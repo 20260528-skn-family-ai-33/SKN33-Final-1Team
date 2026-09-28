@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node.js / TypeScript
+node_modules/
+*.tsbuildinfo
+
+# Build and package output
+build/
+dist/
+
+# Logs and coverage
+*.log
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+
+# Local Docker volume data
+/docker-data/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
