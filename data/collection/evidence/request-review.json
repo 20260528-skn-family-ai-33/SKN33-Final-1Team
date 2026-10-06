@@ -1,0 +1,791 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-10-06T11:33:23+09:00",
+  "scope": "초도 개발 및 시연; 독립 일반화 성능 평가용 아님",
+  "review_type": "AI author self-review and deterministic structure validation",
+  "independent_semantic_review": false,
+  "human_review_status": "pending",
+  "label_status": "draft",
+  "record_count": 250,
+  "normalized_unique_text_count": 250,
+  "request_group_count": 50,
+  "variants_per_group": 5,
+  "intent_counts": {
+    "new_inspection": 50,
+    "reinspection": 50,
+    "criteria_change": 50,
+    "status_query": 50,
+    "other": 50
+  },
+  "human_reviewed_count": 0,
+  "team_real_material_status": "not provided; not read; unconfirmed",
+  "training_performed": false,
+  "dataset_split_performed": false,
+  "checks": {
+    "unique_ids": true,
+    "normalized_text_unique": true,
+    "label_join_complete": true,
+    "raw_records_have_no_intent_label": true,
+    "case_specs_values_used": true,
+    "fifty_distinct_semantic_situations": true
+  },
+  "groups": [
+    {
+      "request_group_id": "REQ-G-001",
+      "request_ids": [
+        "REQ-0001",
+        "REQ-0002",
+        "REQ-0003",
+        "REQ-0004",
+        "REQ-0005"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "첫 납품 접수 후 처음 검수를 요청함. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-002",
+      "request_ids": [
+        "REQ-0006",
+        "REQ-0007",
+        "REQ-0008",
+        "REQ-0009",
+        "REQ-0010"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "처음 제출한 후보 두 개의 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-003",
+      "request_ids": [
+        "REQ-0011",
+        "REQ-0012",
+        "REQ-0013",
+        "REQ-0014",
+        "REQ-0015"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "신규 채널 납품 이미지 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-004",
+      "request_ids": [
+        "REQ-0016",
+        "REQ-0017",
+        "REQ-0018",
+        "REQ-0019",
+        "REQ-0020"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "다국어 설명을 추가한 첫 납품 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-005",
+      "request_ids": [
+        "REQ-0021",
+        "REQ-0022",
+        "REQ-0023",
+        "REQ-0024",
+        "REQ-0025"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "첫 변환 납품의 판독과 조건 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-006",
+      "request_ids": [
+        "REQ-0026",
+        "REQ-0027",
+        "REQ-0028",
+        "REQ-0029",
+        "REQ-0030"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "처음 접수한 불완전 제출 패키지의 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-007",
+      "request_ids": [
+        "REQ-0031",
+        "REQ-0032",
+        "REQ-0033",
+        "REQ-0034",
+        "REQ-0035"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "첫 납품의 발주 대응 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-008",
+      "request_ids": [
+        "REQ-0036",
+        "REQ-0037",
+        "REQ-0038",
+        "REQ-0039",
+        "REQ-0040"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "첫 납품의 모호한 판독 상태를 포함한 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-009",
+      "request_ids": [
+        "REQ-0041",
+        "REQ-0042",
+        "REQ-0043",
+        "REQ-0044",
+        "REQ-0045"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "여러 첫 납품 파일을 구분한 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-010",
+      "request_ids": [
+        "REQ-0046",
+        "REQ-0047",
+        "REQ-0048",
+        "REQ-0049",
+        "REQ-0050"
+      ],
+      "intended_label": "new_inspection",
+      "semantic_review_note": "고해상도 첫 납품의 신규 검사 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-011",
+      "request_ids": [
+        "REQ-0051",
+        "REQ-0052",
+        "REQ-0053",
+        "REQ-0054",
+        "REQ-0055"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "기존 검사에서 할인 오류를 수정한 뒤 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-012",
+      "request_ids": [
+        "REQ-0056",
+        "REQ-0057",
+        "REQ-0058",
+        "REQ-0059",
+        "REQ-0060"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "기존 브랜드 지적 보완 후 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-013",
+      "request_ids": [
+        "REQ-0061",
+        "REQ-0062",
+        "REQ-0063",
+        "REQ-0064",
+        "REQ-0065"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "상품명 지적 수정 후 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-014",
+      "request_ids": [
+        "REQ-0066",
+        "REQ-0067",
+        "REQ-0068",
+        "REQ-0069",
+        "REQ-0070"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "모호한 판독을 보완한 수정본 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-015",
+      "request_ids": [
+        "REQ-0071",
+        "REQ-0072",
+        "REQ-0073",
+        "REQ-0074",
+        "REQ-0075"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "이전 증빙 누락을 보완한 제출 패키지 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-016",
+      "request_ids": [
+        "REQ-0076",
+        "REQ-0077",
+        "REQ-0078",
+        "REQ-0079",
+        "REQ-0080"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "기존 검사 뒤 전체 디자인 교체 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-017",
+      "request_ids": [
+        "REQ-0081",
+        "REQ-0082",
+        "REQ-0083",
+        "REQ-0084",
+        "REQ-0085"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "기존 흐림 지적 보완 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-018",
+      "request_ids": [
+        "REQ-0086",
+        "REQ-0087",
+        "REQ-0088",
+        "REQ-0089",
+        "REQ-0090"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "부분 수정 뒤 남은 위반을 구분하는 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-019",
+      "request_ids": [
+        "REQ-0091",
+        "REQ-0092",
+        "REQ-0093",
+        "REQ-0094",
+        "REQ-0095"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "구버전 오제출 이후 올바른 수정본 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-020",
+      "request_ids": [
+        "REQ-0096",
+        "REQ-0097",
+        "REQ-0098",
+        "REQ-0099",
+        "REQ-0100"
+      ],
+      "intended_label": "reinspection",
+      "semantic_review_note": "기준 변경 자체가 아닌 이미 확정된 기준을 적용한 재검수. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-021",
+      "request_ids": [
+        "REQ-0101",
+        "REQ-0102",
+        "REQ-0103",
+        "REQ-0104",
+        "REQ-0105"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "할인 조건 변경 초안 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-022",
+      "request_ids": [
+        "REQ-0106",
+        "REQ-0107",
+        "REQ-0108",
+        "REQ-0109",
+        "REQ-0110"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "상품명 기준값 변경 초안 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-023",
+      "request_ids": [
+        "REQ-0111",
+        "REQ-0112",
+        "REQ-0113",
+        "REQ-0114",
+        "REQ-0115"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "브랜드 위치 기준 변경 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-024",
+      "request_ids": [
+        "REQ-0116",
+        "REQ-0117",
+        "REQ-0118",
+        "REQ-0119",
+        "REQ-0120"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "기존 필수 고지에 없던 최소 표시 크기 조건 추가 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-025",
+      "request_ids": [
+        "REQ-0121",
+        "REQ-0122",
+        "REQ-0123",
+        "REQ-0124",
+        "REQ-0125"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "파일 형식 기준 변경 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-026",
+      "request_ids": [
+        "REQ-0126",
+        "REQ-0127",
+        "REQ-0128",
+        "REQ-0129",
+        "REQ-0130"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "외관 기준 명확화 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-027",
+      "request_ids": [
+        "REQ-0131",
+        "REQ-0132",
+        "REQ-0133",
+        "REQ-0134",
+        "REQ-0135"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "기존 제작 근거 조건에 단계별 변경 전후 해시 요건 추가 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-028",
+      "request_ids": [
+        "REQ-0136",
+        "REQ-0137",
+        "REQ-0138",
+        "REQ-0139",
+        "REQ-0140"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "문서 충돌 해소를 위한 기준 변경 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-029",
+      "request_ids": [
+        "REQ-0141",
+        "REQ-0142",
+        "REQ-0143",
+        "REQ-0144",
+        "REQ-0145"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "기존 기준 항목 제거 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-030",
+      "request_ids": [
+        "REQ-0146",
+        "REQ-0147",
+        "REQ-0148",
+        "REQ-0149",
+        "REQ-0150"
+      ],
+      "intended_label": "criteria_change",
+      "semantic_review_note": "기존 브랜드 문자열 조건에 노출 횟수 제한 추가 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-031",
+      "request_ids": [
+        "REQ-0151",
+        "REQ-0152",
+        "REQ-0153",
+        "REQ-0154",
+        "REQ-0155"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "새 검사 실행 없이 접수 진행 상태 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-032",
+      "request_ids": [
+        "REQ-0156",
+        "REQ-0157",
+        "REQ-0158",
+        "REQ-0159",
+        "REQ-0160"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "대기 상태와 진행 정보 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-033",
+      "request_ids": [
+        "REQ-0161",
+        "REQ-0162",
+        "REQ-0163",
+        "REQ-0164",
+        "REQ-0165"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "최신 기존 실행 결과 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-034",
+      "request_ids": [
+        "REQ-0166",
+        "REQ-0167",
+        "REQ-0168",
+        "REQ-0169",
+        "REQ-0170"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "기존 검수의 미해결 항목 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-035",
+      "request_ids": [
+        "REQ-0171",
+        "REQ-0172",
+        "REQ-0173",
+        "REQ-0174",
+        "REQ-0175"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "기준 변경 없이 현재 버전 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-036",
+      "request_ids": [
+        "REQ-0176",
+        "REQ-0177",
+        "REQ-0178",
+        "REQ-0179",
+        "REQ-0180"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "증빙 추가 없이 접수 현황 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-037",
+      "request_ids": [
+        "REQ-0181",
+        "REQ-0182",
+        "REQ-0183",
+        "REQ-0184",
+        "REQ-0185"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "기존 재검수 진행 상태 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-038",
+      "request_ids": [
+        "REQ-0186",
+        "REQ-0187",
+        "REQ-0188",
+        "REQ-0189",
+        "REQ-0190"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "검사 재실행 없이 기존 실패 기록 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-039",
+      "request_ids": [
+        "REQ-0191",
+        "REQ-0192",
+        "REQ-0193",
+        "REQ-0194",
+        "REQ-0195"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "기준 승인 실행 없이 대기 상태 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-040",
+      "request_ids": [
+        "REQ-0196",
+        "REQ-0197",
+        "REQ-0198",
+        "REQ-0199",
+        "REQ-0200"
+      ],
+      "intended_label": "status_query",
+      "semantic_review_note": "과거 기록과 버전 이력 조회. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-041",
+      "request_ids": [
+        "REQ-0201",
+        "REQ-0202",
+        "REQ-0203",
+        "REQ-0204",
+        "REQ-0205"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "검수 실행이 아닌 창작 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-042",
+      "request_ids": [
+        "REQ-0206",
+        "REQ-0207",
+        "REQ-0208",
+        "REQ-0209",
+        "REQ-0210"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "확정 기준 수정이 아닌 디자인 상담. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-043",
+      "request_ids": [
+        "REQ-0211",
+        "REQ-0212",
+        "REQ-0213",
+        "REQ-0214",
+        "REQ-0215"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "이름 창작 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-044",
+      "request_ids": [
+        "REQ-0216",
+        "REQ-0217",
+        "REQ-0218",
+        "REQ-0219",
+        "REQ-0220"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "특정 프로젝트 상태가 아닌 일반 개념 설명. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-045",
+      "request_ids": [
+        "REQ-0221",
+        "REQ-0222",
+        "REQ-0223",
+        "REQ-0224",
+        "REQ-0225"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "검수와 무관한 일반 도구 사용 설명. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-046",
+      "request_ids": [
+        "REQ-0226",
+        "REQ-0227",
+        "REQ-0228",
+        "REQ-0229",
+        "REQ-0230"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "검수 업무 명령이 아닌 안내문 작성. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-047",
+      "request_ids": [
+        "REQ-0231",
+        "REQ-0232",
+        "REQ-0233",
+        "REQ-0234",
+        "REQ-0235"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "발표용 창작 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-048",
+      "request_ids": [
+        "REQ-0236",
+        "REQ-0237",
+        "REQ-0238",
+        "REQ-0239",
+        "REQ-0240"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "신규 검사 접수가 아닌 지원 범위 문의. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-049",
+      "request_ids": [
+        "REQ-0241",
+        "REQ-0242",
+        "REQ-0243",
+        "REQ-0244",
+        "REQ-0245"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "상품 소개 글 작성 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    },
+    {
+      "request_group_id": "REQ-G-050",
+      "request_ids": [
+        "REQ-0246",
+        "REQ-0247",
+        "REQ-0248",
+        "REQ-0249",
+        "REQ-0250"
+      ],
+      "intended_label": "other",
+      "semantic_review_note": "검수 흐름 수행이 아닌 번역 요청. 5개 표현은 같은 상황과 같은 요청 행동을 유지함.",
+      "review_method": "AI author checked authored situation and all five rendered formulations",
+      "review_status": "author_self_review_draft",
+      "human_review_status": "pending"
+    }
+  ],
+  "limitations": [
+    "합성 요청이며 사람 검토는 대기 상태임.",
+    "합성 상황과 유사 표현은 독립 일반화 성능 증거가 아님.",
+    "자동 구조 검사 통과와 사람 의미 검토 완료는 별개임.",
+    "의도별 공통 표현 틀이 반복되어 분류 단서가 강함. 자연 실무 요청 분포를 대표하지 않음.",
+    "원문 그룹을 학습·검증·시험에 나눠 넣지 않아야 함. 현재 분할과 학습은 하지 않음."
+  ]
+}

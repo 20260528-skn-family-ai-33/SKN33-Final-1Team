@@ -1,0 +1,66 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#742333">
+  <title>동작그만 밑장빼기냐 · 검수 실험실</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}?v={{ style_version }}">
+  <script src="{% static 'app.js' %}?v={{ script_version }}" defer></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">검수 화면으로 이동</a>
+  <div class="shell">
+    <header class="masthead">
+      <a class="wordmark" href="/" aria-label="검수 실험실 처음으로"><span class="mark" aria-hidden="true">검</span><span>동작그만 밑장빼기냐<small>CREATIVE INSPECTION LAB</small></span></a>
+      <span class="environment"><i aria-hidden="true"></i> 로컬 검수 실험 버전</span>
+    </header>
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">먼저 관찰하고, 근거로 확인합니다</p><h1 id="page-title">이미지 한 장,<br><em>다섯 가지 약속.</em></h1><p class="lede">확정한 조건과 납품 이미지를 나란히 놓고 검토하세요.<br class="desktop"> 항목을 선택하면 실제 관찰 내용과 근거 영역을 확인할 수 있습니다.</p></div>
+      <aside class="capability"><span class="mini-label">현재 검사 환경</span><strong id="health-title">연결 확인 중</strong><p id="health-description">로컬 검사 도구를 확인하고 있습니다.</p><span class="quiet-tag">내용 검사 · 최종 승인 기능 없음</span></aside>
+    </section>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    <main id="workspace">
+      <section class="topic-picker" aria-label="검사 주제 선택"><div><h2>어떤 광고를 검수할까요?</h2><p class="muted">주제별 발주 기준과 샘플 6장을 불러옵니다.</p></div><div id="topic-list" class="choice-list"></div></section>
+      <section class="setup" aria-label="검수 준비">
+        <article class="panel criteria-panel">
+          <div class="section-title"><span class="step">01</span><div><h2>검사 기준</h2><p>적용할 다섯 조건을 확인해 주세요.</p></div><span id="criteria-status" class="pill">불러오는 중</span></div>
+          <div id="condition-picker" class="condition-picker" hidden><p class="muted">미리 등록한 발주 조건을 선택하세요. 샘플 선택 시 해당 발주가 연결됩니다.</p><div id="condition-list" class="choice-list"></div></div>
+          <p id="criteria-context" class="context-note"></p>
+          <div id="criteria-list" class="criteria-list"><p class="muted">기준을 불러오고 있습니다.</p></div>
+          <div class="panel-bottom"><span id="criteria-version" class="meta">기준 버전 —</span><button id="confirm-criteria" class="button secondary" disabled>이 기준으로 확정</button></div>
+        </article>
+        <article class="panel source-panel">
+          <div class="section-title"><span class="step">02</span><div><h2>검사할 이미지</h2><p>준비된 샘플이나 직접 올린 이미지를 선택하세요.</p></div></div>
+          <div id="sample-list" class="sample-list" aria-label="샘플 이미지 선택"></div>
+          <label class="upload" for="file-input"><span class="upload-symbol" aria-hidden="true">＋</span><span><strong>이미지 직접 올리기</strong><small>PNG 또는 JPEG · 파일을 끌어 놓아도 됩니다</small></span><input id="file-input" type="file" accept="image/png,image/jpeg"></label>
+          <p id="asset-info" class="meta asset-info">선택한 이미지가 없습니다.</p>
+          <div class="run-row"><p id="run-hint" class="muted">기준을 확정하고 이미지를 선택해 주세요.</p><button id="run-button" class="button primary" disabled><span id="run-label">검사 실행</span><span aria-hidden="true">↗</span></button></div>
+        </article>
+      </section>
+      <section class="workspace-heading"><div><p class="eyebrow">INSPECTION WORKSPACE</p><h2>관찰과 판단을 함께 보기</h2></div><span id="run-status" class="pill" role="status" aria-live="polite">실행 전</span></section>
+      <section class="inspection-layout" aria-label="검수 결과">
+        <article class="panel image-panel">
+          <div class="image-toolbar"><div><strong id="image-name">검사 대상 이미지</strong><span id="image-version" class="meta">파일 버전 —</span></div><button id="clear-selection" class="text-button" disabled>영역 표시 해제</button></div>
+          <div id="image-empty" class="image-empty"><span aria-hidden="true">⌗</span><h3>먼저 이미지를 선택하세요</h3><p>검사 후 조건을 누르면<br>해당 근거를 이미지 위에 표시합니다.</p></div>
+          <div id="image-stage" class="image-stage" hidden><img id="asset-image" alt="검사 대상 이미지"><div id="evidence-overlay" class="evidence-overlay" aria-hidden="true"></div></div>
+          <div class="image-caption"><span class="legend-dot"></span><span id="image-caption">표시된 영역은 검사 결과가 제공한 근거입니다.</span></div>
+        </article>
+        <article class="panel results-panel">
+          <div class="results-top"><h3>조건별 결과</h3><span id="result-count" class="meta">아직 실행하지 않음</span></div>
+          <div id="result-summary" class="result-summary" hidden></div>
+          <div id="results" class="results"><div class="results-empty"><span class="mini-label">READY WHEN YOU ARE</span><p>검사를 실행하면 조건별<br>관찰 내용이 여기에 표시됩니다.</p></div></div>
+          <p class="results-note">‘확인 필요’는 오류 확정이 아닙니다. 검사 실패와 미실행 항목도 충족으로 집계하지 않습니다.</p>
+        </article>
+      </section>
+      <section class="records-layout">
+        <article class="panel trace-panel"><div class="section-title"><span class="step">↳</span><div><h2>실행 기록</h2><p>실제 검사 경로와 도구의 응답 상태</p></div></div><div id="run-meta" class="run-meta" hidden></div><ol id="trace-list" class="trace-list"><li class="muted">검사 실행 후 기록을 확인할 수 있습니다.</li></ol></article>
+        <article class="panel history-panel"><div class="section-title"><span class="step">↺</span><div><h2>저장된 검사</h2><p>이전 실행을 열어 결과와 근거를 확인하세요.</p></div><button id="refresh-history" class="text-button">새로고침</button></div><div id="history-list" class="history-list"><p class="muted">저장 이력을 불러오고 있습니다.</p></div></article>
+      </section>
+    </main>
+    <footer><strong>동작그만 밑장빼기냐</strong><p>가상 광고 샘플 18장 · 실제 검사 결과에 근거해 표시합니다.<br>문구 검사는 로컬 OCR을 사용하며, 객체 수·크기·외관은 사람의 확인이 필요합니다.</p></footer>
+  </div>
+</body>
+</html>

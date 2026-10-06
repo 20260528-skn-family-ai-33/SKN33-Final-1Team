@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "as_of_date": "2026-10-06",
+  "generated_at": "2026-10-06T11:47:18.490908+09:00",
+  "submission_date": "2026-10-08",
+  "team_material_status": "not_provided_unconfirmed",
+  "team_intake_cutoff": "2026-10-07T12:00:00+09:00",
+  "team_intake_closed": false,
+  "new_documents": 10,
+  "new_requests": 250,
+  "request_groups": 50,
+  "new_images": 12,
+  "new_image_groups": 3,
+  "existing_images": 6,
+  "existing_image_groups": 1,
+  "image_dimensions": "1254×1254",
+  "new_raw_files": 23,
+  "existing_raw_files": 6,
+  "total_raw_files": 29,
+  "human_approved_count": 0,
+  "human_approved_high_quality_count": 0,
+  "by_type_bytes": {
+    "document": 49091,
+    "requests": 129075,
+    "image": 22317536
+  },
+  "legacy_image_bytes": 9776227,
+  "new_image_unique_hashes": 12,
+  "legacy_image_unique_hashes": 6,
+  "all_image_unique_hashes": 18,
+  "requests_normalized_unique": 250,
+  "targets": {
+    "documents": 10,
+    "requests": 250,
+    "request_groups": 50,
+    "new_images": 12,
+    "new_image_groups": 3
+  },
+  "new_image_generation_roots": 3,
+  "new_image_edit_derivatives": 9,
+  "inventory_sha256": "73e82efa83c9f76e86522a2025377fa63b8544cedc0857040eec89d083422b69",
+  "counting_rules": [
+    "Markdown 원문마다 1건; 파싱본·인쇄본은 파생본이며 신규 문서가 아니다.",
+    "Requests: one JSONL file, 250 utterances, 50 semantic groups.",
+    "Images: files and original groups reported separately; runtime copies excluded.",
+    "Team material not provided does not establish that no team material exists."
+  ],
+  "training_executed": false,
+  "performance_evaluation_executed": false,
+  "public_upload_executed": false,
+  "license_review_status": "not_reviewed",
+  "request_intent_counts": {
+    "new_inspection": 50,
+    "reinspection": 50,
+    "criteria_change": 50,
+    "status_query": 50,
+    "other": 50
+  }
+}

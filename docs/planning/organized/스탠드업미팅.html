@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="동작그만 밑장빼기냐 프로젝트의 완료한 일, 다음 작업, 확인할 사항을 정리한 스탠드업 미팅 자료">
+  <title>동작그만 밑장빼기냐 · 스탠드업 미팅</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#203d34;background:#f4f3ee;color-scheme:light}
+    *{box-sizing:border-box}body{margin:0;font-size:15px;line-height:1.7}main{max-width:1120px;margin:auto;padding:32px 28px 30px}a{color:#315b48;text-underline-offset:4px}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible{outline:3px solid #bc7848;outline-offset:4px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:25px}.toolbar a{font-size:13px;text-decoration:none}.toolbar button{border:1px solid #cbd5c5;background:#fffefb;color:#203d34;padding:8px 15px;border-radius:9px}.eyebrow{font-size:11px;letter-spacing:.14em;color:#738064;font-weight:750}.header-line{display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:clamp(29px,4.5vw,43px);letter-spacing:-.055em;line-height:1.25;margin:10px 0 11px}.date{font-size:13px;white-space:nowrap;color:#657562}.project{font-size:16px;font-weight:700;margin:0}.purpose{font-size:14px;color:#69746b;margin:5px 0 0}.status{margin:22px 0;padding:14px 18px;border:1px solid #d8dfd0;border-radius:11px;background:#e9eee3;font-size:13px}.status strong{display:inline-block;margin-right:9px}.columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.card{background:#fffefb;border:1px solid #dbded3;border-radius:15px;padding:21px 20px}.label{display:inline-block;font-size:10px;letter-spacing:.13em;font-weight:750;color:#738064}.card h2{font-size:21px;letter-spacing:-.035em;margin:6px 0 14px}.card ul{margin:0;padding-left:19px}.card li{margin:10px 0;font-size:13px;line-height:1.85}.card li:last-child{margin-bottom:0}.card.next{border-top:3px solid #426b4c}.card.open{border-top:3px solid #b98157}.hint{font-size:11px;color:#7b806e;margin:9px 0 0}.script{margin:21px 0;background:#233e34;color:#f5f8ee;padding:22px 25px;border-radius:15px}.script h2{margin:0 0 12px;font-size:13px;font-weight:650;color:#c4d5b5}.script p{margin:0;font-size:15px;line-height:1.95;word-break:keep-all}.milestones{display:grid;grid-template-columns:1fr 1fr;gap:15px;border-top:1px solid #d6dccf;border-bottom:1px solid #d6dccf;padding:15px 0;font-size:12px}.milestones strong{font-size:14px;display:block;margin-bottom:3px}.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.links a{background:#fffefb;border:1px solid #dbded3;border-radius:99px;padding:6px 13px;font-size:11px;text-decoration:none}footer{font-size:10px;color:#7a8274;margin-top:15px;line-height:1.8}
+    @media(max-width:800px){.columns{grid-template-columns:1fr}.card{padding:19px}.header-line{display:block}.date{margin-bottom:10px}.milestones{grid-template-columns:1fr}.script p{font-size:14px}main{padding:22px 18px}}
+    @media print{@page{size:A4 portrait;margin:12mm}body{background:white;font-size:10pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}main{max-width:none;padding:0}.toolbar,.links{display:none}.header-line{display:flex}h1{font-size:25pt}.purpose{font-size:9pt}.project{font-size:11pt}.date{font-size:9pt}.status{margin:12px 0;font-size:9pt;padding:10px 12px}.columns{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.card{padding:13px 12px;break-inside:avoid}.card h2{font-size:14pt;margin:5px 0 9px}.card li{font-size:8.7pt;line-height:1.7;margin:8px 0}.label,.hint{font-size:7pt}.script{padding:15px 17px;margin:14px 0;break-inside:avoid}.script h2{font-size:9pt}.script p{font-size:10pt;line-height:1.85}.milestones{grid-template-columns:1fr 1fr;gap:12px;padding:11px 0;font-size:8.5pt;break-inside:avoid}.milestones strong{font-size:10pt}footer{font-size:7pt;margin-top:10px}}
+  </style>
+</head>
+<body>
+<main>
+  <nav class="toolbar" aria-label="미팅 자료 도구">
+    <a href="./index.html">← 전체 문서 목차</a>
+    <button type="button" id="print">인쇄 / PDF</button>
+  </nav>
+  <header>
+    <span class="eyebrow">SKN33 FINAL · 1TEAM</span>
+    <div class="header-line"><h1>스탠드업 미팅</h1><time class="date" datetime="2026-10-06">2026.10.06 기준</time></div>
+    <p class="project">동작그만 밑장빼기냐</p>
+    <p class="purpose">광고 이미지가 문서의 조건에 맞는지 검사하고, 수정 요청과 재검수까지 연결하는 서비스.</p>
+  </header>
+  <div class="status"><strong>현재 단계</strong>설계 문서 정리 완료 · OCR·MCP 시제품 기반 보유 · LLM·RAG·8개 에이전트 협업 연결 예정</div>
+  <div class="columns">
+    <section class="card" aria-labelledby="done">
+      <span class="label">DONE</span><h2 id="done">완료한 일</h2>
+      <ul>
+        <li>기획·기능·화면·기술스펙을 <strong>4개 HTML 문서</strong>로 분리하고 한글 파일명으로 정리.</li>
+        <li><strong>8개 에이전트</strong>의 역할, MCP 도구 연결과 전체 업무 흐름 설계.</li>
+        <li>기능 33개·원 요구사항 69개를 유지하고, 화면·기술 문서 간 연결 정리.</li>
+      </ul>
+    </section>
+    <section class="card next" aria-labelledby="next">
+      <span class="label">NEXT</span><h2 id="next">다음 작업</h2>
+      <ul>
+        <li>실제 문서 한 건으로 <strong>LLM 기준 추출</strong>부터 연결.</li>
+        <li>사람 확정 → MCP 검수 → 근거 포함 보고서까지 한 경로 검증.</li>
+        <li>요청 분류용 문장·라벨을 정리하고 첫 학습 실험 준비.</li>
+      </ul>
+      <p class="hint">다음 작업의 제안 순서입니다. 담당·공수는 회의에서 배정합니다.</p>
+    </section>
+    <section class="card open" aria-labelledby="needs">
+      <span class="label">TO DECIDE</span><h2 id="needs">확인할 사항</h2>
+      <ul>
+        <li>공용 <strong>GPU 환경</strong>과 모델 접속 방법.</li>
+        <li>기준 문서·정상/오류 이미지의 확보 범위와 검증 기준.</li>
+        <li>문서 추출·검수 연결·학습 데이터 준비의 담당자와 작업 일정.</li>
+      </ul>
+      <p class="hint">현재 공유된 기록에서 미정인 항목입니다.</p>
+    </section>
+  </div>
+  <section class="script" aria-labelledby="script-title">
+    <h2 id="script-title">바로 읽는 공유 문장</h2>
+    <p>기획·기능·화면·기술스펙 문서를 나눴고, 8개 에이전트와 MCP 업무 흐름까지 정리했습니다. 현재 OCR 기반 검수 시제품은 있고, LLM과 RAG 연결은 다음 작업입니다. 우선 문서에서 기준을 읽고 검수 보고서까지 나오는 한 경로를 연결하려고 합니다. GPU 환경과 테스트 자료, 작업 담당을 먼저 정하면 좋겠습니다.</p>
+  </section>
+  <div class="milestones">
+    <div><strong>10.16 · 중간 발표</strong>문서 → 기준 추출 → 사람 확정 → MCP 검수 → 보고서의 실제 실행과 첫 학습 결과</div>
+    <div><strong>11.20 · 최종 발표</strong>8개 역할 협업 · 수정·재검수 · 평가·배포 · 최종 산출물</div>
+  </div>
+  <nav class="links" aria-label="상세 문서">
+    <a href="./기획서.html">기획서</a><a href="./기능정의서.html">기능정의서</a><a href="./화면정의서.html">화면정의서</a><a href="./기술스펙정의서.html">기술스펙정의서</a>
+  </nav>
+  <footer>기준: 현재 기획 문서와 README의 기존 구현 기록. 이번 정리에서 앱·모델을 재실행하지 않았으며, 역할 설계 완료는 8개 에이전트 구현 완료를 뜻하지 않습니다. 이후 회의에서는 기준일·완료 작업·다음 작업·확인 사항을 갱신합니다.</footer>
+</main>
+<script>document.getElementById('print').addEventListener('click',()=>window.print());</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-10-06T02:59:15.165Z",
+  "browser": "154.0.8037.98",
+  "method": "offline HTML -> Chromium print -> A4 PDF; no external requests",
+  "html_path": "docs/reports/data-collection/report.html",
+  "pdf_path": "docs/reports/data-collection/report.pdf",
+  "html_sha256": "52ba79b1dcbeeb9e1c9881e558bb7d2ee3f6a1c75f90dcf8029ac1d18157b040",
+  "pdf_sha256": "410123b7de5b589b18d6e98661ca4694d64268629a666d0ecf5d57a9411a340b",
+  "expected_pages": 11,
+  "layout": [
+    {
+      "page": 1,
+      "title": "표지",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 2,
+      "title": "1. 데이터 수집 개요",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 3,
+      "title": "2. 데이터 수집 방법",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 4,
+      "title": "3. 데이터 설명 및 구성 · 필드사전",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 5,
+      "title": "3. 데이터 설명 및 구성 · 현황·저장",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 6,
+      "title": "4. 법적·윤리적 고려사항",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 7,
+      "title": "5. 데이터 품질 검토",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 8,
+      "title": "6. 변경 이력 및 근거 패키지",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 992,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 9,
+      "title": "부록 · SYN-AD-01 광고 원자료",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 10,
+      "title": "부록 · SYN-AD-02 광고 원자료",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    },
+    {
+      "page": 11,
+      "title": "부록 · SYN-AD-03 광고 원자료",
+      "contentHeightPx": 945,
+      "contentScrollHeightPx": 945,
+      "footerOverlapPx": 0,
+      "pageHeightPx": 1122.515625
+    }
+  ],
+  "footer_overlap_pages": [],
+  "visual_pdf_review_status": "pending"
+}

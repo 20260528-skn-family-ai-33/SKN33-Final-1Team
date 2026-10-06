@@ -1,0 +1,13 @@
+딸기라떼 검수 기능 기획
+
+strawberry-inspection-plan.html을 더블클릭해 여세요. 외부 라이브러리 없이 로컬에서 탭·검색·단계 필터를 사용할 수 있습니다.
+inspection-plan.json: 구조화한 설계·백로그·요구사항 추적
+requirements-trace.csv: 전체69개 요구사항 및 원문 수용기준
+source-functional-spec.json: 이번 분석에 사용한 기존 기능정의 스냅샷
+sample-criteria.json: 5개 내용 검사 조건
+
+이 폴더는 기획/평가자용입니다. 모델/RAG 입력에 넣지 마세요. 아직 앱·검사 코드나 성능 결과가 아닙니다.
+원본 이미지 위치: /Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/strawberry-latte-qa-v1
+
+업무 흐름 정의서 1차: workflow-definition-v1.html
+사용자·9단계 업무·요청분류·에이전트/MCP·데이터·교육 산출물 연결을 정리했습니다. 구조화 원본은 workflow-definition-v1.json입니다.

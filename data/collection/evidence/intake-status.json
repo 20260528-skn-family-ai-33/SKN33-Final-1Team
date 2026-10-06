@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-10-06T11:47:18.490908+09:00",
+  "actual_status": "not_provided_unconfirmed",
+  "planned_cutoff": "2026-10-07T12:00:00+09:00",
+  "intake_closed": false,
+  "fallback_action_completed": "synthetic introductory corpus produced",
+  "private_intake_location": ".runtime/collection-team-input/",
+  "human_review_status": "pending",
+  "external_sharing_executed": false,
+  "next_update": "After team input is provided, review rights/privacy, register eligible copies and rebuild report."
+}

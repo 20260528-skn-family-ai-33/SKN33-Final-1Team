@@ -38,3 +38,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+data/runtime/
+
+.runtime/

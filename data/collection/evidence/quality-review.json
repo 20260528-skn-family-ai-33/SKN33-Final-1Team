@@ -1,0 +1,2031 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-06T11:47:18.676351+09:00",
+  "method": "read_only_file_metadata_and_content_checks",
+  "scope": "Synthetic collection quality checks; no training or independent performance evaluation",
+  "overall_status": "pending",
+  "human_review_status": "pending",
+  "summary": {
+    "passed": 331,
+    "pending": 1
+  },
+  "metrics": {
+    "actual_business_material_status": "not_provided_unconfirmed",
+    "human_approved_ready": 0,
+    "privacy_manual_review_status": "pending",
+    "training_run": false,
+    "performance_evaluation_run": false,
+    "documents": 10,
+    "new_images": 12,
+    "requests": 250,
+    "request_groups": 50,
+    "request_intents": {
+      "new_inspection": 50,
+      "reinspection": 50,
+      "criteria_change": 50,
+      "status_query": 50,
+      "other": 50
+    },
+    "new_image_groups": 3,
+    "inventory_rows": 29,
+    "submission_packages": 12,
+    "controlled_missing_evidence_packages": 3,
+    "legacy_images": 6,
+    "legacy_independent_original_groups": 1,
+    "privacy_heuristic_hits": 0,
+    "ai_basic_checks_passed": 331,
+    "ai_structurally_checked_documents": 10,
+    "ai_structurally_checked_requests": 250,
+    "ai_structurally_checked_new_images": 12
+  },
+  "checks": [
+    {
+      "id": "spec.synthetic_and_pending",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.target_count",
+      "status": "passed",
+      "detail": {
+        "actual": 10,
+        "target": 10
+      }
+    },
+    {
+      "id": "images.target_count",
+      "status": "passed",
+      "detail": {
+        "actual": 12,
+        "target": 12
+      }
+    },
+    {
+      "id": "document.readable.syn-ad-01-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-01-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-01-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-01-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-01-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-01-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-02-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-02-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-02-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-02-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-02-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-02-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-03-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-03-brief",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-03-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-03-checklist",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-ad-03-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-ad-03-guide",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.readable.syn-common-faq-workflow",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "document.synthetic_disclosure.syn-common-faq-workflow",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.unique_hashes",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance_count_and_ids",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.case_conditions.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.provenance.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "documents.three_types_per_case",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "requests.utf8_and_json.requests",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "requests.target_count",
+      "status": "passed",
+      "detail": {
+        "actual": 250,
+        "target": 250
+      }
+    },
+    {
+      "id": "requests.unique_ids",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "requests.unique_nonempty_sentences",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "requests.group_count_and_variants",
+      "status": "passed",
+      "detail": {
+        "groups": 50,
+        "variant_count_distribution": {
+          "5": 50
+        }
+      }
+    },
+    {
+      "id": "requests.no_embedded_answer",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "requests.synthetic_provenance",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "labels.exact_join",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "labels.intent_distribution",
+      "status": "passed",
+      "detail": {
+        "new_inspection": 50,
+        "reinspection": 50,
+        "criteria_change": 50,
+        "status_query": 50,
+        "other": 50
+      }
+    },
+    {
+      "id": "labels.group_consistency",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "labels.human_pending",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "image.valid.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.unique_hashes",
+      "status": "passed",
+      "detail": {
+        "duplicate_sets": []
+      }
+    },
+    {
+      "id": "images.scenario_coverage",
+      "status": "passed",
+      "detail": {
+        "missing": [],
+        "unexpected": []
+      }
+    },
+    {
+      "id": "images.group_count",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_join",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.provenance_hash.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.three_separate_generation_roots",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.required_columns",
+      "status": "passed",
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "id": "manifest.unique_ids",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-01-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-01-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-01-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-02-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-02-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-02-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-03-BRIEF",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-03-GUIDE",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-03-CHECKLIST",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-DOC-COMMON-FAQ",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.request_record_count.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-REQUESTS-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.image_dimensions.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-01",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-02",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-03",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-04",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-05",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.file.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.hash.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.bytes.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.collection_provenance.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.synthetic_pending.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.evidence.LEGACY-AD-06",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.no_human_approval_claim",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "manifest.raw_coverage",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_coverage",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_human_pending",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observed_conditions_recorded",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_hash.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.observation_condition_integrity.SYN-AD-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.packages_exact_join",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.three_controlled_package_omissions",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-01-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-01-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-01-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-01-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-02-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-02-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-02-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-02-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-03-normal",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-03-mismatch",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-03-ambiguous",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "images.package.SYN-PKG-03-missing_evidence",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "legacy.separate_count",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "id": "privacy.heuristic_scan",
+      "status": "passed",
+      "detail": []
+    },
+    {
+      "id": "privacy.human_review",
+      "status": "pending",
+      "detail": "Heuristics do not establish permission or absence of sensitive information"
+    }
+  ],
+  "image_metadata": [
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-ambiguous.png",
+      "sha256": "ee82945c4eae480f4f89c23de231e514b95fd672ba66a33de8465f462924031c",
+      "bytes": 1726409,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-mismatch.png",
+      "sha256": "c9f08152d75ed816061bce0f840a18d43df925195e3104ea41caac4e42362cc2",
+      "bytes": 1711411,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-missing_evidence.png",
+      "sha256": "1917e717978ba0fdda73ab4fab61c39f7d3b0a441c8179e4a7d5b2228bd3373e",
+      "bytes": 1790853,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-normal.png",
+      "sha256": "14f6eaf28ec840fc4b179d58627883a1f777b85c52b634520f73d35c009f0731",
+      "bytes": 1785626,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-ambiguous.png",
+      "sha256": "b181476e7dfdcd0a73d0844e1e94d088a58c554b0e31afdacc6a18fd4b3d67ab",
+      "bytes": 1811441,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-mismatch.png",
+      "sha256": "92a191844b4bb2b4dbf2cb333b9d3300417b9e2f33938af06c2d03822b066a19",
+      "bytes": 1772613,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-missing_evidence.png",
+      "sha256": "4bb38d9f5afc77a93151e34284d9edcd9d4d7eed4c482a69f41878fc9e3df44d",
+      "bytes": 1812745,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-normal.png",
+      "sha256": "db7e14a77facf07e3cf3dad3aa72454e7fcd33f8a110f633740c61cdfe36ef10",
+      "bytes": 1881529,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-ambiguous.png",
+      "sha256": "12cf885741bcd367e25dfc8aab250d97ee76f90585e430398a20fbe175076f3c",
+      "bytes": 2013866,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-mismatch.png",
+      "sha256": "0f8bb66e7baf7234ffb13cd04c20373d4038f8da5bcb3081d6f0db90b5f0da75",
+      "bytes": 1975484,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-missing_evidence.png",
+      "sha256": "9ed506c2f74abac044ab6f170d955b5bdb8ed62953c572e6d062726fa30f7403",
+      "bytes": 1979165,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    },
+    {
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-normal.png",
+      "sha256": "429d3811fe5ecb7d767965e7f2aacff920b132493b94363e040a71ebdc52d3b1",
+      "bytes": 2056394,
+      "width": 1254,
+      "height": 1254,
+      "format": "PNG"
+    }
+  ],
+  "limitations": [
+    "No human-approved data is inferred from AI checks.",
+    "Exact hashes detect byte duplicates; perceptual similarity requires visual review.",
+    "Sensitive-data heuristics require separate manual review.",
+    "Business material not provided is unconfirmed, not confirmed zero."
+  ],
+  "independent_reviews": [
+    {
+      "review_id": "QA-DOCUMENT-CONTENT-01",
+      "reviewer_kind": "AI",
+      "reviewer_id": "/root/quality_evidence",
+      "independent_from_author": true,
+      "human_review_status": "pending",
+      "reviewed_at": "2026-10-06T11:46:02.792613+09:00",
+      "input_freshness": "current",
+      "input_sha256": {
+        "data/collection/raw/synthetic/documents/syn-ad-01-brief.md": "29f0d9bd290fbe3e3d42b78488c9788c09546c934e50bb971beaf7591c03983b",
+        "data/collection/raw/synthetic/documents/syn-ad-01-checklist.md": "25cc9d6cbbe63c6fc3a96ec189bc3b982abe72a50195f50e4942aa08e06d5304",
+        "data/collection/raw/synthetic/documents/syn-ad-01-guide.md": "4e7736a568e0e4fc4bd1011348dc37a3a8bb6588169a54497d379cabba3d6403",
+        "data/collection/raw/synthetic/documents/syn-ad-02-brief.md": "63f008db9ef1ce4fccdc4101fc9f881df7136d1afb7b942304884ab508db1622",
+        "data/collection/raw/synthetic/documents/syn-ad-02-checklist.md": "73a8d8c33845a6bae69d2087eab42c723a07711b0593e1ce8db9ef0b0515a164",
+        "data/collection/raw/synthetic/documents/syn-ad-02-guide.md": "d4ebaad6a788502df0f82456feed1e32d31e7019311005598fbea9a5b79d6923",
+        "data/collection/raw/synthetic/documents/syn-ad-03-brief.md": "309a7eb1f44a0bc4038a04d1a4632ceb9e5451e6c2050abba88b5c59016b7a7f",
+        "data/collection/raw/synthetic/documents/syn-ad-03-checklist.md": "a36d20bc458ec111dd4536734a524d4581298bf73545259407e95ce4188c5fbc",
+        "data/collection/raw/synthetic/documents/syn-ad-03-guide.md": "f85a211ce3312b00bd55ee53ce1e46b48b995af9e7d620636591c69b0bf05926",
+        "data/collection/raw/synthetic/documents/syn-common-faq-workflow.md": "ff2f494d412bdbb9862f53d2128ce2e49604f2492d1f950011f7b7334cd2490f"
+      },
+      "structural_and_case_consistency_documents": 10,
+      "direct_content_sample_documents": [
+        "syn-ad-01-brief.md",
+        "syn-ad-02-guide.md",
+        "syn-ad-03-checklist.md",
+        "syn-common-faq-workflow.md"
+      ],
+      "findings": [
+        "10 documents match case brand/product/discount/disclaimer/visual direction and remain explicitly synthetic with human review pending.",
+        "Direct four-document sample keeps production intention separate from observations and treats missing evidence as a package issue, not pixel error.",
+        "Rights/public/commercial permission is not implied by generation or AI review.",
+        "Changed ambiguity clause independently rechecked in all 10 documents: readable maximum-discount text with unclear product eligibility is semantic ambiguity, consistent with the three image cases."
+      ],
+      "result": "AI basic content checks passed; human approval pending"
+    },
+    {
+      "review_id": "QA-REQUEST-SEMANTICS-01",
+      "reviewer_kind": "AI",
+      "reviewer_id": "/root/quality_evidence",
+      "independent_from_author": true,
+      "human_review_status": "pending",
+      "reviewed_at": "2026-10-06T11:34:12.587423+09:00",
+      "input_freshness": "current",
+      "input_sha256": {
+        "data/collection/raw/synthetic/requests/requests.jsonl": "e54c2287347340405e7e73fa7b0237f09b77c19f6183537b596596b75679afde",
+        "data/collection/evidence/request-labels.jsonl": "6fb4abd154670d0096938eb468673550763f72a8bb84a664629941ba89300137",
+        "data/collection/case-specs.json": "5e65f9c65f30169cf2a3e66de08743b3332fa3e4ef78a1a1c804d34c2367b167"
+      },
+      "sample_count": 71,
+      "sample_ids": [
+        "REQ-0001",
+        "REQ-0006",
+        "REQ-0011",
+        "REQ-0016",
+        "REQ-0021",
+        "REQ-0026",
+        "REQ-0031",
+        "REQ-0036",
+        "REQ-0041",
+        "REQ-0046",
+        "REQ-0051",
+        "REQ-0055",
+        "REQ-0056",
+        "REQ-0061",
+        "REQ-0066",
+        "REQ-0071",
+        "REQ-0076",
+        "REQ-0080",
+        "REQ-0081",
+        "REQ-0086",
+        "REQ-0091",
+        "REQ-0096",
+        "REQ-0101",
+        "REQ-0105",
+        "REQ-0106",
+        "REQ-0111",
+        "REQ-0116",
+        "REQ-0117",
+        "REQ-0118",
+        "REQ-0119",
+        "REQ-0120",
+        "REQ-0121",
+        "REQ-0126",
+        "REQ-0130",
+        "REQ-0131",
+        "REQ-0132",
+        "REQ-0133",
+        "REQ-0134",
+        "REQ-0135",
+        "REQ-0136",
+        "REQ-0141",
+        "REQ-0146",
+        "REQ-0147",
+        "REQ-0148",
+        "REQ-0149",
+        "REQ-0150",
+        "REQ-0151",
+        "REQ-0155",
+        "REQ-0156",
+        "REQ-0161",
+        "REQ-0166",
+        "REQ-0171",
+        "REQ-0176",
+        "REQ-0180",
+        "REQ-0181",
+        "REQ-0186",
+        "REQ-0191",
+        "REQ-0196",
+        "REQ-0201",
+        "REQ-0205",
+        "REQ-0206",
+        "REQ-0211",
+        "REQ-0216",
+        "REQ-0221",
+        "REQ-0226",
+        "REQ-0230",
+        "REQ-0231",
+        "REQ-0236",
+        "REQ-0241",
+        "REQ-0246",
+        "REQ-0250"
+      ],
+      "situation_groups_covered": 50,
+      "corrected_groups": [
+        "REQ-G-024",
+        "REQ-G-027",
+        "REQ-G-030"
+      ],
+      "correction_review_count": 15,
+      "findings": [
+        "Sample requested actions align with the five draft intent labels; status queries preserve retrieval rather than starting a new run.",
+        "Initial redundant condition-change requests were corrected to 24px minimum disclaimer height, before/after editing SHA-256, and exactly-one brand appearance; all 15 corrected sentences directly rechecked.",
+        "Intent-specific repeated insertion templates give strong classification clues; data is not representative of real requests or an independent performance benchmark."
+      ],
+      "result": "71 distinct request samples semantically checked; all 250 labels remain human-unreviewed drafts"
+    },
+    {
+      "review_id": "QA-IMAGE-VISUAL-01",
+      "reviewer_kind": "AI",
+      "reviewer_id": "/root/quality_evidence",
+      "independent_from_author": true,
+      "human_review_status": "pending",
+      "reviewed_at": "2026-10-06T11:45:45.602945+09:00",
+      "input_freshness": "current",
+      "input_sha256": {
+        "data/collection/raw/synthetic/images/SYN-AD-01-ambiguous.png": "ee82945c4eae480f4f89c23de231e514b95fd672ba66a33de8465f462924031c",
+        "data/collection/raw/synthetic/images/SYN-AD-01-mismatch.png": "c9f08152d75ed816061bce0f840a18d43df925195e3104ea41caac4e42362cc2",
+        "data/collection/raw/synthetic/images/SYN-AD-01-missing_evidence.png": "1917e717978ba0fdda73ab4fab61c39f7d3b0a441c8179e4a7d5b2228bd3373e",
+        "data/collection/raw/synthetic/images/SYN-AD-01-normal.png": "14f6eaf28ec840fc4b179d58627883a1f777b85c52b634520f73d35c009f0731",
+        "data/collection/raw/synthetic/images/SYN-AD-02-ambiguous.png": "b181476e7dfdcd0a73d0844e1e94d088a58c554b0e31afdacc6a18fd4b3d67ab",
+        "data/collection/raw/synthetic/images/SYN-AD-02-mismatch.png": "92a191844b4bb2b4dbf2cb333b9d3300417b9e2f33938af06c2d03822b066a19",
+        "data/collection/raw/synthetic/images/SYN-AD-02-missing_evidence.png": "4bb38d9f5afc77a93151e34284d9edcd9d4d7eed4c482a69f41878fc9e3df44d",
+        "data/collection/raw/synthetic/images/SYN-AD-02-normal.png": "db7e14a77facf07e3cf3dad3aa72454e7fcd33f8a110f633740c61cdfe36ef10",
+        "data/collection/raw/synthetic/images/SYN-AD-03-ambiguous.png": "12cf885741bcd367e25dfc8aab250d97ee76f90585e430398a20fbe175076f3c",
+        "data/collection/raw/synthetic/images/SYN-AD-03-mismatch.png": "0f8bb66e7baf7234ffb13cd04c20373d4038f8da5bcb3081d6f0db90b5f0da75",
+        "data/collection/raw/synthetic/images/SYN-AD-03-missing_evidence.png": "9ed506c2f74abac044ab6f170d955b5bdb8ed62953c572e6d062726fa30f7403",
+        "data/collection/raw/synthetic/images/SYN-AD-03-normal.png": "429d3811fe5ecb7d767965e7f2aacff920b132493b94363e040a71ebdc52d3b1",
+        "data/collection/evidence/image-observations.json": "4a4c81a5310b0876282531e76af8dfaecc70a3c14dc93a7064669c81781709bd",
+        "data/collection/evidence/submission-packages.jsonl": "10bc1af35c49880087003351cd725157bc23985df98ade10f0289c845131221a",
+        "data/collection/case-specs.json": "5e65f9c65f30169cf2a3e66de08743b3332fa3e4ef78a1a1c804d34c2367b167",
+        "tmp/pdfs/new-image-contact.png": "b2b5dff2522876cf4d28f41f28af1d74e7cf18b17900e72d9173a4aa9cd38515"
+      },
+      "visual_review_image_count": 12,
+      "method": "Direct view_image inspection of 3-column/4-scenario contact sheet, plus full-size SYN-AD-01-normal PNG; compared with author observations and package evidence.",
+      "observed_discount_by_scenario": {
+        "normal": [
+          "25%",
+          "15%",
+          "20%"
+        ],
+        "mismatch": [
+          "15%",
+          "30%",
+          "10%"
+        ],
+        "ambiguous": [
+          "최대 25%",
+          "최대 15%",
+          "최대 20%"
+        ],
+        "missing_evidence": [
+          "25%",
+          "15%",
+          "20%"
+        ]
+      },
+      "findings": [
+        "Author observations align with visible brand, product, discount and development disclaimer across 12 images.",
+        "Ambiguous cases retain readable text but qualify discount as maximum and limit eligibility to some menu items; ambiguity concerns applicability, not OCR failure.",
+        "Controlled missing-evidence cases retain four visible criteria and add a seasonal banner; package evidence is deliberately omitted for three submissions while global production audit remains present.",
+        "Seasonal marketing claim is additional unreviewed content outside the four recorded text criteria; no whole-document compliance or rights approval is inferred.",
+        "Document ambiguity definition now includes unclear applicability; updated clause independently checked in all 10 documents."
+      ],
+      "result": "Independent AI visual observations consistent; all labels and rights remain human-unreviewed drafts"
+    }
+  ]
+}

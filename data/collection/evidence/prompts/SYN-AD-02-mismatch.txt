@@ -1,0 +1,1 @@
+Use case: text-localization. Edit this synthetic MOSS CUP matcha latte advertising poster. Change ONLY the main discount text from '15% 할인' to exactly '30% 할인'. Preserve MOSS CUP, 말차라떼, 가상 광고 · 개발용, cup, green background, placement and every other feature. One square poster, no grid.

@@ -1,0 +1,578 @@
+{
+  "schema_version": "1.0",
+  "reviewed_at": "2026-10-06T11:43:21.200973+09:00",
+  "reviewer_kind": "AI",
+  "scope": "12 generated poster images, intended vs visually observed conditions; no OCR execution or human approval",
+  "images": [
+    {
+      "asset_id": "SYN-AD-01-normal",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-normal.png",
+      "sha256": "14f6eaf28ec840fc4b179d58627883a1f777b85c52b634520f73d35c009f0731",
+      "intended_scenario": "normal",
+      "observed_text": [
+        "FABLE CUP",
+        "바닐라라떼",
+        "25% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "FABLE CUP",
+          "observed": "FABLE CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "바닐라라떼",
+          "observed": "바닐라라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "25% 할인, 해당 제품에 적용",
+          "observed": "25% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-01-mismatch",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-mismatch.png",
+      "sha256": "c9f08152d75ed816061bce0f840a18d43df925195e3104ea41caac4e42362cc2",
+      "intended_scenario": "mismatch",
+      "observed_text": [
+        "FABLE CUP",
+        "바닐라라떼",
+        "15% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "FABLE CUP",
+          "observed": "FABLE CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "바닐라라떼",
+          "observed": "바닐라라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "25% 할인, 해당 제품에 적용",
+          "observed": "15% 할인",
+          "status": "mismatch"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-01-ambiguous",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-ambiguous.png",
+      "sha256": "ee82945c4eae480f4f89c23de231e514b95fd672ba66a33de8465f462924031c",
+      "intended_scenario": "ambiguous",
+      "observed_text": [
+        "FABLE CUP",
+        "바닐라라떼",
+        "최대 25% 할인",
+        "가상 광고 · 개발용",
+        "일부 메뉴 한정 · 적용 대상 확인 필요"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "FABLE CUP",
+          "observed": "FABLE CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "바닐라라떼",
+          "observed": "바닐라라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "25% 할인, 해당 제품에 적용",
+          "observed": "최대 25% 할인",
+          "status": "unclear"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-01-missing_evidence",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-01-missing_evidence.png",
+      "sha256": "1917e717978ba0fdda73ab4fab61c39f7d3b0a441c8179e4a7d5b2228bd3373e",
+      "intended_scenario": "missing_evidence",
+      "observed_text": [
+        "FABLE CUP",
+        "바닐라라떼",
+        "25% 할인",
+        "가상 광고 · 개발용",
+        "시즌 한정"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "FABLE CUP",
+          "observed": "FABLE CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "바닐라라떼",
+          "observed": "바닐라라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "25% 할인, 해당 제품에 적용",
+          "observed": "25% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "deliberately_missing_creation_trace",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-02-normal",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-normal.png",
+      "sha256": "db7e14a77facf07e3cf3dad3aa72454e7fcd33f8a110f633740c61cdfe36ef10",
+      "intended_scenario": "normal",
+      "observed_text": [
+        "MOSS CUP",
+        "말차라떼",
+        "15% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "MOSS CUP",
+          "observed": "MOSS CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "말차라떼",
+          "observed": "말차라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "15% 할인, 해당 제품에 적용",
+          "observed": "15% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-02-mismatch",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-mismatch.png",
+      "sha256": "92a191844b4bb2b4dbf2cb333b9d3300417b9e2f33938af06c2d03822b066a19",
+      "intended_scenario": "mismatch",
+      "observed_text": [
+        "MOSS CUP",
+        "말차라떼",
+        "30% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "MOSS CUP",
+          "observed": "MOSS CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "말차라떼",
+          "observed": "말차라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "15% 할인, 해당 제품에 적용",
+          "observed": "30% 할인",
+          "status": "mismatch"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-02-ambiguous",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-ambiguous.png",
+      "sha256": "b181476e7dfdcd0a73d0844e1e94d088a58c554b0e31afdacc6a18fd4b3d67ab",
+      "intended_scenario": "ambiguous",
+      "observed_text": [
+        "MOSS CUP",
+        "말차라떼",
+        "최대 15% 할인",
+        "가상 광고 · 개발용",
+        "일부 메뉴 한정 · 적용 대상 확인 필요"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "MOSS CUP",
+          "observed": "MOSS CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "말차라떼",
+          "observed": "말차라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "15% 할인, 해당 제품에 적용",
+          "observed": "최대 15% 할인",
+          "status": "unclear"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-02-missing_evidence",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-02-missing_evidence.png",
+      "sha256": "4bb38d9f5afc77a93151e34284d9edcd9d4d7eed4c482a69f41878fc9e3df44d",
+      "intended_scenario": "missing_evidence",
+      "observed_text": [
+        "MOSS CUP",
+        "말차라떼",
+        "15% 할인",
+        "가상 광고 · 개발용",
+        "시즌 한정"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "MOSS CUP",
+          "observed": "MOSS CUP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "말차라떼",
+          "observed": "말차라떼",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "15% 할인, 해당 제품에 적용",
+          "observed": "15% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "deliberately_missing_creation_trace",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-03-normal",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-normal.png",
+      "sha256": "429d3811fe5ecb7d767965e7f2aacff920b132493b94363e040a71ebdc52d3b1",
+      "intended_scenario": "normal",
+      "observed_text": [
+        "SUNNY SIP",
+        "레몬에이드",
+        "20% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "SUNNY SIP",
+          "observed": "SUNNY SIP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "레몬에이드",
+          "observed": "레몬에이드",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "20% 할인, 해당 제품에 적용",
+          "observed": "20% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-03-mismatch",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-mismatch.png",
+      "sha256": "0f8bb66e7baf7234ffb13cd04c20373d4038f8da5bcb3081d6f0db90b5f0da75",
+      "intended_scenario": "mismatch",
+      "observed_text": [
+        "SUNNY SIP",
+        "레몬에이드",
+        "10% 할인",
+        "가상 광고 · 개발용"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "SUNNY SIP",
+          "observed": "SUNNY SIP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "레몬에이드",
+          "observed": "레몬에이드",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "20% 할인, 해당 제품에 적용",
+          "observed": "10% 할인",
+          "status": "mismatch"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-03-ambiguous",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-ambiguous.png",
+      "sha256": "12cf885741bcd367e25dfc8aab250d97ee76f90585e430398a20fbe175076f3c",
+      "intended_scenario": "ambiguous",
+      "observed_text": [
+        "SUNNY SIP",
+        "레몬에이드",
+        "최대 20% 할인",
+        "가상 광고 · 개발용",
+        "일부 메뉴 한정 · 적용 대상 확인 필요"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "SUNNY SIP",
+          "observed": "SUNNY SIP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "레몬에이드",
+          "observed": "레몬에이드",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "20% 할인, 해당 제품에 적용",
+          "observed": "최대 20% 할인",
+          "status": "unclear"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "creation_trace_linked",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    },
+    {
+      "asset_id": "SYN-AD-03-missing_evidence",
+      "path": "data/collection/raw/synthetic/images/SYN-AD-03-missing_evidence.png",
+      "sha256": "9ed506c2f74abac044ab6f170d955b5bdb8ed62953c572e6d062726fa30f7403",
+      "intended_scenario": "missing_evidence",
+      "observed_text": [
+        "SUNNY SIP",
+        "레몬에이드",
+        "20% 할인",
+        "가상 광고 · 개발용",
+        "시즌 한정"
+      ],
+      "conditions": [
+        {
+          "criterion": "brand",
+          "expected": "SUNNY SIP",
+          "observed": "SUNNY SIP",
+          "status": "matches"
+        },
+        {
+          "criterion": "product",
+          "expected": "레몬에이드",
+          "observed": "레몬에이드",
+          "status": "matches"
+        },
+        {
+          "criterion": "discount",
+          "expected": "20% 할인, 해당 제품에 적용",
+          "observed": "20% 할인",
+          "status": "matches"
+        },
+        {
+          "criterion": "development_disclaimer",
+          "expected": "가상 광고 · 개발용",
+          "observed": "가상 광고 · 개발용",
+          "status": "matches"
+        }
+      ],
+      "visual_observation": "생성·편집 결과의 표시 이미지를 직접 확인: 브랜드·제품·할인 및 개발용 고지를 읽을 수 있음.",
+      "evidence_package_status": "deliberately_missing_creation_trace",
+      "observed_at": "2026-10-06T11:43:21.200973+09:00",
+      "reviewer": "/root",
+      "reviewer_kind": "AI",
+      "method": "direct visual inspection of tool output; not OCR inference",
+      "human_review_status": "pending",
+      "label_status": "draft",
+      "automated_inspection_executed": false
+    }
+  ]
+}

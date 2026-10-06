@@ -1,0 +1,369 @@
+{
+  "schema_version": "1.0",
+  "official_template_url": "https://docs.google.com/document/d/1MZhQl9eYLTes8zzcw8zoM12_hyZ3OQ2zu8bl4jgD66U/edit",
+  "report_path": "docs/reports/data-collection/report.html",
+  "generated_at": "2026-10-06T02:50:02+00:00",
+  "fields": [
+    {
+      "field_id": "cover.cohort",
+      "official_label": "기수",
+      "page": 1,
+      "html_id": "f-cover-cohort",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "cover.team",
+      "official_label": "팀",
+      "page": 1,
+      "html_id": "f-cover-team",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "cover.stage",
+      "official_label": "단계",
+      "page": 1,
+      "html_id": "f-cover-stage",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "cover.submitted",
+      "official_label": "제출일",
+      "page": 1,
+      "html_id": "f-cover-submitted",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "cover.github",
+      "official_label": "GitHub",
+      "page": 1,
+      "html_id": "f-cover-github",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "cover.authors",
+      "official_label": "작성 팀원",
+      "page": 1,
+      "html_id": "f-cover-authors",
+      "evidence": [
+        "summary.json",
+        "프로젝트 지정 정보"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "overview.name",
+      "official_label": "프로젝트명",
+      "page": 2,
+      "html_id": "f-overview-name",
+      "evidence": [
+        "case-specs.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "overview.target",
+      "official_label": "수집 대상",
+      "page": 2,
+      "html_id": "f-overview-target",
+      "evidence": [
+        "data/collection/inventory.csv",
+        "data/collection/summary.json",
+        "data/collection/evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "overview.purpose",
+      "official_label": "수집 목적",
+      "page": 2,
+      "html_id": "f-overview-purpose",
+      "evidence": [
+        "case-specs.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "overview.functions",
+      "official_label": "활용 기능",
+      "page": 2,
+      "html_id": "f-overview-functions",
+      "evidence": [
+        "case-specs.json",
+        "raw/synthetic/"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "overview.source",
+      "official_label": "데이터 출처 및 저작권",
+      "page": 2,
+      "html_id": "f-overview-source",
+      "evidence": [
+        "evidence/document-production.jsonl",
+        "evidence/request-production.jsonl",
+        "evidence/image-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "method.mode",
+      "official_label": "수집 방식",
+      "page": 3,
+      "html_id": "f-method-mode",
+      "evidence": [
+        "evidence/*-production.jsonl",
+        "README-team-intake.md"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "method.tools",
+      "official_label": "사용 언어 및 라이브러리",
+      "page": 3,
+      "html_id": "f-method-tools",
+      "evidence": [
+        "scripts/generate_documents.py",
+        "scripts/generate_requests.py",
+        "evidence/image-production.jsonl",
+        "scripts/validate_collection.py"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "method.cycle",
+      "official_label": "자동화 여부 및 수집 주기",
+      "page": 3,
+      "html_id": "f-method-cycle",
+      "evidence": [
+        "evidence/*-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "method.exceptions",
+      "official_label": "예외 처리",
+      "page": 3,
+      "html_id": "f-method-exceptions",
+      "evidence": [
+        "scripts/validate_collection.py",
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "method.flow",
+      "official_label": "수집 스크립트 및 흐름",
+      "page": 3,
+      "html_id": "f-method-flow",
+      "evidence": [
+        "scripts/",
+        "evidence/prompts/",
+        "evidence/*-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "structure.dictionary",
+      "official_label": "파일·필드명·타입·설명·예시",
+      "page": 4,
+      "html_id": "f-structure-dictionary",
+      "evidence": [
+        "raw/synthetic/",
+        "inventory.csv",
+        "evidence/*-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "structure.total",
+      "official_label": "전체 데이터 건수",
+      "page": 5,
+      "html_id": "f-structure-total",
+      "evidence": [
+        "inventory.csv",
+        "summary.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "structure.filtered",
+      "official_label": "필터링 후 고품질 데이터",
+      "page": 5,
+      "html_id": "f-structure-filtered",
+      "evidence": [
+        "summary.json",
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "structure.storage",
+      "official_label": "저장 경로·포맷·인코딩",
+      "page": 5,
+      "html_id": "f-structure-storage",
+      "evidence": [
+        "inventory.csv",
+        "summary.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.privacy",
+      "official_label": "개인정보 포함 여부",
+      "page": 6,
+      "html_id": "f-legal-privacy",
+      "evidence": [
+        "evidence/quality-review.json",
+        "README-team-intake.md"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.deidentify",
+      "official_label": "비식별 처리",
+      "page": 6,
+      "html_id": "f-legal-deidentify",
+      "evidence": [
+        "raw/synthetic/",
+        "README-team-intake.md"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.access",
+      "official_label": "공개 및 내부 자료 여부",
+      "page": 6,
+      "html_id": "f-legal-access",
+      "evidence": [
+        "README-team-intake.md",
+        "evidence/*-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.license",
+      "official_label": "라이선스·사용 조건 확인",
+      "page": 6,
+      "html_id": "f-legal-license",
+      "evidence": [
+        "evidence/document-production.jsonl",
+        "evidence/image-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.reviewer",
+      "official_label": "검토자",
+      "page": 6,
+      "html_id": "f-legal-reviewer",
+      "evidence": [
+        "evidence/document-review.json",
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "legal.date",
+      "official_label": "검토 일자",
+      "page": 6,
+      "html_id": "f-legal-date",
+      "evidence": [
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "quality.duplicates",
+      "official_label": "중복 검사",
+      "page": 7,
+      "html_id": "f-quality-duplicates",
+      "evidence": [
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "quality.consistency",
+      "official_label": "정합성 검사",
+      "page": 7,
+      "html_id": "f-quality-consistency",
+      "evidence": [
+        "case-specs.json",
+        "evidence/quality-review.json"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "quality.missing",
+      "official_label": "결측 및 오류 처리",
+      "page": 7,
+      "html_id": "f-quality-missing",
+      "evidence": [
+        "evidence/quality-review.json",
+        "evidence/image-observations.json",
+        "evidence/submission-packages.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "quality.standardization",
+      "official_label": "표준화 방식",
+      "page": 7,
+      "html_id": "f-quality-standardization",
+      "evidence": [
+        "inventory.csv",
+        "evidence/*-production.jsonl"
+      ],
+      "present": true
+    },
+    {
+      "field_id": "history.changes",
+      "official_label": "데이터 변경 이력",
+      "page": 8,
+      "html_id": "f-history-changes",
+      "evidence": [
+        "summary.json",
+        "evidence/",
+        "README-team-intake.md"
+      ],
+      "present": true,
+      "official_subfields": [
+        "일자",
+        "변경 내용",
+        "변경자",
+        "비고·상태"
+      ]
+    }
+  ],
+  "required_fields": 31,
+  "present_fields": 31,
+  "missing_fields": 0,
+  "pages": 11,
+  "assumptions": [
+    "HTML+PDF is user-selected delivery format",
+    "Actual team member names unconfirmed",
+    "Human approval and rights review pending"
+  ],
+  "inventory_rows": 29,
+  "quality_record_fresh": true
+}

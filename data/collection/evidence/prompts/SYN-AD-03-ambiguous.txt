@@ -1,0 +1,1 @@
+Use case: text-localization. Edit this synthetic SUNNY SIP lemonade poster. Replace main '20% 할인' with exactly '최대 20% 할인'. Add one small but legible condition line below discount: '일부 메뉴 한정 · 적용 대상 확인 필요'. Preserve SUNNY SIP, 레몬에이드, 가상 광고 · 개발용 and overall photograph and yellow layout. A conditional offer deliberately requires scope clarification. One square poster, no grid.

@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-05",
+  "purpose": "통합 기획 문서를 종류별 HTML 네 문서로 분리",
+  "sources": [
+    {
+      "path": "docs/planning/presentation-plan-v2.html",
+      "sha256": "4431879d56024c40a7bc690fc932d7f47383f6e92642e87a9c9fe5148dd6e31f"
+    },
+    {
+      "path": "docs/planning/functional-definition-v3.html",
+      "sha256": "8d001166c0601be1041a836f9059ba384a58aefb313480f8128f8b293dcde695"
+    },
+    {
+      "path": "README.md",
+      "sha256": "99e562bd772558dc9861879ea4f112e311bff68e5758f1b74e63cff8db4b0acf"
+    }
+  ],
+  "documents": [
+    {
+      "id": "plan",
+      "file": "기획서.html",
+      "title": "기획서",
+      "sections": [
+        "background",
+        "journey",
+        "scope",
+        "effects",
+        "roadmap",
+        "deliverables",
+        "decisions"
+      ]
+    },
+    {
+      "id": "functions",
+      "file": "기능정의서.html",
+      "title": "기능정의서",
+      "sections": [
+        "overview",
+        "features",
+        "requirements",
+        "responsibility",
+        "contracts",
+        "decisions"
+      ]
+    },
+    {
+      "id": "screens",
+      "file": "화면정의서.html",
+      "title": "화면정의서",
+      "sections": [
+        "overview",
+        "screens",
+        "transitions",
+        "states",
+        "wireframes",
+        "acceptance",
+        "sources"
+      ]
+    },
+    {
+      "id": "technical",
+      "file": "기술스펙정의서.html",
+      "title": "기술스펙정의서",
+      "sections": [
+        "architecture",
+        "agents",
+        "technology",
+        "data",
+        "operations",
+        "evaluation",
+        "choices"
+      ]
+    }
+  ],
+  "meeting_briefs": [
+    {
+      "id": "standup",
+      "file": "스탠드업미팅.html",
+      "title": "스탠드업 미팅용 간단 정리",
+      "as_of": "2026-10-06"
+    }
+  ]
+}

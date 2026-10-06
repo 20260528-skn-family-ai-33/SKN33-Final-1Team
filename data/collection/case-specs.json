@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "project": "SKN33 1팀 광고 납품 검수",
+  "source_kind": "synthetic",
+  "purpose": "초도 개발 및 시연; 독립 일반화 성능 평가용 아님",
+  "human_review_status": "pending",
+  "cases": [
+    {"group_id": "SYN-AD-01", "project_id": "SYN-ORDER-01", "brand": "FABLE CUP", "product": "바닐라라떼", "discount_percent": 25, "wrong_discount_percent": 15, "visual": "크림색 배경, 유리잔의 아이스 바닐라라떼, 바닐라 꽃과 부드러운 베이지색", "required_disclaimer": "가상 광고 · 개발용", "scenarios": ["normal", "mismatch", "ambiguous", "missing_evidence"]},
+    {"group_id": "SYN-AD-02", "project_id": "SYN-ORDER-02", "brand": "MOSS CUP", "product": "말차라떼", "discount_percent": 15, "wrong_discount_percent": 30, "visual": "연녹색 배경, 유리잔의 층진 아이스 말차라떼, 찻잎과 짙은 녹색", "required_disclaimer": "가상 광고 · 개발용", "scenarios": ["normal", "mismatch", "ambiguous", "missing_evidence"]},
+    {"group_id": "SYN-AD-03", "project_id": "SYN-ORDER-03", "brand": "SUNNY SIP", "product": "레몬에이드", "discount_percent": 20, "wrong_discount_percent": 10, "visual": "연노란색 배경, 유리잔의 레몬에이드, 레몬 조각과 밝은 노란색", "required_disclaimer": "가상 광고 · 개발용", "scenarios": ["normal", "mismatch", "ambiguous", "missing_evidence"]}
+  ],
+  "request_intents": ["new_inspection", "reinspection", "criteria_change", "status_query", "other"],
+  "targets": {"documents": 10, "requests": 250, "request_groups": 50, "new_images": 12, "new_image_groups": 3},
+  "rules": ["증빙 부족은 제출 패키지의 제작 근거 누락이며 이미지 픽셀 오류가 아니다.", "원본 그룹 3개는 각각 별도로 생성한 합성 원본과 그 편집 파생본이다.", "광고의 글자와 조건은 제작 의도와 실제 관찰을 구분하여 기록한다.", "사람 검토 전 정답은 초안이며 학습·평가 준비 완료로 집계하지 않는다."]
+}

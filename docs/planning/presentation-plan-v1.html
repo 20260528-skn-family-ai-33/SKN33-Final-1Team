@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>동작그만 밑장빼기냐 · 발표용 기획서</title>
+<style>
+:root{--ink:#253b38;--muted:#687a73;--paper:#f6f4ee;--green:#274c42;--lime:#dce8b9;--line:#dedfd3;--warm:#e5b795}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}main{max-width:1180px;margin:auto;padding:28px}.masthead{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px;font-size:12px;color:var(--muted)}.masthead b{letter-spacing:.04em;color:var(--green)}nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}button{font:inherit;cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:9px 14px;background:white;color:var(--green)}button[aria-selected=true]{background:var(--green);color:white;border-color:var(--green)}button:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){border-color:var(--green)}button:focus-visible,a:focus-visible{outline:3px solid #b77940;outline-offset:3px}section[hidden]{display:none}section{min-height:585px;border:1px solid var(--line);border-radius:22px;padding:38px;background:#fff;position:relative}.eyebrow{font-size:12px;letter-spacing:.12em;color:#66806a;font-weight:700}.page-number{float:right;color:#a0aaa0;font-size:13px}h1{font-size:clamp(35px,5.1vw,60px);letter-spacing:-.055em;line-height:1.19;margin:24px 0 18px}h2{font-size:clamp(27px,3.4vw,39px);letter-spacing:-.045em;line-height:1.35;margin:20px 0 18px}h3{font-size:20px;letter-spacing:-.025em;margin:10px 0}.lead{font-size:20px;max-width:940px;margin:0 0 24px}.muted{font-size:13px;color:var(--muted)}.pill{display:inline-block;background:#eef2e9;color:#5b755c;border-radius:20px;padding:5px 12px;font-size:12px}.hero{background:var(--green);color:#fff}.hero .eyebrow,.hero .page-number{color:#c7d9bb}.hero .lead{color:#e3ebd9}.hero .pill{background:#ffffff16;color:#dfebcd}.hero .six{display:grid;grid-template-columns:repeat(3,1fr);gap:0 22px;margin-top:28px}.six div{padding:15px 0;border-top:1px solid #ffffff33}.six dt{color:#dce8b9;font-size:12px;letter-spacing:.06em;margin-bottom:6px}.six dd{font-size:14px;margin:0;color:#fff}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:26px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px}.card{padding:22px;border-radius:15px;background:#f5f5ef;border:1px solid #e7e7db}.card .number{font-size:12px;color:#869477}.card p{font-size:15px;margin:10px 0 0}.card strong{color:#375f48}.callout{margin-top:25px;padding:17px 21px;background:#edf2e3;border-radius:12px;font-size:16px}.callout.warm{background:#f8eee4}.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:23px 0}.flow span{padding:8px 12px;border:1px solid #d6e0cf;border-radius:8px;font-size:13px;background:#f4f7f0}.flow .human{background:#f8eee4;border-color:#e8d0b8}.flow i{font-style:normal;color:#819078}.role{background:#f5f5ef;border-top:3px solid #829c75;border-radius:8px;padding:15px}.role b{display:block;font-size:16px}.role p{font-size:13px;margin:6px 0;color:#637464}.role small{color:#8b9a81;font-size:11px}.example{display:grid;grid-template-columns:1fr 1fr 1.12fr;gap:14px;margin:23px 0}.document,.ad,.finding{border-radius:14px;padding:22px;border:1px solid #dedfd3;min-height:255px}.document{background:#fcfaf5}.document .line{border-bottom:1px solid #e4ded1;padding:12px 0;font-size:14px}.ad{background:#f6d7d6;text-align:center;display:flex;flex-direction:column;justify-content:center}.ad .brand{font-size:12px;letter-spacing:.12em}.ad .product{font-size:29px;font-weight:800;margin:10px 0}.ad .discount{font-size:40px;font-weight:800;color:#92405d;line-height:1.2}.ad small{color:#815f68;font-size:11px;margin-top:18px}.finding{background:#eef3e7}.finding .flag{display:inline-block;padding:4px 9px;border-radius:5px;background:#f0d8cb;color:#8c4d30;font-size:12px}.finding p{font-size:15px}.finding b{color:#8e4b32}.timeline{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}.milestone{border-radius:14px;padding:22px;background:#eef3e7;border:1px solid #d9e3d0}.milestone time{font-size:29px;font-weight:800;letter-spacing:-.04em}.milestone p{margin:9px 0;font-size:14px}.milestone small{font-size:12px;color:#6b7c62}.states{display:grid;grid-template-columns:1fr 1fr;gap:18px}.states h3{font-size:16px}.states p{font-size:14px;margin:7px 0}.label{font-size:11px;padding:3px 8px;background:#e6efe9;border-radius:5px;color:#42674c}.label.plan{background:#f3e7db;color:#8b6443}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px;margin-top:22px}td,th{padding:14px 12px;border-bottom:1px solid #e2e5da;text-align:left;vertical-align:top}th{background:#f1f4eb;color:#657656;font-size:12px}td:first-child{font-weight:700;min-width:140px}.footnote{margin-top:23px;font-size:12px;color:#82907b}.bottom{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:18px}.paging{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted)}footer{margin:20px 0;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}a{color:#35694d}.print-title{display:none}@media(max-width:800px){main{padding:17px}section{padding:25px;min-height:0}.grid3,.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.example{grid-template-columns:1fr}.document,.ad,.finding{min-height:0}.hero .six{grid-template-columns:repeat(2,1fr)}.lead{font-size:18px}.masthead{align-items:start}.bottom{align-items:start;flex-wrap:wrap}}@media(max-width:510px){main{padding:12px}section{padding:22px 18px}.grid3,.grid4,.timeline,.states{grid-template-columns:1fr}nav button{flex:1 1 28%;font-size:12px;padding:9px 5px}.hero .six{gap:0 14px}h1{font-size:39px}.lead{font-size:17px}.six dd{font-size:13px}.card{padding:18px}.masthead span{max-width:135px;text-align:right}.bottom>button{font-size:12px}}@media print{@page{size:A4 landscape;margin:12mm}body{background:#fff}main{padding:0;max-width:none}.masthead,nav,.bottom,footer{display:none}section,section[hidden]{display:block!important;min-height:0;break-after:page;border:0;border-radius:0;padding:10px}section:last-of-type{break-after:auto}.hero{background:#fff;color:var(--ink)}.hero .eyebrow,.hero .page-number,.hero .lead,.hero .six dd{color:var(--ink)}.hero .six dt{color:#637950}.hero .six div{border-color:#bbb}.hero .pill{color:#4b6652;border:1px solid #ccc}.hero .six{margin-top:18px}.grid3,.grid4,.example,.timeline{break-inside:avoid}h1{font-size:41px;margin:15px 0}h2{font-size:30px;margin:12px 0}.lead{font-size:17px}.grid3,.grid4{margin-top:18px}.card{padding:17px}.card p{font-size:13px}.callout{margin-top:15px;padding:12px;font-size:14px}.footnote{font-size:10px}.six dd{font-size:12px}table{font-size:12px}.states p{font-size:12px}.ad .discount{font-size:35px}.example{margin:16px 0}.document,.ad,.finding{min-height:220px}.timeline{margin:16px 0}}
+</style></head><body><main>
+<div class="masthead"><b>SKN33 FINAL · 1TEAM</b><span>발표용 기획서 v1 · 2026.10.03</span></div>
+<nav role="tablist" aria-label="발표 기획서 목차">
+<button type="button" role="tab" id="tab-0" aria-controls="page-0" aria-selected="true">01 서비스</button>
+<button type="button" role="tab" id="tab-1" aria-controls="page-1" aria-selected="false" tabindex="-1">02 배경·문제</button>
+<button type="button" role="tab" id="tab-2" aria-controls="page-2" aria-selected="false" tabindex="-1">03 해결책</button>
+<button type="button" role="tab" id="tab-3" aria-controls="page-3" aria-selected="false" tabindex="-1">04 사용 사례</button>
+<button type="button" role="tab" id="tab-4" aria-controls="page-4" aria-selected="false" tabindex="-1">05 기대효과</button>
+<button type="button" role="tab" id="tab-5" aria-controls="page-5" aria-selected="false" tabindex="-1">06 개발 계획</button>
+</nav>
+<section class="hero" role="tabpanel" id="page-0" aria-labelledby="tab-0">
+<div class="eyebrow">WHAT · WHO · WHEN · WHERE · WHY · HOW <span class="page-number">01 / 06</span></div>
+<h1>동작그만<br>밑장빼기냐</h1>
+<p class="lead">광고 납품물을 기준 문서와 대조하고,<br>수정 요청과 재검수까지 연결하는 AI 업무자동화 서비스</p>
+<span class="pill">주제 1 · 다중 에이전트 협업 기반 업무자동화</span>
+<dl class="six">
+<div><dt>WHAT · 어떤 업무</dt><dd>광고 납품 검수·보완·재검수</dd></div>
+<div><dt>WHO · 누구를 위해</dt><dd>검수 담당자·제작자·최종 승인자</dd></div>
+<div><dt>WHY · 왜 필요한가</dt><dd>사람이 놓칠 수 있는 오류와 기준 누락을 보완하기 위해</dd></div>
+<div><dt>WHEN · 언제</dt><dd>최초 납품·기준 변경·수정본 제출 시</dd></div>
+<div><dt>WHERE · 어디서</dt><dd>자료와 근거가 연결된 웹 업무 화면</dd></div>
+<div><dt>HOW · 어떻게</dt><dd>문서에서 기준 추출 → AI 검수 → 사람 확인</dd></div>
+</dl>
+</section>
+<section role="tabpanel" id="page-1" aria-labelledby="tab-1" hidden>
+<div class="eyebrow">BACKGROUND → PROBLEM <span class="page-number">02 / 06</span></div>
+<h2>넘쳐나는 창작물,<br>사람의 검수에 한 번의 확인을 더합니다.</h2>
+<p class="lead">숏츠·인스타그램 릴스·광고 이미지까지,<br>사람이 만든 창작물과 AI가 생성한 콘텐츠를 검수해야 합니다.<br>담당자가 검토하더라도 놓칠 수 있는 부분을 AI 검사로 보완합니다.</p>
+<div class="grid3">
+<div class="card"><span class="number">01 · 검수의 필요성</span><h3>제작 방식과 관계없이 확인합니다.</h3><p>사람이 제작하거나 AI가 생성한 콘텐츠 모두 상품명·할인 문구·브랜드·규격이 요청한 조건과 맞는지 살펴야 합니다.<br><strong>검수 기준은 제작 방식보다 의뢰한 내용에 있습니다.</strong></p></div>
+<div class="card"><span class="number">02 · 사람이 놓칠 수 있는 부분</span><h3>꼼꼼히 보아도 누락은 생길 수 있습니다.</h3><p>명세서·계약서·브랜드 가이드의 조건을 여러 납품물·수정본과 반복 대조하다 보면 작은 문구 오류나 변경 사항을 놓칠 수 있습니다.<br><strong>담당자의 검토를 뒷받침할 추가 확인이 필요합니다.</strong></p></div>
+<div class="card"><span class="number">03 · AI 검사로 보완</span><h3>놓칠 수 있는 항목을 한 번 더 확인합니다.</h3><p>문서에서 기준을 추출하고, 사람이 확정한 기준으로 납품물을 검사합니다. 불일치와 확인이 필요한 위치를 근거와 함께 보여 줍니다.<br><strong>담당자는 AI 검사 결과를 검토해 최종 판단합니다.</strong></p></div>
+</div>
+<div class="callout warm">해결할 문제: <b>사람이 놓칠 수 있는 조건·오류를 추가로 검사하고, 근거를 제공해 최종 판단을 돕기</b></div>
+<p class="footnote">숏츠·릴스는 광고 환경을 설명하는 사례입니다. 1차 구현 대상은 광고 이미지이며 영상 검수는 후속 확장 범위입니다. 실제 업무 부담과 개선 효과는 사례 수집·비교 실험으로 확인합니다.</p>
+</section>
+<section role="tabpanel" id="page-2" aria-labelledby="tab-2" hidden>
+<div class="eyebrow">SOLUTION <span class="page-number">03 / 06</span></div>
+<h2>기준을 읽고, 검사하고,<br>수정이 끝날 때까지 연결합니다.</h2>
+<p class="lead">명세서·계약서·브랜드 가이드에서 기준을 추출합니다.<br>사람이 확정한 기준 전체를 검사하고, 각 결과에 근거를 남깁니다.</p>
+<div class="flow" aria-label="제안 업무 흐름"><span>문서·납품 등록</span><i>→</i><span>기준 추출</span><i>→</i><span class="human">사람 확정</span><i>→</i><span>검수·검증</span><i>→</i><span>수정 요청</span><i>→</i><span>재검수</span><i>→</i><span class="human">사람 승인</span></div>
+<div class="grid4">
+<div class="role"><small>AGENT 01</small><b>기준 분석</b><p>문서에서 조건·출처를 추출하고 모호한 내용을 질문합니다.</p></div>
+<div class="role"><small>AGENT 02</small><b>납품 검수</b><p>OCR·시각 도구를 선택해 항목별 관찰과 근거를 만듭니다.</p></div>
+<div class="role"><small>AGENT 03</small><b>근거 검증</b><p>관찰과 판정의 충돌을 확인하고 필요한 재검사를 요청합니다.</p></div>
+<div class="role"><small>AGENT 04</small><b>업무 처리</b><p>수정 요청 초안을 정리하고 이전 검사와 재검수를 연결합니다.</p></div>
+</div>
+<div class="callout">에이전트는 실제 <b>MCP 도구</b>를 사용합니다. 불확실한 항목은 확인 필요로 남기고, <b>기준 확정과 최종 승인은 사람</b>이 맡습니다.</div>
+<p class="footnote">LangGraph: 업무 분기·재개 / RAG: 문서 근거 검색 / DB: 확정 기준·버전·결과 저장. 전체 협업 흐름은 구현 예정입니다.</p>
+</section>
+<section role="tabpanel" id="page-3" aria-labelledby="tab-3" hidden>
+<div class="eyebrow">USE CASE · 목표 시나리오 <span class="page-number">04 / 06</span></div>
+<h2>“30% 할인”을 요청했는데,<br>납품물에는 “20%”가 적혔다면?</h2>
+<p class="lead">어떤 기준과 어디가 다른지 보여 주고, 수정 요청으로 연결합니다.</p>
+<div class="example">
+<div class="document"><span class="pill">기준 문서 · 예시</span><h3>딸기라떼 캠페인</h3><div class="line">상품명 · 딸기라떼</div><div class="line">할인 문구 · <b>30% 할인</b></div><div class="line">브랜드 · MORNING CUP</div></div>
+<div class="ad"><span class="brand">MORNING CUP</span><span class="product">딸기라떼</span><span class="discount">20% 할인</span><small>설명용 납품물 도식 · 실제 이미지 분석 결과 아님</small></div>
+<div class="finding"><span class="flag">할인율 불일치</span><p>확정 기준 <b>30%</b><br>이미지 관찰 <b>20%</b></p><p>문서 원문과 이미지 위치를 연결해 차이를 설명합니다.</p><p><b>수정 요청 초안</b><br>할인 문구를 30%로 수정해 주세요.</p></div>
+</div>
+<div class="callout">수정본 제출 → 새 버전 검사 → 이전 지적 해결 확인 → <b>담당자 최종 승인</b></div>
+<p class="footnote">현재는 샘플 JSON 기준과 OCR 대조까지 구현돼 있습니다. 문서 자동 추출·수정 요청·재검수 전체 연결은 목표 동작입니다.</p>
+</section>
+<section role="tabpanel" id="page-4" aria-labelledby="tab-4" hidden>
+<div class="eyebrow">EXPECTED IMPACT → VALIDATION <span class="page-number">05 / 06</span></div>
+<h2>더 빨리 확인하고,<br>더 분명하게 수정하도록 돕습니다.</h2>
+<p class="lead">기대효과는 아직 측정하지 않았습니다.<br>같은 사례를 수작업과 AI 보조 방식으로 처리해 비교합니다.</p>
+<div class="table-wrap"><table><thead><tr><th>사용자에게 기대하는 변화</th><th>확인할 지표</th><th>검증 방법</th></tr></thead><tbody>
+<tr><td>검수자가 기준을 쉽게 확인</td><td>기준 준비 시간·조건 누락률</td><td>수동 작성과 AI 추출 후 사람 검토 비교</td></tr>
+<tr><td>제작자가 수정할 내용을 이해</td><td>요청 작성 시간·재질문·잘못된 요청</td><td>같은 오류에 대한 수정 요청서 비교</td></tr>
+<tr><td>담당자가 오류와 미검사를 구분</td><td>위반 탐지 재현율·오통과율</td><td>독립 원본 사례의 정답과 검사 결과 대조</td></tr>
+<tr><td>승인자가 최신 결과로 결정</td><td>버전 혼용·중복·구버전 승인 차단</td><td>수정본·기준 변경·재시작 시나리오 시험</td></tr>
+</tbody></table></div>
+<div class="callout"><b>읽기:</b> 기준과 근거를 이해한다. &nbsp; <b>쓰기:</b> 구체적인 수정 요청을 만든다. &nbsp; <b>결정:</b> 최신 검수 결과로 승인한다.</div>
+<p class="footnote">사람 작업 시간과 전체 처리 시간은 구분합니다. Ragas는 검색·설명 품질 평가에 사용하고, 실제 이미지 오판과 업무 완료는 별도로 평가합니다.</p>
+</section>
+<section role="tabpanel" id="page-5" aria-labelledby="tab-5" hidden>
+<div class="eyebrow">BUILD PLAN · 2026 <span class="page-number">06 / 06</span></div>
+<h2>한 건의 실제 업무 연결부터,<br>학습·평가 근거가 있는 서비스까지.</h2>
+<div class="states"><div><span class="label">현재 구현 기록</span><h3>웹·저장·OCR·실제 MCP</h3><p>샘플 기준 확정, 이미지 접수, 상품명·할인율·브랜드 검사, 근거·이력 조회</p></div><div><span class="label plan">다음 구현</span><h3>문서에서 시작하는 AI 업무</h3><p>기준 자동 추출, 요청 분류 학습, RAG·4역할 협업, 수정 요청·재검수·승인</p></div></div>
+<div class="timeline"><div class="milestone"><small>중간 발표</small><br><time datetime="2026-10-16">10.16</time><p>실제 LLM 기준 추출 → 사람 확정 → MCP 검사 → 보고서 한 경로 연결</p><p>요청 분류 모델 첫 학습 결과와 데이터·설계·테스트 초안 제시</p></div><div class="milestone"><small>최종 발표</small><br><time datetime="2026-11-20">11.20</time><p>수정 요청·재검수·승인과 실패 복구를 완성하고 독립 사례로 평가</p><p>단계별 보고서·소스·최종 발표·시연 영상 완성</p></div></div>
+<p class="muted"><b>선택안:</b> Qwen 주 LLM · KLUE 요청 분류 학습 · BGE-M3/Qdrant 하이브리드 RAG · LangChain/LangGraph · MySQL · Ragas</p>
+<div class="callout">교육 산출물: <b>수집·저장 설계 → 전처리·학습 모델 → RAG·에이전트 평가 → LLM 웹·서비스 시험</b></div>
+<p class="footnote">세부 범위는 팀 인원·GPU 환경·데이터 확보량에 맞춰 조정합니다. 현재 상태는 기존 확인 기록이며, 이 기획서 작성에서 앱을 새로 실행하지 않았습니다.</p>
+</section>
+<div class="bottom"><div class="paging"><button type="button" id="prev" disabled>← 이전</button><span id="progress" aria-live="polite">1 / 6</span><button type="button" id="next">다음 →</button></div><button type="button" id="print">전체 인쇄 / PDF</button></div>
+<footer><span>간략 기획서 · 상세 기능정의서 v3 기반 · 설계 및 기대효과는 구현 결과와 구분</span><a href="functional-definition-v3.html">상세 기능정의서 보기 ↗</a></footer>
+</main><script>
+'use strict';
+const tabs=[...document.querySelectorAll('[role=tab]')],pages=[...document.querySelectorAll('[role=tabpanel]')];let index=0;
+function show(n,focus=false){index=Math.max(0,Math.min(tabs.length-1,n));tabs.forEach((t,i)=>{const active=i===index;t.setAttribute('aria-selected',String(active));t.tabIndex=active?0:-1;pages[i].hidden=!active;});document.getElementById('prev').disabled=index===0;document.getElementById('next').disabled=index===tabs.length-1;document.getElementById('progress').textContent=(index+1)+' / '+tabs.length;if(focus)tabs[index].focus();}
+tabs.forEach((t,i)=>{t.addEventListener('click',()=>show(i));t.addEventListener('keydown',e=>{let n;if(e.key==='ArrowRight')n=(i+1)%tabs.length;if(e.key==='ArrowLeft')n=(i+tabs.length-1)%tabs.length;if(e.key==='Home')n=0;if(e.key==='End')n=tabs.length-1;if(n!==undefined){e.preventDefault();show(n,true);}});});
+document.getElementById('prev').addEventListener('click',()=>show(index-1));document.getElementById('next').addEventListener('click',()=>show(index+1));document.getElementById('print').addEventListener('click',()=>window.print());show(0);
+</script></body></html>
