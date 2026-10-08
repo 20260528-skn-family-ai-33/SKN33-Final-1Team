@@ -6,7 +6,10 @@
   const display = value => value == null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value);
   const short = value => String(value || '—').slice(0, 12);
   const unwrap = (value, key) => value && value[key] !== undefined ? value[key] : value;
-  const statusText = value => ({ completed: '검사 완료', complete: '검사 완료', success: '검사 완료', succeeded: '검사 완료', partial: '일부 검사 완료', not_run: '미실행', failed: '검사 실패', error: '검사 실패', running: '검사 중', pending: '대기 중', queued: '대기 중' }[value] || value || '상태 미상');
+  const ruleId = rule => rule.rule_id ?? rule.id;
+  const itemStatusText = value => ({ succeeded: '실행 완료', completed: '실행 완료', failed: '실행 실패', not_run: '미실행' }[value] || value || '상태 미상');
+  const runStatusText = value => ({ running: '실행 중', completed: '전체 실행 완료', partial: '부분 실행 완료', failed: '실행 실패' }[value] || value || '상태 미상');
+  const traceStatusText = value => ({ running: '실행 중', pending: '대기 중', queued: '대기 중', error: '실행 실패', success: '실행 완료' }[value] || itemStatusText(value));
   function notify(message, type = 'error') { $('notice').textContent = message; $('notice').dataset.type = type; $('notice').hidden = !message; }
   async function api(path, options = {}) {
     const headers = new Headers(options.headers || {});
@@ -49,7 +52,7 @@
     $('criteria-list').replaceChildren();
     (c.rules || []).forEach(rule => {
       const row = make('div', undefined, 'criterion-row');
-      row.append(make('span', rule.id, 'criterion-code'), make('span', rule.name, 'criterion-name'), make('span', display(rule.expected), 'criterion-value'));
+      row.append(make('span', ruleId(rule), 'criterion-code'), make('span', rule.name, 'criterion-name'), make('span', display(rule.expected), 'criterion-value'));
       row.title = rule.check || ''; $('criteria-list').append(row);
     });
     $('criteria-status').textContent = c.confirmed ? '확정된 기준' : '확인 후 확정';
@@ -157,15 +160,15 @@
   }
   function resultLabel(result) {
     const failed = ['failed', 'failure', 'error', '실패'].includes(result.execution_status);
-    if (failed) return ['검사 실패', ''];
+    if (failed) return ['미판정', ''];
     if (result.verdict === '충족') return ['충족', 'pass'];
     if (result.verdict === '미충족') return ['미충족', 'fail'];
     if (result.verdict === '확인 필요') return ['확인 필요', 'review'];
-    return [result.execution_status === 'running' ? '검사 중' : '미판정', ''];
+    return [result.execution_status === 'running' ? '실행 중' : '미판정', ''];
   }
   function renderRun(run) {
     state.run = run; clearOverlay();
-    $('run-status').textContent = statusText(run.status); $('run-status').className = 'pill';
+    $('run-status').textContent = runStatusText(run.status); $('run-status').className = 'pill';
     const results = Array.isArray(run.results) ? run.results : [];
     const executed = results.filter(r => ['succeeded', 'completed'].includes(r.execution_status)).length;
     $('result-count').textContent = '검사 실행 ' + executed + ' / ' + results.length + '개';
@@ -174,9 +177,9 @@
     $('results').replaceChildren();
     results.forEach((result, index) => {
       const card = make('div', undefined, 'result-card'), trigger = make('button', undefined, 'result-trigger'); trigger.type = 'button'; trigger.setAttribute('aria-expanded', 'false'); trigger.setAttribute('aria-controls', 'result-detail-' + index);
-      const [label, cls] = resultLabel(result); trigger.append(make('span', result.rule_id || '—', 'criterion-code'), make('strong', result.name || state.criteria?.rules?.find(r => r.id === result.rule_id)?.name || '검사 항목'), make('span', label, 'verdict ' + cls));
+      const [label, cls] = resultLabel(result); trigger.append(make('span', result.rule_id || '—', 'criterion-code'), make('strong', result.name || state.criteria?.rules?.find(r => ruleId(r) === result.rule_id)?.name || '검사 항목'), make('span', label, 'verdict ' + cls));
       const detail = make('div', undefined, 'result-detail'); detail.id = 'result-detail-' + index; detail.hidden = true;
-      const dl = make('dl'); [['실행 상태', statusText(result.execution_status)], ['기대값', result.expected], ['관찰값', result.observed], ['검사 방법', result.method || run.method]].forEach(([key, value]) => dl.append(make('dt', key), make('dd', display(value)))); detail.append(dl, make('p', result.reason || '추가 사유가 제공되지 않았습니다.', 'result-reason'));
+      const dl = make('dl'); [['항목 실행 상태', itemStatusText(result.execution_status)], ['기대값', result.expected], ['관찰값', result.observed], ['검사 방법', result.method || run.method]].forEach(([key, value]) => dl.append(make('dt', key), make('dd', display(value)))); detail.append(dl, make('p', result.reason || '추가 사유가 제공되지 않았습니다.', 'result-reason'));
       (Array.isArray(result.evidence) ? result.evidence : []).forEach(e => { if (e.text) detail.append(make('p', e.text, 'evidence-text')); });
       trigger.addEventListener('click', () => selectResult(result, card)); card.append(trigger, detail); $('results').append(card);
     });
@@ -191,7 +194,7 @@
     trace.forEach(entry => {
       const li = make('li');
       if (typeof entry === 'string') li.textContent = entry;
-      else { const title = entry.method || entry.step || entry.name || entry.event || entry.tool || entry.node || '실행 기록'; li.append(make('strong', display(title)), make('span', display(entry.message || entry.detail || entry.output || [entry.status === 'succeeded' ? '성공' : entry.status === 'failed' ? '실패' : entry.status, entry.tool, entry.device ? entry.device.toUpperCase() : '', entry.fallback_reason, entry.duration_ms !== undefined ? entry.duration_ms + 'ms' : '', entry.protocol_version ? '프로토콜 ' + entry.protocol_version : ''].filter(Boolean).join(' · ')))); }
+      else { const title = entry.method || entry.step || entry.name || entry.event || entry.tool || entry.node || '실행 기록'; li.append(make('strong', display(title)), make('span', display(entry.message || entry.detail || entry.output || [entry.status ? traceStatusText(entry.status) : '', entry.tool, entry.device ? entry.device.toUpperCase() : '', entry.fallback_reason, entry.duration_ms !== undefined ? entry.duration_ms + 'ms' : '', entry.protocol_version ? '프로토콜 ' + entry.protocol_version : ''].filter(Boolean).join(' · ')))); }
       $('trace-list').append(li);
     });
     if (!trace.length) $('trace-list').append(make('li', '서버가 세부 실행 기록을 제공하지 않았습니다.'));
@@ -204,7 +207,7 @@
       const info = make('span'); info.append(make('strong', (run.topic_label || '딸기라떼') + ' · ' + (run.asset_name || run.asset?.name || '검사 ' + short(run.id))));
       const time = run.created_at ? new Date(run.created_at) : null;
       info.append(make('small', (time && !Number.isNaN(time.getTime()) ? time.toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' · ' : '') + '기준 ' + display(run.criteria_version) + ' · ' + short(run.id)));
-      button.append(info, make('span', statusText(run.status), 'pill'));
+      button.append(info, make('span', runStatusText(run.status), 'pill'));
       button.addEventListener('click', () => action(async () => {
         const loaded = unwrap(await api('/api/runs/' + encodeURIComponent(run.id)), 'run');
         let asset = loaded.asset || run.asset;
@@ -240,7 +243,7 @@
   }));
   $('run-button').addEventListener('click', () => action(async () => {
     clearRun();
-    $('run-label').textContent = '검사 중'; $('run-status').textContent = '실제 검사 중'; $('run-status').className = 'pill busy';
+    $('run-label').textContent = '실행 중'; $('run-status').textContent = runStatusText('running'); $('run-status').className = 'pill busy';
     clearOverlay();
     try {
       const key = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);

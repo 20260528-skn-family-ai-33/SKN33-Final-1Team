@@ -1,24 +1,52 @@
 {
-  "date": "2026-10-05",
-  "purpose": "통합 기획 문서를 종류별 HTML 네 문서로 분리",
+  "date": "2026-10-06",
+  "purpose": "검토 의견을 기획·기능·화면·기술·사용자별 정의서와 화면설계서에 일관되게 반영",
   "sources": [
     {
       "path": "docs/planning/presentation-plan-v2.html",
-      "sha256": "4431879d56024c40a7bc690fc932d7f47383f6e92642e87a9c9fe5148dd6e31f"
+      "sha256": "9de21fbcfd88fcbb5ae356f8cf4d41ae5d6dd23d6d5f72b16ed251c6f429f902"
     },
     {
       "path": "docs/planning/functional-definition-v3.html",
-      "sha256": "8d001166c0601be1041a836f9059ba384a58aefb313480f8128f8b293dcde695"
+      "sha256": "2ae8f1f196e459617f4a94b63e0c3a0ab9083fc693f3007ff9a094b4c7af076f"
     },
     {
       "path": "README.md",
-      "sha256": "99e562bd772558dc9861879ea4f112e311bff68e5758f1b74e63cff8db4b0acf"
+      "sha256": "66e96f4fdbe3e265782149f695b4c84469fb33a8a38d52732de98754567715a6"
+    },
+    {
+      "path": "docs/planning/contract-standard-v1.json",
+      "sha256": "e24370cf62e851ec8ea47fa742d057b8a27e51ef345958bc788418e9e64c0588"
+    },
+    {
+      "path": "docs/planning/implementation-snapshot-2026-10-06.json",
+      "sha256": "175342be1cc954ff6ec2cb9071288012a0656ab575e9dbba5180e7f2f38d6580"
+    },
+    {
+      "path": "docs/planning/functional-definition-v3.json",
+      "sha256": "4a172b0b75ae2071cf49d5d5af2eaffc4454f322a46ff61f9c6aec7c31b574a8"
+    },
+    {
+      "path": "app/contracts.py",
+      "sha256": "48752cc7d1580881e0aafbed292f7b1fc6ad022ebd207d3258948c9a08bf3c49"
+    },
+    {
+      "path": "app/topics.py",
+      "sha256": "71dea280ac884083d69e81fcaae2fc0ab4be3017b5bdd44d28fb154ff85648d5"
+    },
+    {
+      "path": "app/ocr_device.py",
+      "sha256": "b7a02edd80a03e1e6a142dc3e6697b9d9aad8aca605f58a2d5c8a54a6f616a03"
+    },
+    {
+      "path": "requirements.lock.txt",
+      "sha256": "9c287239b68c46857d0caebb3aaff67a597af259ae286b71f9b3e1ad3b348c9d"
     }
   ],
   "documents": [
     {
       "id": "plan",
-      "file": "기획서.html",
+      "file": "01_기획서.html",
       "title": "기획서",
       "sections": [
         "background",
@@ -28,11 +56,14 @@
         "roadmap",
         "deliverables",
         "decisions"
-      ]
+      ],
+      "updated_at": "2026-10-06",
+      "revision": "2026-10-06-review-feedback-v1",
+      "sha256": "a69379c25033a3b6b3520501e26c70cc72e18f4bef8e469b33af138c1a61058d"
     },
     {
       "id": "functions",
-      "file": "기능정의서.html",
+      "file": "02_기능정의서.html",
       "title": "기능정의서",
       "sections": [
         "overview",
@@ -41,11 +72,14 @@
         "responsibility",
         "contracts",
         "decisions"
-      ]
+      ],
+      "updated_at": "2026-10-06",
+      "revision": "2026-10-06-review-feedback-v1",
+      "sha256": "543bbce8c5025182e4eaaefb18c181374f6c1571a6a89e921659b5d8edb4b797"
     },
     {
       "id": "screens",
-      "file": "화면정의서.html",
+      "file": "03_화면정의서.html",
       "title": "화면정의서",
       "sections": [
         "overview",
@@ -55,11 +89,14 @@
         "wireframes",
         "acceptance",
         "sources"
-      ]
+      ],
+      "updated_at": "2026-10-06",
+      "revision": "2026-10-06-review-feedback-v1",
+      "sha256": "b642291e461c0cd20e04df798e145662aad4b92bbfb10b046fdeb53b18ddfdb2"
     },
     {
       "id": "technical",
-      "file": "기술스펙정의서.html",
+      "file": "04_기술스펙정의서.html",
       "title": "기술스펙정의서",
       "sections": [
         "architecture",
@@ -69,7 +106,10 @@
         "operations",
         "evaluation",
         "choices"
-      ]
+      ],
+      "updated_at": "2026-10-06",
+      "revision": "2026-10-06-review-feedback-v1",
+      "sha256": "e97b0ef2c05ce350cecc48734cb8e3f49472e619287940c00b40ec312adb4124"
     }
   ],
   "meeting_briefs": [
@@ -78,6 +118,103 @@
       "file": "스탠드업미팅.html",
       "title": "스탠드업 미팅용 간단 정리",
       "as_of": "2026-10-06"
+    },
+    {
+      "id": "mentor-brief",
+      "file": "멘토브리핑_2026-10-06.html",
+      "title": "멘토 기획 브리핑",
+      "author": "최지흠 APM",
+      "as_of": "2026-10-06",
+      "sections": 11,
+      "purpose": "오늘 기획 상세 설명 및 멘토 확인 요청",
+      "implementation_status": "설계·현재 시제품·개발 예정 구분",
+      "sha256": "3a5c1a14461aee0cb769742d73c6e27e501551c2657a0d622571774fb2ef92e0"
     }
-  ]
+  ],
+  "contract_standard": {
+    "id": "checker-contract-v1",
+    "source": "docs/planning/contract-standard-v1.json",
+    "file": "공통실행계약.html",
+    "updated_at": "2026-10-06",
+    "sync_script": "scripts/sync_contract_docs.py",
+    "sha256": "4dc31c8b33c9b5f7847afd684ffb16717cd2df7a8975253a2f42dd75c80813c4"
+  },
+  "revision": "2026-10-06-review-feedback-v1",
+  "refresh_script": "scripts/refresh_planning_documents.py",
+  "implementation_basis": "README의 실제 실행·테스트 기록과 현재 코드. 문서 갱신에서 앱·모델 실험을 새로 수행한 것은 아님",
+  "unresolved": [
+    "데이터 설계지도 원본 파일 경로가 확인되지 않아 해당 파일의 숫자 범위 표시 오류 5곳은 아직 직접 수정하지 못했다. 이번 네 문서는 숫자 범위를 4–6개처럼 표기한다."
+  ],
+  "companion_documents": [
+    {
+      "id": "user-roles",
+      "file": "05_사용자별_기능정의서.html",
+      "title": "사용자별 기능정의서",
+      "updated_at": "2026-10-06",
+      "purpose": "7역할별 요구사항·35개 행위·권한·범위·선행조건·허용/거절·기능/요구사항/시험 추적",
+      "detail_document": "02_기능정의서.html",
+      "contract_document": "공통실행계약.html",
+      "revision": "2026-10-06-review-feedback-v1",
+      "sha256": "3ceebcccc7c559f83b3eb194d13a90fb75d7569c326a81854a3f9bc1206f9cb0"
+    }
+  ],
+  "project_documents": {
+    "project_plan": {
+      "title": "프로젝트기획",
+      "url": "https://docs.google.com/document/d/1SS_nXhI0CmUHwuNU6zBjOiPckRuEdK_g/edit"
+    },
+    "data_collection": {
+      "title": "데이터 수집 및 저장",
+      "url": "https://docs.google.com/document/d/1JkpF21eSmv-509OQK14vYRk5wqiu5yHr/edit"
+    },
+    "requirements": {
+      "title": "요구사항 정의서",
+      "url": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit",
+      "sheet_name": "시트1",
+      "gid": 1153128012
+    },
+    "wbs": {
+      "title": "WBS",
+      "url": "https://docs.google.com/spreadsheets/d/1a3ZsbY1GqjCih3UoqEpAiJ_od-VtxG2-tCKBSp5xqdM/edit"
+    }
+  },
+  "review_feedback": {
+    "as_of": "2026-10-06",
+    "preserved": [
+      "33개 기능 ID",
+      "69개 원 요구사항 ID·원문",
+      "기존 시험 ID",
+      "검수→보완→재검수→최종 승인"
+    ],
+    "added": [
+      "문서 4단계·8상태·14원인 복구",
+      "확정 차단·버전·재처리 예산",
+      "7역할·35개 상세 행위",
+      "SC-01/02/08 UI 예시"
+    ],
+    "status": "설계·미구현 / 추가 수용 시험 미실행"
+  },
+  "screen_design": {
+    "file": "화면설계서_UI_양식.html",
+    "version": "3.0",
+    "screens": 10,
+    "notes": 50,
+    "sha256": "af25ec7a5d765e4ed8c98c7d02f5a90e6b299787a2f8efb5353882800f5bd133",
+    "pdf": {
+      "path": "output/pdf/화면설계서_v3.pdf",
+      "sha256": "9bd6b70cbe8ed569f6df13339ed6dfcbc3b89366c4755133cb8f73020cace00f"
+    }
+  },
+  "verification": {
+    "scope": "문서 정합성 검증; 앱·모델·실제 권한/판독 수용 시험은 미실행",
+    "original_feature_count": 33,
+    "original_requirement_count": 69,
+    "links_and_anchors_checked": 1197,
+    "broken_links": 0,
+    "role_filters": "7역할·요구사항/시험 검색·초기화·행위 hash: Node 가상 DOM 통과",
+    "regeneration": "격리 사본에서 생성 스크립트 실행; 피드백 절·ID·5개 파일명 유지",
+    "ui": "10 SVG·50 표식·50 설명·기존 내장 이미지 보존",
+    "pdf": "정적 HTML/SVG 출력: A3 가로 10쪽·758개 본문 블록 누락 0·10쪽 시각 검토",
+    "browser_preview": "file: URL 보안 정책으로 브라우저 렌더 검증 미실행"
+  }
 }

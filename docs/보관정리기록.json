@@ -1,0 +1,171 @@
+{
+  "date": "2026-10-06",
+  "rule": "Asia/Seoul 생성일 또는 최종 수정일이 오늘인 기존 docs/output 파일 제외",
+  "moved": [
+    {
+      "old_path": "docs/planning/strawberry-inspection-plan.html",
+      "new_path": "docs/planning/보관/01_초기검수기획/strawberry-inspection-plan.html",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T17:05:46.785812+09:00",
+      "original_sha256": "52f373d21855f07eb14740da276d9f8054852d326fc7431511e1c771f9a08b0a",
+      "sha256": "943b44c4b0d536663bb51c06206adf347f6fb0819a83d26516b1e5cc24bb305a",
+      "compatibility": "html_redirect"
+    },
+    {
+      "old_path": "docs/planning/inspection-plan.json",
+      "new_path": "docs/planning/보관/01_초기검수기획/inspection-plan.json",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T16:47:14.111091+09:00",
+      "original_sha256": "15f5928b10390929e173b241152b7c243ba39e087ca83b0eeb19d6a1d0d187a1",
+      "sha256": "15f5928b10390929e173b241152b7c243ba39e087ca83b0eeb19d6a1d0d187a1",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/source-functional-spec.json",
+      "new_path": "docs/planning/보관/01_초기검수기획/source-functional-spec.json",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T16:47:14.111443+09:00",
+      "original_sha256": "a3ff2dfbfadeac946870d4a103a51a0a32b3d0268c03333e637852af351bba03",
+      "sha256": "a3ff2dfbfadeac946870d4a103a51a0a32b3d0268c03333e637852af351bba03",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/sample-criteria.json",
+      "new_path": "docs/planning/보관/01_초기검수기획/sample-criteria.json",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T16:47:14.111542+09:00",
+      "original_sha256": "995b279ad5a3efa9e4f483034dd0efaac6517926879b1ce61a6371e3d5f9e920",
+      "sha256": "995b279ad5a3efa9e4f483034dd0efaac6517926879b1ce61a6371e3d5f9e920",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/requirements-trace.csv",
+      "new_path": "docs/planning/보관/01_초기검수기획/requirements-trace.csv",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T16:47:14.111840+09:00",
+      "original_sha256": "1394285ad1218e4d2e0d8a3d60f945e430edbe575665bfc083de61ec60aebb7f",
+      "sha256": "1394285ad1218e4d2e0d8a3d60f945e430edbe575665bfc083de61ec60aebb7f",
+      "compatibility": "compatibility_copy"
+    },
+    {
+      "old_path": "docs/planning/사용안내.txt",
+      "new_path": "docs/planning/보관/01_초기검수기획/사용안내.txt",
+      "category": "01_초기검수기획",
+      "original_modified": "2026-10-02T17:05:46.785448+09:00",
+      "original_sha256": "3613a151ac4dafb407006b3e8ef88c323fcce1cc16c14a5ea7caa3ce9476517b",
+      "sha256": "cebba7a4eb17007b4a386000fb1bcd40e0c0d69e3192e050e0061ddfb48ec363",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/presentation-plan-v1.html",
+      "new_path": "docs/planning/보관/02_발표기획/presentation-plan-v1.html",
+      "category": "02_발표기획",
+      "original_modified": "2026-10-03T17:16:02.513672+09:00",
+      "original_sha256": "96dd8aaf3e1d0b863f04cfa585b0c427cee90c4667953d298269120440e80c96",
+      "sha256": "61ca993703371067e692bd5d1dc854c9087723be461e5f5488b301282636c583",
+      "compatibility": "html_redirect"
+    },
+    {
+      "old_path": "docs/planning/functional-definition-v2.html",
+      "new_path": "docs/planning/보관/03_기능정의_v2/functional-definition-v2.html",
+      "category": "03_기능정의_v2",
+      "original_modified": "2026-10-03T15:18:47.556397+09:00",
+      "original_sha256": "ff7a9307f73f523e47e94d60887a8c17a53fda7a604df495c6e88d34ff8b1860",
+      "sha256": "fe9bcb62fc2dd7b8a882c4dbf4b3a34871f9d6283d2bafaa4e27a412499a83fd",
+      "compatibility": "html_redirect"
+    },
+    {
+      "old_path": "docs/planning/functional-definition-v2.json",
+      "new_path": "docs/planning/보관/03_기능정의_v2/functional-definition-v2.json",
+      "category": "03_기능정의_v2",
+      "original_modified": "2026-10-03T15:18:47.555587+09:00",
+      "original_sha256": "cbbb237eb47ec42a94e5973244d996bfcb4cebd3c9aca6fc658fe98153f2d809",
+      "sha256": "cbbb237eb47ec42a94e5973244d996bfcb4cebd3c9aca6fc658fe98153f2d809",
+      "compatibility": "compatibility_copy"
+    },
+    {
+      "old_path": "docs/planning/functional-requirements-trace-v2.csv",
+      "new_path": "docs/planning/보관/03_기능정의_v2/functional-requirements-trace-v2.csv",
+      "category": "03_기능정의_v2",
+      "original_modified": "2026-10-03T15:18:47.555832+09:00",
+      "original_sha256": "bb82a333c2fa914d52b7d05c3b2d0c5efade51fff6313046e6a4dd1f91487a91",
+      "sha256": "bb82a333c2fa914d52b7d05c3b2d0c5efade51fff6313046e6a4dd1f91487a91",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/workflow-definition-v1.html",
+      "new_path": "docs/planning/보관/04_업무흐름_교육계획/workflow-definition-v1.html",
+      "category": "04_업무흐름_교육계획",
+      "original_modified": "2026-10-02T17:05:27.637218+09:00",
+      "original_sha256": "f15e3f15fd4804cfe3e197523cffc4a8d8246bef201a27b805a5916fa4ce785c",
+      "sha256": "f32d7d96587c3e95b451c5641748201de29d5c317992ba9a0b77b823bd11cfe7",
+      "compatibility": "html_redirect"
+    },
+    {
+      "old_path": "docs/planning/workflow-definition-v1.json",
+      "new_path": "docs/planning/보관/04_업무흐름_교육계획/workflow-definition-v1.json",
+      "category": "04_업무흐름_교육계획",
+      "original_modified": "2026-10-02T17:05:27.636577+09:00",
+      "original_sha256": "e693a5d339c7db5e2ff5b4d20de46697879cddcb40a9834b4d33fefc756c9e95",
+      "sha256": "e693a5d339c7db5e2ff5b4d20de46697879cddcb40a9834b4d33fefc756c9e95",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/education-aligned-plan-v2.html",
+      "new_path": "docs/planning/보관/04_업무흐름_교육계획/education-aligned-plan-v2.html",
+      "category": "04_업무흐름_교육계획",
+      "original_modified": "2026-10-03T14:53:22.210142+09:00",
+      "original_sha256": "02d1b8f64407f00084de5bb88185d843d8121cb5c2e3ec61147ae5fe4ca72020",
+      "sha256": "ef4ca529dc069ebcd2717e2a27a9c478cda2da9d7eccdd91e1a4cf9f2770322f",
+      "compatibility": "html_redirect"
+    },
+    {
+      "old_path": "docs/planning/education-aligned-plan-v2.json",
+      "new_path": "docs/planning/보관/04_업무흐름_교육계획/education-aligned-plan-v2.json",
+      "category": "04_업무흐름_교육계획",
+      "original_modified": "2026-10-03T14:53:22.209676+09:00",
+      "original_sha256": "bc805b66eb45988028ff2e31001280e6e55de583d9793033d2344571fbc02f24",
+      "sha256": "bc805b66eb45988028ff2e31001280e6e55de583d9793033d2344571fbc02f24",
+      "compatibility": null
+    },
+    {
+      "old_path": "docs/planning/deliverables-trace-v2.csv",
+      "new_path": "docs/planning/보관/04_업무흐름_교육계획/deliverables-trace-v2.csv",
+      "category": "04_업무흐름_교육계획",
+      "original_modified": "2026-10-03T14:53:22.209810+09:00",
+      "original_sha256": "85f127a6ba156c21fec665eb093e4ca8ba8bd00ad96e8ccfdfaad3f3b1c0de30",
+      "sha256": "85f127a6ba156c21fec665eb093e4ca8ba8bd00ad96e8ccfdfaad3f3b1c0de30",
+      "compatibility": null
+    }
+  ],
+  "protected_files_unchanged": [
+    "docs/planning/functional-w5h1-v3.csv",
+    "docs/planning/functional-definition-v3.json",
+    "docs/planning/contract-standard-v1.json",
+    "docs/planning/implementation-snapshot-2026-10-06.json",
+    "docs/planning/functional-requirements-trace-v3.csv",
+    "docs/planning/presentation-plan-v2.html",
+    "docs/planning/functional-definition-v3.html",
+    "docs/reports/data-collection/template-field-map.json",
+    "docs/reports/data-collection/report.html",
+    "docs/reports/data-collection/report.pdf",
+    "docs/planning/organized/사용안내.txt",
+    "docs/planning/organized/화면설계서_UI_양식.html",
+    "docs/planning/organized/index.html",
+    "docs/planning/organized/스탠드업미팅.html",
+    "docs/planning/organized/공통실행계약.html",
+    "docs/planning/organized/02_기능정의서.html",
+    "docs/planning/organized/화면정의서_UI_버전.html",
+    "docs/planning/organized/05_사용자별_기능정의서.html",
+    "docs/planning/organized/03_화면정의서.html",
+    "docs/planning/organized/01_기획서.html",
+    "docs/planning/organized/04_기술스펙정의서.html",
+    "docs/planning/organized/document-map.json",
+    "output/pdf/화면설계서_v1.pdf",
+    "output/pdf/03_화면정의서.pdf",
+    "output/pdf/화면설계서_v2.pdf"
+  ],
+  "compatibility_addresses": 7,
+  "local_links_checked": 65,
+  "broken_new_links": []
+}

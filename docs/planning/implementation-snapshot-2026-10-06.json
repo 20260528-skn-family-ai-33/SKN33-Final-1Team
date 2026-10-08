@@ -1,0 +1,46 @@
+{
+  "as_of": "2026-10-06",
+  "revision": "2026-10-06-contract-v1",
+  "purpose": "오전 분리본 네 문서를 최신 채팅 결정·공통 계약·현재 구현 기록으로 갱신",
+  "evidence_basis": "README의 실제 실행·테스트 기록과 현재 코드. 문서 갱신에서 앱·모델 실험을 새로 수행한 것은 아님",
+  "current_stack": "Django + FastAPI 단일 ASGI · Django ORM/SQLite · HTML/CSS/JavaScript · RapidOCR · 실제 stdio MCP",
+  "current_flow": "주제·발주 선택 → 저장된 기준 읽기·사람 확정 → PNG/JPEG 접수 → 실제 MCP/OCR → 근거·판정·이력",
+  "target_flow": "원본 명세서·계약서 접수 → LLM 기준 초안·출처 추출 → 사람 확정 → 8개 역할 검수·검증 → 보고서·보완 → 수정본 재검수 → 사람 최종 승인",
+  "topics": [
+    {"name": "딸기라떼", "topic_id": "strawberry-latte", "criteria": "data/criteria.json", "images": "data/samples", "count": 6, "text_checks": "상품명·할인율·브랜드", "unimplemented": "딸기 개수·음료 외관"},
+    {"name": "페스티벌 v1", "topic_id": "festival-v1", "criteria": "data/topics/festival-v1/criteria.json", "images": "data/topics/festival-v1/images", "count": 6, "text_checks": "행사명·날짜·시간·장소·가격", "unimplemented": "별도 시각 구성 검사"},
+    {"name": "크루아상 v2", "topic_id": "croissant-v2", "criteria": "data/topics/croissant-v2/criteria.json", "images": "data/topics/croissant-v2/images", "count": 6, "text_checks": "상품명·가격·브랜드", "unimplemented": "큰 빵·미니 빵 개수·접시 외관"}
+  ],
+  "sample_caution": "3주제 × 6장 = 18장 모두 AI로 제작한 가상 광고·개발 시연용 변형 자료다. 독립 평가 18건 또는 범용 정확도 근거로 집계하지 않는다. 현재 PNG는 1254×1254이며 목표 규격 검수와 구분한다.",
+  "criteria_caution": "현재 기준은 사전에 작성된 JSON을 읽는다. 크루아상 기대 수량은 선택한 발주의 sample_conditions에서 읽으며 검사 이미지·업로드 파일명·정답키로 기준을 만들지 않는다. 실제 문서 기반 자동 기준 추출은 미구현이다.",
+  "ocr": {
+    "default": "RapidOCR 3.9.0",
+    "cpu": "ONNX Runtime 1.23.2",
+    "gpu": "PyTorch 2.10.0",
+    "policy": "CUDA 사용 가능 → CUDA / Apple Silicon에서 MPS 사용 가능 → MPS / 나머지 → CPU. GPU 준비·실행 실패는 CPU로 전환하고 실제 사용 장치·오류를 기록한다. CPU도 실패하면 실행 실패·미판정으로 남긴다.",
+    "verified": "Mac Apple Silicon에서 실제 CPU·MPS 및 MCP 실행 확인",
+    "pending": "Windows·NVIDIA CUDA·Intel Mac 실기 검증 미완료",
+    "model_note": "CPU 한국어 v5 경로와 GPU PP-OCRv5 검출 + PP-OCRv4 한국어·영어 인식의 모델 구성이 다르다. 같은 이미지에서도 결과가 달라질 수 있으며 동일 정확도를 보장하지 않는다.",
+    "legacy": "Apple Vision은 Mac 선택 비교 엔진. 기본 엔진이 아니며 Mac MLX는 팀 공통 LLM 운영 스펙에서 제외"
+  },
+  "test_record": {
+    "unit_tests": 125,
+    "description": "직전 코드 변경의 자동 테스트 125개 통과 기록. 원 요구사항 69개에 대한 전체 서비스 수용 시험이나 모델 정확도 평가 결과가 아님",
+    "latest_run": "81e817d3-456b-4909-a160-49ec2e3ddd0a",
+    "latest_example": "크루아상 샘플 04: succeeded 3개 + not_run 2개, run.status=partial. 브랜드 미충족도 항목 실행은 완료",
+    "source": "README.md"
+  },
+  "feature_updates": {
+    "F-03": "세 주제의 JSON 기준 읽기·사람 확정·기준 버전 확인 구현. 크루아상은 발주별 조건을 선택한다. 문서 자동 추출·초안 보정·업무 기준 변경 이력은 미구현.",
+    "F-04": "PNG/JPEG 접수·디코딩·해시·상한 검증, 주제·발주 조건과 접수 연결 구현. 문서/증빙 접수와 전체 업무 버전 묶음은 미구현.",
+    "F-06": "RapidOCR로 딸기라떼·크루아상 문구 각 3항목, 페스티벌 문구 5항목 검사. CPU/CUDA/MPS 선택·CPU 전환과 실제 장치 기록 구현. 개수·외관은 확인 필요/미실행. 문서에서 얻은 가변 규칙의 일반 해석은 미구현.",
+    "F-08": "검사 요청 멱등성·기준 버전 검증·결과 저장 기반 구현. 자동 도구 재시도 추가 2회와 에이전트 재검사 추가 1회는 설계만 확정. 현재 추가 반복 0회이며 LangGraph 재개·후속 업무 멱등성은 미구현.",
+    "F-09": "항목 판정·실행 상태·run 집계, OCR 원문·근거 영역·실제 장치·이력 조회 구현. 기존 completed 항목 상태는 실행 완료로 표시하고 신규 결과는 succeeded로 저장. LLM 통합 보고·티켓·권한 통합은 미구현.",
+    "S-03": "실제 stdio MCP initialize·tools/list·tools/call 및 inspect_image 구현. 정상화된 rule_id 결과·실행 상태를 저장한다. 문서 조회·검색·보고서·업무 티켓 도구와 발주별 권한은 미구현.",
+    "D-01": "3주제·18장 시연 자료와 Django ORM/SQLite 저장 기반 구현. 독립 데이터 수집·라벨·분할·전체 ERD 완성 여부는 수집 산출물과 별도로 대조한다.",
+    "T-01": "README에 직전 자동 테스트 125개 통과와 실제 CPU/MPS·MCP 실행 기록 있음. 교육 요구사항 전체 수용 시험·8개 역할 협업·공용 배포 시험은 미실행. Windows/CUDA/Intel Mac 실기는 미검증.",
+    "S-05": "LLM 공용 Linux·CUDA/RunPod·vLLM 모델 운영은 설계 제안이며 미연결. 현재 OCR의 CPU/CUDA/MPS 자동 선택 기반과 별개다. OCR은 CPU/MPS 실기만 확인했다."
+  },
+  "planned": "문서 기반 LLM 기준 추출 · KLUE 요청 분류 학습 · Dense/BM25/RRF Hybrid RAG · LangChain/LangGraph 8개 에이전트 · VLM 개수/외관 검수 · MySQL/Qdrant · 보고서/보완/재검수/승인 · 공용 CUDA/vLLM",
+  "unresolved": "데이터 설계지도 원본 파일 경로가 확인되지 않아 해당 파일의 숫자 범위 표시 오류 5곳은 아직 직접 수정하지 못했다. 이번 네 문서는 숫자 범위를 4–6개처럼 표기한다."
+}

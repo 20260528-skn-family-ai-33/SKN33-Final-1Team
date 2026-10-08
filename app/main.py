@@ -23,6 +23,7 @@ setup_django()
 
 from django.conf import settings
 from django.core.asgi import get_asgi_application
+from app.contracts import SUPPORTED_VERDICTS, normalize_item_execution_status, normalize_rules
 from app.csrf import enforce_csrf
 from app.store import Store
 from app.topics import DEFAULT_TOPIC, TopicCatalog
@@ -210,19 +211,19 @@ def create_app(runtime_dir=None, criteria_path=None, samples_dir=None, topics_di
         try:
             from app.mcp_client import inspect_via_mcp
             result = inspect_via_mcp(uploads / asset['storage_name'], current['rules'])
-            rows = result['results']
-            if len(rows) != len(current['rules']) or {r['rule_id'] for r in rows} != {r['id'] for r in current['rules']}:
+            rows = normalize_rules(result['results'])
+            if len(rows) != len(current['rules']) or {r['rule_id'] for r in rows} != {r['rule_id'] for r in current['rules']}:
                 raise ValueError('invalid result rule IDs')
-            allowed = {'충족', '미충족', '확인 필요', None}
             for row in rows:
-                if row.get('verdict') not in allowed:
+                if row.get('verdict') not in SUPPORTED_VERDICTS:
                     raise ValueError('invalid verdict')
-                if row.get('execution_status') not in {'succeeded', 'completed', 'failed', 'not_run'}:
-                    raise ValueError('invalid execution status')
-                if row['execution_status'] in {'succeeded', 'completed'} and row.get('verdict') is None:
+                row['execution_status'] = normalize_item_execution_status(row.get('execution_status'))
+                if row['execution_status'] == 'succeeded' and row.get('verdict') is None:
                     raise ValueError('completed item needs verdict')
-                if row['execution_status'] not in {'succeeded', 'completed'} and row.get('verdict') in {'충족', '미충족'}:
+                if row['execution_status'] != 'succeeded' and row.get('verdict') in {'충족', '미충족'}:
                     raise ValueError('unexecuted item cannot pass or fail')
+                if row['execution_status'] == 'failed' and row.get('verdict') is not None:
+                    raise ValueError('failed item must remain unjudged')
                 if not all(k in row for k in ('name', 'expected', 'observed', 'reason', 'evidence', 'method')):
                     raise ValueError('missing result field')
                 if not isinstance(row['evidence'], list):
@@ -236,14 +237,14 @@ def create_app(runtime_dir=None, criteria_path=None, samples_dir=None, topics_di
                             raise ValueError('invalid normalized evidence box')
                         if box[0] + box[2] > 1.001 or box[1] + box[3] > 1.001:
                             raise ValueError('evidence box outside image')
-            completed_count = sum(r['execution_status'] in {'succeeded', 'completed'} for r in rows)
+            completed_count = sum(r['execution_status'] == 'succeeded' for r in rows)
             run_status = 'completed' if completed_count == len(rows) else ('partial' if completed_count else 'failed')
             run.update({'results': rows, 'trace': result.get('trace', []), 'method': result.get('method', 'local'),
                         'status': run_status})
         except Exception as exc:
             run.update({'status': 'failed', 'error': {'code': 'INSPECTION_FAILED', 'type': type(exc).__name__,
                         'message': '검수 실행에 실패했습니다. 새 요청으로 다시 시도하세요.'},
-                        'results': [{'rule_id': r['id'], 'name': r['name'], 'expected': r['expected'],
+                        'results': [{'rule_id': r['rule_id'], 'name': r['name'], 'expected': r['expected'],
                          'verdict': None, 'execution_status': 'failed', 'observed': None,
                          'reason': '검수 실행 실패', 'evidence': [], 'method': 'local'} for r in current['rules']]})
         run['finished_at'] = now()

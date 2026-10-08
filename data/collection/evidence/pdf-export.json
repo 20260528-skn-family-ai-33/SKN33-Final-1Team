@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-06T02:59:15.165Z",
+  "generated_at": "2026-10-06T08:21:44.057Z",
   "browser": "154.0.8037.98",
   "method": "offline HTML -> Chromium print -> A4 PDF; no external requests",
   "html_path": "docs/reports/data-collection/report.html",
   "pdf_path": "docs/reports/data-collection/report.pdf",
-  "html_sha256": "52ba79b1dcbeeb9e1c9881e558bb7d2ee3f6a1c75f90dcf8029ac1d18157b040",
-  "pdf_sha256": "410123b7de5b589b18d6e98661ca4694d64268629a666d0ecf5d57a9411a340b",
+  "html_sha256": "a2420c8d876289aaaf2feefa9d802da4a29366264504e2164aa77c72d33d5bc8",
+  "pdf_sha256": "e158350898165b276cd2d260ed8d454ef4c82cc5e9ed3c601f9ecad7f466126a",
   "expected_pages": 11,
   "layout": [
     {
@@ -98,5 +98,9 @@
     }
   ],
   "footer_overlap_pages": [],
-  "visual_pdf_review_status": "pending"
+  "visual_pdf_review_status": "Link migration: 11-page contact sheet and page 8 full-size checked; no layout defects found",
+  "human_review_status": "pending",
+  "review_evidence_path": "data/collection/evidence/report-review.json",
+  "review_evidence_sha256": "32c569f495bac442bc86f94fe9e468074e0724ef62fa1d0f3c9a8d059975ec33",
+  "review_evidence_section": "link_update_verification"
 }

@@ -5,6 +5,8 @@ from pathlib import Path
 
 from fastapi import HTTPException
 
+from app.contracts import normalize_rules
+
 DEFAULT_TOPIC = 'strawberry-latte'
 
 
@@ -30,18 +32,23 @@ class TopicCatalog:
         label, path, _ = self.entry(topic)
         raw = path.read_bytes()
         data = json.loads(raw)
+        try:
+            data['rules'] = normalize_rules(data['rules'], keep_legacy_id=True)
+        except (KeyError, ValueError, TypeError):
+            raise HTTPException(422, detail={'code': 'INVALID_CRITERIA',
+                                           'message': '검수 기준의 항목 ID가 유효하지 않습니다.'})
         conditions = data.get('sample_conditions', {})
         if condition_id is not None and condition_id not in conditions:
             raise HTTPException(404, detail={'code': 'CONDITION_NOT_FOUND', 'message': '등록되지 않은 발주 조건입니다.'})
         if condition_id:
             for rule in data['rules']:
-                if rule['id'] in conditions[condition_id]:
-                    counts = conditions[condition_id][rule['id']]
+                if rule['rule_id'] in conditions[condition_id]:
+                    counts = conditions[condition_id][rule['rule_id']]
                     rule['expected'] = f"큰 크루아상 {counts['large']}개 · 미니 {counts['mini']}개 · 총 {counts['total']}개"
                     rule['expected_counts'] = counts
         elif conditions:
             for rule in data['rules']:
-                if rule['id'] == 'C04':
+                if rule['rule_id'] == 'C04':
                     rule['expected'] = '발주 조건 선택 후 수량 표시'
         # Preserve old strawberry confirmation versions and API clients.
         version_input = raw if topic == DEFAULT_TOPIC else raw + json.dumps([topic, condition_id]).encode()

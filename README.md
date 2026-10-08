@@ -4,6 +4,15 @@
 
 현재 실행 구조는 **Django 5.2.17 + FastAPI**입니다. Django가 화면·ORM·마이그레이션·관리자 기능을 맡고, FastAPI가 기존 검수 API와 OCR·MCP 호출을 담당합니다. 한 ASGI 서버에서 같은 주소로 실행합니다.
 
+## 프로젝트 기준 문서
+
+- [프로젝트기획](https://docs.google.com/document/d/1SS_nXhI0CmUHwuNU6zBjOiPckRuEdK_g/edit)
+- [데이터 수집 및 저장](https://docs.google.com/document/d/1JkpF21eSmv-509OQK14vYRk5wqiu5yHr/edit)
+- [요구사항 정의서](https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit)
+- [WBS](https://docs.google.com/spreadsheets/d/1a3ZsbY1GqjCih3UoqEpAiJ_od-VtxG2-tCKBSp5xqdM/edit)
+
+최신 Google Drive 경로는 [문서 링크 목록](docs/project-links.json)에서 관리합니다.
+
 ## 실행
 
 ### 공통 준비
@@ -168,6 +177,37 @@ API의 변경 요청에는 Django CSRF 쿠키와 `X-CSRFToken` 헤더가 필요�
 - API 키 없이 실행하며 이미지를 외부 모델에 전송하지 않습니다.
 - 실제 MCP 프로세스와의 도구 조회·호출을 추적합니다. 현재 SDK에서 협상된 프로토콜은 2025-11-25입니다. 설계한 8개 에이전트·RAG·의도 분류 학습·보완/최종 승인 흐름은 후속 구현 범위입니다.
 
+## 공통 상태·항목 계약
+
+[공통 실행 계약](docs/planning/organized/공통실행계약.html)과 [공통 계약 JSON](docs/planning/contract-standard-v1.json)을 기능·기술·화면 정의의 공통 기준으로 사용합니다.
+
+| 영역 | 필드 | 값과 화면 표시 |
+| --- | --- | --- |
+| 항목 판정 | `verdict` | 충족 / 미충족 / 확인 필요 / `null`(미판정) |
+| 항목 실행 상태 | `execution_status` | `succeeded`(실행 완료) / `failed`(실행 실패) / `not_run`(미실행) |
+| 검수 실행 상태 | `run.status` | `running`(실행 중) / `completed`(전체 실행 완료) / `partial`(부분 실행 완료) / `failed`(실행 실패) |
+| 보완 작업 상태 | `task.status` | 초안 / 요청 확정 / 수정본 제출 / 해결 — 설계 계약·미구현 |
+| 최종 승인 상태 | `approval.status` | 승인 대기 / 승인 / 보류 — 설계 계약·미구현 |
+
+실행 완료는 조건 충족이나 최종 승인을 뜻하지 않습니다. 도구 실행 실패는 `verdict=null`로 남기고, 자동 검사 미지원 항목의 기존 `확인 필요 / 미실행` 표시는 호환 범위로 유지합니다. `해당 없음` 판정과 실행 대기·사람 확인 대기·취소 상태는 후속 지원값입니다. 도구가 반환한 항목 실행값 `completed`는 호환 입력으로 받아 신규 결과에 `succeeded`로 저장합니다. 과거 저장 기록은 원본을 보존하고 화면에서 `completed`를 실행 완료로 표시하며, 전체 실행의 `run.status=completed`는 유지합니다.
+
+공개 항목 키는 `rule_id`입니다. 기준 조회는 기존 `rules[].id`와 동일한 `rule_id`를 함께 제공하고, 입력은 두 표기를 호환 처리합니다. 두 값이 다르거나 같은 기준에 중복 ID가 있으면 거절합니다. 원본 기준 파일을 재작성하지 않아 기존 해시·확정 버전을 보존합니다. `C01`은 여러 주제에서 사용하므로 현재 항목은 `topic_id + rule_id`, 당시 조건은 `topic_id + condition_id + criteria_version + rule_id`로 식별합니다. 향후 발주별 기준 묶음 ID와 선택적 DB 내부 `rule_version_id`는 공개 항목 ID와 역할을 분리합니다.
+
+반복 정책의 초기 설계값은 **도구 오류 재시도 추가 2회(총 3번 시도)**, **에이전트 재검사 추가 1회(총 2번 검사)**입니다. 현재 코드에는 자동 반복 루프가 없습니다. 공유 도구 호출의 재시도는 `run_id + operation_id` 단위로 집계하고 여러 항목이 같은 호출의 카운터를 공유합니다. 에이전트 재검사는 `run_id + rule_id` 단위로 집계합니다. 전체 시간·비용 예산은 Q03에서 실측 후 확정하며, 미해결 결과는 사람 확인으로 전달하도록 설계합니다.
+
+공통 계약 JSON을 수정한 뒤 저장소 루트에서 아래 명령으로 관련 HTML과 문서맵을 갱신합니다.
+
+```sh
+python scripts/sync_contract_docs.py
+python scripts/build_contract_standard.py
+```
+
+기획서·기능정의서·화면정의서·기술스펙정의서 네 문서는 공통 계약과 [구현 기준 기록](docs/planning/implementation-snapshot-2026-10-06.json)을 함께 반영합니다. 아래 명령은 기존 문서의 목차·기능·요구사항을 유지하면서 최신 설명과 원본 해시를 갱신합니다.
+
+```sh
+python scripts/refresh_planning_documents.py
+```
+
 ## 데이터와 한계
 
 현재 샘플은 **3주제 × 6장 = 18장**입니다. 모두 AI로 제작한 가상 광고이며, 개발·시연용 변형 자료입니다. 일반화 성능 평가용 독립 18건이 아닙니다. 실제 규격은 1254×1254 PNG이며 기존 기획의 1080×1080 규격 검사와 별개입니다.
@@ -247,8 +287,9 @@ HTTP 인터페이스: 실행 중 <http://127.0.0.1:8000/docs>에서 확인할 �
   - [기능정의서 · 33개 기능과 69개 요구사항](docs/planning/organized/기능정의서.html)
   - [화면정의서 · 10개 논리 화면과 상태·전이](docs/planning/organized/화면정의서.html)
   - [기술스펙정의서 · 8개 에이전트·MCP·18개 기술](docs/planning/organized/기술스펙정의서.html)
+  - [공통 실행 계약 · 상태·항목 ID·버전·반복 정책](docs/planning/organized/공통실행계약.html)
 
-종류별 문서는 2026-10-05에 기존 자료를 분리한 설계본입니다. 아래 통합·이전 문서는 원본으로 보존하며, 최신 역할·검색·팀 실행 환경은 종류별 문서의 적용 기준을 따릅니다.
+종류별 문서는 2026-10-05에 기존 자료를 분리하고, 2026-10-06에 상태·항목 ID·반복 정책을 공통 실행 계약으로 통일한 설계본입니다. 아래 통합·이전 문서는 원본으로 보존하며, 최신 역할·검색·팀 실행 환경은 종류별 문서의 적용 기준을 따릅니다.
 
 - [MCP 기반 8개 에이전트 기획서 v2 · 기술스펙·일정·산출물](docs/planning/presentation-plan-v2.html)
 
@@ -274,6 +315,14 @@ HTTP 인터페이스: 실행 중 <http://127.0.0.1:8000/docs>에서 확인할 �
 - [FastAPI 하위 애플리케이션 연결](https://fastapi.tiangolo.com/advanced/sub-applications/)
 
 이 앱은 개발용 로컬 서버입니다. 서비스 배포 전에는 다중 사용자 인증·발주별 권한·외부 전송 동의·운영 정책을 추가하고 해당 요구사항을 별도로 검증해야 합니다.
+
+## 공통 계약 통일 검증 · 2026-10-06
+
+자동 테스트 **125개** 통과. 표준·기존 항목 ID 입력, ID 충돌·중복 거절, 세 주제의 원본 해시와 확정 버전 보존, 항목 `completed`의 신규 결과 정규화를 검증했습니다. 최신 HTML 8개의 ID·로컬 링크·JavaScript 문법, 원본·내장 JSON 및 문서맵 해시를 확인했고 원 요구사항 69개를 보존했습니다.
+
+기존 이력 화면에서 브랜드 미충족 판정과 항목 실행 완료를 별도로 표시하는 것을 확인했습니다. 이어 크루아상 샘플 04를 실제 MPS OCR·MCP로 다시 검사해 `rule_id` 5개, `succeeded` 3개와 `not_run` 2개, `run.status=partial` 및 기존 기준 버전 유지를 확인했습니다. 자동 재시도·에이전트 재검사 기능은 이번 변경에서 구현하지 않았습니다.
+
+아래 테스트 수와 실행 결과는 OCR·장치·웹 구조를 전환한 각 단계의 검증 기록입니다.
 
 ## 공통 OCR 전환 검증 · 2026-10-06
 

@@ -265,7 +265,7 @@
       "verification": "미실행",
       "testId": "TC-FR-01-01",
       "acceptance": "허용 계정의 조회·제출은 성공하고 다른 조직 또는 역할 밖 요청은 거절된다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A5:H5"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A5:G5"
     },
     {
       "id": "FR-01-02",
@@ -279,7 +279,7 @@
       "verification": "미실행",
       "testId": "TC-FR-01-02",
       "acceptance": "필수값 누락을 안내하며 정상 등록 후 고유 ID로 목록·상세를 조회할 수 있다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A6:H6"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A6:G6"
     },
     {
       "id": "FR-01-03",
@@ -293,7 +293,7 @@
       "verification": "미실행",
       "testId": "TC-FR-01-03",
       "acceptance": "입력된 사용 계획이 소재·게시 기준 검토에 전달되고 변경 이력이 남는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A7:H7"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A7:G7"
     },
     {
       "id": "FR-01-04",
@@ -307,7 +307,7 @@
       "verification": "미실행",
       "testId": "TC-FR-01-04",
       "acceptance": "필터 결과가 저장 상태와 일치하며 구버전 보고서가 현재 결과로 표시되지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A8:H8"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A8:G8"
     },
     {
       "id": "FR-01-05",
@@ -321,7 +321,7 @@
       "verification": "미실행",
       "testId": "TC-FR-01-05",
       "acceptance": "자료를 종류별 조회할 수 있고 다른 발주 자료의 혼입을 서버가 거절한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A9:H9"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A9:G9"
     },
     {
       "id": "FR-02-01",
@@ -335,7 +335,7 @@
       "verification": "미실행",
       "testId": "TC-FR-02-01",
       "acceptance": "추출 구절이 원문의 페이지 또는 행과 연결되고 판독 불가 자료로 조건을 만들어내지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A10:H10"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A10:G10"
     },
     {
       "id": "FR-02-02",
@@ -349,7 +349,7 @@
       "verification": "미실행",
       "testId": "TC-FR-02-02",
       "acceptance": "사례의 정답 조건과 추출 결과를 대조할 수 있으며 각 조건에 원문·예외·자료 버전이 연결된다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A11:H11"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A11:G11"
     },
     {
       "id": "FR-02-03",
@@ -363,7 +363,7 @@
       "verification": "미실행",
       "testId": "TC-FR-02-03",
       "acceptance": "세 유형을 구분하고 미확정 조건으로 납품 미충족을 생성하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A12:H12"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A12:G12"
     },
     {
       "id": "FR-02-04",
@@ -377,7 +377,7 @@
       "verification": "미실행",
       "testId": "TC-FR-02-04",
       "acceptance": "조건·예외·확정자·확정 시각·revision을 저장하고 확정된 조건만 검수에 사용한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A13:H13"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A13:G13"
     },
     {
       "id": "FR-02-05",
@@ -391,7 +391,7 @@
       "verification": "미실행",
       "testId": "TC-FR-02-05",
       "acceptance": "변경 전후 내용·승인자·영향 항목을 조회하고 이전 기준 결과의 자동 승계를 차단한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A14:H14"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A14:G14"
     },
     {
       "id": "FR-03-01",
@@ -405,7 +405,7 @@
       "verification": "미실행",
       "testId": "TC-FR-03-01",
       "acceptance": "v1과 v2 원본·메타데이터가 각각 보존되고 최신 대상이 정확히 선택된다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A15:H15"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A15:G15"
     },
     {
       "id": "FR-03-02",
@@ -419,7 +419,7 @@
       "verification": "미실행",
       "testId": "TC-FR-03-02",
       "acceptance": "손상·확장자 위장·미지원·상한 초과를 구분해 거절하고 검사 충족으로 처리하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A16:H16"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A16:G16"
     },
     {
       "id": "FR-03-03",
@@ -433,7 +433,7 @@
       "verification": "미실행",
       "testId": "TC-FR-03-03",
       "acceptance": "PNG만 제출하고 SVG·연결 소재가 빠진 사례에서 정확한 누락 목록을 생성한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A17:H17"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A17:G17"
     },
     {
       "id": "FR-03-04",
@@ -447,7 +447,7 @@
       "verification": "미실행",
       "testId": "TC-FR-03-04",
       "acceptance": "연결 대상·제출 여부·변경 이력이 표시되고 미제출 평가자 원본을 제출 자료로 취급하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A18:H18"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A18:G18"
     },
     {
       "id": "FR-03-05",
@@ -461,7 +461,7 @@
       "verification": "미실행",
       "testId": "TC-FR-03-05",
       "acceptance": "지원 SVG의 판독 실패·외부 연결 누락을 표시하고 모든 형식의 편집 가능성을 보증하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A19:H19"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A19:G19"
     },
     {
       "id": "FR-04-01",
@@ -475,7 +475,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-01",
       "acceptance": "1080×1080 조건의 일치·불일치·측정 실패를 구분하고 측정값을 표시한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A20:H20"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A20:G20"
     },
     {
       "id": "FR-04-02",
@@ -489,7 +489,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-02",
       "acceptance": "명확한 문구·객체 오류에는 조건과 영역이 연결되고 불확실한 개수는 확인 필요로 남는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A21:H21"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A21:G21"
     },
     {
       "id": "FR-04-03",
@@ -503,7 +503,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-03",
       "acceptance": "원본·납품 영역·관찰을 함께 보여주며 정렬 불가나 근사 영역을 명시한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A22:H22"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A22:G22"
     },
     {
       "id": "FR-04-04",
@@ -517,7 +517,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-04",
       "acceptance": "허용된 AI 사용을 불합격 처리하지 않고 신고·승인 누락 및 불일치를 관련 조건에 연결한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A23:H23"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A23:G23"
     },
     {
       "id": "FR-04-05",
@@ -531,7 +531,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-05",
       "acceptance": "의심 영역과 근거·대안·미확인 사항을 기록하며 픽셀만으로 AI 출처·기여 비율을 확정하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A24:H24"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A24:G24"
     },
     {
       "id": "FR-04-06",
@@ -545,7 +545,7 @@
       "verification": "미실행",
       "testId": "TC-FR-04-06",
       "acceptance": "범위 일치·불일치·미확인을 구분하고 문서 제출만으로 전체 권리 관계를 확정하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A25:H25"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A25:G25"
     },
     {
       "id": "FR-05-01",
@@ -559,7 +559,7 @@
       "verification": "미실행",
       "testId": "TC-FR-05-01",
       "acceptance": "승인된 실제 요청·응답·검색 시각을 기록한다. 통제된 응답은 테스트 데이터로 표시하며 실검색 완료로 집계하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A26:H26"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A26:G26"
     },
     {
       "id": "FR-05-02",
@@ -573,7 +573,7 @@
       "verification": "미실행",
       "testId": "TC-FR-05-02",
       "acceptance": "실제 응답의 URL을 보존하고 미리보기 미허용·접근 불가이면 링크와 사유만 제공한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A27:H27"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A27:G27"
     },
     {
       "id": "FR-05-03",
@@ -587,7 +587,7 @@
       "verification": "미실행",
       "testId": "TC-FR-05-03",
       "acceptance": "동일 입력과 고정 설정의 재실행이 재현되고 LLM이 숫자를 만들거나 계산값을 바꾸지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A28:H28"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A28:G28"
     },
     {
       "id": "FR-05-04",
@@ -601,7 +601,7 @@
       "verification": "미실행",
       "testId": "TC-FR-05-04",
       "acceptance": "점수 정의·대상 영역·출처·증빙 상태를 표시하며 허가된 고유사 재사용을 자동 불합격 처리하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A29:H29"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A29:G29"
     },
     {
       "id": "FR-05-05",
@@ -615,7 +615,7 @@
       "verification": "미실행",
       "testId": "TC-FR-05-05",
       "acceptance": "각 상태의 시험에서 임의 점수·URL·안전 인증을 생성하지 않고 후속 확인을 안내한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A30:H30"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A30:G30"
     },
     {
       "id": "FR-06-01",
@@ -629,7 +629,7 @@
       "verification": "미실행",
       "testId": "TC-FR-06-01",
       "acceptance": "적용 항목의 근거를 표시하고 미등록·미확인 기준은 POLICY_NOT_VERIFIED로 남긴다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A31:H31"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A31:G31"
     },
     {
       "id": "FR-06-02",
@@ -643,7 +643,7 @@
       "verification": "미실행",
       "testId": "TC-FR-06-02",
       "acceptance": "사실·조건·근거·추가 질문을 연결하고 단순 계약 파일 누락에 불필요한 법률 판단을 붙이지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A32:H32"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A32:G32"
     },
     {
       "id": "FR-06-03",
@@ -657,7 +657,7 @@
       "verification": "미실행",
       "testId": "TC-FR-06-03",
       "acceptance": "지정 평가 세트에서 무근거 AI 확정·비율·침해·플랫폼 승인 및 조작된 점수·URL을 0건으로 목표 검증한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A33:H33"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A33:G33"
     },
     {
       "id": "FR-07-01",
@@ -671,7 +671,7 @@
       "verification": "미실행",
       "testId": "TC-FR-07-01",
       "acceptance": "근거 부족이 해당 없음·충족으로 바뀌지 않고 각 결과에 조건·파일·근거가 연결된다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A34:H34"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A34:G34"
     },
     {
       "id": "FR-07-02",
@@ -685,7 +685,7 @@
       "verification": "미실행",
       "testId": "TC-FR-07-02",
       "acceptance": "필수 검사·확인·수정이 남으면 사전검토 완료로 표시하지 않고 원문·영역·출처를 조회할 수 있다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A35:H35"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A35:G35"
     },
     {
       "id": "FR-07-03",
@@ -699,7 +699,7 @@
       "verification": "미실행",
       "testId": "TC-FR-07-03",
       "acceptance": "화면의 조건·근거·미검사 범위와 내려받은 문서가 일치하고 비공개 저장 URL·키가 노출되지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A36:H36"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A36:G36"
     },
     {
       "id": "FR-07-04",
@@ -713,7 +713,7 @@
       "verification": "미실행",
       "testId": "TC-FR-07-04",
       "acceptance": "요청 초안의 근거와 수정 대상이 추적되고 확인되지 않은 사실을 확정 위반으로 작성하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A37:H37"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A37:G37"
     },
     {
       "id": "FR-08-01",
@@ -727,7 +727,7 @@
       "verification": "미실행",
       "testId": "TC-FR-08-01",
       "acceptance": "확정자·시각·내용이 기록되고 허용된 제작자만 요청을 확인하며 중복 작업을 만들지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A38:H38"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A38:G38"
     },
     {
       "id": "FR-08-02",
@@ -741,7 +741,7 @@
       "verification": "미실행",
       "testId": "TC-FR-08-02",
       "acceptance": "원래 보완 작업·이전 입력·새 입력이 연결되고 제출 사실만으로 해결 처리하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A39:H39"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A39:G39"
     },
     {
       "id": "FR-08-03",
@@ -755,7 +755,7 @@
       "verification": "미실행",
       "testId": "TC-FR-08-03",
       "acceptance": "영향 목록과 재검수 근거를 저장하고 이전 QA·승인을 복사하지 않으며 새 이미지의 신규 문제도 검사한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A40:H40"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A40:G40"
     },
     {
       "id": "FR-08-04",
@@ -769,7 +769,7 @@
       "verification": "미실행",
       "testId": "TC-FR-08-04",
       "acceptance": "미해결 자료를 재제출해도 작업이 닫히지 않으며 해결과 알림 읽음·최종 승인이 분리된다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A41:H41"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A41:G41"
     },
     {
       "id": "FR-08-05",
@@ -783,7 +783,7 @@
       "verification": "미실행",
       "testId": "TC-FR-08-05",
       "acceptance": "v7 검토 중 v8 접수 후 v7 승인은 STALE_VERSION으로 거절하며 최신 대상 승인과 이력은 원자적으로 기록한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A42:H42"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A42:G42"
     },
     {
       "id": "SR-01-01",
@@ -797,7 +797,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-01",
       "acceptance": "역할별 실행 기록과 중간 근거 교환을 확인할 수 있으며 단일 응답의 역할명 나열로 대체하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A43:H43"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A43:G43"
     },
     {
       "id": "SR-01-02",
@@ -811,7 +811,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-02",
       "acceptance": "정상·검색 생략·부분 실패 경로의 노드 전이와 보고서 상태가 입력 대상과 일치한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A44:H44"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A44:G44"
     },
     {
       "id": "SR-01-03",
@@ -825,7 +825,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-03",
       "acceptance": "충돌·재확인 근거·횟수·미해결 질문이 남고 무한 반복이나 임의 합의가 발생하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A45:H45"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A45:G45"
     },
     {
       "id": "SR-01-04",
@@ -839,7 +839,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-04",
       "acceptance": "노드 오류·중단 후 재개에서도 작업이 중복 생성되지 않고 실패 검사가 완료로 표시되지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A46:H46"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A46:G46"
     },
     {
       "id": "SR-01-05",
@@ -853,7 +853,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-05",
       "acceptance": "누락 필드·다른 발주 참조·존재하지 않는 근거를 거절하고 오류를 담당 확인으로 연결한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A47:H47"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A47:G47"
     },
     {
       "id": "SR-01-06",
@@ -867,7 +867,7 @@
       "verification": "미실행",
       "testId": "TC-SR-01-06",
       "acceptance": "분류 결과·신뢰 정보·모델 버전·정정이 기록되고 모호·미지원 요청은 확인 필요로 분기한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A48:H48"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A48:G48"
     },
     {
       "id": "SR-02-01",
@@ -881,7 +881,7 @@
       "verification": "미실행",
       "testId": "TC-SR-02-01",
       "acceptance": "초기화·tools/list·tools/call 및 서버·에이전트 호출 로그를 재현하고 모의 JSON과 구분한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A49:H49"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A49:G49"
     },
     {
       "id": "SR-02-02",
@@ -895,7 +895,7 @@
       "verification": "미실행",
       "testId": "TC-SR-02-02",
       "acceptance": "권한 밖 호출·다른 발주 ID·불일치 revision이 거절되고 최종 승인은 사람 도메인 API에만 존재한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A50:H50"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A50:G50"
     },
     {
       "id": "SR-02-03",
@@ -909,7 +909,7 @@
       "verification": "미실행",
       "testId": "TC-SR-02-03",
       "acceptance": "보고서의 규격·점수·자료 결과에서 원래 도구 응답을 추적할 수 있다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A51:H51"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A51:G51"
     },
     {
       "id": "SR-03-01",
@@ -923,7 +923,7 @@
       "verification": "미실행",
       "testId": "TC-SR-03-01",
       "acceptance": "발주 필터로 다른 조직·발주 문서가 검색되지 않고 검증 안 된 정책·법령을 확정 근거로 쓰지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A52:H52"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A52:G52"
     },
     {
       "id": "SR-03-02",
@@ -937,7 +937,7 @@
       "verification": "미실행",
       "testId": "TC-SR-03-02",
       "acceptance": "인용을 원문에 대조할 수 있고 없는 구절·다른 버전 인용을 완료 근거로 사용하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A53:H53"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A53:G53"
     },
     {
       "id": "NFR-01-01",
@@ -951,7 +951,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-01",
       "acceptance": "승인 없음·철회·다른 해시·범위 초과·다른 제공자 요청을 차단하고 허용 요청만 송신한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A54:H54"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A54:G54"
     },
     {
       "id": "NFR-01-02",
@@ -965,7 +965,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-02",
       "acceptance": "지정 공격 문구가 무단 송신·승인 위조·기준 변경을 일으키지 않는지 검증한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A55:H55"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A55:G55"
     },
     {
       "id": "NFR-01-03",
@@ -979,7 +979,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-03",
       "acceptance": "금지 주소·과다 픽셀·디코딩 시간 초과를 차단하고 파일·계약·서버 키를 노출하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A56:H56"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A56:G56"
     },
     {
       "id": "NFR-01-04",
@@ -993,7 +993,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-04",
       "acceptance": "재전송·재시도에서 중복 파일 버전·작업·승인이 생성되지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A57:H57"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A57:G57"
     },
     {
       "id": "NFR-01-05",
@@ -1007,7 +1007,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-05",
       "acceptance": "한 실행을 재구성할 수 있고 API 키·불필요한 계약 원문·미공개 이미지가 로그에 남지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A58:H58"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A58:G58"
     },
     {
       "id": "NFR-01-06",
@@ -1021,7 +1021,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-06",
       "acceptance": "환경·횟수·중앙값·p95를 기록하고 작업 지연·외부 오류가 멈춘 화면이나 완료 표시로 숨겨지지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A59:H59"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A59:G59"
     },
     {
       "id": "NFR-01-07",
@@ -1035,7 +1035,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-07",
       "acceptance": "설정한 호출·시간 한도 도달 시 중단 또는 담당 확인으로 전환하고 비용과 미검사 범위를 남긴다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A60:H60"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A60:G60"
     },
     {
       "id": "NFR-01-08",
@@ -1049,7 +1049,7 @@
       "verification": "미실행",
       "testId": "TC-NFR-01-08",
       "acceptance": "정책·기간·권한을 문서화하고 허용된 시험 데이터 삭제·접근 차단을 검증하며 외부 삭제를 근거 없이 완료 표시하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A61:H61"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A61:G61"
     },
     {
       "id": "DR-01-01",
@@ -1063,7 +1063,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-01",
       "acceptance": "ERD·데이터 사전·파일 저장 설계와 키·버전·소속·관계 제약 시험 결과를 제출한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A62:H62"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A62:G62"
     },
     {
       "id": "DR-01-02",
@@ -1077,7 +1077,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-02",
       "acceptance": "입력 목록·제작 과정·이용 조건·확보량을 기록하고 정상·미충족·모호·증빙 부족을 포함한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A63:H63"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A63:G63"
     },
     {
       "id": "DR-01-03",
@@ -1091,7 +1091,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-03",
       "acceptance": "불일치 조정·그룹 분할·시스템 입력 목록을 남기고 첫 한 건을 독립 성능 평가로 보고하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A64:H64"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A64:G64"
     },
     {
       "id": "DR-01-04",
@@ -1105,7 +1105,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-04",
       "acceptance": "전처리 명세·실행 코드·판독 실패 사례와 동일 입력 재실행 기록을 제출한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A65:H65"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A65:G65"
     },
     {
       "id": "DR-01-05",
@@ -1119,7 +1119,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-05",
       "acceptance": "요청 문장 라벨·독립 분할·학습 설정·모델 버전·정밀도·재현율·F1·혼동행렬·오류 분석을 제출한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A66:H66"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A66:G66"
     },
     {
       "id": "DR-01-06",
@@ -1133,7 +1133,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-06",
       "acceptance": "방법별 점수 분포·오탐·재현·시간·비용을 보고하고 임계값은 검증 자료로 결정한 뒤 독립 평가에서 고정한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A67:H67"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A67:G67"
     },
     {
       "id": "DR-01-07",
@@ -1147,7 +1147,7 @@
       "verification": "미실행",
       "testId": "TC-DR-01-07",
       "acceptance": "학습 모델 파일·전처리·추론 코드·의존성·결과서로 재로딩을 검증하고 미확인 교육 요건을 완료로 처리하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A68:H68"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A68:G68"
     },
     {
       "id": "TR-01-01",
@@ -1161,7 +1161,7 @@
       "verification": "미실행",
       "testId": "TC-TR-01-01",
       "acceptance": "조건 추출·인용 정확성·Recall@k·유사성·오류·시간·비용과 역할 제거 결과를 보고하며 작은 합성 세트의 한계를 명시한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A69:H69"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A69:G69"
     },
     {
       "id": "TR-01-02",
@@ -1175,7 +1175,7 @@
       "verification": "미실행",
       "testId": "TC-TR-01-02",
       "acceptance": "배포 환경에서 등록부터 보완·재검수·최신 사람 승인까지 정상·예외 시나리오를 재현한다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A70:H70"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A70:G70"
     },
     {
       "id": "TR-01-03",
@@ -1189,7 +1189,7 @@
       "verification": "미실행",
       "testId": "TC-TR-01-03",
       "acceptance": "제출 목록의 담당·경로·버전·검증 상태를 기록하고 미작성·미실행 항목을 완료로 표시하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A71:H71"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A71:G71"
     },
     {
       "id": "ER-01-01",
@@ -1203,7 +1203,7 @@
       "verification": "미실행",
       "testId": "TC-ER-01-01",
       "acceptance": "지정 시점·미검사 구간을 표시하며 표본 확인을 영상 전체 충족·안전으로 확정하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A72:H72"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A72:G72"
     },
     {
       "id": "ER-01-02",
@@ -1217,12 +1217,12 @@
       "verification": "미실행",
       "testId": "TC-ER-01-02",
       "acceptance": "선택 기능의 범위·실패·이용 조건·새 완료 기준을 별도 승인하고 초기 구현 완료로 집계하지 않는다.",
-      "sourceUrl": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit#gid=1753907606&range=A73:H73"
+      "sourceUrl": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit#gid=1153128012&range=A73:G73"
     }
   ],
   "sources": {
     "functionalSpec": "/Users/choejiheum/.codex/visualizations/2026/10/02/01a0fa7c-01f2-7be1-ba0d-206084ec9a57/functional-specification.html",
-    "sheet": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit",
+    "sheet": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit",
     "sampleDirectory": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/strawberry-latte-qa-v1",
     "sourceSnapshot": "source-functional-spec.json",
     "criteriaSnapshot": "sample-criteria.json"
