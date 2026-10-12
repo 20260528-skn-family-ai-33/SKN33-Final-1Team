@@ -1,0 +1,65 @@
+{
+  "id": "tour-141731",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_충북_음성군_음성품바축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/68/4062968_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "42e2a189f4671831a2cab99d1b8e16e0b2e4635f1acb99b06c26c6722620f8ce"
+  },
+  "event": {
+    "title": "음성품바축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-10",
+    "end_date": "2026-06-14",
+    "venue": "설성공원 및 꽃동네 일원",
+    "address": "충청북도 음성군 음성읍 설성공원길 28",
+    "region": "충청북도",
+    "district": "음성군",
+    "price": null,
+    "contact": "043-871-3415",
+    "homepage": "https://pumba.kr/",
+    "venue_url": null,
+    "organizer": "음성품바축제기획실무위원회",
+    "host": "음성군 축제추진위원회+음성예총",
+    "sponsor": "문화체육관광부+충청북도청+충청북도 음성군청+꽃동네",
+    "program": "전국 품바 길놀이 퍼레이드+품바 하우스 짓기 경연대회+전국 품바 래퍼 경연대회",
+    "gps": {
+      "lat": 36.93278536,
+      "lng": 127.6910228
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "음성품바축제",
+      "start_date": "2026-06-10",
+      "end_date": "2026-06-14",
+      "venues": [
+        "설성공원 및 꽃동네 일원"
+      ],
+      "organizer": "음성품바축제기획실무위원회",
+      "contact": "043-871-3415",
+      "url": "https://pumba.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "141731",
+    "tour_title": "음성품바축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

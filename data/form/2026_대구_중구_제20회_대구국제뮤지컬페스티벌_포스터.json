@@ -1,0 +1,65 @@
+{
+  "id": "tour-141963",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대구_중구_제20회_대구국제뮤지컬페스티벌_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/51/4075151_image2_1.jpg",
+    "format": "jpeg",
+    "width": 445,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "7242e2ca78f800497b2a864e73725e35dc3a2372fba982b34f5d7a06a2b8f4d4"
+  },
+  "event": {
+    "title": "제20회 대구국제뮤지컬페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-19",
+    "end_date": "2026-07-06",
+    "venue": "대구시 일원",
+    "address": "대구광역시 중구 공평로 88",
+    "region": "대구광역시",
+    "district": "중구",
+    "price": null,
+    "contact": "053-120-0000",
+    "homepage": "https://www.daegu.go.kr",
+    "venue_url": null,
+    "organizer": "대구광역시청",
+    "host": "대구광역시청",
+    "sponsor": "대구광역시청",
+    "program": "문화·예술",
+    "gps": {
+      "lat": 35.87155307,
+      "lng": 128.6012201
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제20회 대구국제뮤지컬페스티벌",
+      "start_date": "2026-06-19",
+      "end_date": "2026-07-06",
+      "venues": [
+        "대구시 일원"
+      ],
+      "organizer": "대구광역시청",
+      "contact": "053-120-0000",
+      "url": "https://www.daegu.go.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-07-30",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "141963",
+    "tour_title": "제20회 대구국제뮤지컬페스티벌",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

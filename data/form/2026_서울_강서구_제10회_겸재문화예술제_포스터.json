@@ -1,0 +1,65 @@
+{
+  "id": "tour-2490376",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_서울_강서구_제10회_겸재문화예술제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/36/4061536_image2_1.jpg",
+    "format": "jpeg",
+    "width": 440,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "391e1376514b20dd0647cbe63919a6acc7614f3567d1e661b12ff14c9d716e00"
+  },
+  "event": {
+    "title": "제10회 겸재문화예술제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-09",
+    "end_date": "2026-05-09",
+    "venue": "겸재정선미술관+궁산근린공원",
+    "address": "서울특별시 강서구 양천로47길 36",
+    "region": "서울특별시",
+    "district": "강서구",
+    "price": null,
+    "contact": "02-2659-2206",
+    "homepage": "https://culture.gangseo.seoul.kr/",
+    "venue_url": null,
+    "organizer": "강서문화원(겸재정선미술관)",
+    "host": "서울특별시 강서구",
+    "sponsor": null,
+    "program": "전국사생대회+야외전시+체험마당 등",
+    "gps": {
+      "lat": 37.572223,
+      "lng": 126.8387234
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제10회 겸재문화예술제",
+      "start_date": "2026-05-09",
+      "end_date": "2026-05-09",
+      "venues": [
+        "겸재정선미술관+궁산근린공원"
+      ],
+      "organizer": "강서문화원(겸재정선미술관)",
+      "contact": "02-2659-2206",
+      "url": "https://culture.gangseo.seoul.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-27",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2490376",
+    "tour_title": "겸재문화예술제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

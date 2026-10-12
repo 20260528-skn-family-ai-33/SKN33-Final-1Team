@@ -1,0 +1,65 @@
+{
+  "id": "tour-981658",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대전_중구_대전효문화뿌리축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/71/4108271_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "8186d3bd6543e92329c35f5e8f3c1180b87ec6028cb8b14efd4c86a48bf48038"
+  },
+  "event": {
+    "title": "대전효문화뿌리축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "venue": "뿌리공원 및 원도심 일원",
+    "address": "대전광역시 중구 뿌리공원로 47",
+    "region": "대전광역시",
+    "district": "중구",
+    "price": null,
+    "contact": "042-606-6292",
+    "homepage": "https://www.djjunggu.go.kr/hyo-ppuri/index.do",
+    "venue_url": null,
+    "organizer": "대전효문화뿌리축제추진위원회",
+    "host": "대전광역시 중구청",
+    "sponsor": "대전광역시+문화체육관광부",
+    "program": "개·폐막식+문중(문화)·체험(참여) 주제공연 프로그램+각종 공연 및 체험프로그램 먹거리 등",
+    "gps": {
+      "lat": 36.28533721,
+      "lng": 127.3844931
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "대전효문화뿌리축제",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-04",
+      "venues": [
+        "뿌리공원 및 원도심 일원"
+      ],
+      "organizer": "대전효문화뿌리축제추진위원회",
+      "contact": "042-606-6292",
+      "url": "https://www.djjunggu.go.kr/hyo-ppuri/index.do"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-22",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "981658",
+    "tour_title": "대전효문화뿌리축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

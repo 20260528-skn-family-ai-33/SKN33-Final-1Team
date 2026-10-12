@@ -1,0 +1,65 @@
+{
+  "id": "tour-2774275",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전남광주통합_목포시_2026_목포해상W쇼_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/45/4055545_image2_1.jpg",
+    "format": "jpeg",
+    "width": 455,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "e013b3eb9c7d67cc8552148884b3c248d722fea6f617764bf286804fd8cf51b4"
+  },
+  "event": {
+    "title": "2026 목포해상W쇼",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-09",
+    "end_date": "2026-09-19",
+    "venue": "평화광장 해상무대 일원",
+    "address": "전남광주통합특별시 목포시 미항로 115",
+    "region": "전남광주통합특별시",
+    "district": "목포시",
+    "price": null,
+    "contact": "061-270-8431",
+    "homepage": "https://mokpowshow.co.kr/",
+    "venue_url": null,
+    "organizer": "전남광주통합특별시 목포시",
+    "host": "목포시축제추진위원회",
+    "sponsor": "문화체육관광부+전남광주통합특별시청+한국관광공사",
+    "program": "바다분수+해상무대공연+불꽃놀이 등",
+    "gps": {
+      "lat": 34.7960971446,
+      "lng": 126.4330065479
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "2026 목포해상W쇼",
+      "start_date": "2026-05-09",
+      "end_date": "2026-09-19",
+      "venues": [
+        "평화광장 해상무대 일원"
+      ],
+      "organizer": "전남광주통합특별시 목포시",
+      "contact": "061-270-8431",
+      "url": "https://mokpowshow.co.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-05",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2774275",
+    "tour_title": "2026 목포해상W쇼",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,65 @@
+{
+  "id": "tour-1801011",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대구_달서구_대구치맥페스티벌_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/43/4072043_image2_1.jpg",
+    "format": "jpeg",
+    "width": 461,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "4bb14ef6cfaca94c0645816e6d46b74c991adf03733c6e9b86f687a9af341bb0"
+  },
+  "event": {
+    "title": "대구치맥페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-01",
+    "end_date": "2026-07-05",
+    "venue": "두류공원 일원",
+    "address": "대구광역시 달서구 공원순환로 36 (두류동)",
+    "region": "대구광역시",
+    "district": "달서구",
+    "price": null,
+    "contact": "053-248-9998",
+    "homepage": "http://www.chimacfestival.com/",
+    "venue_url": null,
+    "organizer": "대구치맥페스티벌조직위원회",
+    "host": "한국치맥산업협회",
+    "sponsor": null,
+    "program": "대프리카 워터피아+치맥떼창클럽+K-치맥스트리트+치상낙원EGG섬+치맥K-POP 콘서트+치킨 신메뉴 경연대회+수제맥주 경연대회 등",
+    "gps": {
+      "lat": 35.85089685,
+      "lng": 128.558767
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "대구치맥페스티벌",
+      "start_date": "2026-07-01",
+      "end_date": "2026-07-05",
+      "venues": [
+        "두류공원 일원"
+      ],
+      "organizer": "대구치맥페스티벌조직위원회",
+      "contact": "053-248-9998",
+      "url": "http://www.chimacfestival.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1801011",
+    "tour_title": "대구치맥페스티벌",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

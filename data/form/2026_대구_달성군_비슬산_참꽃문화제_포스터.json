@@ -1,0 +1,65 @@
+{
+  "id": "tour-1803449",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대구_달성군_비슬산_참꽃문화제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/91/4056791_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "3deadace412a74241d11a358d6011d7f99548197f6d34e281e40f9276195f714"
+  },
+  "event": {
+    "title": "비슬산 참꽃문화제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-04-18",
+    "end_date": "2026-04-19",
+    "venue": "비슬산 유스호스텔 주차장",
+    "address": "대구광역시 달성군 유가읍 일연선사길 99",
+    "region": "대구광역시",
+    "district": "달성군",
+    "price": null,
+    "contact": "053-668-2172",
+    "homepage": "https://www.dalseong.daegu.kr/culture/index.do",
+    "venue_url": null,
+    "organizer": "달성문화재",
+    "host": "대구광역시 달성군",
+    "sponsor": "대구광역시",
+    "program": "무대공연+체험 및 판매부스+먹거리존",
+    "gps": {
+      "lat": 35.690012,
+      "lng": 128.512902
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "비슬산 참꽃문화제",
+      "start_date": "2026-04-18",
+      "end_date": "2026-04-19",
+      "venues": [
+        "비슬산 유스호스텔 주차장"
+      ],
+      "organizer": "달성문화재",
+      "contact": "053-668-2172",
+      "url": "https://www.dalseong.daegu.kr/culture/index.do"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-10",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1803449",
+    "tour_title": "비슬산 참꽃문화제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,64 @@
+{
+  "id": "tour-635451",
+  "collected_at": "2026-10-12T12:03:34+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경북_문경시_문경사과축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/17/4116817_image2_1.jpeg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "0d5f7d267b60d1a355a7e10cdec541f0a75f512c523ebc20eeceecad0436d305"
+  },
+  "event": {
+    "title": "문경사과축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-17",
+    "end_date": "2026-11-01",
+    "venue": "문경새재 야외공연장 일원",
+    "address": "경상북도 문경시 문경읍 새재로 932",
+    "region": "경상북도",
+    "district": "문경시",
+    "price": null,
+    "contact": "054-571-7677",
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "문경관광공사",
+    "host": "문경사과축제추진위원회",
+    "sponsor": "경상북도 문경시",
+    "program": "문경사과 홍보+문경사과 판매+문경사과 체험+공연행사",
+    "gps": {
+      "lat": 36.76160207,
+      "lng": 128.0769905
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "문경사과축제",
+      "start_date": "2026-10-17",
+      "end_date": "2026-11-01",
+      "venues": [
+        "문경새재 야외공연장 일원"
+      ],
+      "organizer": "문경관광공사",
+      "contact": "054-571-7677"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-24",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "635451",
+    "tour_title": "문경사과축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

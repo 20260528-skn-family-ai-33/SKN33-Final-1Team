@@ -1,0 +1,65 @@
+{
+  "id": "tour-589386",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경기_부천시_부천국제만화축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/40/4102340_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "8013c7b8dc0c66fae5e215c196f499c8d44a6ae7a16b0677bf9ed560a06944eb"
+  },
+  "event": {
+    "title": "부천국제만화축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "venue": "한국만화박물관 및 한국만화영상진흥원 일원",
+    "address": "경기도 부천시 원미구 길주로 1 (상동)",
+    "region": "경기도",
+    "district": "부천시",
+    "price": null,
+    "contact": "032-310-3071",
+    "homepage": "https://www.bicof.com",
+    "venue_url": null,
+    "organizer": "한국만화영상진흥원",
+    "host": "한국만화영상진흥원",
+    "sponsor": "경기도+경기도 부천시+경기콘텐츠진흥원",
+    "program": "만화 기획·특별전시+경기국제코스프레페스티벌+BICOF 플레이그라운드",
+    "gps": {
+      "lat": 37.51294184,
+      "lng": 126.7487467
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "부천국제만화축제",
+      "start_date": "2026-09-18",
+      "end_date": "2026-09-20",
+      "venues": [
+        "한국만화박물관 및 한국만화영상진흥원 일원"
+      ],
+      "organizer": "한국만화영상진흥원",
+      "contact": "032-310-3071",
+      "url": "https://www.bicof.com"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "589386",
+    "tour_title": "부천국제만화축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

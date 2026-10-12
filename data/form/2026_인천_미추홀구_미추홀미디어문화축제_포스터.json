@@ -1,0 +1,65 @@
+{
+  "id": "tour-3535742",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_인천_미추홀구_미추홀미디어문화축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/90/4107990_image2_1.png",
+    "format": "png",
+    "width": 445,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "67181f8ad76334f19ea9b464f9b497c6b15e7532d67803a43e35e350605ceff2"
+  },
+  "event": {
+    "title": "미추홀미디어문화축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-12",
+    "end_date": "2026-09-13",
+    "venue": "인천대학교 제물포캠퍼스 평생교육원 옆 광장",
+    "address": "인천광역시 미추홀구 도화동 995",
+    "region": "인천광역시",
+    "district": "미추홀구",
+    "price": null,
+    "contact": "032-880-7977",
+    "homepage": "https://www.michuhol.go.kr/culture/main.do",
+    "venue_url": null,
+    "organizer": "인천광역시 미추홀구",
+    "host": "인천광역시 미추홀구",
+    "sponsor": null,
+    "program": "미디어와 지역 문화가 함께하는 종합문화축제",
+    "gps": {
+      "lat": 37.4712583786,
+      "lng": 126.6571494868
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "미추홀미디어문화축제",
+      "start_date": "2026-09-12",
+      "end_date": "2026-09-13",
+      "venues": [
+        "인천대학교 제물포캠퍼스 평생교육원 옆 광장"
+      ],
+      "organizer": "인천광역시 미추홀구",
+      "contact": "032-880-7977",
+      "url": "https://www.michuhol.go.kr/culture/main.do"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-07",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "3535742",
+    "tour_title": "미추홀미디어문화축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,65 @@
+{
+  "id": "tour-574014",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전남광주통합_목포시_목포항구축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/91/4111091_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "80606af3ee69e53a8a3e4902e8e9a803ee75c439edb0fcbdd3340484f9c09443"
+  },
+  "event": {
+    "title": "목포항구축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-16",
+    "end_date": "2026-10-18",
+    "venue": "목포항+삼학도 일원",
+    "address": "전남광주통합특별시 목포시 삼학로92번길 6 (산정동)",
+    "region": "전남광주통합특별시",
+    "district": "목포시",
+    "price": null,
+    "contact": "061-270-8441",
+    "homepage": "https://www.mokpo.go.kr/tour/festival/harbor",
+    "venue_url": null,
+    "organizer": "목포시축제추진위원회",
+    "host": "전남광주통합특별시 목포시",
+    "sponsor": null,
+    "program": "파시 해상 퍼레이드+파시장터+파시 경매",
+    "gps": {
+      "lat": 34.7865334,
+      "lng": 126.3936724
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "목포항구축제",
+      "start_date": "2026-10-16",
+      "end_date": "2026-10-18",
+      "venues": [
+        "목포항+삼학도 일원"
+      ],
+      "organizer": "목포시축제추진위원회",
+      "contact": "061-270-8441",
+      "url": "https://www.mokpo.go.kr/tour/festival/harbor"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "574014",
+    "tour_title": "목포항구축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}
