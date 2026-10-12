@@ -1,0 +1,526 @@
+{
+  "schema_version": "poster.reference.v1",
+  "document_id": "gimcheon_gimbap_2026",
+  "source": {
+    "path": "data/img/2026_김천_김밥축제.jpg",
+    "filename_original": "2026_김천_김밥축제.jpg",
+    "filename_display_nfc": "2026_김천_김밥축제.jpg",
+    "sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+    "width": 600,
+    "height": 848,
+    "path_base": "project_root"
+  },
+  "coordinate_system": {
+    "origin": "top_left",
+    "units": "original_image_pixels",
+    "bbox_format": "xyxy",
+    "right_bottom": "exclusive"
+  },
+  "provenance": {
+    "method": "assistant_visual_transcription",
+    "independent_agent_review": true,
+    "human_verified": false,
+    "external_event_verified": false
+  },
+  "review_status": "needs_human_review",
+  "annotation_scope": "core_event_fields_plus_selected_context_not_exhaustive_OCR",
+  "notes": [
+    "Not human ground truth; do not use for training or benchmark claims before approval.",
+    "Unresolved small English and mascot text intentionally remain null.",
+    "Logo/illustration text must not become organizer or venue evidence."
+  ],
+  "regions": [
+    {
+      "id": "r01",
+      "role": "brand",
+      "text_raw": "김천시",
+      "bbox_xyxy": [
+        70,
+        22,
+        130,
+        42
+      ],
+      "bbox_normalized_xyxy": [
+        0.116667,
+        0.025943,
+        0.216667,
+        0.049528
+      ],
+      "polygon": [
+        [
+          70,
+          22
+        ],
+        [
+          130,
+          22
+        ],
+        [
+          130,
+          42
+        ],
+        [
+          70,
+          42
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r01.png"
+    },
+    {
+      "id": "r02",
+      "role": "brand",
+      "text_raw": "GIMCHEON CITY",
+      "bbox_xyxy": [
+        70,
+        40,
+        130,
+        52
+      ],
+      "bbox_normalized_xyxy": [
+        0.116667,
+        0.04717,
+        0.216667,
+        0.061321
+      ],
+      "polygon": [
+        [
+          70,
+          40
+        ],
+        [
+          130,
+          40
+        ],
+        [
+          130,
+          52
+        ],
+        [
+          70,
+          52
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r02.png"
+    },
+    {
+      "id": "r03",
+      "role": "event_year",
+      "text_raw": "2026",
+      "bbox_xyxy": [
+        114,
+        65,
+        318,
+        126
+      ],
+      "bbox_normalized_xyxy": [
+        0.19,
+        0.076651,
+        0.53,
+        0.148585
+      ],
+      "polygon": [
+        [
+          114,
+          65
+        ],
+        [
+          318,
+          65
+        ],
+        [
+          318,
+          126
+        ],
+        [
+          114,
+          126
+        ]
+      ],
+      "core_field_evidence": true,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r03.png"
+    },
+    {
+      "id": "r04",
+      "role": "slogan",
+      "text_raw": "김밥특별시",
+      "bbox_xyxy": [
+        366,
+        76,
+        480,
+        104
+      ],
+      "bbox_normalized_xyxy": [
+        0.61,
+        0.089623,
+        0.8,
+        0.122642
+      ],
+      "polygon": [
+        [
+          366,
+          76
+        ],
+        [
+          480,
+          76
+        ],
+        [
+          480,
+          104
+        ],
+        [
+          366,
+          104
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r04.png"
+    },
+    {
+      "id": "r05",
+      "role": "unresolved_small_text",
+      "text_raw": null,
+      "bbox_xyxy": [
+        351,
+        103,
+        485,
+        117
+      ],
+      "bbox_normalized_xyxy": [
+        0.585,
+        0.121462,
+        0.808333,
+        0.137972
+      ],
+      "polygon": [
+        [
+          351,
+          103
+        ],
+        [
+          485,
+          103
+        ],
+        [
+          485,
+          117
+        ],
+        [
+          351,
+          117
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "unresolved_needs_human_review",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r05.png"
+    },
+    {
+      "id": "r06",
+      "role": "event_name",
+      "text_raw": "김천김밥축제",
+      "bbox_xyxy": [
+        106,
+        119,
+        496,
+        211
+      ],
+      "bbox_normalized_xyxy": [
+        0.176667,
+        0.14033,
+        0.826667,
+        0.248821
+      ],
+      "polygon": [
+        [
+          106,
+          119
+        ],
+        [
+          496,
+          119
+        ],
+        [
+          496,
+          211
+        ],
+        [
+          106,
+          211
+        ]
+      ],
+      "core_field_evidence": true,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region_including_outline",
+      "text_policy_note": null,
+      "crop": "crops/r06.png"
+    },
+    {
+      "id": "r07",
+      "role": "event_date_range",
+      "text_raw": "2026. 10. 23 금 ~ 10. 25 일",
+      "bbox_xyxy": [
+        134,
+        225,
+        475,
+        261
+      ],
+      "bbox_normalized_xyxy": [
+        0.223333,
+        0.26533,
+        0.791667,
+        0.307783
+      ],
+      "polygon": [
+        [
+          134,
+          225
+        ],
+        [
+          475,
+          225
+        ],
+        [
+          475,
+          261
+        ],
+        [
+          134,
+          261
+        ]
+      ],
+      "core_field_evidence": true,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r07.png"
+    },
+    {
+      "id": "r08",
+      "role": "event_location",
+      "text_raw": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+      "bbox_xyxy": [
+        102,
+        278,
+        501,
+        301
+      ],
+      "bbox_normalized_xyxy": [
+        0.17,
+        0.32783,
+        0.835,
+        0.354953
+      ],
+      "polygon": [
+        [
+          102,
+          278
+        ],
+        [
+          501,
+          278
+        ],
+        [
+          501,
+          301
+        ],
+        [
+          102,
+          301
+        ]
+      ],
+      "core_field_evidence": true,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r08.png"
+    },
+    {
+      "id": "r09",
+      "role": "illustration_text",
+      "text_raw": "김밥특별시",
+      "bbox_xyxy": [
+        271,
+        429,
+        356,
+        452
+      ],
+      "bbox_normalized_xyxy": [
+        0.451667,
+        0.505896,
+        0.593333,
+        0.533019
+      ],
+      "polygon": [
+        [
+          271,
+          429
+        ],
+        [
+          356,
+          429
+        ],
+        [
+          356,
+          452
+        ],
+        [
+          271,
+          452
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r09.png"
+    },
+    {
+      "id": "r10",
+      "role": "illustration_text",
+      "text_raw": "방문을 환영합니다!",
+      "bbox_xyxy": [
+        259,
+        449,
+        365,
+        469
+      ],
+      "bbox_normalized_xyxy": [
+        0.431667,
+        0.529481,
+        0.608333,
+        0.553066
+      ],
+      "polygon": [
+        [
+          259,
+          449
+        ],
+        [
+          365,
+          449
+        ],
+        [
+          365,
+          469
+        ],
+        [
+          259,
+          469
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r10.png"
+    },
+    {
+      "id": "r11",
+      "role": "illustration_text",
+      "text_raw": "I ♥ GC",
+      "bbox_xyxy": [
+        140,
+        574,
+        217,
+        607
+      ],
+      "bbox_normalized_xyxy": [
+        0.233333,
+        0.676887,
+        0.361667,
+        0.715802
+      ],
+      "polygon": [
+        [
+          140,
+          574
+        ],
+        [
+          217,
+          574
+        ],
+        [
+          217,
+          607
+        ],
+        [
+          140,
+          607
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "model_assisted_draft",
+      "bbox_status": "approximate_region",
+      "text_policy_note": "heart pictogram represented by ♥",
+      "crop": "crops/r11.png"
+    },
+    {
+      "id": "r12",
+      "role": "unresolved_small_text",
+      "text_raw": null,
+      "bbox_xyxy": [
+        416,
+        562,
+        451,
+        580
+      ],
+      "bbox_normalized_xyxy": [
+        0.693333,
+        0.662736,
+        0.751667,
+        0.683962
+      ],
+      "polygon": [
+        [
+          416,
+          562
+        ],
+        [
+          451,
+          562
+        ],
+        [
+          451,
+          580
+        ],
+        [
+          416,
+          580
+        ]
+      ],
+      "core_field_evidence": false,
+      "use_for_training": false,
+      "transcription_status": "unresolved_needs_human_review",
+      "bbox_status": "approximate_region",
+      "text_policy_note": null,
+      "crop": "crops/r12.png"
+    }
+  ]
+}

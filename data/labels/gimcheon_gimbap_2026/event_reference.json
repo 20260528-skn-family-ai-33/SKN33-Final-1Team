@@ -1,0 +1,148 @@
+{
+  "schema_version": "poster.event.v1",
+  "document_id": "gimcheon_gimbap_2026",
+  "source_sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+  "method": "assistant_visual_reference_normalization",
+  "review_status": "needs_human_review",
+  "human_verified": false,
+  "fields": {
+    "event_name": {
+      "value": "김천김밥축제",
+      "source_region_ids": [
+        "r06"
+      ],
+      "normalization_note": null,
+      "status": "model_assisted_draft"
+    },
+    "display_title": {
+      "value": "2026 김천김밥축제",
+      "source_region_ids": [
+        "r03",
+        "r06"
+      ],
+      "normalization_note": "Compose visible year and event name.",
+      "status": "model_assisted_draft"
+    },
+    "start_date": {
+      "value": "2026-10-23",
+      "source_region_ids": [
+        "r07"
+      ],
+      "normalization_note": "Normalize dotted date to ISO 8601.",
+      "status": "model_assisted_draft"
+    },
+    "end_date": {
+      "value": "2026-10-25",
+      "source_region_ids": [
+        "r07"
+      ],
+      "normalization_note": "Inherit 2026 from the same printed date range.",
+      "status": "model_assisted_draft"
+    },
+    "start_weekday_raw": {
+      "value": "금",
+      "source_region_ids": [
+        "r07"
+      ],
+      "normalization_note": null,
+      "status": "model_assisted_draft"
+    },
+    "end_weekday_raw": {
+      "value": "일",
+      "source_region_ids": [
+        "r07"
+      ],
+      "normalization_note": null,
+      "status": "model_assisted_draft"
+    },
+    "location_raw": {
+      "value": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+      "source_region_ids": [
+        "r08"
+      ],
+      "normalization_note": null,
+      "status": "model_assisted_draft"
+    },
+    "city_raw": {
+      "value": "김천시",
+      "source_region_ids": [
+        "r08"
+      ],
+      "normalization_note": "Use location line, not the top-left logo.",
+      "status": "model_assisted_draft"
+    },
+    "venues": {
+      "value": [
+        "직지문화공원",
+        "사명대사공원",
+        "친환경생태공원"
+      ],
+      "source_region_ids": [
+        "r08"
+      ],
+      "normalization_note": "Split comma-separated venue list, preserving location scope separately.",
+      "status": "model_assisted_draft"
+    },
+    "location_scope": {
+      "value": "일원",
+      "source_region_ids": [
+        "r08"
+      ],
+      "normalization_note": null,
+      "status": "model_assisted_draft"
+    },
+    "organizer": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "opening_hours": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "admission_fee": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "contact": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "website": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "street_address": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "latitude": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    },
+    "longitude": {
+      "value": null,
+      "source_region_ids": [],
+      "normalization_note": null,
+      "status": "not_visible_in_poster"
+    }
+  },
+  "checks": {
+    "start_before_end": true,
+    "printed_start_weekday_matches_calendar": true,
+    "printed_end_weekday_matches_calendar": true
+  }
+}

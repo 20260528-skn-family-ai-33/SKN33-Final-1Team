@@ -1,0 +1,369 @@
+"""Local review API: upload -> frozen criteria -> real OCR -> evidence.
+
+Run with ``uvicorn backend.app.api:app --host 127.0.0.1 --port 8000``. Uploaded bytes,
+normalised images, immutable criteria and job results stay under .runtime.
+The configured OCR runtime alone controls any explicitly enabled remote call.
+"""
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+import hashlib
+import io
+import json
+import math
+import os
+from pathlib import Path
+import threading
+from typing import Callable, Literal
+from uuid import UUID, uuid4
+import warnings
+
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
+from PIL import Image, ImageOps, UnidentifiedImageError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+
+from .review_rules import review_criteria
+from .sample import sample_image_path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+# The OCR runtime accepts 40 MP. A fixed 2x scale multiplies pixels by four.
+MAX_IMAGE_PIXELS = 10_000_000
+MAX_IMAGE_SIDE = 8192
+ALLOWED_FORMATS = {"PNG", "JPEG", "WEBP"}
+CRITERIA_MAX_JSON = 250_000
+
+
+class Criterion(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    id: str = Field(min_length=1, max_length=100)
+    text: str = Field(min_length=1, max_length=500)
+    type: Literal["information", "visual"]
+    source: str = Field(default="user", min_length=1, max_length=500)
+
+
+class CriteriaSnapshot(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    criteria: list[Criterion] = Field(min_length=1, max_length=100)
+    criteria_version: int = Field(ge=1, le=1_000_000)
+    project_name: str = Field(min_length=1, max_length=120)
+
+    @field_validator("criteria")
+    @classmethod
+    def unique_ids(cls, values: list[Criterion]) -> list[Criterion]:
+        if len({item.id for item in values}) != len(values):
+            raise ValueError("criteria IDs must be unique")
+        return values
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _write_json(path: Path, value: dict) -> None:
+    temp = path.with_suffix(f".{uuid4().hex}.tmp")
+    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+    temp.replace(path)
+
+
+def _read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
+    """Validate decoded raster contents, ignoring an untrusted file extension."""
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(io.BytesIO(data)) as decoded:
+                actual_format = decoded.format
+                if actual_format not in ALLOWED_FORMATS:
+                    raise HTTPException(415, "JPEG, PNG, WEBP 래스터 이미지만 지원합니다. PDF·SVG는 이미지로 변환해 주세요.")
+                width, height = decoded.size
+                if width * height > MAX_IMAGE_PIXELS or max(width, height) > MAX_IMAGE_SIDE:
+                    raise HTTPException(413, "이미지는 1,000만 픽셀 이하, 한 변 8,192픽셀 이하로 줄여 주세요.")
+                if getattr(decoded, "n_frames", 1) != 1:
+                    raise HTTPException(415, "애니메이션은 지원하지 않습니다. 단일 이미지로 저장해 주세요.")
+                decoded.load()
+                oriented = ImageOps.exif_transpose(decoded).convert("RGBA")
+                rgb = Image.alpha_composite(Image.new("RGBA", oriented.size, "white"), oriented).convert("RGB")
+                metadata = {
+                    "actual_format": actual_format, "original_dimensions": [width, height],
+                    "original_sha256": hashlib.sha256(data).hexdigest(), "original_bytes": len(data),
+                    "oriented_dimensions": list(rgb.size), "ocr_scale": 2,
+                    "normalization": "EXIF transpose; alpha composited onto white; RGB; 2x Lanczos for OCR",
+                }
+                return rgb, metadata
+    except HTTPException:
+        raise
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning):
+        raise HTTPException(413, "이미지의 픽셀 수가 허용 범위를 초과합니다.") from None
+    except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
+        raise HTTPException(415, "이미지를 읽을 수 없습니다. 손상되지 않은 JPEG, PNG, WEBP 파일을 선택해 주세요.") from None
+
+
+def _default_recognizer(path: Path) -> dict:
+    from .ocr_runtime import recognize_image
+    return recognize_image(path)
+
+
+def _default_runtime_status() -> dict:
+    from .ocr_runtime import get_runtime_status
+    return get_runtime_status()
+
+
+def _safe_runtime(payload: dict) -> dict:
+    """Return public execution metadata, never URLs, credentials or tracebacks."""
+    allowed_values = {
+        "engine": {"easyocr"}, "execution_target": {"local", "runpod"},
+        "device": {"cuda", "mps", "cpu", "runpod", "remote-auto", "unknown"},
+        "status": {"ok", "ready", "completed", "failed", "unavailable", "not_ready", "configured", "success", "skipped", "fallback"},
+    }
+    result = {}
+    if isinstance(payload.get("ready"), bool):
+        result["ready"] = payload["ready"]
+    for key, allowed in allowed_values.items():
+        value = payload.get(key)
+        if isinstance(value, str) and value.lower() in allowed:
+            result[key] = value.lower()
+    # Attempts deliberately omit free-form errors that may contain secrets.
+    result["attempts"] = []
+    for attempt in payload.get("attempts", []) if isinstance(payload.get("attempts"), list) else []:
+        if isinstance(attempt, dict):
+            clean = {}
+            for key in ("device", "execution_target", "status"):
+                value = attempt.get(key)
+                if isinstance(value, str) and value.lower() in allowed_values[key]:
+                    clean[key] = value.lower()
+            if clean:
+                result["attempts"].append(clean)
+    return result
+
+
+def _map_records(payload: dict, width: int, height: int) -> list[dict]:
+    raw_records = payload.get("records")
+    if not isinstance(raw_records, list) or len(raw_records) > 10_000:
+        raise ValueError("Invalid OCR record list")
+    expected_dimensions = [width * 2, height * 2]
+    dimensions = payload.get("input_dimensions")
+    if isinstance(dimensions, dict):
+        dimensions = [dimensions.get("width"), dimensions.get("height")]
+    if dimensions is not None and list(dimensions) != expected_dimensions:
+        raise ValueError("OCR returned coordinates for an unexpected image size")
+    mapped = []
+    seen = set()
+    for index, raw in enumerate(raw_records):
+        if not isinstance(raw, dict) or not isinstance(raw.get("text"), str):
+            raise ValueError("Invalid OCR text")
+        record_id = raw.get("id", f"ocr-{index + 1}")
+        if not isinstance(record_id, (str, int)) or isinstance(record_id, bool) or record_id in seen:
+            raise ValueError("Invalid OCR ID")
+        seen.add(record_id)
+        text = raw["text"].strip()
+        if not text:
+            continue
+        if len(text) > 10_000:
+            raise ValueError("OCR text is too long")
+        box = raw.get("bbox_xyxy")
+        if not isinstance(box, (list, tuple)) or len(box) != 4 or any(
+            isinstance(number, bool) or not isinstance(number, (int, float)) or not math.isfinite(number)
+            for number in box
+        ):
+            raise ValueError("Invalid OCR bounding box")
+        if box[2] <= box[0] or box[3] <= box[1]:
+            raise ValueError("Degenerate OCR bounding box")
+        coordinates = [max(0, min(limit, float(number) / 2)) for number, limit in zip(box, [width, height, width, height])]
+        if coordinates[2] <= coordinates[0] or coordinates[3] <= coordinates[1]:
+            raise ValueError("OCR bounding box outside image")
+        confidence = raw.get("confidence")
+        if confidence is not None and (
+            isinstance(confidence, bool) or not isinstance(confidence, (int, float))
+            or not math.isfinite(confidence) or not 0 <= confidence <= 1
+        ):
+            raise ValueError("Invalid OCR confidence")
+        mapped.append({"id": record_id, "text": text, "confidence": confidence, "bbox_xyxy": coordinates})
+    return mapped
+
+
+def create_app(
+    *, recognizer: Callable[[Path], dict] | None = None,
+    runtime_status: Callable[[], dict] | None = None, review_root: Path | None = None,
+) -> FastAPI:
+    recognize = recognizer or _default_recognizer
+    runtime_health = runtime_status or _default_runtime_status
+    storage = review_root or PROJECT_ROOT / ".runtime" / "reviews"
+    storage.mkdir(parents=True, exist_ok=True)
+    lock = threading.RLock()
+    inference_lock = threading.Lock()
+
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        # Background work is local to this process. Never present interrupted
+        # persisted jobs as if inference were still running after a restart.
+        for path in storage.glob("*/result.json"):
+            try:
+                value = _read_json(path)
+                if value.get("status") in {"queued", "running"}:
+                    value.update(status="failed", stage="failed", error="서버가 재시작되어 검수가 중단됐습니다. 다시 실행해 주세요.", updated_at=_now())
+                    _write_json(path, value)
+            except (OSError, ValueError):
+                continue
+        yield
+
+    application = FastAPI(title="바로검수 API", version="1.0.0", lifespan=lifespan)
+    allowed_origins = [value.strip() for value in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if value.strip()]
+    allowed_origins = [value for value in allowed_origins if value.startswith(("http://localhost:", "http://127.0.0.1:"))]
+    application.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+
+    def directory(review_id: str) -> Path:
+        try:
+            if str(UUID(review_id)) != review_id:
+                raise ValueError
+        except ValueError:
+            raise HTTPException(404, "검수 기록을 찾을 수 없습니다.") from None
+        target = storage / review_id
+        if not (target / "result.json").is_file():
+            raise HTTPException(404, "검수 기록을 찾을 수 없습니다.")
+        return target
+
+    def update(target: Path, **changes) -> None:
+        with lock:
+            result = _read_json(target / "result.json")
+            result.update(changes, updated_at=_now())
+            _write_json(target / "result.json", result)
+
+    def _run_review(target: Path) -> None:
+        stage = "preprocessing"
+        try:
+            update(target, status="running", stage=stage, progress=15)
+            with Image.open(target / "normalized.png") as image:
+                width, height = image.size
+                image.resize((width * 2, height * 2), Image.Resampling.LANCZOS).save(target / "ocr_input.png")
+            stage = "ocr"
+            update(target, stage=stage, progress=30)
+            payload = recognize(target / "ocr_input.png")
+            if not isinstance(payload, dict):
+                raise ValueError("Invalid OCR response")
+            runtime = _safe_runtime(payload)
+            update(target, runtime=runtime)
+            if payload.get("status") in {"failed", "error", "unavailable"}:
+                raise RuntimeError("OCR runtime failed")
+            records = _map_records(payload, width, height)
+            ocr = {"records": records, "input_dimensions": [width * 2, height * 2], "coordinate_space": "normalized_original_pixels", "scale": 2}
+            _write_json(target / "ocr.json", {**ocr, **runtime})
+            stage = "review"
+            update(target, stage=stage, progress=80, ocr=ocr)
+            snapshot = _read_json(target / "snapshot.json")
+            results = review_criteria(snapshot["criteria"], records)
+            update(target, status="completed", stage="completed", progress=100, results=results, error=None)
+        except Exception as error:
+            messages = {
+                "preprocessing": "이미지 전처리에 실패했습니다. 이미지 크기와 서버 저장 공간을 확인해 주세요.",
+                "ocr": "OCR 실행에 실패했습니다. 모델 설치·다운로드 설정과 CUDA/MPS/CPU 또는 RunPod 연결 설정을 확인한 뒤 다시 실행해 주세요.",
+                "review": "OCR 결과를 검수 기준과 비교하지 못했습니다. 기준 형식과 OCR 출력을 확인해 주세요.",
+            }
+            if stage == "ocr" and getattr(error, "code", None) == "remote_image_too_large":
+                messages["ocr"] = "2배 전처리한 이미지가 RunPod의 전송 한도 7 MiB를 초과했습니다. 원본 이미지 크기를 줄이거나 로컬 실행(CUDA → MPS → CPU)을 선택해 주세요."
+            failure_metadata = {}
+            if hasattr(error, "attempts"):
+                failure_metadata["runtime"] = _safe_runtime({"engine": "easyocr", "status": "failed", "attempts": error.attempts})
+            update(target, status="failed", stage="failed", error=messages[stage], **failure_metadata)
+
+    def run_review(target: Path) -> None:
+        # Only one image is expanded/inferred at a time in this local process.
+        # A job waiting for this lock remains truthfully queued.
+        with inference_lock:
+            _run_review(target)
+
+    @application.get("/api/health")
+    def health():
+        try:
+            status = runtime_health()
+            return {"status": "ok", "runtime": _safe_runtime(status), "limits": {"upload_bytes": MAX_UPLOAD_BYTES, "image_pixels": MAX_IMAGE_PIXELS, "image_side": MAX_IMAGE_SIDE}}
+        except Exception:
+            return {"status": "degraded", "runtime": {"status": "unavailable"}, "message": "OCR 실행 환경을 확인해 주세요."}
+
+    @application.get("/api/sample")
+    def sample():
+        return {
+            "project_name": "2026 김천김밥축제 포스터 검수",
+            "requirements": "행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n장소: 사명대사공원\n장소: 친환경생태공원\n김천시 로고가 표시되어 있어야 합니다.\n문구와 이미지가 잘리지 않아야 합니다.",
+        }
+
+    @application.get("/api/sample/image")
+    def sample_image():
+        reference = sample_image_path()
+        if reference is None:
+            raise HTTPException(404, "샘플 이미지를 찾을 수 없습니다.")
+        with Image.open(reference) as image:
+            image_format = image.format
+        media_type = Image.MIME.get(image_format, "application/octet-stream")
+        extension = {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
+        return FileResponse(reference, media_type=media_type, filename=f"gimcheon-2026.{extension}")
+
+    @application.post("/api/reviews", status_code=202)
+    async def submit(
+        background_tasks: BackgroundTasks,
+        image: UploadFile = File(...), criteria: str = Form(...),
+        criteria_version: int = Form(..., ge=1, le=1_000_000),
+        project_name: str = Form(..., min_length=1, max_length=120),
+    ):
+        if len(criteria) > CRITERIA_MAX_JSON:
+            raise HTTPException(422, "검수 기준이 너무 깁니다. 최대 100개, 항목당 500자까지 입력해 주세요.")
+        try:
+            frozen = CriteriaSnapshot(criteria=json.loads(criteria), criteria_version=criteria_version, project_name=project_name)
+        except (json.JSONDecodeError, ValidationError, TypeError):
+            raise HTTPException(422, "확정한 기준을 확인해 주세요. 고유 ID와 유형, 1~500자의 내용이 있는 기준 1~100개가 필요합니다.") from None
+        try:
+            data = await image.read(MAX_UPLOAD_BYTES + 1)
+        finally:
+            await image.close()
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, "이미지 파일은 20 MiB 이하로 업로드해 주세요.")
+        if not data:
+            raise HTTPException(400, "빈 이미지 파일입니다.")
+        rgb, source = await run_in_threadpool(_normalise_image, data)
+        review_id = str(uuid4())
+        target = storage / review_id
+        target.mkdir()
+        # Original bytes are retained exactly; user-controlled names are never
+        # used as paths or served directly. snapshots have no update endpoint.
+        (target / "original.bin").write_bytes(data)
+        rgb.save(target / "normalized.png")
+        snapshot = {**frozen.model_dump(), "image_source": source, "created_at": _now()}
+        _write_json(target / "snapshot.json", snapshot)
+        result = {
+            "id": review_id, "status": "queued", "stage": "queued", "progress": 5,
+            "criteria_version": frozen.criteria_version, "project_name": frozen.project_name,
+            "criteria": [item.model_dump() for item in frozen.criteria],
+            "image": {"width": rgb.width, "height": rgb.height, "url": f"/api/reviews/{review_id}/image", "sha256": source["original_sha256"], "actual_format": source["actual_format"]},
+            "results": [], "runtime": None, "ocr": None, "error": None, "created_at": _now(), "updated_at": _now(),
+        }
+        _write_json(target / "result.json", result)
+        rgb.close()
+        background_tasks.add_task(run_review, target)
+        return {"id": review_id, "status": "queued"}
+
+    @application.get("/api/reviews/{review_id}")
+    def get_review(review_id: str):
+        with lock:
+            return _read_json(directory(review_id) / "result.json")
+
+    @application.get("/api/reviews/{review_id}/image")
+    def review_image(review_id: str):
+        return FileResponse(directory(review_id) / "normalized.png", media_type="image/png")
+
+    # API routes are defined first. Only the built React assets are public.
+    frontend = PROJECT_ROOT / "frontend" / "dist"
+    if frontend.is_dir():
+        application.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")
+    return application
+
+
+app = create_app()

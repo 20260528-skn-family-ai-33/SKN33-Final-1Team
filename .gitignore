@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-review/
 venv/
 .pytest_cache/
 .mypy_cache/
@@ -38,3 +39,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Local OCR models, uploaded files, and reproducible diagnostics
+/.runtime/
+/artifacts/

@@ -1,0 +1,10 @@
+# Build from repository root: docker build -f backend/Dockerfile.runpod -t baro-review-ocr .
+# Building downloads models; deploying a paid endpoint remains an explicit action.
+FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 RUN_TARGET=local OCR_MODEL_DIR=/app/models OCR_ALLOW_DOWNLOAD=0
+# Keep torch/torchvision compatible with this CUDA image (separate from local requirements).
+RUN pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 easyocr==1.7.2 runpod==1.7.7
+COPY backend /app/backend
+RUN python -m backend.app.ocr_runtime --download-models
+CMD ["python", "-m", "backend.app.runpod_worker"]

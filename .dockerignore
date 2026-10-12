@@ -1,0 +1,7 @@
+# RunPod worker builds only need backend Python sources.
+**
+!backend/
+!backend/__init__.py
+!backend/app/
+!backend/app/*.py
+!backend/Dockerfile.runpod
