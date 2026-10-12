@@ -4,30 +4,63 @@
 
 ## 실행
 
-이 컴퓨터에서는 프로젝트 폴더에서 다음 명령을 실행합니다.
+설치가 끝났다면 저장소 루트에서 사용하는 운영체제에 맞는 명령을 실행합니다.
+
+**macOS / Linux · Bash**
 
 ```bash
 ./run.sh
+```
+
+**Windows · PowerShell**
+
+```powershell
+& .\.venv-review\Scripts\python.exe .\start.py
 ```
 
 [http://127.0.0.1:8000](http://127.0.0.1:8000)을 열고 **샘플로 체험하기 → 검수 항목 확인 → 기준 확정 → 검수 시작** 순서로 진행합니다.
 
 서버가 실행되는 동안 터미널을 유지하세요. 입력 프롬프트가 돌아오지 않는 것이 정상입니다. `Ctrl+C`는 서버 종료이며, 가상환경의 `activate`만 실행해서는 서버가 시작되지 않습니다. `frontend/index.html`을 파일로 열지 마세요.
 
-8000번 포트를 다른 앱이 사용 중이면 `./run.sh --port 8001`로 실행하고 출력된 주소를 엽니다.
+8000번 포트를 다른 앱이 사용 중이면 다음 명령으로 실행하고 출력된 주소를 엽니다.
+
+```bash
+# macOS / Linux
+./run.sh --port 8001
+```
+
+```powershell
+# Windows PowerShell
+& .\.venv-review\Scripts\python.exe .\start.py --port 8001
+```
 
 ## 새 컴퓨터에서 설치
 
 Python **3.12**, Node.js **22.12 이상**을 준비합니다. Node 20은 20.19 이상도 지원합니다.
+
+모든 명령은 저장소 루트에서 실행합니다. Windows에서는 Python 3.12와 Python 실행기 `py`를 설치하고, Node.js 설치 후 PowerShell을 새로 열어 주세요. `py -3.12 --version`과 `npm.cmd --version`으로 설치를 확인할 수 있습니다. `py`가 없다면 `python --version`이 **3.12.x**인지 확인한 뒤 아래의 `py -3.12`를 `python`으로 바꿉니다.
+
+**macOS / Linux · Bash**
 
 ```bash
 python3.12 setup_local.py --download-models
 ./run.sh
 ```
 
+**Windows · PowerShell**
+
+```powershell
+py -3.12 .\setup_local.py --download-models
+& .\.venv-review\Scripts\python.exe .\start.py
+```
+
 설치 스크립트는 `.venv-review` 가상환경 생성, Python 패키지 설치, `npm ci`, React 빌드를 수행합니다. `--download-models`를 지정한 경우에만 OCR 모델을 다운로드합니다. 기존 `.venv`는 수정하지 않습니다.
 
-수동 설치가 필요하면 다음 명령을 사용합니다.
+설치가 오류로 끝나면 해당 오류를 해결한 뒤 실행 명령을 진행하세요. Windows에서도 가상환경의 Python을 직접 호출하므로 `Activate.ps1` 실행은 필요 없습니다. PowerShell 예시는 `npm.ps1` 대신 `npm.cmd`를 사용하며 실행 정책을 변경할 필요가 없습니다. 설치 스크립트의 완료 안내에 macOS 경로가 출력되더라도 Windows에서는 위 PowerShell 명령을 사용합니다.
+
+수동 설치가 필요하면 다음 명령을 순서대로 사용합니다.
+
+**macOS / Linux · Bash**
 
 ```bash
 python3.12 -m venv .venv-review
@@ -38,7 +71,18 @@ npm --prefix frontend run build
 .venv-review/bin/python start.py
 ```
 
-Windows에서는 `.venv-review/bin/python`을 `.venv-review/Scripts/python.exe`로 바꾸고 `run.sh` 대신 `python start.py`를 실행합니다. NVIDIA 환경에서는 해당 CUDA와 호환되는 PyTorch wheel 설치가 필요합니다. 로컬 요구 버전은 `torch 2.10.0` / `torchvision 0.25.0`입니다.
+**Windows · PowerShell**
+
+```powershell
+py -3.12 -m venv .venv-review
+& .\.venv-review\Scripts\python.exe -m pip install -r requirements-dev.txt
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend run build
+& .\.venv-review\Scripts\python.exe -m backend.app.ocr_runtime --download-models
+& .\.venv-review\Scripts\python.exe .\start.py
+```
+
+NVIDIA 환경에서는 해당 CUDA와 호환되는 PyTorch wheel 설치가 필요합니다. 로컬 요구 버전은 `torch 2.10.0` / `torchvision 0.25.0`입니다.
 
 ## 구성
 
@@ -72,6 +116,8 @@ setup_local.py                 전용 환경 설치와 React 빌드
 
 ## 개발과 검증
 
+**macOS / Linux · Bash**
+
 ```bash
 # API 개발 서버
 .venv-review/bin/python -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
@@ -85,7 +131,38 @@ npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
-React 개발 서버의 `/api`는 기본 `http://127.0.0.1:8000`으로 연결됩니다. 다른 포트는 `API_PROXY_TARGET=http://127.0.0.1:8001 npm --prefix frontend run dev`로 지정합니다. [프런트엔드 안내](frontend/README.md)에 상세 명령이 있습니다.
+**Windows · PowerShell**
+
+```powershell
+# 터미널 1: API 개발 서버
+& .\.venv-review\Scripts\python.exe -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
+
+# 터미널 2: React 개발 서버
+npm.cmd --prefix frontend run dev
+
+# 별도 터미널: 테스트와 프로덕션 빌드
+& .\.venv-review\Scripts\python.exe -m pytest
+npm.cmd --prefix frontend test
+npm.cmd --prefix frontend run build
+```
+
+개발 서버 명령은 각각 별도 터미널에서 실행합니다. React 개발 서버의 `/api`는 기본 `http://127.0.0.1:8000`으로 연결됩니다. API 서버를 `--port 8001`로 실행했다면 React 개발 서버의 대상도 맞춥니다.
+
+```bash
+# macOS / Linux
+API_PROXY_TARGET=http://127.0.0.1:8001 npm --prefix frontend run dev
+```
+
+```powershell
+# Windows PowerShell
+$env:API_PROXY_TARGET = "http://127.0.0.1:8001"
+npm.cmd --prefix frontend run dev
+
+# Ctrl+C로 개발 서버를 종료한 뒤, 기본 포트로 되돌릴 때
+Remove-Item Env:API_PROXY_TARGET -ErrorAction SilentlyContinue
+```
+
+PowerShell의 `$env:` 설정은 현재 터미널과 그 터미널에서 실행한 프로세스에 적용됩니다. 환경 변수를 바꾼 뒤에는 해당 개발 서버를 다시 실행하세요. [프런트엔드 안내](frontend/README.md)에 상세 명령이 있습니다.
 
 GitHub Actions는 `requirements-test.txt`로 OCR 모델 다운로드와 유료 호출 없이 Python 테스트를 실행하고, React 테스트·빌드를 수행하도록 구성했습니다. 실제 MPS/CUDA 추론과 RunPod 연결은 각 실행 환경에서 따로 확인합니다.
 
@@ -95,6 +172,8 @@ GitHub Actions는 `requirements-test.txt`로 OCR 모델 다운로드와 유료 �
 
 RunPod Pod에서 앱 전체를 실행할 때는 `RUN_TARGET=local`로 CUDA를 사용합니다. 기존 Serverless endpoint를 연결하려면 서버 환경에서 설정합니다.
 
+**macOS / Linux · Bash**
+
 ```bash
 export RUN_TARGET=runpod
 export RUNPOD_ENDPOINT_ID='기존 endpoint ID'
@@ -102,9 +181,22 @@ export RUNPOD_API_KEY='서버 측 API 키'
 ./run.sh
 ```
 
+**Windows · PowerShell**
+
+```powershell
+$env:RUN_TARGET = "runpod"
+$env:RUNPOD_ENDPOINT_ID = "기존 endpoint ID"
+$env:RUNPOD_API_KEY = "서버 측 API 키"
+& .\.venv-review\Scripts\python.exe .\start.py
+```
+
+로컬 실행으로 돌아가려면 서버를 종료한 뒤 Bash에서는 `export RUN_TARGET=local`, PowerShell에서는 `$env:RUN_TARGET = "local"`로 설정하고 서버를 다시 실행합니다.
+
 `.env.example`은 설정 예시이며 자동으로 로드하지 않습니다. API 키를 React 코드나 `VITE_*` 변수에 넣지 마세요. 원격 실행을 선택하면 이미지는 지정 endpoint로 전송됩니다.
 
-```bash
+다음 Docker 빌드 명령은 Bash와 PowerShell에서 같습니다. Docker가 설치·실행된 환경에서 사용합니다.
+
+```text
 # 저장소 루트를 Docker build context로 사용
 docker build -f backend/Dockerfile.runpod -t baro-review-worker .
 ```
