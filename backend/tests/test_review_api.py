@@ -78,7 +78,7 @@ def test_upload_freezes_criteria_preserves_bytes_and_maps_coordinates(tmp_path):
         assert result["image"]["actual_format"] == "PNG"  # misleading extension is permitted
         assert result["image"]["sha256"] == hashlib.sha256(original).hexdigest()
         assert (tmp_path / identifier / "original.bin").read_bytes() == original
-        snapshot = json.loads((tmp_path / identifier / "snapshot.json").read_text())
+        snapshot = json.loads((tmp_path / identifier / "snapshot.json").read_text(encoding="utf-8"))
         assert snapshot["criteria"] == criteria and snapshot["criteria_version"] == 3
         assert snapshot["image_source"]["original_bytes"] == len(original)
         assert client.put(f"/api/reviews/{identifier}", json={"criteria_version": 9}).status_code == 405
@@ -186,9 +186,9 @@ def test_restart_marks_interrupted_persisted_jobs_failed(tmp_path):
     with make_client(tmp_path) as client:
         identifier = submit(client).json()["id"]
     path = tmp_path / identifier / "result.json"
-    interrupted = json.loads(path.read_text())
+    interrupted = json.loads(path.read_text(encoding="utf-8"))
     interrupted.update(status="running", stage="ocr", progress=30)
-    path.write_text(json.dumps(interrupted))
+    path.write_text(json.dumps(interrupted), encoding="utf-8")
     with make_client(tmp_path) as client:
         result = client.get(f"/api/reviews/{identifier}").json()
         assert result["status"] == "failed" and "재시작" in result["error"]
