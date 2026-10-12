@@ -1,0 +1,26 @@
+{
+  "id": "team-2a913f091dee",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_이천쌀문화축제_원본.ai",
+    "source_url": null,
+    "format": "ai",
+    "sha256": "2a913f091dee1338c826f12c70bdf9059cf302fab32b9f9db6df76d3acad1522",
+    "width": null,
+    "height": null,
+    "note": "이미지 파일이 아님(검수에 쓰려면 PNG 변환 필요)"
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

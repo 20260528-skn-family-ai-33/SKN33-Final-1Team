@@ -1,0 +1,63 @@
+{
+  "id": "team-b77496909597",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_부여서동연꽃축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "b7749690959756f94e134dff69c40f550ab364358e0d44193622312b5f489e11",
+    "width": 434,
+    "height": 627
+  },
+  "event": {
+    "title": "제24회부여서동연꽃축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-03",
+    "end_date": "2026-07-05",
+    "venue": "서동공원+궁남지 일원",
+    "address": "충청남도 부여군 부여읍 궁남로 52",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "041-830-2207",
+    "homepage": "http://부여서동연꽃축제.kr/",
+    "venue_url": null,
+    "organizer": "백제문화재단",
+    "host": "충청남도 부여군",
+    "sponsor": "충청남도+한국관광공사",
+    "program": "경관조성+공연·경연+체험",
+    "gps": {
+      "lat": 36.27181906,
+      "lng": 126.9131871
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제24회부여서동연꽃축제",
+      "start_date": "2026-07-03",
+      "end_date": "2026-07-05",
+      "venues": [
+        "서동공원+궁남지 일원"
+      ],
+      "organizer": "백제문화재단",
+      "contact": "041-830-2207",
+      "url": "http://부여서동연꽃축제.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-08-11",
+    "match": "파일명 '부여서동연꽃축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

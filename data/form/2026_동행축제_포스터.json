@@ -1,0 +1,25 @@
+{
+  "id": "team-b091043e167c",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_동행축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "b091043e167c5e60e28a5033a8572c479574c175ebc20f592febdff869618313",
+    "width": 442,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

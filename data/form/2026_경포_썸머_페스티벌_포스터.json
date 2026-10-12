@@ -1,0 +1,25 @@
+{
+  "id": "team-030afaed02d8",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_경포_썸머_페스티벌_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "030afaed02d89667ce01db53aa3693ffcfef981baba2bd089d412438df9c8462",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "표준데이터에 2025년판만 있음",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

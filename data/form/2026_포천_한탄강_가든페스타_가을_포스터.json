@@ -1,0 +1,25 @@
+{
+  "id": "team-71ae84e75bd9",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_포천_한탄강_가든페스타_가을_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "71ae84e75bd9d6a7edf6fea8175a3f5e4685b6985dea19c060b738ba0bc21670",
+    "width": 445,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "표준데이터에 2025년판만 있음(포스터는 2026년 가을판)",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "team-1386d9b9a45a",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_인천펜타포트_락_페스티벌_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "1386d9b9a45aece819c3bf5b6f0785972703304f697bb2ff73e5b379180b7e94",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "인천펜타포트 락 페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-31",
+    "end_date": "2026-08-02",
+    "venue": "송도달빛축제공원",
+    "address": "인천광역시 연수구 센트럴로 350 (송도동)",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "032-899-7423",
+    "homepage": "https://pentaport.co.kr/",
+    "venue_url": null,
+    "organizer": "인천관광공사+㈜경기일보",
+    "host": "인천광역시",
+    "sponsor": "문화체육관광부+한국관광공사",
+    "program": "펜타포트 락 페스티벌+F&B존+펜타포트 사전공연(홍대/도쿄)+펜타포트 팝업스토어+펜타 슈퍼루키+펜타포트 라이브 클럽파티+펜타포트 쇼케이스 등",
+    "gps": {
+      "lat": 37.40785375,
+      "lng": 126.6325097
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "인천펜타포트 락 페스티벌",
+      "start_date": "2026-07-31",
+      "end_date": "2026-08-02",
+      "venues": [
+        "송도달빛축제공원"
+      ],
+      "organizer": "인천관광공사+㈜경기일보",
+      "contact": "032-899-7423",
+      "url": "https://pentaport.co.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-16",
+    "match": "파일명 '인천펜타포트' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

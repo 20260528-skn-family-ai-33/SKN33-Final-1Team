@@ -1,0 +1,25 @@
+{
+  "id": "team-86b36a8bae66",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_강릉비치비어페스티벌_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "86b36a8bae66dcd0f50c1a68b67bc1b316dff980aa9865e6dc31bdf453f7ef0e",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "표준데이터에 2025년판만 있음",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

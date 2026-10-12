@@ -1,0 +1,25 @@
+{
+  "id": "team-d83e90ce2156",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_서울세계도시문화축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "d83e90ce2156377322eab69e3d145986ed3c610cb8100544ef82fb631ed65731",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

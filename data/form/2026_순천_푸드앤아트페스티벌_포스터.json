@@ -1,0 +1,25 @@
+{
+  "id": "team-03e79b09c7d1",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_순천_푸드앤아트페스티벌_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "03e79b09c7d19ad2f534b33af8de4748be1cc27ef3ca93629546b591c9dc265e",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

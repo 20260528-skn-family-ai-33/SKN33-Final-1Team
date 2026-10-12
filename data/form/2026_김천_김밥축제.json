@@ -1,0 +1,63 @@
+{
+  "id": "team-505650744b32",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_김천_김밥축제.jpg",
+    "source_url": null,
+    "format": "png",
+    "sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+    "width": 600,
+    "height": 848
+  },
+  "event": {
+    "title": "김천김밥축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-23",
+    "end_date": "2026-10-25",
+    "venue": "직지문화공원+사명대사공원+친환경생태공원",
+    "address": "경상북도 김천시 대항면 직지사길 130",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "054-420-6714",
+    "homepage": "https://gimbapcity.kr/main/main.html",
+    "venue_url": null,
+    "organizer": "경상북도 김천시청",
+    "host": "경상북도 김천시청",
+    "sponsor": null,
+    "program": "로컬 및 8도김밥 판매+공연+체험프로그램 운영 등",
+    "gps": {
+      "lat": 36.117093,
+      "lng": 128.0081803
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "김천김밥축제",
+      "start_date": "2026-10-23",
+      "end_date": "2026-10-25",
+      "venues": [
+        "직지문화공원+사명대사공원+친환경생태공원"
+      ],
+      "organizer": "경상북도 김천시청",
+      "contact": "054-420-6714",
+      "url": "https://gimbapcity.kr/main/main.html"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-03",
+    "match": "파일명 '김천_김밥축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

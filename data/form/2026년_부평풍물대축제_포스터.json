@@ -1,0 +1,63 @@
+{
+  "id": "team-e83b311a3ebf",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026년_부평풍물대축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "e83b311a3ebf64754bb9566633484d400c03a4698b6c6d95fe4cbd66a78367ff",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "2026 부평풍물대축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "venue": "부평대로+신트리공원 등",
+    "address": "인천광역시 부평구 부평대로 168",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "032-509-7516",
+    "homepage": "https://portal.icbp.go.kr/bpf/",
+    "venue_url": null,
+    "organizer": "부평구축제위원회+ 부평구문화재단+ 부평문화원",
+    "host": "인천광역시 부평구청",
+    "sponsor": "문화체육관광부+인천광역시+인천광역시의회+부평구의회+인천광역시교육청",
+    "program": "전통풍물공연+창작연희공연+퍼레이드+개막 및 폐막 공연+체험행사+경연대회 등",
+    "gps": {
+      "lat": 37.50706831,
+      "lng": 126.7218563
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "2026 부평풍물대축제",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-04",
+      "venues": [
+        "부평대로+신트리공원 등"
+      ],
+      "organizer": "부평구축제위원회+ 부평구문화재단+ 부평문화원",
+      "contact": "032-509-7516",
+      "url": "https://portal.icbp.go.kr/bpf/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-28",
+    "match": "파일명 '부평풍물대축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

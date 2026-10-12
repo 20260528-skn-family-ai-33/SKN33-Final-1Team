@@ -1,0 +1,63 @@
+{
+  "id": "team-6c30d774a323",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_광주_추억의_충장축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "6c30d774a3236319b52ce2308454233a59f5d4dbf870a4197727f7aabd5f9a9c",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "제23회 광주 추억의 충장축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-07",
+    "end_date": "2026-10-11",
+    "venue": "5.18민주광장 및 국립아시아문화전당+충장로+금남로+예술의 거리 등 광주 일원",
+    "address": "전남광주통합특별시 동구 서남로 1(동구청)",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "062-608-4674",
+    "homepage": "http://recollection.kr/",
+    "venue_url": null,
+    "organizer": "전남광주통합특별시 동구",
+    "host": "전남광주통합특별시 동구",
+    "sponsor": "문화체육관광부+(구)광주광역시",
+    "program": "공식행사+퍼레이드+전시+공연+체험+국제교류행사 등",
+    "gps": {
+      "lat": 35.1461414,
+      "lng": 126.9230951
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제23회 광주 추억의 충장축제",
+      "start_date": "2026-10-07",
+      "end_date": "2026-10-11",
+      "venues": [
+        "5.18민주광장 및 국립아시아문화전당+충장로+금남로+예술의 거리 등 광주 일원"
+      ],
+      "organizer": "전남광주통합특별시 동구",
+      "contact": "062-608-4674",
+      "url": "http://recollection.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-31",
+    "match": "파일명 '광주_추억의_충장축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}
