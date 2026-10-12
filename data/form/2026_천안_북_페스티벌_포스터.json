@@ -1,0 +1,25 @@
+{
+  "id": "team-ec8525f5f765",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_천안_북_페스티벌_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "ec8525f5f7654dd8b4f2b26e31c35e0fe25a91a4e20c193757a6d262e0a94ad7",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

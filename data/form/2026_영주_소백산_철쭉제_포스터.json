@@ -1,0 +1,58 @@
+{
+  "id": "team-f44f6af9d521",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_영주_소백산_철쭉제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "f44f6af9d5217c3d3ff87dc3544334cc893fa6ff7009f642263b8544f03d3522",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "영주 소백산철쭉제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-23",
+    "end_date": "2026-05-24",
+    "venue": "영주시 소백산 일원+풍기인삼 문화팝업공원 일원",
+    "address": "경상북도 영주시 봉현면 오현리 992",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": null,
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "영주문화관광재단",
+    "host": "경상북도 영주시청",
+    "sponsor": null,
+    "program": "공연+이벤트프로그램+철쭉행사",
+    "gps": null
+  },
+  "reference": {
+    "event": {
+      "name": "영주 소백산철쭉제",
+      "start_date": "2026-05-23",
+      "end_date": "2026-05-24",
+      "venues": [
+        "영주시 소백산 일원+풍기인삼 문화팝업공원 일원"
+      ],
+      "organizer": "영주문화관광재단"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-08-05",
+    "match": "파일명 '영주_소백산_철쭉제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

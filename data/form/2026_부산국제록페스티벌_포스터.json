@@ -1,0 +1,63 @@
+{
+  "id": "team-dfbf95c29e54",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_부산국제록페스티벌_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "dfbf95c29e54d2bf245955449882fc1f76beba34d84a5f26996058243deb14b7",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "부산국제록페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "venue": "삼락생태공원",
+    "address": "부산광역시 사상구 낙동대로 1231",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "051-888-5221",
+    "homepage": "https://festivalbusan.com/",
+    "venue_url": null,
+    "organizer": "(사)부산축제조직위원회",
+    "host": "부산광역시청",
+    "sponsor": null,
+    "program": "국내외 유명밴드 스테이지 공연 등",
+    "gps": {
+      "lat": 35.170013,
+      "lng": 128.97657
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "부산국제록페스티벌",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-04",
+      "venues": [
+        "삼락생태공원"
+      ],
+      "organizer": "(사)부산축제조직위원회",
+      "contact": "051-888-5221",
+      "url": "https://festivalbusan.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-06-26",
+    "match": "파일명 '부산국제록페스티벌' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

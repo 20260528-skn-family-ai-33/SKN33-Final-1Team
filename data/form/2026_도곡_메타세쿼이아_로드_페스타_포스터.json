@@ -1,0 +1,25 @@
+{
+  "id": "team-e7e8ea3a422a",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_도곡_메타세쿼이아_로드_페스타_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "e7e8ea3a422aa11600655b37f6782095fa7641a1d943e1cc30d3847c2a9a16fb",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

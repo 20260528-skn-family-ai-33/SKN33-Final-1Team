@@ -1,0 +1,63 @@
+{
+  "id": "team-2faf32d435f9",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_수원화성문화제_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "2faf32d435f9b93a9f991366a4206276a433cf9831e16d1c106664ddc2c64340",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "수원화성문화제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-04",
+    "end_date": "2026-10-11",
+    "venue": "수원화성 일원",
+    "address": "경기도 수원시 팔달구 정조로 825 (남창동) 행궁광장",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "031-5191-3647",
+    "homepage": "https://shfestival.com",
+    "venue_url": null,
+    "organizer": "경기도 수원시+수원화성문화제 추진위원회+수원문화재단",
+    "host": "경기도 수원시",
+    "sponsor": null,
+    "program": "수원판타지 야조+정조대왕 능행차+시민의 위대한 건축 화홍+수원 가마레이스",
+    "gps": {
+      "lat": 37.28186549,
+      "lng": 127.0137088
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "수원화성문화제",
+      "start_date": "2026-10-04",
+      "end_date": "2026-10-11",
+      "venues": [
+        "수원화성 일원"
+      ],
+      "organizer": "경기도 수원시+수원화성문화제 추진위원회+수원문화재단",
+      "contact": "031-5191-3647",
+      "url": "https://shfestival.com"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-16",
+    "match": "파일명 '수원화성문화제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

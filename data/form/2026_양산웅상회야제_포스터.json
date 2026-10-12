@@ -1,0 +1,63 @@
+{
+  "id": "team-d6c31f524f0a",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_양산웅상회야제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "d6c31f524f0a5f10c145523e4c25cf2d403a5e0cc2ed7eb7068bb70f3170dccc",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "양산웅상회야제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-21",
+    "venue": "웅상체육공원 일원",
+    "address": "경상남도 양산시 배움터길 60-19",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "055-392-0920",
+    "homepage": "https://www.ycf.or.kr",
+    "venue_url": null,
+    "organizer": "(재)양산문화재단",
+    "host": "(재)양산문화재단+경상남도 양산시청",
+    "sponsor": "경상남도+양산시의회+양산문화원",
+    "program": "개막식+축하공연+웅상신풍워터페스타+조선통신사퍼레이드+물놀이장+물총대첨+웅상농청장원놀이공연+웅상석빙고체험+솔밭황톳길숲체험+역사부스조성+먹거리존",
+    "gps": {
+      "lat": 35.3762104,
+      "lng": 129.1425569
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "양산웅상회야제",
+      "start_date": "2026-06-20",
+      "end_date": "2026-06-21",
+      "venues": [
+        "웅상체육공원 일원"
+      ],
+      "organizer": "(재)양산문화재단",
+      "contact": "055-392-0920",
+      "url": "https://www.ycf.or.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-08-10",
+    "match": "파일명 '양산웅상회야제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

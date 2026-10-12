@@ -1,0 +1,63 @@
+{
+  "id": "team-4662beb966e9",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_대구앞산축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "4662beb966e9e036114a21d9a63a8c4d951d5e5d91b7be844c4543f00fa5e762",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "제31회 대덕제 「2026대구앞산축제」",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-04",
+    "end_date": "2026-07-05",
+    "venue": "남구구민체육광장 일원",
+    "address": "대구광역시 남구 이천로 51",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "053-664-2000",
+    "homepage": "https://nam.daegu.kr/",
+    "venue_url": null,
+    "organizer": "대구광역시 남구",
+    "host": "대구광역시 남구",
+    "sponsor": "대구광역시 남구",
+    "program": "문화·예술",
+    "gps": {
+      "lat": 35.846012,
+      "lng": 128.597699
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제31회 대덕제 「2026대구앞산축제」",
+      "start_date": "2026-07-04",
+      "end_date": "2026-07-05",
+      "venues": [
+        "남구구민체육광장 일원"
+      ],
+      "organizer": "대구광역시 남구",
+      "contact": "053-664-2000",
+      "url": "https://nam.daegu.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-30",
+    "match": "파일명 '대구앞산축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

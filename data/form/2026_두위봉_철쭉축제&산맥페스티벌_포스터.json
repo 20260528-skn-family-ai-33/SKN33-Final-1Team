@@ -1,0 +1,25 @@
+{
+  "id": "team-8c6dae4cc7a1",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_두위봉_철쭉축제&산맥페스티벌_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "8c6dae4cc7a16d1644cdf4b98baf9b14d983cc447a250b3bbfb6d05edd6b0adf",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "team-85f2aa72223e",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_광주김치축제_포스터.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "85f2aa72223ed9310774deea3cee1b228d64db88802862a7b35476b1598723a1",
+    "width": 444,
+    "height": 627
+  },
+  "event": {
+    "title": "광주김치축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-23",
+    "end_date": "2026-10-25",
+    "venue": "전남광주통합특별시청",
+    "address": "전남광주통합특별시 서구 내방로 111",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "062-613-3955",
+    "homepage": "http://kimchi.gwangju.go.kr",
+    "venue_url": null,
+    "organizer": "광주김치축제위원회",
+    "host": "전남광주통합특별시",
+    "sponsor": null,
+    "program": "천인의밥상(음식먹거리 부스)+K-김치파티+광주스타셰프 푸드쇼+김치명인 푸드스테이지+김치마켓",
+    "gps": {
+      "lat": 35.16009941,
+      "lng": 126.8514619
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "광주김치축제",
+      "start_date": "2026-10-23",
+      "end_date": "2026-10-25",
+      "venues": [
+        "전남광주통합특별시청"
+      ],
+      "organizer": "광주김치축제위원회",
+      "contact": "062-613-3955",
+      "url": "http://kimchi.gwangju.go.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-16",
+    "match": "파일명 '광주김치축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}
