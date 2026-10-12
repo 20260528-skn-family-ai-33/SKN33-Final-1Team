@@ -1,0 +1,65 @@
+{
+  "id": "tour-1007868",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_부산_동구_부산항축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/03/4064503_image2_1.png",
+    "format": "png",
+    "width": 444,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "096b1caf97a7f68828342c990e6b60f129b68ff4bc6dc2408c70093806a9df97"
+  },
+  "event": {
+    "title": "부산항축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-20",
+    "end_date": "2026-06-21",
+    "venue": "북항친수공원",
+    "address": "부산광역시 동구 충장대로 206",
+    "region": "부산광역시",
+    "district": "동구",
+    "price": null,
+    "contact": "051-888-5291",
+    "homepage": "https://festivalbusan.com/",
+    "venue_url": null,
+    "organizer": "(사)부산축제조직위원회",
+    "host": "부산광역시청",
+    "sponsor": null,
+    "program": "글로벌포트파크+각종 참여행사 등",
+    "gps": {
+      "lat": 35.117747,
+      "lng": 129.049146
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "부산항축제",
+      "start_date": "2026-06-20",
+      "end_date": "2026-06-21",
+      "venues": [
+        "북항친수공원"
+      ],
+      "organizer": "(사)부산축제조직위원회",
+      "contact": "051-888-5291",
+      "url": "https://festivalbusan.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-06-26",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1007868",
+    "tour_title": "부산항축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

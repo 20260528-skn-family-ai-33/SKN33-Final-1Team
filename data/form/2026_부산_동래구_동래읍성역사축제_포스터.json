@@ -1,0 +1,65 @@
+{
+  "id": "tour-229048",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_부산_동래구_동래읍성역사축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/88/4111288_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "2eb99ed0da623d018bb9e9c260737f21a317609ecf8e2b9ceca788eac94f6590"
+  },
+  "event": {
+    "title": "동래읍성역사축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-16",
+    "end_date": "2026-10-18",
+    "venue": "동래읍성북문+동래문화회관 일원",
+    "address": "부산광역시 동래구 문화로 80 (명륜동)",
+    "region": "부산광역시",
+    "district": "동래구",
+    "price": null,
+    "contact": "051-550-4092",
+    "homepage": "https://www.dongnae.go.kr/festival/index.dongnae",
+    "venue_url": null,
+    "organizer": "동래문화원+동래읍성역사축제추진위원회",
+    "host": "부산광역시 동래구",
+    "sponsor": null,
+    "program": "동래부사행차 길놀이+동래세가닥줄다리기+동래성전투재현 뮤지컬",
+    "gps": {
+      "lat": 35.21195069,
+      "lng": 129.090546
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "동래읍성역사축제",
+      "start_date": "2026-10-16",
+      "end_date": "2026-10-18",
+      "venues": [
+        "동래읍성북문+동래문화회관 일원"
+      ],
+      "organizer": "동래문화원+동래읍성역사축제추진위원회",
+      "contact": "051-550-4092",
+      "url": "https://www.dongnae.go.kr/festival/index.dongnae"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "229048",
+    "tour_title": "동래읍성역사축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

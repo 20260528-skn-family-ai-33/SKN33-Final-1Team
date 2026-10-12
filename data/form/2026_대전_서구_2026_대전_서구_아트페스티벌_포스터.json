@@ -1,0 +1,65 @@
+{
+  "id": "tour-2488086",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대전_서구_2026_대전_서구_아트페스티벌_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/20/4117020_image2_1.jpg",
+    "format": "jpeg",
+    "width": 445,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "93a4f4f2a86d85293094f3e012eb7eaf15950529f42293f11533e81db9b3cdb0"
+  },
+  "event": {
+    "title": "2026 대전 서구 아트페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "venue": "샘머리+보라매공원(서구청앞) 일원",
+    "address": "대전광역시 서구 둔산서로 100",
+    "region": "대전광역시",
+    "district": "서구",
+    "price": null,
+    "contact": "042-288-2742",
+    "homepage": "https://www.seogu.go.kr/prog/fstvl/tour/sub04_02/14/view.do",
+    "venue_url": null,
+    "organizer": "서구축제추진위원회+대전광역시서구문화원+한국예총대전광역시연합회+한국미술협회 대전광역시지회",
+    "host": "대전광역시 서구",
+    "sponsor": "하나은행",
+    "program": "도심 속에서 펼쳐지는 빛과 문화예술의 항연",
+    "gps": {
+      "lat": 36.35505601,
+      "lng": 127.3833576
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "2026 대전 서구 아트페스티벌",
+      "start_date": "2026-10-09",
+      "end_date": "2026-10-11",
+      "venues": [
+        "샘머리+보라매공원(서구청앞) 일원"
+      ],
+      "organizer": "서구축제추진위원회+대전광역시서구문화원+한국예총대전광역시연합회+한국미술협회 대전광역시지회",
+      "contact": "042-288-2742",
+      "url": "https://www.seogu.go.kr/prog/fstvl/tour/sub04_02/14/view.do"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-10",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2488086",
+    "tour_title": "대전 서구 아트페스티벌",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

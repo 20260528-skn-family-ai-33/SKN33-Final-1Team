@@ -1,0 +1,65 @@
+{
+  "id": "tour-1849007",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_세종_다솜로_세종한글축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/75/4110275_image2_1.png",
+    "format": "png",
+    "width": 452,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "97e9f7cc4f7ab8629f47b37918a407352b6356b2d1a396bf28effd16271dd578"
+  },
+  "event": {
+    "title": "세종한글축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-11",
+    "venue": "세종호수공원+세종중앙공원",
+    "address": "세종특별자치시 다솜로 216 (세종동)",
+    "region": "세종특별자치시",
+    "district": "다솜로",
+    "price": null,
+    "contact": "044-850-0591",
+    "homepage": "http://sjfestival.kr/",
+    "venue_url": null,
+    "organizer": "세종시문화관광재단",
+    "host": "세종특별자치시",
+    "sponsor": null,
+    "program": "세종한글놀이터+한글노래 경연대회+한글몸짓 플래시몹+한글 골든벨+충녕 마리오네트",
+    "gps": {
+      "lat": 36.49717958,
+      "lng": 127.2734851
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "세종한글축제",
+      "start_date": "2026-10-09",
+      "end_date": "2026-10-11",
+      "venues": [
+        "세종호수공원+세종중앙공원"
+      ],
+      "organizer": "세종시문화관광재단",
+      "contact": "044-850-0591",
+      "url": "http://sjfestival.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1849007",
+    "tour_title": "세종한글축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

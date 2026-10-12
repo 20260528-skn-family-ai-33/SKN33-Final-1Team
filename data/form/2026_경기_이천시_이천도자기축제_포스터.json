@@ -1,0 +1,65 @@
+{
+  "id": "tour-527710",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경기_이천시_이천도자기축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/04/4004504_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "6833ebcb95e356d375b0186bf5901a987fd11830a94670da2479a33a7ca3b2e7"
+  },
+  "event": {
+    "title": "이천도자기축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-04-24",
+    "end_date": "2026-05-05",
+    "venue": "이천도자예술마을+사기막골 도예촌",
+    "address": "경기도 이천시 신둔면 도자예술로5번길 109",
+    "region": "경기도",
+    "district": "이천시",
+    "price": null,
+    "contact": "031-645-3683",
+    "homepage": "https://www.icheon.go.kr/icheonceramic",
+    "venue_url": null,
+    "organizer": "이천시도자기축제추진위원회",
+    "host": "경기도 이천시+이천문화재단",
+    "sponsor": null,
+    "program": "명장작품전시+240여개의 도예공방 참여 도자기 전시+물레체험+도자기 놀이마당 등",
+    "gps": {
+      "lat": 37.29309775,
+      "lng": 127.385686
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "이천도자기축제",
+      "start_date": "2026-04-24",
+      "end_date": "2026-05-05",
+      "venues": [
+        "이천도자예술마을+사기막골 도예촌"
+      ],
+      "organizer": "이천시도자기축제추진위원회",
+      "contact": "031-645-3683",
+      "url": "https://www.icheon.go.kr/icheonceramic"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "527710",
+    "tour_title": "이천도자기축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

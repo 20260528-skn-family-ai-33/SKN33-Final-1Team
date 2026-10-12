@@ -1,0 +1,65 @@
+{
+  "id": "tour-506600",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경남_산청군_산청한방약초축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/09/4106309_image2_1.jpg",
+    "format": "jpeg",
+    "width": 444,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "376b8281354900a5c62e36523894a56dcfb25e03edea18bca06349b910f6dc48"
+  },
+  "event": {
+    "title": "산청한방약초축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-11",
+    "venue": "동의보감촌 일원",
+    "address": "경상남도 산청군 금서면 동의보감로555번길 45-6",
+    "region": "경상남도",
+    "district": "산청군",
+    "price": null,
+    "contact": "055-970-6670",
+    "homepage": "http://www.scherb.or.kr/",
+    "venue_url": null,
+    "organizer": "산청축제관광재단",
+    "host": "산청축제관광재단",
+    "sponsor": null,
+    "program": "산청혜민서+내몸의 보약체험+한방웰니스관+약초판매장터+산청약초관",
+    "gps": {
+      "lat": 35.4410638,
+      "lng": 127.8293596
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "산청한방약초축제",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-11",
+      "venues": [
+        "동의보감촌 일원"
+      ],
+      "organizer": "산청축제관광재단",
+      "contact": "055-970-6670",
+      "url": "http://www.scherb.or.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506600",
+    "tour_title": "산청한방약초축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

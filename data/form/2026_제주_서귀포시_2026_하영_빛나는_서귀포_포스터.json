@@ -1,0 +1,64 @@
+{
+  "id": "tour-1834279",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_제주_서귀포시_2026_하영_빛나는_서귀포_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/25/4066025_image2_1.jpg",
+    "format": "jpeg",
+    "width": 444,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "3fd319154b80bc2cc73c501dd90d23ffac246ba3237d71cadc8dfdf4d779d6bd"
+  },
+  "event": {
+    "title": "2026 하영 빛나는 서귀포",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-24",
+    "end_date": "2026-05-24",
+    "venue": "자구리공원 일대",
+    "address": "제주특별자치도 서귀포시 칠십리로 120-12 (서귀동)",
+    "region": "제주특별자치도",
+    "district": "서귀포시",
+    "price": null,
+    "contact": "064-760-2654",
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "제주특별자치도 서귀포시",
+    "host": "제주특별자치도 서귀포시",
+    "sponsor": null,
+    "program": "서귀포의 낮과 밤을 함께 즐기는 특별한 하루 2026년 5월 도심 걷기와 감성 음악콘서트 그리고 화려한 드론라이트쇼가 어우러진 복합 문화행사 「하영 빛나는 서귀포」 가 개최됩니다. 시민과 관광객 여러분의 많은 관심과 참여 바랍니다.",
+    "gps": {
+      "lat": 33.24144151,
+      "lng": 126.5668484
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "2026 하영 빛나는 서귀포",
+      "start_date": "2026-05-24",
+      "end_date": "2026-05-24",
+      "venues": [
+        "자구리공원 일대"
+      ],
+      "organizer": "제주특별자치도 서귀포시",
+      "contact": "064-760-2654"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-07-31",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1834279",
+    "tour_title": "2026 하영 빛나는 서귀포",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

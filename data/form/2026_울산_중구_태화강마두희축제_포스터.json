@@ -1,0 +1,65 @@
+{
+  "id": "tour-3104107",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_울산_중구_태화강마두희축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/75/4067375_image2_1.jpg",
+    "format": "jpeg",
+    "width": 447,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "345486c73f8c13bef33e5d3a516d0786ac1f3e044003e30fd608c10765fc487f"
+  },
+  "event": {
+    "title": "태화강마두희축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-19",
+    "end_date": "2026-06-21",
+    "venue": "태화강변+성남동 일원",
+    "address": "울산광역시 중구 태화강북자전거길 518 (성남동)",
+    "region": "울산광역시",
+    "district": "중구",
+    "price": null,
+    "contact": "052-244-2007",
+    "homepage": "https://www.ulsanmaduhee.co.kr/",
+    "venue_url": null,
+    "organizer": "태화강마두희축제추진위원회",
+    "host": "태화강마두희축제 추진위원회",
+    "sponsor": null,
+    "program": "울산 큰줄당기기 마두희+전국 태화강 마두희 춤 경연대회+민속놀이 한마당 씨름대회",
+    "gps": {
+      "lat": 35.55366939,
+      "lng": 129.3104165
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "태화강마두희축제",
+      "start_date": "2026-06-19",
+      "end_date": "2026-06-21",
+      "venues": [
+        "태화강변+성남동 일원"
+      ],
+      "organizer": "태화강마두희축제추진위원회",
+      "contact": "052-244-2007",
+      "url": "https://www.ulsanmaduhee.co.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "3104107",
+    "tour_title": "태화강마두희축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

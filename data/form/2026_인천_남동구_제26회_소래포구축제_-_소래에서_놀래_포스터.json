@@ -1,0 +1,60 @@
+{
+  "id": "tour-506809",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_인천_남동구_제26회_소래포구축제_-_소래에서_놀래_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/31/4106531_image2_1.jpg",
+    "format": "jpeg",
+    "width": 444,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "f8a5b113f04e6b6ccab300e78157fe9eb9fd5d0d0d388c7bc69703e55102b69e"
+  },
+  "event": {
+    "title": "제26회 소래포구축제 - 소래에서 놀래",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-04",
+    "venue": "소래포구 일원(해오름광장 및 소래포구 관광벨트)",
+    "address": "인천광역시 남동구 아암대로 1454 해오름광장",
+    "region": "인천광역시",
+    "district": "남동구",
+    "price": null,
+    "contact": null,
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "인천광역시 남동구",
+    "host": "(재)남동문화재단",
+    "sponsor": null,
+    "program": "래포구축제는 소래포구가 지닌 풍부한 생태자원과 역사·문화적 가치를 바탕으로 지역의 정체성을 담아내는 대표 축제입니다.",
+    "gps": null
+  },
+  "reference": {
+    "event": {
+      "name": "제26회 소래포구축제 - 소래에서 놀래",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-04",
+      "venues": [
+        "소래포구 일원(해오름광장 및 소래포구 관광벨트)"
+      ],
+      "organizer": "인천광역시 남동구"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-19",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506809",
+    "tour_title": "소래포구축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

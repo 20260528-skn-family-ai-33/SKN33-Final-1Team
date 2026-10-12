@@ -1,0 +1,65 @@
+{
+  "id": "tour-506690",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경기_안성시_안성맞춤_남사당_바우덕이축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/82/4091582_image2_1.jpg",
+    "format": "jpeg",
+    "width": 441,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "151e8480b4697e876b769f075ad71a851f847085e27422266464d8ea2372fb64"
+  },
+  "event": {
+    "title": "안성맞춤 남사당 바우덕이축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-02",
+    "end_date": "2026-10-05",
+    "venue": "안성맞춤랜드 및 안성천 일원",
+    "address": "경기도 안성시 보개면 남사당로 198",
+    "region": "경기도",
+    "district": "안성시",
+    "price": null,
+    "contact": "031-678-5414",
+    "homepage": "https://www.anseong.go.kr/festival",
+    "venue_url": null,
+    "organizer": "안성맞춤 남사당 바우덕이축제위원회",
+    "host": "경기도 안성시",
+    "sponsor": "문화체육관광부+경기도",
+    "program": "추모제+전야제+개장식+개폐막식",
+    "gps": {
+      "lat": 37.03283615,
+      "lng": 127.3078003
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "안성맞춤 남사당 바우덕이축제",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-05",
+      "venues": [
+        "안성맞춤랜드 및 안성천 일원"
+      ],
+      "organizer": "안성맞춤 남사당 바우덕이축제위원회",
+      "contact": "031-678-5414",
+      "url": "https://www.anseong.go.kr/festival"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506690",
+    "tour_title": "안성맞춤 남사당 바우덕이축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

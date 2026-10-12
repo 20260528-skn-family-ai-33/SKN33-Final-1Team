@@ -1,0 +1,65 @@
+{
+  "id": "tour-506480",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전남광주통합_담양군_담양대나무축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/54/4041254_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "25d2b0107552cfb53a4bd6b90db5518833887b0c0db5850035e718c6b8fc8923"
+  },
+  "event": {
+    "title": "담양대나무축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-01",
+    "end_date": "2026-05-05",
+    "venue": "담양종합체육관+죽녹원+담빛음악당 일원",
+    "address": "전남광주통합특별시 담양군 담양읍 죽녹원로 130",
+    "region": "전남광주통합특별시",
+    "district": "담양군",
+    "price": null,
+    "contact": "061-380-3152",
+    "homepage": "www.bamboofestival.co.kr",
+    "venue_url": null,
+    "organizer": "(사)담양대나무축제위원회",
+    "host": "(사)담양대나무축제위원회",
+    "sponsor": null,
+    "program": "축하공연(윤도현밴드+알리+남진+황민호 등)+죽신제+전통장과 죽순을 활용한 맛이 죽(竹)여주네 경진대회+전국 스피드드론 경진대회+관광캐릭터 팝업스토어",
+    "gps": {
+      "lat": 35.32520648,
+      "lng": 126.9878901
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "담양대나무축제",
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-05",
+      "venues": [
+        "담양종합체육관+죽녹원+담빛음악당 일원"
+      ],
+      "organizer": "(사)담양대나무축제위원회",
+      "contact": "061-380-3152",
+      "url": "www.bamboofestival.co.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506480",
+    "tour_title": "담양 대나무축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

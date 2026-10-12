@@ -1,0 +1,61 @@
+{
+  "id": "tour-3483016",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_서울_강서구_2026년_강서봄빛페스타_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/73/4055173_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "575c95ad894ef803b3a350fc621053a3d5a519fad8468674810a937df1955670"
+  },
+  "event": {
+    "title": "2026년 강서봄빛페스타",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-04-04",
+    "end_date": "2026-04-04",
+    "venue": "방화근린공원",
+    "address": "서울특별시 강서구 금낭화로 176",
+    "region": "서울특별시",
+    "district": "강서구",
+    "price": null,
+    "contact": "02-2600-6455",
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "서울특별시 강서구",
+    "host": "서울특별시 강서구",
+    "sponsor": "서울특별시+강서구의회",
+    "program": "공연+플리마켓+버스킹 등",
+    "gps": null
+  },
+  "reference": {
+    "event": {
+      "name": "2026년 강서봄빛페스타",
+      "start_date": "2026-04-04",
+      "end_date": "2026-04-04",
+      "venues": [
+        "방화근린공원"
+      ],
+      "organizer": "서울특별시 강서구",
+      "contact": "02-2600-6455"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-27",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "3483016",
+    "tour_title": "강서봄빛페스타",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

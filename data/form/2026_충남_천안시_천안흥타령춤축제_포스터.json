@@ -1,0 +1,64 @@
+{
+  "id": "tour-506935",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_충남_천안시_천안흥타령춤축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/40/4056640_image2_1.jpg",
+    "format": "jpeg",
+    "width": 440,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "55ba9e20c04e5f3bcb8b4a7be4e61748a0358afaf1e96d61d9901fa917cc2ca4"
+  },
+  "event": {
+    "title": "천안흥타령춤축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-01",
+    "end_date": "2026-10-05",
+    "venue": "천안종합운동장+천안삼거리공원",
+    "address": "충청남도 천안시 서북구 번영로 208",
+    "region": "충청남도",
+    "district": "천안시",
+    "price": null,
+    "contact": "041-900-7021",
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "천안문화재단",
+    "host": "천안문화재단",
+    "sponsor": null,
+    "program": "전국춤경연대회+국제춤대회+국제스트릿댄스챔피언쉽+거리댄스퍼레이드",
+    "gps": {
+      "lat": 36.81910075,
+      "lng": 127.1133052
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "천안흥타령춤축제",
+      "start_date": "2026-10-01",
+      "end_date": "2026-10-05",
+      "venues": [
+        "천안종합운동장+천안삼거리공원"
+      ],
+      "organizer": "천안문화재단",
+      "contact": "041-900-7021"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506935",
+    "tour_title": "천안흥타령춤축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

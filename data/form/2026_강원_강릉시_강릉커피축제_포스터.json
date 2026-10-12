@@ -1,0 +1,65 @@
+{
+  "id": "tour-825295",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_강원_강릉시_강릉커피축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/86/4113386_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "3331d1b307b3cc26ed15ab683d04a937b25498cf2c48eeb1e7a11818daf3260f"
+  },
+  "event": {
+    "title": "강릉커피축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-21",
+    "end_date": "2026-10-25",
+    "venue": "강릉커피거리",
+    "address": "강원특별자치도 강릉시 창해로14번길 20-1 (견소동)",
+    "region": "강원특별자치도",
+    "district": "강릉시",
+    "price": null,
+    "contact": "033-647-6802",
+    "homepage": "https://www.coffeefestival.net/",
+    "venue_url": null,
+    "organizer": "강릉문화재단",
+    "host": "문화체육관광부+강원특별자치도+강원특별자치도 강릉시",
+    "sponsor": null,
+    "program": "스탬프랠리+커피크닉+100인100미+커피버스킹+커피웨이브+별의별강릉커피 등",
+    "gps": {
+      "lat": 37.77259356,
+      "lng": 128.9473209
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "강릉커피축제",
+      "start_date": "2026-10-21",
+      "end_date": "2026-10-25",
+      "venues": [
+        "강릉커피거리"
+      ],
+      "organizer": "강릉문화재단",
+      "contact": "033-647-6802",
+      "url": "https://www.coffeefestival.net/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "825295",
+    "tour_title": "강릉커피축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

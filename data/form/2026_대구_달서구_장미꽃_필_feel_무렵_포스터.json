@@ -1,0 +1,65 @@
+{
+  "id": "tour-2374957",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대구_달서구_장미꽃_필_feel_무렵_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/24/4057524_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "86b4911ab2456bb61ba9d3776e9888adfee58ec5b1d2f553263cf3d25ede579d"
+  },
+  "event": {
+    "title": "장미꽃 필(feel)무렵",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-15",
+    "end_date": "2026-05-17",
+    "venue": "이곡장미공원",
+    "address": "대구광역시 달서구 이곡동 1306-6",
+    "region": "대구광역시",
+    "district": "달서구",
+    "price": null,
+    "contact": "053-584-9712",
+    "homepage": "http://www.dscf.or.kr",
+    "venue_url": null,
+    "organizer": "(재)달서문화재단",
+    "host": "(재)달서문화재단",
+    "sponsor": "대구광역시 달서구+달서구의회",
+    "program": "개막축하공연+거리예술공연+장미체험부스+이색포토존 등",
+    "gps": {
+      "lat": 35.85779894,
+      "lng": 128.5147832
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "장미꽃 필(feel)무렵",
+      "start_date": "2026-05-15",
+      "end_date": "2026-05-17",
+      "venues": [
+        "이곡장미공원"
+      ],
+      "organizer": "(재)달서문화재단",
+      "contact": "053-584-9712",
+      "url": "http://www.dscf.or.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-07-10",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2374957",
+    "tour_title": "장미꽃 필(Feel) 무렵",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

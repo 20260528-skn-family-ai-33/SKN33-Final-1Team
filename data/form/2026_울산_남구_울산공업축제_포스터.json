@@ -1,0 +1,65 @@
+{
+  "id": "tour-2986930",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_울산_남구_울산공업축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/58/4116558_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "f3523012b8e47ffd1aa670cbe856dd9b83c3a03301ff90009eed2dde6e3f8d78"
+  },
+  "event": {
+    "title": "울산공업축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-08",
+    "end_date": "2026-10-11",
+    "venue": "태화강국가정원 남구둔치 일원",
+    "address": "울산광역시 남구 신정동 1513",
+    "region": "울산광역시",
+    "district": "남구",
+    "price": null,
+    "contact": "052-276-8590",
+    "homepage": "http://www.울산공업축제.kr",
+    "venue_url": null,
+    "organizer": "울산공업축제추진위원회",
+    "host": "울산광역시",
+    "sponsor": null,
+    "program": "울산의 과거와 현재, 미래를 보여주고 산업도시 울산의 정체성을 나타내는 울산의 대표축제",
+    "gps": {
+      "lat": 35.55056694,
+      "lng": 129.3077348
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "울산공업축제",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-11",
+      "venues": [
+        "태화강국가정원 남구둔치 일원"
+      ],
+      "organizer": "울산공업축제추진위원회",
+      "contact": "052-276-8590",
+      "url": "http://www.울산공업축제.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-20",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2986930",
+    "tour_title": "울산공업축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

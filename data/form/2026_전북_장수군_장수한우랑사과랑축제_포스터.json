@@ -1,0 +1,65 @@
+{
+  "id": "tour-763974",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전북_장수군_장수한우랑사과랑축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/80/4095780_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "2833c34f0bcc3448242e9b0a52df1a031db278510d43250b4a875b8bc25e97a3"
+  },
+  "event": {
+    "title": "장수한우랑사과랑축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-10",
+    "end_date": "2026-09-13",
+    "venue": "의암공원 일원",
+    "address": "전북특별자치도 장수군 장수읍 한누리로 378",
+    "region": "전북특별자치도",
+    "district": "장수군",
+    "price": null,
+    "contact": "063-350-2356",
+    "homepage": "https://www.jangsufestival.com/index.php",
+    "venue_url": null,
+    "organizer": "사단법인 장수한우랑사과랑축제추진위원회",
+    "host": "사단법인 장수한우랑사과랑축제추진위원회",
+    "sponsor": null,
+    "program": "전국최대규모의 장수 한우마당+사과마당+레드푸드 존+흑백요리사와 함께하는 장수레드푸드 요리만들기 체험+장수레드푸드 사찰음식만들기체험+아빠와함께토마토스파게티 만들기 체험",
+    "gps": {
+      "lat": 35.64023661,
+      "lng": 127.519819
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "장수한우랑사과랑축제",
+      "start_date": "2026-09-10",
+      "end_date": "2026-09-13",
+      "venues": [
+        "의암공원 일원"
+      ],
+      "organizer": "사단법인 장수한우랑사과랑축제추진위원회",
+      "contact": "063-350-2356",
+      "url": "https://www.jangsufestival.com/index.php"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "763974",
+    "tour_title": "장수한우랑사과랑축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}
