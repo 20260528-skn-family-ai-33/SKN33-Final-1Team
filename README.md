@@ -56,7 +56,7 @@ py -3.12 .\setup_local.py --download-models
 
 설치 스크립트는 `.venv-review` 가상환경 생성, Python 패키지 설치, `npm ci`, React 빌드를 수행합니다. `--download-models`를 지정한 경우에만 OCR 모델을 다운로드합니다. 기존 `.venv`는 수정하지 않습니다.
 
-설치가 오류로 끝나면 해당 오류를 해결한 뒤 실행 명령을 진행하세요. Windows에서도 가상환경의 Python을 직접 호출하므로 `Activate.ps1` 실행은 필요 없습니다. PowerShell 예시는 `npm.ps1` 대신 `npm.cmd`를 사용하며 실행 정책을 변경할 필요가 없습니다. 설치 스크립트의 완료 안내에 macOS 경로가 출력되더라도 Windows에서는 위 PowerShell 명령을 사용합니다.
+설치가 오류로 끝나면 해당 오류를 해결한 뒤 실행 명령을 진행하세요. Windows에서도 가상환경의 Python을 직접 호출하므로 `Activate.ps1` 실행은 필요 없습니다. PowerShell 예시는 `npm.ps1` 대신 `npm.cmd`를 사용하며 실행 정책을 변경할 필요가 없습니다. 실행·설치 스크립트는 운영체제에 맞는 명령을 안내합니다.
 
 수동 설치가 필요하면 다음 명령을 순서대로 사용합니다.
 
@@ -83,6 +83,28 @@ npm.cmd --prefix frontend run build
 ```
 
 NVIDIA 환경에서는 해당 CUDA와 호환되는 PyTorch wheel 설치가 필요합니다. 로컬 요구 버전은 `torch 2.10.0` / `torchvision 0.25.0`입니다.
+
+### Windows PowerShell에서 실행이 안 될 때
+
+`'..venv-review' 모듈을 로드할 수 없습니다`는 실행 경로에서 역슬래시가 빠졌을 때 발생할 수 있습니다. 올바른 경로는 `..venv-review`가 아니라 `.\.venv-review`입니다. 앞의 `.\`는 현재 폴더이고, 그 뒤의 `.venv-review`가 가상환경 폴더 이름입니다. 먼저 저장소 루트에서 파일이 있는지 확인합니다.
+
+```powershell
+Test-Path ".\.venv-review\Scripts\python.exe"
+```
+
+`True`이면 아래 명령을 그대로 실행합니다.
+
+```powershell
+& ".\.venv-review\Scripts\python.exe" .\start.py
+```
+
+`False`이거나 올바른 경로로 실행해도 의존성 오류가 나면 전용 환경 설치를 완료합니다. Python 3.12와 Node.js가 먼저 설치되어 있어야 합니다.
+
+```powershell
+py -3.12 .\setup_local.py --download-models
+```
+
+설치가 성공한 뒤 위 실행 명령을 다시 입력하세요. `(django_env)`처럼 다른 환경이 활성화된 상태에서 `python start.py`를 입력하면 그 환경의 Python을 사용할 수 있습니다. 위 명령처럼 `.venv-review`의 실행 파일을 직접 지정하면 활성화된 환경과 관계없이 프로젝트 전용 Python을 사용합니다. 기존 환경을 삭제하거나 패키지를 따로 설치할 필요는 없습니다.
 
 ## 구성
 
