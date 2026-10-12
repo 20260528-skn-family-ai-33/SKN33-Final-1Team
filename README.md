@@ -35,9 +35,9 @@
 
 ## 새 컴퓨터에서 설치
 
-Python **3.12**, Node.js **22.12 이상**을 준비합니다. Node 20은 20.19 이상도 지원합니다.
+Python **3.12**, Node.js **22.12 이상**을 사용합니다. Node 20은 20.19 이상도 지원합니다. macOS / Linux에서는 Python 3.12를 먼저 준비하고, Windows에서는 아래 절차로 Python이 없을 때 자동 다운로드합니다.
 
-모든 명령은 저장소 루트에서 실행합니다. Windows에서는 Python 3.12와 Python 실행기 `py`를 설치하고, Node.js 설치 후 PowerShell을 새로 열어 주세요. `py -3.12 --version`과 `npm.cmd --version`으로 설치를 확인할 수 있습니다. `py`가 없다면 `python --version`이 **3.12.x**인지 확인한 뒤 아래의 `py -3.12`를 `python`으로 바꿉니다.
+모든 명령은 저장소 루트에서 실행합니다. [Node.js](https://nodejs.org/en/download)를 설치한 뒤 터미널을 새로 여세요. Windows에서는 `npm.cmd --version`으로 npm이 실행되는지 확인합니다.
 
 **macOS / Linux · Bash**
 
@@ -48,8 +48,28 @@ python3.12 setup_local.py --download-models
 
 **Windows · PowerShell**
 
+사용자별 Python 절대경로나 `py` 실행기를 지정하지 않고 **uv → 프로젝트 `.venv` → 설치·실행** 순서로 진행합니다. 각 블록은 한 줄입니다. 순서대로 실행하고, 오류가 나면 해결한 뒤 다음 단계로 진행하세요.
+
+1. **uv 확인·설치** — 이미 있으면 버전을 표시하고, 없으면 WinGet으로 다운로드·설치합니다.
+
 ```powershell
-py -3.12 .\setup_local.py --download-models; if ($? -and ($LASTEXITCODE -eq 0)) { .\run.cmd }
+if (Get-Command uv -ErrorAction SilentlyContinue) { uv --version } else { winget install --id astral-sh.uv --exact }
+```
+
+uv를 새로 설치했다면 **PowerShell을 닫고 새로 연 뒤 저장소 루트로 돌아오세요.** `uv --version`이 실행되어야 다음 단계로 진행할 수 있습니다. `winget`도 없다면 [uv 공식 설치 안내](https://docs.astral.sh/uv/getting-started/installation/)에서 Windows 설치 방법을 확인하세요.
+
+2. **Python 3.12와 `.venv` 준비** — `.venv`가 없을 때만 생성합니다. 사용할 수 있는 Python 3.12가 없으면 uv가 다운로드합니다. 인터넷 연결이 필요합니다.
+
+```powershell
+if (-not (Test-Path ".\.venv")) { uv venv --python 3.12 --seed .venv }
+```
+
+`--seed`는 설치 스크립트가 사용하는 `pip`도 가상환경에 넣습니다. 기존 `.venv`는 이 단계에서 변경하지 않고 다음 단계에서 검증합니다. Python 원본 설치 경로는 uv가 찾으므로 사용자 이름이나 `cpython-3.12.x-...` 경로를 직접 입력하지 않습니다. [Python 자동 다운로드](https://docs.astral.sh/uv/pip/environments/#creating-a-virtual-environment) · [uv의 `--seed` 옵션](https://docs.astral.sh/uv/reference/cli/#uv-venv--seed)
+
+3. **패키지 설치·React 빌드·OCR 모델 다운로드 후 실행** — 프로젝트 상대경로의 Python을 사용하며 설치가 성공한 경우에만 서버를 실행합니다.
+
+```powershell
+.\.venv\Scripts\python.exe .\setup_local.py --download-models; if ($? -and ($LASTEXITCODE -eq 0)) { .\run.cmd }
 ```
 
 프로젝트 가상환경은 모든 운영체제에서 **`.venv`**로 통일합니다. 설치 스크립트는 `.venv` 생성, Python 패키지 설치, `npm ci`, React 빌드를 수행합니다. 기존 `.venv`가 Python 3.12이면 재사용하며 요구 패키지를 설치합니다. Python 버전이 다르거나 다른 운영체제에서 만든 환경이면 자동으로 덮어쓰지 않고 중단합니다. 이 경우 기존 환경을 다른 이름으로 보관한 뒤 다시 설치하세요. 가상환경은 경로를 포함하므로 다른 이름의 환경 폴더를 `.venv`로 이름만 바꿔 재사용하지 마세요.
@@ -76,12 +96,12 @@ npm --prefix frontend run build
 
 **Windows · PowerShell**
 
-각 블록이 한 줄 명령입니다. 순서대로 실행하고, 오류가 나면 해결한 뒤 다음 단계로 진행하세요.
+위 Windows 설치 안내의 uv 준비를 먼저 완료하세요. 각 블록이 한 줄 명령입니다. 순서대로 실행하고, 오류가 나면 해결한 뒤 다음 단계로 진행하세요. 기존 `.venv`는 현재 Windows에서 만든 Python 3.12 환경일 때만 재사용합니다.
 
 1. 가상환경 생성
 
 ```powershell
-py -3.12 -m venv .venv
+if (-not (Test-Path ".\.venv")) { uv venv --python 3.12 --seed .venv }
 ```
 
 2. Python 패키지 설치
@@ -120,22 +140,28 @@ NVIDIA 환경에서는 해당 CUDA와 호환되는 PyTorch wheel 설치가 필�
 
 ### Windows PowerShell에서 실행이 안 될 때
 
+**`CommandNotFoundException`과 Python 절대경로가 함께 나오는 경우**는 PowerShell이 지정된 위치의 실행 파일을 찾거나 실행하지 못한 것입니다. `setup_local.py`가 실행되기 전의 오류입니다. 다른 PC의 사용자 이름, uv 저장 위치 또는 Python 세부 버전을 포함한 경로를 복사했을 수 있습니다. `&`와 따옴표로 감싼 절대경로 자체는 올바른 PowerShell 문법이지만, 존재하지 않는 파일을 실행해 주지는 않습니다.
+
+절대경로를 상대경로로 바꾸는 것만으로 Python이 설치되지는 않습니다. **위 Windows 설치의 1~3단계**를 따라 uv를 준비하고, 필요한 Python을 다운로드해 `.venv`를 만든 뒤 `.\.venv\Scripts\python.exe`로 실행하세요. Python 3.12를 찾지 못하는 `py -3.12`의 `No suitable Python runtime found` 오류도 같은 절차로 해결할 수 있습니다. 이 절차는 `py` 실행기에 의존하지 않습니다.
+
 먼저 저장소 루트에서 프로젝트 Python이 있는지 확인합니다. `run.cmd`는 다른 환경이 활성화되어 있어도 이 실행 파일을 선택합니다.
 
 ```powershell
 Test-Path ".\.venv\Scripts\python.exe"
 ```
 
-`True`이면 아래 명령을 그대로 실행합니다.
+`True`이고 설치를 이미 완료했다면 아래 명령을 그대로 실행합니다. `True`는 파일이 있다는 뜻이며 Python 버전이나 패키지 설치까지 보장하지는 않습니다.
 
 ```powershell
 .\run.cmd
 ```
 
-`False`이거나 올바른 경로로 실행해도 의존성 오류가 나면 전용 환경 설치를 완료합니다. Python 3.12와 Node.js가 먼저 설치되어 있어야 합니다.
+`False`라면 위 Windows 설치의 1~3단계로 돌아갑니다. `.venv` 폴더는 있지만 Python 파일이 없거나 실행되지 않는다면 다른 운영체제에서 만든 환경이거나 설치가 불완전할 수 있습니다. 기존 폴더를 다른 이름으로 보관한 뒤 2단계부터 다시 생성하세요.
+
+Python은 실행되지만 의존성 오류가 나면 다음 명령으로 설치를 다시 완료합니다. Node.js와 npm도 실행 가능해야 합니다.
 
 ```powershell
-py -3.12 .\setup_local.py --download-models
+.\.venv\Scripts\python.exe .\setup_local.py --download-models
 ```
 
 설치가 성공한 뒤 `.\run.cmd`를 다시 실행하세요. 경로를 직접 지정하려면 다음 명령도 사용할 수 있습니다.
@@ -145,6 +171,14 @@ py -3.12 .\setup_local.py --download-models
 ```
 
 경로의 앞부분은 `..venv`가 아니라 `.\.venv`입니다. `.\`는 현재 폴더이고 `.venv`는 가상환경 폴더 이름입니다. `(django_env)` 등 다른 환경에 서버 패키지를 따로 설치할 필요는 없습니다. 오류 안내에는 실제 사용한 Python 경로와 실패 원인이 표시됩니다.
+
+`No module named pip`이면 기존 `.venv`가 `--seed` 없이 만들어졌을 수 있습니다. 정상적으로 실행되는 Python 3.12 가상환경인지 확인한 뒤 아래 명령으로 해당 환경에만 pip를 설치하고 설치 명령을 다시 실행하세요.
+
+```powershell
+uv pip install --python .\.venv\Scripts\python.exe pip
+```
+
+프롬프트가 `>>`로 바뀌면 아직 명령을 입력받는 중입니다. `Ctrl+C`로 취소하고, 닫히지 않은 따옴표·괄호나 줄바꿈이 들어가지 않도록 위 한 줄 블록을 다시 붙여넣으세요. `PS ...>`나 `>>` 자체는 명령에 포함하지 않습니다.
 
 ## 구성
 
