@@ -1,0 +1,65 @@
+{
+  "id": "tour-507599",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2027_강원_화천군_얼음나라화천_산천어축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/28/3588828_image2_1.jpg",
+    "format": "jpeg",
+    "width": 447,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "2e11d8e3e084aa9e518537602c4fcb3fb4d017aab05c3ea6c3fe058b0d854172"
+  },
+  "event": {
+    "title": "얼음나라화천 산천어축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2027-01-09",
+    "end_date": "2027-01-31",
+    "venue": "배머리교+화천읍 일원",
+    "address": "강원특별자치도 화천군 화천읍 산천어길 137",
+    "region": "강원특별자치도",
+    "district": "화천군",
+    "price": null,
+    "contact": "1688-3005",
+    "homepage": "https://www.narafestival.com/01_icenara/",
+    "venue_url": null,
+    "organizer": "강원특별자치도 화천군+재단법인나라",
+    "host": "강원특별자치도 화천군+재단법인나라",
+    "sponsor": null,
+    "program": "산천어체험+눈/얼음체험+얼음나라방송국+호국이체험존+먹거리등",
+    "gps": {
+      "lat": 38.11250161,
+      "lng": 127.7098432
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "얼음나라화천 산천어축제",
+      "start_date": "2027-01-09",
+      "end_date": "2027-01-31",
+      "venues": [
+        "배머리교+화천읍 일원"
+      ],
+      "organizer": "강원특별자치도 화천군+재단법인나라",
+      "contact": "1688-3005",
+      "url": "https://www.narafestival.com/01_icenara/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "507599",
+    "tour_title": "얼음나라화천 산천어축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

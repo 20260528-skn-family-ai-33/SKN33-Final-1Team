@@ -1,0 +1,65 @@
+{
+  "id": "tour-506545",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_부산_수영구_광안리어방축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/23/4056223_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "23d3afcc922f9d0d03a35f8d708b36fe456620073f76fd28ef1e07d413312a21"
+  },
+  "event": {
+    "title": "광안리어방축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-06-12",
+    "end_date": "2026-06-14",
+    "venue": "광안리해변 및 수영사적공원 일원",
+    "address": "부산광역시 수영구 광안해변로 219 (광안동)",
+    "region": "부산광역시",
+    "district": "수영구",
+    "price": null,
+    "contact": "051-610-4212",
+    "homepage": "https://www.suyeong.go.kr/festival/index.suyeong",
+    "venue_url": null,
+    "organizer": "수영구 축제위원회",
+    "host": "부산광역시 수영구",
+    "sponsor": "문화체육관광부+부산광역시",
+    "program": "뮤지컬어방+경상좌수사행렬퍼레이드+어방민속마을 등",
+    "gps": {
+      "lat": 35.15370745,
+      "lng": 129.1184306
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "광안리어방축제",
+      "start_date": "2026-06-12",
+      "end_date": "2026-06-14",
+      "venues": [
+        "광안리해변 및 수영사적공원 일원"
+      ],
+      "organizer": "수영구 축제위원회",
+      "contact": "051-610-4212",
+      "url": "https://www.suyeong.go.kr/festival/index.suyeong"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506545",
+    "tour_title": "광안리어방축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,65 @@
+{
+  "id": "tour-767114",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전남광주통합_장흥군_정남진장흥물축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/11/4075311_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "e81cb37fb36ae623577de7ff24dd5664362bbfddf77d802aed9ed024a67c06ed"
+  },
+  "event": {
+    "title": "정남진장흥물축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-25",
+    "end_date": "2026-08-02",
+    "venue": "장흥군 탐진강+편백숲 우드랜드+빠삐용zip",
+    "address": "전남광주통합특별시 장흥군 장흥읍 칠거리예양로 83",
+    "region": "전남광주통합특별시",
+    "district": "장흥군",
+    "price": null,
+    "contact": "061-864-5990",
+    "homepage": "https://www.jangheung.go.kr/festival",
+    "venue_url": null,
+    "organizer": "장흥축제관광재단",
+    "host": "전남광주통합특별시 장흥군",
+    "sponsor": null,
+    "program": "장흥 Rock 페스티벌+살수대첩 거리 퍼레이드+지상 최대의 물싸움+황금물고기(대왕장어)를 잡아라+수중줄다리기 등",
+    "gps": {
+      "lat": 34.67976234,
+      "lng": 126.9026698
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "정남진장흥물축제",
+      "start_date": "2026-07-25",
+      "end_date": "2026-08-02",
+      "venues": [
+        "장흥군 탐진강+편백숲 우드랜드+빠삐용zip"
+      ],
+      "organizer": "장흥축제관광재단",
+      "contact": "061-864-5990",
+      "url": "https://www.jangheung.go.kr/festival"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "767114",
+    "tour_title": "정남진 장흥 물축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

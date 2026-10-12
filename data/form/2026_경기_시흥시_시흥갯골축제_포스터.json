@@ -1,0 +1,65 @@
+{
+  "id": "tour-142197",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경기_시흥시_시흥갯골축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/44/4099144_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "67b91c36fd15f4cb20eb2554a023eb98f452361acb6b3ab29c1ef8db4626a12f"
+  },
+  "event": {
+    "title": "시흥갯골축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "venue": "시흥갯골생태공원",
+    "address": "경기도 시흥시 동서로 287",
+    "region": "경기도",
+    "district": "시흥시",
+    "price": null,
+    "contact": "031-310-2920",
+    "homepage": "https://shggfestival.com/",
+    "venue_url": null,
+    "organizer": "경기도 시흥시",
+    "host": "경기도 시흥시",
+    "sponsor": null,
+    "program": "소금의 기억 물의 춤+나무숲 음악제+소금창고 인형극장+판타지 열기구 체험+느린 우체국 등",
+    "gps": {
+      "lat": 37.38979099,
+      "lng": 126.7812554
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "시흥갯골축제",
+      "start_date": "2026-09-18",
+      "end_date": "2026-09-20",
+      "venues": [
+        "시흥갯골생태공원"
+      ],
+      "organizer": "경기도 시흥시",
+      "contact": "031-310-2920",
+      "url": "https://shggfestival.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "142197",
+    "tour_title": "시흥갯골축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

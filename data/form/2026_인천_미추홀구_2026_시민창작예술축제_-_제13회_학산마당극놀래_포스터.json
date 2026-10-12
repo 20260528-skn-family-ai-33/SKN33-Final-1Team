@@ -1,0 +1,60 @@
+{
+  "id": "tour-2829118",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_인천_미추홀구_2026_시민창작예술축제_-_제13회_학산마당극놀래_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/07/4090107_image2_1.jpg",
+    "format": "jpeg",
+    "width": 444,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "a315ba70aa294c96c034b284021f3156af0fb0c33e3c5d0e06ca46169952d57c"
+  },
+  "event": {
+    "title": "2026 시민창작예술축제 - 제13회 학산마당극놀래",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-19",
+    "end_date": "2026-09-19",
+    "venue": "장소수봉공원 인공폭포 야외공연장",
+    "address": "인천광역시 미추홀구 도화동 597-39 수봉공원 인공폭포 야외공연장",
+    "region": "인천광역시",
+    "district": "미추홀구",
+    "price": null,
+    "contact": null,
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "미추홀학산문화원",
+    "host": "미추홀학산문화원",
+    "sponsor": null,
+    "program": "시민예술이 꽃피는 시민창작예술축제 학산마당극놀래 올해 주제는 미추홀 사계입니다. 사계절은 단순한 자연의 변화가 아니라  그 안에서 살아가는 주민들의 삶이 켜켜이 쌓여 만들어낸 시간의 이야기이자 관계의 흐름입니다. 또한 삶의 터전이자 공간인 미추홀구의 살아지고 사라지는 변화의 시간들을 봄여름가을겨울 계절로 비유해 볼 수도 있겠습니다.",
+    "gps": null
+  },
+  "reference": {
+    "event": {
+      "name": "2026 시민창작예술축제 - 제13회 학산마당극놀래",
+      "start_date": "2026-09-19",
+      "end_date": "2026-09-19",
+      "venues": [
+        "장소수봉공원 인공폭포 야외공연장"
+      ],
+      "organizer": "미추홀학산문화원"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-19",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "2829118",
+    "tour_title": "시민창작예술축제 학산마당극놀래",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

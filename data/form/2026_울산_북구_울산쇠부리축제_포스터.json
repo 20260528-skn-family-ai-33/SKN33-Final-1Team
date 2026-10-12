@@ -1,0 +1,65 @@
+{
+  "id": "tour-538458",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_울산_북구_울산쇠부리축제_포스터.png",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/41/4039741_image2_1.png",
+    "format": "png",
+    "width": 443,
+    "height": 627,
+    "original_format": "PNG",
+    "sha256": "5f96cfaf3c1e890317af6e01a93303c53ad06707c9aa22387a34eb1e38721c00"
+  },
+  "event": {
+    "title": "울산쇠부리축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-08",
+    "end_date": "2026-05-10",
+    "venue": "달천철장 일원",
+    "address": "울산광역시 북구 달천철장길 58",
+    "region": "울산광역시",
+    "district": "북구",
+    "price": null,
+    "contact": "052-293-3500",
+    "homepage": "http://www.soeburi.org/",
+    "venue_url": null,
+    "organizer": "울산쇠부리축제추진위원회",
+    "host": "울산광역시 북구청",
+    "sponsor": null,
+    "program": "한반도 최초의 철산지 달천철장에서 펼처지는 철문화축제",
+    "gps": {
+      "lat": 35.63424081,
+      "lng": 129.3289893
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "울산쇠부리축제",
+      "start_date": "2026-05-08",
+      "end_date": "2026-05-10",
+      "venues": [
+        "달천철장 일원"
+      ],
+      "organizer": "울산쇠부리축제추진위원회",
+      "contact": "052-293-3500",
+      "url": "http://www.soeburi.org/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-20",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "538458",
+    "tour_title": "울산쇠부리축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

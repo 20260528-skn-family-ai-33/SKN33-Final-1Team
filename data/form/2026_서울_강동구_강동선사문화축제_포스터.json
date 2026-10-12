@@ -1,0 +1,65 @@
+{
+  "id": "tour-1307813",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_서울_강동구_강동선사문화축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/82/4114682_image2_1.jpg",
+    "format": "jpeg",
+    "width": 444,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "207692e6440a25556de05ba1e45fc5fc3dae4c0525d6f0f7561c95443830585d"
+  },
+  "event": {
+    "title": "강동선사문화축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-16",
+    "end_date": "2026-10-18",
+    "venue": "서울 암사동 유적",
+    "address": "서울특별시 강동구 올림픽로 875 (암사동)",
+    "region": "서울특별시",
+    "district": "강동구",
+    "price": null,
+    "contact": "02-3425-5240",
+    "homepage": "https://www.gdsunsa.com/",
+    "venue_url": null,
+    "organizer": "서울특별시 강동구",
+    "host": "서울특별시 강동구",
+    "sponsor": null,
+    "program": "개폐막식+축하공연+개막 드론쇼+폐막 불꽃쇼+거리퍼레이드+강동선사 노래자랑+자치회관 프로그램 경연대회+바위절 호상놀이 재연",
+    "gps": {
+      "lat": 37.55985381,
+      "lng": 127.1308316
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "강동선사문화축제",
+      "start_date": "2026-10-16",
+      "end_date": "2026-10-18",
+      "venues": [
+        "서울 암사동 유적"
+      ],
+      "organizer": "서울특별시 강동구",
+      "contact": "02-3425-5240",
+      "url": "https://www.gdsunsa.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1307813",
+    "tour_title": "강동선사문화축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

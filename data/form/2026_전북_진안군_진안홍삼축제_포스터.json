@@ -1,0 +1,65 @@
+{
+  "id": "tour-1718060",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_전북_진안군_진안홍삼축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/85/4095885_image2_1.jpg",
+    "format": "jpeg",
+    "width": 445,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "f5eb2727150f0b99acd7e2ed98d2f6a40939741cad4b1b58eb20a7b3469777dc"
+  },
+  "event": {
+    "title": "진안홍삼축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-18",
+    "end_date": "2026-09-20",
+    "venue": "마이산 북부 일원",
+    "address": "전북특별자치도 진안군 진안읍 마이산로 160",
+    "region": "전북특별자치도",
+    "district": "진안군",
+    "price": null,
+    "contact": "063-430-2392",
+    "homepage": "https://www.jinan.go.kr/festival/",
+    "venue_url": null,
+    "organizer": "진안홍삼축제추진위원회",
+    "host": "전북특별자치도 진안군",
+    "sponsor": null,
+    "program": "홍삼명인교실+홍삼깍두기 담그GO 나누GO+홍삼웰니스타임&산골愛홍삼한상+대동퍼레이드 등",
+    "gps": {
+      "lat": 35.773251,
+      "lng": 127.4162559
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "진안홍삼축제",
+      "start_date": "2026-09-18",
+      "end_date": "2026-09-20",
+      "venues": [
+        "마이산 북부 일원"
+      ],
+      "organizer": "진안홍삼축제추진위원회",
+      "contact": "063-430-2392",
+      "url": "https://www.jinan.go.kr/festival/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "1718060",
+    "tour_title": "진안홍삼축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

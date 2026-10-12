@@ -1,0 +1,65 @@
+{
+  "id": "tour-506295",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_경북_문경시_문경찻사발축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/81/4054281_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "b18b0f4d93f4f535c6f81bf4d1eeb65cb574c79cfbf902b0937ff35093ba49ce"
+  },
+  "event": {
+    "title": "문경찻사발축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-01",
+    "end_date": "2026-05-10",
+    "venue": "문경새재도립공원 일원",
+    "address": "경상북도 문경시 문경읍 새재로 932",
+    "region": "경상북도",
+    "district": "문경시",
+    "price": null,
+    "contact": "054-571-7677",
+    "homepage": "http://www.sabal21.com",
+    "venue_url": null,
+    "organizer": "문경관광공사",
+    "host": "문경찻사발축제추진위원회",
+    "sponsor": "문화체육관광부+경상북도청+경상북도 문경시",
+    "program": "개막식 축하공연+국제작가교류전+도자기명품전+찻사발공모대전+찻사발빚기+다례체험+전통놀이+방탈출미션+전통발물례경진대회 등",
+    "gps": {
+      "lat": 36.76160074,
+      "lng": 128.0769883
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "문경찻사발축제",
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-10",
+      "venues": [
+        "문경새재도립공원 일원"
+      ],
+      "organizer": "문경관광공사",
+      "contact": "054-571-7677",
+      "url": "http://www.sabal21.com"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506295",
+    "tour_title": "문경찻사발축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

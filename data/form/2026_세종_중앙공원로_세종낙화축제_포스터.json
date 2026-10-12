@@ -1,0 +1,65 @@
+{
+  "id": "tour-3300114",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_세종_중앙공원로_세종낙화축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/31/4039831_image2_1.JPG",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "3d9900dfc9f73206ca864eaaf33a57edf8bf088d28b90a52c36722e7c44d796f"
+  },
+  "event": {
+    "title": "세종낙화축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-16",
+    "end_date": "2026-05-16",
+    "venue": "세종호수+중앙공원 일원",
+    "address": "세종특별자치시 중앙공원로 60",
+    "region": "세종특별자치시",
+    "district": "중앙공원로",
+    "price": null,
+    "contact": "044-850-0592",
+    "homepage": "https://www.sjcf.or.kr/index.do",
+    "venue_url": null,
+    "organizer": "세종특별자치시 문화관광재단",
+    "host": "세종특별자치시청",
+    "sponsor": null,
+    "program": "市 무형유산 세종불교낙화법 활용 야간 특화 관광 축제",
+    "gps": {
+      "lat": 36.4914325,
+      "lng": 127.271784
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "세종낙화축제",
+      "start_date": "2026-05-16",
+      "end_date": "2026-05-16",
+      "venues": [
+        "세종호수+중앙공원 일원"
+      ],
+      "organizer": "세종특별자치시 문화관광재단",
+      "contact": "044-850-0592",
+      "url": "https://www.sjcf.or.kr/index.do"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-08-31",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "3300114",
+    "tour_title": "세종낙화축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

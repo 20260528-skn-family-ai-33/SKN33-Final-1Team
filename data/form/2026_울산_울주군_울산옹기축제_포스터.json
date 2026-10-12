@@ -1,0 +1,65 @@
+{
+  "id": "tour-506774",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_울산_울주군_울산옹기축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/96/4057396_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "f805d15690f29954f55c15eac67afde7f6a81e5070dcb849cfb77056d285de83"
+  },
+  "event": {
+    "title": "울산옹기축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-01",
+    "end_date": "2026-05-03",
+    "venue": "외고산 옹기마을",
+    "address": "울산광역시 울주군 온양읍 외고산3길 36",
+    "region": "울산광역시",
+    "district": "울주군",
+    "price": null,
+    "contact": "052-980-2235",
+    "homepage": "https://www.onggi.or.kr/",
+    "venue_url": null,
+    "organizer": "울주문화재단",
+    "host": "울주문화재단",
+    "sponsor": null,
+    "program": "옹기특별체험관+옹기 특공대옹기 흙놀이터+주제공연혼불+옹기 불멍+옹기콘서트+옹기축제 팝업등",
+    "gps": {
+      "lat": 35.43502449,
+      "lng": 129.2795392
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "울산옹기축제",
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-03",
+      "venues": [
+        "외고산 옹기마을"
+      ],
+      "organizer": "울주문화재단",
+      "contact": "052-980-2235",
+      "url": "https://www.onggi.or.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "506774",
+    "tour_title": "울산옹기축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

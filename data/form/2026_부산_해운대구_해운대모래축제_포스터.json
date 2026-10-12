@@ -1,0 +1,65 @@
+{
+  "id": "tour-566822",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_부산_해운대구_해운대모래축제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/58/4058358_image2_1.jpg",
+    "format": "jpeg",
+    "width": 445,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "f6f33196b82250020da9819047cf1487f4e6501dc8f51958651559759e66a9de"
+  },
+  "event": {
+    "title": "해운대모래축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-05-15",
+    "end_date": "2026-05-18",
+    "venue": "해운대 해수욕장",
+    "address": "부산광역시 해운대구 해운대해변로 280 (중동)",
+    "region": "부산광역시",
+    "district": "해운대구",
+    "price": null,
+    "contact": "051-749-4064",
+    "homepage": "https://www.haeundae.go.kr/tour/index.do?menuCd=DOM_000000309005000000",
+    "venue_url": null,
+    "organizer": "부산광역시 해운대구+해운대문화원",
+    "host": "부산광역시 해운대구",
+    "sponsor": null,
+    "program": "세계모래조각 작품전+ 도전 나도 모래조각가(모래조각 체험교실)+ 날아라 샌드보드(모래썰매) 등",
+    "gps": {
+      "lat": 35.15949661,
+      "lng": 129.1625766
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "해운대모래축제",
+      "start_date": "2026-05-15",
+      "end_date": "2026-05-18",
+      "venues": [
+        "해운대 해수욕장"
+      ],
+      "organizer": "부산광역시 해운대구+해운대문화원",
+      "contact": "051-749-4064",
+      "url": "https://www.haeundae.go.kr/tour/index.do?menuCd=DOM_000000309005000000"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "566822",
+    "tour_title": "해운대 모래축제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,65 @@
+{
+  "id": "tour-141918",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_대전_유성구_대전사이언스페스티벌_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/23/4053923_image2_1.jpg",
+    "format": "jpeg",
+    "width": 443,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "fc8d131ed49f64928adba5872c7824ffda03d2c0ecfb0c6f80b4d2587d9ecc0b"
+  },
+  "event": {
+    "title": "대전사이언스페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-04-17",
+    "end_date": "2026-04-19",
+    "venue": "DCC대전컨벤션센터 제2전시장",
+    "address": "대전광역시 유성구 엑스포로 87 (도룡동)",
+    "region": "대전광역시",
+    "district": "유성구",
+    "price": null,
+    "contact": "042-477-5181",
+    "homepage": "https://www.xn--vk1b24prmdv9ba048b1qd46ae07d7pb.com/",
+    "venue_url": null,
+    "organizer": "대전관광공사+한국과학창의재단+국립중앙과학관",
+    "host": "과학기술정보통신부+대전광역시",
+    "sponsor": null,
+    "program": "사이언스 미래연구소+사이언스 그린파크+사이언스 아트 브릿지+사이언스 가든+사이언스 어드벤처",
+    "gps": {
+      "lat": 36.37535744,
+      "lng": 127.3893853
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "대전사이언스페스티벌",
+      "start_date": "2026-04-17",
+      "end_date": "2026-04-19",
+      "venues": [
+        "DCC대전컨벤션센터 제2전시장"
+      ],
+      "organizer": "대전관광공사+한국과학창의재단+국립중앙과학관",
+      "contact": "042-477-5181",
+      "url": "https://www.xn--vk1b24prmdv9ba048b1qd46ae07d7pb.com/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "141918",
+    "tour_title": "대전사이언스페스티벌",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

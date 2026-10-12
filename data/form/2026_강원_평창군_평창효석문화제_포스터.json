@@ -1,0 +1,65 @@
+{
+  "id": "tour-507635",
+  "collected_at": "2026-10-12T11:28:55+09:00",
+  "collector": "ksh8343",
+  "image": {
+    "file": "data/img/2026_강원_평창군_평창효석문화제_포스터.jpg",
+    "source_url": "https://tong.visitkorea.or.kr/cms/resource/90/4096390_image2_1.jpg",
+    "format": "jpeg",
+    "width": 470,
+    "height": 627,
+    "original_format": "JPEG",
+    "sha256": "4b669b8f6bec89c716d6f4db6fd8c07f3e32d5f3ee52a04dfcacfff5717679d5"
+  },
+  "event": {
+    "title": "평창효석문화제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-04",
+    "end_date": "2026-09-13",
+    "venue": "봉평면 효석문화마을 일원",
+    "address": "강원특별자치도 평창군 봉평면 이효석길 157",
+    "region": "강원특별자치도",
+    "district": "평창군",
+    "price": null,
+    "contact": "033-335-2323",
+    "homepage": "http://www.hyoseok.com",
+    "venue_url": null,
+    "organizer": "사단법인 이효석문학선양회",
+    "host": "사단법인 이효석문학선양회",
+    "sponsor": "강원특별자치도 평창군+평창관광문화재단",
+    "program": "마당극공연(메밀꽃필무렵)+평창메밀꽃가요제+전국효석백일장+이효석문학상시상식+라디오공개방송",
+    "gps": {
+      "lat": 37.61410983,
+      "lng": 128.371554
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "평창효석문화제",
+      "start_date": "2026-09-04",
+      "end_date": "2026-09-13",
+      "venues": [
+        "봉평면 효석문화마을 일원"
+      ],
+      "organizer": "사단법인 이효석문학선양회",
+      "contact": "033-335-2323",
+      "url": "http://www.hyoseok.com"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "reference_date": "2026-09-16",
+    "image_provider": "한국관광공사 국문 관광정보 서비스 TourAPI (data.go.kr 15101578)",
+    "image_api": "KorService2 searchFestival2 + detailImage2",
+    "tour_contentid": "507635",
+    "tour_title": "평창효석문화제",
+    "match": "축제명·기간·시도 대조",
+    "image_rights": "TourAPI 저작권 유형 Type3 (Type1: 출처표시, Type3: 출처표시·변경금지). 포스터 원저작권은 주최 기관"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}
