@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0",
+  "reviewer_kind": "AI",
+  "reviewer_id": "/root/quality_evidence",
+  "independent_from_author": true,
+  "reviewed_at": "2026-10-06T12:05:03.634814+09:00",
+  "human_review_status": "pending",
+  "input_sha256": {
+    "docs/reports/data-collection/report.html": "52ba79b1dcbeeb9e1c9881e558bb7d2ee3f6a1c75f90dcf8029ac1d18157b040",
+    "docs/reports/data-collection/report.pdf": "410123b7de5b589b18d6e98661ca4694d64268629a666d0ecf5d57a9411a340b",
+    "docs/reports/data-collection/template-field-map.json": "cde9d811b282460448abe3493d3453f77aad3703bd5fa23527b72d11bc6ecb30",
+    "data/collection/inventory.csv": "73e82efa83c9f76e86522a2025377fa63b8544cedc0857040eec89d083422b69",
+    "data/collection/summary.json": "355d2362ef4d6bbc9e097e7f005b8711b6e896eb4836d695c1ea059ec24a0cdc"
+  },
+  "pdf_pages": 11,
+  "pdf_bytes": 35057603,
+  "pdf_metadata": {
+    "/Title": "SKN33 1팀 수집 데이터 보고서",
+    "/Creator": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "/Producer": "Skia/PDF m154",
+    "/CreationDate": "D:20261006025913+00'00'",
+    "/ModDate": "D:20261006025913+00'00'"
+  },
+  "pdf_attachments": [],
+  "annotations": [
+    {
+      "page": 1,
+      "type": "/Link",
+      "uri": "https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team"
+    },
+    {
+      "page": 8,
+      "type": "/Link",
+      "uri": "https://docs.google.com/document/d/1JkpF21eSmv-509OQK14vYRk5wqiu5yHr/edit"
+    }
+  ],
+  "html_field_count": 31,
+  "official_required_field_count": 31,
+  "missing_fields_or_pdf_labels": [],
+  "embedded_images": [
+    {
+      "asset_id": "SYN-AD-01-normal",
+      "sha256": "14f6eaf28ec840fc4b179d58627883a1f777b85c52b634520f73d35c009f0731",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-01-mismatch",
+      "sha256": "c9f08152d75ed816061bce0f840a18d43df925195e3104ea41caac4e42362cc2",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-01-ambiguous",
+      "sha256": "ee82945c4eae480f4f89c23de231e514b95fd672ba66a33de8465f462924031c",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-01-missing_evidence",
+      "sha256": "1917e717978ba0fdda73ab4fab61c39f7d3b0a441c8179e4a7d5b2228bd3373e",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-02-normal",
+      "sha256": "db7e14a77facf07e3cf3dad3aa72454e7fcd33f8a110f633740c61cdfe36ef10",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-02-mismatch",
+      "sha256": "92a191844b4bb2b4dbf2cb333b9d3300417b9e2f33938af06c2d03822b066a19",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-02-ambiguous",
+      "sha256": "b181476e7dfdcd0a73d0844e1e94d088a58c554b0e31afdacc6a18fd4b3d67ab",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-02-missing_evidence",
+      "sha256": "4bb38d9f5afc77a93151e34284d9edcd9d4d7eed4c482a69f41878fc9e3df44d",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-03-normal",
+      "sha256": "429d3811fe5ecb7d767965e7f2aacff920b132493b94363e040a71ebdc52d3b1",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-03-mismatch",
+      "sha256": "0f8bb66e7baf7234ffb13cd04c20373d4038f8da5bcb3081d6f0db90b5f0da75",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-03-ambiguous",
+      "sha256": "12cf885741bcd367e25dfc8aab250d97ee76f90585e430398a20fbe175076f3c",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    },
+    {
+      "asset_id": "SYN-AD-03-missing_evidence",
+      "sha256": "9ed506c2f74abac044ab6f170d955b5bdb8ed62953c572e6d062726fa30f7403",
+      "matches_raw_and_observations": true,
+      "png_metadata_keys": [],
+      "gps_exif_present": false
+    }
+  ],
+  "expected_counts_confirmed_against_raw_quality_metrics": {
+    "documents": 10,
+    "requests": 250,
+    "request_groups": 50,
+    "new_images": 12,
+    "new_image_groups": 3,
+    "legacy_images": 6,
+    "legacy_groups": 1,
+    "all_images": 18,
+    "all_image_groups": 4,
+    "inventory_files": 29,
+    "human_approved_ready": 0
+  },
+  "public_heuristic_hits": 0,
+  "collection_plus_public_checks": {
+    "passed": 332,
+    "pending": 1
+  },
+  "report_cited_collection_snapshot": {
+    "passed": 331,
+    "failed": 0,
+    "pending": 1,
+    "scope": "Raw collection snapshot before public PDF attachment scan; public checks are separate."
+  },
+  "visual_review": {
+    "pages_viewed_individually": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "method": "view_image of each final 90dpi PDF page and entire contact sheet",
+    "clipped_text": false,
+    "overlapping_content": false,
+    "missing_korean_glyphs": false,
+    "table_rows_cut": false,
+    "appendix_images_missing": false,
+    "notes": [
+      "Page 5 checklist path and full SHA wrap to the next line; no characters lost.",
+      "Pages 6-8 distinguish incomplete human/privacy/rights review and future intake/submission.",
+      "All three appendix pages retain four images and case captions."
+    ]
+  },
+  "semantic_findings": [
+    "29 primary files are separated from 250 request records and supplemental evidence.",
+    "New images 12/3 groups and legacy 6/1 are explicit; combined 18/4 is derivable rather than printed as its own aggregate row.",
+    "10/06 is authored snapshot; 10/07 12:00 intake remains future/incomplete; 10/08 submission is scheduled.",
+    "Human approvals zero; actual business materials not provided/unconfirmed.",
+    "No model training, OCR run, real performance evaluation, rights approval or external sharing claimed complete.",
+    "All 31 specified fields present, including date/change description/changer/status history columns."
+  ],
+  "limitations": [
+    "Human privacy review and rights clearance remain pending.",
+    "External official template not independently reopened here; author-grounded 31-field map was checked against visible HTML/PDF.",
+    "Initial privacy pattern hit was confirmed within PNG base64 random bytes, not report text; encoded pixels excluded from text heuristics and embedded images hash matched and visually reviewed."
+  ],
+  "result": "Independent AI artifact QA passed; human privacy/approval gate pending",
+  "link_update_verification": {
+    "verified_at": "2026-10-06T08:23:51.357303+00:00",
+    "scope": "Google Drive 경로 변경만 검증. 이전 독립 검토의 input_sha256과 승인 상태는 당시 기록으로 보존.",
+    "verified_sha256": {
+      "README.md": "66e96f4fdbe3e265782149f695b4c84469fb33a8a38d52732de98754567715a6",
+      "docs/project-links.json": "21dc2175c768ffe6f728a41d720340d7ef6d479c4f97b0a13faa92400821ab0d",
+      "docs/문서안내.html": "99329c1480c246deb20f64233989ad3bd5dd01047a655d4fc4e90982ff9c4a2f",
+      "docs/planning/organized/index.html": "aa627334735ffa4bc90536877d430d38cfd6bab0283707eb8eaf739a45742d4d",
+      "docs/planning/organized/document-map.json": "fed019b8a9f37aa1272a2757d4a63672a87673de6d53d9d330120de6c4252ae5",
+      "docs/planning/requirements-trace.csv": "bfac27f8a3753c1a243c427d19411377f17b0fd8ca08531fa468bda089707569",
+      "docs/planning/보관/01_초기검수기획/requirements-trace.csv": "bfac27f8a3753c1a243c427d19411377f17b0fd8ca08531fa468bda089707569",
+      "docs/planning/보관/01_초기검수기획/strawberry-inspection-plan.html": "c9f169f10315a0d33b604e7b7abb4c7eb58a96880bb673d709e9243fa5fa3ed5",
+      "docs/planning/보관/01_초기검수기획/inspection-plan.json": "341cb49adcb585619f93fca413c1d4bfcc5e310939a0ea7f98d1be04ffafa754",
+      "docs/planning/보관/01_초기검수기획/source-functional-spec.json": "838413b227e3d3e91f23666a569de30edd4abcf8d8a6bba949975603ed793c52",
+      "data/collection/scripts/build_report.py": "ca607df56350ca091b2665e95e4cf827da004d2aad523e759df112eafb830431",
+      "docs/reports/data-collection/template-field-map.json": "7336e06d2e53cef372722fd912251a307e406c8b9f1e949229e9067db5b0b697",
+      "docs/reports/data-collection/report.html": "a2420c8d876289aaaf2feefa9d802da4a29366264504e2164aa77c72d33d5bc8",
+      "docs/reports/data-collection/report.pdf": "e158350898165b276cd2d260ed8d454ef4c82cc5e9ed3c601f9ecad7f466126a"
+    },
+    "requirements_row_links_verified": 69,
+    "old_document_ids_remaining": 0,
+    "pdf_pages": 11,
+    "pdf_bytes": 35056606,
+    "visual_review": "11페이지 접촉 시트와 링크 변경 8페이지 전체 크기 확인. 잘림·겹침 없음.",
+    "result": "passed"
+  }
+}

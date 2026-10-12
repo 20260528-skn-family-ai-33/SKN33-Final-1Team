@@ -341,7 +341,13 @@ def validate(root, public_paths=()):
     for path in public_paths:
         try:
             if path.suffix.lower() in ('.html', '.md', '.txt', '.csv', '.json'):
-                text_sources.append((path, path.read_text(encoding='utf-8')))
+                content = path.read_text(encoding='utf-8')
+                if path.suffix.lower() == '.html':
+                    # Encoded pixels are not human-readable phone/ID text. Retain
+                    # HTML text, hidden content and other attributes for scanning;
+                    # binary artwork is checked visually and by exact source hash.
+                    content = re.sub(r'data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+', '[embedded image bytes]', content)
+                text_sources.append((path, content))
             elif path.suffix.lower() == '.pdf':
                 try:
                     from pypdf import PdfReader

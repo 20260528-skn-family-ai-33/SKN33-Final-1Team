@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-10-06T11:47:18.676351+09:00",
+  "generated_at": "2026-10-06T12:03:25.615848+09:00",
   "method": "read_only_file_metadata_and_content_checks",
   "scope": "Synthetic collection quality checks; no training or independent performance evaluation",
   "overall_status": "pending",
   "human_review_status": "pending",
   "summary": {
-    "passed": 331,
+    "passed": 332,
     "pending": 1
   },
   "metrics": {
@@ -33,7 +33,7 @@
     "legacy_images": 6,
     "legacy_independent_original_groups": 1,
     "privacy_heuristic_hits": 0,
-    "ai_basic_checks_passed": 331,
+    "ai_basic_checks_passed": 332,
     "ai_structurally_checked_documents": 10,
     "ai_structurally_checked_requests": 250,
     "ai_structurally_checked_new_images": 12
@@ -1717,6 +1717,11 @@
       "detail": null
     },
     {
+      "id": "public.pdf_no_attachments.report",
+      "status": "passed",
+      "detail": null
+    },
+    {
       "id": "privacy.heuristic_scan",
       "status": "passed",
       "detail": []
@@ -2026,6 +2031,49 @@
         "Document ambiguity definition now includes unclear applicability; updated clause independently checked in all 10 documents."
       ],
       "result": "Independent AI visual observations consistent; all labels and rights remain human-unreviewed drafts"
+    },
+    {
+      "review_id": "QA-REPORT-ARTIFACT-01",
+      "reviewer_kind": "AI",
+      "reviewer_id": "/root/quality_evidence",
+      "independent_from_author": true,
+      "human_review_status": "pending",
+      "reviewed_at": "2026-10-06T12:05:03.634814+09:00",
+      "input_sha256": {
+        "docs/reports/data-collection/report.html": "52ba79b1dcbeeb9e1c9881e558bb7d2ee3f6a1c75f90dcf8029ac1d18157b040",
+        "docs/reports/data-collection/report.pdf": "410123b7de5b589b18d6e98661ca4694d64268629a666d0ecf5d57a9411a340b",
+        "docs/reports/data-collection/template-field-map.json": "cde9d811b282460448abe3493d3453f77aad3703bd5fa23527b72d11bc6ecb30",
+        "data/collection/inventory.csv": "73e82efa83c9f76e86522a2025377fa63b8544cedc0857040eec89d083422b69",
+        "data/collection/summary.json": "355d2362ef4d6bbc9e097e7f005b8711b6e896eb4836d695c1ea059ec24a0cdc"
+      },
+      "input_freshness": "current",
+      "report_review_path": "data/collection/evidence/report-review.json",
+      "pdf_pages": 11,
+      "visual_pages_reviewed": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "template_fields_verified": 31,
+      "embedded_synthetic_images_hash_verified": 12,
+      "pdf_attachments": 0,
+      "privacy_text_pattern_hits": 0,
+      "findings": [
+        "All 11 final PDF pages independently viewed; no clipping, overlap or missing Korean glyphs.",
+        "31 author-grounded official template fields and four history subcolumns present in HTML and extracted PDF text.",
+        "12 self-contained HTML images hash-match synthetic originals and carry no GPS metadata.",
+        "Raw collection snapshot has 331 passing checks; public PDF attachment check adds one passing check, total 332; human privacy review remains pending.",
+        "New 12 images/3 groups and legacy 6/1 are explicit; combined totals 18/4 derive correctly."
+      ],
+      "result": "Independent AI HTML/PDF quality checks passed; human review pending"
     }
   ]
 }

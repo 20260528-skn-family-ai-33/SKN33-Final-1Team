@@ -2266,10 +2266,11 @@
   "sourceTitle": "요구사항정의서_33기_1팀",
   "sourceVersion": "v0.2 간결본 · 2026-10-02",
   "snapshot": "2026-10-02",
-  "url": "https://docs.google.com/spreadsheets/d/1h4nOXjF4ly5Mh5837IR30CjQA6DWL8lHd0G7fv13m7A/edit",
+  "url": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit",
   "gids": {
-    "requirements": 1753907606,
-    "tests": 1332463035,
-    "project": 2124032296
-  }
+    "requirements": 1153128012,
+    "tests": null,
+    "project": null
+  },
+  "sourceLocationNote": "연결 경로 갱신: 현재 요구사항 파일은 시트1만 제공하며 이전 검증 기준·프로젝트 기준 탭 경로는 연결하지 않음."
 }

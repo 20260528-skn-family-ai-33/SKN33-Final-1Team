@@ -59,6 +59,7 @@ def test_confirmation_idempotency_and_snapshots(setup):
     confirm(client)
     run = client.post('/api/runs', json=request).json()
     assert run['status'] == 'completed'
+    assert run['results'][0]['execution_status'] == 'succeeded'
     assert client.post('/api/runs', json=request).json()['id'] == run['id']
     assert len(calls) == 1
     second_asset = upload(client)
@@ -67,6 +68,8 @@ def test_confirmation_idempotency_and_snapshots(setup):
     assert client.get('/api/criteria').json()['confirmed'] is False
     assert client.post('/api/runs', json={**request, 'idempotency_key': 'new'}).status_code == 409
     saved = client.get('/api/runs/' + run['id']).json()
+    assert saved['status'] == 'completed'
+    assert saved['results'][0]['execution_status'] == 'succeeded'
     assert saved['criteria_snapshot']['rules'][0]['expected'] == '딸기라떼'
     assert saved['asset']['sha256'] == asset['sha256']
 
@@ -133,3 +136,55 @@ def test_partial_execution_and_out_of_bounds_evidence(setup, monkeypatch):
     result = client.post('/api/runs', json={**request, 'idempotency_key': 'invalid-box'}).json()
     assert result['status'] == 'failed'
     assert result['results'][0]['verdict'] is None
+
+
+@pytest.mark.parametrize('identifier_field', ['id', 'rule_id'])
+def test_canonical_and_legacy_criteria_are_accepted_without_changing_confirmation_version(setup, identifier_field):
+    import hashlib
+    client, _, criteria_path, _, _ = setup
+    raw = json.dumps({'rules': [{identifier_field: 'C01', 'name': '상품명', 'expected': '딸기라떼'}]}).encode()
+    criteria_path.write_bytes(raw)
+    version = hashlib.sha256(raw).hexdigest()[:16]
+    current = client.get('/api/criteria').json()
+    assert current['rules'][0]['rule_id'] == current['rules'][0]['id'] == 'C01'
+    assert current['version'] == version
+    assert confirm(client) == version
+    asset = upload(client)
+    run = client.post('/api/runs', json={
+        'asset_id': asset['id'], 'criteria_version': version, 'idempotency_key': identifier_field}).json()
+    assert run['status'] == 'completed'
+    assert run['results'][0]['rule_id'] == 'C01'
+    assert run['results'][0]['execution_status'] == 'succeeded'
+    assert client.get('/api/criteria').json()['confirmed'] is True
+    assert criteria_path.read_bytes() == raw
+
+
+@pytest.mark.parametrize('rules', [
+    [{'id': 'C01', 'rule_id': 'C02'}],
+    [{'id': 'C01'}, {'rule_id': 'C01'}],
+])
+def test_invalid_criteria_identifiers_are_rejected_before_confirmation(setup, rules):
+    client, calls, criteria_path, _, _ = setup
+    criteria_path.write_text(json.dumps({'rules': rules}))
+    response = client.get('/api/criteria')
+    assert response.status_code == 422
+    assert response.json()['detail']['code'] == 'INVALID_CRITERIA'
+    assert calls == []
+
+
+def test_duplicate_mcp_result_identifiers_do_not_count_as_completed(setup, monkeypatch):
+    client, _, criteria_path, _, _ = setup
+    criteria_path.write_text(json.dumps({'rules': [
+        {'rule_id': key, 'name': key, 'expected': '조건'} for key in ('C01', 'C02')]}))
+    def duplicate_results(*_):
+        row = {'rule_id': 'C01', 'name': 'C01', 'expected': '조건', 'verdict': '충족',
+               'execution_status': 'completed', 'observed': '관찰', 'reason': '테스트', 'evidence': [], 'method': 'test-only'}
+        return {'results': [row, dict(row)]}
+    monkeypatch.setitem(sys.modules, 'app.mcp_client', SimpleNamespace(inspect_via_mcp=duplicate_results))
+    version = confirm(client)
+    asset = upload(client)
+    run = client.post('/api/runs', json={
+        'asset_id': asset['id'], 'criteria_version': version, 'idempotency_key': 'duplicate-results'}).json()
+    assert run['status'] == 'failed'
+    assert [row['rule_id'] for row in run['results']] == ['C01', 'C02']
+    assert all(row['verdict'] is None for row in run['results'])

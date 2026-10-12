@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="사용자 7역할의 행위·발주/자료 범위·권한 운영 제안과 33개 상세 기능·69개 요구사항·시험을 연결한 명세. 공통 실행 계약 v1 및 2026-10-06 구현 기록 반영.">
+<title>사용자 역할별 요구사항·권한 명세 · 동작그만 밑장빼기냐</title>
+<style>
+:root{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#203d34;background:#f4f3ee}
+*{box-sizing:border-box}body{margin:0;font-size:15px;line-height:1.85}.document{max-width:1240px;margin:36px auto;padding:42px 44px;background:#fffefb;border:1px solid #dbded3;border-radius:18px}h1{font-size:36px;line-height:1.4;letter-spacing:-.055em;margin:0 0 20px}h2{font-size:24px;line-height:1.5;letter-spacing:-.035em;margin:44px 0 18px;padding-top:26px;border-top:1px solid #dbded3}h3{font-size:18px;margin:24px 0 12px}p{margin:12px 0}strong{font-weight:750}code{font-family:ui-monospace,Consolas,monospace;background:#edf1e8;padding:2px 5px;border-radius:4px;font-size:.9em;overflow-wrap:anywhere}li{margin:9px 0}a{color:#315b48;text-underline-offset:4px}.table-wrap{overflow:auto;margin:20px 0;border:1px solid #dbded3;border-radius:12px}table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px;line-height:1.8}th,td{text-align:left;vertical-align:top;padding:13px 14px;border-bottom:1px solid #dbded3;overflow-wrap:anywhere}th{background:#edf0e8}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#fafbf7}.source-note{font-size:12px;color:#69746b;padding:25px 0 0;margin-top:30px;border-top:1px solid #dbded3}
+@media(max-width:800px){.document{margin:16px;padding:24px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}body{font-size:14px}}
+@media print{@page{size:A4 landscape;margin:14mm}:root{background:white;color:#18251e}body{font-size:10pt}.document{max-width:none;margin:0;padding:0;border:0}h1{font-size:24pt}h2{font-size:16pt;break-after:avoid;margin-top:26px}.table-wrap{overflow:visible;border:0}table{min-width:0;font-size:8.5pt}th,td{padding:6px 7px}thead{display:table-header-group}tr{break-inside:avoid}p,li{orphans:3;widows:3}code{background:#f0f0f0}}
+
+html{scroll-behavior:smooth}h1,h2,h3,[id]{scroll-margin-top:24px}.doc-nav,.role-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}.doc-nav a,.role-nav a{display:inline-flex;align-items:center;text-decoration:none;border:1px solid #cdd8cb;border-radius:9px;padding:8px 13px;background:#fafbf7;font-size:13px;font-weight:650}.doc-nav a[aria-current="page"]{background:#315b48;color:#fff;border-color:#315b48}.role-nav a{padding:7px 12px}.doc-nav a:hover,.role-nav a:hover{background:#e6eee2;color:#203d34}a:focus-visible{outline:3px solid #8a6331;outline-offset:3px}.notice{padding:18px 22px;margin:22px 0;background:#edf3e9;border:1px solid #cddcca;border-left:4px solid #52734e;border-radius:10px}.notice p:first-child{margin-top:0}.notice p:last-child{margin-bottom:0}.notice.proposal{background:#fff7e8;border-color:#e9dcc1;border-left-color:#a2783d}.status-note{font-size:13px;line-height:1.8;background:#f2f4ee;padding:12px 16px;border-radius:8px}.feature-ref,.requirement-ref{white-space:nowrap}.implementation-detail{display:block;min-width:210px;max-width:440px;font-size:12px;color:#536052;margin-top:6px}.table-wrap:focus-visible{outline:3px solid #8a6331;outline-offset:3px}.source-note a{overflow-wrap:anywhere}
+@media print{.doc-nav,.role-nav{display:none}html{scroll-behavior:auto}.notice{padding:10px 13px}.implementation-detail{min-width:0;max-width:none}a{text-decoration:none;color:inherit}}
+
+.filter-tools{display:flex;flex-wrap:wrap;gap:14px;align-items:end;padding:15px;background:#edf3e9;border-radius:10px}.filter-tools[hidden]{display:none}.filter-tools label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:650}.filter-tools label:has(input){flex:1;min-width:220px}.filter-tools select,.filter-tools input,.filter-tools button{font:inherit;padding:9px 12px;border:1px solid #aabda1;border-radius:8px;background:white;color:#203d34}.filter-tools input{width:100%}.filter-tools button{cursor:pointer}.filter-count,.role-actions{font-size:13px;color:#536052}.action-links,.trace-tests{display:block;margin-top:7px;font-size:12px}.action-links{min-width:190px}.role-label{font-size:12px;color:#536052}#permission-details{min-width:1120px;font-size:12px}#permission-details td:nth-child(6){min-width:150px}#permission-details td:nth-child(7){min-width:145px}.permission-summary{min-width:1080px}a:focus-visible,input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #8a6331;outline-offset:3px}tr[hidden]{display:none}tr:target{outline:3px solid #a2783d;outline-offset:-3px;background:#fff7e8} @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}} @media print{.filter-tools,.filter-count,.role-actions{display:none!important}tr[hidden]{display:table-row!important}#permission-details,.permission-summary{min-width:0;font-size:8pt}.action-links{min-width:0}#permission-details td:nth-child(6),#permission-details td:nth-child(7){min-width:0}}
+</style>
+</head>
+<body><main class="document">
+<nav class="doc-nav" aria-label="문서 이동"><a href="./index.html">전체 문서 목차</a><a href="./05_사용자별_기능정의서.html" aria-current="page">사용자별 기능정의서</a><a href="./02_기능정의서.html">상세 기능정의서</a><a href="./공통실행계약.html">공통 실행 계약</a></nav>
+<h1 id="section">사용자 역할별 기능·요구사항 및 권한 명세</h1>
+<p><strong>프로젝트:</strong> 동작그만 밑장빼기냐<br />
+<strong>갱신 기준일:</strong> 2026-10-06 · 공통 실행 계약 v1<br />
+<strong>상세 기준:</strong> <a href="./02_기능정의서.html">02_기능정의서.html</a> · <a href="./공통실행계약.html">공통실행계약.html</a></p>
+<p>상세 기능정의서의 33개 기능을 <strong>서비스 사용자 6개 역할</strong>과 <strong>내부 개발·평가 역할</strong>로 재구성한다. 역할별로 필요한 행동을 먼저 확인한 뒤, 기능·요구사항 ID를 눌러 입력·출력·예외·수용 기준을 조회할 수 있다. 일반 사용자는 발주자이며, 제작자·검수 담당자·법률·권리 검토자·최종 승인자·시스템 관리자를 업무에 따라 구분한다.</p>
+<p>이 문서는 사용자와 권한에 대한 <strong>설계 제안</strong>이다. <a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a>과 Q01·Q08의 구체 역할명, 겸임 정책, 승인 조건은 미확정이며 <strong>역할별 인증·접근 제어는 현재 미구현</strong>이다. 아래 사용자 행동·권한·완료 기준은 목표 동작을 정의한다. 기능 ID·69개 원 요구사항 ID·우선순위는 유지하며 구현 범위는 2026-10-06 상세 정의서와 구현 기록에 맞췄다. 이번 문서 갱신에서 앱·모델 시험을 새로 실행한 것은 아니다.</p>
+
+<div class="notice" id="current-scope">
+<p><strong>지금 가능한 흐름</strong><br>주제·발주 조건 선택 → 저장된 JSON 기준 읽기 → 사람 확정 → PNG/JPEG 접수 → 실제 MCP/OCR 검사 → 항목별 근거·판정·이력 조회.</p>
+<p>현재는 딸기라떼·페스티벌·크루아상 3개 주제와 시연 이미지 18장을 사용한다. 문구 검사는 일부 구현했으며 개수·외관 검사는 미실행으로 표시한다. 이미지 18장은 AI로 만든 시연 자료로, 독립 평가 18건이나 범용 정확도 근거가 아니다.</p>
+<p><strong>다음 구현 범위</strong><br>명세서·계약서에서 LLM으로 기준 초안 추출, Hybrid RAG, A01–A08 협업, 역할별 권한, 보완 요청·수정본 재검수·최종 승인. 현재 문서 자동 추출과 8개 에이전트 협업은 미구현이다.</p>
+</div>
+<nav class="role-nav" aria-label="사용자 역할 빠른 이동"><a href="#r01">R01 발주자</a><a href="#r02">R02 제작자</a><a href="#r03">R03 검수 담당자</a><a href="#r04">R04 전문 검토 · 선택</a><a href="#r05">R05 승인자</a><a href="#r06">R06 관리자</a><a href="#r07">R07 개발·평가</a><a href="#section-2">권한 배정표</a><a href="#section-3">업무 흐름·공통 기준</a><a href="#section-5">33개 기능 추적표</a></nav>
+<h2 id="section-1">1. 사용자 구분</h2>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>역할 ID</th>
+<th>사용자 유형</th>
+<th>정의</th>
+<th>핵심 책임</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td>일반 사용자 — 발주자·광고주</td>
+<td>광고 제작을 의뢰하고 사용 목적과 요구사항을 제공하는 사람</td>
+<td>발주 등록, 기준 문서·사용 계획 제공, 결과 확인</td>
+</tr>
+<tr>
+<td>R02</td>
+<td>제작자 — 디자이너·납품 담당자</td>
+<td>발주에 배정되어 광고 이미지와 제작 증빙을 제출하는 사람</td>
+<td>납품, 제작·소재 증빙 제출, 수정본 제출</td>
+</tr>
+<tr>
+<td>R03</td>
+<td>검수 담당자 — 업무 검토자</td>
+<td>제출 자료와 AI 검사 결과를 검토하고 수정 업무를 관리하는 사람</td>
+<td>기준 확정, 검사 실행, 결과 확인, 보완 요청, 재검수</td>
+</tr>
+<tr>
+<td>R04</td>
+<td>법률·권리 검토자 · 선택 확장</td>
+<td>계약·소재 이용 조건·관련 공식 근거에 대한 검토를 맡는 사람</td>
+<td>사용 범위와 증빙 검토, 추가 확인 사항과 전문 의견 제시</td>
+</tr>
+<tr>
+<td>R05</td>
+<td>최종 승인자</td>
+<td>해당 발주의 최종 승인 권한을 별도로 부여받은 사람</td>
+<td>최신 결과 확인, 미해결 조건 점검, 승인 또는 보류</td>
+</tr>
+<tr>
+<td>R06</td>
+<td>시스템 관리자 — 운영 담당자</td>
+<td>계정 권한과 서비스 운영 정책·환경을 관리하는 사람</td>
+<td>접근 권한, 모델·검색 운영, 처리 한도·보존 정책, 운영 이력</td>
+</tr>
+<tr>
+<td>R07</td>
+<td>개발·평가 담당자 — 내부 역할</td>
+<td>서비스 구현과 데이터·모델·품질 시험을 담당하는 사람</td>
+<td>학습·평가, 데이터 관리, 통합 시험, 배포·산출물 관리</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>계정과 역할은 구분한다.</strong> 한 계정에 여러 역할을 부여할 수 있고, 같은 사람도 발주별로 다른 역할을 맡을 수 있다. 역할 겸임을 허용하더라도 기준 확정, 요청 확정, 전문 검토, 최종 승인은 각각의 행위와 권한·시각·대상 버전으로 기록한다.</p>
+<h2 id="r01">2. R01 — 일반 사용자 / 발주자</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R01">R01 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R01">R01 원 요구사항 찾기</a></p>
+<p><strong>목적:</strong> 광고 제작 요구사항과 실제 사용 계획을 전달하고, 발주 진행 상태와 검수 결과를 확인한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>사용자 행동</th>
+<th>결과</th>
+<th>기존 기능</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>발주 생성·조회</td>
+<td>제목, 담당자, 납기, 목적을 입력하고 본인에게 허용된 발주를 조회한다</td>
+<td>고유 발주 ID, 상세 정보, 진행 상태</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a></td>
+</tr>
+<tr>
+<td>기준 문서 등록·추출 요청</td>
+<td>계약·요구사항 문서를 발주에 등록한다</td>
+<td>원문 위치가 연결된 기준 초안과 확인 질문</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a>, <a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a></td>
+</tr>
+<tr>
+<td>사용 계획 등록·변경</td>
+<td>게시 매체, 기간, 지역, 유료 광고 여부, 재가공 범위를 입력한다</td>
+<td>버전이 있는 사용 계획과 변경 이력</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a></td>
+</tr>
+<tr>
+<td>기준·보고서 확인</td>
+<td>확정 기준, 검사 결과, 근거, 미검사·미해결 항목을 확인한다</td>
+<td>현재 버전의 검수 결과와 보고서</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a> 조회, <a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a></td>
+</tr>
+<tr>
+<td>보고서 다운로드</td>
+<td>내보내기 권한이 있는 경우 현재 보고서를 내려받는다</td>
+<td>대상 버전과 생성 시각이 포함된 Markdown</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-16">F-16</a></td>
+</tr>
+<tr>
+<td>진행 조회·요청 입력</td>
+<td>진행 상태를 조회하거나 자연어로 상태 조회 등 허용된 업무를 요청한다</td>
+<td>실행 상태와 요청 분류 결과</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a>, <a class="feature-ref" href="./02_기능정의서.html#S-02">S-02</a></td>
+</tr>
+<tr>
+<td>외부 전송 승인·철회</td>
+<td><strong>전송 승인 권한을 별도로 받은 경우</strong> 수신자·목적·파일·범위를 확인한다</td>
+<td>허용 범위의 승인 또는 철회 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 발주 정보, 읽을 수 있는 PDF·TXT·MD, 콘텐츠 사용 계획.<br />
+<strong>출력:</strong> 발주 상세, 기준 초안·확정 상태, 진행 상태, 검수 보고서.<br />
+<strong>권한:</strong> 배정된 조직·발주 안에서만 조회·등록하며, 기준 확정·검수 실행·최종 승인은 해당 권한을 별도로 받은 경우에만 가능하다.</p>
+<p><strong>완료 기준:</strong> 등록한 발주와 문서·사용 계획이 올바르게 연결되고, 조회 결과가 최신 버전과 일치한다. 사용 계획의 미입력·모호한 범위는 추가 질문으로 남는다. 기준 문서 제출과 기준 확정은 별도 상태다.</p>
+<p><strong>배정 제안:</strong> 원문에서 검수 담당자에게 배정된 발주 등록·기준 문서 제공·사용 계획 입력을 발주자에게도 부여한다. 보고서 내보내기 역시 권한 기반으로 확대하는 제안이다.</p>
+<p class="status-note">판독 실패 원본은 R01이 읽을 수 있는 파일로 <a href="#action-document-reregister">재등록</a>한다. 허용된 자료를 맡은 R02·R03도 해당 제출 권한 범위에서 재등록한다. 상세 차단·복구 조건은 <a href="./02_기능정의서.html#document-recovery">02 문서 판독 복구 정의</a>를 따른다.</p>
+<h2 id="r02">3. R02 — 제작자 / 납품 담당자</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R02">R02 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R02">R02 원 요구사항 찾기</a></p>
+<p><strong>목적:</strong> 확정된 기준에 맞는 광고 이미지와 제작 증빙을 납품하고, 보완 요청을 처리한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>사용자 행동</th>
+<th>결과</th>
+<th>기존 기능</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>배정 발주·기준 확인</td>
+<td>본인에게 배정된 발주의 확정 기준과 필수 자료 목록을 확인한다</td>
+<td>현재 기준·납품 요구사항</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a> 조회, <a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a> 조회</td>
+</tr>
+<tr>
+<td>납품·제작 자료 제출</td>
+<td>PNG·JPEG, 지원 편집 원본, 작업 이력, AI 신고, 소재 이용 증빙을 제출한다</td>
+<td>파일 목록, 접수 여부, 납품 묶음 버전</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a></td>
+</tr>
+<tr>
+<td>검수 결과 확인</td>
+<td>본인에게 공유된 결과·지적 영역·근거를 확인한다</td>
+<td>수정 대상과 필요한 보완 자료</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a></td>
+</tr>
+<tr>
+<td>보완 작업 처리</td>
+<td>내부 작업함에서 담당 작업과 기한·완료 조건을 확인한다</td>
+<td>작업 처리 이력</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a></td>
+</tr>
+<tr>
+<td>수정본·추가 증빙 제출</td>
+<td>수정 이미지 또는 추가 증빙을 원 요청에 연결해 제출한다</td>
+<td>새 입력 버전과 이전 버전 연결</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a>, <a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a></td>
+</tr>
+<tr>
+<td>처리·재검수 상태 확인</td>
+<td>접수·검수·재검수·승인 상태를 확인한다</td>
+<td>최신 진행 상태</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a>, <a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 납품 이미지, 제작 자료, 소재 증빙, AI 사용 신고, 수정본.<br />
+<strong>출력:</strong> 접수 기록, 버전 이력, 보완 작업 처리 상태.<br />
+<strong>권한:</strong> 배정된 발주의 제출·수정본 등록과 허용된 결과 조회. 기준 확정, 본인이 처리한 작업의 검수상 해결 확인, 최종 승인은 해당 역할 권한이 별도로 있어야 한다.</p>
+<p><strong>완료 기준:</strong> 자료의 종류·대상·버전이 보존되고, 수정본이 원래 보완 요청과 연결된다. 파일 제출, 작업 해결, 최종 승인은 서로 다른 상태로 표시한다. 미지원·손상·확장자 위장·한도 초과는 구분해 안내한다.</p>
+<h2 id="r03">4. R03 — 검수 담당자</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R03">R03 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R03">R03 원 요구사항 찾기</a></p>
+<p><strong>목적:</strong> 기준을 확정하고 검사 결과를 검토하여, 필요한 수정과 재검수를 진행한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>사용자 행동</th>
+<th>결과</th>
+<th>기존 기능</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>발주·자료 관리</td>
+<td>담당 발주와 문서·납품·증빙의 접수 상태를 확인한다</td>
+<td>검수 대상과 필수 자료 목록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a>, <a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a>, <a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a>, <a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a></td>
+</tr>
+<tr>
+<td>기준 초안 검토·확정</td>
+<td>추출값과 원문을 대조하고 보정값·사유를 기록한 뒤 확정한다</td>
+<td>확정자·시각·버전이 있는 기준</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a></td>
+</tr>
+<tr>
+<td>검수 실행·재시도</td>
+<td>확정 기준과 납품 버전을 선택해 검사한다. 재개·자동 반복은 설계 범위이며 현재 미구현이다</td>
+<td>실행 상태, 검사 결과, 오류·시도 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-05">F-05</a>, <a class="feature-ref" href="./02_기능정의서.html#F-06">F-06</a>, <a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a>, <a class="feature-ref" href="./02_기능정의서.html#F-15">F-15</a>, <a class="feature-ref" href="./02_기능정의서.html#S-01">S-01</a></td>
+</tr>
+<tr>
+<td>제품 원본 비교</td>
+<td>제공 제품 원본과 납품 이미지의 차이를 확인한다</td>
+<td>변화 후보, 비교 영역과 한계</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-17">F-17</a></td>
+</tr>
+<tr>
+<td>외부 후보 검색·비교</td>
+<td>전송 승인 범위에서 외부 검색을 요청하고 비교 결과를 확인한다</td>
+<td>후보 출처·접근 상태·도구 계산 근거</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-18">F-18</a>, <a class="feature-ref" href="./02_기능정의서.html#F-19">F-19</a>, <a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a></td>
+</tr>
+<tr>
+<td>제작·사용 근거 검토</td>
+<td>AI 신고, 작업 이력, 소재 증빙을 사용 계획과 대조한다</td>
+<td>누락·불일치·미확인 사항</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a>, <a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a></td>
+</tr>
+<tr>
+<td>게시 기준·근거 확인</td>
+<td>출처·확인일·버전·적용 범위를 확인한 기준을 선택한다</td>
+<td>적용 항목별 결과와 관련 근거</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-20">F-20</a>, <a class="feature-ref" href="./02_기능정의서.html#S-04">S-04</a></td>
+</tr>
+<tr>
+<td>결과·보고서 검토</td>
+<td>항목 판정, 실행 상태, 원문·이미지 영역·근거를 확인한다</td>
+<td>검토한 보고서와 미해결 항목</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a>, <a class="feature-ref" href="./02_기능정의서.html#F-16">F-16</a></td>
+</tr>
+<tr>
+<td>보완 요청 확정</td>
+<td>AI 초안을 수정하고 담당자·기한·완료 조건을 확정한다</td>
+<td>내부 작업함의 보완 작업</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a></td>
+</tr>
+<tr>
+<td>재검수·해결 확인</td>
+<td>변경 영향에 따른 검사와 신규 문제 검사를 진행하고 해결 여부를 확인한다</td>
+<td>새 실행 결과, 지적별 해결 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 기준 초안, 원문, 납품 묶음, 증빙, 사용 계획, 이전 결과·보완 요청.<br />
+<strong>출력:</strong> 확정 기준, 검수 보고서, 보완 작업, 재검수 결과와 해결 기록.<br />
+<strong>권한:</strong> 담당 발주의 기준 확정·검수 실행·보완 요청 확정·재검수. 최종 승인은 R05 권한을 별도로 부여받은 경우에만 가능하다.</p>
+<p><strong>완료 기준:</strong> 필수 충돌이 남으면 기준 확정을 차단한다. 확정된 적용 기준 전체를 검사 대상에 포함하며, 검색 상위 결과만으로 범위를 줄이지 않는다. 정상 실행의 판독 불확실성은 확인 필요, 도구 오류는 항목 실행 실패(execution_status=failed)·미판정(verdict=null)으로 구분한다. 보완 요청은 확인된 근거와 연결하고, 요청 확정자는 사람으로 기록한다.</p>
+<p><strong>추가 제안:</strong> 권리 관계·계약 해석·공식 근거 적용이 모호한 항목을 R04에게 배정하는 전문 검토 요청 기능. 원문에는 독립된 전문 검토 배정·작업함 기능이 명시되어 있지 않다.</p>
+<p class="status-note">R03의 <a href="#action-document-reprocess">판독 재처리</a>, <a href="#action-criteria-correct">원문 대조 보정</a>, <a href="#action-criteria-confirm">기준 확정</a>은 각각의 권한·버전·예산을 확인한다. 필수 미판독 범위가 남으면 확정을 차단하며, 전체 판독 실패를 빈 폼으로 우회하지 않는다. 원문에 없는 조건은 변경 요청·추가 근거로 분리한다. 수동 전사·비필수 제외는 선택 정책·미확정이다.</p>
+<h2 id="r04">5. R04 — 법률·권리 검토자 · 선택 확장</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R04">R04 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R04">R04 원 요구사항 찾기</a></p>
+<p class="status-note"><strong>선택 확장·미구현.</strong> 전문 검토 배정과 L-01 의견 관리의 도입 여부는 별도 범위 결정 대상이다. 기존 33개 기능의 필수 완료 조건이나 확정된 권한으로 집계하지 않는다.</p>
+<p><strong>목적:</strong> 제작·소재 증빙과 예정 사용 범위를 검토하고, 계약·이용 조건·관련 공식 근거에 대한 전문 의견을 제공한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>사용자 행동</th>
+<th>결과</th>
+<th>기존 기능 / 구분</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>검토 자료 조회</td>
+<td>배정된 발주의 계약, 작업 이력, AI 신고, 소재 증빙, 사용 계획을 확인한다</td>
+<td>전문 검토에 필요한 자료와 버전</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a> 조회, <a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a>, <a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a> 조회</td>
+</tr>
+<tr>
+<td>소재 이용 범위 검토</td>
+<td>매체·기간·지역·유료 광고·재가공 계획과 이용 조건을 대조한다</td>
+<td>일치·불일치·미확인 사항과 근거</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a></td>
+</tr>
+<tr>
+<td>AI 신고·제작 근거 검토</td>
+<td>허용 범위, 신고·승인 기록, 작업 이력의 누락·불일치를 확인한다</td>
+<td>추가 확인 항목과 필요한 자료</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a></td>
+</tr>
+<tr>
+<td>유사 후보 근거 검토</td>
+<td>비교 이미지·출처·공통점·차이점과 이용 증빙을 함께 확인한다</td>
+<td>비교 결과의 해석과 확인 사항</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-18">F-18</a>, <a class="feature-ref" href="./02_기능정의서.html#F-19">F-19</a> 결과 조회</td>
+</tr>
+<tr>
+<td>공식 근거·적용 범위 확인</td>
+<td>출처·확인일·버전·시행 정보·적용 범위를 대조한다</td>
+<td>확인한 참고 근거와 추가 질문</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-20">F-20</a>, <a class="feature-ref" href="./02_기능정의서.html#S-04">S-04</a></td>
+</tr>
+<tr>
+<td>전문 검토 의견 등록</td>
+<td>대상 항목·버전, 검토 내용, 근거, 미확인 사항, 검토자·시각을 등록한다</td>
+<td>버전에 연결된 검토 의견</td>
+<td><strong>선택 확장 L-01 · 미구현</strong></td>
+</tr>
+<tr>
+<td>추가 자료 요청·보완 의견</td>
+<td>부족한 증빙·확인 질문과 권고 사항을 초안으로 작성한다</td>
+<td>검수 담당자가 확정할 보완 요청 초안</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a> 활용 + <strong>역할 배정 제안</strong></td>
+</tr>
+<tr>
+<td>수정 후 전문 재검토</td>
+<td>새 증빙·이미지·사용 계획에 대한 의견을 남긴다</td>
+<td>기존 의견과 연결된 재검토 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a> 활용 + <strong>추가 제안 L-01</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 계약·이용 증빙, AI 신고·작업 이력, 사용 계획, 유사 후보와 공식 근거.<br />
+<strong>출력:</strong> 근거가 연결된 전문 검토 의견, 추가 자료 목록, 확인 질문.<br />
+<strong>권한:</strong> 배정된 검토 범위의 자료·결과 조회와 전문 의견 작성. 기준 변경은 변경 제안으로 전달하고, 보완 요청 확정과 최종 승인은 별도 권한으로 처리한다.</p>
+<p><strong>완료 기준:</strong> 의견에는 대상 버전·근거·미확인 사항·검토자·시각을 기록한다. 미확인 정책은 <code>POLICY_NOT_VERIFIED</code>로 남기고 확정 근거로 쓰지 않는다. 시스템은 유사도 점수를 침해 확률로 표시하거나, AI 출처·권리 관계·플랫폼 게시 허용을 자동 확정하지 않는다.</p>
+<p><strong>추가 설계 범위:</strong> L-01의 의견 저장, 검토 요청·배정·완료 상태, 의견 접근 권한과 재검토 연결은 신규 설계다. 신규 원 요구사항 ID나 P0/P1을 임의 부여하지 않는다. 법률 검토 필수 여부와 승인 시 차단 조건은 발주 정책 및 Q08에서 정한다.</p>
+<h2 id="r05">6. R05 — 최종 승인자</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R05">R05 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R05">R05 원 요구사항 찾기</a></p>
+<p><strong>목적:</strong> 최신 검수 대상과 필수 해결 조건을 확인하고 최종 승인 여부를 결정한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>사용자 행동</th>
+<th>결과</th>
+<th>기존 기능 / 구분</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>최신 결과 확인</td>
+<td>현재 기준·납품·보고서와 미실행·실패·확인 필요 항목을 조회한다</td>
+<td>승인 대상 버전과 미해결 목록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a></td>
+</tr>
+<tr>
+<td>승인 전 해결 근거 조회·검토</td>
+<td>작업별 해결 근거와 재검수 결과를 조회하여 승인 전 검토 기록을 남긴다. 작업 해결 상태는 변경하지 않는다</td>
+<td>승인 전 검토 기록과 전후 결과 조회</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a>, <a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a></td>
+</tr>
+<tr>
+<td>전문 의견 확인</td>
+<td>전문 검토가 배정된 경우 해당 버전의 의견·미확인 사항을 확인한다</td>
+<td>승인에 참고할 검토 의견</td>
+<td><strong>L-01 추가 제안 연계</strong></td>
+</tr>
+<tr>
+<td>최종 승인·보류</td>
+<td>최신 대상과 필수 해결 조건을 확인하고 사유를 기록한다</td>
+<td>승인 기록 또는 차단·보류 사유</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a></td>
+</tr>
+<tr>
+<td>과거 이력 조회</td>
+<td>권한이 있는 범위에서 이전 결과와 승인 이력을 확인한다</td>
+<td>버전별 변경·승인 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a>, <a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a>, <a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 최신 기준·납품·검수 실행 버전, 보완 상태, 승인 또는 보류 사유.<br />
+<strong>출력:</strong> 현재 버전에 대한 사람의 승인 기록 또는 보류 사유.<br />
+<strong>권한:</strong> 지정 발주의 최종 승인과 승인 전 해결 근거 조회·검토. 이 검토는 <code>task.status=resolved</code> 변경 권한을 포함하지 않는다. 기본 제안에서 작업 해결 확인은 R03이 수행한다. R05가 추가 R03 업무 권한을 받아 해결 확인을 겸하는 경우 별도 행위로 기록하며, 겸임 허용·직무 분리 정책은 Q01·Q08에서 결정한다. 시스템 관리자 권한이나 전문 검토자 권한만으로 최종 승인 권한을 얻지 않는다.</p>
+<p><strong>완료 기준:</strong> 승인 직전 서버에서 사용자 권한·파일 해시·기준·보고서·현재 버전·필수 해결 조건을 검증한다. 필수 조건 미충족이나 검사 불완전은 승인 보류로 처리한다. 새 버전 접수 후 이전 버전에 대한 승인 요청은 <code>STALE_VERSION</code>으로 거절한다. 예외 승인 허용 범위는 Q08 결정 전 임의 허용하지 않는다.</p>
+<h2 id="r06">7. R06 — 시스템 관리자 / 운영 담당자</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R06">R06 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R06">R06 원 요구사항 찾기</a></p>
+<p><strong>목적:</strong> 접근 권한과 운영 환경을 관리하고 서비스 장애·한도·보존 정책을 운영한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>관리자 행동</th>
+<th>결과</th>
+<th>기존 기능 / 구분</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>역할·발주 권한 관리</td>
+<td>조직·발주·역할 범위를 지정하고 변경 이력을 남긴다</td>
+<td>서버가 검증하는 접근 권한</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a> 기반 <strong>관리 기능·화면 추가 제안</strong></td>
+</tr>
+<tr>
+<td>감사·운영 이력 조회</td>
+<td>허용 범위의 실행·도구·모델·전송 승인·비용·사람 조치를 확인한다</td>
+<td>추적 가능한 운영 이력</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a></td>
+</tr>
+<tr>
+<td>모델 연결 관리</td>
+<td>허용 모델 서버·모델 버전·설정·요청 한도를 관리한다</td>
+<td>연결 상태와 구조화 출력·실행 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#S-05">S-05</a></td>
+</tr>
+<tr>
+<td>MCP 연결 관리</td>
+<td>실제 도구 연결과 인증·권한·스키마·버전 검증 상태를 확인한다</td>
+<td>도구 호출·오류·응답 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a></td>
+</tr>
+<tr>
+<td>문서 인덱싱 운영</td>
+<td>문서·검색 인덱스 버전과 처리 실패·재시도 상태를 확인한다</td>
+<td>준비된 버전의 검색 자료</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#S-06">S-06</a>, <a class="feature-ref" href="./02_기능정의서.html#S-04">S-04</a></td>
+</tr>
+<tr>
+<td>전송·보안 정책 운영</td>
+<td>제공자·처리 조건·허용 범위와 입력·URL·미디어 제한을 관리한다</td>
+<td>허용·차단 기록과 사유</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a></td>
+</tr>
+<tr>
+<td>진행·비용 한도 운영</td>
+<td>호출·시간·비용 상한과 중단·오류 상태를 관리한다</td>
+<td>진행·중단·비용 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a>, <a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a></td>
+</tr>
+<tr>
+<td>자료 보존·삭제 관리</td>
+<td>자료별 보존 기간·삭제 권한에 따라 처리한다</td>
+<td>삭제·접근 차단 검증 결과</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>입력:</strong> 권한 변경 요청, 운영 설정, 실행·연결 상태, 보존·삭제 정책.<br />
+<strong>출력:</strong> 권한·설정 변경 이력, 장애·한도·보존 처리 기록.<br />
+<strong>권한:</strong> 운영 목적에 필요한 범위. 업무 자료 원문과 미공개 이미지의 열람, 외부 전송 승인, 기준 확정, 최종 승인은 각각 별도 권한으로 검증한다.</p>
+<p><strong>완료 기준:</strong> 권한 검사는 서버에서 수행한다. 감사 이력에도 자료 접근 범위를 적용하고 API 키·불필요한 계약 원문·이미지를 로그에 남기지 않는다. 인덱스 준비가 완료된 현재 문서 버전만 검색에 노출한다. 운영 설정으로 개별 자료의 전송 동의를 대신하지 않는다. 외부 삭제는 근거 없이 완료로 표시하지 않는다.</p>
+<p><strong>추가 설계 범위:</strong> 계정 생성·가입·비밀번호 재설정·회원 정지 등의 상세 계정 관리 기능은 원문에 정의되어 있지 않다. 역할·권한을 편집하는 관리자 화면도 별도 구현 설계가 필요하다.</p>
+<p class="status-note">R06의 <a href="#action-ops-recover">운영 복구</a>는 장애 원인·인가·예산을 기록하고 R03의 재처리 판단으로 연결한다. 새 처리 ID나 운영 복구로 재처리 한도를 초기화하거나 기준·최종 승인을 대신하지 않는다.</p>
+<h2 id="r07">8. R07 — 개발·평가 담당자 / 내부 역할</h2>
+<p class="role-actions"><a href="#permissions-detail" data-role-focus="R07">R07 상세 권한·시험 보기</a> · <a href="#section-5" data-trace-focus="R07">R07 원 요구사항 찾기</a></p>
+<p>다음 항목은 제품의 일반 사용자 업무와 분리하여 개발·평가 환경에서 수행한다. 운영 발주의 접근·승인 권한은 별도로 부여한다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>기능</th>
+<th>담당 업무</th>
+<th>산출물</th>
+<th>기존 기능</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>저장 구조·데이터 관리</td>
+<td>DB·ERD·데이터 사전, 출처·이용 범위, 라벨·분할·전처리를 관리한다</td>
+<td>저장 설계, 데이터 목록, 분할·전처리 기록</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#D-01">D-01</a></td>
+</tr>
+<tr>
+<td>요청 분류 모델 학습</td>
+<td>요청 문장 라벨링, 독립 분할, 학습·재로딩·추론을 검증한다</td>
+<td>모델, 설정·로그, 학습결과서</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#S-02">S-02</a></td>
+</tr>
+<tr>
+<td>이미지 비교 실험</td>
+<td>방법별 정확도·비용을 비교하고 검증 자료로 임계값을 정한다</td>
+<td>비교 실험 결과와 고정 설정</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#D-02">D-02</a></td>
+</tr>
+<tr>
+<td>RAG 평가</td>
+<td>검색·인용·응답을 고정 평가 자료로 비교한다</td>
+<td>검색·평가 점수와 오류 분석</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#T-02">T-02</a></td>
+</tr>
+<tr>
+<td>품질·통합 시험·배포</td>
+<td>정상·실패·권한·중복·구버전·재시작 시나리오를 시험한다</td>
+<td>E2E 기록, 배포·교육 산출물</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#T-01">T-01</a></td>
+</tr>
+<tr>
+<td>후속 확장</td>
+<td>이미지 검증 후 합의한 영상·추가 형식·채널 범위를 구현한다</td>
+<td>확장 명세와 별도 완료 기준</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#X-01">X-01</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>완료 기준:</strong> 시험 정답과 평가자 전용 자료는 서비스 입력·검색 자료와 분리한다. 미실행 시험을 완료로 표시하지 않는다. 작은 합성 데이터의 한계를 명시하고 생성 모델의 자기평가만으로 정확도를 확정하지 않는다. P2 후속 확장을 초기 구현 완료로 집계하지 않는다.</p>
+<h2 id="section-2">9. 역할별 요구사항·권한 명세 — 제안</h2>
+<p class="status-note">현재는 단일 사용자 시제품이며 인증·발주별 RBAC·관리자 권한 화면은 미구현이다. 아래는 구현된 계정 권한표가 아닌 목표 설계다. R01~R07 역할 배정·겸임·승인 차단 정책은 Q01·Q08 결정 전 미확정이며, 상세 수용 기준과 시험 계약은 02를 따른다.</p>
+<p><code>가능</code>은 조직·발주·자료 접근과 해당 행위 권한이 부여된 경우의 기본 제안이다. <code>조회</code>는 허용된 읽기, <code>의견</code>은 변경·요청 제안, <code>별도</code>는 해당 업무 역할·행위·자료 범위를 추가로 부여해야 함, <code>—</code>는 기본 권한 없음이다. 역할명만으로 권한을 얻지 않는다. R07은 내부 개발·평가 환경의 권한과 운영 발주 업무 권한을 분리한다.</p>
+<h3 id="permission-summary">7역할 권한 요약 · 기존 21개 업무 묶음</h3>
+<p>요약의 행위 링크에서 보정·확정·변경, 제출·접수 조회, 실행·재개·재검수·복구를 각각 확인한다. ‘별도’의 승인 주체·효력·겸임 조건은 <a href="#role-policy">운영 정책 제안·결정 항목</a>을 따른다.</p>
+<div class="table-wrap" tabindex="0" aria-label="7역할 권한 요약표 가로 스크롤"><table class="permission-summary"><thead><tr><th scope="col">업무 묶음 / 상세 행위</th><th scope="col">R01 발주자</th><th scope="col">R02 제작자</th><th scope="col">R03 검수 담당자</th><th scope="col">R04 전문 검토 · 선택</th><th scope="col">R05 승인자</th><th scope="col">R06 관리자</th><th scope="col">R07 개발·평가 · 내부</th></tr></thead><tbody><tr><td>발주 생성<span class="action-links"><a href="#action-order-create">발주 생성</a></span></td><td>가능</td><td>—</td><td>가능</td><td>—</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>배정 발주 조회<span class="action-links"><a href="#action-order-read">배정 발주 조회</a></span></td><td>조회</td><td>조회</td><td>조회</td><td>조회</td><td>조회</td><td>별도</td><td>운영 업무 기본 없음</td></tr><tr><td>기준 문서 제공<span class="action-links"><a href="#action-document-provide">기준 문서 제공</a> · <a href="#action-document-reregister">판독 실패 문서 재등록</a> · <a href="#action-document-reprocess">문서 판독 재처리 요청</a></span></td><td>가능</td><td>지정 자료만</td><td>가능</td><td>지정 자료만</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>사용 계획 등록·변경<span class="action-links"><a href="#action-use-plan">사용 계획 등록·변경</a></span></td><td>가능</td><td>—</td><td>가능</td><td>의견</td><td>조회</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>기준 보정·확정·확정 후 변경<span class="action-links"><a href="#action-criteria-correct">원문 대조·기준 초안 보정</a> · <a href="#action-criteria-confirm">기준 확정</a> · <a href="#action-criteria-change">확정 후 기준 변경</a></span></td><td>별도</td><td>—</td><td>가능</td><td>의견</td><td>조회</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>자료 제출·접수 조회·수정본 등록<span class="action-links"><a href="#action-delivery-submit">납품·제작 증빙 제출</a> · <a href="#action-receipt-read">접수 현황 조회</a> · <a href="#action-correction-submit">수정본·추가 증빙 제출</a></span></td><td>별도</td><td>가능</td><td>가능</td><td>—</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>검수 실행·재개·재검수·운영 복구<span class="action-links"><a href="#action-run-start">검수 실행</a> · <a href="#action-run-resume">검수 실행 재개</a> · <a href="#action-rerun">수정본·변경 영향 재검수</a> · <a href="#action-ops-recover">문서·검사 운영 복구</a></span></td><td>별도</td><td>—</td><td>가능</td><td>—</td><td>—</td><td>운영 복구 별도</td><td>운영 업무 기본 없음</td></tr><tr><td>실행 취소<span class="action-links"><a href="#action-cancel">실행 취소</a></span></td><td>별도</td><td>—</td><td>별도</td><td>—</td><td>—</td><td>운영 권한 범위</td><td>운영 업무 기본 없음</td></tr><tr><td>보고서·근거 조회<span class="action-links"><a href="#action-report-read">보고서·근거 조회</a></span></td><td>조회</td><td>공유 범위</td><td>조회</td><td>배정 범위</td><td>조회</td><td>별도</td><td>운영 업무 기본 없음</td></tr><tr><td>보고서 내보내기<span class="action-links"><a href="#action-export">보고서 내보내기</a></span></td><td>별도</td><td>—</td><td>가능</td><td>별도</td><td>별도</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>외부 검색 실행 요청<span class="action-links"><a href="#action-external-search">외부 검색 실행 요청</a></span></td><td>별도</td><td>—</td><td>가능</td><td>별도</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>자료의 외부 전송 승인·철회<span class="action-links"><a href="#action-transfer-grant">자료 외부 전송 승인</a> · <a href="#action-transfer-revoke">자료 외부 전송 승인 철회</a></span></td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>운영 업무 기본 없음</td></tr><tr><td>보완 요청 초안 작성<span class="action-links"><a href="#action-task-draft">보완 요청 초안 작성</a></span></td><td>의견</td><td>—</td><td>가능</td><td>의견</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>보완 요청 확정<span class="action-links"><a href="#action-task-confirm">보완 요청 수정·확정</a></span></td><td>별도</td><td>—</td><td>가능</td><td>별도</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>보완 작업 처리·수정본 제출<span class="action-links"><a href="#action-task-work">보완 작업 처리</a> · <a href="#action-correction-submit">수정본·추가 증빙 제출</a></span></td><td>—</td><td>가능</td><td>별도</td><td>의견</td><td>—</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>보완 해결 확인<span class="action-links"><a href="#action-task-resolve">재검수 근거로 작업 해결 확인</a> · <a href="#action-resolution-review">승인 전 해결 근거 조회·검토</a></span></td><td>—</td><td>—</td><td>가능</td><td>전문 의견</td><td>해결 근거 조회</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>전문 검토 의견 등록<span class="action-links"><a href="#action-professional-opinion">전문 검토 의견 등록·재검토</a></span></td><td>—</td><td>—</td><td>의견</td><td>가능</td><td>조회</td><td>—</td><td>운영 업무 기본 없음</td></tr><tr><td>최종 승인·보류<span class="action-links"><a href="#action-approve">최종 승인</a> · <a href="#action-hold">최종 승인 보류</a></span></td><td>별도</td><td>—</td><td>별도</td><td>별도</td><td>가능</td><td>별도</td><td>운영 업무 기본 없음</td></tr><tr><td>역할·권한·운영 설정 관리<span class="action-links"><a href="#action-access-manage">역할·발주 권한 부여·변경·철회</a> · <a href="#action-setting-manage">운영 설정 관리</a> · <a href="#action-development">내부 데이터·학습·평가·배포</a></span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>가능</td><td>내부 환경만</td></tr><tr><td>감사 이력 조회<span class="action-links"><a href="#action-audit">감사 이력 조회</a></span></td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>운영 범위</td><td>내부 환경만</td></tr><tr><td>자료 삭제<span class="action-links"><a href="#action-delete">자료 삭제</a></span></td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>별도</td><td>정책·권한 범위</td><td>운영 업무 기본 없음</td></tr></tbody></table></div>
+<h3 id="permissions-detail">행위별 발주·자료 범위와 시험 연결</h3>
+<p>행위 항목은 탐색을 위한 문서 내부 키다. 새 기능·원 요구사항 ID를 추가하지 않는다. 허용·거절 조건과 시험 ID는 기존 계약의 역할별 확인 관점을 보여 주며, 시험을 실행했거나 권한을 구현했다는 뜻이 아니다.</p>
+<div class="filter-tools" id="permission-filters" hidden><label for="permission-role">역할별 보기 <select id="permission-role"><option value="all">전체 역할</option><option value="R01">R01 발주자</option><option value="R02">R02 제작자</option><option value="R03">R03 검수 담당자</option><option value="R04">R04 전문 검토 · 선택</option><option value="R05">R05 승인자</option><option value="R06">R06 관리자</option><option value="R07">R07 개발·평가 · 내부</option></select></label><label for="permission-search">행위·요구사항·시험 ID 찾기 <input id="permission-search" type="search" placeholder="예: 기준 변경, FR-08-04, TC-FR-01-01"></label><button type="button" id="permission-reset">전체 보기</button></div>
+<p id="permission-count" class="filter-count" aria-live="polite"></p><noscript><p>JavaScript 없이도 아래 모든 행위와 요구사항을 순서대로 확인할 수 있다.</p></noscript>
+<div class="table-wrap" tabindex="0" aria-label="행위별 권한·범위·시험 상세표 가로 스크롤"><table id="permission-details"><thead><tr><th scope="col">행위 / 수행·참여 역할</th><th scope="col">대상 발주·자료 범위</th><th scope="col">필요 권한·별도 부여</th><th scope="col">선행 상태·버전</th><th scope="col">허용·거절과 기록</th><th scope="col">기능·요구사항·원 시험 ID</th><th scope="col">정책 확정 여부</th></tr></thead><tbody><tr id="action-order-create" data-roles="R01 R03"><td><strong>발주 생성</strong><br><span class="role-label">R01 · R03</span></td><td>허용 조직의 새 발주</td><td>발주 생성 권한. 역할 이름만으로 조직 접근을 부여하지 않음</td><td>인증·조직 범위와 필수 발주 정보</td><td>고유 발주 ID를 생성. 누락 또는 조직 밖 생성은 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a><br><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-02">FR-01-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-02">TC-FR-01-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-order-read" data-roles="R01 R02 R03 R04 R05 R06"><td><strong>배정 발주 조회</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06</span></td><td>현재 배정 발주 목록·상세. R04는 선택 배정 범위</td><td>R01~R05 발주 조회. R06 원문 열람은 별도 권한</td><td>요청 시 유효한 조직·발주 배정</td><td>허용 목록만 조회. 같은 조직의 미배정 발주와 다른 조직 접근도 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a><br><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-04">FR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-04">TC-FR-01-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-document-provide" data-roles="R01 R02 R03 R04"><td><strong>기준 문서 제공</strong><br><span class="role-label">R01 · R02 · R03 · R04</span></td><td>해당 발주의 원본 문서. R02·R04는 요청된 지정 자료만</td><td>문서 제출 권한; 지정 자료 외 제출은 별도 배정</td><td>지원 형식·용량과 발주 연결 검증</td><td>원본·해시·문서 버전을 보존. 제출 사실은 기준 확정이 아님</td><td><a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a><br><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-01">FR-02-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-01">TC-FR-02-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-05">FR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-05">TC-FR-01-05</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-document-reregister" data-roles="R01 R02 R03"><td><strong>판독 실패 문서 재등록</strong><br><span class="role-label">R01 · R02 · R03</span></td><td>원인·미판독 범위가 연결된 해당 발주 문서</td><td>R01·R03 문서 제출; R02는 허용된 원본·증빙의 재제출</td><td>02의 복구 안내에 따라 읽을 수 있는 원본 마련</td><td>새 원본은 새 document_version으로 연결. 전체 판독 실패를 빈 기준 폼 입력으로 우회하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a><br><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-01">FR-02-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-01">TC-FR-02-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-02">FR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-02">TC-FR-02-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-03">FR-02-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-03">TC-FR-02-03</a></td><td>복구 설계·미구현 / 제출 역할 Q01 미확정</td></tr><tr id="action-document-reprocess" data-roles="R03"><td><strong>문서 판독 재처리 요청</strong><br><span class="role-label">R03</span></td><td>동일 입력 버전의 실패한 판독·기준 추출 작업</td><td>문서 재처리 권한. 예산 소진 후 운영 인가·예산 필요</td><td>실패 원인 해소·한도 확인. 기준 확정 전이라 검수 run이 없어도 가능</td><td>새 processing_id도 동일 논리 작업의 retry_budget_scope·operation_id 예산 유지. 한도 우회는 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a><br><a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-02">FR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-02">TC-FR-02-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-03">FR-02-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-03">TC-FR-02-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-04">NFR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-04">TC-NFR-01-04</a></td><td>복구 설계·미구현 / Q01·Q03 미확정</td></tr><tr id="action-criteria-correct" data-roles="R03"><td><strong>원문 대조·기준 초안 보정</strong><br><span class="role-label">R03</span></td><td>판독 가능한 원문과 연결된 기준 초안·추출 오류</td><td>기준 초안 보정 권한. R01 등은 별도 R03 업무 권한</td><td>원문 위치·추출값·오류 범위가 추적 가능</td><td>원래 값·보정값·사유·원문을 기록. 원문 없는 조건은 변경 요청으로 분리. 전체 판독 실패 빈 폼 우회 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-04">FR-02-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-04">TC-FR-02-04</a></td><td>역할 Q01 미확정 / 수동 전사·비필수 제외는 선택·미확정</td></tr><tr id="action-criteria-confirm" data-roles="R03"><td><strong>기준 확정</strong><br><span class="role-label">R03</span></td><td>검토한 기준 초안 전체와 문서 버전</td><td>기준 확정 권한. 문서 제출 권한과 분리</td><td>필수 충돌·모호함·필수 미판독 범위 해소 및 최신 버전 일치</td><td>확정자·시각·대상 버전을 기록. 필수 미판독 또는 근거 없는 적용 제외가 남으면 확정 차단</td><td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-04">FR-02-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-04">TC-FR-02-04</a></td><td>역할 Q01 미확정 / 제외·예외 정책 Q08 미확정</td></tr><tr id="action-criteria-change" data-roles="R01 R03 R04"><td><strong>확정 후 기준 변경</strong><br><span class="role-label">R01 · R03 · R04</span></td><td>해당 발주의 확정 기준과 변경 요청·추가 근거</td><td>R01·R04는 변경 제안. R03 새 버전 작성·확정 권한은 각각 검증</td><td>기존 확정 기준 보존·변경 사유 및 영향 항목 확인</td><td>새 기준 버전 생성 후 확정. 과거 결과·승인 자동 승계 거절. 작성자와 확정자 겸임 여부 별도 결정</td><td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a><br><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a><br><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-02-05">FR-02-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-02-05">TC-FR-02-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-03">FR-08-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-03">TC-FR-08-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-05">FR-08-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a></td><td>기본 제안 / 작성·확정 겸임과 승인 영향 Q01·Q08 미확정</td></tr><tr id="action-use-plan" data-roles="R01 R03 R04 R05"><td><strong>사용 계획 등록·변경</strong><br><span class="role-label">R01 · R03 · R04 · R05</span></td><td>해당 발주의 매체·기간·지역·광고·재가공 계획</td><td>R01·R03 등록·변경; R04 의견, R05 조회</td><td>발주 접근·변경 권한 및 현재 계획 버전</td><td>계획 버전·변경 이력을 검토에 연결. 빈 범위는 질문으로 남김</td><td><a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-03">FR-01-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-03">TC-FR-01-03</a></td><td>기본 제안 / 변경의 승인 영향 Q08 미확정</td></tr><tr id="action-delivery-submit" data-roles="R02 R03"><td><strong>납품·제작 증빙 제출</strong><br><span class="role-label">R02 · R03</span></td><td>배정 발주의 납품 묶음·증빙. 다른 제작자 작업은 기본 제외</td><td>납품·증빙 제출 권한. R01은 별도 배정</td><td>발주·자료 종류·입력 버전·지원 형식 검증</td><td>서버가 접수·해시·버전 연결. 형식·손상·한도 실패를 안내. 제출을 해결·승인으로 처리하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-03-01">FR-03-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-03-01">TC-FR-03-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-03-02">FR-03-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-03-02">TC-FR-03-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-03-04">FR-03-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-03-04">TC-FR-03-04</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-receipt-read" data-roles="R01 R02 R03 R04 R05"><td><strong>접수 현황 조회</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05</span></td><td>R02 본인 제출·공유 자료, R04 배정 자료, 나머지 허용 발주 자료</td><td>자료 종류별 조회 권한. 수동 접수 승인 기능을 새로 가정하지 않음</td><td>서버 접수·검증 기록과 대상 버전 존재</td><td>접수 여부·거절 사유·누락 목록 조회. 타 제작자의 비공유 증빙은 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a><br><a class="feature-ref" href="./02_기능정의서.html#F-05">F-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-05">FR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-05">TC-FR-01-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-03-03">FR-03-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-03-03">TC-FR-03-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-run-start" data-roles="R03"><td><strong>검수 실행</strong><br><span class="role-label">R03</span></td><td>확정 기준·납품 묶음을 고정한 해당 발주 새 검사</td><td>검수 실행 권한. R01은 별도 R03 업무 권한</td><td>기준 확정·최신 입력 일치·필수 접수 조건·외부 전송 조건</td><td>새 실행과 근거 저장. 미확정 기준·권한 밖 입력·미동의 송신 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-05">F-05</a><br><a class="feature-ref" href="./02_기능정의서.html#F-06">F-06</a><br><a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a><br><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-04-01">FR-04-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-04-01">TC-FR-04-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-04-02">FR-04-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-04-02">TC-FR-04-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-02-02">SR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-01">NFR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-run-resume" data-roles="R03"><td><strong>검수 실행 재개</strong><br><span class="role-label">R03</span></td><td>중단 실행의 고정 입력·기준과 체크포인트</td><td>실행 재개 권한; 운영 복구와 분리</td><td>재개 지원 구현·체크포인트 및 권한·버전·남은 예산 검증</td><td>같은 논리 작업의 카운터·멱등성 유지. 버전 불일치·한도 소진·중복 처리는 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-01-04">SR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#SR-01-04">TC-SR-01-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-04">NFR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-04">TC-NFR-01-04</a></td><td>설계·미구현 / 재개 권한·한도 Q01·Q03 미확정</td></tr><tr id="action-rerun" data-roles="R03"><td><strong>수정본·변경 영향 재검수</strong><br><span class="role-label">R03</span></td><td>새 파일·기준·증빙 버전과 이전 실행·보완 요청</td><td>재검수 권한. 제출 권한과 분리</td><td>변경 영향·신규 문제 검사 범위 확인 및 현재 확정 기준</td><td>새 실행·previous_run_id로 연결. 이전 QA·승인 복사와 수정본 제출만으로 해결 처리 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-03">FR-08-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-03">TC-FR-08-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-04">FR-08-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-04">TC-FR-08-04</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-ops-recover" data-roles="R06"><td><strong>문서·검사 운영 복구</strong><br><span class="role-label">R06</span></td><td>승인된 장애 작업·작업 메타데이터. 업무 원문은 별도 범위</td><td>운영 복구 권한; 원문 열람·문서 재처리·검수 실행·승인은 별도</td><td>원인·인가·남은 예산과 복구 대상 논리 작업 확인</td><td>연결·자원 장애를 복구하고 R03 재처리로 인계. 새 ID로 예산 초기화·업무 확정 대행 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a><br><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-01-04">SR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#SR-01-04">TC-SR-01-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-04">NFR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-04">TC-NFR-01-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-05">NFR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-05">TC-NFR-01-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-02-02">SR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a></td><td>운영 제안·미구현 / 소진 후 인가·예산 Q01·Q03 미확정</td></tr><tr id="action-cancel" data-roles="R01 R03 R06"><td><strong>실행 취소</strong><br><span class="role-label">R01 · R03 · R06</span></td><td>본인에게 취소 권한이 있는 실행</td><td>R01·R03 별도 취소 권한; R06 운영 범위의 중단 권한</td><td>취소 기능 지원·현재 실행 상태 및 인계 확인</td><td>취소·중단 이력과 실제 처리 여부 기록. 취소 요청만으로 완료·삭제·해결 처리하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-06">NFR-01-06</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-06">TC-NFR-01-06</a></td><td>설계·미구현 / 업무 취소와 운영 중단 범위 Q01 미확정</td></tr><tr id="action-report-read" data-roles="R01 R02 R03 R04 R05 R06"><td><strong>보고서·근거 조회</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06</span></td><td>허용 발주·현재/과거 결과. R02 공유 범위, R04 배정 범위</td><td>보고서·근거 종류별 조회. R06 업무 원문 열람은 별도</td><td>대상 버전·공유/배정 유효성과 현재/과거 표시 검증</td><td>허용 근거·미실행·미해결 표시. 구버전을 현재 결과로 표시하거나 비공유 원문 노출 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a><br><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-07-01">FR-07-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-07-01">TC-FR-07-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-07-02">FR-07-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-07-02">TC-FR-07-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-export" data-roles="R01 R03 R04 R05"><td><strong>보고서 내보내기</strong><br><span class="role-label">R01 · R03 · R04 · R05</span></td><td>조회 가능한 보고서와 허용 내보내기 범위</td><td>R03 기본 제안; R01·R04·R05 별도 내보내기 권한</td><td>현재 대상 버전·포함 자료 범위 재검증</td><td>버전·생성 시각이 있는 Markdown 출력. 조회 권한만 있는 계정의 다운로드 거절</td><td><a class="feature-ref" href="./02_기능정의서.html#F-16">F-16</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-07-03">FR-07-03</a> / <a class="test-ref" href="./02_기능정의서.html#FR-07-03">TC-FR-07-03</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-external-search" data-roles="R01 R03 R04"><td><strong>외부 검색 실행 요청</strong><br><span class="role-label">R01 · R03 · R04</span></td><td>허용 발주 자료와 승인된 검색 제공자·목적</td><td>R03 검색 요청; R01·R04 별도 요청 권한. 전송 동의는 별도</td><td>송신 시 제공자·목적·파일 해시·범위·철회 상태 검증</td><td>출처·접근 상태와 결과 기록. 검색 요청 권한만으로 무동의 송신하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-19">F-19</a><br><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-05-01">FR-05-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-05-01">TC-FR-05-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-05-02">FR-05-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-05-02">TC-FR-05-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-05-05">FR-05-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-05-05">TC-FR-05-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-01">NFR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a></td><td>역할 Q01 및 제공자·전송 Q04·Q05 미확정</td></tr><tr id="action-transfer-grant" data-roles="R01 R02 R03 R04 R05 R06"><td><strong>자료 외부 전송 승인</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06</span></td><td>별도로 지정된 자료·제공자·목적·해시·전송 범위</td><td>자료별 전송 승인 권한. 역할 이름·관리자 설정으로 자동 부여하지 않음</td><td>자료 처리 조건 확인·동의 권한과 대상 검증</td><td>승인자·범위·시각 저장. 다른 해시·제공자·목적·범위 초과 송신 차단</td><td><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-01">NFR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a></td><td>승인자·위임·범위 Q01·Q05 미확정</td></tr><tr id="action-transfer-revoke" data-roles="R01 R02 R03 R04 R05 R06"><td><strong>자료 외부 전송 승인 철회</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06</span></td><td>별도 철회 권한이 있는 전송 승인 기록</td><td>승인 철회 권한·위임 범위 별도 확인</td><td>대상 승인과 현재 권한 검증</td><td>철회 이력 저장·다음 송신 시 차단. 이미 송신한 자료의 외부 삭제를 근거 없이 완료 표시하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a><br><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-01">NFR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-08">NFR-01-08</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-08">TC-NFR-01-08</a></td><td>철회 주체·효력·외부 보존 Q01·Q05 미확정</td></tr><tr id="action-task-draft" data-roles="R01 R03 R04"><td><strong>보완 요청 초안 작성</strong><br><span class="role-label">R01 · R03 · R04</span></td><td>확인된 검수 항목과 허용 근거</td><td>R03 작성; R01·R04 의견 제안</td><td>대상 항목·자료·버전·근거 연결</td><td>수정 대상·필요 자료 초안. 미확인 사실을 확정 위반으로 쓰거나 초안을 확정 요청으로 전달하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-07-04">FR-07-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-07-04">TC-FR-07-04</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-task-confirm" data-roles="R03"><td><strong>보완 요청 수정·확정</strong><br><span class="role-label">R03</span></td><td>담당 발주의 초안·담당 제작자·기한·완료 조건</td><td>보완 요청 확정 권한. 다른 역할은 별도 R03 업무 권한</td><td>근거·담당자·범위 검토 및 최신 초안 확인</td><td>사람 확정 후 내부 작업함 등록, 확정자·시각·내용 기록. 중복 확정·외부 자동 발송 제외</td><td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-01">FR-08-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-01">TC-FR-08-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-task-work" data-roles="R02 R03 R04"><td><strong>보완 작업 처리</strong><br><span class="role-label">R02 · R03 · R04</span></td><td>R02 본인 담당 작업. R03 대행은 별도; R04 전문 의견</td><td>R02 작업 처리; R03 별도 대행 권한</td><td>확정 작업·담당자·기한과 완료 조건 조회</td><td>작업 처리 이력 기록. 처리·알림 읽음을 resolved 또는 approved로 바꾸지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-01">FR-08-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-01">TC-FR-08-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-correction-submit" data-roles="R02 R03"><td><strong>수정본·추가 증빙 제출</strong><br><span class="role-label">R02 · R03</span></td><td>원래 보완 요청·이전 입력·새 입력</td><td>R02 수정본 제출; R03 별도 대행 제출 권한</td><td>확정 요청·본인 담당/대행 범위·접수 검증</td><td>새 입력과 원 요청 연결·submitted 기록. 제출만으로 해결 처리하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a><br><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-02">FR-08-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-02">TC-FR-08-02</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-task-resolve" data-roles="R03"><td><strong>재검수 근거로 작업 해결 확인</strong><br><span class="role-label">R03</span></td><td>담당 발주의 작업과 최신 재검수 근거</td><td>작업 해결 확인 권한. R05는 추가 R03 업무 권한을 받은 경우만 별도 행위</td><td>재검수 근거·미해결 여부와 최신 버전 확인</td><td>task.status=resolved와 확인자·사유 기록. 단순 제출·읽음·전문 의견으로 닫지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-04">FR-08-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-04">TC-FR-08-04</a></td><td>기본 R03 제안 / R05 겸임·제출자 자기 해결 Q01·Q08 미확정</td></tr><tr id="action-resolution-review" data-roles="R05"><td><strong>승인 전 해결 근거 조회·검토</strong><br><span class="role-label">R05</span></td><td>최신 보완 해결 근거·재검수 결과·미해결 목록</td><td>승인 대상 조회 권한; 작업 해결 변경 권한은 포함하지 않음</td><td>대상 발주·버전·조회 범위 일치</td><td>승인 전 검토 기록·전후 결과 조회. 이 행위는 task.status=resolved를 변경하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a><br><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a><br><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-07-02">FR-07-02</a> / <a class="test-ref" href="./02_기능정의서.html#FR-07-02">TC-FR-07-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-04">FR-08-04</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-04">TC-FR-08-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-05">FR-08-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a></td><td>기본 R05 제안 / Q01·Q08 미확정</td></tr><tr id="action-professional-opinion" data-roles="R03 R04 R05"><td><strong>전문 검토 의견 등록·재검토</strong><br><span class="role-label">R03 · R04 · R05</span></td><td>선택 배정된 항목·자료·사용 계획 버전</td><td>R04 의견 작성; R03 변경·요청 의견, R05 조회</td><td>L-01 도입·배정·조회 범위·근거 버전 확인</td><td>대상·근거·미확인 사항·검토자·시각 기록. 의견을 요청 확정·해결·최종 승인으로 처리하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a><br><a class="feature-ref" href="./02_기능정의서.html#F-20">F-20</a></td><td>L-01 선택 확장·미구현 / 원 기능·69개 집계 제외 / Q08 미확정</td></tr><tr id="action-approve" data-roles="R05"><td><strong>최종 승인</strong><br><span class="role-label">R05</span></td><td>현재 기준·파일 해시·검수 실행·보고서 및 필수 해결 조건</td><td>R05 최종 승인 권한. R06 등은 R05 업무 권한 별도 부여·기록</td><td>서버에서 권한·현재 버전·해시·필수 해결 조건 재검증</td><td>승인 대상과 이력 원자 기록. STALE_VERSION·검사 불완전·필수 미해결이면 거절/보류. AI 승인 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a><br><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-05">FR-08-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-02-02">SR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a></td><td>기본 제안 / 겸임·직무 분리·예외 승인 Q01·Q08 미확정</td></tr><tr id="action-hold" data-roles="R05"><td><strong>최종 승인 보류</strong><br><span class="role-label">R05</span></td><td>승인 대상 버전과 보류 사유</td><td>R05 승인·보류 권한</td><td>최신 대상·권한 및 필수 해결 상태 확인</td><td>보류 사유 기록. 임의 면제·구버전 승인·이전 승인 복사 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-08-05">FR-08-05</a> / <a class="test-ref" href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a></td><td>기본 제안 / 필수 차단·예외 정책 Q08 미확정</td></tr><tr id="action-access-manage" data-roles="R06"><td><strong>역할·발주 권한 부여·변경·철회</strong><br><span class="role-label">R06</span></td><td>승인된 계정·조직·발주·행위·자료 범위·유효기간</td><td>권한 관리 권한; 요청 승인 주체와 관리자 실행 주체를 분리하는 운영 제안</td><td>요청 승인 근거·기존 권한·겸임 정책 확인</td><td>권한 버전·요청/승인/실행자·변경 전후·시각 기록. 역할 관리만으로 원문·승인 권한 자동 획득 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-05">NFR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-05">TC-NFR-01-05</a></td><td>관리 UI 신규 설계 / 부여·철회·자기 권한 부여 Q01·Q08 미확정</td></tr><tr id="action-setting-manage" data-roles="R06 R07"><td><strong>운영 설정 관리</strong><br><span class="role-label">R06 · R07</span></td><td>R06 승인된 운영 설정; R07 개발·평가 환경만</td><td>운영 설정 권한. R07 운영 반영·발주 접근은 별도</td><td>대상 환경·설정 버전·인가·한도 검증</td><td>모델·도구·인덱스·예산 설정 이력. 설정을 자료별 동의·기준 확정·승인으로 취급하지 않음</td><td><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a><br><a class="feature-ref" href="./02_기능정의서.html#S-05">S-05</a><br><a class="feature-ref" href="./02_기능정의서.html#S-06">S-06</a><br><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-02-02">SR-02-02</a> / <a class="test-ref" href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-07">NFR-01-07</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-07">TC-NFR-01-07</a></td><td>관리 화면·S-05/S-06 추가 설계 / 환경·운영권한 Q01·Q03 미확정</td></tr><tr id="action-audit" data-roles="R01 R02 R03 R04 R05 R06 R07"><td><strong>감사 이력 조회</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06 · R07</span></td><td>별도 허용 이력. R06 운영 메타데이터, R07 승인된 시험 기록</td><td>업무 이력 조회는 자료별 별도. 원문·이미지 열람은 별도</td><td>조직·발주·자료 범위와 로그 접근 검증</td><td>실행·권한·전송·사람 조치를 재구성. 비공유 원문·이미지·API 키 노출 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-05">NFR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-05">TC-NFR-01-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a></td><td>기본 역할 배정 제안 · Q01 미확정</td></tr><tr id="action-delete" data-roles="R01 R02 R03 R04 R05 R06"><td><strong>자료 삭제</strong><br><span class="role-label">R01 · R02 · R03 · R04 · R05 · R06</span></td><td>자료별 보존 기간·삭제 가능 범위. R06 정책·인가 범위</td><td>자료 삭제 권한; 조직·자료 소유/위임 정책 별도</td><td>보존 정책·영향·대상 버전과 실제 삭제 가능 여부 확인</td><td>삭제·접근 차단 검증 결과 기록. 다른 자료·과거 이력 임의 삭제 및 외부 삭제 완료 추정 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-08">NFR-01-08</a> / <a class="test-ref" href="./02_기능정의서.html#NFR-01-08">TC-NFR-01-08</a></td><td>보존·삭제 범위 Q01·Q05 미확정</td></tr><tr id="action-development" data-roles="R07"><td><strong>내부 데이터·학습·평가·배포</strong><br><span class="role-label">R07</span></td><td>개발·평가 환경의 승인된 데이터·모델·시험 자료</td><td>내부 환경·데이터 권한. 운영 발주 조회·제출·확정·승인은 기본 없음</td><td>자료 출처·이용 범위·독립 분할·시험 환경 확인</td><td>데이터·학습·평가·배포 산출물. 시험 정답의 서비스 입력 혼입·미실행 완료 표시 금지</td><td><a class="feature-ref" href="./02_기능정의서.html#D-01">D-01</a><br><a class="feature-ref" href="./02_기능정의서.html#D-02">D-02</a><br><a class="feature-ref" href="./02_기능정의서.html#S-02">S-02</a><br><a class="feature-ref" href="./02_기능정의서.html#T-01">T-01</a><br><a class="feature-ref" href="./02_기능정의서.html#T-02">T-02</a><br><a class="feature-ref" href="./02_기능정의서.html#X-01">X-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-01">DR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-01">TC-DR-01-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-02">DR-01-02</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-02">TC-DR-01-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-03">DR-01-03</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-03">TC-DR-01-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-04">DR-01-04</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-04">TC-DR-01-04</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-05">DR-01-05</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-05">TC-DR-01-05</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-06">DR-01-06</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-06">TC-DR-01-06</a><br><a class="requirement-ref" href="./02_기능정의서.html#DR-01-07">DR-01-07</a> / <a class="test-ref" href="./02_기능정의서.html#DR-01-07">TC-DR-01-07</a><br><a class="requirement-ref" href="./02_기능정의서.html#SR-01-06">SR-01-06</a> / <a class="test-ref" href="./02_기능정의서.html#SR-01-06">TC-SR-01-06</a><br><a class="requirement-ref" href="./02_기능정의서.html#TR-01-01">TR-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#TR-01-01">TC-TR-01-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#TR-01-02">TR-01-02</a> / <a class="test-ref" href="./02_기능정의서.html#TR-01-02">TC-TR-01-02</a><br><a class="requirement-ref" href="./02_기능정의서.html#TR-01-03">TR-01-03</a> / <a class="test-ref" href="./02_기능정의서.html#TR-01-03">TC-TR-01-03</a><br><a class="requirement-ref" href="./02_기능정의서.html#ER-01-01">ER-01-01</a> / <a class="test-ref" href="./02_기능정의서.html#ER-01-01">TC-ER-01-01</a><br><a class="requirement-ref" href="./02_기능정의서.html#ER-01-02">ER-01-02</a> / <a class="test-ref" href="./02_기능정의서.html#ER-01-02">TC-ER-01-02</a></td><td>내부 역할 제안 / T-02 추가 설계·X-01 후속 P2 유지</td></tr></tbody></table></div>
+<p class="notice">문서 판독 실패의 원인·해결 안내·차단 해제 조건은 <a href="./02_기능정의서.html#document-recovery">02 문서 판독 복구 정의</a>, 시험 시나리오는 <a href="./02_기능정의서.html#document-recovery-tests">02 문서 판독 복구 시험</a>을 따른다. 문서 처리 단계·한도는 <a href="./공통실행계약.html">공통 실행 계약</a>을 참조한다. 필수 미판독 범위가 남으면 R03도 기준 확정을 할 수 없다. 재등록·재처리·운영 복구는 판독 범위와 기준 확정 검증을 우회하는 수단이 아니다.</p>
+<p>자료의 외부 전송 승인·철회는 별도 행위로 관리한다. 승인된 제공자·목적·파일 해시·범위·철회 상태를 송신 시 검증한다. 관리자 설정은 개별 자료 동의를 대신하지 않으며, R06에게 최종 승인 권한을 부여할 때도 R05 업무 권한으로 별도 기록한다.</p>
+<h2 id="section-3">10. 사용자 간 업무 흐름과 공통 기준</h2>
+<p>아래는 최종 서비스의 목표 흐름이다. 현재 가능한 범위는 <a href="#current-scope">상단 구현 요약</a>과 <a href="#section-5">기능별 구현 범위</a>에서 확인한다.</p>
+<ol>
+<li><strong>발주자</strong>가 발주, 기준 문서, 사용 계획을 등록한다.</li>
+<li><strong>시스템</strong>이 명세서·계약서에서 출처와 연결된 기준 초안을 추출하고, <strong>검수 담당자</strong>가 원문과 대조하여 확정한다. 직접 입력을 최초 기준 생성의 기본 경로로 두지 않는다. 현재는 미리 작성한 JSON 기준을 읽으며 문서 자동 추출은 미구현이다.</li>
+<li><strong>제작자</strong>가 납품 이미지·원본·작업 이력·AI 신고·소재 증빙을 제출한다.</li>
+<li><strong>검수 담당자</strong>가 검수를 실행하고 결과·근거·미검사 항목을 확인한다.</li>
+<li>전문 검토가 필요한 항목은 <strong>법률·권리 검토자</strong>에게 배정한다. R04 역할과 이 배정·의견 등록 과정은 선택 확장·미구현이다.</li>
+<li><strong>검수 담당자</strong>가 보완 요청을 확정하고, <strong>제작자</strong>가 수정본·추가 증빙을 제출한다.</li>
+<li><strong>검수 담당자</strong>가 재검수를 진행하여 해결 여부를 확인한다. 배정된 전문 검토가 있으면 해당 범위의 재검토를 연결한다.</li>
+<li><strong>최종 승인자</strong>가 최신 기준·납품·결과와 필수 해결 조건을 확인하여 승인 또는 보류한다.</li>
+<li><strong>관리자</strong>는 전 과정의 권한·실행 환경·장애·한도·보존 정책을 운영한다.</li>
+</ol>
+<h3 id="state-contract">상태 표시 — 공통 실행 계약 v1</h3>
+<p>판정, 항목 실행, 전체 실행, 보완 작업, 최종 승인은 아래 5개 도메인으로 표시한다. 전체 실행 완료와 조건 충족, 사람의 최종 승인은 각각 다른 의미다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table><thead><tr><th>대상·필드</th><th>표준 값·표시</th><th>현재 범위·해석</th></tr></thead><tbody><tr><td>항목 판정<br><code>verdict</code></td><td><code>충족</code> (충족) / <code>미충족</code> (미충족) / <code>확인 필요</code> (확인 필요) / <code>null</code> (미판정)</td><td>현재 지원<br>실행 실패는 null(미판정). 근거 부족·미실행은 충족 또는 해당 없음으로 바꾸지 않는다. 해당 없음은 적용 제외 근거가 확인된 경우의 후속 지원값이다. 기존 미실행 결과의 확인 필요 표시는 읽기 호환 범위로 유지한다.</td></tr><tr><td>항목 실행 상태<br><code>execution_status</code></td><td><code>succeeded</code> (실행 완료) / <code>failed</code> (실행 실패) / <code>not_run</code> (미실행)</td><td>현재 지원<br>신규 처리 결과는 succeeded로 저장한다. 도구가 반환한 completed는 호환 입력으로 받아 succeeded로 정규화한다. 과거 저장 결과는 원본을 유지하고 화면에서 completed를 실행 완료로 표시한다. run.status의 completed와 별개이며 실행 완료는 조건 충족을 의미하지 않는다.</td></tr><tr><td>검수 실행 상태<br><code>run.status</code></td><td><code>running</code> (실행 중) / <code>completed</code> (전체 실행 완료) / <code>partial</code> (부분 실행 완료) / <code>failed</code> (실행 실패)</td><td>현재 지원<br>전체 실행 완료는 항목 실행 집계이며 최종 승인과 별개다. queued/waiting_human/cancelled는 실제 대기·중단·취소 기능을 구현할 때 추가한다. 완료 결과에 확인 필요 판정이 있다는 이유만으로 waiting_human으로 바꾸지 않는다.</td></tr><tr><td>보완 작업 상태<br><code>task.status</code></td><td><code>draft</code> (초안) / <code>confirmed</code> (요청 확정) / <code>submitted</code> (수정본 제출) / <code>resolved</code> (해결)</td><td>설계·미구현<br>설계 계약·현재 미구현. 수정본 제출만으로 해결 처리하지 않고 새 검수 결과와 사람의 해결 확인을 기록한다.</td></tr><tr><td>최종 승인 상태<br><code>approval.status</code></td><td><code>pending</code> (승인 대기) / <code>approved</code> (승인) / <code>on_hold</code> (보류)</td><td>설계·미구현<br>설계 계약·현재 미구현. 최신 기준·납품 버전 및 필수 해결 조건을 확인하고 권한 있는 사람의 결정을 기록한다. 과거 버전의 승인 기록은 보존한다.</td></tr></tbody></table></div>
+<p><strong>후속 지원값:</strong> 판정의 <code>해당 없음</code>, 검수 실행의 <code>queued</code>(실행 대기)·<code>waiting_human</code>(사람 확인 대기)·<code>cancelled</code>(취소 완료)는 현재 미지원이다. 기준 초안·확정과 L-01 전문 검토의 단계는 업무 설계이며 위 5개 실행 상태와 섞지 않는다.</p>
+<p><strong>표시 예:</strong> OCR이 정상 실행되어 브랜드 불일치를 찾으면 <code>execution_status=succeeded</code> + <code>verdict=미충족</code>이다. OCR 실행 오류는 <code>failed</code> + <code>null</code>(미판정)이다. 현재 개수·외관 미실행 항목의 <code>not_run</code> + 확인 필요 표시는 호환 범위이며, 미실행을 충족으로 처리하지 않는다. 일부 항목만 실행한 검수는 <code>run.status=partial</code>로 표시한다.</p>
+<h3 id="rule-identity">검사 항목과 버전 식별</h3>
+<p>문서의 기능 ID(<a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a> 등), 요구사항 ID(<a class="requirement-ref" href="./02_기능정의서.html#FR-02-04">FR-02-04</a> 등), 사용자 역할 ID(R01 등)와 실제 검사 항목 ID는 구분한다. 검사 항목은 <code>rule_id</code>를 표준으로 사용한다. <code>C01</code> 같은 값은 기준 묶음 안에서 식별하며 전체 프로젝트에서 단독 고유값으로 취급하지 않는다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table><thead><tr><th>구분</th><th>식별 기준</th><th>동작</th></tr></thead><tbody>
+<tr><td>현재 논리 항목</td><td><code>(topic_id, rule_id)</code></td><td>같은 의미의 항목은 같은 rule_id를 유지한다.</td></tr>
+<tr><td>현재 기준 스냅샷</td><td><code>(topic_id, condition_id, criteria_version, rule_id)</code></td><td>선택 발주 조건과 기준 버전에 맞는 기대값을 읽는다.</td></tr>
+<tr><td>검사 결과</td><td><code>(run_id, rule_id)</code></td><td>실행에 고정된 기준·입력 버전으로 결과를 조회한다.</td></tr>
+<tr><td>후속 업무 DB 설계</td><td><code>(project_id, criteria_set_id, rule_id)</code><br>스냅샷에는 <code>criteria_version</code> 추가</td><td>선택 내부 키 rule_version_id가 공개 rule_id를 대신하지 않는다.</td></tr>
+</tbody></table></div>
+<p>기존 입력의 <code>rules[].id</code>는 읽기 호환 별칭으로 받아 <code>rule_id</code>로 정규화한다. 두 값의 불일치와 같은 기준 버전의 중복 ID는 거절한다. 원본 JSON 바이트를 변경해 기존 <code>criteria_version</code>·확정 기록을 무효화하지 않는다. 기대값 변경은 같은 항목 ID와 새 기준 버전을 사용하고, 항목 분할·병합·의미 변경에는 새 항목 ID를 부여한다.</p>
+<h3 id="retry-policy">재시도·재검사·수정본 재검수</h3>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table><thead><tr><th>구분</th><th>초기 설계값</th><th>처리·집계 기준</th></tr></thead><tbody>
+<tr><td>도구 재시도</td><td>추가 2회 · 최초 포함 총 3번</td><td>일시적 통신 오류·과부하에 한해 <code>(run_id, operation_id)</code>로 집계한다.</td></tr>
+<tr><td>에이전트 재검사</td><td>추가 1회 · 최초 포함 총 2번</td><td>근거 충돌·판독 불확실성이 있고 추가 근거 확보가 가능한 경우 <code>(run_id, rule_id)</code>로 집계한다.</td></tr>
+<tr><td>수정본 재검수</td><td>새 입력·기준·증빙 버전의 새 실행</td><td><code>previous_run_id</code>로 이전 실행을 연결하고 과거 보고서·의견·승인 이력을 보존한다.</td></tr>
+</tbody></table></div>
+<p><strong>현재 자동 반복·체크포인트 재개는 미구현이며 추가 반복은 0회다.</strong> 재개나 에이전트 인계로 카운터를 초기화하지 않는다. 조건 미충족·입력 오류·권한 거절·응답 스키마 오류는 단순 재시도 사유가 아니다. 저장·티켓 생성은 멱등성 키와 처리 결과 조회를 갖춘 뒤 재시도하며 최종 승인은 자동 반복하지 않는다.</p>
+<p>한 검사 도구를 사용하는 항목의 중첩 상한은 검사 2번 × 호출 시도 3번 = 최대 6번이다. 여러 항목을 함께 검사하는 하나의 호출은 같은 <code>operation_id</code>와 재시도 예산을 공유하며 항목 수만큼 예산을 늘리지 않는다. 전체 실행에는 별도 시간·비용 예산을 적용하고, 구체 운영 한도는 Q03에서 실측 후 확정한다. 미해결 불확실성은 사람 확인으로 넘긴다.</p>
+<p>사용 계획 변경이 승인에 미치는 영향, 전문 검토의 필수 완료 조건과 예외 허용 여부는 Q08의 추가 정책으로 확정한다. 상세 규칙은 <a href="./공통실행계약.html">공통 실행 계약</a>을 기준으로 한다.</p>
+<h2 id="ai">11. 사람과 AI 에이전트의 구분</h2>
+<p>아래 A01–A08은 <strong>시스템 내부의 AI 처리 역할 8개</strong>이며 사람 역할 R01–R07과 구분한다. LangGraph 기반 협업은 설계·미구현이다. 현재 실제 MCP/OCR 호출이 8개 에이전트 협업의 구현 완료를 의미하지 않는다. 사용자 권한·기준 확정·최종 승인은 권한 있는 사람의 행위로 남긴다.</p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>AI 역할</th>
+<th>담당 처리</th>
+<th>사람이 확인하는 접점</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A01 업무 총괄</td>
+<td>요청 분류, 역할 배정, 재검사·사람 확인 연결</td>
+<td>검수 담당자의 실행 요청과 확인</td>
+</tr>
+<tr>
+<td>A02 문서·기준 분석</td>
+<td>문서 전체에서 기준 초안·충돌 질문 추출</td>
+<td>검수 담당자의 기준 확정</td>
+</tr>
+<tr>
+<td>A03 근거 검색</td>
+<td>허용 문서 범위의 조항·예외·출처 검색</td>
+<td>검수 담당자·법률 검토자의 근거 확인</td>
+</tr>
+<tr>
+<td>A04 문구 검수</td>
+<td>문자·숫자 관찰과 확정 기준 대조</td>
+<td>검수 담당자의 결과 검토</td>
+</tr>
+<tr>
+<td>A05 시각 요소 검수</td>
+<td>외형·구성·개수 관찰과 비교 근거 제공</td>
+<td>검수 담당자의 결과 검토</td>
+</tr>
+<tr>
+<td>A06 근거·결과 검증</td>
+<td>판정·출처 대조, 충돌·미검사·추가 확인 식별</td>
+<td>검수 담당자·전문 검토자의 확인</td>
+</tr>
+<tr>
+<td>A07 보고서 작성</td>
+<td>검증 결과와 보완 요청 초안 작성</td>
+<td>검수 담당자의 요청 확정</td>
+</tr>
+<tr>
+<td>A08 수정·재검수 관리</td>
+<td>확정 요청·수정본·작업 이력 연결</td>
+<td>검수 담당자의 해결 확인</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="section-4">12. 추가 설계·정책 결정 항목</h2>
+<h3 id="role-policy">권한 부여·철회·겸임 운영 제안과 미확정 결정</h3>
+<p class="status-note">아래는 F-13의 접근·감사 계약을 구체화하는 운영 제안이며 이미 합의된 조직 정책이 아니다. 요청·승인·실행 주체와 효력을 팀이 결정하기 전에는 역할명을 근거로 권한을 확대하지 않는다. 초기 시연의 R01·R03·R05 겸임도 확정 정책으로 간주하지 않는다.</p>
+<div class="table-wrap" tabindex="0" aria-label="역할 권한 운영 정책 제안과 결정사항"><table><thead><tr><th scope="col">정책 항목</th><th scope="col">구체 운영 제안</th><th scope="col">미확정 결정·연결</th></tr></thead><tbody>
+<tr><td>부여·변경 주체</td><td>권한 변경 요청 → 조직 또는 발주 책임자의 승인 → R06의 서버 권한 설정으로 구분. 요청자·승인자·실행자·사유·대상·유효기간·권한 버전 기록</td><td>책임자 지정과 위임, 긴급 변경 승인 경로·기한: Q01. F-13 / FR-01-01 / NFR-01-05</td></tr>
+<tr><td>부여 범위</td><td>계정에 조직·발주·행위·자료 종류·공유/검토 범위·유효기간을 연결. 조직 접근만으로 조직 내 모든 발주·증빙을 열람하지 않음. R07은 내부 환경 접근을 따로 배정</td><td>범위 상속·제작자 간 자료 공유·R04 검토 범위·R06 원문 열람: Q01</td></tr>
+<tr><td>철회 주체·효력</td><td>권한 있는 책임자가 철회 요청·승인, R06 실행. 서버는 조회·제출·확정·송신·승인 시 유효 권한을 다시 확인. 과거 행위 이력은 유지</td><td>효력 시점, 세션·진행 작업 중단/인계와 긴급 철회 경로: Q01. 자료 전송 철회·외부 보존은 Q05</td></tr>
+<tr><td>자기 권한 부여</td><td>R06이 자신의 원문 열람·전송 승인·R03/R05 업무 권한을 추가하는 요청은 다른 지정 승인자의 확인을 받도록 제안. 관리자 역할만으로 업무 권한 자동 획득 금지</td><td>승인자·긴급 운영 예외·사후 검토 기한: Q01·Q08. 별도 관리 UI와 정책 설계</td></tr>
+<tr><td>겸임·직무 분리</td><td>R01·R03·R05 겸임 가능 여부를 발주별로 명시. 제출자와 작업 해결 확인자·승인자, 기준 작성자와 확정자의 분리 여부를 결정. 겸임해도 행위·권한·시각·버전 각각 기록</td><td>자기 제출물 해결/승인 허용·차단, R05의 R03 추가 권한, 추가 검토자·예외 근거: Q01·Q08. 합의 전 임의 허용하지 않음</td></tr>
+<tr><td>승인·전문 검토</td><td>R05 승인 권한과 R03 해결 권한을 분리. 필수 조건 미충족·검사 불완전은 보류. L-01은 선택 도입 후 배정 범위의 의견으로 연결</td><td>승인 차단 세부 조건·예외 승인·전문 검토 필수 조건과 계획 변경 영향: Q08. R04/L-01은 원 33개 기능·69개 요구사항의 필수 범위에 추가하지 않음</td></tr>
+</tbody></table></div>
+<p>정책 시험은 기존 <a href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a>·<a href="./02_기능정의서.html#FR-08-04">TC-FR-08-04</a>·<a href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a>·<a href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a>·<a href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a>·<a href="./02_기능정의서.html#NFR-01-05">TC-NFR-01-05</a>에 허용 계정, 다른 조직, 같은 조직의 미배정 발주, 철회 후 요청, 자기 권한 확대, 구버전·겸임 사례를 연결해 수행한다. 현재는 권한 시험 미실행이며 새 원 요구사항·우선순위를 부여하지 않는다.</p>
+
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>제안 내용</th>
+<th>원문과의 관계</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>사용자 역할·겸임</td>
+<td>R01~R07 배정, 발주별 역할, 별도 승인 권한</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a>의 역할명·겸임 미정 및 Q01·Q08 구체화 제안</td>
+</tr>
+<tr>
+<td>발주자 기능 확대</td>
+<td>발주·문서·사용 계획 등록과 보고서 조회·내보내기 권한 배정</td>
+<td>기존 기능의 사용자 재배정</td>
+</tr>
+<tr>
+<td>L-01 전문 의견 관리</td>
+<td>의견 등록·배정·상태·버전·재검토 연결</td>
+<td>선택 확장·미구현; 원문 33개 기능·69개 요구사항 집계에서 제외</td>
+</tr>
+<tr>
+<td>전문 검토 필수 조건</td>
+<td>증빙 부족·사용 범위 불일치·근거 미확인 등의 발주별 검토 배정·차단 조건</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a>·<a class="feature-ref" href="./02_기능정의서.html#F-20">F-20</a> 및 Q08과 연결한 정책 제안</td>
+</tr>
+<tr>
+<td>관리자 화면</td>
+<td>역할·발주 권한, 모델·도구 연결, 인덱싱·한도·보존 운영 화면</td>
+<td>기존 실행 계약의 관리 UI 추가 설계</td>
+</tr>
+<tr>
+<td>승인 영향 정책</td>
+<td>기준·파일·증빙·사용 계획 변경 시 재검토와 승인 대상 갱신 규칙</td>
+<td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a>·<a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a>·<a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a>·<a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a> 구체화; 사용 계획 승인 영향은 추가 정책</td>
+</tr>
+<tr>
+<td>서비스 접속·계정 수명주기</td>
+<td>가입·초대·인증 방식, 계정 정지·복구 등</td>
+<td>원문에 세부 정의 없음; 별도 범위 결정</td>
+</tr>
+</tbody>
+</table></div>
+<p>초기 시연은 원문 Q01의 <strong>발주 담당자와 제작자 2역할</strong> 제안을 활용할 수 있다. 발주 담당자에게 R01·R03·R05 권한을 겸임 배정하되 각 확인 행위는 따로 기록하고, 법률·권리 검토자는 검토가 필요한 사례에 배정한다. 운영 관리와 개발·평가는 내부에서 수행한다. 이는 초기 구성 제안이며 원문에서 확정된 역할 정책은 아니다.</p>
+<h2 id="section-5">13. 원문 기능 추적표</h2>
+<p>아래 표는 상세 정의서의 33개 기능과 연결된 69개 요구사항 ID를 모두 보존한다. ID를 누르면 해당 상세 기능 또는 요구사항으로 이동한다. 구현 범위는 2026-10-06 상세 정의서의 기록을 반영한다. 사용자 역할 배정이 원 우선순위나 구현 완료를 바꾸지는 않으며 L-01은 집계에 포함하지 않는다.</p>
+<p>역할 필터는 해당 역할이 수행·조회·검토에 참여하는 기능을 찾는 문서 탐색 도구이며, 역할별로 실제 권한을 부여하지 않는다. 전체 보기에는 원 33개 기능·69개 요구사항·69개 원 시험 ID를 유지한다. 시스템·보안·데이터·시험·후속 요구사항은 관련 업무·내부 역할로 연결하고 상세 수용 기준을 다시 정의하지 않는다.</p>
+<div class="filter-tools" id="trace-filters" hidden><label for="trace-role">관련 역할 <select id="trace-role"><option value="all">전체 역할</option><option value="R01">R01 발주자</option><option value="R02">R02 제작자</option><option value="R03">R03 검수 담당자</option><option value="R04">R04 전문 검토 · 선택</option><option value="R05">R05 승인자</option><option value="R06">R06 관리자</option><option value="R07">R07 개발·평가 · 내부</option></select></label><label for="trace-search">기능·원 요구사항·시험 ID 찾기 <input id="trace-search" type="search" placeholder="예: F-03, FR-02-05, TC-DR-01-05"></label><button type="button" id="trace-reset">전체 보기</button></div><p id="trace-count" class="filter-count" aria-live="polite"></p>
+<div class="table-wrap" tabindex="0" aria-label="표 가로 스크롤"><table id="feature-trace">
+<thead>
+<tr>
+<th>기능 ID</th>
+<th>원문 기능</th>
+<th>사용자 / 시스템 처리</th>
+<th>원 우선순위</th>
+<th>구현 상태·범위 · 10.06 기준</th>
+<th>원 요구사항</th>
+</tr>
+</thead>
+<tbody>
+<tr data-feature="F-01" data-roles="R01 R02 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-01">F-01</a></td>
+<td>발주 등록·목록 조회</td>
+<td>R01·R03 등록 / 배정 사용자 조회</td>
+<td>P0 / P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-01-02">FR-01-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-01-04">FR-01-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-01-02">TC-FR-01-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-01-04">TC-FR-01-04</a></span></td>
+</tr>
+<tr data-feature="F-02" data-roles="R01 R02 R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-02">F-02</a></td>
+<td>원본 문서 등록·검수 기준 자동 추출</td>
+<td>R01·R03 문서 제공 / 시스템 추출</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-02-01">FR-02-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-02-02">FR-02-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-02-03">FR-02-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-02-01">TC-FR-02-01</a> · <a class="test-ref" href="./02_기능정의서.html#FR-02-02">TC-FR-02-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-02-03">TC-FR-02-03</a></span></td>
+</tr>
+<tr data-feature="F-03" data-roles="R01 R02 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-03">F-03</a></td>
+<td>추출 기준 검토·확정·변경 이력</td>
+<td>R03 확정 / 배정 사용자 조회</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">세 주제의 JSON 기준 읽기·사람 확정·기준 버전 확인 구현. 크루아상은 발주별 조건을 선택한다. 문서 자동 추출·초안 보정·업무 기준 변경 이력은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-02-04">FR-02-04</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-02-05">FR-02-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-02-04">TC-FR-02-04</a> · <a class="test-ref" href="./02_기능정의서.html#FR-02-05">TC-FR-02-05</a></span></td>
+</tr>
+<tr data-feature="F-04" data-roles="R01 R02 R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-04">F-04</a></td>
+<td>납품·제작 자료 접수와 파일 버전</td>
+<td>R01 기준 문서 / R02·R03 납품·증빙</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">PNG/JPEG 접수·디코딩·해시·상한 검증, 주제·발주 조건과 접수 연결 구현. 문서/증빙 접수와 전체 업무 버전 묶음은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-01-05">FR-01-05</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-03-01">FR-03-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-03-02">FR-03-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-03-04">FR-03-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-01-05">TC-FR-01-05</a> · <a class="test-ref" href="./02_기능정의서.html#FR-03-01">TC-FR-03-01</a> · <a class="test-ref" href="./02_기능정의서.html#FR-03-02">TC-FR-03-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-03-04">TC-FR-03-04</a></span></td>
+</tr>
+<tr data-feature="F-05" data-roles="R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-05">F-05</a></td>
+<td>파일 존재·규격·형식 검사</td>
+<td>시스템 검사 / R03 확인</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">이미지 형식·크기 검증 기반 있음. 발주별 제출 목록·확정 규격 전 항목 검사는 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-03-03">FR-03-03</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-04-01">FR-04-01</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-03-03">TC-FR-03-03</a> · <a class="test-ref" href="./02_기능정의서.html#FR-04-01">TC-FR-04-01</a></span></td>
+</tr>
+<tr data-feature="F-06" data-roles="R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-06">F-06</a></td>
+<td>문구·내용 검수</td>
+<td>시스템 검사 / R03 확인</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">RapidOCR로 딸기라떼·크루아상 문구 각 3항목, 페스티벌 문구 5항목 검사. CPU/CUDA/MPS 선택·CPU 전환과 실제 장치 기록 구현. 개수·외관은 확인 필요/미실행. 문서에서 얻은 가변 규칙의 일반 해석은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-04-02">FR-04-02</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-04-02">TC-FR-04-02</a></span></td>
+</tr>
+<tr data-feature="F-07" data-roles="R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-07">F-07</a></td>
+<td>AI 신고·제작 관찰·소재 사용 범위 검토</td>
+<td>R03 검수·R04 전문 검토</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-04-04">FR-04-04</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-04-05">FR-04-05</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-04-06">FR-04-06</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-04-04">TC-FR-04-04</a> · <a class="test-ref" href="./02_기능정의서.html#FR-04-05">TC-FR-04-05</a> · <a class="test-ref" href="./02_기능정의서.html#FR-04-06">TC-FR-04-06</a></span></td>
+</tr>
+<tr data-feature="F-08" data-roles="R03 R06">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-08">F-08</a></td>
+<td>실행 재개·재시도·중복 처리</td>
+<td>R03 실행 / R06 운영 / 서버 처리</td>
+<td>P0 / P1</td>
+<td>부분 구현<span class="implementation-detail">검사 요청 멱등성·기준 버전 검증·결과 저장 기반 구현. 자동 도구 재시도 추가 2회와 에이전트 재검사 추가 1회는 설계만 확정. 현재 추가 반복 0회이며 LangGraph 재개·후속 업무 멱등성은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#SR-01-04">SR-01-04</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-04">NFR-01-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#SR-01-04">TC-SR-01-04</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-04">TC-NFR-01-04</a></span></td>
+</tr>
+<tr data-feature="F-09" data-roles="R01 R02 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-09">F-09</a></td>
+<td>조건별 결과·통합 보고서 조회</td>
+<td>배정된 R01~R05 조회</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">항목 판정·실행 상태·run 집계, OCR 원문·근거 영역·실제 장치·이력 조회 구현. 기존 completed 항목 상태는 실행 완료로 표시하고 신규 결과는 succeeded로 저장. LLM 통합 보고·티켓·권한 통합은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-07-01">FR-07-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-07-02">FR-07-02</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-07-01">TC-FR-07-01</a> · <a class="test-ref" href="./02_기능정의서.html#FR-07-02">TC-FR-07-02</a></span></td>
+</tr>
+<tr data-feature="F-10" data-roles="R01 R02 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-10">F-10</a></td>
+<td>보완 요청 생성·작업 관리</td>
+<td>R03 확정 / R02 처리 / R04 의견</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-07-04">FR-07-04</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-08-01">FR-08-01</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-07-04">TC-FR-07-04</a> · <a class="test-ref" href="./02_기능정의서.html#FR-08-01">TC-FR-08-01</a></span></td>
+</tr>
+<tr data-feature="F-11" data-roles="R02 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-11">F-11</a></td>
+<td>수정본 재검수·해결 여부 확인</td>
+<td>R02 제출 / R03 재검수 / R04 전문 의견</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-08-02">FR-08-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-08-03">FR-08-03</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-08-04">FR-08-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-08-02">TC-FR-08-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-08-03">TC-FR-08-03</a> · <a class="test-ref" href="./02_기능정의서.html#FR-08-04">TC-FR-08-04</a></span></td>
+</tr>
+<tr data-feature="F-12" data-roles="R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-12">F-12</a></td>
+<td>최신 버전 최종 확인·승인</td>
+<td>R05 승인 / 서버 검증</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-08-05">FR-08-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-08-05">TC-FR-08-05</a></span></td>
+</tr>
+<tr data-feature="F-13" data-roles="R01 R02 R03 R04 R05 R06 R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-13">F-13</a></td>
+<td>발주별 권한·감사 이력</td>
+<td>모든 역할 접근 검증 / R06 운영</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-01-01">FR-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-05">NFR-01-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-01-01">TC-FR-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-05">TC-NFR-01-05</a></span></td>
+</tr>
+<tr data-feature="F-14" data-roles="R01 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-14">F-14</a></td>
+<td>콘텐츠 사용 계획 등록·변경</td>
+<td>R01·R03 등록 / R04·R05 조회</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-01-03">FR-01-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-01-03">TC-FR-01-03</a></span></td>
+</tr>
+<tr data-feature="F-15" data-roles="R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-15">F-15</a></td>
+<td>SVG 기본 판독·연결 파일 확인</td>
+<td>시스템 판독 / R03 확인</td>
+<td>P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-03-05">FR-03-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-03-05">TC-FR-03-05</a></span></td>
+</tr>
+<tr data-feature="F-16" data-roles="R01 R03 R04 R05">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-16">F-16</a></td>
+<td>현재 보고서 Markdown 내보내기</td>
+<td>R03 내보내기 / 다른 역할은 별도 권한</td>
+<td>P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-07-03">FR-07-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-07-03">TC-FR-07-03</a></span></td>
+</tr>
+<tr data-feature="F-17" data-roles="R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-17">F-17</a></td>
+<td>제품 원본 대비 변화 비교</td>
+<td>시스템 비교 / R03 확인</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-04-03">FR-04-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-04-03">TC-FR-04-03</a></span></td>
+</tr>
+<tr data-feature="F-18" data-roles="R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-18">F-18</a></td>
+<td>제공·검색 후보 이미지 유사성 비교</td>
+<td>시스템 비교 / R03·R04 확인</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-05-03">FR-05-03</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-05-04">FR-05-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-05-03">TC-FR-05-03</a> · <a class="test-ref" href="./02_기능정의서.html#FR-05-04">TC-FR-05-04</a></span></td>
+</tr>
+<tr data-feature="F-19" data-roles="R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-19">F-19</a></td>
+<td>실제 외부 유사 후보 검색·접근 상태</td>
+<td>R03 요청 / R04 결과 검토 / 시스템 검색</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-05-01">FR-05-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-05-02">FR-05-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-05-05">FR-05-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-05-01">TC-FR-05-01</a> · <a class="test-ref" href="./02_기능정의서.html#FR-05-02">TC-FR-05-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-05-05">TC-FR-05-05</a></span></td>
+</tr>
+<tr data-feature="F-20" data-roles="R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#F-20">F-20</a></td>
+<td>게시 기준·관련 공식 근거·출력 경계</td>
+<td>R03 기준 선택 / R04 근거 검토</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#FR-06-01">FR-06-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-06-02">FR-06-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#FR-06-03">FR-06-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#FR-06-01">TC-FR-06-01</a> · <a class="test-ref" href="./02_기능정의서.html#FR-06-02">TC-FR-06-02</a> · <a class="test-ref" href="./02_기능정의서.html#FR-06-03">TC-FR-06-03</a></span></td>
+</tr>
+<tr data-feature="S-01" data-roles="R03">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-01">S-01</a></td>
+<td>8역할 에이전트 협업·재검사·출력 검증</td>
+<td>시스템 내부 협업 / R03 확인</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#SR-01-01">SR-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-01-02">SR-01-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-01-03">SR-01-03</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-01-05">SR-01-05</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#SR-01-01">TC-SR-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#SR-01-02">TC-SR-01-02</a> · <a class="test-ref" href="./02_기능정의서.html#SR-01-03">TC-SR-01-03</a> · <a class="test-ref" href="./02_기능정의서.html#SR-01-05">TC-SR-01-05</a></span></td>
+</tr>
+<tr data-feature="S-02" data-roles="R01 R02 R03 R04 R05 R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-02">S-02</a></td>
+<td>자연어 요청 분류·학습 모델 적용</td>
+<td>업무 사용자 요청 / R07 학습 / 시스템 분류</td>
+<td>P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#SR-01-06">SR-01-06</a> · <a class="requirement-ref" href="./02_기능정의서.html#DR-01-05">DR-01-05</a> · <a class="requirement-ref" href="./02_기능정의서.html#DR-01-07">DR-01-07</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#SR-01-06">TC-SR-01-06</a> · <a class="test-ref" href="./02_기능정의서.html#DR-01-05">TC-DR-01-05</a> · <a class="test-ref" href="./02_기능정의서.html#DR-01-07">TC-DR-01-07</a></span></td>
+</tr>
+<tr data-feature="S-03" data-roles="R06 R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-03">S-03</a></td>
+<td>실제 MCP 서버·권한·호출 추적</td>
+<td>시스템 도구 호출 / R06 운영·R07 개발</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">실제 stdio MCP initialize·tools/list·tools/call 및 inspect_image 구현. 정상화된 rule_id 결과·실행 상태를 저장한다. 문서 조회·검색·보고서·업무 티켓 도구와 발주별 권한은 미구현.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#SR-02-01">SR-02-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-02-02">SR-02-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-02-03">SR-02-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#SR-02-01">TC-SR-02-01</a> · <a class="test-ref" href="./02_기능정의서.html#SR-02-02">TC-SR-02-02</a> · <a class="test-ref" href="./02_기능정의서.html#SR-02-03">TC-SR-02-03</a></span></td>
+</tr>
+<tr data-feature="S-04" data-roles="R03 R04">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-04">S-04</a></td>
+<td>문서 근거 검색·하이브리드 RAG·인용</td>
+<td>시스템 검색 / R03·R04 근거 확인</td>
+<td>P0</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#SR-03-01">SR-03-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#SR-03-02">SR-03-02</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#SR-03-01">TC-SR-03-01</a> · <a class="test-ref" href="./02_기능정의서.html#SR-03-02">TC-SR-03-02</a></span></td>
+</tr>
+<tr data-feature="S-05" data-roles="R06 R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-05">S-05</a></td>
+<td>모델 서버 연결·구조화 출력·실행 기록</td>
+<td>시스템 모델 호출 / R06·R07 연결 관리</td>
+<td>원 요구사항 우선순위 없음</td>
+<td>설계 제안<span class="implementation-detail">LLM 공용 Linux·CUDA/RunPod·vLLM 모델 운영은 설계 제안이며 미연결. 현재 OCR의 CPU/CUDA/MPS 자동 선택 기반과 별개다. OCR은 CPU/MPS 실기만 확인했다.</span></td>
+<td>— (추가 설계)<span class="trace-tests">추가 설계: 원 시험 ID 없음</span></td>
+</tr>
+<tr data-feature="S-06" data-roles="R06 R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#S-06">S-06</a></td>
+<td>문서 인덱싱·버전 동기화</td>
+<td>시스템 인덱싱 / R06·R07 운영</td>
+<td>원 요구사항 우선순위 없음</td>
+<td>설계 제안<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td>— (추가 설계)<span class="trace-tests">추가 설계: 원 시험 ID 없음</span></td>
+</tr>
+<tr data-feature="N-01" data-roles="R01 R02 R03 R04 R05 R06">
+<td><a class="feature-ref" href="./02_기능정의서.html#N-01">N-01</a></td>
+<td>외부 전송 동의·입력 및 URL 격리</td>
+<td>별도 전송 승인 권한자 / 서버 검증·R06 운영</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">이미지 자원·경로 제한 일부 구현. 외부 전송/URL/자료 지시문 격리 전체는 미검증.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-01">NFR-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-02">NFR-01-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-03">NFR-01-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#NFR-01-01">TC-NFR-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-02">TC-NFR-01-02</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-03">TC-NFR-01-03</a></span></td>
+</tr>
+<tr data-feature="N-02" data-roles="R01 R02 R03 R04 R05 R06">
+<td><a class="feature-ref" href="./02_기능정의서.html#N-02">N-02</a></td>
+<td>진행·취소·비용 한도·보존 정책</td>
+<td>업무 사용자 진행 조회 / R06 운영</td>
+<td>P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#NFR-01-06">NFR-01-06</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-07">NFR-01-07</a> · <a class="requirement-ref" href="./02_기능정의서.html#NFR-01-08">NFR-01-08</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#NFR-01-06">TC-NFR-01-06</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-07">TC-NFR-01-07</a> · <a class="test-ref" href="./02_기능정의서.html#NFR-01-08">TC-NFR-01-08</a></span></td>
+</tr>
+<tr data-feature="D-01" data-roles="R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#D-01">D-01</a></td>
+<td>저장 설계·데이터·정답·전처리</td>
+<td>R07 개발·평가</td>
+<td>P0</td>
+<td>부분 구현<span class="implementation-detail">3주제·18장 시연 자료와 Django ORM/SQLite 저장 기반 구현. 독립 데이터 수집·라벨·분할·전체 ERD 완성 여부는 수집 산출물과 별도로 대조한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#DR-01-01">DR-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#DR-01-02">DR-01-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#DR-01-03">DR-01-03</a> · <a class="requirement-ref" href="./02_기능정의서.html#DR-01-04">DR-01-04</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#DR-01-01">TC-DR-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#DR-01-02">TC-DR-01-02</a> · <a class="test-ref" href="./02_기능정의서.html#DR-01-03">TC-DR-01-03</a> · <a class="test-ref" href="./02_기능정의서.html#DR-01-04">TC-DR-01-04</a></span></td>
+</tr>
+<tr data-feature="D-02" data-roles="R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#D-02">D-02</a></td>
+<td>이미지 비교 방법·임계값 검증</td>
+<td>R07 개발·평가</td>
+<td>P1</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#DR-01-06">DR-01-06</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#DR-01-06">TC-DR-01-06</a></span></td>
+</tr>
+<tr data-feature="T-01" data-roles="R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#T-01">T-01</a></td>
+<td>품질·협업 평가·배포·교육 산출물</td>
+<td>R07 시험·배포</td>
+<td>P0 / P1</td>
+<td>부분 구현<span class="implementation-detail">README에 직전 자동 테스트 125개 통과와 실제 CPU/MPS·MCP 실행 기록 있음. 교육 요구사항 전체 수용 시험·8개 역할 협업·공용 배포 시험은 미실행. Windows/CUDA/Intel Mac 실기는 미검증.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#TR-01-01">TR-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#TR-01-02">TR-01-02</a> · <a class="requirement-ref" href="./02_기능정의서.html#TR-01-03">TR-01-03</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#TR-01-01">TC-TR-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#TR-01-02">TC-TR-01-02</a> · <a class="test-ref" href="./02_기능정의서.html#TR-01-03">TC-TR-01-03</a></span></td>
+</tr>
+<tr data-feature="T-02" data-roles="R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#T-02">T-02</a></td>
+<td>RAG·Ragas 오프라인 비교 평가</td>
+<td>R07 평가</td>
+<td>원 요구사항 우선순위 없음</td>
+<td>설계 제안<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td>— (추가 설계)<span class="trace-tests">추가 설계: 원 시험 ID 없음</span></td>
+</tr>
+<tr data-feature="X-01" data-roles="R07">
+<td><a class="feature-ref" href="./02_기능정의서.html#X-01">X-01</a></td>
+<td>제한 영상·추가 형식·채널 확장</td>
+<td>팀의 범위 합의 후 R07 구현</td>
+<td>P2</td>
+<td>미구현<span class="implementation-detail">현재 앱 구현 완료로 확인된 항목이 없음. 이 문서는 구현 계약을 정의한다.</span></td>
+<td><a class="requirement-ref" href="./02_기능정의서.html#ER-01-01">ER-01-01</a> · <a class="requirement-ref" href="./02_기능정의서.html#ER-01-02">ER-01-02</a><span class="trace-tests">원 시험: <a class="test-ref" href="./02_기능정의서.html#ER-01-01">TC-ER-01-01</a> · <a class="test-ref" href="./02_기능정의서.html#ER-01-02">TC-ER-01-02</a></span></td>
+</tr>
+</tbody>
+</table></div>
+<p>원문의 3개 추가 설계 <a class="feature-ref" href="./02_기능정의서.html#S-05">S-05</a>·<a class="feature-ref" href="./02_기능정의서.html#S-06">S-06</a>·<a class="feature-ref" href="./02_기능정의서.html#T-02">T-02</a>에는 원 요구사항 ID·우선순위를 새로 부여하지 않는다. 2026-10-06 상세 정의서의 집계는 미구현 20개·부분 구현 10개·설계 제안 3개다. 표의 부분 구현은 일부 기반 기능만 갖췄다는 뜻이다. 직전 자동 테스트 125개 통과 기록은 원 요구사항 69개 전체의 수용 시험이나 모델 정확도 평가가 아니다.</p>
+
+<p class="source-note">기준: <a href="./02_기능정의서.html">상세 기능정의서</a> · <a href="./공통실행계약.html">공통 실행 계약 v1</a> · <a href="../implementation-snapshot-2026-10-06.json">2026-10-06 구현 기록</a><br>사용자 역할·권한 배정은 제안이며 기능별 구현 범위와 구분한다. 33개 기능·69개 요구사항 연결 보존 · 인터넷 없이 같은 폴더의 문서와 함께 열람 가능 · 갱신일 2026-10-06</p>
+</main><script>
+(()=>{'use strict';
+ function attachFilter(prefix,tableId){
+  const table=document.getElementById(tableId),role=document.getElementById(prefix+'-role'),search=document.getElementById(prefix+'-search'),count=document.getElementById(prefix+'-count');
+  const rows=Array.from(table.tBodies[0].rows),total=rows.length;
+  function apply(){const query=search.value.trim().toLocaleLowerCase('ko'),chosen=role.value;let visible=0;
+   rows.forEach(row=>{const roles=(row.dataset.roles||'').split(' ');const show=(chosen==='all'||roles.includes(chosen))&&row.textContent.toLocaleLowerCase('ko').includes(query);row.hidden=!show;if(show)visible++;});
+   count.textContent=prefix==='trace'?'표시 '+visible+' / 전체 '+total+'개 기능 · 전체 보기에서 원 69개 요구사항·시험 ID 확인':'표시 '+visible+' / 전체 '+total+'개 상세 행위 · 권한 배정 제안';
+  }
+  document.getElementById(prefix+'-filters').hidden=false;role.addEventListener('change',apply);search.addEventListener('input',apply);
+  document.getElementById(prefix+'-reset').addEventListener('click',()=>{role.value='all';search.value='';apply();});apply();
+  return {focusRole(value){role.value=value;search.value='';apply();},reveal(){role.value='all';search.value='';apply();}};
+ }
+ const permission=attachFilter('permission','permission-details'),trace=attachFilter('trace','feature-trace');
+ document.querySelectorAll('[data-role-focus]').forEach(link=>link.addEventListener('click',()=>permission.focusRole(link.dataset.roleFocus)));
+ document.querySelectorAll('[data-trace-focus]').forEach(link=>link.addEventListener('click',()=>trace.focusRole(link.dataset.traceFocus)));
+ function revealAction(){if(location.hash.startsWith('#action-'))permission.reveal();}
+ document.querySelectorAll('a[href^="#action-"]').forEach(link=>link.addEventListener('click',()=>permission.reveal()));
+ window.addEventListener('hashchange',revealAction);revealAction();
+})();
+</script>
+</body></html>

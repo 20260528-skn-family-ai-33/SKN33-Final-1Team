@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 BASE = ROOT / "data/collection"
 OUT = ROOT / "docs/reports/data-collection"
-TEMPLATE = "https://docs.google.com/document/d/1MZhQl9eYLTes8zzcw8zoM12_hyZ3OQ2zu8bl4jgD66U/edit"
+TEMPLATE = "https://docs.google.com/document/d/1JkpF21eSmv-509OQK14vYRk5wqiu5yHr/edit"
 GITHUB = "https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team"
 FIELD_MAP = []
 PAGES = []

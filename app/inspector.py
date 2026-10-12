@@ -11,6 +11,7 @@ from typing import Any
 
 from PIL import Image
 
+from app.contracts import normalize_rules, rule_id
 from app.ocr import get_capabilities, method_name, read_image, selected_backend
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,7 +58,8 @@ def _field_value(text, normalization):
 
 
 def _base(rule: dict) -> dict:
-    return {"rule_id": rule["id"], "name": rule.get("name", rule["id"]),
+    identifier = rule_id(rule)
+    return {"rule_id": identifier, "name": rule.get("name", identifier),
             "expected": rule.get("expected"), "observed": None,
             "verdict": "확인 필요", "execution_status": "not_run",
             "reason": "", "evidence": [], "method": method_name()}
@@ -65,7 +67,7 @@ def _base(rule: dict) -> dict:
 
 def unavailable_results(rules: list[dict], reason: str) -> list[dict]:
     results = []
-    for rule in rules:
+    for rule in normalize_rules(rules):
         result = _base(rule)
         result.update(execution_status="failed", verdict=None, reason=reason)
         results.append(result)
@@ -134,12 +136,12 @@ def inspect_text_rules(lines: list[dict], rules: list[dict]) -> list[dict]:
     """Compare observed OCR text; matching tolerates whitespace only, not misspellings."""
     results = []
     upper = [line for line in lines if line["bbox"][1] < .50]
-    for rule in rules:
+    for rule in normalize_rules(rules):
         if 'inspection' in rule:
             results.append(inspect_configured_rule(lines, rule))
             continue
         item = _base(rule)
-        code = rule["id"]
+        code = rule['rule_id']
         if code not in {"C01", "C02", "C03"}:
             item.update(reason="로컬 OCR은 객체 개수·제품 외관을 검사하지 않습니다. 사람이 확인해야 합니다.",
                         method="manual-review-required")
@@ -191,6 +193,7 @@ def inspect_text_rules(lines: list[dict], rules: list[dict]) -> list[dict]:
 
 
 def inspect_image(path: Path, rules: list) -> dict:
+    rules = normalize_rules(rules)
     start = time.monotonic()
     try:
         ocr = read_ocr(path)

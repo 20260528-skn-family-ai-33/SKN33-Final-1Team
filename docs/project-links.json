@@ -1,0 +1,23 @@
+{
+  "updated_at": "2026-10-06",
+  "documents": {
+    "project_plan": {
+      "title": "프로젝트기획",
+      "url": "https://docs.google.com/document/d/1SS_nXhI0CmUHwuNU6zBjOiPckRuEdK_g/edit"
+    },
+    "data_collection": {
+      "title": "데이터 수집 및 저장",
+      "url": "https://docs.google.com/document/d/1JkpF21eSmv-509OQK14vYRk5wqiu5yHr/edit"
+    },
+    "requirements": {
+      "title": "요구사항 정의서",
+      "url": "https://docs.google.com/spreadsheets/d/1PSzwTFpjvseFFAJsol6IksQDN2eXRgzs/edit",
+      "sheet_name": "시트1",
+      "gid": 1153128012
+    },
+    "wbs": {
+      "title": "WBS",
+      "url": "https://docs.google.com/spreadsheets/d/1a3ZsbY1GqjCih3UoqEpAiJ_od-VtxG2-tCKBSp5xqdM/edit"
+    }
+  }
+}
