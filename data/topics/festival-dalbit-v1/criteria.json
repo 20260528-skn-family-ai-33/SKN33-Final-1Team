@@ -1,0 +1,151 @@
+{
+  "dataset": "festival-dalbit-content-v1",
+  "purpose": "가상 음악 페스티벌(달빛누리 뮤직 페스타) 포스터의 문구 검수용 개발·시연 데이터",
+  "scope": "행사명·일정·장소·티켓·출연진 명칭·주최주관·우천 고지 문구만 검사. 출연자 사진 동의, 후원사 로고 승인 목록, 증빙, 규격은 앱이 검사하지 않음.",
+  "rules": [
+    {
+      "id": "C01",
+      "name": "행사명",
+      "source_criterion": "G01",
+      "expected": "달빛누리 뮤직 페스타",
+      "check": "근거 문구: 행사명은 “달빛누리 뮤직 페스타”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.14,
+          0.1539,
+          0.72,
+          0.0847
+        ]
+      }
+    },
+    {
+      "id": "C02",
+      "name": "행사 일정(요일 포함)",
+      "source_criterion": "G02",
+      "expected": "11.21(토) ~ 11.22(일)",
+      "check": "근거 문구: 행사 일정은 “11.21(토) ~ 11.22(일)”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "normalize": "time_dash",
+        "region": [
+          0.2082,
+          0.2504,
+          0.5835,
+          0.0681
+        ]
+      }
+    },
+    {
+      "id": "C03",
+      "name": "장소",
+      "source_criterion": "G03",
+      "expected": "달빛공원 야외무대",
+      "check": "근거 문구: 장소는 “달빛공원 야외무대”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.3264,
+          0.3176,
+          0.3472,
+          0.0484
+        ]
+      }
+    },
+    {
+      "id": "C04",
+      "name": "티켓 가격",
+      "source_criterion": "G04",
+      "expected": "1일권 55,000원 · 2일권 98,000원",
+      "check": "근거 문구: 티켓 가격은 “1일권 55,000원 · 2일권 98,000원”으로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "region": [
+          0.2113,
+          0.6969,
+          0.5774,
+          0.0484
+        ]
+      }
+    },
+    {
+      "id": "C05",
+      "name": "출연진 명칭",
+      "source_criterion": "G05",
+      "expected": "라이네 새벽결 오로라정원",
+      "check": "근거 문구: 표기할 출연진은 라이네, 새벽결, 오로라정원이다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "join_lines": true,
+        "region": [
+          0.1607,
+          0.6077,
+          0.7119,
+          0.0453
+        ]
+      }
+    },
+    {
+      "id": "C06",
+      "name": "주최·주관 표기",
+      "source_criterion": "G08",
+      "expected": "주최 달빛시 문화재단 · 주관 누리기획",
+      "check": "근거 문구: 주최·주관은 “주최 달빛시 문화재단 · 주관 누리기획”으로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.2541,
+          0.8676,
+          0.4919,
+          0.036
+        ]
+      }
+    },
+    {
+      "id": "C07",
+      "name": "우천 고지",
+      "source_criterion": "G09",
+      "expected": "우천 시에도 공연은 진행됩니다",
+      "check": "근거 문구: “우천 시에도 공연은 진행됩니다”를 하단에 넣는다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.3131,
+          0.9206,
+          0.3737,
+          0.0329
+        ]
+      }
+    },
+    {
+      "id": "C08",
+      "name": "후원사 로고(승인 목록)",
+      "source_criterion": "G07",
+      "expected": "승인된 후원사 로고 3개(달빛은행·누리푸드·하늘모터스)만 노출",
+      "check": "자동 검사기를 연결하지 않은 항목이다. 사람이 확인해야 한다.",
+      "inspection": {
+        "kind": "manual"
+      }
+    }
+  ],
+  "common": "가상 브랜드·가상 행사·가상 인물의 합성 광고 이미지이며 실제 광고나 업무 자료가 아니다. 문구 영역은 이 이미지 레이아웃에 맞춘 설정이다.",
+  "format_note": "실제 크기는 개별 파일 메타데이터로 기록한다(1080×1350 PNG). 원본은 data/virtual-orders/VO-02-festival에 있다. sample-01~06은 D1~D6을 변경 없이 복사한 것이다.",
+  "output_example": {
+    "sample_id": "sample-XX",
+    "results": [
+      {
+        "rule_id": "C01",
+        "verdict": "충족 | 미충족 | 확인 필요",
+        "observation": "관찰한 내용",
+        "evidence": "이미지 내 위치"
+      }
+    ]
+  }
+}

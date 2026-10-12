@@ -1,0 +1,1113 @@
+{
+  "case_id": "C04",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 30805,
+        "sha256": "ab45117805cabfbf91a7b4a0df29b64c0101e1631a523731442e4a110f432cc2"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              566.0,
+              109
+            ],
+            [
+              566.0,
+              136
+            ],
+            [
+              542.0,
+              137
+            ],
+            [
+              315.0,
+              137
+            ],
+            [
+              230,
+              136
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            566,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "500mL",
+          "polygon": [
+            [
+              737,
+              760
+            ],
+            [
+              922,
+              760
+            ],
+            [
+              922,
+              804
+            ],
+            [
+              737,
+              804
+            ]
+          ],
+          "bbox": [
+            737,
+            760,
+            922,
+            804
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f5f2e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_claim",
+          "role": "효능 문구",
+          "transcription_raw": "피부 자극 테스트 완료",
+          "polygon": [
+            [
+              369,
+              943
+            ],
+            [
+              711,
+              943
+            ],
+            [
+              711,
+              978
+            ],
+            [
+              369,
+              978
+            ]
+          ],
+          "bbox": [
+            369,
+            943,
+            711,
+            978
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f5f2e",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              430,
+              370,
+              650,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "ref",
+              "label_color": "#f2d21b"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          80,
+          70,
+          190,
+          180
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 40.0
+      },
+      "evidence": [
+        "license_icons",
+        "test_report"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 30856,
+        "sha256": "17672ffa3caaa68decb517316b0b5caf74bf5eac62cdacbcfdb70ec628189aa6"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              300,
+              109
+            ],
+            [
+              636.0,
+              109
+            ],
+            [
+              636.0,
+              136
+            ],
+            [
+              612.0,
+              137
+            ],
+            [
+              385.0,
+              137
+            ],
+            [
+              300,
+              136
+            ]
+          ],
+          "bbox": [
+            300,
+            109,
+            636,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "500mL",
+          "polygon": [
+            [
+              737,
+              760
+            ],
+            [
+              922,
+              760
+            ],
+            [
+              922,
+              804
+            ],
+            [
+              737,
+              804
+            ]
+          ],
+          "bbox": [
+            737,
+            760,
+            922,
+            804
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f5f2e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_claim",
+          "role": "효능 문구",
+          "transcription_raw": "피부 자극 테스트 완료",
+          "polygon": [
+            [
+              369,
+              943
+            ],
+            [
+              711,
+              943
+            ],
+            [
+              711,
+              978
+            ],
+            [
+              369,
+              978
+            ]
+          ],
+          "bbox": [
+            369,
+            943,
+            711,
+            978
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f5f2e",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              430,
+              370,
+              650,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "ref",
+              "label_color": "#f2d21b"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "stretched",
+        "bbox": [
+          80,
+          70,
+          256,
+          180
+        ],
+        "width": 176,
+        "height": 110,
+        "aspect": 1.6,
+        "clear_space_px": 44.0
+      },
+      "evidence": [
+        "license_icons",
+        "test_report"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 26455,
+        "sha256": "dccd7e790dbcc690ad28930d95b64e4f1edc65e70bd3dd06beccb5f09ff861de"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              196,
+              109
+            ],
+            [
+              532.0,
+              109
+            ],
+            [
+              532.0,
+              136
+            ],
+            [
+              508.0,
+              137
+            ],
+            [
+              281.0,
+              137
+            ],
+            [
+              196,
+              136
+            ]
+          ],
+          "bbox": [
+            196,
+            109,
+            532,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "550mL",
+          "polygon": [
+            [
+              737,
+              760
+            ],
+            [
+              922,
+              760
+            ],
+            [
+              922,
+              804
+            ],
+            [
+              737,
+              804
+            ]
+          ],
+          "bbox": [
+            737,
+            760,
+            922,
+            804
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f5f2e",
+          "reading_order": 3
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              430,
+              370,
+              650,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "ref",
+              "label_color": "#f2d21b"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          80,
+          70,
+          190,
+          180
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 6.0
+      },
+      "evidence": [
+        "license_icons"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 30721,
+        "sha256": "e0fda8513ff731f466e0cd2107bafae62e23085b278589644345867b368b6b86"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              566.0,
+              109
+            ],
+            [
+              566.0,
+              136
+            ],
+            [
+              542.0,
+              137
+            ],
+            [
+              315.0,
+              137
+            ],
+            [
+              230,
+              136
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            566,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "500mL",
+          "polygon": [
+            [
+              737,
+              760
+            ],
+            [
+              922,
+              760
+            ],
+            [
+              922,
+              804
+            ],
+            [
+              737,
+              804
+            ]
+          ],
+          "bbox": [
+            737,
+            760,
+            922,
+            804
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f5f2e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_claim",
+          "role": "효능 문구",
+          "transcription_raw": "피부 자극 테스트 완료",
+          "polygon": [
+            [
+              369,
+              943
+            ],
+            [
+              711,
+              943
+            ],
+            [
+              711,
+              978
+            ],
+            [
+              369,
+              978
+            ]
+          ],
+          "bbox": [
+            369,
+            943,
+            711,
+            978
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f5f2e",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              390,
+              440,
+              690,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "wide",
+              "label_color": "#3d6fd1"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          80,
+          70,
+          190,
+          180
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 40.0
+      },
+      "evidence": [
+        "license_icons",
+        "test_report"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 28230,
+        "sha256": "c6d447ce0c63e4df4b315c4153082538cdb9586d2280fe01de896a932ba79e0b"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              566.0,
+              109
+            ],
+            [
+              566.0,
+              136
+            ],
+            [
+              542.0,
+              137
+            ],
+            [
+              315.0,
+              137
+            ],
+            [
+              230,
+              136
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            566,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "500mL",
+          "polygon": [
+            [
+              804,
+              774
+            ],
+            [
+              855,
+              774
+            ],
+            [
+              855,
+              786
+            ],
+            [
+              804,
+              786
+            ]
+          ],
+          "bbox": [
+            804,
+            774,
+            855,
+            786
+          ],
+          "legibility": "ambiguous",
+          "font_size": 16,
+          "color": "#d9e6a8",
+          "reading_order": 3,
+          "note": "16px·저대비, 숫자 판독 불확실"
+        },
+        {
+          "region_id": "r_claim",
+          "role": "효능 문구",
+          "transcription_raw": "피부 자극 테스트 완료",
+          "polygon": [
+            [
+              369,
+              943
+            ],
+            [
+              711,
+              943
+            ],
+            [
+              711,
+              978
+            ],
+            [
+              369,
+              978
+            ]
+          ],
+          "bbox": [
+            369,
+            943,
+            711,
+            978
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f5f2e",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              430,
+              370,
+              650,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "ref",
+              "label_color": "#f2d21b"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          80,
+          70,
+          190,
+          180
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 40.0
+      },
+      "evidence": [
+        "license_icons"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 28230,
+        "sha256": "c6d447ce0c63e4df4b315c4153082538cdb9586d2280fe01de896a932ba79e0b"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MALGEUNGYEOL",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              566.0,
+              109
+            ],
+            [
+              566.0,
+              136
+            ],
+            [
+              542.0,
+              137
+            ],
+            [
+              315.0,
+              137
+            ],
+            [
+              230,
+              136
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            566,
+            137
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#1f5f2e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "맑은결 주방세제 레몬",
+          "polygon": [
+            [
+              236,
+              258
+            ],
+            [
+              844,
+              258
+            ],
+            [
+              844,
+              325
+            ],
+            [
+              236,
+              325
+            ]
+          ],
+          "bbox": [
+            236,
+            258,
+            844,
+            325
+          ],
+          "legibility": "clear",
+          "font_size": 70,
+          "color": "#1f5f2e",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "500mL",
+          "polygon": [
+            [
+              804,
+              774
+            ],
+            [
+              855,
+              774
+            ],
+            [
+              855,
+              786
+            ],
+            [
+              804,
+              786
+            ]
+          ],
+          "bbox": [
+            804,
+            774,
+            855,
+            786
+          ],
+          "legibility": "ambiguous",
+          "font_size": 16,
+          "color": "#d9e6a8",
+          "reading_order": 3,
+          "note": "16px·저대비, 숫자 판독 불확실"
+        },
+        {
+          "region_id": "r_claim",
+          "role": "효능 문구",
+          "transcription_raw": "피부 자극 테스트 완료",
+          "polygon": [
+            [
+              369,
+              943
+            ],
+            [
+              711,
+              943
+            ],
+            [
+              711,
+              978
+            ],
+            [
+              369,
+              978
+            ]
+          ],
+          "bbox": [
+            369,
+            943,
+            711,
+            978
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f5f2e",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "제품 병": [
+          {
+            "instance_id": "bottle_1",
+            "bbox": [
+              430,
+              370,
+              650,
+              870
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "form": "ref",
+              "label_color": "#f2d21b"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          80,
+          70,
+          190,
+          180
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 40.0
+      },
+      "evidence": [
+        "license_icons",
+        "test_report"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    }
+  }
+}

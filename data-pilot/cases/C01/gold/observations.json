@@ -1,0 +1,1333 @@
+{
+  "case_id": "C01",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 57739,
+        "sha256": "56dc1e671a2bcd3e275c94c456f3b41b8133e6eccefc3dd13ad2b1ba7058de25"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "SUPGYEOL COFFEE",
+          "polygon": [
+            [
+              230,
+              99
+            ],
+            [
+              640,
+              99
+            ],
+            [
+              640,
+              133
+            ],
+            [
+              230,
+              133
+            ]
+          ],
+          "bbox": [
+            230,
+            99,
+            640,
+            133
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#2f6b4f",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              759,
+              617
+            ],
+            [
+              981,
+              617
+            ],
+            [
+              981,
+              665
+            ],
+            [
+              759,
+              665
+            ]
+          ],
+          "bbox": [
+            759,
+            617,
+            981,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.31",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_phrase",
+          "role": "필수 문구",
+          "transcription_raw": "매장별 재고 소진 시 조기 종료",
+          "polygon": [
+            [
+              354,
+              1217
+            ],
+            [
+              725,
+              1217
+            ],
+            [
+              725,
+              1245
+            ],
+            [
+              354,
+              1245
+            ]
+          ],
+          "bbox": [
+            354,
+            1217,
+            725,
+            1245
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#3d5a4a",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_3",
+            "bbox": [
+              616,
+              481,
+              684,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          180,
+          180
+        ],
+        "width": 120,
+        "height": 120,
+        "aspect": 1.0,
+        "clear_space_px": 50.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 58016,
+        "sha256": "328ffdf0c8052e93172ef3462c4c92d392b08d0de36958a4208e297a7cad1ec1"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "SUPGYEOL COFFEE",
+          "polygon": [
+            [
+              230,
+              99
+            ],
+            [
+              640,
+              99
+            ],
+            [
+              640,
+              133
+            ],
+            [
+              230,
+              133
+            ]
+          ],
+          "bbox": [
+            230,
+            99,
+            640,
+            133
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#2f6b4f",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              759,
+              617
+            ],
+            [
+              981,
+              617
+            ],
+            [
+              981,
+              665
+            ],
+            [
+              759,
+              665
+            ]
+          ],
+          "bbox": [
+            759,
+            617,
+            981,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.31",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_phrase",
+          "role": "필수 문구",
+          "transcription_raw": "매장별 재고 소진 시 조기 종료",
+          "polygon": [
+            [
+              354,
+              1217
+            ],
+            [
+              725,
+              1217
+            ],
+            [
+              725,
+              1245
+            ],
+            [
+              354,
+              1245
+            ]
+          ],
+          "bbox": [
+            354,
+            1217,
+            725,
+            1245
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#3d5a4a",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_3",
+            "bbox": [
+              616,
+              481,
+              684,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          180,
+          180
+        ],
+        "width": 120,
+        "height": 120,
+        "aspect": 1.0,
+        "clear_space_px": 50.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 52129,
+        "sha256": "8f893b114248eb84697184ced5113beb03ec28e33b58bfb83fd7f28222f4d9f9"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "supgyeol coffee",
+          "polygon": [
+            [
+              230,
+              96
+            ],
+            [
+              575,
+              96
+            ],
+            [
+              575,
+              142
+            ],
+            [
+              230,
+              142
+            ]
+          ],
+          "bbox": [
+            230,
+            96,
+            575,
+            142
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#2f6b4f",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              99,
+              617
+            ],
+            [
+              321,
+              617
+            ],
+            [
+              321,
+              665
+            ],
+            [
+              99,
+              665
+            ]
+          ],
+          "bbox": [
+            99,
+            617,
+            321,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.30",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_3",
+            "bbox": [
+              616,
+              481,
+              684,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          180,
+          180
+        ],
+        "width": 120,
+        "height": 120,
+        "aspect": 1.0,
+        "clear_space_px": 50.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 57607,
+        "sha256": "5649667e450d919e0437d062f87cca77a70b02452642bee6fd7045ccd6c977c1"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "SUPGYEOL COFFEE",
+          "polygon": [
+            [
+              300,
+              99
+            ],
+            [
+              710,
+              99
+            ],
+            [
+              710,
+              133
+            ],
+            [
+              300,
+              133
+            ]
+          ],
+          "bbox": [
+            300,
+            99,
+            710,
+            133
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#2f6b4f",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              759,
+              617
+            ],
+            [
+              981,
+              617
+            ],
+            [
+              981,
+              665
+            ],
+            [
+              759,
+              665
+            ]
+          ],
+          "bbox": [
+            759,
+            617,
+            981,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.31",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_phrase",
+          "role": "필수 문구",
+          "transcription_raw": "매장별 재고 소진 시 조기 종료",
+          "polygon": [
+            [
+              354,
+              1217
+            ],
+            [
+              725,
+              1217
+            ],
+            [
+              725,
+              1245
+            ],
+            [
+              354,
+              1245
+            ]
+          ],
+          "bbox": [
+            354,
+            1217,
+            725,
+            1245
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#3d5a4a",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "stretched",
+        "bbox": [
+          60,
+          60,
+          252,
+          180
+        ],
+        "width": 192,
+        "height": 120,
+        "aspect": 1.6,
+        "clear_space_px": 48.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 53351,
+        "sha256": "f11da7190abc936e12d59e69ddf3de7d0d5210a34bacf07e8d953f4a25154fc3"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "SUPGYEOL COFFEE",
+          "polygon": [
+            [
+              230,
+              99
+            ],
+            [
+              640,
+              99
+            ],
+            [
+              640,
+              133
+            ],
+            [
+              230,
+              133
+            ]
+          ],
+          "bbox": [
+            230,
+            99,
+            640,
+            133
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#2f6b4f",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              759,
+              617
+            ],
+            [
+              981,
+              617
+            ],
+            [
+              981,
+              665
+            ],
+            [
+              759,
+              665
+            ]
+          ],
+          "bbox": [
+            759,
+            617,
+            981,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.31",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_phrase",
+          "role": "필수 문구",
+          "transcription_raw": "매장별 재고 소진 시 조기 종료",
+          "polygon": [
+            [
+              454,
+              1224
+            ],
+            [
+              625,
+              1224
+            ],
+            [
+              625,
+              1237
+            ],
+            [
+              454,
+              1237
+            ]
+          ],
+          "bbox": [
+            454,
+            1224,
+            625,
+            1237
+          ],
+          "legibility": "ambiguous",
+          "font_size": 14,
+          "color": "#c9dcc2",
+          "reading_order": 5,
+          "note": "글자 크기 14px, 배경과 대비가 매우 낮아 사람도 확정하기 어려움"
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_3",
+            "bbox": [
+              616,
+              481,
+              684,
+              549
+            ],
+            "occlusion": 0.6,
+            "occluded_by": "cream",
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          180,
+          180
+        ],
+        "width": 120,
+        "height": 120,
+        "aspect": 1.0,
+        "clear_space_px": 50.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 52504,
+        "sha256": "826d19143df415caccd0422abc37bf3543511cfb2aa17aaad02f69c5c208b1bc"
+      },
+      "regions": [
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "제주 말차 크림라떼",
+          "polygon": [
+            [
+              161,
+              290
+            ],
+            [
+              919,
+              290
+            ],
+            [
+              919,
+              381
+            ],
+            [
+              161,
+              381
+            ]
+          ],
+          "bbox": [
+            161,
+            290,
+            919,
+            381
+          ],
+          "legibility": "clear",
+          "font_size": 92,
+          "color": "#1e4a35",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              759,
+              617
+            ],
+            [
+              981,
+              617
+            ],
+            [
+              981,
+              665
+            ],
+            [
+              759,
+              665
+            ]
+          ],
+          "bbox": [
+            759,
+            617,
+            981,
+            665
+          ],
+          "legibility": "clear",
+          "font_size": 52,
+          "color": "#ffffff",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "10.20 ~ 10.31",
+          "polygon": [
+            [
+              360,
+              1100
+            ],
+            [
+              719,
+              1100
+            ],
+            [
+              719,
+              1144
+            ],
+            [
+              360,
+              1144
+            ]
+          ],
+          "bbox": [
+            360,
+            1100,
+            719,
+            1144
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1e4a35",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_phrase",
+          "role": "필수 문구",
+          "transcription_raw": "매장별 재고 소진 시 조기 종료",
+          "polygon": [
+            [
+              354,
+              1217
+            ],
+            [
+              725,
+              1217
+            ],
+            [
+              725,
+              1245
+            ],
+            [
+              354,
+              1245
+            ]
+          ],
+          "bbox": [
+            354,
+            1217,
+            725,
+            1245
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#3d5a4a",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "쿠키 토핑": [
+          {
+            "instance_id": "cookie_1",
+            "bbox": [
+              396,
+              481,
+              464,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_2",
+            "bbox": [
+              506,
+              461,
+              574,
+              529
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "cookie_3",
+            "bbox": [
+              616,
+              481,
+              684,
+              549
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          180,
+          180
+        ],
+        "width": 120,
+        "height": 120,
+        "aspect": 1.0,
+        "clear_space_px": 110.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    }
+  }
+}

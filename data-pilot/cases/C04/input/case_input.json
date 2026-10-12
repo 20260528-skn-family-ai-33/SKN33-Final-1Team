@@ -1,0 +1,159 @@
+{
+  "case_id": "C04",
+  "group_id": "G04",
+  "name": "맑은결 주방세제 레몬",
+  "category": "일반 소비재",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-03 ~ 2026-11-30",
+    "region": "대한민국",
+    "paid": true
+  },
+  "documents": [
+    {
+      "doc_id": "spec",
+      "title": "광고 소재 제작 명세서",
+      "pdf": "C04_spec.pdf",
+      "md": "C04_spec.md",
+      "pages": 2,
+      "sha256": "991a906f6d53e6a863490ecce69826029951003ec34d48644861736f85fea688"
+    },
+    {
+      "doc_id": "contract",
+      "title": "광고 제작 용역 계약서(요약)",
+      "pdf": "C04_contract.pdf",
+      "md": "C04_contract.md",
+      "pages": 1,
+      "sha256": "a9121835fc1d434cc78407e6993ebbaac04fe283242018cf6b61b51bda54477c"
+    },
+    {
+      "doc_id": "guide",
+      "title": "맑은결 브랜드 가이드",
+      "pdf": "C04_guide.pdf",
+      "md": "C04_guide.md",
+      "pages": 2,
+      "sha256": "abfd8dbb682ef2eed8afcf9862773e6b64f91b5dea5b3758677116ab24b53edb"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "logo_ref",
+      "file": "C04_logo_ref.png",
+      "kind": "brand_reference"
+    },
+    {
+      "ref_id": "product_ref",
+      "file": "C04_product_ref.png",
+      "kind": "product_reference"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "C04_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "ab45117805cabfbf91a7b4a0df29b64c0101e1631a523731442e4a110f432cc2",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 30805,
+      "evidence_ids": [
+        "license_icons",
+        "test_report"
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "C04_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "17672ffa3caaa68decb517316b0b5caf74bf5eac62cdacbcfdb70ec628189aa6",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 30856,
+      "evidence_ids": [
+        "license_icons",
+        "test_report"
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "C04_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "dccd7e790dbcc690ad28930d95b64e4f1edc65e70bd3dd06beccb5f09ff861de",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 26455,
+      "evidence_ids": [
+        "license_icons"
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "C04_D4.png",
+      "kind": "시각/개수 오류",
+      "submitted_order": 4,
+      "sha256": "e0fda8513ff731f466e0cd2107bafae62e23085b278589644345867b368b6b86",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 30721,
+      "evidence_ids": [
+        "license_icons",
+        "test_report"
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "C04_D5.png",
+      "kind": "판독 불확실",
+      "submitted_order": 5,
+      "sha256": "c6d447ce0c63e4df4b315c4153082538cdb9586d2280fe01de896a932ba79e0b",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 28230,
+      "evidence_ids": [
+        "license_icons"
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "C04_D6.png",
+      "kind": "수정본(증빙만)",
+      "submitted_order": 6,
+      "sha256": "c6d447ce0c63e4df4b315c4153082538cdb9586d2280fe01de896a932ba79e0b",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 28230,
+      "evidence_ids": [
+        "license_icons",
+        "test_report"
+      ],
+      "parent": "D5",
+      "byte_identical_to": "D5"
+    }
+  ],
+  "evidence": {
+    "license_icons": "C04_icons_license_receipt.txt",
+    "test_report": "C04_skin_test_report.txt"
+  }
+}

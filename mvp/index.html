@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>검수 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: 한 열짜리 작업 흐름. 홈(설명+시작) → 입력(이미지|요구사항) → 항목 확정(이미지|항목 목록) → 접수 결과.
+   색과 톤은 기존 검수 앱(web/styles.css)의 토큰을 그대로 따른다. */
+:root{
+  --bg:#f4f1eb; --paper:#fffdf9; --ink:#30282a; --muted:#786e6c; --line:#e5ded5; --chip:#eee9e2;
+  --accent:#742333; --accent-solid:#742333; --on-accent:#fffdf9; --accent-soft:#f4e8e8;
+  --green:#386b58; --green-soft:#eaf2ec; --amber:#88622b; --amber-soft:#faf0db; --red:#9b3042; --red-soft:#f8e9eb;
+  --shadow:0 8px 28px rgba(65,43,35,.06);
+  --font-sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171214; --paper:#211a1c; --ink:#f1e9e5; --muted:#a99d99; --line:#3a2f31; --chip:#2e2527;
+  --accent:#e59aa8; --accent-solid:#a8465c; --on-accent:#ffffff; --accent-soft:#3a2328;
+  --green:#86c9aa; --green-soft:#1d2e26; --amber:#dcb36a; --amber-soft:#382d19; --red:#ec8c9a; --red-soft:#3b1f25;
+  --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171214; --paper:#211a1c; --ink:#f1e9e5; --muted:#a99d99; --line:#3a2f31; --chip:#2e2527;
+  --accent:#e59aa8; --accent-solid:#a8465c; --on-accent:#ffffff; --accent-soft:#3a2328;
+  --green:#86c9aa; --green-soft:#1d2e26; --amber:#dcb36a; --amber-soft:#382d19; --red:#ec8c9a; --red-soft:#3b1f25;
+  --shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 var(--font-sans);word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:20px}
+.mono{font-family:var(--font-mono)}
+
+/* header */
+.top{border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-block:14px}
+.brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none;min-width:0}
+.mark{flex:none;width:36px;height:36px;border-radius:9px;background:var(--accent-solid);color:var(--on-accent);display:grid;place-items:center;font-weight:900;font-size:17px}
+.brand-t{display:flex;flex-direction:column;font-weight:900;font-size:16px;line-height:1.25}
+.brand-t small{font:400 10px var(--font-mono);letter-spacing:.08em;color:var(--muted)}
+.steps{display:flex;align-items:center;gap:8px;font-size:13px}
+.steps li{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.steps li+li::before{content:"";width:22px;height:1px;background:var(--line)}
+.steps .n{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font:500 11px var(--font-mono)}
+.steps li[aria-current="step"]{color:var(--ink);font-weight:700}
+.steps li[aria-current="step"] .n{background:var(--accent-solid);border-color:var(--accent-solid);color:var(--on-accent)}
+.steps li.done .n{background:var(--green-soft);border-color:transparent;color:var(--green)}
+@media (max-width:560px){.steps li:not([aria-current]) .t{display:none}.steps li+li::before{width:12px}}
+
+main{padding-block:36px 56px}
+.eyebrow{font:500 12px var(--font-mono);letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+h1{font-size:clamp(28px,4.4vw,42px);font-weight:900;line-height:1.22;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:clamp(23px,3.4vw,30px);font-weight:900;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:16px;font-weight:700}
+h1:focus,h2:focus{outline:none}
+.lede{color:var(--muted);font-size:16px;max-width:60ch}
+.meta{font-size:13px;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;transition:border-color .15s,background .15s,filter .15s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent-solid);border-color:var(--accent-solid);color:var(--on-accent)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.12)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.btn.lg{min-height:54px;padding:0 28px;font-size:17px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{border:0;background:none;padding:6px 2px;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:center;padding-block:28px 44px}
+.hero-copy{display:flex;flex-direction:column;gap:18px;min-width:0}
+.cta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px}
+.demo{background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.demo-label{font:500 11px var(--font-mono);letter-spacing:.1em;color:var(--muted)}
+.demo-in{font:400 13px/1.9 var(--font-mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-wrap:anywhere}
+.demo-arrow{align-self:center;color:var(--accent);font-size:18px;line-height:1}
+.demo-out li{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.demo-out li:first-child{border-top:0}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border-top:1px solid var(--line);padding-top:28px}
+.flow li{display:flex;flex-direction:column;gap:6px}
+.flow .num{font:500 13px var(--font-mono);color:var(--accent)}
+.flow p{color:var(--muted);font-size:14px}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);gap:32px}.flow{grid-template-columns:minmax(0,1fr)}}
+
+/* cards, forms */
+.page-head{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px;min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.tagreq{font:500 11px var(--font-mono);color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:20px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.drop{position:relative;display:flex;align-items:center;justify-content:center;min-height:300px;border:2px dashed var(--line);border-radius:10px;background:var(--bg);cursor:pointer;overflow:hidden;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-empty{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:24px;pointer-events:none}
+.drop-empty .plus{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:24px;line-height:1}
+.drop img{display:block;max-height:340px;width:auto;object-fit:contain;pointer-events:none}
+.drop .swap{position:absolute;right:10px;bottom:10px;font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 10px;pointer-events:none}
+.hint{margin-top:10px;font-size:13px;color:var(--muted)}
+.err{margin-top:10px;font-size:13px;font-weight:700;color:var(--red);background:var(--red-soft);padding:8px 12px;border-radius:8px}
+.lbl{display:block;margin:0 0 6px;font-size:13px;font-weight:700}
+.lbl .opt{font-weight:400;color:var(--muted);margin-left:6px}
+.field{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:10px 12px;font-size:14px}
+.field:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+textarea.field{resize:vertical;min-height:210px;line-height:1.7}
+.stack{display:flex;flex-direction:column;gap:16px}
+.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px}
+.actions .spacer{flex:1 1 0}
+.why{font-size:13px;color:var(--muted)}
+
+/* review */
+.review-grid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;align-items:start}
+@media (min-width:821px) and (min-height:760px){.ref{position:sticky;top:16px}}
+@media (max-width:820px){.review-grid{grid-template-columns:minmax(0,1fr)}}
+.ref figure{background:var(--bg);border:1px solid var(--line);border-radius:8px;display:flex;justify-content:center;padding:8px}
+.ref img{display:block;max-height:260px;width:auto;object-fit:contain}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin-top:16px;font-size:13px}
+.kv dt{color:var(--muted)}
+.kv dd{overflow-wrap:anywhere}
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px}
+.toolbar .tally{margin-left:auto;font:400 12px var(--font-mono);color:var(--muted)}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;min-height:36px}
+input[type=checkbox]{width:18px;height:18px;margin:0;accent-color:var(--accent-solid);cursor:pointer}
+.items{border-bottom:1px solid var(--line)}
+.item{display:grid;grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"sel body state" "sel acts acts";gap:8px 14px;align-items:start;padding:16px 0;border-top:1px solid var(--line)}
+.item .sel{grid-area:sel;display:grid;place-items:center;height:26px}
+.item .body{grid-area:body;min-width:0}
+.item .state{grid-area:state}
+.item .acts{grid-area:acts;display:flex;gap:4px 14px;flex-wrap:wrap}
+.item-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cid{font:500 12px var(--font-mono);color:var(--muted)}
+.tag{font:500 11px var(--font-mono);padding:2px 8px;border-radius:20px;background:var(--chip);color:var(--muted)}
+.item .label{font-size:15px}
+.item .crit{margin-top:4px;color:var(--ink);overflow-wrap:anywhere}
+.item[data-state="excluded"] .body{color:var(--muted)}
+.item[data-state="excluded"] .crit{text-decoration:line-through;color:var(--muted)}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:900}
+.dot.ok{background:var(--green-soft);color:var(--green)}
+.dot.no{background:var(--chip);color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:700;line-height:1.5;padding:3px 10px;border-radius:20px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.wait{background:var(--amber-soft);color:var(--amber)}
+.pill.off{background:var(--red-soft);color:var(--red)}
+.edit{display:flex;flex-direction:column;gap:8px}
+.edit-row{display:flex;gap:8px;flex-wrap:wrap}
+.add{margin-top:14px}
+.bar{position:sticky;bottom:12px;z-index:5;margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow)}
+.bar .msg{flex:1 1 240px;font-size:14px;min-width:0}
+.bar .msg b{color:var(--accent)}
+
+/* run */
+.run-head{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-bottom:24px}
+.run-grid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.run-grid{grid-template-columns:minmax(0,1fr)}}
+.run-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.run-item:first-child{border-top:0;padding-top:0}
+.run-item .crit{grid-column:2;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.note{margin-top:20px;padding:14px 16px;border-radius:10px;background:var(--amber-soft);color:var(--amber);font-size:14px}
+details{margin-top:16px}
+summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--accent)}
+pre{margin:10px 0 0;padding:14px;border-radius:8px;background:var(--bg);border:1px solid var(--line);font:400 12px/1.6 var(--font-mono);overflow-x:auto;max-height:320px}
+.toast{font-size:13px;font-weight:700;color:var(--green)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#home" id="brand" aria-label="검수 실험실 처음으로">
+      <span class="mark" aria-hidden="true">검</span>
+      <span class="brand-t">검수 실험실<small>동작그만 밑장빼기냐</small></span>
+    </a>
+    <ol class="steps" id="steps" aria-label="진행 단계" hidden>
+      <li data-step="input"><span class="n">1</span><span class="t">입력</span></li>
+      <li data-step="review"><span class="n">2</span><span class="t">항목 확정</span></li>
+      <li data-step="run"><span class="n">3</span><span class="t">검수 시작</span></li>
+    </ol>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1~3. 메인: 서비스 설명 + 시작 버튼 -->
+  <section id="v-home" data-view="home" aria-labelledby="home-title">
+    <div class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">광고 납품 검수 자동화</p>
+        <h1 id="home-title" tabindex="-1">이미지 한 장과 요구사항,<br>항목별로 확정하고 검수합니다.</h1>
+        <p class="lede">납품 샘플 이미지와 발주 요구사항을 올리면 요구사항을 검수 항목으로 나누어 보여드립니다. 항목마다 직접 확인하고 확정한 뒤에 검수가 시작됩니다.</p>
+        <div class="cta">
+          <button class="btn primary lg" id="btn-start" type="button">시작하기 →</button>
+          <span class="meta">PNG · JPEG, 10MB 이하</span>
+        </div>
+      </div>
+      <figure class="demo" aria-label="요구사항이 검수 항목으로 나뉘는 예시">
+        <div class="demo-label">요구사항 입력</div>
+        <div class="demo-in">상품명: 딸기라떼<br>할인율: 30% 할인<br>딸기 개수: 컵 밖 테이블에 3개</div>
+        <div class="demo-arrow" aria-hidden="true">↓</div>
+        <div class="demo-label">검수 항목</div>
+        <ul class="demo-out">
+          <li><span class="cid">C01</span><span class="tag">문구</span><span>상품명</span><span class="pill ok">확정</span></li>
+          <li><span class="cid">C02</span><span class="tag">문구</span><span>할인율</span><span class="pill ok">확정</span></li>
+          <li><span class="cid">C03</span><span class="tag">수량</span><span>딸기 개수</span><span class="pill wait">대기</span></li>
+        </ul>
+      </figure>
+    </div>
+    <ol class="flow">
+      <li><span class="num">01 / 입력</span><h3>이미지와 요구사항 입력</h3><p>검수할 샘플 이미지를 올리고, 요구사항을 한 줄에 한 항목씩 적습니다.</p></li>
+      <li><span class="num">02 / 항목 확정</span><h3>항목별로 선택하고 확정</h3><p>입력한 내용이 항목별로 나뉩니다. 맞는 항목을 선택해 확정하고, 필요 없는 항목은 제외합니다.</p></li>
+      <li><span class="num">03 / 검수 시작</span><h3>모든 항목이 확정되면 시작</h3><p>확정한 항목으로 검수 요청서가 만들어지고 검수가 접수됩니다.</p></li>
+    </ol>
+  </section>
+
+  <!-- 4. 샘플 이미지 + 검수 요구사항 입력 -->
+  <section id="v-input" data-view="input" aria-labelledby="input-title" hidden>
+    <div class="page-head">
+      <h2 id="input-title" tabindex="-1">검수할 내용을 입력하세요</h2>
+      <p class="lede">샘플 이미지와 요구사항이 모두 있어야 다음 단계로 넘어갈 수 있습니다.</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-h"><h3>샘플 이미지</h3><span class="tagreq">필수</span></div>
+        <label class="drop" id="drop" for="file">
+          <input type="file" id="file" accept="image/png,image/jpeg">
+          <div class="drop-empty" id="drop-empty">
+            <span class="plus" aria-hidden="true">+</span>
+            <strong>이미지를 끌어 놓거나 눌러서 선택</strong>
+            <span class="meta">PNG 또는 JPEG · 10MB 이하</span>
+          </div>
+          <img id="preview" alt="업로드한 샘플 이미지 미리보기" hidden>
+          <span class="swap" id="swap" hidden>이미지 바꾸기</span>
+        </label>
+        <p class="hint mono" id="file-info" hidden></p>
+        <p class="err" id="file-err" role="alert" hidden></p>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>검수 요구사항</h3><span class="tagreq">필수</span></div>
+        <div class="stack">
+          <div>
+            <label class="lbl" for="title">검수 이름<span class="opt">선택</span></label>
+            <input class="field" id="title" type="text" maxlength="60" placeholder="예: 딸기라떼 SNS 광고" autocomplete="off">
+          </div>
+          <div>
+            <label class="lbl" for="reqs">요구사항</label>
+            <textarea class="field" id="reqs" placeholder="상품명: 딸기라떼&#10;할인율: 30% 할인&#10;브랜드: MORNING CUP"></textarea>
+            <p class="hint">한 줄에 한 항목씩 적습니다. ‘항목명: 기준’ 형식으로 쓰면 항목명과 기준이 나뉩니다. <b id="count" aria-live="polite">0개 항목</b></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="btn-example" type="button">예시로 채우기</button>
+      <span class="spacer"></span>
+      <span class="why" id="input-why" aria-live="polite"></span>
+      <button class="btn primary" id="btn-review" type="button" disabled>항목 확인하기 →</button>
+    </div>
+  </section>
+
+  <!-- 5~6. 입력 내용을 항목별로 출력하고, 항목별로 선택해 확정 -->
+  <section id="v-review" data-view="review" aria-labelledby="review-title" hidden>
+    <div class="page-head">
+      <h2 id="review-title" tabindex="-1">입력 내용을 항목별로 확인하세요</h2>
+      <p class="lede">항목을 선택해 확정합니다. 필요 없는 항목은 제외할 수 있고, 모든 항목을 확정하거나 제외하면 검수를 시작할 수 있습니다.</p>
+    </div>
+    <div class="review-grid">
+      <aside class="card ref" aria-label="입력한 샘플 이미지">
+        <div class="card-h"><h3>샘플 이미지</h3></div>
+        <figure><img id="ref-img" alt="검수할 샘플 이미지"></figure>
+        <dl class="kv" id="ref-meta"></dl>
+        <button class="link" id="btn-edit-input" type="button">입력 수정</button>
+      </aside>
+      <div class="card">
+        <div class="toolbar">
+          <label class="chk"><input type="checkbox" id="sel-all"> 전체 선택</label>
+          <button class="btn sm" id="btn-confirm-sel" type="button" disabled>선택 항목 확정</button>
+          <span class="tally" id="tally" aria-live="polite"></span>
+        </div>
+        <ul class="items" id="items"></ul>
+        <button class="btn ghost sm add" id="btn-add" type="button">+ 항목 추가</button>
+      </div>
+    </div>
+    <div class="bar">
+      <p class="msg" id="bar-msg" aria-live="polite"></p>
+      <button class="btn ghost" id="btn-prev" type="button">← 입력으로</button>
+      <button class="btn primary" id="btn-run" type="button" disabled>검수 시작</button>
+    </div>
+  </section>
+
+  <!-- 7. 검수 시작 -->
+  <section id="v-run" data-view="run" aria-labelledby="run-title" hidden>
+    <div class="run-head">
+      <span class="pill ok">접수됨</span>
+      <h2 id="run-title" tabindex="-1">검수를 시작했습니다</h2>
+      <p class="lede" id="run-lede"></p>
+    </div>
+    <div class="run-grid">
+      <div class="card">
+        <div class="card-h"><h3>검수 요청</h3></div>
+        <figure class="ref"><img id="run-img" alt="검수 요청한 샘플 이미지"></figure>
+        <dl class="kv" id="run-meta"></dl>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>확정한 검수 항목</h3><span class="meta mono" id="run-count"></span></div>
+        <ul id="run-items"></ul>
+      </div>
+    </div>
+    <div class="note">검수 결과는 항목별 판정이 준비되면 이 화면에 표시됩니다. 현재 MVP는 검수 요청서를 만들어 접수하는 단계까지 동작합니다.</div>
+    <details id="json-box">
+      <summary>검수 요청서 보기 (JSON)</summary>
+      <pre id="json-pre"></pre>
+    </details>
+    <div class="actions">
+      <button class="btn ghost" id="btn-copy" type="button">요청서 복사</button>
+      <span class="toast" id="copy-toast" role="status" hidden>복사했습니다</span>
+      <span class="spacer"></span>
+      <button class="btn primary" id="btn-new" type="button">새 검수 시작</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var MAX_BYTES = 10 * 1024 * 1024;
+  var state = { image: null, sig: null, items: [], selected: {}, editing: null, counter: 0, job: null };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtBytes(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  function pad(n, w) { return String(n).padStart(w, '0'); }
+
+  /* ---------- 화면 전환 ---------- */
+  var VIEWS = ['home', 'input', 'review', 'run'];
+  var STEP_ORDER = ['input', 'review', 'run'];
+
+  function guard(name) {
+    if (VIEWS.indexOf(name) < 0) return 'home';
+    if (name === 'review' && (!state.image || !state.items.length)) return 'input';
+    if (name === 'run' && !state.job) return state.image && state.items.length ? 'review' : 'home';
+    return name;
+  }
+  function show(name, focus) {
+    name = guard(name);
+    VIEWS.forEach(function (v) { $('v-' + v).hidden = v !== name; });
+    var steps = $('steps');
+    steps.hidden = name === 'home';
+    var cur = STEP_ORDER.indexOf(name);
+    [].forEach.call(steps.children, function (li, i) {
+      li.classList.toggle('done', i < cur || (name === 'run' && i === cur));
+      if (i === cur) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    if (name === 'review') renderReview();
+    if (focus) {
+      window.scrollTo(0, 0);
+      var h = $('v-' + name).querySelector('h1,h2');
+      if (h) h.focus({ preventScroll: true });
+    }
+  }
+  function go(name) {
+    try { if (location.hash !== '#' + name) location.hash = name; } catch (e) { /* 해시를 쓸 수 없는 환경 */ }
+    show(name, true);
+  }
+  window.addEventListener('hashchange', function () { show((location.hash || '').slice(1) || 'home', false); });
+
+  /* ---------- 4. 입력 ---------- */
+  var BULLET = /^\s*(?:[-*•·▪●○■□▶>]+|\(?\d{1,2}[.)]\s+|[①-⑩])\s*/;
+  var LABELED = /^([^:：=]{1,20}?)\s*[:：=]\s*(.+)$/;
+  var TYPES = [
+    ['규격', /해상도|크기|규격|비율|\d\s*(?:px|mm|cm)|\d\s*[x×]\s*\d/i],
+    ['수량', /개수|수량|몇\s*개|\d+\s*(?:개|명|장|건|병|잔|마리)/],
+    ['문구', /문구|텍스트|글자|제목|명칭|표기|상품명|브랜드|할인|%|가격|슬로건|로고/],
+    ['위치', /위치|배치|상단|하단|좌측|우측|중앙|왼쪽|오른쪽|위쪽|아래쪽/],
+    ['외관', /외관|색|컬러|모양|형태|유리|컵|배경|디자인|질감|이미지|사진/]
+  ];
+  function guessType(label, text) {
+    var srcs = [label, text];
+    for (var i = 0; i < srcs.length; i++) {
+      if (!srcs[i]) continue;
+      for (var j = 0; j < TYPES.length; j++) if (TYPES[j][1].test(srcs[i])) return TYPES[j][0];
+    }
+    return '기타';
+  }
+  function parseRequirements(raw) {
+    var out = [], seen = {};
+    raw.split(/\r?\n/).forEach(function (line) {
+      var t = line.replace(BULLET, '').trim();
+      if (!t) return;
+      var label = '', text = t, m = t.match(LABELED);
+      if (m) { label = m[1].trim(); text = m[2].trim(); }
+      var key = label + '|' + text;
+      if (seen[key]) return;
+      seen[key] = 1;
+      out.push({ label: label, text: text });
+    });
+    return out;
+  }
+  function itemId(n) { return 'C' + pad(n, 2); }
+  function labelOf(it, idx) { return it.label || '요구사항 ' + (idx + 1); }
+
+  function readDims(url) {
+    return new Promise(function (resolve, reject) {
+      var im = new Image();
+      im.onload = function () { resolve({ width: im.naturalWidth, height: im.naturalHeight }); };
+      im.onerror = reject;
+      im.src = url;
+    });
+  }
+  function fileError(msg) { var e = $('file-err'); e.textContent = msg; e.hidden = !msg; }
+  function setFile(file) {
+    fileError('');
+    if (!file) return Promise.resolve();
+    if (!/^image\/(png|jpeg)$/.test(file.type)) { fileError('PNG 또는 JPEG 파일만 올릴 수 있습니다.'); return Promise.resolve(); }
+    if (file.size > MAX_BYTES) { fileError('파일이 ' + fmtBytes(file.size) + '입니다. 10MB 이하 파일을 올려 주세요.'); return Promise.resolve(); }
+    var url = URL.createObjectURL(file);
+    return readDims(url).then(function (d) {
+      if (state.image) URL.revokeObjectURL(state.image.url);
+      state.image = { url: url, name: file.name, type: file.type === 'image/png' ? 'PNG' : 'JPEG', size: file.size, width: d.width, height: d.height };
+      var p = $('preview'); p.src = url; p.hidden = false;
+      $('drop-empty').hidden = true; $('swap').hidden = false;
+      var info = $('file-info');
+      info.textContent = file.name + ' · ' + state.image.type + ' · ' + d.width + '×' + d.height + ' · ' + fmtBytes(file.size);
+      info.hidden = false;
+      updateInput();
+    }).catch(function () {
+      URL.revokeObjectURL(url);
+      fileError('이미지를 읽을 수 없습니다. 다른 파일로 다시 시도해 주세요.');
+    });
+  }
+  function updateInput() {
+    var n = parseRequirements($('reqs').value).length;
+    $('count').textContent = n + '개 항목';
+    var why = !state.image ? '샘플 이미지를 올려 주세요.' : (n === 0 ? '요구사항을 한 줄 이상 입력해 주세요.' : '');
+    $('input-why').textContent = why;
+    $('btn-review').disabled = !!why;
+  }
+
+  var drop = $('drop');
+  $('file').addEventListener('change', function (e) { setFile(e.target.files[0]); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { setFile(e.dataTransfer && e.dataTransfer.files[0]); });
+  $('reqs').addEventListener('input', updateInput);
+
+  /* 예시: 기존 검수 기준(딸기라떼)과 같은 구성의 안내용 이미지를 즉석에서 그린다. */
+  function drawExample() {
+    var fontReady = (document.fonts && document.fonts.load) ? document.fonts.load('900 80px "Noto Sans KR"').catch(function () {}) : Promise.resolve();
+    return fontReady.then(function () {
+      var c = document.createElement('canvas'); c.width = c.height = 800;
+      var g = c.getContext('2d'), F = '"Noto Sans KR",sans-serif';
+      var bg = g.createLinearGradient(0, 0, 0, 800); bg.addColorStop(0, '#fde7ea'); bg.addColorStop(1, '#f6c3cb');
+      g.fillStyle = bg; g.fillRect(0, 0, 800, 800);
+      g.fillStyle = '#e8d2c2'; g.fillRect(0, 640, 800, 160);
+      g.textAlign = 'center'; g.fillStyle = '#742333';
+      g.font = '700 30px ' + F; g.fillText('MORNING CUP', 400, 76);
+      g.font = '900 96px ' + F; g.fillText('딸기라떼', 400, 196);
+      g.beginPath(); g.arc(660, 170, 74, 0, 7); g.fillStyle = '#c4304a'; g.fill();
+      g.fillStyle = '#fff'; g.font = '900 38px ' + F; g.fillText('30%', 660, 168); g.font = '700 28px ' + F; g.fillText('할인', 660, 204);
+      g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(300, 270, 200, 350);
+      g.fillStyle = '#f9d5de'; g.fillRect(304, 290, 192, 130);
+      g.fillStyle = '#c4304a'; g.fillRect(304, 420, 192, 196);
+      g.strokeStyle = '#ffffff'; g.lineWidth = 6; g.strokeRect(300, 270, 200, 350);
+      [[170, 705], [400, 725], [630, 705]].forEach(function (p) {
+        g.beginPath(); g.ellipse(p[0], p[1], 46, 54, 0, 0, 7); g.fillStyle = '#d2263f'; g.fill();
+        g.beginPath(); g.moveTo(p[0] - 30, p[1] - 44); g.lineTo(p[0], p[1] - 70); g.lineTo(p[0] + 30, p[1] - 44); g.closePath(); g.fillStyle = '#3f8a54'; g.fill();
+      });
+      return new Promise(function (resolve) { c.toBlob(function (b) { resolve(new File([b], '예시-딸기라떼.png', { type: 'image/png' })); }, 'image/png'); });
+    });
+  }
+  $('btn-example').addEventListener('click', function () {
+    $('title').value = '딸기라떼 SNS 광고 (예시)';
+    $('reqs').value = ['상품명: 딸기라떼', '할인율: 30% 할인', '브랜드: MORNING CUP',
+      '딸기 개수: 컵 밖 앞쪽 테이블에 놓인 온전한 딸기가 정확히 3개',
+      '음료 외관: 투명한 손잡이 없는 일자 유리컵, 위쪽 연분홍 우유와 아래쪽 빨간 딸기층'].join('\n');
+    updateInput();
+    drawExample().then(setFile);
+  });
+
+  $('btn-review').addEventListener('click', function () {
+    var raw = $('reqs').value.trim();
+    if (raw !== state.sig) {            // 요구사항이 바뀌었을 때만 항목을 새로 만든다
+      var parsed = parseRequirements(raw);
+      state.counter = 0;
+      state.items = parsed.map(function (p) {
+        state.counter += 1;
+        return { id: itemId(state.counter), label: p.label, text: p.text, type: guessType(p.label, p.text), status: 'pending' };
+      });
+      state.selected = {}; state.editing = null; state.sig = raw;
+    }
+    go('review');
+  });
+
+  /* ---------- 5~6. 항목별 출력 · 선택 · 확정 ---------- */
+  function count(status) { return state.items.filter(function (i) { return i.status === status; }).length; }
+  function metaRows(el, rows) {
+    el.innerHTML = rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd' + (r[2] ? ' class="mono"' : '') + '>' + esc(r[1]) + '</dd>'; }).join('');
+  }
+  function imageRows() {
+    var im = state.image;
+    return [['파일', im.name], ['형식', im.type], ['해상도', im.width + '×' + im.height + ' px', 1], ['크기', fmtBytes(im.size), 1]];
+  }
+  function itemHTML(it, idx) {
+    var editing = state.editing === it.id, lab = esc(labelOf(it, idx)), st = it.status;
+    var lead = st === 'pending'
+      ? '<input type="checkbox" data-act="sel" aria-label="' + esc(it.id + ' ' + labelOf(it, idx)) + ' 선택"' + (state.selected[it.id] ? ' checked' : '') + '>'
+      : (st === 'confirmed' ? '<span class="dot ok" aria-hidden="true">✓</span>' : '<span class="dot no" aria-hidden="true">–</span>');
+    var pill = st === 'confirmed' ? '<span class="pill ok">확정됨</span>' : (st === 'excluded' ? '<span class="pill off">제외됨</span>' : '<span class="pill wait">대기</span>');
+    var body, acts;
+    if (editing) {
+      body = '<div class="edit"><div><label class="lbl" for="e-label">항목명</label><input class="field" id="e-label" maxlength="20" value="' + esc(it.label) + '" placeholder="예: 상품명"></div>' +
+             '<div><label class="lbl" for="e-text">기준</label><input class="field" id="e-text" value="' + esc(it.text) + '" placeholder="예: 딸기라떼"></div></div>';
+      acts = '<button class="btn sm primary" type="button" data-act="save">저장</button><button class="btn sm ghost" type="button" data-act="cancel">취소</button>';
+    } else {
+      body = '<div class="item-top"><span class="cid">' + esc(it.id) + '</span><span class="tag">' + esc(it.type) + '</span><strong class="label">' + lab + '</strong></div><p class="crit">' + esc(it.text) + '</p>';
+      if (st === 'pending') acts = '<button class="link" type="button" data-act="confirm">확정</button><button class="link" type="button" data-act="edit">수정</button><button class="link" type="button" data-act="exclude">제외</button>';
+      else if (st === 'confirmed') acts = '<button class="link" type="button" data-act="unconfirm">확정 취소</button>';
+      else acts = '<button class="link" type="button" data-act="restore">되살리기</button>';
+    }
+    return '<li class="item" data-id="' + esc(it.id) + '" data-state="' + st + '"><span class="sel">' + lead + '</span><div class="body">' + body + '</div><span class="state">' + pill + '</span><div class="acts">' + acts + '</div></li>';
+  }
+  function renderReview() {
+    if (!state.image) return;
+    $('ref-img').src = state.image.url;
+    var rows = imageRows(), t = $('title').value.trim();
+    if (t) rows.unshift(['검수 이름', t]);
+    metaRows($('ref-meta'), rows);
+    $('items').innerHTML = state.items.map(itemHTML).join('');
+    var pending = state.items.filter(function (i) { return i.status === 'pending'; });
+    var nSel = pending.filter(function (i) { return state.selected[i.id]; }).length;
+    var c = count('confirmed'), p = pending.length, x = count('excluded');
+    $('tally').textContent = '확정 ' + c + ' · 대기 ' + p + ' · 제외 ' + x;
+    var all = $('sel-all');
+    all.disabled = p === 0; all.checked = p > 0 && nSel === p;
+    $('btn-confirm-sel').disabled = nSel === 0;
+    $('btn-confirm-sel').textContent = nSel ? '선택 항목 확정 (' + nSel + ')' : '선택 항목 확정';
+    var msg;
+    if (state.editing) msg = '수정 중인 항목을 저장하거나 취소해 주세요.';
+    else if (p > 0) msg = '대기 중인 항목 <b>' + p + '개</b>를 확정하거나 제외해 주세요.';
+    else if (c === 0) msg = '확정된 항목이 없습니다. 제외한 항목을 되살리거나 항목을 추가해 주세요.';
+    else msg = '확정 <b>' + c + '개</b> · 검수를 시작할 수 있습니다.';
+    $('bar-msg').innerHTML = msg;
+    $('btn-run').disabled = !!state.editing || p > 0 || c === 0;
+  }
+  function find(id) { return state.items.filter(function (i) { return i.id === id; })[0]; }
+
+  $('items').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var li = b.closest('.item'), it = find(li.dataset.id), act = b.dataset.act;
+    if (act === 'sel') { if (b.checked) state.selected[it.id] = 1; else delete state.selected[it.id]; }
+    else if (act === 'confirm') { it.status = 'confirmed'; delete state.selected[it.id]; }
+    else if (act === 'unconfirm' || act === 'restore') it.status = 'pending';
+    else if (act === 'exclude') { it.status = 'excluded'; delete state.selected[it.id]; }
+    else if (act === 'edit') state.editing = it.id;
+    else if (act === 'cancel') {
+      state.editing = null;
+      if (!it.text) { state.items = state.items.filter(function (i) { return i !== it; }); if (it.id === itemId(state.counter)) state.counter -= 1; }
+    }
+    else if (act === 'save') {
+      var text = $('e-text').value.trim();
+      if (!text) { $('e-text').focus(); return; }
+      it.label = $('e-label').value.trim(); it.text = text; it.type = guessType(it.label, it.text); state.editing = null;
+    }
+    renderReview();
+    if (act === 'edit') $('e-label').focus();
+  });
+  $('sel-all').addEventListener('change', function (e) {
+    state.items.forEach(function (i) { if (i.status === 'pending') { if (e.target.checked) state.selected[i.id] = 1; else delete state.selected[i.id]; } });
+    renderReview();
+  });
+  $('btn-confirm-sel').addEventListener('click', function () {
+    state.items.forEach(function (i) { if (i.status === 'pending' && state.selected[i.id]) i.status = 'confirmed'; });
+    state.selected = {}; renderReview();
+  });
+  $('btn-add').addEventListener('click', function () {
+    if (state.editing) return;
+    state.counter += 1;
+    var it = { id: itemId(state.counter), label: '', text: '', type: '기타', status: 'pending' };
+    state.items.push(it); state.editing = it.id; renderReview(); $('e-label').focus();
+  });
+  $('btn-prev').addEventListener('click', function () { go('input'); });
+  $('btn-edit-input').addEventListener('click', function () { go('input'); });
+
+  /* ---------- 7. 검수 시작 ---------- */
+  function buildRequest() {
+    var im = state.image;
+    return {
+      title: $('title').value.trim() || null,
+      image: { name: im.name, format: im.type, width: im.width, height: im.height, bytes: im.size },
+      items: state.items.filter(function (i) { return i.status === 'confirmed'; }).map(function (i) {
+        return { id: i.id, name: i.label || null, criterion: i.text, checkType: i.type };
+      })
+    };
+  }
+  /* 검수 엔진 연결 지점: 실제 검수 API가 생기면 여기서 호출한다. 지금은 접수 번호만 만든다. */
+  function startInspection(req) {
+    var d = new Date(), rnd = Math.random().toString(16).slice(2, 6).toUpperCase();
+    return Promise.resolve({
+      jobId: 'INS-' + d.getFullYear() + pad(d.getMonth() + 1, 2) + pad(d.getDate(), 2) + '-' + rnd,
+      acceptedAt: d, request: req
+    });
+  }
+  $('btn-run').addEventListener('click', function () {
+    var btn = this; btn.disabled = true;
+    startInspection(buildRequest()).then(function (job) {
+      state.job = job;
+      var req = job.request, t = job.acceptedAt;
+      $('run-lede').textContent = '확정한 ' + req.items.length + '개 항목이 검수 요청으로 접수되었습니다.';
+      $('run-img').src = state.image.url;
+      var rows = [['요청 번호', job.jobId, 1], ['접수 시각', t.getFullYear() + '-' + pad(t.getMonth() + 1, 2) + '-' + pad(t.getDate(), 2) + ' ' + pad(t.getHours(), 2) + ':' + pad(t.getMinutes(), 2), 1]];
+      if (req.title) rows.push(['검수 이름', req.title]);
+      metaRows($('run-meta'), rows.concat(imageRows().slice(0, 1)));
+      $('run-count').textContent = req.items.length + ' ITEMS';
+      $('run-items').innerHTML = req.items.map(function (i) {
+        return '<li class="run-item"><span class="cid">' + esc(i.id) + '</span><span><span class="tag">' + esc(i.checkType) + '</span> <strong>' + esc(i.name || '요구사항') + '</strong></span><span class="pill wait">검수 대기</span><p class="crit">' + esc(i.criterion) + '</p></li>';
+      }).join('');
+      $('json-pre').textContent = JSON.stringify({ jobId: job.jobId, acceptedAt: t.toISOString(), request: req }, null, 2);
+      $('json-box').open = false; $('copy-toast').hidden = true;
+      go('run');
+    }).finally(function () { btn.disabled = false; });
+  });
+  $('btn-copy').addEventListener('click', function () {
+    var text = $('json-pre').textContent, toast = $('copy-toast');
+    function fallback() { $('json-box').open = true; var r = document.createRange(); r.selectNodeContents($('json-pre')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); toast.textContent = '복사가 막혀 있어 내용을 선택했습니다. Ctrl+C로 복사하세요.'; toast.hidden = false; }
+    try {
+      navigator.clipboard.writeText(text).then(function () { toast.textContent = '복사했습니다'; toast.hidden = false; setTimeout(function () { toast.hidden = true; }, 2500); }, fallback);
+    } catch (e) { fallback(); }
+  });
+  $('btn-new').addEventListener('click', function () {
+    if (state.image) URL.revokeObjectURL(state.image.url);
+    state = { image: null, sig: null, items: [], selected: {}, editing: null, counter: 0, job: null };
+    $('reqs').value = ''; $('title').value = '';
+    $('preview').hidden = true; $('preview').removeAttribute('src'); $('drop-empty').hidden = false; $('swap').hidden = true; $('file-info').hidden = true; fileError('');
+    updateInput(); go('input');
+  });
+
+  $('btn-start').addEventListener('click', function () { go('input'); });
+  $('brand').addEventListener('click', function (e) { e.preventDefault(); go('home'); });
+
+  updateInput();
+  show((location.hash || '').slice(1) || 'home', false);
+})();
+</script>
+</body>
+</html>

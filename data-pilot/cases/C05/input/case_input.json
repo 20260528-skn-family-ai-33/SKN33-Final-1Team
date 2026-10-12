@@ -1,0 +1,154 @@
+{
+  "case_id": "C05",
+  "group_id": "G05",
+  "name": "플로우메이트 스마트 텀블러 FM-1",
+  "category": "신규 브랜드·새 레이아웃",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-12-01 ~ 2026-12-14",
+    "region": "대한민국",
+    "paid": true
+  },
+  "documents": [
+    {
+      "doc_id": "spec",
+      "title": "신제품 광고 소재 제작 명세서",
+      "pdf": "C05_spec.pdf",
+      "md": "C05_spec.md",
+      "pages": 4,
+      "sha256": "78ee4a02ca72293611b68a83745ed1e9605c65d2e52bdb2841a1144cd35d0735"
+    },
+    {
+      "doc_id": "contract",
+      "title": "광고 제작 용역 계약서(요약)",
+      "pdf": "C05_contract.pdf",
+      "md": "C05_contract.md",
+      "pages": 2,
+      "sha256": "ceeca9811df91d98957ff27a8b6c8de611c0b308f6b320df3e6745a1e82ce1be"
+    },
+    {
+      "doc_id": "guide",
+      "title": "플로우메이트 브랜드 가이드",
+      "pdf": "C05_guide.pdf",
+      "md": "C05_guide.md",
+      "pages": 2,
+      "sha256": "bf28c920a7b01afb6eeff68a7df107da70c66994bd357b16fba3652414610031"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "logo_ref",
+      "file": "C05_logo_ref.png",
+      "kind": "brand_reference"
+    },
+    {
+      "ref_id": "product_ref",
+      "file": "C05_product_ref.png",
+      "kind": "product_reference"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "C05_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "7256fa5699155f7c9f5da56398330d1649c90ed8d9c88a2b10c3b650f0c3f16b",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 87976,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "C05_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "1b0eb9d9c8023edb2b55aa600583d3eae6b57fdbc340295f7c0c6cbedc04530e",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 87972,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "C05_D3.jpg",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "93a1c1abd6c244934a4550b85d99d326ae0569499bbb28fdf74cb4e4df85e004",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/jpeg",
+      "bytes": 121201,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "C05_D4.png",
+      "kind": "시각/개수 오류",
+      "submitted_order": 4,
+      "sha256": "60b5b89ee1965929b0f640848750605c0c6a14618d1d28acfe85151e47629127",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 86592,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "C05_D5.png",
+      "kind": "판독 불확실",
+      "submitted_order": 5,
+      "sha256": "9d8cef08d208ec700fa14f7c919cb384e2e1da06bd24a7adb7b0ab495286ea0b",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 88631,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "C05_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "949b338c55b01582af73e7ad2619fa1beffab76c9db1b50ccfcd83aec42f9c5c",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 87628,
+      "evidence_ids": [],
+      "parent": "D2",
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D7",
+      "file": "C05_D7.png",
+      "kind": "승인 중 새 파일",
+      "submitted_order": 7,
+      "sha256": "f559ebca5f946f3fe1a59d6423be76fa8e54e6b4957b1740fc3de3930126eb29",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 87998,
+      "evidence_ids": [],
+      "parent": "D6",
+      "byte_identical_to": null
+    }
+  ],
+  "evidence": {}
+}

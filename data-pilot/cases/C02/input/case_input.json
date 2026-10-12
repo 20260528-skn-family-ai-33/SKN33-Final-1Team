@@ -1,0 +1,148 @@
+{
+  "case_id": "C02",
+  "group_id": "G02",
+  "name": "밀담 베이커리 · 버터 크루아상 세트",
+  "category": "음료·디저트 B",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-01 ~ 2026-11-07",
+    "region": "대한민국",
+    "paid": true
+  },
+  "documents": [
+    {
+      "doc_id": "spec",
+      "title": "광고 소재 제작 명세서",
+      "pdf": "C02_spec.pdf",
+      "md": "C02_spec.md",
+      "pages": 2,
+      "sha256": "d2d2eaea0d5825c4ad93cf3fef47aa78d02bd8aac50b67715456803931c90ea3"
+    },
+    {
+      "doc_id": "contract",
+      "title": "광고 제작 용역 계약서(요약)",
+      "pdf": "C02_contract.pdf",
+      "md": "C02_contract.md",
+      "pages": 1,
+      "sha256": "e72f7e655a2a1b67f806af9f65944883b38b93885e6512276d28a6cb6d827cbd"
+    },
+    {
+      "doc_id": "guide",
+      "title": "밀담 베이커리 브랜드 가이드",
+      "pdf": "C02_guide.pdf",
+      "md": "C02_guide.md",
+      "pages": 1,
+      "sha256": "7afe04af872c1de16b504c8c68fea5277cb46fd8c903eb9f4d63c5bf83969c46"
+    },
+    {
+      "doc_id": "notice",
+      "title": "기준 변경 공지",
+      "pdf": "C02_notice.pdf",
+      "md": "C02_notice.md",
+      "pages": 1,
+      "sha256": "63b3c9f6f3ccab6db1829909ef2b54dc31677a26bdda93fa953c22d7bc53e9d0"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "logo_ref",
+      "file": "C02_logo_ref.png",
+      "kind": "brand_reference"
+    },
+    {
+      "ref_id": "product_ref",
+      "file": "C02_product_ref.png",
+      "kind": "product_reference"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "C02_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "5781e1281cc50b590c0f30e4600bff9746bc8a4f5b9fdfec1347fe6243a55d0b",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 62926,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "C02_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "2b9a689cce116ae97efc5d0e0d9f99bb9b3e81657ed54b859f7963071a071e96",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 63779,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "C02_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "d3d5aa40e309cf58c0395132bb98a0da2668e876d95732feb0c1c61b30487473",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 59824,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "C02_D4.png",
+      "kind": "시각/개수 오류",
+      "submitted_order": 4,
+      "sha256": "db7b25844cce65cffed4a6c2390ea9247d22bb00e5806ab0c2edc717c12cd16d",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 62879,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "C02_D5.png",
+      "kind": "판독 불확실",
+      "submitted_order": 5,
+      "sha256": "dcacc7b646aa9df8793be029fcf8c6356feeca4418bdf789f56493a870c1999d",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 71372,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "C02_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "7cf48c94f5df1f456f76aab1a99d224293780eadb592f2cf4316836e91a01883",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 62587,
+      "evidence_ids": [],
+      "parent": "D1",
+      "byte_identical_to": null
+    }
+  ],
+  "evidence": {}
+}

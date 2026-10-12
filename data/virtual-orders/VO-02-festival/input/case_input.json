@@ -1,0 +1,346 @@
+{
+  "case_id": "VO-02",
+  "group_id": "VG02",
+  "name": "달빛누리 뮤직 페스타 2026",
+  "category": "페스티벌(행사 홍보)",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-09 ~ 2026-11-22",
+    "region": "대한민국",
+    "paid": false,
+    "post_start": "2026-11-09",
+    "post_end": "2026-11-22"
+  },
+  "documents": [
+    {
+      "doc_id": "rfp",
+      "title": "제안요청서 (RFP)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-02_rfp.pdf",
+      "md": "VO-02_rfp.md",
+      "pages": 1,
+      "sha256": "baa1786216c7be0523ec0343220079f2b54f413380f0e174056ab79847fa8d4b"
+    },
+    {
+      "doc_id": "nda",
+      "title": "비밀유지계약서 (NDA)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-02_nda.pdf",
+      "md": "VO-02_nda.md",
+      "pages": 1,
+      "sha256": "b370661a1514cc619ccc221562951010ddac3aa7459decc4a8591ea5567dac9c"
+    },
+    {
+      "doc_id": "overview",
+      "title": "행사 개요서",
+      "stage": "1 기획·요청",
+      "pdf": "VO-02_overview.pdf",
+      "md": "VO-02_overview.md",
+      "pages": 2,
+      "sha256": "72400c1d7bb80760a91d38e757d8722e2e4d463dc2ef2d0e4acf7fa1e486bcc5"
+    },
+    {
+      "doc_id": "artist",
+      "title": "출연자 이미지·명칭 사용 허락 기준",
+      "stage": "2 계약",
+      "pdf": "VO-02_artist.pdf",
+      "md": "VO-02_artist.md",
+      "pages": 1,
+      "sha256": "bdc3889d22304cb239853dbe5947f6deab9bd2d762408191446e15cd92f25274"
+    },
+    {
+      "doc_id": "sponsor",
+      "title": "후원사 로고 사용 기준",
+      "stage": "2 계약",
+      "pdf": "VO-02_sponsor.pdf",
+      "md": "VO-02_sponsor.md",
+      "pages": 1,
+      "sha256": "08d14d1cc7b92343f63d17ac0fb3fc2415a7c206d66b99166b284a1683785244"
+    },
+    {
+      "doc_id": "banner",
+      "title": "현수막 게시 계획서",
+      "stage": "2 계약",
+      "pdf": "VO-02_banner.pdf",
+      "md": "VO-02_banner.md",
+      "pages": 1,
+      "sha256": "394a42e5123ecfac3a9256e48a190386b904350ce006b5d470cbed05803d1502"
+    },
+    {
+      "doc_id": "contract",
+      "title": "외주 용역 계약서",
+      "stage": "2 계약",
+      "pdf": "VO-02_contract.pdf",
+      "md": "VO-02_contract.md",
+      "pages": 2,
+      "sha256": "1d5c80775c89dd86cb5f5ee203516a5ae67e6a5508b85b6d32c6b03a02285721"
+    },
+    {
+      "doc_id": "sow",
+      "title": "과업지시서 (SOW)",
+      "stage": "3 수행·검수",
+      "pdf": "VO-02_sow.pdf",
+      "md": "VO-02_sow.md",
+      "pages": 1,
+      "sha256": "a8c2e02068e177bc9a2e114de369078865cc737b680ec7fe62126f453bf6da21"
+    },
+    {
+      "doc_id": "guide",
+      "title": "행사 로고 가이드",
+      "stage": "3 수행·검수",
+      "pdf": "VO-02_guide.pdf",
+      "md": "VO-02_guide.md",
+      "pages": 1,
+      "sha256": "67276ff8360963f3a8681d2c4beae323163012a8f245f9def27d65fca64b41f8"
+    },
+    {
+      "doc_id": "inspect",
+      "title": "검수조서 (검수 확인서) 양식",
+      "stage": "3 수행·검수",
+      "pdf": "VO-02_inspect.pdf",
+      "md": "VO-02_inspect.md",
+      "pages": 1,
+      "sha256": "07bc8079363c498a0a0dad6970b2b76f37e44034d0ef56c55a11d246e4e680f5"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "VO-02_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "220c1ed068fdc89d32af6d5c0fcf6bcfd25326c88ce3a0f137d74e4e14f1ba8a",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 75775,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:오로라정원",
+          "version": "v1",
+          "file": "VO-02_consent-오로라정원_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "VO-02_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "f75f6ab38690387a6b599c90153fa73e8108c20efbf77e2d3b7136e75f4f3c34",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 75986,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:오로라정원",
+          "version": "v1",
+          "file": "VO-02_consent-오로라정원_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "VO-02_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "c88aefb97a0e23f793332e90a3c3a2e2d8dbb3bb6e2d5c8e7d761d74a568bc30",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 76543,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:오로라정원",
+          "version": "v1",
+          "file": "VO-02_consent-오로라정원_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "VO-02_D4.png",
+      "kind": "판독 불확실",
+      "submitted_order": 4,
+      "sha256": "7f124a82d3996d8cf97546d8de77230ea1eb0ccd800ab5b951fcd3d365abbe3a",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 71355,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:오로라정원",
+          "version": "v1",
+          "file": "VO-02_consent-오로라정원_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "VO-02_D5.png",
+      "kind": "증빙 누락",
+      "submitted_order": 5,
+      "sha256": "761eaca93bd2d027c2a61f7307006c14891e2fb3509af876a3086a833578dc77",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 76071,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "VO-02_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "e1481182c6ae3026778668a4294cbf004c48fa928702bf914830caa9b6aac206",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 75873,
+      "evidence": [
+        {
+          "evidence_id": "consent:라이네",
+          "version": "v1",
+          "file": "VO-02_consent-라이네_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:새벽결",
+          "version": "v1",
+          "file": "VO-02_consent-새벽결_v1.pdf"
+        },
+        {
+          "evidence_id": "consent:오로라정원",
+          "version": "v1",
+          "file": "VO-02_consent-오로라정원_v1.pdf"
+        },
+        {
+          "evidence_id": "sponsor_approval",
+          "version": "v1",
+          "file": "VO-02_sponsor_approval_v1.pdf"
+        },
+        {
+          "evidence_id": "font_license",
+          "version": "v1",
+          "file": "VO-02_font_license_v1.pdf"
+        }
+      ],
+      "parent": "D3",
+      "byte_identical_to": null
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "dataset": "fnb-ongi-content-v1",
+  "purpose": "가상 식음료 매장(온기식탁) 신메뉴 광고의 문구 검수용 개발·시연 데이터",
+  "scope": "메뉴명·가격·할인율·기간·원산지·알레르기·매장 정보 문구만 검사. 원산지/알레르기 글자 크기, 최상급 표현, 증빙 제출, 로고·규격은 앱이 검사하지 않음.",
+  "rules": [
+    {
+      "id": "C01",
+      "name": "메뉴명",
+      "source_criterion": "F01",
+      "expected": "들깨 버섯 리조또 세트",
+      "check": "근거 문구: 메뉴명은 “들깨 버섯 리조또 세트”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "join_lines": true,
+        "region": [
+          0.1105,
+          0.1824,
+          0.7781,
+          0.0879
+        ]
+      }
+    },
+    {
+      "id": "C02",
+      "name": "정가",
+      "source_criterion": "F02",
+      "expected": "15,000원",
+      "check": "근거 문구: 정가 15,000원",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "extract": "(?<![\\d,A-Za-z])\\d+(?:,\\d{3})*원",
+        "normalize": "currency",
+        "format": "\\d+원",
+        "region": [
+          0.2053,
+          0.7001,
+          0.2006,
+          0.0567
+        ]
+      }
+    },
+    {
+      "id": "C03",
+      "name": "판매가",
+      "source_criterion": "F03",
+      "expected": "12,000원",
+      "check": "근거 문구: 판매가 12,000원",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "extract": "(?<![\\d,A-Za-z])\\d+(?:,\\d{3})*원",
+        "normalize": "currency",
+        "format": "\\d+원",
+        "region": [
+          0.4328,
+          0.6787,
+          0.4307,
+          0.1138
+        ]
+      }
+    },
+    {
+      "id": "C04",
+      "name": "할인율",
+      "source_criterion": "F04",
+      "expected": "20% 할인",
+      "check": "근거 문구: 할인율 20% 할인",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "region": [
+          0.7412,
+          0.393,
+          0.1843,
+          0.0443
+        ]
+      }
+    },
+    {
+      "id": "C05",
+      "name": "행사 기간",
+      "source_criterion": "F11",
+      "expected": "11.02 ~ 11.15",
+      "check": "근거 문구: 행사 기간은 “11.02 ~ 11.15”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[0-9]",
+        "normalize": "time_dash",
+        "format": "\\d{2}\\.\\d{2}-\\d{2}\\.\\d{2}",
+        "join_lines": true,
+        "region": [
+          0.3508,
+          0.7772,
+          0.2983,
+          0.0412
+        ]
+      }
+    },
+    {
+      "id": "C06",
+      "name": "원산지 표기",
+      "source_criterion": "F06",
+      "expected": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+      "check": "근거 문구: 원산지는 “쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산”으로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.2531,
+          0.835,
+          0.4929,
+          0.036
+        ]
+      }
+    },
+    {
+      "id": "C07",
+      "name": "알레르기 표기",
+      "source_criterion": "F08",
+      "expected": "알레르기: 우유·대두·밀 함유",
+      "check": "근거 문구: 알레르기 유발 원료는 “알레르기: 우유·대두·밀 함유”로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.3223,
+          0.8724,
+          0.3554,
+          0.0329
+        ]
+      }
+    },
+    {
+      "id": "C08",
+      "name": "매장 정보",
+      "source_criterion": "F12",
+      "expected": "서울 가상구 온기로 12 · 02-000-0000",
+      "check": "근거 문구: 매장 정보는 “서울 가상구 온기로 12 · 02-000-0000”으로 표기한다.",
+      "inspection": {
+        "kind": "text",
+        "contains": "[가-힣]",
+        "region": [
+          0.2663,
+          0.9243,
+          0.4674,
+          0.0329
+        ]
+      }
+    },
+    {
+      "id": "C09",
+      "name": "버섯 토핑 개수",
+      "source_criterion": "F13",
+      "expected": "버섯 토핑 5개 이상",
+      "check": "자동 검사기를 연결하지 않은 항목이다. 사람이 확인해야 한다.",
+      "inspection": {
+        "kind": "manual"
+      }
+    }
+  ],
+  "common": "가상 브랜드·가상 행사·가상 인물의 합성 광고 이미지이며 실제 광고나 업무 자료가 아니다. 문구 영역은 이 이미지 레이아웃에 맞춘 설정이다.",
+  "format_note": "실제 크기는 개별 파일 메타데이터로 기록한다(1080×1350 PNG). 원본은 data/virtual-orders/VO-01-fnb에 있다. sample-01~06은 D1~D6을 변경 없이 복사한 것이다.",
+  "output_example": {
+    "sample_id": "sample-XX",
+    "results": [
+      {
+        "rule_id": "C01",
+        "verdict": "충족 | 미충족 | 확인 필요",
+        "observation": "관찰한 내용",
+        "evidence": "이미지 내 위치"
+      }
+    ]
+  }
+}

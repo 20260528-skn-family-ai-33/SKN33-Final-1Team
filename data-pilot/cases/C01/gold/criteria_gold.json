@@ -1,0 +1,130 @@
+{
+  "case_id": "C01",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "K01",
+      "label": "상품명",
+      "kind": "text_equals",
+      "role": "상품명",
+      "expected": "제주 말차 크림라떼",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "상품명은 “제주 말차 크림라떼”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "K02",
+      "label": "할인율",
+      "kind": "text_equals",
+      "role": "할인율",
+      "expected": "20% 할인",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "할인 문구는 “20% 할인”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "K03",
+      "label": "브랜드 표기",
+      "kind": "text_equals",
+      "role": "브랜드 표기",
+      "expected": "SUPGYEOL COFFEE",
+      "case_sensitive": true,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "브랜드명은 “SUPGYEOL COFFEE”로 대문자 표기한다."
+        },
+        {
+          "doc": "guide",
+          "page": 2,
+          "quote": "브랜드명은 항상 대문자 SUPGYEOL COFFEE로 쓴다."
+        }
+      ]
+    },
+    {
+      "id": "K04",
+      "label": "행사 기간",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "10.20 ~ 10.31",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "행사 기간은 “10.20 ~ 10.31”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "K05",
+      "label": "필수 문구",
+      "kind": "text_equals",
+      "role": "필수 문구",
+      "expected": "매장별 재고 소진 시 조기 종료",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "필수 문구 “매장별 재고 소진 시 조기 종료”를 하단에 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "K06",
+      "label": "쿠키 토핑 개수",
+      "kind": "count",
+      "cls": "쿠키 토핑",
+      "op": ">=",
+      "n": 3,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "컵 위 쿠키 토핑이 3개 이상 보이게 한다."
+        }
+      ]
+    },
+    {
+      "id": "K07",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "K08",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    }
+  ]
+}

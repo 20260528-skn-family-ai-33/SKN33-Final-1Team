@@ -1,0 +1,19 @@
+{
+  "case_id": "VO-03",
+  "scenario_type": "evidence_only",
+  "description": "D5 검수에서 허락 기간 부족(H09)과 AI 도구 목록 미제출(H11). D6은 이미지가 같고 증빙만 갱신 → 두 조건이 해결되고 새 오류는 없다.",
+  "previous": "D5",
+  "revised": "D6",
+  "diff": {
+    "resolved": [
+      "H09",
+      "H11"
+    ],
+    "persisting": [],
+    "new_errors": [],
+    "needs_review_after": []
+  },
+  "approval_blockers_for_revised": [],
+  "image_bytes_identical": true,
+  "expected_system_behavior": "이미지 해시가 같으면 문자 검사를 반복하지 않아도 되지만 증빙 버전 변경은 새 이력으로 남기고, 해결된 조건과 남은 조건을 구분한다."
+}

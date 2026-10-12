@@ -1,0 +1,140 @@
+{
+  "case_id": "C01",
+  "group_id": "G01",
+  "name": "숲결커피 · 제주 말차 크림라떼",
+  "category": "음료·디저트 A",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-10-20 ~ 2026-10-31",
+    "region": "대한민국",
+    "paid": true
+  },
+  "documents": [
+    {
+      "doc_id": "spec",
+      "title": "광고 소재 제작 명세서",
+      "pdf": "C01_spec.pdf",
+      "md": "C01_spec.md",
+      "pages": 1,
+      "sha256": "5e61bcb35059a7863e92f3059499ce79ecb5cb782ae785cb8218e22b52fae54b"
+    },
+    {
+      "doc_id": "contract",
+      "title": "광고 제작 용역 계약서(요약)",
+      "pdf": "C01_contract.pdf",
+      "md": "C01_contract.md",
+      "pages": 1,
+      "sha256": "5c532b1fa6b604364d8d53bed660fdfce4edfd8bc039a828113af03b763cbff8"
+    },
+    {
+      "doc_id": "guide",
+      "title": "숲결커피 브랜드 가이드",
+      "pdf": "C01_guide.pdf",
+      "md": "C01_guide.md",
+      "pages": 2,
+      "sha256": "f5f7581223c99a15fa5f50dee5eafc3740e45025f8d65d9adf60e0ac459342ed"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "logo_ref",
+      "file": "C01_logo_ref.png",
+      "kind": "brand_reference"
+    },
+    {
+      "ref_id": "product_ref",
+      "file": "C01_product_ref.png",
+      "kind": "product_reference"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "C01_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "56dc1e671a2bcd3e275c94c456f3b41b8133e6eccefc3dd13ad2b1ba7058de25",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 57739,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "C01_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "328ffdf0c8052e93172ef3462c4c92d392b08d0de36958a4208e297a7cad1ec1",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 58016,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "C01_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "8f893b114248eb84697184ced5113beb03ec28e33b58bfb83fd7f28222f4d9f9",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 52129,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "C01_D4.png",
+      "kind": "시각/개수 오류",
+      "submitted_order": 4,
+      "sha256": "5649667e450d919e0437d062f87cca77a70b02452642bee6fd7045ccd6c977c1",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 57607,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "C01_D5.png",
+      "kind": "판독 불확실",
+      "submitted_order": 5,
+      "sha256": "f11da7190abc936e12d59e69ddf3de7d0d5210a34bacf07e8d953f4a25154fc3",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 53351,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "C01_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "826d19143df415caccd0422abc37bf3543511cfb2aa17aaad02f69c5c208b1bc",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 52504,
+      "evidence_ids": [],
+      "parent": "D2",
+      "byte_identical_to": null
+    }
+  ],
+  "evidence": {}
+}

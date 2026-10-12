@@ -1,0 +1,105 @@
+{
+  "_note": "가능 여부 확인용 샘플 1건. 문화포털 상세 페이지의 정적 HTML을 1회 조회해 항목을 옮겨 적고, 포스터 이미지 1장을 해상도 확인용으로 내려받았다(저장소 밖 임시 폴더). API(한눈에보는문화정보조회서비스)는 호출하지 않았다.",
+  "source": {
+    "site": "문화포털(한국문화정보원) culture.go.kr",
+    "url": "https://www.culture.go.kr/portal/cltInfo/oneCltInfo/oneCltInfoView.do?menuNo=200010&pblprfrSn=397760",
+    "retrieved_on": "2026-10-07",
+    "method": "상세 페이지 1회 조회(서버 렌더링 HTML). 자동 수집 파이프라인 아님",
+    "provider_tag_on_page": "공연예술통합전산망",
+    "robots_txt": "User-agent: * / Disallow: /portal/search / Allow: /  (이 상세 경로는 허용)",
+    "terms_note": "이용약관은 회원이 서비스로 얻은 정보를 사전 승낙 없이 복사·복제·출판하거나 타인에게 제공하는 것과 영리행위를 제한한다. 크롤링·로봇에 대한 명시 조항은 확인하지 못했다."
+  },
+  "record": {
+    "pblprfrSn": "397760",
+    "title": "제4회 대한민국국악관현악축제, 진주시립국악관현악단",
+    "genre": "음악/콘서트",
+    "host": "(재)세종문화회관",
+    "age_limit": "만 7세 이상(2019년 포함 이전 출생자)",
+    "period": {
+      "start": "2026-10-09",
+      "end": "2026-10-09",
+      "status_on_page": "예정"
+    },
+    "time": "금요일(17:00)",
+    "price": "전석 10,000원",
+    "venue": {
+      "region": "서울",
+      "name": "세종문화회관 세종M씨어터",
+      "address": "서울특별시 종로구 세종대로 175 세종문화회관"
+    },
+    "running_time": "2시간",
+    "contact": "세종문화티켓 02-399-1000",
+    "links": [
+      "https://www.sejongpac.or.kr/organization/main/contents.do?menuNo=500138",
+      "https://www.sejongpac.or.kr/organization/main/contents.do?menuNo=500138\n\t\t\t\t\t\t\t\t\t\t\t",
+      "https://www.sejongpac.or.kr/portal/main/main.do",
+      "https://www.sejongpac.or.kr/portal/performance/performance/performTicket.do?performIdx=37423&menuNo=200320"
+    ]
+  },
+  "poster": {
+    "url": "https://www.culture.go.kr/upload/rdf/26/09/rdf_2026091021215527730.gif",
+    "format": "gif",
+    "bytes": 64059,
+    "last_modified": "2026-09-10",
+    "http_status_on_head": 200,
+    "downloaded": true,
+    "rights": "미확인. 제공기관(공연예술통합전산망·세종문화회관 등) 저작물로 보이며 내부 개발·평가용으로만 사용",
+    "saved_to": "저장소 밖 임시 폴더(저장소·docs-draft에 두지 않음)",
+    "sha256": "a4718c18051cebe5bc8d02aadf22cd68cdff2f02e9ca166331d4e8989607c371",
+    "width": 750,
+    "height": 1000,
+    "aspect_ratio": 0.75,
+    "megapixels": 0.75,
+    "color_mode": "P(팔레트 253색)",
+    "frames": 1,
+    "animated": false,
+    "format_detail": "GIF89a"
+  },
+  "mapping_to_poster_schema": {
+    "reference.event.name": "제4회 대한민국국악관현악축제, 진주시립국악관현악단",
+    "reference.event.start_date / end_date": "2026-10-09 / 2026-10-09",
+    "reference.event.start_time": "17:00",
+    "reference.event.venues": [
+      "세종문화회관 세종M씨어터"
+    ],
+    "reference.event.organizer": "(재)세종문화회관",
+    "reference.event.admission_fee": "전석 10,000원",
+    "reference.event.contact": "세종문화티켓 02-399-1000",
+    "note": "표준데이터(전국문화축제표준데이터)에 없던 입장료·시간을 이 출처가 채운다."
+  },
+  "api_equivalent": {
+    "service": "한국문화정보원_한눈에보는문화정보조회서비스 (data.go.kr 15138937)",
+    "operation": "publicperformancedisplays/detail?seq={공연/전시일련번호} (문화포털 API 안내 페이지 기준)",
+    "auth": "serviceKey (data.go.kr 발급, 개발계정 일 10,000건, 자동승인 — 데이터포털 표기)",
+    "license_on_catalog": "이용허락범위 제한 없음",
+    "format": "XML",
+    "seq_equals_pblprfrSn": "미확인(서비스키로 호출해 확인 필요)",
+    "response_field_names": "미확인(서비스키 발급 후 확인)"
+  },
+  "poster_observation": {
+    "checked_on": "2026-10-07",
+    "visible_text_read_by_eye": [
+      "세종문화회관(로고 문자)",
+      "대한민국",
+      "국악관현악축제",
+      "진주시립국악관현악단",
+      "10.9금 17:00",
+      "2026(세로 큰 글자, 20/26 두 줄)",
+      "세종문화회관 M씨어터",
+      "2026.10.6화 ─ 10.17토"
+    ],
+    "ocr_engine": "RapidOCR PP-OCRv5 Korean ONNX CPU (앱 설정 그대로)",
+    "ocr_result": "11줄 검출. 제목·진행자·일시·장소는 정확. 로고 문자는 \"제종문화회관\"(0.857)으로 오독, 매듭 그래픽을 \"9\"로 오검출 2건, 세로 \"2026\"은 \"20\"/\"26\" 두 줄로 분리",
+    "smallest_text_px": "요일 글자(금·화·토) 약 12px, 로고 문자 약 27px, 일시 줄 약 34px",
+    "weekday_check_by_calendar": {
+      "2026-10-06": "화",
+      "2026-10-09": "금",
+      "2026-10-17": "토",
+      "matches_poster": true
+    },
+    "differs_from_page_metadata": [
+      "포스터 제목에는 \"제4회\"가 없음(페이지 제목은 \"제4회 대한민국국악관현악축제, 진주시립국악관현악단\")",
+      "포스터에는 축제 전체 기간(10.6~10.17)과 이 공연 일시(10.9 금 17:00)가 함께 있음. 페이지 기간은 이 공연 하루(2026-10-09)"
+    ]
+  }
+}

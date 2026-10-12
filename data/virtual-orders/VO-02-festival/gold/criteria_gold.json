@@ -1,0 +1,217 @@
+{
+  "case_id": "VO-02",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "G01",
+      "label": "행사명",
+      "kind": "text_equals",
+      "role": "행사명",
+      "expected": "달빛누리 뮤직 페스타",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 1,
+          "quote": "행사명은 “달빛누리 뮤직 페스타”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "kind": "text_equals",
+      "role": "행사 일정",
+      "expected": "11.21(토) ~ 11.22(일)",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 1,
+          "quote": "행사 일정은 “11.21(토) ~ 11.22(일)”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G03",
+      "label": "장소",
+      "kind": "text_equals",
+      "role": "장소",
+      "expected": "달빛공원 야외무대",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 1,
+          "quote": "장소는 “달빛공원 야외무대”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G04",
+      "label": "티켓 가격",
+      "kind": "text_equals",
+      "role": "티켓 가격",
+      "expected": "1일권 55,000원 · 2일권 98,000원",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 1,
+          "quote": "티켓 가격은 “1일권 55,000원 · 2일권 98,000원”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G05",
+      "label": "출연진 명칭",
+      "kind": "text_set",
+      "role": "출연자명",
+      "expected": [
+        "라이네",
+        "새벽결",
+        "오로라정원"
+      ],
+      "sources": [
+        {
+          "doc": "artist",
+          "page": 1,
+          "quote": "표기할 출연진은 라이네, 새벽결, 오로라정원이다."
+        }
+      ]
+    },
+    {
+      "id": "G06",
+      "label": "출연자 사진 동의",
+      "kind": "consent_for_shown",
+      "cls": "출연자 사진",
+      "evidence_prefix": "consent:",
+      "sources": [
+        {
+          "doc": "artist",
+          "page": 1,
+          "quote": "출연자의 사진은 서면 동의서가 있는 경우에만 사용한다."
+        }
+      ]
+    },
+    {
+      "id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "kind": "logo_set",
+      "cls": "후원사 로고",
+      "expected": [
+        "달빛은행",
+        "누리푸드",
+        "하늘모터스"
+      ],
+      "sources": [
+        {
+          "doc": "sponsor",
+          "page": 1,
+          "quote": "노출할 후원사는 달빛은행, 누리푸드, 하늘모터스이며 승인되지 않은 후원사 로고는 쓰지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "G08",
+      "label": "주최·주관 표기",
+      "kind": "text_equals",
+      "role": "주최·주관",
+      "expected": "주최 달빛시 문화재단 · 주관 누리기획",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 1,
+          "quote": "주최·주관은 “주최 달빛시 문화재단 · 주관 누리기획”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G09",
+      "label": "우천 고지",
+      "kind": "text_equals",
+      "role": "우천 고지",
+      "expected": "우천 시에도 공연은 진행됩니다",
+      "sources": [
+        {
+          "doc": "overview",
+          "page": 2,
+          "quote": "“우천 시에도 공연은 진행됩니다”를 하단에 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "kind": "text_equals",
+      "role": "신고번호",
+      "expected": "신고번호 가상-2026-0001",
+      "media": [
+        "banner_offline"
+      ],
+      "na_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)",
+      "sources": [
+        {
+          "doc": "banner",
+          "page": 1,
+          "quote": "현수막에는 게시 신고번호를 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "G11",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "행사 로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "G12",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    },
+    {
+      "id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "kind": "evidence_required",
+      "evidence_id": "sponsor_approval",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "후원사 로고 사용 승인서를 납품과 함께 제출한다."
+        }
+      ]
+    },
+    {
+      "id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "kind": "evidence_required",
+      "evidence_id": "font_license",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "사용한 폰트와 이미지의 라이선스 확인서를 납품과 함께 제출한다."
+        }
+      ]
+    }
+  ]
+}

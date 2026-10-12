@@ -1,0 +1,2584 @@
+{
+  "case_id": "VO-01",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 77617,
+        "sha256": "0e78e04c74147bd6bd7c3dcb86d587be6a3d727b3adef945187b9680fcefe7c0"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "가을 한 그릇의 위로",
+          "polygon": [
+            [
+              404,
+              375
+            ],
+            [
+              676,
+              375
+            ],
+            [
+              676,
+              407
+            ],
+            [
+              404,
+              407
+            ]
+          ],
+          "bbox": [
+            404,
+            375,
+            676,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "12,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+          "polygon": [
+            [
+              303,
+              1137
+            ],
+            [
+              776,
+              1137
+            ],
+            [
+              776,
+              1166
+            ],
+            [
+              303,
+              1166
+            ]
+          ],
+          "bbox": [
+            303,
+            1137,
+            776,
+            1166
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_allergy",
+          "role": "알레르기",
+          "transcription_raw": "알레르기: 우유·대두·밀 함유",
+          "polygon": [
+            [
+              371,
+              1187
+            ],
+            [
+              709,
+              1187
+            ],
+            [
+              709,
+              1213
+            ],
+            [
+              371,
+              1213
+            ]
+          ],
+          "bbox": [
+            371,
+            1187,
+            709,
+            1213
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "origin_allergen_sheet",
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 77994,
+        "sha256": "81c08c79c1fd3d0cafc00ad3d67cb515d45ce41f8a576cbe76477dd423f526bc"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "가을 한 그릇의 위로",
+          "polygon": [
+            [
+              404,
+              375
+            ],
+            [
+              676,
+              375
+            ],
+            [
+              676,
+              407
+            ],
+            [
+              404,
+              407
+            ]
+          ],
+          "bbox": [
+            404,
+            375,
+            676,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "13,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+          "polygon": [
+            [
+              303,
+              1137
+            ],
+            [
+              776,
+              1137
+            ],
+            [
+              776,
+              1166
+            ],
+            [
+              303,
+              1166
+            ]
+          ],
+          "bbox": [
+            303,
+            1137,
+            776,
+            1166
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_allergy",
+          "role": "알레르기",
+          "transcription_raw": "알레르기: 우유·대두·밀 함유",
+          "polygon": [
+            [
+              371,
+              1187
+            ],
+            [
+              709,
+              1187
+            ],
+            [
+              709,
+              1213
+            ],
+            [
+              371,
+              1213
+            ]
+          ],
+          "bbox": [
+            371,
+            1187,
+            709,
+            1213
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "origin_allergen_sheet",
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 73362,
+        "sha256": "23bdf5972860df42c8e9af6c8a44d51ef5c3034c5e43c18b2c43ac1035899533"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "서울 최고의 리조또",
+          "polygon": [
+            [
+              408,
+              375
+            ],
+            [
+              672,
+              375
+            ],
+            [
+              672,
+              407
+            ],
+            [
+              408,
+              407
+            ]
+          ],
+          "bbox": [
+            408,
+            375,
+            672,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "12,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 프랑스산",
+          "polygon": [
+            [
+              316,
+              1137
+            ],
+            [
+              763,
+              1137
+            ],
+            [
+              763,
+              1166
+            ],
+            [
+              316,
+              1166
+            ]
+          ],
+          "bbox": [
+            316,
+            1137,
+            763,
+            1166
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "origin_allergen_sheet",
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 70247,
+        "sha256": "89df1c0eca7a1e888d24d2b95c377b0001fdf4a229a9aacc782babbaad50f3f5"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "가을 한 그릇의 위로",
+          "polygon": [
+            [
+              404,
+              375
+            ],
+            [
+              676,
+              375
+            ],
+            [
+              676,
+              407
+            ],
+            [
+              404,
+              407
+            ]
+          ],
+          "bbox": [
+            404,
+            375,
+            676,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "12,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+          "polygon": [
+            [
+              439,
+              1145
+            ],
+            [
+              641,
+              1145
+            ],
+            [
+              641,
+              1157
+            ],
+            [
+              439,
+              1157
+            ]
+          ],
+          "bbox": [
+            439,
+            1145,
+            641,
+            1157
+          ],
+          "legibility": "ambiguous",
+          "font_size": 12,
+          "color": "#e6d2ac",
+          "reading_order": 8,
+          "note": "12px·저대비"
+        },
+        {
+          "region_id": "r_allergy",
+          "role": "알레르기",
+          "transcription_raw": "알레르기: 우유·대두·밀 함유",
+          "polygon": [
+            [
+              468,
+              1195
+            ],
+            [
+              612,
+              1195
+            ],
+            [
+              612,
+              1206
+            ],
+            [
+              468,
+              1206
+            ]
+          ],
+          "bbox": [
+            468,
+            1195,
+            612,
+            1206
+          ],
+          "legibility": "ambiguous",
+          "font_size": 12,
+          "color": "#e6d2ac",
+          "reading_order": 9,
+          "note": "12px·저대비"
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "origin_allergen_sheet",
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 77440,
+        "sha256": "ea7c2e0d19bd8c7534a37878bee3d9b9237e6349572f100523688fa5c2763ccc"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "가을 한 그릇의 위로",
+          "polygon": [
+            [
+              404,
+              375
+            ],
+            [
+              676,
+              375
+            ],
+            [
+              676,
+              407
+            ],
+            [
+              404,
+              407
+            ]
+          ],
+          "bbox": [
+            404,
+            375,
+            676,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "12,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+          "polygon": [
+            [
+              303,
+              1137
+            ],
+            [
+              776,
+              1137
+            ],
+            [
+              776,
+              1166
+            ],
+            [
+              303,
+              1166
+            ]
+          ],
+          "bbox": [
+            303,
+            1137,
+            776,
+            1166
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_allergy",
+          "role": "알레르기",
+          "transcription_raw": "알레르기: 우유·대두·밀 함유",
+          "polygon": [
+            [
+              371,
+              1187
+            ],
+            [
+              709,
+              1187
+            ],
+            [
+              709,
+              1213
+            ],
+            [
+              371,
+              1213
+            ]
+          ],
+          "bbox": [
+            371,
+            1187,
+            709,
+            1213
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 77530,
+        "sha256": "c81f9451af943a03dd9af832c3a8a2cf11f880aec63e76bfb3b0ca34f33c08f0"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "ONGI TABLE",
+          "polygon": [
+            [
+              230,
+              109
+            ],
+            [
+              327.0,
+              109
+            ],
+            [
+              507.0,
+              110
+            ],
+            [
+              507.0,
+              138
+            ],
+            [
+              327.0,
+              139
+            ],
+            [
+              230,
+              139
+            ]
+          ],
+          "bbox": [
+            230,
+            109,
+            507,
+            139
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#7a4a1e",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_menu",
+          "role": "메뉴명",
+          "transcription_raw": "들깨 버섯 리조또 세트",
+          "polygon": [
+            [
+              163,
+              266
+            ],
+            [
+              916,
+              266
+            ],
+            [
+              916,
+              345
+            ],
+            [
+              163,
+              345
+            ]
+          ],
+          "bbox": [
+            163,
+            266,
+            916,
+            345
+          ],
+          "legibility": "clear",
+          "font_size": 80,
+          "color": "#4a2e12",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_tag",
+          "role": "광고 문구",
+          "transcription_raw": "가을 한 그릇의 위로",
+          "polygon": [
+            [
+              404,
+              375
+            ],
+            [
+              676,
+              375
+            ],
+            [
+              676,
+              407
+            ],
+            [
+              404,
+              407
+            ]
+          ],
+          "bbox": [
+            404,
+            375,
+            676,
+            407
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#7a4a1e",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_disc",
+          "role": "할인율",
+          "transcription_raw": "20% 할인",
+          "polygon": [
+            [
+              815,
+              542
+            ],
+            [
+              985,
+              542
+            ],
+            [
+              985,
+              579
+            ],
+            [
+              815,
+              579
+            ]
+          ],
+          "bbox": [
+            815,
+            542,
+            985,
+            579
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "15,000원",
+          "polygon": [
+            [
+              237,
+              959
+            ],
+            [
+              423,
+              959
+            ],
+            [
+              423,
+              1008
+            ],
+            [
+              237,
+              1008
+            ]
+          ],
+          "bbox": [
+            237,
+            959,
+            423,
+            1008
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "12,000원",
+          "polygon": [
+            [
+              494,
+              941
+            ],
+            [
+              906,
+              941
+            ],
+            [
+              906,
+              1045
+            ],
+            [
+              494,
+              1045
+            ]
+          ],
+          "bbox": [
+            494,
+            941,
+            906,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 96,
+          "color": "#b3341f",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.02 ~ 11.15",
+          "polygon": [
+            [
+              399,
+              1060
+            ],
+            [
+              681,
+              1060
+            ],
+            [
+              681,
+              1094
+            ],
+            [
+              399,
+              1094
+            ]
+          ],
+          "bbox": [
+            399,
+            1060,
+            681,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#4a2e12",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_origin",
+          "role": "원산지",
+          "transcription_raw": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+          "polygon": [
+            [
+              303,
+              1137
+            ],
+            [
+              776,
+              1137
+            ],
+            [
+              776,
+              1166
+            ],
+            [
+              303,
+              1166
+            ]
+          ],
+          "bbox": [
+            303,
+            1137,
+            776,
+            1166
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_allergy",
+          "role": "알레르기",
+          "transcription_raw": "알레르기: 우유·대두·밀 함유",
+          "polygon": [
+            [
+              371,
+              1187
+            ],
+            [
+              709,
+              1187
+            ],
+            [
+              709,
+              1213
+            ],
+            [
+              371,
+              1213
+            ]
+          ],
+          "bbox": [
+            371,
+            1187,
+            709,
+            1213
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#4a2e12",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_store",
+          "role": "매장 정보",
+          "transcription_raw": "서울 가상구 온기로 12 · 02-000-0000",
+          "polygon": [
+            [
+              316,
+              1257
+            ],
+            [
+              764,
+              1257
+            ],
+            [
+              764,
+              1283
+            ],
+            [
+              316,
+              1283
+            ]
+          ],
+          "bbox": [
+            316,
+            1257,
+            764,
+            1283
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#7a4a1e",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "버섯 토핑": [
+          {
+            "instance_id": "mushroom_1",
+            "bbox": [
+              398,
+              674,
+              462,
+              726
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_2",
+            "bbox": [
+              468,
+              654,
+              532,
+              706
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_3",
+            "bbox": [
+              548,
+              664,
+              612,
+              716
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_4",
+            "bbox": [
+              618,
+              689,
+              682,
+              741
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "mushroom_5",
+            "bbox": [
+              508,
+              714,
+              572,
+              766
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 60.0
+      },
+      "evidence": [
+        "origin_allergen_sheet",
+        "photo_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    }
+  }
+}

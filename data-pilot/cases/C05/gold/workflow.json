@@ -1,0 +1,15 @@
+{
+  "case_id": "C05",
+  "scenario_type": "concurrent_upload",
+  "description": "D6에 대한 승인 검토 중 D7이 업로드된다. 승인 요청은 STALE_VERSION으로 거절되고 D7을 새로 검수해야 한다. 할인율 기준 충돌(F03)이 풀리기 전까지는 어느 버전도 승인할 수 없다.",
+  "approval_target": "D6",
+  "concurrent_upload": "D7",
+  "sha_differs": true,
+  "blockers_for_target": [
+    "F03"
+  ],
+  "blockers_for_concurrent": [
+    "F03"
+  ],
+  "expected_system_behavior": "승인 요청은 STALE_VERSION으로 거절. 새 파일(D7)은 새로 검수. 할인율 기준 충돌(F03)이 해소되기 전에는 두 버전 모두 승인 불가."
+}

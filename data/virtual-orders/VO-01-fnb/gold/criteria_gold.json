@@ -1,0 +1,250 @@
+{
+  "case_id": "VO-01",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "F01",
+      "label": "메뉴명",
+      "kind": "text_equals",
+      "role": "메뉴명",
+      "expected": "들깨 버섯 리조또 세트",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "메뉴명은 “들깨 버섯 리조또 세트”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F02",
+      "label": "정가",
+      "kind": "text_equals",
+      "role": "정가",
+      "expected": "15,000원",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "정가 15,000원"
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "label": "판매가",
+      "kind": "text_equals",
+      "role": "판매가",
+      "expected": "12,000원",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "판매가 12,000원"
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "label": "할인율",
+      "kind": "text_equals",
+      "role": "할인율",
+      "expected": "20% 할인",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "할인율 20% 할인"
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "label": "가격 정합성",
+      "kind": "price_consistency",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "판매가는 정가에 할인율을 적용한 금액과 일치해야 한다."
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "label": "원산지 표기",
+      "kind": "text_equals",
+      "role": "원산지",
+      "expected": "쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산",
+      "sources": [
+        {
+          "doc": "menu",
+          "page": 1,
+          "quote": "원산지는 “쌀·버섯·들깨: 국내산 / 치즈: 이탈리아산”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "label": "원산지 글자 크기",
+      "kind": "text_min_size",
+      "role": "원산지",
+      "min_px": 26,
+      "sources": [
+        {
+          "doc": "label",
+          "page": 1,
+          "quote": "원산지 표기는 26px 이상으로 한다."
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "label": "알레르기 표기",
+      "kind": "text_equals",
+      "role": "알레르기",
+      "expected": "알레르기: 우유·대두·밀 함유",
+      "sources": [
+        {
+          "doc": "menu",
+          "page": 1,
+          "quote": "알레르기 유발 원료는 “알레르기: 우유·대두·밀 함유”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "label": "알레르기 글자 크기",
+      "kind": "text_min_size",
+      "role": "알레르기",
+      "min_px": 26,
+      "sources": [
+        {
+          "doc": "label",
+          "page": 1,
+          "quote": "알레르기 표기는 26px 이상으로 한다."
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "label": "근거 없는 최상급 표현 금지",
+      "kind": "text_forbidden",
+      "words": [
+        "최고",
+        "1위",
+        "유일",
+        "최초"
+      ],
+      "sources": [
+        {
+          "doc": "label",
+          "page": 1,
+          "quote": "“최고”, “1위”, “유일”, “최초” 등 근거 없는 최상급 표현은 쓰지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "label": "행사 기간",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "11.02 ~ 11.15",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "행사 기간은 “11.02 ~ 11.15”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "label": "매장 정보",
+      "kind": "text_equals",
+      "role": "매장 정보",
+      "expected": "서울 가상구 온기로 12 · 02-000-0000",
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 1,
+          "quote": "매장 정보는 “서울 가상구 온기로 12 · 02-000-0000”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "label": "버섯 토핑 개수",
+      "kind": "count",
+      "cls": "버섯 토핑",
+      "op": ">=",
+      "n": 5,
+      "sources": [
+        {
+          "doc": "promo",
+          "page": 2,
+          "quote": "버섯 토핑이 5개 이상 보이게 한다."
+        }
+      ]
+    },
+    {
+      "id": "F14",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "F15",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    },
+    {
+      "id": "F16",
+      "label": "원산지·알레르기 확인서 제출",
+      "kind": "evidence_required",
+      "evidence_id": "origin_allergen_sheet",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "원산지·알레르기 확인서를 납품과 함께 제출한다."
+        }
+      ]
+    },
+    {
+      "id": "F17",
+      "label": "촬영물 이용 확인서 제출",
+      "kind": "evidence_required",
+      "evidence_id": "photo_license",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "촬영물과 이미지의 이용 권리 확인서를 납품과 함께 제출한다."
+        }
+      ]
+    }
+  ]
+}

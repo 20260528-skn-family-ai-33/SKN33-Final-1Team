@@ -1,0 +1,1751 @@
+{
+  "schema": "poster-inspection-elements/v1",
+  "generated_on": "2026-10-06",
+  "subject": "2026 김천김밥축제 포스터",
+  "source_image": {
+    "file_name": "2.webp",
+    "format": "WEBP (RGBA)",
+    "width": 800,
+    "height": 1131,
+    "bytes": 164410,
+    "sha256": "4fe861baea23597af3e010b4b37c48670404465682f9661983dc1daf49d64387",
+    "aspect_ratio": 0.7073,
+    "aspect_note": "1 : 1.414(A시리즈 비율)에 해당",
+    "provenance": "사용자가 대화에 첨부한 이미지. 원본 출처·원본 해상도는 확인하지 않았다."
+  },
+  "coordinate_system": {
+    "bbox": "[x0, y0, x1, y1] 픽셀, 원점은 왼쪽 위, 이미지 800×1131 기준",
+    "bbox_norm": "[x, y, w, h] 0~1 비율. 이 프로젝트 앱 region 형식과 동일",
+    "bbox_source": {
+      "ocr_bbox+visual_text": "OCR 검출 박스를 사용하고 글자는 육안으로 전사(OCR 오독은 ocr.raw에 보존)",
+      "visual_estimate": "확대 이미지를 보고 사람이 추정한 박스(±5px 정도 오차 가능)",
+      "visual_estimate(ocr_bbox_rejected)": "OCR 박스가 글자 범위를 벗어나(TTL-01은 표지판까지 포함, TTL-02는 위가 겹치고 아래가 잘림) 육안 박스로 교체. OCR 원본은 ocr_raw에 보존"
+    }
+  },
+  "method": {
+    "ocr_engine": "RapidOCR PP-OCRv5 Korean ONNX CPU (프로젝트 app/ocr.py 설정 그대로)",
+    "visual": "일러스트·캐릭터·현수막·작은 글씨는 확대해서 육안으로 판독",
+    "inspection_candidates": "검수 항목 후보. expected가 null인 것은 기획서·발주서의 기준값을 채워 넣어야 판정할 수 있다."
+  },
+  "summary": {
+    "elements_total": 38,
+    "by_kind": {
+      "badge": 2,
+      "icon": 1,
+      "illustration": 9,
+      "logo": 2,
+      "mascot": 5,
+      "shape": 4,
+      "text": 15
+    },
+    "text_elements": 17,
+    "ocr_failed_or_partial": [
+      "TTL-01(오독 \"20261\")",
+      "BN-01a/b(조각화)",
+      "SG-01a(GC만 인식)",
+      "MC-03a(미검출)"
+    ],
+    "ocr_false_positive": 1,
+    "real_person_photo_present": false,
+    "real_person_note": "실사 인물 사진 없음. 캐릭터는 모두 만화풍 일러스트."
+  },
+  "elements": [
+    {
+      "id": "HDR-01",
+      "group": "header",
+      "role": "주최(지자체) 로고 묶음",
+      "kind": "logo",
+      "bbox": [
+        30,
+        27,
+        172,
+        70
+      ],
+      "bbox_norm": [
+        0.0375,
+        0.0239,
+        0.1775,
+        0.038
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "심볼(붉은 해·산·물결)과 \"김천시 GIMCHEON CITY\" 워드마크의 결합형. 로고 사용 지침 원본과 대조할 수 있다.",
+      "inspection_candidates": [
+        {
+          "check_id": "logo_present",
+          "kind": "logo_present",
+          "what": "김천시 로고 존재",
+          "method": "visual"
+        },
+        {
+          "check_id": "logo_integrity",
+          "kind": "logo_integrity",
+          "what": "비율·색·여백이 로고 지침과 일치(변형·왜곡 없음)",
+          "method": "manual"
+        },
+        {
+          "check_id": "logo_min_size",
+          "kind": "min_size",
+          "what": "로고 최소 크기 규정 충족",
+          "method": "rule",
+          "unit": "px",
+          "observed_width": 142
+        }
+      ]
+    },
+    {
+      "id": "HDR-01a",
+      "group": "header",
+      "role": "로고 심볼",
+      "kind": "logo",
+      "parent": "HDR-01",
+      "bbox": [
+        30,
+        27,
+        94,
+        70
+      ],
+      "bbox_norm": [
+        0.0375,
+        0.0239,
+        0.08,
+        0.038
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "원형 일출·산·물결 형태",
+      "inspection_candidates": []
+    },
+    {
+      "id": "HDR-01b",
+      "group": "header",
+      "role": "로고 워드마크(국문)",
+      "kind": "text",
+      "parent": "HDR-01",
+      "ocr": {
+        "raw": "김천시",
+        "score": 0.9999,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        93,
+        29,
+        170,
+        55
+      ],
+      "bbox_norm": [
+        0.1163,
+        0.0256,
+        0.0963,
+        0.023
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "김천시",
+      "text_height_px": 26,
+      "legibility": "clear",
+      "inspection_candidates": [
+        {
+          "check_id": "org_name",
+          "kind": "text_equals",
+          "what": "기관명 표기",
+          "method": "ocr",
+          "expected": null
+        }
+      ]
+    },
+    {
+      "id": "HDR-01c",
+      "group": "header",
+      "role": "로고 워드마크(영문)",
+      "kind": "text",
+      "parent": "HDR-01",
+      "ocr": {
+        "raw": "GIMCHEON CITY",
+        "score": 0.9769,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        96,
+        54,
+        172,
+        67
+      ],
+      "bbox_norm": [
+        0.12,
+        0.0477,
+        0.095,
+        0.0115
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "GIMCHEON CITY",
+      "text_height_px": 13,
+      "legibility": "clear",
+      "inspection_candidates": [
+        {
+          "check_id": "org_name_en",
+          "kind": "text_equals",
+          "what": "영문 기관명 표기·철자",
+          "method": "ocr",
+          "expected": null
+        }
+      ]
+    },
+    {
+      "id": "TTL-01",
+      "group": "title",
+      "role": "개최 연도",
+      "kind": "text",
+      "ocr": {
+        "raw": "20261",
+        "score": 0.7889,
+        "matches_transcription": 0.889
+      },
+      "bbox": [
+        157,
+        94,
+        413,
+        163
+      ],
+      "bbox_norm": [
+        0.1963,
+        0.0831,
+        0.32,
+        0.061
+      ],
+      "bbox_source": "visual_estimate(ocr_bbox_rejected)",
+      "transcription": "2026",
+      "text_height_px": 69,
+      "legibility": "clear",
+      "style": "입체 장식 글자(적·황·녹·주황 그라데이션, 흰색+검정 외곽선)",
+      "note": "OCR이 \"20261\"로 오독했다(장식체와 우측 표지판 외곽 포함). OCR 단독 판독은 신뢰할 수 없고 사람 확인이 필요하다.",
+      "inspection_candidates": [
+        {
+          "check_id": "year_text",
+          "kind": "text_equals",
+          "what": "개최 연도 표기",
+          "method": "ocr+manual",
+          "expected": null
+        },
+        {
+          "check_id": "year_vs_date",
+          "kind": "attr_equals",
+          "what": "타이틀 연도와 기간 연도 일치",
+          "method": "rule"
+        }
+      ]
+    },
+    {
+      "id": "TTL-02",
+      "group": "title",
+      "role": "행사명",
+      "kind": "text",
+      "ocr": {
+        "raw": "김천김밥축제",
+        "score": 0.9585,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        141,
+        163,
+        665,
+        276
+      ],
+      "bbox_norm": [
+        0.1762,
+        0.1441,
+        0.655,
+        0.0999
+      ],
+      "bbox_source": "visual_estimate(ocr_bbox_rejected)",
+      "transcription": "김천김밥축제",
+      "text_height_px": 113,
+      "legibility": "clear",
+      "style": "굵은 입체 고딕, 검정 글자 + 흰 외곽선 + 노란 그림자",
+      "inspection_candidates": [
+        {
+          "check_id": "event_name",
+          "kind": "text_equals",
+          "what": "행사명 정확 표기",
+          "method": "ocr",
+          "expected": null
+        },
+        {
+          "check_id": "event_name_consistency",
+          "kind": "text_contains",
+          "what": "행사명이 다른 문구와 모순되지 않음",
+          "method": "manual"
+        }
+      ]
+    },
+    {
+      "id": "TTL-03",
+      "group": "title",
+      "role": "도로 표지판형 슬로건 상자",
+      "kind": "shape",
+      "bbox": [
+        425,
+        94,
+        665,
+        162
+      ],
+      "bbox_norm": [
+        0.5312,
+        0.0831,
+        0.3,
+        0.0601
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "녹색 고속도로 표지판 + 흰 화살표(위쪽) + 노란 그림자",
+      "note": "행사 콘셉트(\"김밥특별시\")를 표지판으로 표현",
+      "inspection_candidates": []
+    },
+    {
+      "id": "TTL-03a",
+      "group": "title",
+      "role": "위쪽 화살표 아이콘",
+      "kind": "icon",
+      "parent": "TTL-03",
+      "bbox": [
+        445,
+        110,
+        473,
+        148
+      ],
+      "bbox_norm": [
+        0.5563,
+        0.0973,
+        0.035,
+        0.0336
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "TTL-03b",
+      "group": "title",
+      "role": "콘셉트 문구(국문)",
+      "kind": "text",
+      "parent": "TTL-03",
+      "ocr": {
+        "raw": "김밥특별시",
+        "score": 0.9986,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        489,
+        100,
+        637,
+        144
+      ],
+      "bbox_norm": [
+        0.6112,
+        0.0884,
+        0.185,
+        0.0389
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "김밥특별시",
+      "text_height_px": 44,
+      "legibility": "clear",
+      "inspection_candidates": [
+        {
+          "check_id": "concept_text",
+          "kind": "text_equals",
+          "what": "콘셉트 문구 표기",
+          "method": "ocr",
+          "expected": null
+        },
+        {
+          "check_id": "concept_repeat",
+          "kind": "text_equals",
+          "what": "현수막(BN-01a)의 동일 문구와 일치",
+          "method": "rule"
+        }
+      ]
+    },
+    {
+      "id": "TTL-03c",
+      "group": "title",
+      "role": "콘셉트 문구(영문)",
+      "kind": "text",
+      "parent": "TTL-03",
+      "ocr": {
+        "raw": "Gimbap Metropolitan-Special City",
+        "score": 0.973,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        470,
+        136,
+        645,
+        153
+      ],
+      "bbox_norm": [
+        0.5875,
+        0.1202,
+        0.2188,
+        0.015
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "Gimbap Metropolitan · Special City",
+      "text_height_px": 17,
+      "legibility": "clear",
+      "note": "가운뎃점(·)을 OCR이 하이픈(-)으로 읽었다. 영문 철자·대소문자는 사람이 확인해야 한다.",
+      "inspection_candidates": [
+        {
+          "check_id": "concept_text_en",
+          "kind": "text_equals",
+          "what": "영문 표기·철자",
+          "method": "ocr+manual",
+          "expected": null
+        }
+      ]
+    },
+    {
+      "id": "DT-01",
+      "group": "date",
+      "role": "행사 기간",
+      "kind": "text",
+      "ocr": {
+        "raw": "2026.10.23금 ~ 10.25일",
+        "score": 0.9596,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        178,
+        297,
+        631,
+        353
+      ],
+      "bbox_norm": [
+        0.2225,
+        0.2626,
+        0.5663,
+        0.0495
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "2026. 10. 23 금 ~ 10. 25 일",
+      "text_height_px": 56,
+      "legibility": "clear",
+      "style": "흰 글자 + 검정 외곽선, 요일은 노란 원형 배지(검정 글자)",
+      "note": "요일 \"금\", \"일\"은 괄호 없이 원형 배지로 표기된다.",
+      "inspection_candidates": [
+        {
+          "check_id": "date_format",
+          "kind": "text_format",
+          "what": "날짜 형식 YYYY. MM. DD",
+          "method": "ocr",
+          "pattern": "\\d{4}\\. \\d{2}\\. \\d{2}"
+        },
+        {
+          "check_id": "date_exact",
+          "kind": "text_equals",
+          "what": "기획서의 기간과 일치",
+          "method": "ocr",
+          "expected": null
+        },
+        {
+          "check_id": "weekday_match",
+          "kind": "attr_equals",
+          "what": "날짜와 요일 일치",
+          "method": "rule"
+        },
+        {
+          "check_id": "date_order",
+          "kind": "attr_equals",
+          "what": "시작일 < 종료일",
+          "method": "rule"
+        }
+      ]
+    },
+    {
+      "id": "DT-01a",
+      "group": "date",
+      "role": "시작일",
+      "kind": "text",
+      "parent": "DT-01",
+      "bbox": [
+        187,
+        305,
+        392,
+        343
+      ],
+      "bbox_norm": [
+        0.2338,
+        0.2697,
+        0.2562,
+        0.0336
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "2026. 10. 23",
+      "text_height_px": 38,
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "DT-01b",
+      "group": "date",
+      "role": "시작일 요일 배지",
+      "kind": "badge",
+      "parent": "DT-01",
+      "bbox": [
+        397,
+        307,
+        437,
+        345
+      ],
+      "bbox_norm": [
+        0.4963,
+        0.2714,
+        0.05,
+        0.0336
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "금",
+      "text_height_px": 38,
+      "legibility": "clear",
+      "style": "노란 원형, 검정 글자",
+      "inspection_candidates": []
+    },
+    {
+      "id": "DT-01c",
+      "group": "date",
+      "role": "기간 기호",
+      "kind": "text",
+      "parent": "DT-01",
+      "bbox": [
+        446,
+        316,
+        470,
+        336
+      ],
+      "bbox_norm": [
+        0.5575,
+        0.2794,
+        0.03,
+        0.0177
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "~",
+      "text_height_px": 20,
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "DT-01d",
+      "group": "date",
+      "role": "종료일",
+      "kind": "text",
+      "parent": "DT-01",
+      "bbox": [
+        482,
+        305,
+        585,
+        343
+      ],
+      "bbox_norm": [
+        0.6025,
+        0.2697,
+        0.1288,
+        0.0336
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "10. 25",
+      "text_height_px": 38,
+      "legibility": "clear",
+      "note": "종료일의 연도는 생략(시작일과 같은 해)",
+      "inspection_candidates": []
+    },
+    {
+      "id": "DT-01e",
+      "group": "date",
+      "role": "종료일 요일 배지",
+      "kind": "badge",
+      "parent": "DT-01",
+      "bbox": [
+        587,
+        307,
+        627,
+        345
+      ],
+      "bbox_norm": [
+        0.7338,
+        0.2714,
+        0.05,
+        0.0336
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "일",
+      "text_height_px": 38,
+      "legibility": "clear",
+      "style": "노란 원형, 검정 글자",
+      "inspection_candidates": []
+    },
+    {
+      "id": "VN-01",
+      "group": "venue",
+      "role": "개최 장소",
+      "kind": "text",
+      "ocr": {
+        "raw": "김천시 직지문화공원,사명대사공원,친환경생태공원 일원",
+        "score": 0.996,
+        "matches_transcription": 1.0
+      },
+      "bbox": [
+        140,
+        372,
+        666,
+        401
+      ],
+      "bbox_norm": [
+        0.175,
+        0.3289,
+        0.6575,
+        0.0256
+      ],
+      "bbox_source": "ocr_bbox+visual_text",
+      "transcription": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+      "text_height_px": 29,
+      "legibility": "clear",
+      "style": "검정 굵은 고딕, 흰 리본(양끝 접힘) 안",
+      "note": "OCR은 쉼표 뒤 띄어쓰기를 지웠다. 시각 판독 기준 전사.",
+      "inspection_candidates": [
+        {
+          "check_id": "venue_text",
+          "kind": "text_equals",
+          "what": "장소명 정확 표기",
+          "method": "ocr",
+          "expected": null
+        },
+        {
+          "check_id": "venue_set",
+          "kind": "text_set",
+          "what": "3개 장소가 모두 표기됨",
+          "method": "rule",
+          "expected_items": [
+            "직지문화공원",
+            "사명대사공원",
+            "친환경생태공원"
+          ]
+        },
+        {
+          "check_id": "venue_count",
+          "kind": "count",
+          "what": "장소 개수 = 3",
+          "method": "rule",
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "id": "VN-01a",
+      "group": "venue",
+      "role": "장소 리본 도형",
+      "kind": "shape",
+      "parent": "VN-01",
+      "bbox": [
+        118,
+        362,
+        697,
+        412
+      ],
+      "bbox_norm": [
+        0.1475,
+        0.3201,
+        0.7238,
+        0.0442
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "흰 바탕 + 노란 외곽 리본",
+      "inspection_candidates": []
+    },
+    {
+      "id": "BN-01",
+      "group": "banner",
+      "role": "거대 김밥 위 현수막",
+      "kind": "shape",
+      "bbox": [
+        324,
+        560,
+        501,
+        631
+      ],
+      "bbox_norm": [
+        0.405,
+        0.4951,
+        0.2213,
+        0.0628
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "흰 현수막, 약간 기울어짐",
+      "note": "OCR은 이 영역을 조각(0.27~0.83 신뢰도)으로만 읽었다. 문구는 확대 육안 판독.",
+      "inspection_candidates": []
+    },
+    {
+      "id": "BN-01a",
+      "group": "banner",
+      "role": "현수막 1행",
+      "kind": "text",
+      "parent": "BN-01",
+      "bbox": [
+        366,
+        573,
+        467,
+        596
+      ],
+      "bbox_norm": [
+        0.4575,
+        0.5066,
+        0.1263,
+        0.0203
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "김밥특별시",
+      "text_height_px": 23,
+      "legibility": "clear",
+      "style": "검정 손글씨체",
+      "note": "OCR 조각: \"김밥특\"(0.79), \"별시\"(0.83) 등 — 단어가 분리되어 인식됨.",
+      "inspection_candidates": [
+        {
+          "check_id": "banner_title",
+          "kind": "text_equals",
+          "what": "문구 정확 표기",
+          "method": "manual",
+          "expected": null
+        },
+        {
+          "check_id": "banner_vs_sign",
+          "kind": "text_equals",
+          "what": "표지판(TTL-03b)과 동일 표기",
+          "method": "rule"
+        }
+      ]
+    },
+    {
+      "id": "BN-01b",
+      "group": "banner",
+      "role": "현수막 2행",
+      "kind": "text",
+      "parent": "BN-01",
+      "bbox": [
+        349,
+        600,
+        481,
+        619
+      ],
+      "bbox_norm": [
+        0.4363,
+        0.5305,
+        0.165,
+        0.0168
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "방문을 환영합니다!",
+      "text_height_px": 19,
+      "legibility": "clear",
+      "style": "산호색 손글씨체",
+      "note": "OCR은 \"방문을\"(0.9968)만 읽고 나머지 누락.",
+      "inspection_candidates": [
+        {
+          "check_id": "banner_welcome",
+          "kind": "text_equals",
+          "what": "문구 정확 표기·느낌표 포함",
+          "method": "manual",
+          "expected": null
+        }
+      ]
+    },
+    {
+      "id": "SG-01",
+      "group": "sign",
+      "role": "손팻말 \"I ♥ GC\"",
+      "kind": "shape",
+      "bbox": [
+        179,
+        771,
+        299,
+        807
+      ],
+      "bbox_norm": [
+        0.2238,
+        0.6817,
+        0.15,
+        0.0318
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "흰 판 + 나무 막대",
+      "note": "GC는 Gimcheon의 약어로 보이나 포스터에 풀이는 없음",
+      "inspection_candidates": []
+    },
+    {
+      "id": "SG-01a",
+      "group": "sign",
+      "role": "손팻말 문구",
+      "kind": "text",
+      "parent": "SG-01",
+      "bbox": [
+        188,
+        776,
+        290,
+        800
+      ],
+      "bbox_norm": [
+        0.235,
+        0.6861,
+        0.1275,
+        0.0212
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "I ♥ GC",
+      "text_height_px": 24,
+      "legibility": "clear",
+      "style": "짙은 회색 글자 + 붉은 하트",
+      "note": "OCR은 \"GC\"([242,776,278,798], 0.987)만 인식. 같은 위치의 하트·I는 누락.",
+      "inspection_candidates": [
+        {
+          "check_id": "sign_text",
+          "kind": "text_equals",
+          "what": "손팻말 문구 표기",
+          "method": "manual",
+          "expected": null
+        }
+      ]
+    },
+    {
+      "id": "MC-03a",
+      "group": "mascot",
+      "role": "오이 마스코트 모자 글씨",
+      "kind": "text",
+      "parent": "MC-03",
+      "bbox": [
+        566,
+        759,
+        594,
+        769
+      ],
+      "bbox_norm": [
+        0.7075,
+        0.6711,
+        0.035,
+        0.0088
+      ],
+      "bbox_source": "visual_estimate",
+      "transcription": "OiiNG (추정)",
+      "text_height_px": 10,
+      "legibility": "ambiguous",
+      "style": "노란 글자, 초록 비니 위",
+      "note": "글자 높이 약 10px로 800px 해상도에서는 철자를 확정할 수 없다. 원본 해상도 확인 필요. OCR 미검출.",
+      "inspection_candidates": [
+        {
+          "check_id": "cap_text",
+          "kind": "text_equals",
+          "what": "모자 글씨 철자",
+          "method": "manual",
+          "expected": null,
+          "requires": "고해상도 원본"
+        }
+      ]
+    },
+    {
+      "id": "MC-01",
+      "group": "mascot",
+      "role": "메인 김밥 캐릭터(하단 중앙, 일부 잘림)",
+      "kind": "mascot",
+      "bbox": [
+        220,
+        855,
+        590,
+        1131
+      ],
+      "bbox_norm": [
+        0.275,
+        0.756,
+        0.4625,
+        0.244
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "흰 얼굴에 적·황·녹 머리 줄무늬, 검은 김 옷, 활짝 웃는 표정",
+      "note": "이미지 하단이 잘려 손·몸이 포스터 아래 경계에 닿는다.",
+      "inspection_candidates": [
+        {
+          "check_id": "mascot_present",
+          "kind": "logo_present",
+          "what": "공식 캐릭터 사용",
+          "method": "visual"
+        },
+        {
+          "check_id": "mascot_rule",
+          "kind": "manual",
+          "what": "캐릭터 사용 지침(비율·표정·색) 준수",
+          "method": "manual"
+        }
+      ]
+    },
+    {
+      "id": "MC-02",
+      "group": "mascot",
+      "role": "노란 캐릭터(손팻말을 든 모습)",
+      "kind": "mascot",
+      "bbox": [
+        190,
+        805,
+        312,
+        905
+      ],
+      "bbox_norm": [
+        0.2375,
+        0.7118,
+        0.1525,
+        0.0884
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "노란 삿갓형 머리, 흰 얼굴",
+      "inspection_candidates": []
+    },
+    {
+      "id": "MC-03",
+      "group": "mascot",
+      "role": "초록 오이 캐릭터(모자 착용)",
+      "kind": "mascot",
+      "bbox": [
+        545,
+        742,
+        615,
+        895
+      ],
+      "bbox_norm": [
+        0.6813,
+        0.6561,
+        0.0875,
+        0.1353
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "초록 비니, 감은 눈 표정",
+      "inspection_candidates": []
+    },
+    {
+      "id": "MC-04",
+      "group": "mascot",
+      "role": "주먹밥 캐릭터(왼쪽 아래 소풍 매트)",
+      "kind": "mascot",
+      "bbox": [
+        62,
+        898,
+        126,
+        985
+      ],
+      "bbox_norm": [
+        0.0775,
+        0.794,
+        0.08,
+        0.0769
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "흰 삼각 주먹밥형",
+      "inspection_candidates": []
+    },
+    {
+      "id": "MC-05",
+      "group": "mascot",
+      "role": "분홍 새 캐릭터(오른쪽 아래, 디저트 먹는 모습)",
+      "kind": "mascot",
+      "bbox": [
+        683,
+        932,
+        780,
+        1018
+      ],
+      "bbox_norm": [
+        0.8538,
+        0.824,
+        0.1212,
+        0.076
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "분홍·흰, 케이크 접시와 함께",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-01",
+      "group": "illustration",
+      "role": "거대 김밥 타워",
+      "kind": "illustration",
+      "bbox": [
+        313,
+        450,
+        512,
+        792
+      ],
+      "bbox_norm": [
+        0.3912,
+        0.3979,
+        0.2487,
+        0.3024
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "style": "검은 김 외벽, 파란 유리문",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-01a",
+      "group": "illustration",
+      "role": "김밥 단면(재료)",
+      "kind": "illustration",
+      "parent": "IL-01",
+      "bbox": [
+        315,
+        450,
+        510,
+        528
+      ],
+      "bbox_norm": [
+        0.3937,
+        0.3979,
+        0.2437,
+        0.069
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "단무지·달걀·시금치·햄 등 재료로 보이는 색 층. 식품 광고라면 실제 제품과의 일치 여부는 확인 대상이 아니다(일러스트).",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-02",
+      "group": "illustration",
+      "role": "갓 모양 지붕 건물",
+      "kind": "illustration",
+      "bbox": [
+        110,
+        598,
+        316,
+        768
+      ],
+      "bbox_norm": [
+        0.1375,
+        0.5287,
+        0.2575,
+        0.1503
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "지역 명소를 형상화한 것으로 보이나 포스터에 명칭 표기는 없다.",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-03",
+      "group": "illustration",
+      "role": "다층 전통 탑",
+      "kind": "illustration",
+      "bbox": [
+        512,
+        495,
+        682,
+        742
+      ],
+      "bbox_norm": [
+        0.64,
+        0.4377,
+        0.2125,
+        0.2184
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "지역 명소를 형상화한 것으로 보이나 포스터에 명칭 표기는 없다.",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-04",
+      "group": "illustration",
+      "role": "물레방아",
+      "kind": "illustration",
+      "bbox": [
+        604,
+        684,
+        696,
+        792
+      ],
+      "bbox_norm": [
+        0.755,
+        0.6048,
+        0.115,
+        0.0955
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-05",
+      "group": "illustration",
+      "role": "소풍 바구니·바게트(왼쪽 아래)",
+      "kind": "illustration",
+      "bbox": [
+        5,
+        924,
+        66,
+        978
+      ],
+      "bbox_norm": [
+        0.0063,
+        0.817,
+        0.0762,
+        0.0477
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-06",
+      "group": "illustration",
+      "role": "분홍 체크 소풍 매트(왼쪽 아래)",
+      "kind": "illustration",
+      "bbox": [
+        0,
+        950,
+        155,
+        1010
+      ],
+      "bbox_norm": [
+        0.0,
+        0.84,
+        0.1938,
+        0.0531
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "IL-07",
+      "group": "illustration",
+      "role": "노란 체크 소풍 매트·케이크 접시(오른쪽 아래)",
+      "kind": "illustration",
+      "bbox": [
+        640,
+        945,
+        780,
+        1035
+      ],
+      "bbox_norm": [
+        0.8,
+        0.8355,
+        0.175,
+        0.0796
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "inspection_candidates": []
+    },
+    {
+      "id": "BG-01",
+      "group": "background",
+      "role": "배경(하늘·구름·언덕·나무)",
+      "kind": "illustration",
+      "bbox": [
+        0,
+        0,
+        800,
+        1131
+      ],
+      "bbox_norm": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "bbox_source": "visual_estimate",
+      "legibility": "clear",
+      "note": "구름이 제목 옆 흰 외곽선과 비슷한 색이라 가장자리에서 대비가 낮아지는 곳이 있는지 확인할 수 있다.",
+      "inspection_candidates": [
+        {
+          "check_id": "contrast_title",
+          "kind": "min_size",
+          "what": "제목·날짜의 배경 대비(흰 외곽선 포함)",
+          "method": "rule",
+          "requires": "색상 샘플링"
+        }
+      ]
+    }
+  ],
+  "cross_checks": [
+    {
+      "check_id": "weekday_match",
+      "what": "날짜와 요일 일치",
+      "result": "pass",
+      "evidence": "2026-10-23 = 금요일, 2026-10-25 = 일요일 (포스터: 금, 일)",
+      "elements": [
+        "DT-01a",
+        "DT-01b",
+        "DT-01d",
+        "DT-01e"
+      ]
+    },
+    {
+      "check_id": "date_order",
+      "what": "시작일 < 종료일",
+      "result": "pass",
+      "evidence": "기간 3일(금~일, 주말 포함)",
+      "elements": [
+        "DT-01a",
+        "DT-01d"
+      ]
+    },
+    {
+      "check_id": "year_vs_date",
+      "what": "타이틀 연도(2026)와 기간 연도(2026) 일치",
+      "result": "pass",
+      "evidence": "두 곳 모두 2026. 단 OCR은 타이틀을 \"20261\"로 오독해 자동 판독만으로는 확인할 수 없다.",
+      "elements": [
+        "TTL-01",
+        "DT-01a"
+      ]
+    },
+    {
+      "check_id": "concept_repeat",
+      "what": "표지판과 현수막의 \"김밥특별시\" 표기 일치",
+      "result": "pass",
+      "evidence": "두 곳 모두 \"김밥특별시\". 현수막은 육안 판독(OCR 조각화).",
+      "elements": [
+        "TTL-03b",
+        "BN-01a"
+      ]
+    },
+    {
+      "check_id": "venue_count",
+      "what": "장소 3곳 표기",
+      "result": "pass",
+      "evidence": "직지문화공원 / 사명대사공원 / 친환경생태공원 + \"일원\"",
+      "elements": [
+        "VN-01"
+      ]
+    },
+    {
+      "check_id": "host_prefix_consistency",
+      "what": "로고 기관명과 장소 문구의 지명이 같음",
+      "result": "pass",
+      "evidence": "로고 \"김천시\"와 장소 \"김천시 …\" 일치",
+      "elements": [
+        "HDR-01b",
+        "VN-01"
+      ]
+    }
+  ],
+  "absent_elements": [
+    {
+      "item": "주최·주관 기관 문구",
+      "detail": "김천시 로고만 있고 \"주최/주관\" 표기는 없음"
+    },
+    {
+      "item": "행사 운영 시간",
+      "detail": "날짜만 있고 시간 없음"
+    },
+    {
+      "item": "문의 연락처",
+      "detail": "전화번호 없음"
+    },
+    {
+      "item": "홈페이지·SNS·QR",
+      "detail": "온라인 안내 수단 없음"
+    },
+    {
+      "item": "입장료·무료 여부",
+      "detail": "표기 없음"
+    },
+    {
+      "item": "프로그램·공연 라인업",
+      "detail": "표기 없음"
+    },
+    {
+      "item": "교통·주차 안내",
+      "detail": "표기 없음"
+    },
+    {
+      "item": "후원·협찬 로고",
+      "detail": "표기 없음"
+    }
+  ],
+  "ocr_raw": [
+    {
+      "text": "김천시",
+      "score": 0.9999,
+      "bbox": [
+        93,
+        29,
+        170,
+        55
+      ],
+      "polygon": [
+        [
+          93,
+          29
+        ],
+        [
+          170,
+          29
+        ],
+        [
+          170,
+          55
+        ],
+        [
+          93,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "GIMCHEON CITY",
+      "score": 0.9769,
+      "bbox": [
+        96,
+        54,
+        172,
+        67
+      ],
+      "polygon": [
+        [
+          96,
+          54
+        ],
+        [
+          172,
+          54
+        ],
+        [
+          172,
+          67
+        ],
+        [
+          96,
+          67
+        ]
+      ]
+    },
+    {
+      "text": "20261",
+      "score": 0.7889,
+      "bbox": [
+        153,
+        86,
+        457,
+        175
+      ],
+      "polygon": [
+        [
+          153,
+          86
+        ],
+        [
+          457,
+          88
+        ],
+        [
+          457,
+          175
+        ],
+        [
+          153,
+          172
+        ]
+      ]
+    },
+    {
+      "text": "김밥특별시",
+      "score": 0.9986,
+      "bbox": [
+        489,
+        100,
+        637,
+        144
+      ],
+      "polygon": [
+        [
+          489,
+          102
+        ],
+        [
+          637,
+          100
+        ],
+        [
+          637,
+          141
+        ],
+        [
+          489,
+          144
+        ]
+      ]
+    },
+    {
+      "text": "Gimbap Metropolitan-Special City",
+      "score": 0.973,
+      "bbox": [
+        470,
+        136,
+        645,
+        153
+      ],
+      "polygon": [
+        [
+          470,
+          136
+        ],
+        [
+          645,
+          136
+        ],
+        [
+          645,
+          153
+        ],
+        [
+          470,
+          153
+        ]
+      ]
+    },
+    {
+      "text": "김천김밥축제",
+      "score": 0.9585,
+      "bbox": [
+        141,
+        150,
+        662,
+        266
+      ],
+      "polygon": [
+        [
+          141,
+          150
+        ],
+        [
+          662,
+          153
+        ],
+        [
+          662,
+          266
+        ],
+        [
+          141,
+          263
+        ]
+      ]
+    },
+    {
+      "text": "2026.10.23금 ~ 10.25일",
+      "score": 0.9596,
+      "bbox": [
+        178,
+        297,
+        631,
+        353
+      ],
+      "polygon": [
+        [
+          178,
+          297
+        ],
+        [
+          631,
+          299
+        ],
+        [
+          631,
+          353
+        ],
+        [
+          178,
+          350
+        ]
+      ]
+    },
+    {
+      "text": "김천시 직지문화공원,사명대사공원,친환경생태공원 일원",
+      "score": 0.996,
+      "bbox": [
+        140,
+        372,
+        666,
+        401
+      ],
+      "polygon": [
+        [
+          140,
+          372
+        ],
+        [
+          666,
+          372
+        ],
+        [
+          666,
+          401
+        ],
+        [
+          140,
+          401
+        ]
+      ]
+    },
+    {
+      "text": "김밥특",
+      "score": 0.7892,
+      "bbox": [
+        362,
+        573,
+        414,
+        604
+      ],
+      "polygon": [
+        [
+          362,
+          573
+        ],
+        [
+          414,
+          573
+        ],
+        [
+          414,
+          604
+        ],
+        [
+          362,
+          604
+        ]
+      ]
+    },
+    {
+      "text": "별시",
+      "score": 0.8301,
+      "bbox": [
+        420,
+        575,
+        469,
+        597
+      ],
+      "polygon": [
+        [
+          420,
+          575
+        ],
+        [
+          469,
+          575
+        ],
+        [
+          469,
+          597
+        ],
+        [
+          420,
+          597
+        ]
+      ]
+    },
+    {
+      "text": "트",
+      "score": 0.2704,
+      "bbox": [
+        408,
+        578,
+        423,
+        590
+      ],
+      "polygon": [
+        [
+          408,
+          578
+        ],
+        [
+          423,
+          578
+        ],
+        [
+          423,
+          590
+        ],
+        [
+          408,
+          590
+        ]
+      ]
+    },
+    {
+      "text": "피",
+      "score": 0.6658,
+      "bbox": [
+        385,
+        589,
+        403,
+        601
+      ],
+      "polygon": [
+        [
+          385,
+          589
+        ],
+        [
+          403,
+          589
+        ],
+        [
+          403,
+          601
+        ],
+        [
+          385,
+          601
+        ]
+      ]
+    },
+    {
+      "text": "그",
+      "score": 0.3739,
+      "bbox": [
+        430,
+        592,
+        442,
+        601
+      ],
+      "polygon": [
+        [
+          430,
+          592
+        ],
+        [
+          442,
+          592
+        ],
+        [
+          442,
+          601
+        ],
+        [
+          430,
+          601
+        ]
+      ]
+    },
+    {
+      "text": "방문을",
+      "score": 0.9968,
+      "bbox": [
+        343,
+        596,
+        395,
+        626
+      ],
+      "polygon": [
+        [
+          346,
+          596
+        ],
+        [
+          395,
+          600
+        ],
+        [
+          392,
+          626
+        ],
+        [
+          343,
+          621
+        ]
+      ]
+    },
+    {
+      "text": "GC",
+      "score": 0.987,
+      "bbox": [
+        242,
+        776,
+        278,
+        798
+      ],
+      "polygon": [
+        [
+          242,
+          776
+        ],
+        [
+          278,
+          776
+        ],
+        [
+          278,
+          798
+        ],
+        [
+          242,
+          798
+        ]
+      ]
+    },
+    {
+      "text": "0.0",
+      "score": 0.8223,
+      "bbox": [
+        221,
+        826,
+        270,
+        861
+      ],
+      "polygon": [
+        [
+          221,
+          831
+        ],
+        [
+          267,
+          826
+        ],
+        [
+          270,
+          857
+        ],
+        [
+          224,
+          861
+        ]
+      ]
+    }
+  ],
+  "ocr_raw_notes": [
+    {
+      "text": "0.0",
+      "bbox": [
+        221,
+        826,
+        270,
+        861
+      ],
+      "note": "노란 캐릭터 얼굴(눈)을 글자로 오인한 오검출(거짓 양성)"
+    },
+    {
+      "text": "트 / 피 / 그",
+      "note": "현수막 글자 조각이 낮은 신뢰도(0.27~0.67)로 검출됨"
+    }
+  ],
+  "limitations": [
+    "800×1131 압축본이라 10px 안팎의 작은 글씨(모자 글씨)는 철자를 확정할 수 없다.",
+    "좌표 중 visual_estimate는 사람 추정이며 픽셀 단위 정답이 아니다.",
+    "기획서·발주서 기준값(expected)이 없어 대부분의 문구는 \"표기값 추출\"까지만 했고 정오 판정은 하지 않았다.",
+    "법적 표시 의무 해당 여부는 판단하지 않았다."
+  ]
+}

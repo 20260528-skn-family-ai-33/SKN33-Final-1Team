@@ -1,0 +1,237 @@
+{
+  "case_id": "C05",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "kind": "text_equals",
+      "role": "상품명",
+      "expected": "플로우메이트 스마트 텀블러 FM-1",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "상품명은 “플로우메이트 스마트 텀블러 FM-1”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F02",
+      "label": "브랜드 표기",
+      "kind": "text_equals",
+      "role": "브랜드 표기",
+      "expected": "FLOWMATE",
+      "case_sensitive": true,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "브랜드명은 “FLOWMATE”로 대문자 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "label": "할인율(기준 충돌)",
+      "kind": "text_equals",
+      "role": "할인율",
+      "status": "unresolved",
+      "candidates": {
+        "명세서 3쪽": "25% 할인",
+        "계약서 1쪽": "30% 할인"
+      },
+      "question": "할인 문구 기준이 명세서(25%)와 계약서(30%)로 충돌하고 우선순위 규정이 없습니다. 어느 쪽이 유효한지 발주 담당자 확인이 필요합니다.",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 3,
+          "quote": "할인 문구는 “25% 할인”으로 표기한다."
+        },
+        {
+          "doc": "contract",
+          "page": 1,
+          "quote": "할인 문구는 “30% 할인”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F04",
+      "label": "가격",
+      "kind": "text_equals",
+      "role": "가격",
+      "expected": "49,000원",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "가격은 “49,000원”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F05",
+      "label": "행사 기간",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "12.01 ~ 12.14",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 3,
+          "quote": "행사 기간은 “12.01 ~ 12.14”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F06",
+      "label": "가격 각주",
+      "kind": "text_equals",
+      "role": "가격 각주",
+      "expected": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 4,
+          "quote": "가격 아래에 “※ 모델 및 색상에 따라 가격이 다를 수 있음” 각주를 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "F07",
+      "label": "용량",
+      "kind": "text_equals",
+      "role": "용량",
+      "expected": "450ml",
+      "case_sensitive": true,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "용량은 “450ml”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F08",
+      "label": "컬러 3종 개수",
+      "kind": "count",
+      "cls": "텀블러",
+      "op": "==",
+      "n": 3,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 3,
+          "quote": "컬러 3종이 모두 보이게 한다."
+        }
+      ]
+    },
+    {
+      "id": "F09",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "F10",
+      "label": "로고 최소 폭",
+      "kind": "logo_min_size",
+      "min_px": 80,
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고 가로 폭은 80px 이상으로 한다."
+        }
+      ]
+    },
+    {
+      "id": "F11",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 4,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    },
+    {
+      "id": "F12",
+      "label": "해시태그",
+      "kind": "text_equals",
+      "role": "해시태그",
+      "expected": "#플로우메이트",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 4,
+          "quote": "해시태그 “#플로우메이트”와 주소 “flowmate.example/fm1”을 하단에 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "F13",
+      "label": "주소(URL)",
+      "kind": "text_equals",
+      "role": "URL",
+      "expected": "flowmate.example/fm1",
+      "case_sensitive": false,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 4,
+          "quote": "해시태그 “#플로우메이트”와 주소 “flowmate.example/fm1”을 하단에 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "F14",
+      "label": "배송 문구",
+      "kind": "text_equals",
+      "role": "배송 문구",
+      "expected": "무료배송 (제주·도서산간 제외)",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 4,
+          "quote": "배송 문구는 “무료배송 (제주·도서산간 제외)”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "F15",
+      "label": "최상급 표현 금지",
+      "kind": "text_forbidden",
+      "words": [
+        "최고",
+        "1위",
+        "최상"
+      ],
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 2,
+          "quote": "“최고”, “1위”, “최상” 등 최상급 표현은 사용하지 않는다."
+        }
+      ]
+    }
+  ]
+}

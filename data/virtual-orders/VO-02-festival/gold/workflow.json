@@ -1,0 +1,19 @@
+{
+  "case_id": "VO-02",
+  "scenario_type": "fix",
+  "description": "D3 지적(이름 오타·미승인 후원사·후원사 누락) → D6 수정본. 재검수에서 모두 해결, 새 오류 없음.",
+  "previous": "D3",
+  "revised": "D6",
+  "diff": {
+    "resolved": [
+      "G05",
+      "G07"
+    ],
+    "persisting": [],
+    "new_errors": [],
+    "needs_review_after": []
+  },
+  "approval_blockers_for_revised": [],
+  "image_bytes_identical": false,
+  "expected_system_behavior": "이전 지적의 해결 여부와 새 오류를 항목별로 구분해 기록하고, 남은 차단 조건이 없을 때만 승인 준비로 넘어간다."
+}

@@ -1,0 +1,1253 @@
+{
+  "case_id": "VO-02",
+  "judgments": [
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "1일권 55,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_match",
+      "observed": "라이네 / 새벽결 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "consent_ok",
+      "observed": "노출 라이네, 새벽결, 오로라정원",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_ok",
+      "observed": "노출 누리푸드, 달빛은행, 하늘모터스",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "1일권 59,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_match",
+      "observed": "라이네 / 새벽결 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "consent_ok",
+      "observed": "노출 라이네, 새벽결, 오로라정원",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_ok",
+      "observed": "노출 누리푸드, 달빛은행, 하늘모터스",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "1일권 55,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "set_mismatch",
+      "observed": "라이네 / 새벽겹 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "consent_ok",
+      "observed": "노출 라이네, 새벽결, 오로라정원",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "unapproved_or_missing",
+      "observed": "노출 가상통신, 누리푸드, 달빛은행 · 미승인 ['가상통신'] · 누락 ['하늘모터스']",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "1일권 55,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_match",
+      "observed": "라이네 / 새벽결 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "consent_ok",
+      "observed": "노출 라이네, 새벽결, 오로라정원",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "occluded_set",
+      "observed": "노출 누리푸드, 하늘모터스 (가림 포함 누리푸드, 달빛은행, 하늘모터스)",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "1일권 55,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_match",
+      "observed": "라이네 / 새벽결 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "consent_missing",
+      "observed": "노출 라이네, 새벽결, 오로라정원 · 동의서 없음 ['오로라정원']",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_ok",
+      "observed": "노출 누리푸드, 달빛은행, 하늘모터스",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛누리 뮤직 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G02",
+      "label": "행사 일정(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.21(토) ~ 11.22(일)",
+      "evidence_ids": [
+        "r_date"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "달빛공원 야외무대",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G04",
+      "label": "티켓 가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "1일권 55,000원 · 2일권 98,000원",
+      "evidence_ids": [
+        "r_ticket"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G05",
+      "label": "출연진 명칭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_match",
+      "observed": "라이네 / 새벽결 / 오로라정원",
+      "evidence_ids": [
+        "r_artist_1",
+        "r_artist_2",
+        "r_artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G06",
+      "label": "출연자 사진 동의",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "consent_ok",
+      "observed": "노출 라이네, 새벽결, 오로라정원",
+      "evidence_ids": [
+        "artist_1",
+        "artist_2",
+        "artist_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G07",
+      "label": "후원사 로고(승인 목록)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "set_ok",
+      "observed": "노출 누리푸드, 달빛은행, 하늘모터스",
+      "evidence_ids": [
+        "sponsor_1",
+        "sponsor_2",
+        "sponsor_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G08",
+      "label": "주최·주관 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "주최 달빛시 문화재단 · 주관 누리기획",
+      "evidence_ids": [
+        "r_host"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G09",
+      "label": "우천 고지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시에도 공연은 진행됩니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G10",
+      "label": "현수막 신고번호(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "현수막에만 적용되는 조건이며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(현수막 게시 계획서)"
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G11",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G12",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G13",
+      "label": "후원사 로고 사용 승인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "VO-02",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "G14",
+      "label": "폰트·음원 라이선스 확인서 제출",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    }
+  ]
+}

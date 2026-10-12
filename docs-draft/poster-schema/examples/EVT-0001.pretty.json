@@ -1,0 +1,497 @@
+{
+  "schema_version": "poster-case/0.1",
+  "case_id": "EVT-0001",
+  "domain": "regional_event",
+  "media_type": "image",
+  "source": {
+    "origin": "real_public",
+    "provenance": "사용자가 제공한 이미지(2026 김천김밥축제 포스터로 보임). 원 출처 URL과 원본 해상도는 확인하지 않았다.",
+    "rights": {
+      "status": "unconfirmed",
+      "license": null,
+      "note": "데이터 판매·재배포 전에 사용 허락을 확인해야 한다. 이미지 파일은 저장소에 넣지 않는다."
+    }
+  },
+  "input": {
+    "image": {
+      "path": "images/EVT-0001.webp",
+      "width": 800,
+      "height": 1131,
+      "format": "webp",
+      "sha256": "4fe861baea23597af3e010b4b37c48670404465682f9661983dc1daf49d64387"
+    }
+  },
+  "gold": {
+    "extraction": {
+      "texts": [
+        {
+          "id": "T01",
+          "role": "organizer",
+          "text": "김천시",
+          "bbox": [
+            0.1163,
+            0.0256,
+            0.0963,
+            0.023
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T02",
+          "role": "organizer",
+          "text": "GIMCHEON CITY",
+          "bbox": [
+            0.12,
+            0.0477,
+            0.095,
+            0.0115
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T03",
+          "role": "edition_year",
+          "text": "2026",
+          "bbox": [
+            0.1963,
+            0.0831,
+            0.32,
+            0.061
+          ],
+          "legibility": "clear",
+          "note": "장식체. OCR은 \"20261\"로 오독했으나 정답은 육안 전사값."
+        },
+        {
+          "id": "T04",
+          "role": "event_name",
+          "text": "김천김밥축제",
+          "bbox": [
+            0.1762,
+            0.1441,
+            0.655,
+            0.0999
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T05",
+          "role": "slogan",
+          "text": "김밥특별시",
+          "bbox": [
+            0.6112,
+            0.0884,
+            0.185,
+            0.0389
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T06",
+          "role": "slogan",
+          "text": "Gimbap Metropolitan · Special City",
+          "bbox": [
+            0.5875,
+            0.1202,
+            0.2188,
+            0.015
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T07",
+          "role": "date",
+          "text": "2026. 10. 23 금 ~ 10. 25 일",
+          "bbox": [
+            0.2225,
+            0.2626,
+            0.5663,
+            0.0495
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T08",
+          "role": "venue",
+          "text": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+          "bbox": [
+            0.175,
+            0.3289,
+            0.6575,
+            0.0256
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T09",
+          "role": "slogan",
+          "text": "김밥특별시",
+          "bbox": [
+            0.4575,
+            0.5066,
+            0.1263,
+            0.0203
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T10",
+          "role": "body",
+          "text": "방문을 환영합니다!",
+          "bbox": [
+            0.4363,
+            0.5305,
+            0.165,
+            0.0168
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T11",
+          "role": "caption",
+          "text": "I ♥ GC",
+          "bbox": [
+            0.235,
+            0.6861,
+            0.1275,
+            0.0212
+          ],
+          "legibility": "clear"
+        },
+        {
+          "id": "T12",
+          "role": "other",
+          "text": "OiiNG",
+          "bbox": [
+            0.7075,
+            0.6711,
+            0.035,
+            0.0088
+          ],
+          "legibility": "ambiguous",
+          "note": "글자 높이 약 10px. 800px 해상도에서는 철자를 확정할 수 없음(고해상도 원본 필요)."
+        }
+      ],
+      "objects": [
+        {
+          "id": "O01",
+          "kind": "logo",
+          "label": "김천시 로고(심볼+워드마크)",
+          "bbox": [
+            0.0375,
+            0.0239,
+            0.1775,
+            0.038
+          ]
+        },
+        {
+          "id": "O02",
+          "kind": "mascot",
+          "label": "메인 김밥 캐릭터",
+          "bbox": [
+            0.275,
+            0.756,
+            0.4625,
+            0.244
+          ]
+        },
+        {
+          "id": "O03",
+          "kind": "mascot",
+          "label": "노란 캐릭터(손팻말)",
+          "bbox": [
+            0.2375,
+            0.7118,
+            0.1525,
+            0.0884
+          ]
+        },
+        {
+          "id": "O04",
+          "kind": "mascot",
+          "label": "초록 오이 캐릭터",
+          "bbox": [
+            0.6813,
+            0.6561,
+            0.0875,
+            0.1353
+          ]
+        },
+        {
+          "id": "O05",
+          "kind": "mascot",
+          "label": "주먹밥 캐릭터",
+          "bbox": [
+            0.0775,
+            0.794,
+            0.08,
+            0.0769
+          ]
+        },
+        {
+          "id": "O06",
+          "kind": "mascot",
+          "label": "분홍 새 캐릭터",
+          "bbox": [
+            0.8538,
+            0.824,
+            0.1212,
+            0.076
+          ]
+        },
+        {
+          "id": "O07",
+          "kind": "illustration",
+          "label": "거대 김밥 타워",
+          "bbox": [
+            0.3912,
+            0.3979,
+            0.2487,
+            0.3024
+          ]
+        },
+        {
+          "id": "O08",
+          "kind": "illustration",
+          "label": "갓 모양 지붕 건물",
+          "bbox": [
+            0.1375,
+            0.5287,
+            0.2575,
+            0.1503
+          ]
+        },
+        {
+          "id": "O09",
+          "kind": "illustration",
+          "label": "다층 전통 탑",
+          "bbox": [
+            0.64,
+            0.4377,
+            0.2125,
+            0.2184
+          ]
+        },
+        {
+          "id": "O10",
+          "kind": "illustration",
+          "label": "물레방아",
+          "bbox": [
+            0.755,
+            0.6048,
+            0.115,
+            0.0955
+          ]
+        }
+      ],
+      "fields": {
+        "event_name": {
+          "value": "김천김밥축제",
+          "text_ids": [
+            "T04"
+          ]
+        },
+        "event_year": {
+          "value": 2026,
+          "text_ids": [
+            "T03"
+          ]
+        },
+        "dates": {
+          "start": "2026-10-23",
+          "end": "2026-10-25",
+          "start_weekday": "금",
+          "end_weekday": "일",
+          "text_ids": [
+            "T07"
+          ]
+        },
+        "time": null,
+        "venues": [
+          {
+            "value": "직지문화공원",
+            "text_ids": [
+              "T08"
+            ]
+          },
+          {
+            "value": "사명대사공원",
+            "text_ids": [
+              "T08"
+            ]
+          },
+          {
+            "value": "친환경생태공원",
+            "text_ids": [
+              "T08"
+            ]
+          }
+        ],
+        "organizers": [
+          {
+            "role": "unspecified",
+            "form": "both",
+            "name": "김천시",
+            "text_ids": [
+              "T01",
+              "T02"
+            ],
+            "object_ids": [
+              "O01"
+            ]
+          }
+        ],
+        "contact": null,
+        "admission_fee": null,
+        "slogans": [
+          {
+            "value": "김밥특별시",
+            "text_ids": [
+              "T05",
+              "T09"
+            ]
+          },
+          {
+            "value": "Gimbap Metropolitan · Special City",
+            "text_ids": [
+              "T06"
+            ]
+          }
+        ]
+      }
+    },
+    "checks": [
+      {
+        "check_id": "TXT-01",
+        "verdict": "pass",
+        "targets": [
+          "T04",
+          "T07",
+          "T08"
+        ],
+        "note": "육안 검토에서 오탈자 없음. 사람 검토 전 AI 초안."
+      },
+      {
+        "check_id": "TXT-02",
+        "verdict": "needs_review",
+        "reason_code": "needs_reference",
+        "note": "기준 정보(input.reference.event) 없음"
+      },
+      {
+        "check_id": "DT-01",
+        "verdict": "pass",
+        "targets": [
+          "T07"
+        ],
+        "observed": {
+          "start": "2026-10-23 금",
+          "end": "2026-10-25 일"
+        },
+        "expected": {
+          "start": "금",
+          "end": "일"
+        }
+      },
+      {
+        "check_id": "DT-02",
+        "verdict": "pass",
+        "targets": [
+          "T07"
+        ],
+        "observed": "2026-10-23 ≤ 2026-10-25"
+      },
+      {
+        "check_id": "DT-03",
+        "verdict": "pass",
+        "targets": [
+          "T03",
+          "T07"
+        ],
+        "observed": [
+          2026,
+          2026
+        ]
+      },
+      {
+        "check_id": "DT-04",
+        "verdict": "needs_review",
+        "reason_code": "needs_reference",
+        "note": "공식 일정(input.reference.event) 없음",
+        "severity": "critical"
+      },
+      {
+        "check_id": "DT-05",
+        "verdict": "not_applicable",
+        "note": "운영 시간 표기 없음. 존재 여부는 REQ-02에서 본다."
+      },
+      {
+        "check_id": "REQ-01",
+        "verdict": "pass",
+        "targets": [
+          "T04",
+          "T07",
+          "T08",
+          "O01"
+        ],
+        "observed": {
+          "present": [
+            "event_name",
+            "dates",
+            "venues",
+            "organizers"
+          ],
+          "missing": []
+        },
+        "note": "주최·주관 구분 문구는 없고 로고만 있다. 기관은 로고로도 충족하므로 pass."
+      },
+      {
+        "check_id": "REQ-02",
+        "verdict": "needs_review",
+        "reason_code": "missing_recommended",
+        "severity": "low",
+        "observed": {
+          "missing": [
+            "time",
+            "contact",
+            "url_or_qr",
+            "admission_fee"
+          ]
+        }
+      },
+      {
+        "check_id": "LAY-02",
+        "verdict": "pass",
+        "observed": {
+          "min_text_margin_ratio": 0.0256
+        },
+        "note": "모든 글자 영역이 가장자리에서 떨어져 있다. 하단 마스코트의 잘림은 일러스트라 대상 아님."
+      },
+      {
+        "check_id": "CLR-01",
+        "verdict": "needs_review",
+        "reason_code": "needs_reference",
+        "note": "컬러 시스템(input.reference.design_guide.palette) 없음"
+      },
+      {
+        "check_id": "FNT-01",
+        "verdict": "needs_review",
+        "reason_code": "needs_reference",
+        "note": "폰트 기준(input.reference.design_guide.fonts) 없음. 글자별 font 라벨도 아직 없음"
+      },
+      {
+        "check_id": "BRD-01",
+        "verdict": "needs_review",
+        "reason_code": "needs_reference",
+        "note": "로고 원본(input.reference.design_guide.logos) 없음"
+      }
+    ]
+  },
+  "label_meta": {
+    "label_status": "draft_ai",
+    "catalog_version": "0.1",
+    "created_at": "2026-10-07",
+    "annotators": [
+      "ai-draft"
+    ],
+    "notes": "스키마 모양을 보이기 위한 예시. 사람 검토 전이며 기준 정보가 없어 기준이 필요한 검사는 needs_review로 두었다."
+  }
+}

@@ -1,0 +1,1941 @@
+{
+  "case_id": "C02",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 62926,
+        "sha256": "5781e1281cc50b590c0f30e4600bff9746bc8a4f5b9fdfec1347fe6243a55d0b"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              815,
+              452
+            ],
+            [
+              985,
+              452
+            ],
+            [
+              985,
+              489
+            ],
+            [
+              815,
+              489
+            ]
+          ],
+          "bbox": [
+            815,
+            452,
+            985,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "6,000원",
+          "polygon": [
+            [
+              250,
+              909
+            ],
+            [
+              410,
+              909
+            ],
+            [
+              410,
+              958
+            ],
+            [
+              250,
+              958
+            ]
+          ],
+          "bbox": [
+            250,
+            909,
+            410,
+            958
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,200원",
+          "polygon": [
+            [
+              514,
+              890
+            ],
+            [
+              885,
+              890
+            ],
+            [
+              885,
+              998
+            ],
+            [
+              514,
+              998
+            ]
+          ],
+          "bbox": [
+            514,
+            890,
+            885,
+            998
+          ],
+          "legibility": "clear",
+          "font_size": 100,
+          "color": "#c0392b",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.07",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              421,
+              1133
+            ],
+            [
+              658,
+              1133
+            ],
+            [
+              658,
+              1168
+            ],
+            [
+              421,
+              1168
+            ]
+          ],
+          "bbox": [
+            421,
+            1133,
+            658,
+            1168
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#5a3515",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakery",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 8
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              250,
+              565,
+              510,
+              715
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              570,
+              595,
+              830,
+              745
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 63779,
+        "sha256": "2b9a689cce116ae97efc5d0e0d9f99bb9b3e81657ed54b859f7963071a071e96"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              815,
+              452
+            ],
+            [
+              985,
+              452
+            ],
+            [
+              985,
+              489
+            ],
+            [
+              815,
+              489
+            ]
+          ],
+          "bbox": [
+            815,
+            452,
+            985,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "6,000원",
+          "polygon": [
+            [
+              250,
+              909
+            ],
+            [
+              410,
+              909
+            ],
+            [
+              410,
+              958
+            ],
+            [
+              250,
+              958
+            ]
+          ],
+          "bbox": [
+            250,
+            909,
+            410,
+            958
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,800원",
+          "polygon": [
+            [
+              514,
+              890
+            ],
+            [
+              885,
+              890
+            ],
+            [
+              885,
+              998
+            ],
+            [
+              514,
+              998
+            ]
+          ],
+          "bbox": [
+            514,
+            890,
+            885,
+            998
+          ],
+          "legibility": "clear",
+          "font_size": 100,
+          "color": "#c0392b",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.07",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              421,
+              1133
+            ],
+            [
+              658,
+              1133
+            ],
+            [
+              658,
+              1168
+            ],
+            [
+              421,
+              1168
+            ]
+          ],
+          "bbox": [
+            421,
+            1133,
+            658,
+            1168
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#5a3515",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakery",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 8
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              250,
+              565,
+              510,
+              715
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              570,
+              595,
+              830,
+              745
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 59824,
+        "sha256": "d3d5aa40e309cf58c0395132bb98a0da2668e876d95732feb0c1c61b30487473"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "3O% 할인",
+          "polygon": [
+            [
+              811,
+              452
+            ],
+            [
+              988,
+              452
+            ],
+            [
+              988,
+              489
+            ],
+            [
+              811,
+              489
+            ]
+          ],
+          "bbox": [
+            811,
+            452,
+            988,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,200원",
+          "polygon": [
+            [
+              514,
+              890
+            ],
+            [
+              885,
+              890
+            ],
+            [
+              885,
+              998
+            ],
+            [
+              514,
+              998
+            ]
+          ],
+          "bbox": [
+            514,
+            890,
+            885,
+            998
+          ],
+          "legibility": "clear",
+          "font_size": 100,
+          "color": "#c0392b",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.17",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              421,
+              1133
+            ],
+            [
+              658,
+              1133
+            ],
+            [
+              658,
+              1168
+            ],
+            [
+              421,
+              1168
+            ]
+          ],
+          "bbox": [
+            421,
+            1133,
+            658,
+            1168
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakery",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 7
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              250,
+              565,
+              510,
+              715
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              570,
+              595,
+              830,
+              745
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 62879,
+        "sha256": "db7b25844cce65cffed4a6c2390ea9247d22bb00e5806ab0c2edc717c12cd16d"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              815,
+              452
+            ],
+            [
+              985,
+              452
+            ],
+            [
+              985,
+              489
+            ],
+            [
+              815,
+              489
+            ]
+          ],
+          "bbox": [
+            815,
+            452,
+            985,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "6,000원",
+          "polygon": [
+            [
+              250,
+              909
+            ],
+            [
+              410,
+              909
+            ],
+            [
+              410,
+              958
+            ],
+            [
+              250,
+              958
+            ]
+          ],
+          "bbox": [
+            250,
+            909,
+            410,
+            958
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,200원",
+          "polygon": [
+            [
+              514,
+              890
+            ],
+            [
+              885,
+              890
+            ],
+            [
+              885,
+              998
+            ],
+            [
+              514,
+              998
+            ]
+          ],
+          "bbox": [
+            514,
+            890,
+            885,
+            998
+          ],
+          "legibility": "clear",
+          "font_size": 100,
+          "color": "#c0392b",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.07",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              421,
+              1133
+            ],
+            [
+              658,
+              1133
+            ],
+            [
+              658,
+              1168
+            ],
+            [
+              421,
+              1168
+            ]
+          ],
+          "bbox": [
+            421,
+            1133,
+            658,
+            1168
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#5a3515",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakary",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 8
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              160,
+              580,
+              360,
+              700
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              440,
+              640,
+              640,
+              760
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_3",
+            "bbox": [
+              720,
+              580,
+              920,
+              700
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 71372,
+        "sha256": "dcacc7b646aa9df8793be029fcf8c6356feeca4418bdf789f56493a870c1999d"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              815,
+              452
+            ],
+            [
+              985,
+              452
+            ],
+            [
+              985,
+              489
+            ],
+            [
+              815,
+              489
+            ]
+          ],
+          "bbox": [
+            815,
+            452,
+            985,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "6,000원",
+          "polygon": [
+            [
+              250,
+              909
+            ],
+            [
+              410,
+              909
+            ],
+            [
+              410,
+              958
+            ],
+            [
+              250,
+              958
+            ]
+          ],
+          "bbox": [
+            250,
+            909,
+            410,
+            958
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,200원",
+          "polygon": [
+            [
+              544.1,
+              863.1
+            ],
+            [
+              604.0,
+              851.4
+            ],
+            [
+              647.6,
+              846.4
+            ],
+            [
+              708.5,
+              844.3
+            ],
+            [
+              714.2,
+              844.4
+            ],
+            [
+              775.0,
+              848.6
+            ],
+            [
+              780.6,
+              849.3
+            ],
+            [
+              847.9,
+              860.3
+            ],
+            [
+              935.9,
+              887.2
+            ],
+            [
+              903.6,
+              992.4
+            ],
+            [
+              565.3,
+              971.0
+            ]
+          ],
+          "bbox": [
+            544,
+            844,
+            936,
+            992
+          ],
+          "legibility": "partial",
+          "font_size": 100,
+          "color": "#eab6a8",
+          "reading_order": 5,
+          "note": "곡선 배치 + 배경과 대비가 낮아 숫자 판독이 어려움"
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.07",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              496,
+              1144
+            ],
+            [
+              583,
+              1144
+            ],
+            [
+              583,
+              1157
+            ],
+            [
+              496,
+              1157
+            ]
+          ],
+          "bbox": [
+            496,
+            1144,
+            583,
+            1157
+          ],
+          "legibility": "ambiguous",
+          "font_size": 14,
+          "color": "#ecdcc0",
+          "reading_order": 7,
+          "note": "14px·저대비"
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakery",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 8
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              250,
+              565,
+              510,
+              715
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              570,
+              595,
+              830,
+              745
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 62587,
+        "sha256": "7cf48c94f5df1f456f76aab1a99d224293780eadb592f2cf4316836e91a01883"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MILDAM BAKERY",
+          "polygon": [
+            [
+              338.5,
+              184
+            ],
+            [
+              742.5,
+              184
+            ],
+            [
+              742.5,
+              213
+            ],
+            [
+              338.5,
+              213
+            ]
+          ],
+          "bbox": [
+            338,
+            184,
+            742,
+            213
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#6b4a2b",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "버터 크루아상 세트",
+          "polygon": [
+            [
+              187,
+              263
+            ],
+            [
+              893,
+              263
+            ],
+            [
+              893,
+              347
+            ],
+            [
+              187,
+              347
+            ]
+          ],
+          "bbox": [
+            187,
+            263,
+            893,
+            347
+          ],
+          "legibility": "clear",
+          "font_size": 86,
+          "color": "#5a3515",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "25% 할인",
+          "polygon": [
+            [
+              815,
+              452
+            ],
+            [
+              985,
+              452
+            ],
+            [
+              985,
+              489
+            ],
+            [
+              815,
+              489
+            ]
+          ],
+          "bbox": [
+            815,
+            452,
+            985,
+            489
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_list",
+          "role": "정가",
+          "transcription_raw": "6,000원",
+          "polygon": [
+            [
+              250,
+              909
+            ],
+            [
+              410,
+              909
+            ],
+            [
+              410,
+              958
+            ],
+            [
+              250,
+              958
+            ]
+          ],
+          "bbox": [
+            250,
+            909,
+            410,
+            958
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#7a7a7a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_sale",
+          "role": "판매가",
+          "transcription_raw": "4,500원",
+          "polygon": [
+            [
+              514,
+              890
+            ],
+            [
+              885,
+              890
+            ],
+            [
+              885,
+              998
+            ],
+            [
+              514,
+              998
+            ]
+          ],
+          "bbox": [
+            514,
+            890,
+            885,
+            998
+          ],
+          "legibility": "clear",
+          "font_size": 100,
+          "color": "#c0392b",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.01 ~ 11.07",
+          "polygon": [
+            [
+              394,
+              1057
+            ],
+            [
+              685,
+              1057
+            ],
+            [
+              685,
+              1094
+            ],
+            [
+              394,
+              1094
+            ]
+          ],
+          "bbox": [
+            394,
+            1057,
+            685,
+            1094
+          ],
+          "legibility": "clear",
+          "font_size": 46,
+          "color": "#5a3515",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_limit",
+          "role": "한정 문구",
+          "transcription_raw": "1인 3세트 한정",
+          "polygon": [
+            [
+              421,
+              1133
+            ],
+            [
+              658,
+              1133
+            ],
+            [
+              658,
+              1168
+            ],
+            [
+              421,
+              1168
+            ]
+          ],
+          "bbox": [
+            421,
+            1133,
+            658,
+            1168
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#5a3515",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_handle",
+          "role": "계정",
+          "transcription_raw": "@mildam_bakery",
+          "polygon": [
+            [
+              413,
+              1238
+            ],
+            [
+              667,
+              1238
+            ],
+            [
+              667,
+              1269
+            ],
+            [
+              413,
+              1269
+            ]
+          ],
+          "bbox": [
+            413,
+            1238,
+            667,
+            1269
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#6b4a2b",
+          "reading_order": 8
+        }
+      ],
+      "objects": {
+        "크루아상": [
+          {
+            "instance_id": "croissant_1",
+            "bbox": [
+              250,
+              565,
+              510,
+              715
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "croissant_2",
+            "bbox": [
+              570,
+              595,
+              830,
+              745
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          490,
+          50,
+          590,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 34.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    }
+  }
+}

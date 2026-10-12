@@ -1,0 +1,100 @@
+{
+  "_note": "가능 여부 확인용 샘플 1건. 서울문화포털 축제 상세 페이지의 정적 HTML을 1회 조회해 항목을 옮겨 적고, 대표 포스터 1장을 해상도 확인용으로 내려받았다(저장소 밖 임시 폴더). API는 호출하지 않았다.",
+  "source": {
+    "site": "서울문화포털 culture.seoul.go.kr (서울특별시 문화본부)",
+    "url": "https://culture.seoul.go.kr/culture/culture/cultureEvent/view.do?cultcode=159120&menuNo=200010",
+    "retrieved_on": "2026-10-07",
+    "method": "상세 페이지 1회 조회(서버 렌더링 HTML). 자동 수집 파이프라인 아님",
+    "robots_txt": "User-agent: * / Disallow: / 이고 /culture/culture/, /culture/main/, /culture/event/, /culture/bbs/, /culture/festival/ 등만 Allow (이 상세 경로는 허용)",
+    "terms_note": "이용안내 페이지에서 저작권·크롤링 조항은 찾지 못했다. 홈페이지에 \"Copyright © 2021. Seoul Culture Portal All Rights Reserved.\" 표기가 있다."
+  },
+  "record": {
+    "cultcode": "159120",
+    "category": "축제-문화/예술",
+    "title": "2026 서울어텀페스타",
+    "venue": "서울 전역의 실내외 공연장, 한강공원 일대, 서울문화재단 대학로센터 등",
+    "period": {
+      "start": "2026-09-18",
+      "end": "2026-11-29"
+    },
+    "time": "각 공연 / 축제별 상이",
+    "target": "각 공연 / 축제별 상이",
+    "fee": "각 공연 / 축제별 상이",
+    "contact": "02-758-2036",
+    "homepage_link": "https://www.sfac.or.kr/seoulautumnfesta/",
+    "description_sections": [
+      "행사 설명",
+      "주요 내용",
+      "핵심소개문구",
+      "기획프로그램(개막공연, 서울거리예술축제, 서울국제예술포럼, 쿼드 연극 시리즈)"
+    ],
+    "note": "서울 전역의 공연·축제를 묶은 통합 브랜드라 시간·요금이 구체값이 아니다. 기준 정보로 쓰기에는 한계가 있다."
+  },
+  "poster": {
+    "main_url": "https://culture.seoul.go.kr/cmmn/file/imageSrc.do?fileStreCours=35367259ca6485b8ea26e64a6b235a53853458f85f6e2f12731531a129ae4121&streFileNm=1f714a5a5b3671d244e4fafc6265bab76db30ab9edb0bb8e4f449a9903cb06fb",
+    "format": "JPEG(헤더의 Content-Type은 image/jpg)",
+    "bytes": 440056,
+    "width": 540,
+    "height": 763,
+    "aspect_ratio": 0.7077,
+    "megapixels": 0.412,
+    "dpi": 72,
+    "frames": 1,
+    "sha256": "deb2931ad39905df8ee8e1ddbdaacbcffa9cc21612e04e5e8ee583ca43ce2a4d",
+    "downloaded": true,
+    "saved_to": "저장소 밖 임시 폴더(저장소·docs-draft에 두지 않음)",
+    "second_image_headers_only": {
+      "url": "https://culture.seoul.go.kr/resources/culture/img/editor/funSeoul/editor_20260819100731_02668.jpg",
+      "bytes": 1871298,
+      "content_type": "image/jpeg",
+      "last_modified": "2026-08-19",
+      "downloaded": false,
+      "note": "본문 에디터 이미지(width 속성 1400). 더 큰 해상도일 가능성이 있으나 내려받지 않아 미확인"
+    },
+    "rights": "미확인. 홈페이지 Copyright 표기가 있고 공공누리 1유형이 이미지의 제3자 저작권까지 해결하는지는 확인하지 못했다. 내부 개발·평가용으로만 사용"
+  },
+  "poster_observation": {
+    "checked_on": "2026-10-07",
+    "visible_text_read_by_eye": [
+      "2026",
+      "서울어텀페스타",
+      "SEOUL AUTUMN FESTA",
+      "9.18.-11.29.",
+      "서울의 가을, 도시가 예술이 되다",
+      "(왼쪽 아래 로고: 서울 시즌 아이콘, SEOUL MY SOUL)"
+    ],
+    "ocr_engine": "RapidOCR PP-OCRv5 Korean ONNX CPU (앱 설정 그대로)",
+    "ocr_result": "10줄 검출. 제목·연도·기간·문구는 정확(공백은 일부 사라짐). \"SEOUL\"은 \"SEOul\"(0.643)로, 왼쪽 아래 작은 로고 문자는 \"서울물/MESUL\"(0.585/0.520)로 오독",
+    "not_on_poster": [
+      "장소",
+      "시간",
+      "문의처",
+      "입장료",
+      "주최·주관 문구"
+    ],
+    "matches_page_metadata": {
+      "title": true,
+      "period": true,
+      "detail": "포스터 9.18.-11.29.와 페이지 2026-09-18~2026-11-29가 일치"
+    }
+  },
+  "mapping_to_poster_schema": {
+    "reference.event.name": "2026 서울어텀페스타",
+    "reference.event.start_date / end_date": "2026-09-18 / 2026-11-29",
+    "reference.event.venues": [
+      "서울 전역의 실내외 공연장, 한강공원 일대, 서울문화재단 대학로센터 등"
+    ],
+    "reference.event.contact": "02-758-2036",
+    "reference.event.admission_fee": "각 공연 / 축제별 상이 (구체값 없음)",
+    "reference.event.start_time": null,
+    "note": "이 포스터는 장소·시간·문의처가 없어 REQ-01(필수 정보 표기) 검사 사례로 쓸 수 있다. 장소는 기준 정보에만 있다."
+  },
+  "api_equivalent": {
+    "service": "서울 열린데이터광장 \"서울시 문화행사 정보\" (OA-15486), 원천 시스템 서울문화포털, 매일 갱신(2026.10.07 확인)",
+    "license_on_catalog": "공공누리 1유형: 출처표시 (상업적 이용 및 변경 가능)",
+    "auth": "인증키 신청 필요(열린데이터광장)",
+    "output_fields_second_source": "MAIN_IMG(대표이미지), TITLE, DATE, PLACE, USE_FEE, IS_FREE, STRTDATE, END_DATE, CODENAME, GUNAME, HMPG_ADDR 등 — 제3자 MCP 도구 문서 기준(2차 출처)",
+    "request_url_and_traffic_limit": "미확인(인증키 발급 후 확인)",
+    "cultcode_equals_api_key_field": "미확인"
+  }
+}

@@ -42,16 +42,19 @@ def confirm(client, topic, condition=None):
     return result.json()
 
 
-def test_three_topics_eighteen_images_and_legacy_default(client):
+def test_six_topics_thirtysix_images_and_legacy_default(client):
     topics = client.get('/api/topics').json()
     assert [(t['id'], t['sample_count']) for t in topics] == [
-        (DEFAULT_TOPIC, 6), ('festival-v1', 6), ('croissant-v2', 6)]
+        (DEFAULT_TOPIC, 6), ('festival-v1', 6), ('croissant-v2', 6),
+        ('fnb-ongi-v1', 6), ('festival-dalbit-v1', 6), ('virtual-seoha-v1', 6)]
     assert client.get('/api/criteria').json()['rules'][0]['expected'] == '딸기라떼'
+    # 기존 3개 주제는 1254×1254, 가상 발주 3건(data/virtual-orders)은 1080×1350
+    sizes = {'fnb-ongi-v1': (1080, 1350), 'festival-dalbit-v1': (1080, 1350), 'virtual-seoha-v1': (1080, 1350)}
     for topic in topics:
         samples = client.get('/api/samples', params={'topic_id': topic['id']}).json()
         assert len(samples) == 6
         with Image.open(io.BytesIO(client.get(samples[0]['url']).content)) as image:
-            assert image.size == (1254, 1254)
+            assert image.size == sizes.get(topic['id'], (1254, 1254))
     assert client.get('/api/criteria?topic_id=../../reviewer').status_code == 404
     assert client.get('/api/samples/sample-01/image?topic_id=../festival-v1').status_code == 404
 

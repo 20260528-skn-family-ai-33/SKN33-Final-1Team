@@ -12,7 +12,9 @@ class TopicCatalog:
     def __init__(self, criteria_file, samples, topics_dir=None):
         self.entries = {DEFAULT_TOPIC: ('딸기라떼', Path(criteria_file), Path(samples))}
         if topics_dir is not None:
-            for topic, label in [('festival-v1', '페스티벌'), ('croissant-v2', '크루아상 v2')]:
+            for topic, label in [('festival-v1', '페스티벌'), ('croissant-v2', '크루아상 v2'),
+                                 ('fnb-ongi-v1', '온기식탁(F&B)'), ('festival-dalbit-v1', '달빛 페스타(페스티벌)'),
+                                 ('virtual-seoha-v1', '가상인물 서하')]:
                 folder = Path(topics_dir) / topic
                 self.entries[topic] = (label, folder / 'criteria.json', folder / 'images')
 

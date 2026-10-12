@@ -1,0 +1,149 @@
+{
+  "case_id": "C03",
+  "group_id": "G03",
+  "name": "가온동 골목마켓 가을 페스타",
+  "category": "매장·행사 홍보",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-10 ~ 2026-11-15",
+    "region": "대한민국",
+    "paid": false
+  },
+  "documents": [
+    {
+      "doc_id": "spec",
+      "title": "행사 홍보 소재 제작 명세서",
+      "pdf": "C03_spec.pdf",
+      "md": "C03_spec.md",
+      "pages": 3,
+      "sha256": "b04f464a1ad44ea8543fd2a0036c7294f4eacf7a4ca890de772b41eb9b1d7d3d"
+    },
+    {
+      "doc_id": "contract",
+      "title": "소재 제작 용역 계약서(요약)",
+      "pdf": "C03_contract.pdf",
+      "md": "C03_contract.md",
+      "pages": 1,
+      "sha256": "c9f24b65b5e063200f2392e333721dd873e949bad3243cce2bbb95c90aac4ada"
+    },
+    {
+      "doc_id": "guide",
+      "title": "가온동 골목마켓 로고 가이드",
+      "pdf": "C03_guide.pdf",
+      "md": "C03_guide.md",
+      "pages": 1,
+      "sha256": "cf58b1ede8c26cd76fc327f7a2dfc7a704333f8370cd8cf2578ee948b63f4f94"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "logo_ref",
+      "file": "C03_logo_ref.png",
+      "kind": "brand_reference"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "C03_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "dffe0a58bea23050803ed8ef05872f4a38787b34dbd24030797bd4a88b2888ab",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 60592,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "C03_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "4c6094e41ef5decf2125d6b24f37bd69f900800422b65304fb3a4b52fe936c92",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 60674,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "C03_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "bbbfa98474b735bfcb2041c8e976f58761b430372adc2beab14bff2fb852f910",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 50677,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "C03_D4.png",
+      "kind": "시각/개수 오류",
+      "submitted_order": 4,
+      "sha256": "b206ae21d70585ff3fee76c5989c87cd573de3a70bc368d5d30024bd9209df10",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 60893,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "C03_D5.png",
+      "kind": "판독 불확실",
+      "submitted_order": 5,
+      "sha256": "c855b0a8e71e2936f278b9b6fa8dcaaa08a19ba0aae7db907ca548e655731d1f",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 54121,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "C03_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "a9d1a01b64aeb4a417d2a8a04f859d56d01a25c52f10e9b850c45f35a0644eee",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 60761,
+      "evidence_ids": [],
+      "parent": "D3",
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D7",
+      "file": "C03_D7.png",
+      "kind": "구버전 재제출",
+      "submitted_order": 7,
+      "sha256": "4c6094e41ef5decf2125d6b24f37bd69f900800422b65304fb3a4b52fe936c92",
+      "width": 1080,
+      "height": 1080,
+      "mime": "image/png",
+      "bytes": 60674,
+      "evidence_ids": [],
+      "parent": null,
+      "byte_identical_to": "D2"
+    }
+  ],
+  "evidence": {}
+}

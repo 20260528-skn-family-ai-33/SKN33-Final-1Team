@@ -1,0 +1,2544 @@
+{
+  "case_id": "VO-02",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 75775,
+        "sha256": "220c1ed068fdc89d32af6d5c0fcf6bcfd25326c88ce3a0f137d74e4e14f1ba8a"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽결",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 55,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              304,
+              1181
+            ],
+            [
+              776,
+              1181
+            ],
+            [
+              776,
+              1210
+            ],
+            [
+              304,
+              1210
+            ]
+          ],
+          "bbox": [
+            304,
+            1181,
+            776,
+            1210
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#e6dcff",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "하늘모터스"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "consent:오로라정원",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 75986,
+        "sha256": "f75f6ab38690387a6b599c90153fa73e8108c20efbf77e2d3b7136e75f4f3c34"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽결",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 59,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              304,
+              1181
+            ],
+            [
+              776,
+              1181
+            ],
+            [
+              776,
+              1210
+            ],
+            [
+              304,
+              1210
+            ]
+          ],
+          "bbox": [
+            304,
+            1181,
+            776,
+            1210
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#e6dcff",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "하늘모터스"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "consent:오로라정원",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 76543,
+        "sha256": "c88aefb97a0e23f793332e90a3c3a2e2d8dbb3bb6e2d5c8e7d761d74a568bc30"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽겹",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 55,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              304,
+              1181
+            ],
+            [
+              776,
+              1181
+            ],
+            [
+              776,
+              1210
+            ],
+            [
+              304,
+              1210
+            ]
+          ],
+          "bbox": [
+            304,
+            1181,
+            776,
+            1210
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#e6dcff",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "가상통신"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "consent:오로라정원",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 71355,
+        "sha256": "7f124a82d3996d8cf97546d8de77230ea1eb0ccd800ab5b951fcd3d365abbe3a"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽결",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 55,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              431,
+              1189
+            ],
+            [
+              648,
+              1189
+            ],
+            [
+              648,
+              1203
+            ],
+            [
+              431,
+              1203
+            ]
+          ],
+          "bbox": [
+            431,
+            1189,
+            648,
+            1203
+          ],
+          "legibility": "ambiguous",
+          "font_size": 14,
+          "color": "#4a3a72",
+          "reading_order": 8,
+          "note": "14px·저대비"
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0.6,
+            "occluded_by": "overlay",
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "하늘모터스"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "consent:오로라정원",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 76071,
+        "sha256": "761eaca93bd2d027c2a61f7307006c14891e2fb3509af876a3086a833578dc77"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽결",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 55,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              304,
+              1181
+            ],
+            [
+              776,
+              1181
+            ],
+            [
+              776,
+              1210
+            ],
+            [
+              304,
+              1210
+            ]
+          ],
+          "bbox": [
+            304,
+            1181,
+            776,
+            1210
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#e6dcff",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "하늘모터스"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 75873,
+        "sha256": "e1481182c6ae3026778668a4294cbf004c48fa928702bf914830caa9b6aac206"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "달빛누리 뮤직 페스타",
+          "polygon": [
+            [
+              192,
+              227
+            ],
+            [
+              888,
+              227
+            ],
+            [
+              888,
+              303
+            ],
+            [
+              192,
+              303
+            ]
+          ],
+          "bbox": [
+            192,
+            227,
+            888,
+            303
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#fff3c4",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_date",
+          "role": "행사 일정",
+          "transcription_raw": "11.21(토) ~ 11.22(일)",
+          "polygon": [
+            [
+              259,
+              354
+            ],
+            [
+              821,
+              354
+            ],
+            [
+              821,
+              414
+            ],
+            [
+              259,
+              414
+            ]
+          ],
+          "bbox": [
+            259,
+            354,
+            821,
+            414
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#f0b429",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "달빛공원 야외무대",
+          "polygon": [
+            [
+              375,
+              441
+            ],
+            [
+              705,
+              441
+            ],
+            [
+              705,
+              482
+            ],
+            [
+              375,
+              482
+            ]
+          ],
+          "bbox": [
+            375,
+            441,
+            705,
+            482
+          ],
+          "legibility": "clear",
+          "font_size": 44,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_artist_1",
+          "role": "출연자명",
+          "transcription_raw": "라이네",
+          "polygon": [
+            [
+              214,
+              832
+            ],
+            [
+              325,
+              832
+            ],
+            [
+              325,
+              870
+            ],
+            [
+              214,
+              870
+            ]
+          ],
+          "bbox": [
+            214,
+            832,
+            325,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_artist_2",
+          "role": "출연자명",
+          "transcription_raw": "새벽결",
+          "polygon": [
+            [
+              484,
+              832
+            ],
+            [
+              595,
+              832
+            ],
+            [
+              595,
+              870
+            ],
+            [
+              484,
+              870
+            ]
+          ],
+          "bbox": [
+            484,
+            832,
+            595,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_artist_3",
+          "role": "출연자명",
+          "transcription_raw": "오로라정원",
+          "polygon": [
+            [
+              717,
+              832
+            ],
+            [
+              902,
+              832
+            ],
+            [
+              902,
+              870
+            ],
+            [
+              717,
+              870
+            ]
+          ],
+          "bbox": [
+            717,
+            832,
+            902,
+            870
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_ticket",
+          "role": "티켓 가격",
+          "transcription_raw": "1일권 55,000원 · 2일권 98,000원",
+          "polygon": [
+            [
+              262,
+              953
+            ],
+            [
+              818,
+              953
+            ],
+            [
+              818,
+              994
+            ],
+            [
+              262,
+              994
+            ]
+          ],
+          "bbox": [
+            262,
+            953,
+            818,
+            994
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#f0e6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_host",
+          "role": "주최·주관",
+          "transcription_raw": "주최 달빛시 문화재단 · 주관 누리기획",
+          "polygon": [
+            [
+              304,
+              1181
+            ],
+            [
+              776,
+              1181
+            ],
+            [
+              776,
+              1210
+            ],
+            [
+              304,
+              1210
+            ]
+          ],
+          "bbox": [
+            304,
+            1181,
+            776,
+            1210
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#e6dcff",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_rain",
+          "role": "우천 고지",
+          "transcription_raw": "우천 시에도 공연은 진행됩니다",
+          "polygon": [
+            [
+              362,
+              1252
+            ],
+            [
+              718,
+              1252
+            ],
+            [
+              718,
+              1278
+            ],
+            [
+              362,
+              1278
+            ]
+          ],
+          "bbox": [
+            362,
+            1252,
+            718,
+            1278
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#e6dcff",
+          "reading_order": 9
+        }
+      ],
+      "objects": {
+        "출연자 사진": [
+          {
+            "instance_id": "artist_1",
+            "bbox": [
+              170,
+              600,
+              370,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "라이네"
+            }
+          },
+          {
+            "instance_id": "artist_2",
+            "bbox": [
+              440,
+              600,
+              640,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "새벽결"
+            }
+          },
+          {
+            "instance_id": "artist_3",
+            "bbox": [
+              710,
+              600,
+              910,
+              800
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "오로라정원"
+            }
+          }
+        ],
+        "후원사 로고": [
+          {
+            "instance_id": "sponsor_1",
+            "bbox": [
+              110,
+              1060,
+              370,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "달빛은행"
+            }
+          },
+          {
+            "instance_id": "sponsor_2",
+            "bbox": [
+              410,
+              1060,
+              670,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "누리푸드"
+            }
+          },
+          {
+            "instance_id": "sponsor_3",
+            "bbox": [
+              710,
+              1060,
+              970,
+              1130
+            ],
+            "occlusion": 0,
+            "occluded_by": null,
+            "attrs": {
+              "name": "하늘모터스"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          170,
+          170
+        ],
+        "width": 110,
+        "height": 110,
+        "aspect": 1.0,
+        "clear_space_px": 61.1
+      },
+      "evidence": [
+        "consent:라이네",
+        "consent:새벽결",
+        "consent:오로라정원",
+        "sponsor_approval",
+        "font_license"
+      ],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ],
+      "evidence_meta": {}
+    }
+  }
+}

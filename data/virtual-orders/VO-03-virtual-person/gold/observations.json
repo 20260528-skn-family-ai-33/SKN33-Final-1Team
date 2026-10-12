@@ -1,0 +1,1515 @@
+{
+  "case_id": "VO-03",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 40916,
+        "sha256": "d5cb36a61e197f422b6cc1969c1ef6d8fe750a267f7cb74eb1470c984ebb75f3"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "199,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_ai",
+          "role": "AI 표시",
+          "transcription_raw": "AI로 생성된 가상 인물입니다",
+          "polygon": [
+            [
+              360,
+              1166
+            ],
+            [
+              718,
+              1166
+            ],
+            [
+              718,
+              1195
+            ],
+            [
+              360,
+              1195
+            ]
+          ],
+          "bbox": [
+            360,
+            1166,
+            718,
+            1195
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#1f2f45",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "검은 단발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              316,
+              810,
+              384,
+              898
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "wrist": "left"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment",
+        "ai_tool_list"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-02-28",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 33856,
+        "sha256": "7f3769c0df5542309057e723b4cc99693bd74309c50c3dcc3a51903eb23fa5bb"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "199,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "검은 단발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              316,
+              810,
+              384,
+              898
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "wrist": "left"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment",
+        "ai_tool_list"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-02-28",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 41510,
+        "sha256": "f237433f72fe3b441e41ea265a63fb59f0d537c66814045b857cbdfc75532900"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "219,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_ai",
+          "role": "AI 표시",
+          "transcription_raw": "AI로 생성된 가상 인물입니다",
+          "polygon": [
+            [
+              360,
+              1166
+            ],
+            [
+              718,
+              1166
+            ],
+            [
+              718,
+              1195
+            ],
+            [
+              360,
+              1195
+            ]
+          ],
+          "bbox": [
+            360,
+            1166,
+            718,
+            1195
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#1f2f45",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "갈색 장발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              696,
+              810,
+              764,
+              898
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "wrist": "right"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment",
+        "ai_tool_list"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-02-28",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 35446,
+        "sha256": "e3c8492b9c29c3cf09666a210de2ed7c6022c4bbd7195f96f4dc1f4d6537f58a"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "199,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_ai",
+          "role": "AI 표시",
+          "transcription_raw": "AI로 생성된 가상 인물입니다",
+          "polygon": [
+            [
+              457,
+              1174
+            ],
+            [
+              622,
+              1174
+            ],
+            [
+              622,
+              1187
+            ],
+            [
+              457,
+              1187
+            ]
+          ],
+          "bbox": [
+            457,
+            1174,
+            622,
+            1187
+          ],
+          "legibility": "ambiguous",
+          "font_size": 14,
+          "color": "#c7d2e8",
+          "reading_order": 5,
+          "note": "14px·저대비"
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "검은 단발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              316,
+              810,
+              384,
+              898
+            ],
+            "occlusion": 0.6,
+            "occluded_by": "sleeve",
+            "attrs": {
+              "wrist": "left"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment",
+        "ai_tool_list"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-02-28",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 40872,
+        "sha256": "a8131e9533b596e2f43b1f32f591fbb12d8d577045da2674f8797e5f09006fe5"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "199,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_ai",
+          "role": "AI 표시",
+          "transcription_raw": "AI로 생성된 가상 인물입니다",
+          "polygon": [
+            [
+              360,
+              1166
+            ],
+            [
+              718,
+              1166
+            ],
+            [
+              718,
+              1195
+            ],
+            [
+              360,
+              1195
+            ]
+          ],
+          "bbox": [
+            360,
+            1166,
+            718,
+            1195
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#1f2f45",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "검은 단발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              316,
+              810,
+              384,
+              898
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "wrist": "left"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-01-31",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 40872,
+        "sha256": "a8131e9533b596e2f43b1f32f591fbb12d8d577045da2674f8797e5f09006fe5"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "MOA WATCH",
+          "polygon": [
+            [
+              190,
+              100
+            ],
+            [
+              228.0,
+              99
+            ],
+            [
+              433.0,
+              99
+            ],
+            [
+              467.0,
+              100
+            ],
+            [
+              467.0,
+              128
+            ],
+            [
+              433.0,
+              129
+            ],
+            [
+              228.0,
+              129
+            ],
+            [
+              190,
+              128
+            ]
+          ],
+          "bbox": [
+            190,
+            99,
+            467,
+            129
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#1f2f45",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_name",
+          "role": "상품명",
+          "transcription_raw": "모아 워치 S1",
+          "polygon": [
+            [
+              315,
+              233
+            ],
+            [
+              764,
+              233
+            ],
+            [
+              764,
+              312
+            ],
+            [
+              315,
+              312
+            ]
+          ],
+          "bbox": [
+            315,
+            233,
+            764,
+            312
+          ],
+          "legibility": "clear",
+          "font_size": 84,
+          "color": "#1f2f45",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "199,000원",
+          "polygon": [
+            [
+              762,
+              985
+            ],
+            [
+              1037,
+              985
+            ],
+            [
+              1037,
+              1045
+            ],
+            [
+              762,
+              1045
+            ]
+          ],
+          "bbox": [
+            762,
+            985,
+            1037,
+            1045
+          ],
+          "legibility": "clear",
+          "font_size": 56,
+          "color": "#1f2f45",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.16 ~ 12.15",
+          "polygon": [
+            [
+              785,
+              1072
+            ],
+            [
+              1014,
+              1072
+            ],
+            [
+              1014,
+              1100
+            ],
+            [
+              785,
+              1100
+            ]
+          ],
+          "bbox": [
+            785,
+            1072,
+            1014,
+            1100
+          ],
+          "legibility": "clear",
+          "font_size": 36,
+          "color": "#3f5f8a",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_ai",
+          "role": "AI 표시",
+          "transcription_raw": "AI로 생성된 가상 인물입니다",
+          "polygon": [
+            [
+              360,
+              1166
+            ],
+            [
+              718,
+              1166
+            ],
+            [
+              718,
+              1195
+            ],
+            [
+              360,
+              1195
+            ]
+          ],
+          "bbox": [
+            360,
+            1166,
+            718,
+            1195
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#1f2f45",
+          "reading_order": 5
+        }
+      ],
+      "objects": {
+        "가상 인물": [
+          {
+            "instance_id": "persona_1",
+            "bbox": [
+              390,
+              448,
+              690,
+              1080
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "hair": "검은 단발"
+            }
+          }
+        ],
+        "시계": [
+          {
+            "instance_id": "watch_1",
+            "bbox": [
+              316,
+              810,
+              384,
+              898
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "wrist": "left"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          60,
+          60,
+          160,
+          160
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 30.0
+      },
+      "evidence": [
+        "likeness_consent",
+        "ip_assignment",
+        "ai_tool_list"
+      ],
+      "fonts": [
+        "Noto Sans KR"
+      ],
+      "evidence_meta": {
+        "likeness_consent": {
+          "start": "2026-11-01",
+          "end": "2027-02-28",
+          "media": [
+            "instagram_feed"
+          ],
+          "region": "대한민국"
+        }
+      }
+    }
+  }
+}

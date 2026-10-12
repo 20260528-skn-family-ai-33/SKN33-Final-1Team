@@ -1,0 +1,277 @@
+{
+  "case_id": "VO-03",
+  "group_id": "VG03",
+  "name": "모아 워치 S1 · 가상 인간 서하",
+  "category": "가상인물(AI 휴먼 광고)",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-16 ~ 2027-02-15",
+    "region": "대한민국",
+    "paid": true,
+    "post_start": "2026-11-16",
+    "post_end": "2027-02-15"
+  },
+  "documents": [
+    {
+      "doc_id": "rfp",
+      "title": "제안요청서 (RFP)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-03_rfp.pdf",
+      "md": "VO-03_rfp.md",
+      "pages": 1,
+      "sha256": "36cefd9bd75d09e96ea055c0a7664826165c89be3018688f05b37fe6a8ec954c"
+    },
+    {
+      "doc_id": "nda",
+      "title": "비밀유지계약서 (NDA)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-03_nda.pdf",
+      "md": "VO-03_nda.md",
+      "pages": 1,
+      "sha256": "d69d607a28321030263357d5fe7eadedac6c7631aefbeb8a5fc10c90eaa1c5f7"
+    },
+    {
+      "doc_id": "persona",
+      "title": "가상 인물 설정서",
+      "stage": "1 기획·요청",
+      "pdf": "VO-03_persona.pdf",
+      "md": "VO-03_persona.md",
+      "pages": 1,
+      "sha256": "e5fd5443da47e8823149c41234e3725a652acaf57d0edf1b3465da6b3f7e1c89"
+    },
+    {
+      "doc_id": "consent",
+      "title": "모델 초상·음성 사용 허락 기준",
+      "stage": "2 계약",
+      "pdf": "VO-03_consent.pdf",
+      "md": "VO-03_consent.md",
+      "pages": 1,
+      "sha256": "fe1ed03f860cf8199dbc77e1a3b55c79436a88c2daa46d5f315753008e35b734"
+    },
+    {
+      "doc_id": "label",
+      "title": "AI 생성물 표시 기준 (가상 발주사 내부 기준)",
+      "stage": "2 계약",
+      "pdf": "VO-03_label.pdf",
+      "md": "VO-03_label.md",
+      "pages": 1,
+      "sha256": "01456cb47f6a9f5980ef272a8a50617aa2026dfd023cf5f78e25f461677cf758"
+    },
+    {
+      "doc_id": "contract",
+      "title": "외주 용역 계약서",
+      "stage": "2 계약",
+      "pdf": "VO-03_contract.pdf",
+      "md": "VO-03_contract.md",
+      "pages": 2,
+      "sha256": "d7c7555612afb4a191ff57e05f50d78c1228f5ff434e4abd42fd3be99a2d3346"
+    },
+    {
+      "doc_id": "sow",
+      "title": "과업지시서 (SOW)",
+      "stage": "3 수행·검수",
+      "pdf": "VO-03_sow.pdf",
+      "md": "VO-03_sow.md",
+      "pages": 1,
+      "sha256": "41d0d8b63eb0906a24041f71239ada4ef95a2cfec359516ce905ecfef51ccf48"
+    },
+    {
+      "doc_id": "guide",
+      "title": "브랜드 가이드",
+      "stage": "3 수행·검수",
+      "pdf": "VO-03_guide.pdf",
+      "md": "VO-03_guide.md",
+      "pages": 1,
+      "sha256": "603f315f32c05c4c04bb61ba313aee84a8a34c3efaee2dd34340f689836c6ef1"
+    },
+    {
+      "doc_id": "inspect",
+      "title": "검수조서 (검수 확인서) 양식",
+      "stage": "3 수행·검수",
+      "pdf": "VO-03_inspect.pdf",
+      "md": "VO-03_inspect.md",
+      "pages": 1,
+      "sha256": "e4a75434ad7f87b9d62a82b2f496107f1971c266c5b5b1db7a3ba4343444d932"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "VO-03_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "d5cb36a61e197f422b6cc1969c1ef6d8fe750a267f7cb74eb1470c984ebb75f3",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 40916,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v2",
+          "file": "VO-03_likeness_consent_v2.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        },
+        {
+          "evidence_id": "ai_tool_list",
+          "version": "v1",
+          "file": "VO-03_ai_tool_list_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "VO-03_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "7f3769c0df5542309057e723b4cc99693bd74309c50c3dcc3a51903eb23fa5bb",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 33856,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v2",
+          "file": "VO-03_likeness_consent_v2.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        },
+        {
+          "evidence_id": "ai_tool_list",
+          "version": "v1",
+          "file": "VO-03_ai_tool_list_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "VO-03_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "f237433f72fe3b441e41ea265a63fb59f0d537c66814045b857cbdfc75532900",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 41510,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v2",
+          "file": "VO-03_likeness_consent_v2.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        },
+        {
+          "evidence_id": "ai_tool_list",
+          "version": "v1",
+          "file": "VO-03_ai_tool_list_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "VO-03_D4.png",
+      "kind": "판독 불확실",
+      "submitted_order": 4,
+      "sha256": "e3c8492b9c29c3cf09666a210de2ed7c6022c4bbd7195f96f4dc1f4d6537f58a",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 35446,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v2",
+          "file": "VO-03_likeness_consent_v2.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        },
+        {
+          "evidence_id": "ai_tool_list",
+          "version": "v1",
+          "file": "VO-03_ai_tool_list_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "VO-03_D5.png",
+      "kind": "증빙 문제",
+      "submitted_order": 5,
+      "sha256": "a8131e9533b596e2f43b1f32f591fbb12d8d577045da2674f8797e5f09006fe5",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 40872,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v1",
+          "file": "VO-03_likeness_consent_v1.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "VO-03_D6.png",
+      "kind": "수정본(증빙만)",
+      "submitted_order": 6,
+      "sha256": "a8131e9533b596e2f43b1f32f591fbb12d8d577045da2674f8797e5f09006fe5",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 40872,
+      "evidence": [
+        {
+          "evidence_id": "likeness_consent",
+          "version": "v2",
+          "file": "VO-03_likeness_consent_v2.pdf"
+        },
+        {
+          "evidence_id": "ip_assignment",
+          "version": "v1",
+          "file": "VO-03_ip_assignment_v1.pdf"
+        },
+        {
+          "evidence_id": "ai_tool_list",
+          "version": "v1",
+          "file": "VO-03_ai_tool_list_v1.pdf"
+        }
+      ],
+      "parent": "D5",
+      "byte_identical_to": "D5"
+    }
+  ]
+}

@@ -1,0 +1,1823 @@
+{
+  "case_id": "C03",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 60592,
+        "sha256": "dffe0a58bea23050803ed8ef05872f4a38787b34dbd24030797bd4a88b2888ab"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(토) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              380,
+              842
+            ],
+            [
+              700,
+              842
+            ],
+            [
+              700,
+              879
+            ],
+            [
+              380,
+              879
+            ]
+          ],
+          "bbox": [
+            380,
+            842,
+            700,
+            879
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              343,
+              947
+            ],
+            [
+              737,
+              947
+            ],
+            [
+              737,
+              974
+            ],
+            [
+              343,
+              974
+            ]
+          ],
+          "bbox": [
+            343,
+            947,
+            737,
+            974
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#d8e8e0",
+          "reading_order": 6
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 60674,
+        "sha256": "4c6094e41ef5decf2125d6b24f37bd69f900800422b65304fb3a4b52fe936c92"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(금) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              380,
+              842
+            ],
+            [
+              700,
+              842
+            ],
+            [
+              700,
+              879
+            ],
+            [
+              380,
+              879
+            ]
+          ],
+          "bbox": [
+            380,
+            842,
+            700,
+            879
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              343,
+              947
+            ],
+            [
+              737,
+              947
+            ],
+            [
+              737,
+              974
+            ],
+            [
+              343,
+              974
+            ]
+          ],
+          "bbox": [
+            343,
+            947,
+            737,
+            974
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#d8e8e0",
+          "reading_order": 6
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 50677,
+        "sha256": "bbbfa98474b735bfcb2041c8e976f58761b430372adc2beab14bff2fb852f910"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(토) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 시청광장",
+          "polygon": [
+            [
+              373,
+              427
+            ],
+            [
+              706,
+              427
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            427,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 60893,
+        "sha256": "b206ae21d70585ff3fee76c5989c87cd573de3a70bc368d5d30024bd9209df10"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(토) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              380,
+              842
+            ],
+            [
+              700,
+              842
+            ],
+            [
+              700,
+              879
+            ],
+            [
+              380,
+              879
+            ]
+          ],
+          "bbox": [
+            380,
+            842,
+            700,
+            879
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              343,
+              947
+            ],
+            [
+              737,
+              947
+            ],
+            [
+              737,
+              974
+            ],
+            [
+              343,
+              974
+            ]
+          ],
+          "bbox": [
+            343,
+            947,
+            737,
+            974
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#d8e8e0",
+          "reading_order": 6
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              274,
+              654,
+              366,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              404,
+              654,
+              496,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              534,
+              654,
+              626,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_4",
+            "bbox": [
+              664,
+              654,
+              756,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "stretched",
+        "bbox": [
+          50,
+          50,
+          210,
+          150
+        ],
+        "width": 160,
+        "height": 100,
+        "aspect": 1.6,
+        "clear_space_px": 54.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 54121,
+        "sha256": "c855b0a8e71e2936f278b9b6fa8dcaaa08a19ba0aae7db907ca548e655731d1f"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(토) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              476,
+              853
+            ],
+            [
+              603,
+              853
+            ],
+            [
+              603,
+              867
+            ],
+            [
+              476,
+              867
+            ]
+          ],
+          "bbox": [
+            476,
+            853,
+            603,
+            867
+          ],
+          "legibility": "ambiguous",
+          "font_size": 16,
+          "color": "#2d5a64",
+          "reading_order": 5,
+          "note": "16px·저대비, 숫자 판독 불가"
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              441,
+              953
+            ],
+            [
+              638,
+              953
+            ],
+            [
+              638,
+              967
+            ],
+            [
+              441,
+              967
+            ]
+          ],
+          "bbox": [
+            441,
+            953,
+            638,
+            967
+          ],
+          "legibility": "ambiguous",
+          "font_size": 14,
+          "color": "#31606a",
+          "reading_order": 6,
+          "note": "14px·저대비"
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 60761,
+        "sha256": "a9d1a01b64aeb4a417d2a8a04f859d56d01a25c52f10e9b850c45f35a0644eee"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(토) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#ffd966",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              380,
+              842
+            ],
+            [
+              700,
+              842
+            ],
+            [
+              700,
+              879
+            ],
+            [
+              380,
+              879
+            ]
+          ],
+          "bbox": [
+            380,
+            842,
+            700,
+            879
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              343,
+              947
+            ],
+            [
+              737,
+              947
+            ],
+            [
+              737,
+              974
+            ],
+            [
+              343,
+              974
+            ]
+          ],
+          "bbox": [
+            343,
+            947,
+            737,
+            974
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#d8e8e0",
+          "reading_order": 6
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    },
+    "D7": {
+      "file": {
+        "w": 1080,
+        "h": 1080,
+        "mime": "image/png",
+        "size": 60674,
+        "sha256": "4c6094e41ef5decf2125d6b24f37bd69f900800422b65304fb3a4b52fe936c92"
+      },
+      "regions": [
+        {
+          "region_id": "r_title",
+          "role": "행사명",
+          "transcription_raw": "가온동 골목마켓 가을 페스타",
+          "polygon": [
+            [
+              169,
+              204
+            ],
+            [
+              910,
+              204
+            ],
+            [
+              910,
+              264
+            ],
+            [
+              169,
+              264
+            ]
+          ],
+          "bbox": [
+            169,
+            204,
+            910,
+            264
+          ],
+          "legibility": "clear",
+          "font_size": 60,
+          "color": "#fff4d6",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "11.14(금) ~ 11.15(일)",
+          "polygon": [
+            [
+              251,
+              333
+            ],
+            [
+              828,
+              333
+            ],
+            [
+              828,
+              395
+            ],
+            [
+              251,
+              395
+            ]
+          ],
+          "bbox": [
+            251,
+            333,
+            828,
+            395
+          ],
+          "legibility": "clear",
+          "font_size": 58,
+          "color": "#f4c542",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_place",
+          "role": "장소",
+          "transcription_raw": "가온동 중앙광장",
+          "polygon": [
+            [
+              373,
+              428
+            ],
+            [
+              706,
+              428
+            ],
+            [
+              706,
+              474
+            ],
+            [
+              373,
+              474
+            ]
+          ],
+          "bbox": [
+            373,
+            428,
+            706,
+            474
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_benefit",
+          "role": "혜택",
+          "transcription_raw": "입장 무료 · 스탬프 3개 모으면 기념품",
+          "polygon": [
+            [
+              246,
+              543
+            ],
+            [
+              834,
+              543
+            ],
+            [
+              834,
+              578
+            ],
+            [
+              246,
+              578
+            ]
+          ],
+          "bbox": [
+            246,
+            543,
+            834,
+            578
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#d8e8e0",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_contact",
+          "role": "연락처",
+          "transcription_raw": "문의 02-000-0000",
+          "polygon": [
+            [
+              380,
+              842
+            ],
+            [
+              700,
+              842
+            ],
+            [
+              700,
+              879
+            ],
+            [
+              380,
+              879
+            ]
+          ],
+          "bbox": [
+            380,
+            842,
+            700,
+            879
+          ],
+          "legibility": "clear",
+          "font_size": 40,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_rain",
+          "role": "필수 문구",
+          "transcription_raw": "우천 시 일정이 변경될 수 있습니다",
+          "polygon": [
+            [
+              343,
+              947
+            ],
+            [
+              737,
+              947
+            ],
+            [
+              737,
+              974
+            ],
+            [
+              343,
+              974
+            ]
+          ],
+          "bbox": [
+            343,
+            947,
+            737,
+            974
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#d8e8e0",
+          "reading_order": 6
+        }
+      ],
+      "objects": {
+        "스탬프 아이콘": [
+          {
+            "instance_id": "stamp_1",
+            "bbox": [
+              344,
+              654,
+              436,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_2",
+            "bbox": [
+              494,
+              654,
+              586,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          },
+          {
+            "instance_id": "stamp_3",
+            "bbox": [
+              644,
+              654,
+              736,
+              746
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {}
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          50,
+          50,
+          150,
+          150
+        ],
+        "width": 100,
+        "height": 100,
+        "aspect": 1.0,
+        "clear_space_px": 57.2
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR",
+        "Noto Serif KR"
+      ]
+    }
+  }
+}

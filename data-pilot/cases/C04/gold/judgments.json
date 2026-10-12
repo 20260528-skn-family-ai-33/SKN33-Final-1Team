@@ -1,0 +1,867 @@
+{
+  "case_id": "C04",
+  "judgments": [
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "500mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "피부 자극 테스트 완료",
+      "evidence_ids": [
+        "r_claim"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "clear_ok",
+      "observed": "여백 40.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "form_ok",
+      "observed": "형태 ref · 라벨 #f2d21b",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "500mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "피부 자극 테스트 완료",
+      "evidence_ids": [
+        "r_claim"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "logo_distorted",
+      "observed": "변형 stretched · 가로세로비 1.6",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "clear_ok",
+      "observed": "여백 44.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "form_ok",
+      "observed": "형태 ref · 라벨 #f2d21b",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "550mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "clear_violation",
+      "observed": "여백 6.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "form_ok",
+      "observed": "형태 ref · 라벨 #f2d21b",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "condition_not_triggered",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "효능 문구 “피부 자극 테스트 완료”가 소재에 사용되지 않아 시험 성적서 제출 의무가 발생하지 않음(계약서 1조)"
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "500mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "피부 자극 테스트 완료",
+      "evidence_ids": [
+        "r_claim"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "clear_ok",
+      "observed": "여백 40.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "form_changed",
+      "observed": "형태 wide · 라벨 #3d6fd1",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "500mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "피부 자극 테스트 완료",
+      "evidence_ids": [
+        "r_claim"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "clear_ok",
+      "observed": "여백 40.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "form_ok",
+      "observed": "형태 ref · 라벨 #f2d21b",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "evidence_missing",
+      "observed": "제출 목록에 없음",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "맑은결 주방세제 레몬",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M02",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "500mL",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "MALGEUNGYEOL",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M04",
+      "label": "효능 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "피부 자극 테스트 완료",
+      "evidence_ids": [
+        "r_claim"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M05",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M06",
+      "label": "로고 최소 여백",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "clear_ok",
+      "observed": "여백 40.0px / 필요 27.5px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M07",
+      "label": "제품 외형",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "form_ok",
+      "observed": "형태 ref · 라벨 #f2d21b",
+      "evidence_ids": [
+        "bottle_1"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M09",
+      "label": "소재 라이선스 증빙",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C04",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "M10",
+      "label": "시험 성적서(문구 사용 시)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "evidence_present",
+      "observed": "제출됨",
+      "evidence_ids": [],
+      "applicability_basis": null
+    }
+  ]
+}

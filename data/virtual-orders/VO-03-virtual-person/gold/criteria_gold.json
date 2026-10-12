@@ -1,0 +1,193 @@
+{
+  "case_id": "VO-03",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "H01",
+      "label": "브랜드 표기",
+      "kind": "text_equals",
+      "role": "브랜드 표기",
+      "expected": "MOA WATCH",
+      "case_sensitive": true,
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "브랜드명은 항상 대문자 MOA WATCH로 쓴다."
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "label": "상품명",
+      "kind": "text_equals",
+      "role": "상품명",
+      "expected": "모아 워치 S1",
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "상품명은 “모아 워치 S1”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "label": "가격",
+      "kind": "text_equals",
+      "role": "가격",
+      "expected": "199,000원",
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "가격은 “199,000원”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "label": "출시 기념 기간",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "11.16 ~ 12.15",
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "출시 기념 기간은 “11.16 ~ 12.15”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "label": "AI 생성물 표시 문구",
+      "kind": "text_equals",
+      "role": "AI 표시",
+      "expected": "AI로 생성된 가상 인물입니다",
+      "sources": [
+        {
+          "doc": "label",
+          "page": 1,
+          "quote": "광고 이미지 하단에 “AI로 생성된 가상 인물입니다”를 표시한다."
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "label": "AI 표시 글자 크기",
+      "kind": "text_min_size",
+      "role": "AI 표시",
+      "min_px": 24,
+      "sources": [
+        {
+          "doc": "label",
+          "page": 1,
+          "quote": "표시 문구는 24px 이상으로 한다."
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "label": "가상 인물 헤어(설정서 일치)",
+      "kind": "attr_equals",
+      "cls": "가상 인물",
+      "attr": "hair",
+      "expected": "검은 단발",
+      "sources": [
+        {
+          "doc": "persona",
+          "page": 1,
+          "quote": "서하의 헤어는 검은 단발이다."
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "label": "시계 착용 손목(설정서 일치)",
+      "kind": "attr_equals",
+      "cls": "시계",
+      "attr": "wrist",
+      "expected": "left",
+      "sources": [
+        {
+          "doc": "persona",
+          "page": 1,
+          "quote": "제품 시계는 왼쪽 손목에 착용한다."
+        }
+      ]
+    },
+    {
+      "id": "H09",
+      "label": "모델 초상·음성 허락 범위",
+      "kind": "license_covers",
+      "evidence_id": "likeness_consent",
+      "sources": [
+        {
+          "doc": "consent",
+          "page": 1,
+          "quote": "허락 기간·매체·지역은 광고 게시 계획을 포함해야 한다."
+        }
+      ]
+    },
+    {
+      "id": "H10",
+      "label": "IP 귀속 확인서 제출",
+      "kind": "evidence_required",
+      "evidence_id": "ip_assignment",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "가상 인물과 결과물의 IP 귀속 확인서를 납품과 함께 제출한다."
+        }
+      ]
+    },
+    {
+      "id": "H11",
+      "label": "AI 도구·모델 버전 목록 제출",
+      "kind": "evidence_required",
+      "evidence_id": "ai_tool_list",
+      "sources": [
+        {
+          "doc": "contract",
+          "page": 2,
+          "quote": "사용한 AI 도구와 모델 버전 목록을 납품과 함께 제출한다."
+        }
+      ]
+    },
+    {
+      "id": "H12",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "H13",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "sow",
+          "page": 1,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    }
+  ]
+}

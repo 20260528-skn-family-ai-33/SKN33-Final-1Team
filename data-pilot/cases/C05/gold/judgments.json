@@ -1,0 +1,1580 @@
+{
+  "case_id": "C05",
+  "judgments": [
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "미충족",
+        "계약서 1쪽": "충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "FLOWMAET",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "미충족",
+        "계약서 1쪽": "충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "미충족",
+        "계약서 1쪽": "충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "12.01 ~ 12.15",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "count_mismatch",
+      "observed": "보이는 수 2",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "spec_mismatch",
+      "observed": "1080×1350 image/jpeg",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "미충족",
+        "계약서 1쪽": "충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "count_mismatch",
+      "observed": "보이는 수 4",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3",
+        "tumbler_4"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 small · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "logo_too_small",
+      "observed": "로고 가로 40px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "forbidden_phrase",
+      "observed": "최고",
+      "evidence_ids": [
+        "r_tagline"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "미충족",
+        "계약서 1쪽": "충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "충족",
+        "계약서 1쪽": "미충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F01",
+      "label": "상품명(곡선 한영 혼합)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "플로우메이트 스마트 텀블러 FM-1",
+      "evidence_ids": [
+        "r_model"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F02",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "FLOWMATE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F03",
+      "label": "할인율(기준 충돌)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "criterion_unresolved",
+      "observed": "기준 충돌(미확정)",
+      "evidence_ids": [],
+      "applicability_basis": null,
+      "if_resolved": {
+        "명세서 3쪽": "충족",
+        "계약서 1쪽": "미충족"
+      }
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F04",
+      "label": "가격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "49,000원",
+      "evidence_ids": [
+        "r_price"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F05",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "12.01 ~ 12.14",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F06",
+      "label": "가격 각주",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+      "evidence_ids": [
+        "r_foot"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F07",
+      "label": "용량",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "450ml",
+      "evidence_ids": [
+        "r_volume"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F08",
+      "label": "컬러 3종 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "tumbler_1",
+        "tumbler_2",
+        "tumbler_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F09",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F10",
+      "label": "로고 최소 폭",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "size_ok",
+      "observed": "로고 가로 90px",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F11",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F12",
+      "label": "해시태그",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "#플로우메이트",
+      "evidence_ids": [
+        "r_tag"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F13",
+      "label": "주소(URL)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "flowmate.example/fm1",
+      "evidence_ids": [
+        "r_url"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F14",
+      "label": "배송 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "무료배송 (제주·도서산간 제외)",
+      "evidence_ids": [
+        "r_ship"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C05",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "F15",
+      "label": "최상급 표현 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "no_forbidden_phrase",
+      "observed": "금지어 없음(판독 가능한 문자 기준)",
+      "evidence_ids": [],
+      "applicability_basis": null
+    }
+  ]
+}

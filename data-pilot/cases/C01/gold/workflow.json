@@ -1,0 +1,21 @@
+{
+  "case_id": "C01",
+  "scenario_type": "fix_with_new_error",
+  "description": "D2 검수에서 할인율 미충족 → 수정 요청 → D6 제출. 재검수에서 할인율은 해결, 브랜드 표기는 새 오류. 최신 버전(D6)은 승인할 수 없다.",
+  "previous": "D2",
+  "revised": "D6",
+  "diff": {
+    "resolved": [
+      "K02"
+    ],
+    "persisting": [],
+    "new_errors": [
+      "K03"
+    ],
+    "needs_review_after": []
+  },
+  "approval_blockers_for_revised": [
+    "K03"
+  ],
+  "expected_system_behavior": "이전 지적(할인율)은 해결로 기록하고 새 오류(브랜드 표기)를 별도 항목으로 보고한다. 수정본은 승인 불가."
+}

@@ -1,0 +1,247 @@
+{
+  "case_id": "VO-01",
+  "group_id": "VG01",
+  "name": "온기식탁 · 들깨 버섯 리조또 세트",
+  "category": "F&B (식음료 매장 신메뉴)",
+  "synthetic": true,
+  "usage_plan": {
+    "media": [
+      "instagram_feed"
+    ],
+    "period": "2026-11-02 ~ 2026-11-15",
+    "region": "대한민국",
+    "paid": true,
+    "post_start": "2026-11-02",
+    "post_end": "2026-11-15"
+  },
+  "documents": [
+    {
+      "doc_id": "rfp",
+      "title": "제안요청서 (RFP)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-01_rfp.pdf",
+      "md": "VO-01_rfp.md",
+      "pages": 1,
+      "sha256": "d58bb80eefa523123d9915e9b7e61d13be4783869c3ccf04a177feadc52bc31d"
+    },
+    {
+      "doc_id": "nda",
+      "title": "비밀유지계약서 (NDA)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-01_nda.pdf",
+      "md": "VO-01_nda.md",
+      "pages": 1,
+      "sha256": "f5424c9de434ee2f736657a8fc9942679f013d5381036ad43d67b45d5c4ab6ca"
+    },
+    {
+      "doc_id": "menu",
+      "title": "메뉴 정보서 (원재료·원산지·알레르기)",
+      "stage": "1 기획·요청",
+      "pdf": "VO-01_menu.pdf",
+      "md": "VO-01_menu.md",
+      "pages": 1,
+      "sha256": "fd98994468d97dce0e1201f35442e43d9e22d75ac613f966dcd34d3d38d81a88"
+    },
+    {
+      "doc_id": "promo",
+      "title": "프로모션 조건서",
+      "stage": "1 기획·요청",
+      "pdf": "VO-01_promo.pdf",
+      "md": "VO-01_promo.md",
+      "pages": 2,
+      "sha256": "2497e1fa6260dc8f71e797c8ba091e6d9fb32dd79253714ee6240ac158a602c6"
+    },
+    {
+      "doc_id": "label",
+      "title": "표시·광고 기준서 (가상 발주사 내부 기준)",
+      "stage": "2 계약",
+      "pdf": "VO-01_label.pdf",
+      "md": "VO-01_label.md",
+      "pages": 1,
+      "sha256": "82c446afcce0d8b9c6f18678d1bc546ae9cd234416ce3f3b9a2cc4f213d23cce"
+    },
+    {
+      "doc_id": "contract",
+      "title": "외주 용역 계약서",
+      "stage": "2 계약",
+      "pdf": "VO-01_contract.pdf",
+      "md": "VO-01_contract.md",
+      "pages": 2,
+      "sha256": "f5cfa22b444386ea886f2af0e0a446b0108263ec77ea431f218a70a2dc3442a0"
+    },
+    {
+      "doc_id": "sow",
+      "title": "과업지시서 (SOW)",
+      "stage": "3 수행·검수",
+      "pdf": "VO-01_sow.pdf",
+      "md": "VO-01_sow.md",
+      "pages": 1,
+      "sha256": "5c26378600621c70b68c419b4c5aff1e183fde6230c22cef900e81986ac508ca"
+    },
+    {
+      "doc_id": "guide",
+      "title": "브랜드 로고 가이드",
+      "stage": "3 수행·검수",
+      "pdf": "VO-01_guide.pdf",
+      "md": "VO-01_guide.md",
+      "pages": 1,
+      "sha256": "f8ce634acb6a4a7a53a4de4d6605a7966764be44b7ff8622461a33387508c66c"
+    },
+    {
+      "doc_id": "inspect",
+      "title": "검수조서 (검수 확인서) 양식",
+      "stage": "3 수행·검수",
+      "pdf": "VO-01_inspect.pdf",
+      "md": "VO-01_inspect.md",
+      "pages": 1,
+      "sha256": "fe8e12e818bc0d3f6b98fe3afeffecfab27aa68331f796f9580bd01e7be9aa22"
+    }
+  ],
+  "deliveries": [
+    {
+      "delivery_id": "D1",
+      "file": "VO-01_D1.png",
+      "kind": "정상",
+      "submitted_order": 1,
+      "sha256": "0e78e04c74147bd6bd7c3dcb86d587be6a3d727b3adef945187b9680fcefe7c0",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 77617,
+      "evidence": [
+        {
+          "evidence_id": "origin_allergen_sheet",
+          "version": "v1",
+          "file": "VO-01_origin_allergen_sheet_v1.pdf"
+        },
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D2",
+      "file": "VO-01_D2.png",
+      "kind": "단일 오류",
+      "submitted_order": 2,
+      "sha256": "81c08c79c1fd3d0cafc00ad3d67cb515d45ce41f8a576cbe76477dd423f526bc",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 77994,
+      "evidence": [
+        {
+          "evidence_id": "origin_allergen_sheet",
+          "version": "v1",
+          "file": "VO-01_origin_allergen_sheet_v1.pdf"
+        },
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D3",
+      "file": "VO-01_D3.png",
+      "kind": "복합 오류",
+      "submitted_order": 3,
+      "sha256": "23bdf5972860df42c8e9af6c8a44d51ef5c3034c5e43c18b2c43ac1035899533",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 73362,
+      "evidence": [
+        {
+          "evidence_id": "origin_allergen_sheet",
+          "version": "v1",
+          "file": "VO-01_origin_allergen_sheet_v1.pdf"
+        },
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D4",
+      "file": "VO-01_D4.png",
+      "kind": "판독 불확실",
+      "submitted_order": 4,
+      "sha256": "89df1c0eca7a1e888d24d2b95c377b0001fdf4a229a9aacc782babbaad50f3f5",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 70247,
+      "evidence": [
+        {
+          "evidence_id": "origin_allergen_sheet",
+          "version": "v1",
+          "file": "VO-01_origin_allergen_sheet_v1.pdf"
+        },
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D5",
+      "file": "VO-01_D5.png",
+      "kind": "증빙 누락",
+      "submitted_order": 5,
+      "sha256": "ea7c2e0d19bd8c7534a37878bee3d9b9237e6349572f100523688fa5c2763ccc",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 77440,
+      "evidence": [
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": null,
+      "byte_identical_to": null
+    },
+    {
+      "delivery_id": "D6",
+      "file": "VO-01_D6.png",
+      "kind": "수정본",
+      "submitted_order": 6,
+      "sha256": "c81f9451af943a03dd9af832c3a8a2cf11f880aec63e76bfb3b0ca34f33c08f0",
+      "width": 1080,
+      "height": 1350,
+      "mime": "image/png",
+      "bytes": 77530,
+      "evidence": [
+        {
+          "evidence_id": "origin_allergen_sheet",
+          "version": "v1",
+          "file": "VO-01_origin_allergen_sheet_v1.pdf"
+        },
+        {
+          "evidence_id": "photo_license",
+          "version": "v1",
+          "file": "VO-01_photo_license_v1.pdf"
+        }
+      ],
+      "parent": "D3",
+      "byte_identical_to": null
+    }
+  ]
+}

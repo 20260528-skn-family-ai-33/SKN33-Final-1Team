@@ -1,0 +1,25 @@
+{
+  "case_id": "C03",
+  "scenario_type": "old_version_resubmitted",
+  "description": "D3 지적 → D6 수정본 제출(해결). 이후 D2와 해시가 같은 D7이 다시 제출되면 구버전 재제출로 탐지해 승인 대상에서 제외한다.",
+  "previous": "D3",
+  "revised": "D6",
+  "diff": {
+    "resolved": [
+      "E03",
+      "E06",
+      "E07",
+      "E10"
+    ],
+    "persisting": [],
+    "new_errors": [],
+    "needs_review_after": []
+  },
+  "resubmitted": "D7",
+  "resubmitted_sha_equals": {
+    "D2": true
+  },
+  "latest_valid_version": "D6",
+  "approval_eligible_resubmitted": false,
+  "expected_system_behavior": "해시가 과거 버전(D2)과 같은 파일은 구버전 재제출로 표시하고 승인 대상에서 제외한다. 최신 유효 버전은 D6."
+}

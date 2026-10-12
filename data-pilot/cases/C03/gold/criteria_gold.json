@@ -1,0 +1,162 @@
+{
+  "case_id": "C03",
+  "versions": [
+    "v1"
+  ],
+  "criteria": [
+    {
+      "id": "E01",
+      "label": "행사명",
+      "kind": "text_equals",
+      "role": "행사명",
+      "expected": "가온동 골목마켓 가을 페스타",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "행사명은 “가온동 골목마켓 가을 페스타”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "11.14(토) ~ 11.15(일)",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "행사 기간은 “11.14(토) ~ 11.15(일)”로 표기한다."
+        },
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "연도는 생략할 수 있다. 단 요일은 반드시 함께 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "label": "장소",
+      "kind": "text_equals",
+      "role": "장소",
+      "expected": "가온동 중앙광장",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "장소는 “가온동 중앙광장”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "label": "혜택 문구",
+      "kind": "text_equals",
+      "role": "혜택",
+      "expected": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "혜택 문구는 “입장 무료 · 스탬프 3개 모으면 기념품”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "kind": "count",
+      "cls": "스탬프 아이콘",
+      "op": "==",
+      "n": 3,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "스탬프 아이콘은 3개를 보여 준다."
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "kind": "text_equals",
+      "role": "필수 문구",
+      "expected": "우천 시 일정이 변경될 수 있습니다",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 3,
+          "quote": "모든 소재 하단에 “우천 시 일정이 변경될 수 있습니다”를 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "label": "문의처",
+      "kind": "text_equals",
+      "role": "연락처",
+      "expected": "문의 02-000-0000",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "문의처는 “문의 02-000-0000”으로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "kind": "text_equals",
+      "role": "주최",
+      "expected": "주최 가온동 상인회",
+      "media": [
+        "banner_offline"
+      ],
+      "na_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 3,
+          "quote": "현수막에는 “주최 가온동 상인회”를 반드시 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "E09",
+      "label": "행사 로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "행사 로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1080
+      ],
+      "mimes": [
+        "image/png",
+        "image/jpeg"
+      ],
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "규격은 1080×1080이며 PNG 또는 JPEG로 제출한다."
+        }
+      ]
+    }
+  ]
+}

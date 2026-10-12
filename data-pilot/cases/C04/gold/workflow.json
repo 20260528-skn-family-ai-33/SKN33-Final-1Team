@@ -1,0 +1,19 @@
+{
+  "case_id": "C04",
+  "scenario_type": "evidence_only",
+  "description": "D5 검수에서 시험 성적서 미제출(미충족)과 용량 판독 불확실(확인 필요). D6은 이미지가 같고 증빙만 추가됨 → 성적서 조건은 해결되지만 용량 확인 필요는 그대로 남는다.",
+  "previous": "D5",
+  "revised": "D6",
+  "image_bytes_identical": true,
+  "diff": {
+    "resolved": [
+      "M10"
+    ],
+    "persisting": [],
+    "new_errors": [],
+    "needs_review_after": [
+      "M02"
+    ]
+  },
+  "expected_system_behavior": "이미지 해시가 같으므로 문자 검사를 다시 하지 않아도 되지만, 증빙 버전 변경은 새 이력으로 남긴다. 성적서 조건은 해결, 용량 판독 불확실은 그대로 사람 확인 대상."
+}

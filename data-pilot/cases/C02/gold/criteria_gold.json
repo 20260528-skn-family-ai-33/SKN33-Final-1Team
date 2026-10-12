@@ -1,0 +1,201 @@
+{
+  "case_id": "C02",
+  "versions": [
+    "v1",
+    "v2"
+  ],
+  "criteria": [
+    {
+      "id": "P01",
+      "label": "상품명",
+      "kind": "text_equals",
+      "role": "상품명",
+      "expected": "버터 크루아상 세트",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "상품명은 “버터 크루아상 세트”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "label": "정가",
+      "kind": "text_equals",
+      "role": "정가",
+      "expected": "6,000원",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "정가 6,000원"
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "label": "판매가",
+      "kind": "text_equals",
+      "role": "판매가",
+      "expected": {
+        "v1": "4,200원",
+        "v2": "4,500원"
+      },
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "판매가 4,200원",
+          "version": "v1"
+        },
+        {
+          "doc": "notice",
+          "page": 1,
+          "quote": "판매가 4,200원 4,500원",
+          "version": "v2"
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "label": "할인율",
+      "kind": "text_equals",
+      "role": "할인율",
+      "expected": {
+        "v1": "30% 할인",
+        "v2": "25% 할인"
+      },
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "할인율 30% 할인",
+          "version": "v1"
+        },
+        {
+          "doc": "notice",
+          "page": 1,
+          "quote": "할인율 30% 할인 25% 할인",
+          "version": "v2"
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "label": "가격 정합성",
+      "kind": "price_consistency",
+      "note": "파생 규칙: 정가 × (100-할인율)% = 판매가. 정가가 없으면 확인 필요.",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 1,
+          "quote": "판매가는 정가에 할인율을 적용한 금액과 일치해야 한다."
+        }
+      ]
+    },
+    {
+      "id": "P06",
+      "label": "브랜드 표기",
+      "kind": "text_equals",
+      "role": "브랜드 표기",
+      "expected": "MILDAM BAKERY",
+      "case_sensitive": true,
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "브랜드명은 항상 대문자 MILDAM BAKERY로 쓴다."
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "label": "행사 기간",
+      "kind": "text_equals",
+      "role": "기간",
+      "expected": "11.01 ~ 11.07",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "행사 기간은 “11.01 ~ 11.07”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "label": "한정 문구",
+      "kind": "text_equals",
+      "role": "한정 문구",
+      "expected": "1인 3세트 한정",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "“1인 3세트 한정” 문구를 넣는다."
+        }
+      ]
+    },
+    {
+      "id": "P09",
+      "label": "크루아상 개수",
+      "kind": "count",
+      "cls": "크루아상",
+      "op": "==",
+      "n": 2,
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "세트 구성 이미지는 크루아상 2개로 한다."
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "label": "프로필 계정",
+      "kind": "text_equals",
+      "role": "계정",
+      "expected": "@mildam_bakery",
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "프로필 계정은 “@mildam_bakery”로 표기한다."
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "label": "로고 변형 금지",
+      "kind": "logo_variant",
+      "sources": [
+        {
+          "doc": "guide",
+          "page": 1,
+          "quote": "로고는 가로세로 비율과 색을 변경하지 않는다."
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "label": "규격",
+      "kind": "file_spec",
+      "size": [
+        1080,
+        1350
+      ],
+      "mimes": [
+        "image/png"
+      ],
+      "sources": [
+        {
+          "doc": "spec",
+          "page": 2,
+          "quote": "규격은 1080×1350 PNG로 한다."
+        }
+      ]
+    }
+  ]
+}

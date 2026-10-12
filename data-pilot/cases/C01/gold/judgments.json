@@ -1,0 +1,720 @@
+{
+  "case_id": "C01",
+  "judgments": [
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "20% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "SUPGYEOL COFFEE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "10.20 ~ 10.31",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "매장별 재고 소진 시 조기 종료",
+      "evidence_ids": [
+        "r_phrase"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2",
+        "cookie_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "30% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "SUPGYEOL COFFEE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "10.20 ~ 10.31",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "매장별 재고 소진 시 조기 종료",
+      "evidence_ids": [
+        "r_phrase"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2",
+        "cookie_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "20% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "supgyeol coffee",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "10.20 ~ 10.30",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2",
+        "cookie_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "20% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "SUPGYEOL COFFEE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "10.20 ~ 10.31",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "매장별 재고 소진 시 조기 종료",
+      "evidence_ids": [
+        "r_phrase"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "count_mismatch",
+      "observed": "보이는 수 2",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "logo_distorted",
+      "observed": "변형 stretched · 가로세로비 1.6",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "20% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "SUPGYEOL COFFEE",
+      "evidence_ids": [
+        "r_brand"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "10.20 ~ 10.31",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "매장별 재고 소진 시 조기 종료",
+      "evidence_ids": [
+        "r_phrase"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "occluded_count",
+      "observed": "보이는 수 2~3 (가림)",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2",
+        "cookie_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K01",
+      "label": "상품명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "제주 말차 크림라떼",
+      "evidence_ids": [
+        "r_name"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K02",
+      "label": "할인율",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "20% 할인",
+      "evidence_ids": [
+        "r_discount"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K03",
+      "label": "브랜드 표기",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K04",
+      "label": "행사 기간",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "10.20 ~ 10.31",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K05",
+      "label": "필수 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "매장별 재고 소진 시 조기 종료",
+      "evidence_ids": [
+        "r_phrase"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K06",
+      "label": "쿠키 토핑 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "cookie_1",
+        "cookie_2",
+        "cookie_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K07",
+      "label": "로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C01",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "K08",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    }
+  ]
+}

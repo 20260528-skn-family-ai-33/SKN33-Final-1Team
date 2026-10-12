@@ -1,0 +1,23 @@
+{
+  "case_id": "C02",
+  "scenario_type": "criteria_change",
+  "description": "v1 기준으로 D1~D5를 검수한 뒤 변경 공지(적용일 2026-10-29)로 기준이 v2가 된다. D1은 v2에서 새로 평가하되 v1 결과는 보존하고, D6은 v2 기준으로 검수한다.",
+  "criteria_versions": [
+    "v1",
+    "v2"
+  ],
+  "revised": "D6",
+  "reevaluated_under_v2": {
+    "D1": {
+      "P03": "미충족",
+      "P04": "미충족"
+    }
+  },
+  "v1_results_preserved_for": "D1",
+  "revised_under_v2_blockers": [],
+  "changed_criteria": [
+    "P03",
+    "P04"
+  ],
+  "expected_system_behavior": "기준 v2 확정 후 D1을 v2로 새로 평가하되 v1 결과는 덮어쓰지 않는다. D6은 v2에서 모든 조건 충족."
+}

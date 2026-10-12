@@ -1,0 +1,1038 @@
+{
+  "case_id": "C03",
+  "judgments": [
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.14(토) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D1",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "11.14(금) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D2",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.14(토) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "가온동 시청광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "text_missing",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D3",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "spec_mismatch",
+      "observed": "1080×1350 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.14(토) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "count_mismatch",
+      "observed": "보이는 수 4",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3",
+        "stamp_4"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "logo_distorted",
+      "observed": "변형 stretched · 가로세로비 1.6",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D4",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.14(토) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "확인 필요",
+      "reason_code": "illegible",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D5",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "11.14(토) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D6",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E01",
+      "label": "행사명",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 골목마켓 가을 페스타",
+      "evidence_ids": [
+        "r_title"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E02",
+      "label": "행사 기간(요일 포함)",
+      "applicable": true,
+      "judgment": "미충족",
+      "reason_code": "value_mismatch",
+      "observed": "11.14(금) ~ 11.15(일)",
+      "evidence_ids": [
+        "r_period"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E03",
+      "label": "장소",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "가온동 중앙광장",
+      "evidence_ids": [
+        "r_place"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E04",
+      "label": "혜택 문구",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "입장 무료 · 스탬프 3개 모으면 기념품",
+      "evidence_ids": [
+        "r_benefit"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E05",
+      "label": "스탬프 아이콘 개수",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "count_ok",
+      "observed": "보이는 수 3",
+      "evidence_ids": [
+        "stamp_1",
+        "stamp_2",
+        "stamp_3"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E06",
+      "label": "우천 고지(필수 문구)",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "우천 시 일정이 변경될 수 있습니다",
+      "evidence_ids": [
+        "r_rain"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E07",
+      "label": "문의처",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "match",
+      "observed": "문의 02-000-0000",
+      "evidence_ids": [
+        "r_contact"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E08",
+      "label": "주최 표기(현수막 한정)",
+      "applicable": false,
+      "judgment": "해당 없음",
+      "reason_code": "media_not_targeted",
+      "observed": null,
+      "evidence_ids": [],
+      "applicability_basis": "이 조건은 현수막에만 적용되며 이번 사용 계획의 매체는 인스타그램 피드이므로 적용 대상이 아님(명세서 3p 매체별 조건)"
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E09",
+      "label": "행사 로고 변형 금지",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "logo_ok",
+      "observed": "변형 ref · 가로세로비 1.0",
+      "evidence_ids": [
+        "logo"
+      ],
+      "applicability_basis": null
+    },
+    {
+      "case_id": "C03",
+      "delivery_id": "D7",
+      "criteria_version": "v1",
+      "criterion_id": "E10",
+      "label": "규격",
+      "applicable": true,
+      "judgment": "충족",
+      "reason_code": "spec_ok",
+      "observed": "1080×1080 image/png",
+      "evidence_ids": [],
+      "applicability_basis": null
+    }
+  ]
+}

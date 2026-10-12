@@ -1,0 +1,3902 @@
+{
+  "case_id": "C05",
+  "note": "문자·객체·로고는 렌더링 시점의 실제 좌표에서 기록한 관찰 정답. legibility는 설계 의도(clear/partial/ambiguous).",
+  "deliveries": {
+    "D1": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 87976,
+        "sha256": "7256fa5699155f7c9f5da56398330d1649c90ed8d9c88a2b10c3b650f0c3f16b"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "하루 종일 시원하게",
+          "polygon": [
+            [
+              421,
+              261
+            ],
+            [
+              659,
+              261
+            ],
+            [
+              659,
+              290
+            ],
+            [
+              421,
+              290
+            ]
+          ],
+          "bbox": [
+            421,
+            261,
+            659,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              209,
+              574,
+              391,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              449,
+              574,
+              631,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              689,
+              574,
+              871,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D2": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 87972,
+        "sha256": "1b0eb9d9c8023edb2b55aa600583d3eae6b57fdbc340295f7c0c6cbedc04530e"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMAET",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "하루 종일 시원하게",
+          "polygon": [
+            [
+              421,
+              261
+            ],
+            [
+              659,
+              261
+            ],
+            [
+              659,
+              290
+            ],
+            [
+              421,
+              290
+            ]
+          ],
+          "bbox": [
+            421,
+            261,
+            659,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              209,
+              574,
+              391,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              449,
+              574,
+              631,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              689,
+              574,
+              871,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D3": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/jpeg",
+        "size": 121201,
+        "sha256": "93a1c1abd6c244934a4550b85d99d326ae0569499bbb28fdf74cb4e4df85e004"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "하루 종일 시원하게",
+          "polygon": [
+            [
+              421,
+              261
+            ],
+            [
+              659,
+              261
+            ],
+            [
+              659,
+              290
+            ],
+            [
+              421,
+              290
+            ]
+          ],
+          "bbox": [
+            421,
+            261,
+            659,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.15",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              309,
+              574,
+              491,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              589,
+              574,
+              771,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D4": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 86592,
+        "sha256": "60b5b89ee1965929b0f640848750605c0c6a14618d1d28acfe85151e47629127"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "최고의 보온력",
+          "polygon": [
+            [
+              452,
+              262
+            ],
+            [
+              627,
+              262
+            ],
+            [
+              627,
+              290
+            ],
+            [
+              452,
+              290
+            ]
+          ],
+          "bbox": [
+            452,
+            262,
+            627,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              134,
+              574,
+              316,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              324,
+              574,
+              506,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              514,
+              574,
+              696,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          },
+          {
+            "instance_id": "tumbler_4",
+            "bbox": [
+              704,
+              574,
+              886,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#ffd54f"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "small",
+        "bbox": [
+          495,
+          40,
+          535,
+          80
+        ],
+        "width": 40,
+        "height": 40,
+        "aspect": 1.0,
+        "clear_space_px": 88.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D5": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 88631,
+        "sha256": "9d8cef08d208ec700fa14f7c919cb384e2e1da06bd24a7adb7b0ab495286ea0b"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "하루 종일 시원하게",
+          "polygon": [
+            [
+              421,
+              261
+            ],
+            [
+              659,
+              261
+            ],
+            [
+              659,
+              290
+            ],
+            [
+              421,
+              290
+            ]
+          ],
+          "bbox": [
+            421,
+            261,
+            659,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "partial",
+          "font_size": 50,
+          "color": "#5c6f9e",
+          "reading_order": 3,
+          "note": "곡선 글씨가 저대비이며 반사광으로 일부가 가려짐"
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "30% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              434,
+              1275
+            ],
+            [
+              646,
+              1275
+            ],
+            [
+              646,
+              1287
+            ],
+            [
+              434,
+              1287
+            ]
+          ],
+          "bbox": [
+            434,
+            1275,
+            646,
+            1287
+          ],
+          "legibility": "ambiguous",
+          "font_size": 12,
+          "color": "#2a3f70",
+          "reading_order": 9,
+          "note": "12px·저대비"
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              209,
+              574,
+              391,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              449,
+              574,
+              631,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              689,
+              574,
+              871,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D6": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 87628,
+        "sha256": "949b338c55b01582af73e7ad2619fa1beffab76c9db1b50ccfcd83aec42f9c5c"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "하루 종일 시원하게",
+          "polygon": [
+            [
+              421,
+              261
+            ],
+            [
+              659,
+              261
+            ],
+            [
+              659,
+              290
+            ],
+            [
+              421,
+              290
+            ]
+          ],
+          "bbox": [
+            421,
+            261,
+            659,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "25% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              209,
+              574,
+              391,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              449,
+              574,
+              631,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              689,
+              574,
+              871,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    },
+    "D7": {
+      "file": {
+        "w": 1080,
+        "h": 1350,
+        "mime": "image/png",
+        "size": 87998,
+        "sha256": "f559ebca5f946f3fe1a59d6423be76fa8e54e6b4957b1740fc3de3930126eb29"
+      },
+      "regions": [
+        {
+          "region_id": "r_brand",
+          "role": "브랜드 표기",
+          "transcription_raw": "FLOWMATE",
+          "polygon": [
+            [
+              282.5,
+              169
+            ],
+            [
+              397.5,
+              168
+            ],
+            [
+              456.5,
+              168
+            ],
+            [
+              797.5,
+              169
+            ],
+            [
+              797.5,
+              226
+            ],
+            [
+              456.5,
+              227
+            ],
+            [
+              397.5,
+              227
+            ],
+            [
+              282.5,
+              226
+            ]
+          ],
+          "bbox": [
+            282,
+            168,
+            798,
+            227
+          ],
+          "legibility": "clear",
+          "font_size": 76,
+          "color": "#ffffff",
+          "reading_order": 1
+        },
+        {
+          "region_id": "r_tagline",
+          "role": "광고 문구",
+          "transcription_raw": "온종일 시원하게",
+          "polygon": [
+            [
+              438,
+              261
+            ],
+            [
+              641,
+              261
+            ],
+            [
+              641,
+              290
+            ],
+            [
+              438,
+              290
+            ]
+          ],
+          "bbox": [
+            438,
+            261,
+            641,
+            290
+          ],
+          "legibility": "clear",
+          "font_size": 30,
+          "color": "#9fb4e6",
+          "reading_order": 2
+        },
+        {
+          "region_id": "r_model",
+          "role": "상품명",
+          "transcription_raw": "플로우메이트 스마트 텀블러 FM-1",
+          "polygon": [
+            [
+              142.4,
+              502.6
+            ],
+            [
+              174.1,
+              469.3
+            ],
+            [
+              175.9,
+              467.6
+            ],
+            [
+              210.6,
+              437.3
+            ],
+            [
+              212.6,
+              435.7
+            ],
+            [
+              249.9,
+              408.8
+            ],
+            [
+              252.1,
+              407.4
+            ],
+            [
+              291.7,
+              384.0
+            ],
+            [
+              293.9,
+              382.8
+            ],
+            [
+              335.5,
+              363.2
+            ],
+            [
+              337.9,
+              362.2
+            ],
+            [
+              381.1,
+              346.5
+            ],
+            [
+              394.7,
+              342.4
+            ],
+            [
+              439.4,
+              331.7
+            ],
+            [
+              441.9,
+              331.2
+            ],
+            [
+              487.5,
+              324.6
+            ],
+            [
+              490.0,
+              324.4
+            ],
+            [
+              536.0,
+              322.0
+            ],
+            [
+              550.1,
+              322.1
+            ],
+            [
+              596.1,
+              325.0
+            ],
+            [
+              598.6,
+              325.3
+            ],
+            [
+              644.1,
+              332.4
+            ],
+            [
+              646.6,
+              332.9
+            ],
+            [
+              691.2,
+              344.1
+            ],
+            [
+              704.2,
+              348.5
+            ],
+            [
+              734.3,
+              359.2
+            ],
+            [
+              772.7,
+              376.2
+            ],
+            [
+              791.3,
+              386.0
+            ],
+            [
+              817.3,
+              401.0
+            ],
+            [
+              789.7,
+              448.6
+            ],
+            [
+              182.2,
+              540.6
+            ]
+          ],
+          "bbox": [
+            142,
+            322,
+            817,
+            541
+          ],
+          "legibility": "clear",
+          "font_size": 50,
+          "color": "#ffffff",
+          "reading_order": 3
+        },
+        {
+          "region_id": "r_volume",
+          "role": "용량",
+          "transcription_raw": "450ml",
+          "polygon": [
+            [
+              490,
+              1007
+            ],
+            [
+              589,
+              1007
+            ],
+            [
+              589,
+              1034
+            ],
+            [
+              490,
+              1034
+            ]
+          ],
+          "bbox": [
+            490,
+            1007,
+            589,
+            1034
+          ],
+          "legibility": "clear",
+          "font_size": 34,
+          "color": "#c9d6f5",
+          "reading_order": 4
+        },
+        {
+          "region_id": "r_price",
+          "role": "가격",
+          "transcription_raw": "49,000원",
+          "polygon": [
+            [
+              164,
+              1087
+            ],
+            [
+              435,
+              1087
+            ],
+            [
+              435,
+              1156
+            ],
+            [
+              164,
+              1156
+            ]
+          ],
+          "bbox": [
+            164,
+            1087,
+            435,
+            1156
+          ],
+          "legibility": "clear",
+          "font_size": 64,
+          "color": "#ffffff",
+          "reading_order": 5
+        },
+        {
+          "region_id": "r_discount",
+          "role": "할인율",
+          "transcription_raw": "25% 할인",
+          "polygon": [
+            [
+              719,
+              1092
+            ],
+            [
+              881,
+              1092
+            ],
+            [
+              881,
+              1128
+            ],
+            [
+              719,
+              1128
+            ]
+          ],
+          "bbox": [
+            719,
+            1092,
+            881,
+            1128
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#10172a",
+          "reading_order": 6
+        },
+        {
+          "region_id": "r_period",
+          "role": "기간",
+          "transcription_raw": "12.01 ~ 12.14",
+          "polygon": [
+            [
+              420,
+              1180
+            ],
+            [
+              660,
+              1180
+            ],
+            [
+              660,
+              1211
+            ],
+            [
+              420,
+              1211
+            ]
+          ],
+          "bbox": [
+            420,
+            1180,
+            660,
+            1211
+          ],
+          "legibility": "clear",
+          "font_size": 38,
+          "color": "#dce6ff",
+          "reading_order": 7
+        },
+        {
+          "region_id": "r_ship",
+          "role": "배송 문구",
+          "transcription_raw": "무료배송 (제주·도서산간 제외)",
+          "polygon": [
+            [
+              360,
+              1227
+            ],
+            [
+              720,
+              1227
+            ],
+            [
+              720,
+              1257
+            ],
+            [
+              360,
+              1257
+            ]
+          ],
+          "bbox": [
+            360,
+            1227,
+            720,
+            1257
+          ],
+          "legibility": "clear",
+          "font_size": 28,
+          "color": "#c9d6f5",
+          "reading_order": 8
+        },
+        {
+          "region_id": "r_foot",
+          "role": "가격 각주",
+          "transcription_raw": "※ 모델 및 색상에 따라 가격이 다를 수 있음",
+          "polygon": [
+            [
+              349,
+              1270
+            ],
+            [
+              730,
+              1270
+            ],
+            [
+              730,
+              1291
+            ],
+            [
+              349,
+              1291
+            ]
+          ],
+          "bbox": [
+            349,
+            1270,
+            730,
+            1291
+          ],
+          "legibility": "clear",
+          "font_size": 22,
+          "color": "#aebbe0",
+          "reading_order": 9
+        },
+        {
+          "region_id": "r_tag",
+          "role": "해시태그",
+          "transcription_raw": "#플로우메이트",
+          "polygon": [
+            [
+              120,
+              1310
+            ],
+            [
+              279,
+              1310
+            ],
+            [
+              279,
+              1334
+            ],
+            [
+              120,
+              1334
+            ]
+          ],
+          "bbox": [
+            120,
+            1310,
+            279,
+            1334
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 10
+        },
+        {
+          "region_id": "r_url",
+          "role": "URL",
+          "transcription_raw": "flowmate.example/fm1",
+          "polygon": [
+            [
+              711,
+              1311
+            ],
+            [
+              1008,
+              1311
+            ],
+            [
+              1008,
+              1338
+            ],
+            [
+              711,
+              1338
+            ]
+          ],
+          "bbox": [
+            711,
+            1311,
+            1008,
+            1338
+          ],
+          "legibility": "clear",
+          "font_size": 26,
+          "color": "#9fb4e6",
+          "reading_order": 11
+        }
+      ],
+      "objects": {
+        "텀블러": [
+          {
+            "instance_id": "tumbler_1",
+            "bbox": [
+              209,
+              574,
+              391,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#4fc3f7"
+            }
+          },
+          {
+            "instance_id": "tumbler_2",
+            "bbox": [
+              449,
+              574,
+              631,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#f48fb1"
+            }
+          },
+          {
+            "instance_id": "tumbler_3",
+            "bbox": [
+              689,
+              574,
+              871,
+              980
+            ],
+            "occlusion": 0.0,
+            "occluded_by": null,
+            "attrs": {
+              "color": "#a5d6a7"
+            }
+          }
+        ]
+      },
+      "logo": {
+        "variant": "ref",
+        "bbox": [
+          495,
+          40,
+          585,
+          130
+        ],
+        "width": 90,
+        "height": 90,
+        "aspect": 1.0,
+        "clear_space_px": 38.0
+      },
+      "evidence": [],
+      "fonts": [
+        "Noto Sans KR"
+      ]
+    }
+  }
+}
