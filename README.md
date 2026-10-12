@@ -1,6 +1,6 @@
 # 바로검수 · SKN33 Final 1Team
 
-포스터와 요구사항을 입력하고, 검수 기준을 확정한 뒤 OCR 근거를 확인하는 React + FastAPI 개발 프로젝트입니다. 기존 샘플의 실행 코드를 이 저장소로 통합했습니다.
+포스터와 요구사항을 입력하고, 검수 기준을 확정한 뒤 OCR 근거를 확인하는 React·Vite + FastAPI 개발 프로젝트입니다. 기존 샘플의 실행 코드를 이 저장소로 통합했습니다.
 
 ## 실행
 
@@ -15,7 +15,7 @@
 **Windows · PowerShell**
 
 ```powershell
-& .\.venv-review\Scripts\python.exe .\start.py
+.\run.cmd
 ```
 
 [http://127.0.0.1:8000](http://127.0.0.1:8000)을 열고 **샘플로 체험하기 → 검수 항목 확인 → 기준 확정 → 검수 시작** 순서로 진행합니다.
@@ -30,8 +30,7 @@
 ```
 
 ```powershell
-# Windows PowerShell
-& .\.venv-review\Scripts\python.exe .\start.py --port 8001
+.\run.cmd --port 8001
 ```
 
 ## 새 컴퓨터에서 설치
@@ -50,52 +49,87 @@ python3.12 setup_local.py --download-models
 **Windows · PowerShell**
 
 ```powershell
-py -3.12 .\setup_local.py --download-models
-& .\.venv-review\Scripts\python.exe .\start.py
+py -3.12 .\setup_local.py --download-models; if ($? -and ($LASTEXITCODE -eq 0)) { .\run.cmd }
 ```
 
-설치 스크립트는 `.venv-review` 가상환경 생성, Python 패키지 설치, `npm ci`, React 빌드를 수행합니다. `--download-models`를 지정한 경우에만 OCR 모델을 다운로드합니다. 기존 `.venv`는 수정하지 않습니다.
+프로젝트 가상환경은 모든 운영체제에서 **`.venv`**로 통일합니다. 설치 스크립트는 `.venv` 생성, Python 패키지 설치, `npm ci`, React 빌드를 수행합니다. 기존 `.venv`가 Python 3.12이면 재사용하며 요구 패키지를 설치합니다. Python 버전이 다르거나 다른 운영체제에서 만든 환경이면 자동으로 덮어쓰지 않고 중단합니다. 이 경우 기존 환경을 다른 이름으로 보관한 뒤 다시 설치하세요. 가상환경은 경로를 포함하므로 다른 이름의 환경 폴더를 `.venv`로 이름만 바꿔 재사용하지 마세요.
 
-설치가 오류로 끝나면 해당 오류를 해결한 뒤 실행 명령을 진행하세요. Windows에서도 가상환경의 Python을 직접 호출하므로 `Activate.ps1` 실행은 필요 없습니다. PowerShell 예시는 `npm.ps1` 대신 `npm.cmd`를 사용하며 실행 정책을 변경할 필요가 없습니다. 실행·설치 스크립트는 운영체제에 맞는 명령을 안내합니다.
+`--download-models`를 지정한 경우에만 OCR 모델을 다운로드합니다. `python start.py`도 프로젝트의 `.venv` Python을 선택하므로, 다른 가상환경이 활성화되어 있어도 서버는 프로젝트 환경에서 실행합니다.
 
-수동 설치가 필요하면 다음 명령을 순서대로 사용합니다.
+위 PowerShell 명령은 설치가 성공한 경우에만 서버를 실행합니다. 코드 블록은 실제 줄바꿈 없는 한 줄이며, 화면에서 길게 접혀 보여도 블록 전체를 복사하면 됩니다. 터미널의 `PS C:\...>` 프롬프트는 붙이지 마세요. 설치가 오류로 끝나면 해당 오류를 해결한 뒤 다시 실행하세요. Windows에서도 가상환경의 Python을 직접 호출하므로 `Activate.ps1` 실행은 필요 없습니다. PowerShell 예시는 `npm.ps1` 대신 `npm.cmd`를 사용하며 실행 정책을 변경할 필요가 없습니다. 실행·설치 스크립트는 운영체제에 맞는 명령을 안내합니다.
+
+<details>
+<summary>수동 설치 명령 보기</summary>
+
+자동 설치 대신 직접 설치할 때만 다음 명령을 순서대로 사용합니다.
 
 **macOS / Linux · Bash**
 
 ```bash
-python3.12 -m venv .venv-review
-.venv-review/bin/python -m pip install -r requirements-dev.txt
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
 npm --prefix frontend ci
 npm --prefix frontend run build
-.venv-review/bin/python -m backend.app.ocr_runtime --download-models
-.venv-review/bin/python start.py
+.venv/bin/python -m backend.app.ocr_runtime --download-models
+.venv/bin/python start.py
 ```
 
 **Windows · PowerShell**
 
+각 블록이 한 줄 명령입니다. 순서대로 실행하고, 오류가 나면 해결한 뒤 다음 단계로 진행하세요.
+
+1. 가상환경 생성
+
 ```powershell
-py -3.12 -m venv .venv-review
-& .\.venv-review\Scripts\python.exe -m pip install -r requirements-dev.txt
-npm.cmd --prefix frontend ci
-npm.cmd --prefix frontend run build
-& .\.venv-review\Scripts\python.exe -m backend.app.ocr_runtime --download-models
-& .\.venv-review\Scripts\python.exe .\start.py
+py -3.12 -m venv .venv
 ```
+
+2. Python 패키지 설치
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+3. 프런트엔드 패키지 설치
+
+```powershell
+npm.cmd --prefix frontend ci
+```
+
+4. 프런트엔드 빌드
+
+```powershell
+npm.cmd --prefix frontend run build
+```
+
+5. OCR 모델 다운로드
+
+```powershell
+.\.venv\Scripts\python.exe -m backend.app.ocr_runtime --download-models
+```
+
+6. 서버 실행
+
+```powershell
+.\run.cmd
+```
+
+</details>
 
 NVIDIA 환경에서는 해당 CUDA와 호환되는 PyTorch wheel 설치가 필요합니다. 로컬 요구 버전은 `torch 2.10.0` / `torchvision 0.25.0`입니다.
 
 ### Windows PowerShell에서 실행이 안 될 때
 
-`'..venv-review' 모듈을 로드할 수 없습니다`는 실행 경로에서 역슬래시가 빠졌을 때 발생할 수 있습니다. 올바른 경로는 `..venv-review`가 아니라 `.\.venv-review`입니다. 앞의 `.\`는 현재 폴더이고, 그 뒤의 `.venv-review`가 가상환경 폴더 이름입니다. 먼저 저장소 루트에서 파일이 있는지 확인합니다.
+먼저 저장소 루트에서 프로젝트 Python이 있는지 확인합니다. `run.cmd`는 다른 환경이 활성화되어 있어도 이 실행 파일을 선택합니다.
 
 ```powershell
-Test-Path ".\.venv-review\Scripts\python.exe"
+Test-Path ".\.venv\Scripts\python.exe"
 ```
 
 `True`이면 아래 명령을 그대로 실행합니다.
 
 ```powershell
-& ".\.venv-review\Scripts\python.exe" .\start.py
+.\run.cmd
 ```
 
 `False`이거나 올바른 경로로 실행해도 의존성 오류가 나면 전용 환경 설치를 완료합니다. Python 3.12와 Node.js가 먼저 설치되어 있어야 합니다.
@@ -104,7 +138,13 @@ Test-Path ".\.venv-review\Scripts\python.exe"
 py -3.12 .\setup_local.py --download-models
 ```
 
-설치가 성공한 뒤 위 실행 명령을 다시 입력하세요. `(django_env)`처럼 다른 환경이 활성화된 상태에서 `python start.py`를 입력하면 그 환경의 Python을 사용할 수 있습니다. 위 명령처럼 `.venv-review`의 실행 파일을 직접 지정하면 활성화된 환경과 관계없이 프로젝트 전용 Python을 사용합니다. 기존 환경을 삭제하거나 패키지를 따로 설치할 필요는 없습니다.
+설치가 성공한 뒤 `.\run.cmd`를 다시 실행하세요. 경로를 직접 지정하려면 다음 명령도 사용할 수 있습니다.
+
+```powershell
+.\.venv\Scripts\python.exe .\start.py
+```
+
+경로의 앞부분은 `..venv`가 아니라 `.\.venv`입니다. `.\`는 현재 폴더이고 `.venv`는 가상환경 폴더 이름입니다. `(django_env)` 등 다른 환경에 서버 패키지를 따로 설치할 필요는 없습니다. 오류 안내에는 실제 사용한 Python 경로와 실패 원인이 표시됩니다.
 
 ## 구성
 
@@ -118,11 +158,11 @@ tests/                         데이터 경로·원본 보존 테스트
 data/img/                      기존 포스터 원본
 data/labels/gimcheon_gimbap_2026/ 시각 판독 라벨 초안
 docs/data-pipeline.md           라벨링·전처리 재현 방법
-start.py / run.sh               통합 서버 실행
+start.py / run.sh / run.cmd     통합 서버 실행 (macOS·Linux / Windows)
 setup_local.py                 전용 환경 설치와 React 빌드
 ```
 
-`.runtime/`에는 OCR 모델과 업로드·작업 기록이, `artifacts/`에는 재생성 가능한 전처리·평가 결과가 저장됩니다. 두 폴더와 `.venv-review`, `node_modules`, `dist`는 Git에서 제외합니다. 모델 가중치·가상환경·과거 샘플 ZIP은 커밋하지 않습니다.
+`.runtime/`에는 OCR 모델과 업로드·작업 기록이, `artifacts/`에는 재생성 가능한 전처리·평가 결과가 저장됩니다. 두 폴더와 `.venv`, `node_modules`, `dist`는 Git에서 제외합니다. 모델 가중치·가상환경·과거 샘플 ZIP은 커밋하지 않습니다. `frontend/package-lock.json`은 Git에 포함하고, `frontend/node_modules`와 `frontend/dist`는 설치·빌드로 다시 생성합니다.
 
 샘플 이미지는 기존 `data/img/2026_김천_김밥축제.jpg`를 재사용합니다. 파일명의 NFC/NFD 차이를 처리하며, 확장자와 달리 실제 포맷이 PNG인 원본도 읽습니다. 원본 이미지를 변형하거나 덮어쓰지 않습니다.
 
@@ -138,55 +178,93 @@ setup_local.py                 전용 환경 설치와 React 빌드
 
 ## 개발과 검증
 
-**macOS / Linux · Bash**
+아래 명령도 모두 저장소 루트에서 실행합니다. API와 화면 개발 서버는 각각 별도 터미널을 사용합니다.
+
+### 화면 개발
+
+**터미널 1 — API 개발 서버**
+
+macOS / Linux · Bash:
 
 ```bash
-# API 개발 서버
-.venv-review/bin/python -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
+.venv/bin/python -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
+```
 
-# 별도 터미널: React 개발 서버
+Windows · PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
+```
+
+**터미널 2 — React·Vite 개발 서버**
+
+macOS / Linux · Bash:
+
+```bash
 npm --prefix frontend run dev
+```
 
-# 테스트와 프로덕션 빌드
-.venv-review/bin/python -m pytest
+Windows · PowerShell:
+
+```powershell
+npm.cmd --prefix frontend run dev
+```
+
+Vite가 출력한 주소(기본 [http://127.0.0.1:5173](http://127.0.0.1:5173))를 엽니다. 화면의 `/api` 상대 경로 요청은 개발 서버가 기본 `http://127.0.0.1:8000`으로 전달합니다.
+
+### API 포트 변경
+
+API 서버를 `--port 8001`로 실행했다면 Vite 실행 시 대상 주소도 맞춥니다.
+
+macOS / Linux · Bash:
+
+```bash
+API_PROXY_TARGET=http://127.0.0.1:8001 npm --prefix frontend run dev
+```
+
+Windows · PowerShell:
+
+```powershell
+$env:API_PROXY_TARGET = "http://127.0.0.1:8001"; npm.cmd --prefix frontend run dev
+```
+
+PowerShell에서 `Ctrl+C`로 개발 서버를 종료한 뒤 기본 포트로 되돌릴 때:
+
+```powershell
+Remove-Item Env:API_PROXY_TARGET -ErrorAction SilentlyContinue
+```
+
+PowerShell의 `$env:` 설정은 현재 터미널과 그 터미널에서 실행한 프로세스에 적용됩니다. 환경 변수를 바꾼 뒤에는 Vite를 다시 실행하세요.
+
+`API_PROXY_TARGET`은 Vite 개발·미리보기 프록시에서만 사용합니다. 빌드한 화면은 FastAPI와 같은 출처에서 제공하며, 프록시 주소나 RunPod 비밀키를 브라우저 번들에 넣지 않습니다.
+
+### 테스트와 빌드
+
+macOS / Linux · Bash:
+
+```bash
+.venv/bin/python -m pytest
 npm --prefix frontend test
 npm --prefix frontend run build
 ```
 
-**Windows · PowerShell**
+Windows · PowerShell — Python 테스트:
 
 ```powershell
-# 터미널 1: API 개발 서버
-& .\.venv-review\Scripts\python.exe -m uvicorn backend.app.api:app --host 127.0.0.1 --port 8000 --reload
-
-# 터미널 2: React 개발 서버
-npm.cmd --prefix frontend run dev
-
-# 별도 터미널: 테스트와 프로덕션 빌드
-& .\.venv-review\Scripts\python.exe -m pytest
-npm.cmd --prefix frontend test
-npm.cmd --prefix frontend run build
+.\.venv\Scripts\python.exe -m pytest
 ```
 
-개발 서버 명령은 각각 별도 터미널에서 실행합니다. React 개발 서버의 `/api`는 기본 `http://127.0.0.1:8000`으로 연결됩니다. API 서버를 `--port 8001`로 실행했다면 React 개발 서버의 대상도 맞춥니다.
-
-```bash
-# macOS / Linux
-API_PROXY_TARGET=http://127.0.0.1:8001 npm --prefix frontend run dev
-```
+Windows · PowerShell — React 테스트 성공 시에만 프로덕션 빌드:
 
 ```powershell
-# Windows PowerShell
-$env:API_PROXY_TARGET = "http://127.0.0.1:8001"
-npm.cmd --prefix frontend run dev
-
-# Ctrl+C로 개발 서버를 종료한 뒤, 기본 포트로 되돌릴 때
-Remove-Item Env:API_PROXY_TARGET -ErrorAction SilentlyContinue
+npm.cmd --prefix frontend test; if ($? -and ($LASTEXITCODE -eq 0)) { npm.cmd --prefix frontend run build }
 ```
 
-PowerShell의 `$env:` 설정은 현재 터미널과 그 터미널에서 실행한 프로세스에 적용됩니다. 환경 변수를 바꾼 뒤에는 해당 개발 서버를 다시 실행하세요. [프런트엔드 안내](frontend/README.md)에 상세 명령이 있습니다.
+프런트엔드 상태 테스트는 기준 확정·잠금, 변경 후 재확정, 이전 결과 무효화, 늦은 응답 차단, 원본 이미지 좌표 표시를 확인합니다. 전체 업로드·OCR 흐름은 API를 실행한 상태에서 확인합니다. 빌드 후 통합 화면은 위 [실행](#실행) 명령으로 확인합니다.
 
-GitHub Actions는 `requirements-test.txt`로 OCR 모델 다운로드와 유료 호출 없이 Python 테스트를 실행하고, React 테스트·빌드를 수행하도록 구성했습니다. 실제 MPS/CUDA 추론과 RunPod 연결은 각 실행 환경에서 따로 확인합니다.
+### 자동 검증과 확인 범위
+
+GitHub Actions는 Ubuntu와 Windows에서 `requirements-test.txt`로 OCR 모델 다운로드와 유료 호출 없이 Python 테스트를 실행하고, React 테스트·빌드를 수행하도록 구성했습니다. Windows 작업에는 `.venv` 생성, `run.cmd` 실행 확인, 실제 서버의 `/api/health`·React 화면 응답 확인이 포함됩니다. 워크플로 추가 자체가 Windows 검증 통과를 뜻하지는 않으며, PR 또는 main 푸시 후 해당 실행 결과를 확인해야 합니다. 실제 MPS/CUDA 추론과 RunPod 연결은 각 실행 환경에서 따로 확인합니다.
 
 2026-10-12 통합 검증: Python 56개·React 8개 테스트, React 빌드, 프로젝트 경로의 실제 MPS OCR(RGB 2배), 산출물 검사 190개를 통과했습니다. 서버의 HTML·MPS 준비 상태·원본 이미지 바이트와 MIME도 확인했습니다. GitHub 원격 Actions 실행과 CUDA/RunPod 실제 실행은 이 로컬 검증에 포함되지 않습니다.
 
@@ -206,10 +284,7 @@ export RUNPOD_API_KEY='서버 측 API 키'
 **Windows · PowerShell**
 
 ```powershell
-$env:RUN_TARGET = "runpod"
-$env:RUNPOD_ENDPOINT_ID = "기존 endpoint ID"
-$env:RUNPOD_API_KEY = "서버 측 API 키"
-& .\.venv-review\Scripts\python.exe .\start.py
+$env:RUN_TARGET = "runpod"; $env:RUNPOD_ENDPOINT_ID = "기존 endpoint ID"; $env:RUNPOD_API_KEY = "서버 측 API 키"; .\run.cmd
 ```
 
 로컬 실행으로 돌아가려면 서버를 종료한 뒤 Bash에서는 `export RUN_TARGET=local`, PowerShell에서는 `$env:RUN_TARGET = "local"`로 설정하고 서버를 다시 실행합니다.

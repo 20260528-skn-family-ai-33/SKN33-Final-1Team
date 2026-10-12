@@ -13,6 +13,7 @@ on:
       - "start.py"
       - "setup_local.py"
       - "run.sh"
+      - "run.cmd"
       - ".github/workflows/review-app.yml"
   push:
     branches: [main]
@@ -47,3 +48,87 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+  windows:
+    # Checks startup and the offline suite, not OCR weights, CUDA, or paid RunPod calls.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Create the project virtual environment
+        run: python -m venv .venv
+      - name: Install offline test dependencies
+        run: '& ".\.venv\Scripts\python.exe" -m pip install -r requirements-test.txt'
+      - name: Run Python tests
+        run: '& ".\.venv\Scripts\python.exe" -m pytest'
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm.cmd ci
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm.cmd test
+      - name: Build frontend
+        working-directory: frontend
+        run: npm.cmd run build
+      - name: Check the Windows launcher
+        run: '& ".\run.cmd" --help'
+      - name: Smoke test the API and React on the same origin
+        run: |
+          $python = (Resolve-Path ".\.venv\Scripts\python.exe").Path
+          $stdout = Join-Path $env:RUNNER_TEMP "review-app-stdout.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "review-app-stderr.log"
+          $server = $null
+          try {
+            $server = Start-Process -FilePath $python `
+              -ArgumentList @("start.py", "--host", "127.0.0.1", "--port", "18765") `
+              -WorkingDirectory $env:GITHUB_WORKSPACE `
+              -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              if ($server.HasExited) {
+                throw "Server exited before becoming ready (exit $($server.ExitCode))."
+              }
+              try {
+                $health = Invoke-WebRequest "http://127.0.0.1:18765/api/health" -TimeoutSec 2
+                if ($health.StatusCode -eq 200) {
+                  $ready = $true
+                  break
+                }
+              } catch {
+                # The server may still be starting; retry for up to 60 attempts.
+              }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $ready) {
+              throw "The API did not become ready."
+            }
+            $page = Invoke-WebRequest "http://127.0.0.1:18765/" -TimeoutSec 5
+            if ($page.StatusCode -ne 200 -or $page.Content -notmatch '<div id="root">') {
+              throw "The built React page was not served successfully."
+            }
+            Write-Host "GET /api/health and GET / returned HTTP 200."
+          } finally {
+            if ($null -ne $server -and -not $server.HasExited) {
+              Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+            }
+            foreach ($log in @($stdout, $stderr)) {
+              if (Test-Path $log) {
+                Get-Content $log
+              }
+            }
+          }

@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+# Keep the previous local environment excluded during migration.
 .venv-review/
 venv/
 .pytest_cache/
