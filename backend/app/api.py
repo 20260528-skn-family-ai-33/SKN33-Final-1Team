@@ -22,13 +22,14 @@ import warnings
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from .review_rules import review_criteria
 from .sample import sample_image_path
+from .spa import ReviewStaticFiles
+from .local_auth import local_auth_router
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -217,6 +218,9 @@ def create_app(
         yield
 
     application = FastAPI(title="바로검수 API", version="1.0.0", lifespan=lifespan)
+    # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
+    if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
+        application.include_router(local_auth_router())
     allowed_origins = [value.strip() for value in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if value.strip()]
     allowed_origins = [value for value in allowed_origins if value.startswith(("http://localhost:", "http://127.0.0.1:"))]
     application.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
@@ -362,7 +366,7 @@ def create_app(
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"
     if frontend.is_dir():
-        application.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")
+        application.mount("/", ReviewStaticFiles(directory=frontend, html=True), name="frontend")
     return application
 
 

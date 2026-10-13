@@ -18,7 +18,9 @@
 .\run.cmd
 ```
 
-[http://127.0.0.1:8000](http://127.0.0.1:8000)을 열고 **샘플로 체험하기 → 검수 항목 확인 → 기준 확정 → 검수 시작** 순서로 진행합니다.
+[http://127.0.0.1:8000](http://127.0.0.1:8000)에서 서비스 소개를, [로그인 화면](http://127.0.0.1:8000/login)에서 계정 입력 화면을 확인합니다. 로컬에서 **아이디 `admin` / 비밀번호 `admin`**으로 로그인하면 검수 화면으로 이동합니다. **샘플로 체험하기 → 로그인 → 검수 항목 확인 → 기준 확정 → 검수 시작** 순서로 진행합니다.
+
+현재 FastAPI는 localhost에서 사용할 수 있는 **개발용 임시 admin 계정**을 제공합니다. 세션은 서버 메모리와 HttpOnly 쿠키로 유지하며 로그아웃·8시간 만료·서버 재시작 시 해제합니다. `LOCAL_ADMIN_LOGIN=0`으로 비활성화할 수 있습니다. 회원가입과 운영용 Django 계정·권한 관리는 후속 구현입니다.
 
 서버가 실행되는 동안 터미널을 유지하세요. 입력 프롬프트가 돌아오지 않는 것이 정상입니다. `Ctrl+C`는 서버 종료이며, 가상환경의 `activate`만 실행해서는 서버가 시작되지 않습니다. `frontend/index.html`을 파일로 열지 마세요.
 
@@ -200,6 +202,31 @@ setup_local.py                 전용 환경 설치와 React 빌드
 
 샘플 이미지는 기존 `data/img/2026_김천_김밥축제.jpg`를 재사용합니다. 파일명의 NFC/NFD 차이를 처리하며, 확장자와 달리 실제 포맷이 PNG인 원본도 읽습니다. 원본 이미지를 변형하거나 덮어쓰지 않습니다.
 
+### 페이지와 인증 연결
+
+| 경로 | 화면 | 접근 |
+| --- | --- | --- |
+| `/` | 서비스 소개 | 공개 |
+| `/login` | 로그인·연결 상태·재시도 | 공개 |
+| `/review/new` | 입력 → 기준 확정 → 실행 → 결과 | 서버 세션 확인 후 진입 |
+
+`frontend/src/App.jsx`가 경로를, `auth/AuthProvider.jsx`가 인증 상태를 관리합니다. `pages/review/ReviewProvider.jsx`는 같은 로그인 세션에서 서비스 소개를 왕복해도 검수 초안과 진행 상태를 유지합니다. 화면은 `InputPage`, `CriteriaPage`, `RunningPage`, `ResultsPage`로 분리하고 공통 탐색은 `layouts/ReviewLayout.jsx`에서 제공합니다. 페이지 전체 새로고침 시 검수 초안은 초기화됩니다. 영구 저장·이력 조회는 후속 구현입니다.
+
+인증 어댑터 `frontend/src/api/auth.js`는 같은 출처의 쿠키와 아래 계약을 사용합니다.
+
+`backend/app/local_auth.py`의 임시 admin 로그인도 이 계약을 사용합니다. 임시 계정은 localhost 호스트와 루프백 클라이언트에서만 허용되며 비밀번호를 브라우저 코드나 저장소에 넣지 않습니다. 기존에 서버가 실행 중이었다면 코드를 적용한 뒤 서버를 재시작하고 로그인 페이지를 새로고침하세요.
+
+| API | 요청·응답 계약 |
+| --- | --- |
+| `GET /api/v1/auth/me` | `{ "authenticated": true, "user": { "id": "...", "username": "...", "display_name": "..." } }` 또는 `{ "user": { ... } }`; 익명은 `{ "authenticated": false, "user": null }` |
+| `GET /api/v1/auth/csrf` | `{ "csrf_token": "..." }`; 응답 토큰이 없으면 `csrftoken` 쿠키 사용 |
+| `POST /api/v1/auth/login` | `{ "username": "...", "password": "..." }`와 `X-CSRFToken`; 성공 후 `/me`로 세션 확인 |
+| `POST /api/v1/auth/logout` | `{}`와 새 `X-CSRFToken`; 성공 시 세션 해제, `204` 허용 |
+
+오류는 `{ "error": { "code": "...", "message": "...", "fields": {} } }`로 읽습니다. `401` 또는 명시적인 인증 오류 코드가 있는 `403`만 미로그인으로 처리합니다. 일반 `403`, CSRF 실패, 서버 장애, 미구현 `404`는 구분해 안내합니다. 비밀번호·토큰은 브라우저 저장소에 보관하지 않습니다.
+
+현재 `/api/reviews` 등 FastAPI 검수 API에는 서버 인증·사용자별 권한 검사가 없습니다. React의 진입 제어만으로 API가 보호되지는 않으므로, 공유 배포 전 A 담당의 인증·소유권 검증을 서버에 연결해야 합니다. 직접 주소 접근과 새로고침을 위한 HTML fallback은 `/login`, `/review/new`에만 적용하며 API·파일의 `404`를 유지합니다.
+
 ## OCR과 검수 정책
 
 - **Apple Vision을 사용하지 않습니다.** EasyOCR 한국어·영어 모델을 사용합니다.
@@ -295,6 +322,22 @@ npm.cmd --prefix frontend test; if ($? -and ($LASTEXITCODE -eq 0)) { npm.cmd --p
 ```
 
 프런트엔드 상태 테스트는 기준 확정·잠금, 변경 후 재확정, 이전 결과 무효화, 늦은 응답 차단, 원본 이미지 좌표 표시를 확인합니다. 전체 업로드·OCR 흐름은 API를 실행한 상태에서 확인합니다. 빌드 후 통합 화면은 위 [실행](#실행) 명령으로 확인합니다.
+
+인증 단위 테스트는 세션 판별·CSRF·안전한 복귀 경로·오류 분류를 확인합니다. 브라우저 테스트는 `playwright` 개발 의존성과 설치된 Google Chrome을 사용합니다. 먼저 빌드 후 별도 터미널에서 서버를 `8123` 포트로 실행하고, 다음 명령을 실행하세요.
+
+```bash
+# macOS / Linux
+E2E_BASE_URL=http://127.0.0.1:8123 npm --prefix frontend run test:e2e
+```
+
+```powershell
+# Windows
+$env:E2E_BASE_URL = "http://127.0.0.1:8123"; npm.cmd --prefix frontend run test:e2e
+```
+
+서버 실행 예시는 `./run.sh --port 8123` 또는 `.\run.cmd --port 8123`입니다. Chrome 위치를 직접 지정하려면 `E2E_CHROME_PATH`, 화면 캡처가 필요하면 `E2E_SCREENSHOT_DIR`를 설정합니다. 테스트는 격리된 브라우저에서 모든 API를 모의 응답으로 처리하여 실제 계정·OCR 호출 없이 로그인 성공·실패·복귀·로그아웃과 검수 화면 회귀를 확인합니다. 실제 Django 서버의 쿠키 설정·인증·권한 검증은 별도 통합 테스트가 필요합니다.
+
+`npm --prefix frontend run test:e2e:local`은 실행 중인 로컬 서버에서 모의 인증 응답 없이 `admin / admin` 로그인·새로고침·로그아웃을 확인합니다. 서버 주소와 Chrome 설정은 위 환경 변수를 동일하게 사용합니다. OCR 실행은 요청하지 않습니다.
 
 ### 자동 검증과 확인 범위
 

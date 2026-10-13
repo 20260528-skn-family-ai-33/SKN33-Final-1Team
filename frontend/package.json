@@ -10,13 +10,17 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test src/workflow.test.js"
+    "test": "node --test src/workflow.test.js src/auth/auth.test.js",
+    "test:e2e": "node --test tests/e2e/login.spec.mjs",
+    "test:e2e:local": "node --test tests/e2e/local-admin.spec.mjs"
   },
   "dependencies": {
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router": "7.18.4"
   },
   "devDependencies": {
+    "playwright": "1.62.1",
     "vite": "^7.1.7"
   }
 }
