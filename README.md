@@ -202,6 +202,24 @@ uv pip install --python .\.venv\Scripts\python.exe pip
 
 ## 구성
 
+### OCR 개선 전 성능 비교
+
+여러 줄 제목·날짜 결합과 제한된 영역 재인식도 선택할 수 있습니다. macOS/Linux는 `OCR_PIPELINE=adaptive ./run.sh`, Windows PowerShell은 `$env:OCR_PIPELINE = "adaptive"` 설정 후 `.\run.cmd`로 실행하세요. 기본값은 기존 `baseline`이며 `multiline`은 줄 결합만 적용합니다. 재인식은 현재 로컬 모델만 지원합니다. [구현 내용·실제 전후 비교·한계](docs/ocr-improvement-2026-10-13.md)를 확인하세요.
+
+**PaddleOCR 단독 탐지·인식**은 `OCR_PIPELINE=paddle-only ./run.sh`로 실행합니다. Windows PowerShell은 `$env:OCR_PIPELINE = "paddle-only"` 설정 후 `.\run.cmd`를 실행하세요. `PP-OCRv5_server_det`와 `korean_PP-OCRv5_mobile_rec`를 분리된 `.runtime/paddle-env`에서 사용하며, 이 경로의 실행 검사와 OCR에는 EasyOCR/PyTorch 가중치가 필요하지 않습니다. 모델 준비는 `.venv/bin/python -m scripts.prepare_paddle --include-detection`을 명시적으로 실행합니다. 가상환경 준비·판정 정책·실제 비교는 [Paddle 단독 실행 안내](docs/ocr-paddle-only-2026-10-13.md)를 확인하세요. 기본값은 비교 검증이 완료될 때까지 `baseline`으로 유지합니다.
+
+기존 `OCR_PIPELINE=paddle`은 **EasyOCR 탐지 + Paddle 재인식** 비교 경로이며 단독 모드와 다릅니다. `OCR_PIPELINE=qwen`은 EasyOCR와 로컬 Ollama `qwen3-vl:4b-instruct`를 함께 사용합니다. 혼합 경로에서 신규·변경 후보는 확인 대상으로 보존하고, 기존에 충분한 근거가 있던 동일 문구는 해당 기준별로 판정합니다. [기존 모델 비교 기록](docs/ocr-model-comparison-2026-10-13.md)은 변경 전 실험 결과입니다. 실행 스크립트는 선택한 모델 준비 상태를 검사하며 자동 설치·다운로드하지 않습니다.
+
+여러 포스터를 같은 조건으로 비교하는 실행 도구를 추가했습니다. 아래 명령은 비교용 5장에 기존 EasyOCR의 전처리 3종을 실행하고, 시간·메모리·원시 결과·필드 추출·오통과 사례를 새 실행 폴더에 기록합니다. 최종 확인용 3장은 기본 실행에서 제외하며 모델은 자동 다운로드하지 않습니다.
+
+```bash
+.venv/bin/python -m scripts.benchmark_ocr
+```
+
+Windows에서는 `.\.venv\Scripts\python.exe -m scripts.benchmark_ocr`를 사용하세요. 실행 방법과 라벨 형식은 [비교 도구 안내](docs/ocr-benchmark.md), 실제 MPS 측정값과 한계는 [첫 기준선 보고서](docs/ocr-baseline-2026-10-13.md)에 정리했습니다. 현재 라벨은 사람 확인 전 초안이므로 일치율을 확정 정확도로 해석하지 않습니다.
+
+### 프로젝트 파일
+
 ```text
 frontend/                      React 화면, 상태 관리, Vite, npm lock
 backend/app/                   API, OCR 실행, 행사 정보 추출, 검수 규칙
@@ -252,7 +270,8 @@ setup_local.py                 전용 환경 설치와 React 빌드
 - **Apple Vision을 사용하지 않습니다.** EasyOCR 한국어·영어 모델을 사용합니다.
 - 로컬과 RunPod Pod에서는 **CUDA → MPS → CPU** 순서로 장치를 선택합니다. 명확한 GPU 오류만 다음 장치로 전환하고, 입력·모델 오류는 실패로 표시합니다.
 - 요구사항을 항목별로 편집·선택한 뒤 기준 버전을 고정합니다. 입력이나 기준을 바꾸면 이전 결과를 무효화합니다.
-- 충분한 OCR 근거가 있는 문구를 충족으로 표시합니다. OCR 누락을 위반으로 단정하지 않으며 로고·색상·잘림 등은 확인 필요로 남깁니다.
+- 충분한 OCR 근거가 있는 문구를 충족으로 표시합니다. OCR 누락을 위반으로 단정하지 않으며 색상·잘림 등 시각 조건은 확인 필요로 남깁니다.
+- 로고 원본이 없는 현재 단계에서는 합의된 `김천시 로고가 표시되어 있어야 합니다.` 항목만 `김천시` 문구가 충분한 OCR 점수로 확인되면 충족으로 처리합니다. 결과에 임시 문구 판정(`logo_text_proxy`)과 해당 글자의 위치를 남기며 심벌 형태는 검증하지 않습니다. 다른 로고나 위치·색상·잘림을 함께 요구하는 조건에는 적용하지 않습니다. 추후 승인된 로고 원본을 등록해 이미지 대조로 확장할 수 있습니다.
 - 판정 결과는 최종 승인을 대신하지 않습니다. OCR 신뢰도는 정답 확률이 아닙니다.
 
 김천 포스터의 장식 글꼴에서 EasyOCR 인식 오류가 확인됐습니다. 기존 샘플의 MPS 실험에서는 원본·RGB 2배·회색조·CLAHE·이진화 모두 실행됐지만, 행사명·시작일·종료일·전체 장소 문구의 완전 일치는 **0/4**였습니다. 라벨 초안은 사람이 확정한 학습 정답이 아닙니다. [데이터 파이프라인 안내](docs/data-pipeline.md)를 참고하세요.

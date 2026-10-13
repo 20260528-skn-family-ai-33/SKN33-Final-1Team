@@ -1,0 +1,124 @@
+{
+  "schema_version": "poster.benchmark-label.v1",
+  "case_id": "p04",
+  "source_sha256": "330af1d271eabe45427233ed03d63e390b1490d1bda5b2938983f9ebc99df4f5",
+  "coordinate_space": "normalized_original_pixels",
+  "dimensions": [
+    940,
+    1175
+  ],
+  "method": "assistant_visual_draft_before_inference",
+  "human_verified": false,
+  "review_status": "needs_human_review",
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "use_for_training": false,
+  "notes": [
+    "픽셀 시각 판독 초안. 사람 확인 전 정답 정확도로 보고하지 않는다.",
+    "regions는 문자 진단용이며 추론·탐지·crop 생성에 전달하지 않는다.",
+    "unresolved는 미라벨/판독 불가이며 실제 부재를 의미하지 않는다."
+  ],
+  "regions": [
+    {
+      "id": "title1",
+      "text": "단양",
+      "bbox_xyxy": [
+        70,
+        124,
+        321,
+        262
+      ]
+    },
+    {
+      "id": "title2",
+      "text": "겨울놀이 축제",
+      "bbox_xyxy": [
+        65,
+        270,
+        889,
+        404
+      ]
+    },
+    {
+      "id": "date",
+      "text": "2026. 1. 23.(금) ~ 25.(일) 3일간",
+      "bbox_xyxy": [
+        77,
+        422,
+        692,
+        475
+      ]
+    },
+    {
+      "id": "place",
+      "text": "단양군 대강면 죽령천 인근(대강오토캠핑장)",
+      "bbox_xyxy": [
+        79,
+        476,
+        685,
+        514
+      ]
+    }
+  ],
+  "fields": {
+    "event_name": {
+      "value": "단양겨울놀이축제",
+      "status": "visible",
+      "region_ids": [
+        "title1",
+        "title2"
+      ]
+    },
+    "start_date": {
+      "value": "2026-01-23",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "end_date": {
+      "value": "2026-01-25",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "location_raw": {
+      "value": "단양군 대강면 죽령천 인근(대강오토캠핑장)",
+      "status": "visible",
+      "region_ids": [
+        "place"
+      ]
+    }
+  },
+  "criteria": [
+    {
+      "id": "name",
+      "text": "행사명: 단양겨울놀이축제",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "title1",
+        "title2"
+      ]
+    },
+    {
+      "id": "period",
+      "text": "기간: 2026.01.23 ~ 01.25",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "date"
+      ]
+    },
+    {
+      "id": "venue",
+      "text": "장소: 대강오토캠핑장",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "place"
+      ]
+    }
+  ]
+}

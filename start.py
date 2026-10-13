@@ -21,6 +21,13 @@ OCR_PACKAGES = (("torch", "torch"), ("torchvision", "torchvision"),
                 ("opencv-python-headless", "cv2"))
 
 
+def requirements_file():
+    """원격·Paddle 단독은 EasyOCR 없이 실행 가능한 공통 패키지만 안내한다."""
+    target = os.getenv("RUN_TARGET", "local").strip().lower()
+    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    return "requirements-test.txt" if target == "runpod" or pipeline == "paddle-only" else "requirements.txt"
+
+
 # 빌드 HTML에서 실행에 필요한 스크립트와 스타일 경로만 읽는다.
 class BuildAssets(HTMLParser):
     def __init__(self):
@@ -50,8 +57,7 @@ def environment_failure(reason, windows, preserve=False):
         print("Python 3.12가 없다면 먼저 설치하세요.")
         print("python3.12 -m venv .venv")
     python = r".\.venv\Scripts\python.exe" if windows else ".venv/bin/python"
-    requirements = "requirements-test.txt" if os.getenv("RUN_TARGET", "local").strip().lower() == "runpod" else "requirements.txt"
-    print(f"{python} -m pip install -r {requirements}")
+    print(f"{python} -m pip install -r {requirements_file()}")
     print("설치 후 다시 실행: " + (r".\run.cmd" if windows else "./run.sh"))
     raise SystemExit(1)
 
@@ -106,11 +112,29 @@ def model_problems():
     return problems
 
 
+def paddle_setup_commands(python, windows, *, include_detection=False):
+    """기존 격리 환경을 덮어쓰지 않고 복구·설치·다운로드 명령만 반환한다."""
+    relative_python = r".runtime\paddle-env\Scripts\python.exe" if windows else ".runtime/paddle-env/bin/python"
+    environment = ROOT / ".runtime" / "paddle-env"
+    executable = environment / ("Scripts/python.exe" if windows else "bin/python")
+    warnings, commands = [], []
+    if not executable.is_file():
+        if environment.exists():
+            warnings.append("[안내] 기존 .runtime/paddle-env에 현재 운영체제의 Python이 없습니다. 다른 이름으로 보관한 뒤 생성 명령을 실행하세요.")
+        commands.append(f"{python} -m venv .runtime/paddle-env")
+    # 기존 환경의 pip 유무와 무관하게 안전하게 복구한 후 패키지를 설치하도록 안내한다.
+    commands.extend([f"{relative_python} -m ensurepip --upgrade",
+                     f"{relative_python} -m pip install -r requirements-paddle.txt",
+                     f"{python} -m scripts.prepare_paddle" + (" --include-detection" if include_detection else "")])
+    return warnings, commands
+
+
 # 선택한 실행 모드의 준비 상태와 필요한 복구 명령을 함께 반환한다.
 def startup_checks(windows):
     python = r".\.venv\Scripts\python.exe" if windows else ".venv/bin/python"
     npm = "npm.cmd" if windows else "npm"
     target = os.getenv("RUN_TARGET", "local").strip().lower()
+    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
     problems, modules = package_problems(SERVER_PACKAGES)
     package_errors = bool(problems)
     warnings = []
@@ -122,6 +146,11 @@ def startup_checks(windows):
     if target not in {"local", "runpod"}:
         problems.append("[설정 오류] RUN_TARGET은 local 또는 runpod이어야 합니다.")
         commands.append('$env:RUN_TARGET = "local"' if windows else "export RUN_TARGET=local")
+    if pipeline not in {"baseline", "multiline", "adaptive", "paddle", "paddle-only", "qwen"}:
+        problems.append("[설정 오류] OCR_PIPELINE은 baseline, multiline, adaptive, paddle, paddle-only, qwen 중 하나여야 합니다.")
+    if target == "runpod" and pipeline in {"adaptive", "paddle", "paddle-only", "qwen"}:
+        problems.append(f"[설정 오류] OCR_PIPELINE={pipeline}은 RUN_TARGET=local에서만 지원합니다.")
+        commands.append('$env:RUN_TARGET = "local"' if windows else "export RUN_TARGET=local")
     if target == "runpod":
         if not os.getenv("RUNPOD_API_KEY", "").strip():
             problems.append("[설정 누락] RUNPOD_API_KEY")
@@ -132,18 +161,41 @@ def startup_checks(windows):
             warnings.append("[안내] 서버 터미널에 RunPod 설정을 지정하세요. .env.example은 자동으로 읽지 않습니다.")
         else:
             warnings.append("[안내] RunPod 연결 설정이 있습니다. 실제 worker 연결은 검수 요청 시 확인합니다.")
-    else:
+    elif pipeline != "paddle-only":
         ocr_errors, _ = package_problems(OCR_PACKAGES)
         problems.extend(ocr_errors)
         package_errors = package_errors or bool(ocr_errors)
     if package_errors:
-        requirements = "requirements-test.txt" if target == "runpod" else "requirements.txt"
-        commands.append(f"{python} -m pip install -r {requirements}")
-    if target != "runpod":
+        if pipeline == "paddle-only":
+            warnings.append("[안내] requirements-test.txt는 EasyOCR·PyTorch 없이 서버 공통 패키지를 준비하는 데 사용합니다.")
+        commands.append(f"{python} -m pip install -r {requirements_file()}")
+    if target != "runpod" and pipeline != "paddle-only":
         missing_models = model_problems()
         problems.extend(missing_models)
         if missing_models:
             commands.append(f"{python} -m backend.app.ocr_runtime --download-models")
+    # 새 모델도 실행 전에 점검하되 설치·모델 다운로드는 사용자가 명시적으로 실행한다.
+    if pipeline == "paddle-only" and target == "local":
+        # 단독 경로에서는 EasyOCR import·모델 검사 없이 Paddle 격리 환경만 점검한다.
+        from backend.app.paddle_ocr import paddle_readiness
+        ready, detail = paddle_readiness(check_import=True)
+        if not ready:
+            problems.append(f"[모델 준비 부족] {detail}")
+            paddle_warnings, paddle_commands = paddle_setup_commands(python, windows, include_detection=True)
+            warnings.extend(paddle_warnings)
+            commands.extend(paddle_commands)
+    elif pipeline in {"paddle", "qwen"} and target == "local":
+        from backend.app.model_ocr import model_readiness
+        ready, detail = model_readiness(pipeline, check_import=True)
+        if not ready:
+            problems.append(f"[모델 준비 부족] {detail}")
+            if pipeline == "paddle":
+                paddle_warnings, paddle_commands = paddle_setup_commands(python, windows)
+                warnings.extend(paddle_warnings)
+                commands.extend(paddle_commands)
+            else:
+                commands.extend([f"{python} -m scripts.local_ollama serve  # 별도 터미널에서 유지",
+                                 f"{python} -m scripts.local_ollama pull"])
     build_errors = frontend_problems()
     problems.extend(build_errors)
     if build_errors:

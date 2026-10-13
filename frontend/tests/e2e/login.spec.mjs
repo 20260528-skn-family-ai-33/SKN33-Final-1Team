@@ -83,7 +83,7 @@ async function fixture(t, options = {}) {
       id: 'test-review', status: 'completed', stage: 'completed', progress: 100,
       project_name: '화면 통합 검증', criteria_version: 1,
       image: { url: '/api/reviews/test-review/image', width: 1, height: 1 },
-      results: [{ criterion_id: 'criterion-1', criterion: '행사명: 테스트 축제', type: 'information', status: 'pass',
+      results: state.reviewResults || [{ criterion_id: 'criterion-1', criterion: '행사명: 테스트 축제', type: 'information', status: 'pass',
         reason: '이미지 문구에서 행사명을 확인했습니다.', observed_text: '테스트 축제',
         evidence: [{ text: '테스트 축제', bbox_xyxy: [0, 0, 1, 1] }] }],
     });
@@ -272,4 +272,30 @@ test('이미지 입력·기준 확정·검수·결과 근거와 서비스 소개
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).first().click();
   await page.getByRole('heading', { name: '항목별 검수 결과를 확인하세요.' }).waitFor();
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
+});
+
+// 후보가 충돌하면 처음 읽은 문구와 재인식 문구를 모두 화면에 표시한다.
+test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함께 표시한다', async t => {
+  const { page } = await fixture(t, { authenticated: true, reviewResults: [{
+    criterion_id: 'place', criterion: '장소: 친환경생태공원', type: 'information', status: 'review',
+    reason: '서로 다른 OCR 후보를 확인해 주세요.', observed_text: '친환경생대공원',
+    evidence: [{ ocr_id: 'r1', text: '친환경생대공원', baseline_text: '친환경생대공원',
+      requires_review: true, bbox_xyxy: [0, 0, 1, 1],
+      alternatives: [{ text: '친환경생태공원', engine: 'qwen3-vl', bbox_xyxy: [0, 0, 1, 1] },
+        { text: '친환경생태공원', engine: 'paddleocr', bbox_xyxy: [0, 0, 1, 1] }] }],
+  }] });
+  await page.goto(`${baseURL}/review/new`);
+  await page.getByLabel('1. 프로젝트 이름').fill('재인식 검증');
+  await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
+  await page.getByLabel('3. 검수 요구사항').fill('장소: 친환경생태공원');
+  await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
+  await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
+  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+  await page.getByLabel('재인식 비교', { exact: true }).waitFor();
+  await page.getByText('처음 읽기: 친환경생대공원', { exact: true }).waitFor();
+  await page.getByText('다시 읽기: Qwen: 친환경생태공원 / PaddleOCR: 친환경생태공원', { exact: true }).waitFor();
+  assert.equal(await page.locator('.result-item .status-badge').textContent(), '확인 필요');
+  await page.getByRole('button', { name: '위치 보기 · 1곳' }).click();
+  await page.getByLabel('근거 영역: 친환경생대공원', { exact: true }).waitFor();
+  await screenshot(page, 'reread-comparison.png');
 });

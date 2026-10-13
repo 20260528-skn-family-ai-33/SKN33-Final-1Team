@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock, call
 import json
 import subprocess
+import sys
 
 import pytest
 
@@ -262,6 +263,125 @@ def ready_start(project, monkeypatch):
     monkeypatch.delenv("OCR_MODEL_DIR", raising=False)
     monkeypatch.setattr(start.sys, "argv", ["start.py"])
     return uvicorn, modules
+
+
+def ready_paddle_start(project, monkeypatch, *, ready=True):
+    """EasyOCR가 설치되지 않은 프로젝트에서 Paddle 격리 환경만 준비됐다고 주입한다."""
+    uvicorn, modules = ready_start(project, monkeypatch)
+    for model in (project.root / ".runtime" / "easyocr").iterdir():
+        model.unlink()
+    original_import = modules.side_effect
+
+    def server_only_import(name):
+        """서버 Python에 OCR 의존성을 불러오는 회귀가 있으면 즉시 실패한다."""
+        if name in {module for _, module in start.OCR_PACKAGES}:
+            raise AssertionError("Paddle 단독은 EasyOCR 패키지를 검사하지 않습니다.")
+        return original_import(name)
+
+    modules.side_effect = server_only_import
+    readiness = Mock(return_value=(ready, "Paddle model missing" if not ready else "Paddle ready"))
+    monkeypatch.setitem(sys.modules, "backend.app.paddle_ocr", SimpleNamespace(paddle_readiness=readiness))
+    monkeypatch.setenv("OCR_PIPELINE", "paddle-only")
+    return uvicorn, modules, readiness
+
+
+@pytest.mark.parametrize("check_only", [True, False])
+def test_paddle_only_starts_without_easyocr_packages_or_weights(windows_project, monkeypatch, check_only):
+    """단독 시작은 Paddle만 점검하고 기존 host·port 및 검사 전용 동작을 유지한다."""
+    uvicorn, modules, readiness = ready_paddle_start(windows_project, monkeypatch)
+    monkeypatch.setattr(start.sys, "argv", ["start.py", "--host", "127.0.0.1", "--port", "8124"] + (["--check-only"] if check_only else []))
+    start.main()
+    readiness.assert_called_once_with(check_import=True)
+    assert modules.call_count == len(start.SERVER_PACKAGES)
+    if check_only:
+        uvicorn.run.assert_not_called()
+    else:
+        uvicorn.run.assert_called_once_with("backend.app.api:app", host="127.0.0.1", port=8124)
+    windows_project.run.assert_not_called()
+    windows_project.popen.assert_not_called()
+
+
+def test_missing_paddle_only_prints_explicit_setup_and_never_executes_it(windows_project, monkeypatch, capsys):
+    """준비 부족은 설치·다운로드를 실행하지 않고 필요한 명령만 출력한다."""
+    uvicorn, modules, readiness = ready_paddle_start(windows_project, monkeypatch, ready=False)
+    with pytest.raises(SystemExit) as failure:
+        start.main()
+    assert failure.value.code == 1
+    output = capsys.readouterr().out
+    assert "--include-detection" in output and "requirements-paddle.txt" in output
+    assert output.index("venv .runtime/paddle-env") < output.index("ensurepip --upgrade") < output.index("pip install") < output.index("--include-detection")
+    assert "backend.app.ocr_runtime --download-models" not in output
+    assert all(name not in output for name in start.MODEL_FILES)
+    assert modules.call_count == len(start.SERVER_PACKAGES)
+    readiness.assert_called_once_with(check_import=True)
+    uvicorn.run.assert_not_called()
+    windows_project.run.assert_not_called()
+    windows_project.popen.assert_not_called()
+
+
+def test_paddle_only_server_recovery_uses_requirements_without_easyocr(windows_project, monkeypatch, capsys):
+    """서버 의존성 복구에서도 EasyOCR·PyTorch 설치를 요구하지 않는다."""
+    uvicorn, modules, _ = ready_paddle_start(windows_project, monkeypatch)
+    modules.side_effect = ImportError("server dependency unavailable")
+    monkeypatch.setattr(start.importlib.util, "find_spec", lambda name: None)
+    with pytest.raises(SystemExit):
+        start.main()
+    output = capsys.readouterr().out
+    assert "-m pip install -r requirements-test.txt" in output
+    assert "-m pip install -r requirements.txt" not in output
+    assert output.index("ensurepip --upgrade") < output.index("pip install")
+    uvicorn.run.assert_not_called()
+
+
+@pytest.mark.parametrize("pipeline", ["paddle-only", "paddle", "qwen", "adaptive"])
+def test_runpod_rejects_local_only_pipeline_before_local_checks(windows_project, monkeypatch, capsys, pipeline):
+    """RunPod와 지원하지 않는 조합에서 로컬 모델 검사·실행을 하지 않는다."""
+    uvicorn, modules, readiness = ready_paddle_start(windows_project, monkeypatch)
+    monkeypatch.setenv("OCR_PIPELINE", pipeline)
+    monkeypatch.setenv("RUN_TARGET", "runpod")
+    monkeypatch.setenv("RUNPOD_API_KEY", "private-key-never-print")
+    monkeypatch.setenv("RUNPOD_ENDPOINT_ID", "endpoint-1")
+    with pytest.raises(SystemExit):
+        start.main()
+    output = capsys.readouterr().out
+    assert "RUN_TARGET=local에서만" in output
+    assert "private-key-never-print" not in output
+    readiness.assert_not_called()
+    assert modules.call_count == len(start.SERVER_PACKAGES)
+    uvicorn.run.assert_not_called()
+
+
+def test_paddle_setup_preserves_existing_environment(windows_project, monkeypatch, capsys):
+    """기존 Paddle 환경은 재생성하지 않고 pip 복구부터 안내한다."""
+    uvicorn, _, _ = ready_paddle_start(windows_project, monkeypatch, ready=False)
+    executable = windows_project.root / ".runtime" / "paddle-env" / "Scripts" / "python.exe"
+    executable.parent.mkdir(parents=True)
+    executable.write_bytes(b"keep existing environment")
+    with pytest.raises(SystemExit):
+        start.main()
+    output = capsys.readouterr().out
+    assert "-m venv .runtime/paddle-env" not in output
+    assert executable.read_bytes() == b"keep existing environment"
+    uvicorn.run.assert_not_called()
+
+
+@pytest.mark.parametrize("pipeline", ["paddle", "qwen"])
+def test_selected_new_model_missing_stops_server_and_only_prints_commands(windows_project, monkeypatch, capsys, pipeline):
+    """선택 모델 누락 시 기존 실행 정책대로 설치 안내만 하고 서버를 시작하지 않는다."""
+    from backend.app import model_ocr
+    uvicorn, _ = ready_start(windows_project, monkeypatch)
+    monkeypatch.setenv("OCR_PIPELINE", pipeline)
+    readiness = Mock(return_value=(False, "test missing model"))
+    monkeypatch.setattr(model_ocr, "model_readiness", readiness)
+    with pytest.raises(SystemExit) as failure:
+        start.main()
+    assert failure.value.code == 1
+    output = capsys.readouterr().out
+    assert "test missing model" in output
+    assert ("requirements-paddle.txt" if pipeline == "paddle" else "scripts.local_ollama") in output
+    readiness.assert_called_once_with(pipeline, check_import=True)
+    uvicorn.run.assert_not_called()
+    windows_project.run.assert_not_called()
 
 
 @pytest.mark.parametrize("error", [ImportError("No module named fastapi"), OSError("DLL load failed")])

@@ -1,0 +1,105 @@
+{
+  "schema_version": "poster.benchmark.v1",
+  "dataset_id": "posters-v1",
+  "selection_status": "frozen_before_baseline",
+  "selection_method": "시각적 배치·글꼴·방향·정보량을 기준으로 선택. 최종 검증 3장은 이번 추론에서 제외.",
+  "limitations": [
+    "8장 모두 행사 포스터이며 대표 표본을 보장하지 않음",
+    "인위적 회전·실제 정보 누락·EXIF·투명 배경은 별도 계약 테스트가 필요",
+    "holdout은 아직 OCR 추론에 사용하지 않았지만 데이터 선정 시 미리보기는 확인함",
+    "정규화 원본 픽셀 중복은 사전 확인했으며 유사 디자인의 완전 배제를 보장하지 않음"
+  ],
+  "cases": [
+    {
+      "id": "p01",
+      "image": "data/img/2026_김천_김밥축제.jpg",
+      "sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+      "split": "tuning",
+      "traits": [
+        "장식 글꼴",
+        "높은 신뢰도 오인식 회귀"
+      ],
+      "label": "data/benchmarks/labels/p01.json"
+    },
+    {
+      "id": "p02",
+      "image": "data/img/2026_강원_춘천시_춘천마임축제_포스터.jpg",
+      "sha256": "dd6b8f8734742fb4e4b9e1c55ff1e8b5d41a23ff7df2467bb886d2347b3fccbb",
+      "split": "tuning",
+      "traits": [
+        "오른쪽 제목",
+        "여러 줄 제목",
+        "연도와 날짜 분리"
+      ],
+      "label": "data/benchmarks/labels/p02.json"
+    },
+    {
+      "id": "p03",
+      "image": "data/img/2026_구미라면_축제_포스터.png",
+      "sha256": "780e11893a51d1fb6664bf803ec8fcd0014c531a4c88d3651f3b63f9b3c47e9b",
+      "split": "tuning",
+      "traits": [
+        "세 줄 제목",
+        "종료 월 생략"
+      ],
+      "label": "data/benchmarks/labels/p03.json"
+    },
+    {
+      "id": "p04",
+      "image": "data/img/2026_단양_겨울놀이_축제_포스터.jpg",
+      "sha256": "330af1d271eabe45427233ed03d63e390b1490d1bda5b2938983f9ebc99df4f5",
+      "split": "tuning",
+      "traits": [
+        "분리된 제목",
+        "공원 이외 장소",
+        "글자가 많은 포스터"
+      ],
+      "label": "data/benchmarks/labels/p04.json"
+    },
+    {
+      "id": "p05",
+      "image": "data/img/2026_안동국제탈춤페스티벌.png",
+      "sha256": "374898f64d83ec5b96931c4e413960ce5ee979bece86c02f87afb02135b4ba10",
+      "split": "tuning",
+      "traits": [
+        "하단 제목",
+        "다중 문구",
+        "두 줄 장소"
+      ],
+      "label": "data/benchmarks/labels/p05.json"
+    },
+    {
+      "id": "p06",
+      "image": "data/img/2026_경북_문경시_문경사과축제_포스터.jpg",
+      "sha256": "0d5f7d267b60d1a355a7e10cdec541f0a75f512c523ebc20eeceecad0436d305",
+      "split": "holdout",
+      "traits": [
+        "세로 제목",
+        "고밀도 일정"
+      ],
+      "label": null
+    },
+    {
+      "id": "p07",
+      "image": "data/img/2026_영등포_북페스타_오늘만_북클럽_포스터.jpg",
+      "sha256": "2eea0156f2666ab97f09bdcbe85bf4f206e2c69eaef894bca81b2cda54b566b2",
+      "split": "holdout",
+      "traits": [
+        "회전 글자",
+        "실험적 배치"
+      ],
+      "label": null
+    },
+    {
+      "id": "p08",
+      "image": "data/img/2026_백제문화제_포스터.png",
+      "sha256": "65ca048a2221a8d1f34e3a4b118ab481cb3163303d99db4f80ed2551e8a829b4",
+      "split": "holdout",
+      "traits": [
+        "가로형 포스터",
+        "고밀도 문구"
+      ],
+      "label": null
+    }
+  ]
+}

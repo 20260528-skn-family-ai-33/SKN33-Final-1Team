@@ -1,5 +1,9 @@
 # 포스터 라벨링과 전처리
 
+여러 포스터의 새 비교 작업은 [OCR 기준선 비교 도구](ocr-benchmark.md)를 사용합니다. `scripts.benchmark_ocr`는 실행별 폴더와 고정 분할을 사용하며 웹과 같은 **정규화 원본 좌표**를 보존합니다. 아래 기존 김천 샘플 CLI의 **EXIF 역변환 후 저장 픽셀 좌표**와 구분합니다. 첫 실제 측정은 [기준선 보고서](ocr-baseline-2026-10-13.md)에 있습니다.
+
+Paddle 단독 경로는 `--pipeline paddle-only --variants rgb_2x`로 비교합니다. 전체 이미지에서 Paddle 자체 탐지·인식을 수행하며, `paddle`(EasyOCR 탐지 + Paddle 재인식)과 구분합니다. 기존 이미지·라벨·이전 결과는 보존하고 매 실행마다 새 결과를 만듭니다. 설치·운영 판정·실측의 한계는 [Paddle 단독 보고서](ocr-paddle-only-2026-10-13.md)를 따릅니다.
+
 원본 포스터는 `data/img/`에서 읽습니다. Git에는 재현 가능한 스크립트와 `data/labels/gimcheon_gimbap_2026/`의 작은 JSON 초안만 추가합니다. 변형 이미지, crop, OCR 결과와 검증 보고서는 `artifacts/`에 생성하며 Git에서 제외합니다. 모델, 가상환경, 과거 Apple Vision 결과는 이 데이터 파이프라인에 포함하지 않습니다.
 
 모든 명령은 저장소 루트에서 실행합니다. Python 설치와 의존성 구성은 루트 README를 따릅니다.

@@ -102,6 +102,31 @@ jobs:
           }
           & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert importlib.util.find_spec('easyocr') is None"
           if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
+      - name: Verify Paddle-only startup does not require EasyOCR
+        run: |
+          # 단독 선택은 Paddle 준비 명령만 안내하고 격리 환경도 자동 생성하지 않는다.
+          $env:OCR_PIPELINE = "paddle-only"
+          $env:RUN_TARGET = "local"
+          $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
+          $checkExit = $LASTEXITCODE
+          Write-Host $diagnostics
+          if ($checkExit -ne 1) {
+            throw "Expected missing Paddle environment to stop the launcher with exit 1."
+          }
+          if ($diagnostics -notmatch 'requirements-paddle.txt' -or
+              $diagnostics -notmatch 'scripts.prepare_paddle --include-detection') {
+            throw "Paddle-only diagnostics did not include explicit preparation commands."
+          }
+          if ($diagnostics -match '\[누락\] (torch|torchvision|easyocr)' -or
+              $diagnostics -match 'pip install -r requirements\.txt' -or
+              $diagnostics -match 'backend.app.ocr_runtime --download-models') {
+            throw "Paddle-only startup must not require EasyOCR packages or models."
+          }
+          if (Test-Path ".runtime/paddle-env") {
+            throw "The checker must not create or install the Paddle environment."
+          }
+          & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert all(importlib.util.find_spec(name) is None for name in ('easyocr', 'torch', 'paddleocr'))"
+          if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
       - name: Smoke test the API and React on the same origin
         run: |
           $python = (Resolve-Path ".\.venv\Scripts\python.exe").Path
