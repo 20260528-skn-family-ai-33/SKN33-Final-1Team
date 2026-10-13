@@ -24,6 +24,24 @@
 
 서버가 실행되는 동안 터미널을 유지하세요. 입력 프롬프트가 돌아오지 않는 것이 정상입니다. `Ctrl+C`는 서버 종료이며, 가상환경의 `activate`만 실행해서는 서버가 시작되지 않습니다. `frontend/index.html`을 파일로 열지 마세요.
 
+`run.sh`와 `run.cmd`는 서버를 시작하기 전에 프로젝트 `.venv`, Python 3.12, 서버·OCR 패키지의 import, OCR 모델 파일, React 빌드와 참조 자산을 검사합니다. **준비되지 않은 실행 항목이 있으면 누락 목록과 설치 명령을 출력하고 종료 코드 `1`로 중단**합니다. 로그에 나온 명령은 자동 실행되지 않습니다. 각 명령이 성공하면 다음 명령을 실행한 뒤 서버를 다시 시작하세요.
+
+서버를 켜지 않고 검사만 하려면 다음 명령을 사용합니다. 준비됐으면 종료 코드 `0`, 누락이나 import 오류가 있으면 `1`을 반환합니다.
+
+```bash
+# macOS / Linux
+./run.sh --check-only
+```
+
+```powershell
+# Windows
+.\run.cmd --check-only
+```
+
+패키지 설치가 필요하면 프로젝트 Python의 `-m pip install -r requirements.txt`를 안내하며, pip도 없으면 `-m ensurepip --upgrade`를 먼저 안내합니다. pip만 없고 나머지 실행 항목이 준비됐다면 복구 안내를 출력하고 서버를 실행합니다. 기존 빌드가 정상이라면 Node.js/npm은 실행에 필요하지 않습니다. 빌드가 없거나 참조 파일이 손상된 경우에만 npm 설치·빌드 명령을 안내합니다.
+
+`RUN_TARGET=runpod`에서는 로컬 OCR 패키지·모델 대신 `RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_ID` 설정을 검사하고, 서버 패키지 복구는 `requirements-test.txt`를 안내합니다. 비밀키 값은 출력하지 않으며 실제 worker 연결은 검수 요청 시 확인합니다. 로컬 검사도 모델 파일의 존재·빈 파일 여부까지만 확인하며 모델 무결성·장치별 실제 추론은 검수 실행에서 확인합니다. 다른 운영체제의 `.venv`나 Python 버전이 다른 환경은 자동 삭제·덮어쓰지 않습니다.
+
 8000번 포트를 다른 앱이 사용 중이면 다음 명령으로 실행하고 출력된 주소를 엽니다.
 
 ```bash
@@ -198,7 +216,9 @@ start.py / run.sh / run.cmd     통합 서버 실행 (macOS·Linux / Windows)
 setup_local.py                 전용 환경 설치와 React 빌드
 ```
 
-`.runtime/`에는 OCR 모델과 업로드·작업 기록이, `artifacts/`에는 재생성 가능한 전처리·평가 결과가 저장됩니다. 두 폴더와 `.venv`, `node_modules`, `dist`는 Git에서 제외합니다. 모델 가중치·가상환경·과거 샘플 ZIP은 커밋하지 않습니다. `frontend/package-lock.json`은 Git에 포함하고, `frontend/node_modules`와 `frontend/dist`는 설치·빌드로 다시 생성합니다.
+`.runtime/`에는 OCR 모델과 업로드·작업 기록이, `artifacts/`에는 재생성 가능한 전처리·평가 결과가 저장됩니다. 두 폴더와 `.venv`, `node_modules`, 일반 `dist` 폴더는 Git에서 제외합니다. 모델 가중치·가상환경·과거 샘플 ZIP은 커밋하지 않습니다. **`frontend/dist`는 예외로 Git에 포함**하여 다른 PC에서도 저장소에 포함된 화면을 바로 실행할 수 있게 합니다. `frontend/package-lock.json`도 Git에 포함하며, `frontend/node_modules`는 각 PC에서 설치합니다.
+
+프런트엔드 코드를 수정했다면 커밋 전에 `npm --prefix frontend run build`(Windows: `npm.cmd --prefix frontend run build`)를 실행하고, 소스와 `frontend/dist`의 변경·추가·삭제 파일을 함께 커밋하세요. 새 빌드의 해시가 달라지면 이전 JS·CSS 파일도 삭제된 상태로 반영해야 합니다. Windows에서는 최신 커밋을 받은 뒤 실행 중인 서버를 종료하고 `.\run.cmd`를 다시 실행하면 됩니다. Python 패키지와 OCR 모델은 별도 설치가 필요합니다.
 
 샘플 이미지는 기존 `data/img/2026_김천_김밥축제.jpg`를 재사용합니다. 파일명의 NFC/NFD 차이를 처리하며, 확장자와 달리 실제 포맷이 PNG인 원본도 읽습니다. 원본 이미지를 변형하거나 덮어쓰지 않습니다.
 
@@ -341,7 +361,7 @@ $env:E2E_BASE_URL = "http://127.0.0.1:8123"; npm.cmd --prefix frontend run test:
 
 ### 자동 검증과 확인 범위
 
-GitHub Actions는 Ubuntu와 Windows에서 `requirements-test.txt`로 OCR 모델 다운로드와 유료 호출 없이 Python 테스트를 실행하고, React 테스트·빌드를 수행하도록 구성했습니다. Windows 작업에는 `.venv` 생성, `run.cmd` 실행 확인, 실제 서버의 `/api/health`·React 화면 응답 확인이 포함됩니다. 워크플로 추가 자체가 Windows 검증 통과를 뜻하지는 않으며, PR 또는 main 푸시 후 해당 실행 결과를 확인해야 합니다. 실제 MPS/CUDA 추론과 RunPod 연결은 각 실행 환경에서 따로 확인합니다.
+GitHub Actions는 Ubuntu와 Windows에서 `requirements-test.txt`로 OCR 모델 다운로드와 유료 호출 없이 Python 테스트를 실행하고, React 테스트·빌드를 수행하도록 구성했습니다. Windows 작업에는 `.venv` 생성, `run.cmd --check-only`가 OCR 누락을 안내하며 설치 없이 중단하는지 확인하는 검사가 포함됩니다. 실제 서버의 `/api/health`·React 화면 응답은 uvicorn을 직접 실행하여 별도로 확인합니다. 워크플로 추가 자체가 Windows 검증 통과를 뜻하지는 않으며, PR 또는 main 푸시 후 해당 실행 결과를 확인해야 합니다. 실제 MPS/CUDA 추론과 RunPod 연결은 각 실행 환경에서 따로 확인합니다.
 
 2026-10-12 통합 검증: Python 56개·React 8개 테스트, React 빌드, 프로젝트 경로의 실제 MPS OCR(RGB 2배), 산출물 검사 190개를 통과했습니다. 서버의 HTML·MPS 준비 상태·원본 이미지 바이트와 MIME도 확인했습니다. GitHub 원격 Actions 실행과 CUDA/RunPod 실제 실행은 이 로컬 검증에 포함되지 않습니다.
 

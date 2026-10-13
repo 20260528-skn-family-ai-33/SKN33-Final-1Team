@@ -87,6 +87,21 @@ jobs:
         run: npm.cmd run build
       - name: Check the Windows launcher
         run: '& ".\run.cmd" --help'
+      - name: Verify missing OCR stops startup without installing
+        run: |
+          $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
+          $checkExit = $LASTEXITCODE
+          Write-Host $diagnostics
+          if ($checkExit -ne 1) {
+            throw "Expected missing OCR packages to stop the launcher with exit 1."
+          }
+          if ($diagnostics -notmatch '\[누락\] (torch|torchvision|easyocr)' -or
+              $diagnostics -notmatch 'pip install -r requirements.txt' -or
+              $diagnostics -notmatch '--download-models') {
+            throw "Missing OCR diagnostics did not include actionable preparation commands."
+          }
+          & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert importlib.util.find_spec('easyocr') is None"
+          if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
       - name: Smoke test the API and React on the same origin
         run: |
           $python = (Resolve-Path ".\.venv\Scripts\python.exe").Path
@@ -95,7 +110,7 @@ jobs:
           $server = $null
           try {
             $server = Start-Process -FilePath $python `
-              -ArgumentList @("start.py", "--host", "127.0.0.1", "--port", "18765") `
+              -ArgumentList @("-m", "uvicorn", "backend.app.api:app", "--host", "127.0.0.1", "--port", "18765") `
               -WorkingDirectory $env:GITHUB_WORKSPACE `
               -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
             $ready = $false
