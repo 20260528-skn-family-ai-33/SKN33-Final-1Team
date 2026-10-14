@@ -99,7 +99,7 @@ RGB 2배에서는 춘천·단양의 올바른 전체 행사명을 요구했을 �
 | `data/benchmarks/posters-v1.json` | 8장 목록과 고정 분할 |
 | `data/benchmarks/labels/p01.json` ~ `p05.json` | 사람 확인 전 시각 판독·좌표·검수 기준 초안 |
 | `tests/test_ocr_benchmark.py` | 데이터 분리, 실패·시간 초과, 좌표·EXIF·투명 배경, 오통과 등 계약 테스트 |
-| `README.md`, `docs/ocr-benchmark.md`, `docs/data-pipeline.md` | 실행과 지표 해석 안내 |
+| 당시 `README.md`(현재 [실행가이드](../실행가이드.md)), `docs/ocr-benchmark.md`, `docs/data-pipeline.md` | 실행과 지표 해석 안내 |
 
 새 함수에는 간단한 한국어 설명 주석을 붙였다. 전체 Python 테스트 **138개와 하위 테스트 7개**, 프런트엔드 테스트 **18개**가 통과했다. 그중 비교 도구 테스트는 17개이고 실제 MPS 추론 15회는 모의 테스트와 별도로 실행했다. Windows 실행·메모리 수집은 실제 장비에서 검증하지 않았으며 Windows RSS는 null로 남기도록 했다.
 

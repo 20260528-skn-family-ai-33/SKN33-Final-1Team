@@ -326,7 +326,7 @@ compose.yaml                      # PostgreSQL 등 로컬 기반 서비스, 구�
 
 현재 8000번 포트의 샘플 FastAPI를 자동 종료하거나 이 문서 작성으로 포트를 바꾸지 않는다. 전환 구현 때 시작 스크립트가 포트 충돌 원인을 안내하고 환경변수·명령 옵션으로 포트를 바꿀 수 있게 한다.
 
-Mac의 MPS OCR은 호스트의 Python 프로세스로 실행하는 구성을 기준으로 한다. Linux Docker 안에서 macOS MPS를 사용하는 것으로 가정하지 않는다. 운영 CUDA는 호환 GPU 환경에서 별도 검증한다. DB는 먼저 PostgreSQL 컨테이너로 제공할 수 있으며 파일·DB 백업과 복원 절차를 README에 추가한다.
+Mac의 MPS OCR은 호스트의 Python 프로세스로 실행하는 구성을 기준으로 한다. Linux Docker 안에서 macOS MPS를 사용하는 것으로 가정하지 않는다. 운영 CUDA는 호환 GPU 환경에서 별도 검증한다. DB는 먼저 PostgreSQL 컨테이너로 제공할 수 있으며 파일·DB 백업과 복원 절차를 [실행가이드](../실행가이드.md)에 추가한다.
 
 ## 12. 전환 순서와 팀 작업 분담
 
@@ -360,7 +360,7 @@ Mac의 MPS OCR은 호스트의 Python 프로세스로 실행하는 구성을 기
 | AC-11 | 기존 OCR·판정·추출·데이터셋·React 테스트를 유지하고 변경한 API 계약과 이력 복원 시나리오를 추가 검증한다. |
 | AC-12 | 초기 설치, DB migration, 각 프로세스 실행, 포트 변경, 장애 확인, DB+파일 백업·복원 절차가 문서화된다. |
 
-기존 README에는 Python 56개·React 8개 테스트 및 실제 MPS 실행 기록이 있다. 이는 이전 샘플 검증이며 **이번 Django/PostgreSQL 구조의 검증 결과가 아니다.** CUDA 실장비, 실제 RunPod 호출, RunPod Docker 빌드도 각각 별도 확인 대상으로 남는다. 명세서 작성 중에는 애플리케이션 코드·DB·서버 설정을 변경하지 않았다.
+당시 README(현재 [실행가이드](../실행가이드.md))에는 Python 56개·React 8개 테스트 및 실제 MPS 실행 기록이 있다. 이는 이전 샘플 검증이며 **이번 Django/PostgreSQL 구조의 검증 결과가 아니다.** CUDA 실장비, 실제 RunPod 호출, RunPod Docker 빌드도 각각 별도 확인 대상으로 남는다. 명세서 작성 중에는 애플리케이션 코드·DB·서버 설정을 변경하지 않았다.
 
 ## 14. 후속 범위
 
