@@ -36,7 +36,7 @@ PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세�
 | 검수 기록 | `.runtime/reviews/<UUID>/`의 JSON·이미지 | PostgreSQL의 관계형 데이터 + 파일 저장소 |
 | 기준 확정 | 브라우저 스냅샷·정수 버전, 실행 요청 때 서버에 함께 저장 | 서버에 별도로 확정·저장하는 프로젝트별 불변 버전 |
 | 실행 | FastAPI `BackgroundTasks`, 프로세스 내부 잠금 | PostgreSQL 작업 기록 + 독립 Python worker |
-| OCR | 기본 EasyOCR, 여러 줄 결합·선택적 재인식, Paddle 혼합·단독 등 선택 경로 | 기존 OCR 모듈을 worker에서 호출하고 실행 설정·근거·시도 기록 보존 |
+| OCR | 로컬 기본 Paddle 단독(`paddle-only`), EasyOCR 기준선·줄 결합·재인식 등 비교 경로. RunPod 기본은 `baseline` | 기존 OCR 모듈을 worker에서 호출하고 실행 설정·근거·시도 기록 보존 |
 | 판정·행사 정보 추출 | `review_rules.py`, `extract_event.py`, `event_layout.py` | 기존 규칙·추출기를 worker에서 재사용 |
 | 사용자·권한 | localhost용 `admin / admin`, 메모리 세션·로그인/로그아웃 CSRF | 실제 사용자·서버 저장 세션·프로젝트 멤버십·검수 접근 통제 |
 | 재실행 | 새 UUID 생성, 이전 실행과 관계 없음 | 새 실행에 `retry_of` 연결, 이전 결과 보존 |

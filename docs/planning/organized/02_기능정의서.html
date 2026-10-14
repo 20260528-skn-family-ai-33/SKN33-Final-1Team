@@ -55,7 +55,7 @@
 </tr>
 <tr>
 <td>OCR 경로</td>
-<td>기본 baseline=EasyOCR, paddle=EasyOCR+Paddle 재인식, paddle-only=PaddleOCR 탐지·인식. 대표 개선 결과는 명시적으로 선택한 paddle-only CPU.</td>
+<td>로컬 기본 paddle-only=PaddleOCR 탐지·인식. 비교용 baseline=EasyOCR, paddle=EasyOCR+Paddle 재인식. RunPod 기본은 baseline. 대표 개선 결과는 기본값 변경 전에 명시적으로 선택한 paddle-only CPU 기록.</td>
 </tr>
 <tr>
 <td>목표 업무 저장</td>
@@ -405,8 +405,8 @@
 <dt>교육 항목</dt>
 <dd><a href="./01_%EA%B8%B0%ED%9A%8D%EC%84%9C.html#ED06">ED06</a></dd>
 </dl>
-<p class="meta">화면 연결: <a href="./03_%ED%99%94%EB%A9%B4%EC%A0%95%EC%9D%98%EC%84%9C.html">검수 결과</a> · <a href="./04_%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%8E%99%EC%A0%95%EC%9D%98%EC%84%9C.html">기술 선택·실행 환경 확인</a></p></details><details class="feature-card" id="F-06" data-feature-id="F-06" data-search="F-06 문구·내용 검수 부분 구현 문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 기본 baseline은 EasyOCR, paddle은 혼합, paddle-only는 PaddleOCR 단독이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다. P0 · 문구 / P1 · 시각 FR-04-02"><summary><strong>F-06 · 문구·내용 검수</strong> <span class="badge">부분 구현 · 10.14 기준</span> <span class="badge">원 기록 P0</span></summary><h3>문구·내용 검수</h3>
-<p class="note"><strong>최신 기획 연결:</strong> P0 · 문구 / P1 · 시각<br><strong>현재:</strong> 문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 기본 baseline은 EasyOCR, paddle은 혼합, paddle-only는 PaddleOCR 단독이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</p>
+<p class="meta">화면 연결: <a href="./03_%ED%99%94%EB%A9%B4%EC%A0%95%EC%9D%98%EC%84%9C.html">검수 결과</a> · <a href="./04_%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%8E%99%EC%A0%95%EC%9D%98%EC%84%9C.html">기술 선택·실행 환경 확인</a></p></details><details class="feature-card" id="F-06" data-feature-id="F-06" data-search="F-06 문구·내용 검수 부분 구현 문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 로컬 기본 paddle-only는 PaddleOCR 단독이며 baseline은 EasyOCR 비교, paddle은 혼합 경로다. RunPod 기본은 baseline이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다. P0 · 문구 / P1 · 시각 FR-04-02"><summary><strong>F-06 · 문구·내용 검수</strong> <span class="badge">부분 구현 · 10.14 기준</span> <span class="badge">원 기록 P0</span></summary><h3>문구·내용 검수</h3>
+<p class="note"><strong>최신 기획 연결:</strong> P0 · 문구 / P1 · 시각<br><strong>현재:</strong> 문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 로컬 기본 paddle-only는 PaddleOCR 단독이며 baseline은 EasyOCR 비교, paddle은 혼합 경로다. RunPod 기본은 baseline이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</p>
 <p class="note">현재 로고 확인은 김천시 글자 판독을 사용하는 임시 정책이다. 심벌 형태·배치·잘림 검사는 미구현이며, 후속 잘림 검사는 문구·필수 요소를 대상으로 하고 의도적인 장식 잘림을 허용한다.</p>
 <p class="meta">연결 요구사항: <a href="#FR-04-02">FR-04-02</a></p>
 <dl>
@@ -448,7 +448,7 @@
 <dt>구현 상태</dt>
 <dd>부분 구현</dd>
 <dt>현재 구현 범위</dt>
-<dd>문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 기본 baseline은 EasyOCR, paddle은 혼합, paddle-only는 PaddleOCR 단독이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</dd>
+<dd>문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 로컬 기본 paddle-only는 PaddleOCR 단독이며 baseline은 EasyOCR 비교, paddle은 혼합 경로다. RunPod 기본은 baseline이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</dd>
 <dt>의존 기능</dt>
 <dd>F-03 조건 · F-04 이미지 · S-01 충돌 재확인</dd>
 <dt>보존 데이터</dt>

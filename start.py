@@ -11,6 +11,7 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlsplit
 
+from backend.app.ocr_config import selected_pipeline
 from backend.app.ocr_runtime import MODEL_FILES
 
 ROOT = Path(__file__).resolve().parent
@@ -24,8 +25,29 @@ OCR_PACKAGES = (("torch", "torch"), ("torchvision", "torchvision"),
 def requirements_file():
     """원격·Paddle 단독은 EasyOCR 없이 실행 가능한 공통 패키지만 안내한다."""
     target = os.getenv("RUN_TARGET", "local").strip().lower()
-    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    pipeline = selected_pipeline()
     return "requirements-test.txt" if target == "runpod" or pipeline == "paddle-only" else "requirements.txt"
+
+
+def print_ocr_selection(windows):
+    """선택한 OCR과 다른 경로로 실행하는 명령을 패키지 검사 전에 안내한다."""
+    pipeline = selected_pipeline()
+    target = os.getenv("RUN_TARGET", "local").strip().lower()
+    source = "사용자 지정" if "OCR_PIPELINE" in os.environ else "기본값"
+    print(f"[OCR 실행 설정] RUN_TARGET={target} · OCR_PIPELINE={pipeline} ({source})", flush=True)
+    print("로컬 기본: paddle-only = PaddleOCR 단독 탐지·인식 / RunPod 기본: baseline", flush=True)
+    print("선택 경로: baseline(EasyOCR), multiline(줄 결합), adaptive(영역 재인식), "
+          "paddle(EasyOCR+Paddle), paddle-only(Paddle 단독), qwen(EasyOCR+Qwen)", flush=True)
+    print("[다른 OCR로 실행] 아래 명령은 안내이며 자동 실행하지 않습니다.", flush=True)
+    if windows:
+        print(r'$env:OCR_PIPELINE = "baseline"; .\run.cmd', flush=True)
+        print(r'$env:OCR_PIPELINE = "paddle"; .\run.cmd', flush=True)
+        print(r'기본값으로 복귀: Remove-Item Env:OCR_PIPELINE -ErrorAction SilentlyContinue; .\run.cmd', flush=True)
+    else:
+        print("OCR_PIPELINE=baseline ./run.sh", flush=True)
+        print("OCR_PIPELINE=paddle ./run.sh", flush=True)
+        print("기본값으로 복귀: env -u OCR_PIPELINE ./run.sh", flush=True)
+    print("adaptive·paddle·paddle-only·qwen은 RUN_TARGET=local에서 사용합니다.\n", flush=True)
 
 
 # 빌드 HTML에서 실행에 필요한 스크립트와 스타일 경로만 읽는다.
@@ -134,7 +156,7 @@ def startup_checks(windows):
     python = r".\.venv\Scripts\python.exe" if windows else ".venv/bin/python"
     npm = "npm.cmd" if windows else "npm"
     target = os.getenv("RUN_TARGET", "local").strip().lower()
-    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    pipeline = selected_pipeline()
     problems, modules = package_problems(SERVER_PACKAGES)
     package_errors = bool(problems)
     warnings = []
@@ -242,6 +264,7 @@ def main():
         environment_failure("프로젝트 Python이 가상환경을 사용하지 않습니다.", windows, True)
     if sys.version_info[:2] != (3, 12):
         environment_failure("프로젝트 .venv에는 Python 3.12가 필요합니다.", windows, True)
+    print_ocr_selection(windows)
     print(f"[실행 전 검사] Python: {sys.executable}", flush=True)
     problems, warnings, commands, uvicorn = startup_checks(windows)
     for message in [*problems, *warnings]:

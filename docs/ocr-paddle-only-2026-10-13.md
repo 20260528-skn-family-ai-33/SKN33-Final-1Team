@@ -1,5 +1,7 @@
 # PaddleOCR 단독 탐지·인식 및 항목별 판정 비교
 
+> **실행 설정 갱신:** 현재 로컬 기본값은 `paddle-only`이므로 `./run.sh` 또는 `.\run.cmd`만 실행합니다. EasyOCR 비교는 `OCR_PIPELINE=baseline`으로 선택합니다. 아래 기본값 유지 설명과 측정값은 2026-10-13 실험 당시 기록입니다. 현재 설치·선택 방법은 [실행가이드](../실행가이드.md#다른-ocr로-실행)를 참고하세요.
+
 ## 선택 경로
 
 `OCR_PIPELINE=paddle-only`는 `PP-OCRv5_server_det`로 글자 위치를 탐지하고 `korean_PP-OCRv5_mobile_rec`로 문구를 읽는다. EasyOCR 기준선을 먼저 실행하지 않는다. 두 모델은 `.runtime/paddle-env`의 CPU 작업자에서 실행하며, 문서 방향 분류·문서 왜곡 보정·글자 줄 방향 분류는 꺼 둔다. 모델 경로를 명시하고 추론 중 다운로드하지 않는다.

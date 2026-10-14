@@ -39,6 +39,8 @@ def windows_project(tmp_path, monkeypatch):
     popen = Mock(return_value=child)
     monkeypatch.setattr(subprocess, "Popen", popen)
     monkeypatch.delenv("BARO_REVIEW_PROJECT_ENV", raising=False)
+    monkeypatch.delenv("OCR_PIPELINE", raising=False)
+    monkeypatch.setenv("RUN_TARGET", "local")
     builder = Mock()
     monkeypatch.setattr(setup_local.venv, "EnvBuilder", Mock(return_value=builder))
     return SimpleNamespace(root=root, environment=environment, python=python,
@@ -241,7 +243,7 @@ def test_start_missing_project_environment_prints_windows_setup_command(windows_
     message = capsys.readouterr().out
     assert ".venv" in message
     assert "uv venv --python 3.12 --seed .venv" in message
-    assert r".\.venv\Scripts\python.exe -m pip install -r requirements.txt" in message
+    assert r".\.venv\Scripts\python.exe -m pip install -r requirements-test.txt" in message
     assert failure.value.code == 1
     windows_project.run.assert_not_called()
     windows_project.popen.assert_not_called()
@@ -260,6 +262,8 @@ def ready_start(project, monkeypatch):
     monkeypatch.setattr(start.importlib, "import_module", modules)
     monkeypatch.setattr(start.importlib.util, "find_spec", lambda name: SimpleNamespace())
     monkeypatch.setenv("RUN_TARGET", "local")
+    # 기존 기준선 테스트는 비교 경로를 명시해 기본값 변경과 분리한다.
+    monkeypatch.setenv("OCR_PIPELINE", "baseline")
     monkeypatch.delenv("OCR_MODEL_DIR", raising=False)
     monkeypatch.setattr(start.sys, "argv", ["start.py"])
     return uvicorn, modules
@@ -286,13 +290,26 @@ def ready_paddle_start(project, monkeypatch, *, ready=True):
 
 
 @pytest.mark.parametrize("check_only", [True, False])
-def test_paddle_only_starts_without_easyocr_packages_or_weights(windows_project, monkeypatch, check_only):
+@pytest.mark.parametrize("explicit", [True, False])
+@pytest.mark.parametrize("windows", [True, False])
+def test_paddle_only_starts_without_easyocr_packages_or_weights(windows_project, monkeypatch, capsys, check_only, explicit, windows):
     """단독 시작은 Paddle만 점검하고 기존 host·port 및 검사 전용 동작을 유지한다."""
+    if not windows:
+        windows_project.python = windows_project.environment / "bin" / "python"
+        monkeypatch.setattr(start.sys, "platform", "darwin")
+        monkeypatch.setattr(start.sys, "executable", str(windows_project.python))
     uvicorn, modules, readiness = ready_paddle_start(windows_project, monkeypatch)
+    if not explicit:
+        monkeypatch.delenv("OCR_PIPELINE")
     monkeypatch.setattr(start.sys, "argv", ["start.py", "--host", "127.0.0.1", "--port", "8124"] + (["--check-only"] if check_only else []))
     start.main()
     readiness.assert_called_once_with(check_import=True)
     assert modules.call_count == len(start.SERVER_PACKAGES)
+    output = capsys.readouterr().out
+    assert "OCR_PIPELINE=paddle-only" in output
+    assert ("사용자 지정" if explicit else "기본값") in output
+    assert (r'$env:OCR_PIPELINE = "baseline"; .\run.cmd' if windows else "OCR_PIPELINE=baseline ./run.sh") in output
+    assert ("Remove-Item Env:OCR_PIPELINE" if windows else "env -u OCR_PIPELINE ./run.sh") in output
     if check_only:
         uvicorn.run.assert_not_called()
     else:
@@ -301,9 +318,12 @@ def test_paddle_only_starts_without_easyocr_packages_or_weights(windows_project,
     windows_project.popen.assert_not_called()
 
 
-def test_missing_paddle_only_prints_explicit_setup_and_never_executes_it(windows_project, monkeypatch, capsys):
+@pytest.mark.parametrize("explicit", [True, False])
+def test_missing_paddle_only_prints_explicit_setup_and_never_executes_it(windows_project, monkeypatch, capsys, explicit):
     """준비 부족은 설치·다운로드를 실행하지 않고 필요한 명령만 출력한다."""
     uvicorn, modules, readiness = ready_paddle_start(windows_project, monkeypatch, ready=False)
+    if not explicit:
+        monkeypatch.delenv("OCR_PIPELINE")
     with pytest.raises(SystemExit) as failure:
         start.main()
     assert failure.value.code == 1
@@ -507,6 +527,7 @@ def test_check_only_failure_does_not_start_server(windows_project, monkeypatch):
 def test_runpod_skips_local_ocr_and_does_not_log_secret(windows_project, monkeypatch, capsys):
     uvicorn, modules = ready_start(windows_project, monkeypatch)
     monkeypatch.setenv("RUN_TARGET", "runpod")
+    monkeypatch.delenv("OCR_PIPELINE")
     monkeypatch.setenv("RUNPOD_API_KEY", "secret-not-in-log")
     monkeypatch.setenv("RUNPOD_ENDPOINT_ID", "endpoint-1")
     for path in (windows_project.root / ".runtime" / "easyocr").iterdir():
@@ -514,6 +535,7 @@ def test_runpod_skips_local_ocr_and_does_not_log_secret(windows_project, monkeyp
     start.main()
     assert modules.call_count == len(start.SERVER_PACKAGES)
     output = capsys.readouterr().out
+    assert "OCR_PIPELINE=baseline (기본값)" in output
     assert "secret-not-in-log" not in output and "--download-models" not in output
     uvicorn.run.assert_called_once()
 

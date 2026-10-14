@@ -26,9 +26,12 @@ def stub_paddle(monkeypatch, *, ready=True, recognizer=None):
 
 
 @pytest.mark.parametrize("ready", [True, False])
-def test_paddle_health_uses_only_selected_runtime(tmp_path, monkeypatch, ready):
+@pytest.mark.parametrize("explicit", [True, False])
+def test_paddle_health_uses_only_selected_runtime(tmp_path, monkeypatch, ready, explicit):
     """Paddle 준비 여부와 무관하게 EasyOCR 없는 상태에서 건강 검사가 동작한다."""
     module, easy_status = stub_paddle(monkeypatch, ready=ready)
+    if not explicit:
+        monkeypatch.delenv("OCR_PIPELINE")
     with TestClient(api.create_app(review_root=tmp_path)) as client:
         response = client.get("/api/health").json()
     assert response["runtime"]["engine"] == "paddleocr"
@@ -39,14 +42,35 @@ def test_paddle_health_uses_only_selected_runtime(tmp_path, monkeypatch, ready):
     easy_status.assert_not_called()
 
 
-def test_paddle_recognizer_dispatch_has_no_baseline_call(tmp_path, monkeypatch):
+@pytest.mark.parametrize("explicit", [True, False])
+def test_paddle_recognizer_dispatch_has_no_baseline_call(tmp_path, monkeypatch, explicit):
     """단독 선택을 EasyOCR 기준선 호출보다 먼저 분기한다."""
     module, easy_status = stub_paddle(monkeypatch)
+    if not explicit:
+        monkeypatch.delenv("OCR_PIPELINE")
     module.recognize_paddle.return_value = {"records": []}
     image = tmp_path / "input.png"
     assert api._default_recognizer(image) == {"records": []}
     module.recognize_paddle.assert_called_once_with(image, tmp_path / "paddle-only")
     easy_status.assert_not_called()
+
+
+@pytest.mark.parametrize("target", ["local", "runpod"])
+def test_baseline_override_and_runpod_default_keep_easyocr_adapter(tmp_path, monkeypatch, target):
+    """명시한 EasyOCR 비교 경로와 RunPod 기본값이 Paddle로 바뀌지 않게 한다."""
+    module, easy_status = stub_paddle(monkeypatch)
+    monkeypatch.setenv("RUN_TARGET", target)
+    if target == "local":
+        monkeypatch.setenv("OCR_PIPELINE", "baseline")
+    else:
+        monkeypatch.delenv("OCR_PIPELINE")
+    easy_status.side_effect = None
+    easy_status.return_value = {"engine": "easyocr", "execution_target": target, "ready": True}
+    assert api._default_runtime_status()["engine"] == "easyocr"
+    assert api._default_recognizer(tmp_path / "input.png")["engine"] == "easyocr"
+    assert api._runtime_identity() == {"engine": "easyocr", "execution_target": target}
+    module.paddle_readiness.assert_not_called()
+    module.recognize_paddle.assert_not_called()
 
 
 @pytest.mark.parametrize("pipeline", ["paddle-only", "paddle", "qwen", "adaptive"])

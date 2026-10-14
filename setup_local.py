@@ -7,6 +7,8 @@ import subprocess
 import sys
 import venv
 
+from backend.app.ocr_config import selected_pipeline
+
 ROOT = Path(__file__).resolve().parent
 
 
@@ -70,7 +72,10 @@ def main():
                 f"{exc}\n위 오류를 해결한 뒤 같은 설치 명령을 다시 실행하세요."
             ) from None
     print(f"설치 완료. 저장소 루트에서 다음 명령으로 실행하세요.\n{start_command}")
-    if not args.download_models:
+    if selected_pipeline() == "paddle-only":
+        print("로컬 기본 OCR은 PaddleOCR 단독입니다. .runtime/paddle-env와 탐지·인식 모델을 별도로 준비해야 합니다.")
+        print(f"준비 상태와 필요한 설치 명령 확인: {start_command} --check-only")
+    elif not args.download_models:
         print(f"OCR 모델이 없다면 다음 명령으로 다운로드하세요.\n{python_command} -m backend.app.ocr_runtime --download-models")
 
 
