@@ -1,0 +1,63 @@
+{
+  "id": "team-13a61b32fe28",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_대구_동구_여름축제_두두썸동_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "13a61b32fe286a84f554c7a6e5d9a9bff8d6ea6c19a03ff7310fadb2cf10b336",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "2026년 동구 여름축제 두두썸동",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-25",
+    "end_date": "2026-07-26",
+    "venue": "금호강 둔치 일원",
+    "address": "대구광역시 동구 아양로 207",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "053-662-2000",
+    "homepage": "https://www.dong.daegu.kr/",
+    "venue_url": null,
+    "organizer": "대구광역시 동구",
+    "host": "대구광역시 동구",
+    "sponsor": "대구광역시 동구",
+    "program": "자연생태",
+    "gps": {
+      "lat": 35.886807,
+      "lng": 128.636074
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "2026년 동구 여름축제 두두썸동",
+      "start_date": "2026-07-25",
+      "end_date": "2026-07-26",
+      "venues": [
+        "금호강 둔치 일원"
+      ],
+      "organizer": "대구광역시 동구",
+      "contact": "053-662-2000",
+      "url": "https://www.dong.daegu.kr/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-30",
+    "match": "파일명 '대구_동구_여름축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

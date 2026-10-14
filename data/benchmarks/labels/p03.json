@@ -1,0 +1,136 @@
+{
+  "schema_version": "poster.benchmark-label.v1",
+  "case_id": "p03",
+  "source_sha256": "780e11893a51d1fb6664bf803ec8fcd0014c531a4c88d3651f3b63f9b3c47e9b",
+  "coordinate_space": "normalized_original_pixels",
+  "dimensions": [
+    442,
+    627
+  ],
+  "method": "assistant_visual_draft_before_inference",
+  "human_verified": false,
+  "review_status": "needs_human_review",
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "use_for_training": false,
+  "notes": [
+    "픽셀 시각 판독 초안. 사람 확인 전 정답 정확도로 보고하지 않는다.",
+    "regions는 문자 진단용이며 추론·탐지·crop 생성에 전달하지 않는다.",
+    "unresolved는 미라벨/판독 불가이며 실제 부재를 의미하지 않는다."
+  ],
+  "regions": [
+    {
+      "id": "title1",
+      "text": "구미",
+      "bbox_xyxy": [
+        137,
+        174,
+        312,
+        273
+      ]
+    },
+    {
+      "id": "title2",
+      "text": "라면",
+      "bbox_xyxy": [
+        137,
+        273,
+        312,
+        362
+      ]
+    },
+    {
+      "id": "title3",
+      "text": "축제",
+      "bbox_xyxy": [
+        137,
+        362,
+        312,
+        443
+      ]
+    },
+    {
+      "id": "date",
+      "text": "2026.11.6(금)~8(일)",
+      "bbox_xyxy": [
+        130,
+        476,
+        320,
+        509
+      ]
+    },
+    {
+      "id": "place",
+      "text": "구미역일원",
+      "bbox_xyxy": [
+        155,
+        509,
+        280,
+        544
+      ]
+    }
+  ],
+  "fields": {
+    "event_name": {
+      "value": "구미라면축제",
+      "status": "visible",
+      "region_ids": [
+        "title1",
+        "title2",
+        "title3"
+      ]
+    },
+    "start_date": {
+      "value": "2026-11-06",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "end_date": {
+      "value": "2026-11-08",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "location_raw": {
+      "value": "구미역일원",
+      "status": "visible",
+      "region_ids": [
+        "place"
+      ]
+    }
+  },
+  "criteria": [
+    {
+      "id": "name",
+      "text": "행사명: 구미라면축제",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "title1",
+        "title2",
+        "title3"
+      ]
+    },
+    {
+      "id": "period",
+      "text": "기간: 2026.11.06 ~ 11.08",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "date"
+      ]
+    },
+    {
+      "id": "venue",
+      "text": "장소: 구미역일원",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "place"
+      ]
+    }
+  ]
+}

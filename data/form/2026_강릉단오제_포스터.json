@@ -1,0 +1,25 @@
+{
+  "id": "team-bc7ab1ae9ce6",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_강릉단오제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "bc7ab1ae9ce6c08013598671e93eb1a564ee30c202de5855ad882c0b85f13d7f",
+    "width": 443,
+    "height": 627
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "표준데이터에 2025년판만 있음(포스터는 2026년판)",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

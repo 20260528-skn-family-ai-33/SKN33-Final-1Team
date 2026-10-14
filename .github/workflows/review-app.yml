@@ -1,0 +1,174 @@
+name: Review app checks
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "scripts/**"
+      - "tests/**"
+      - "data/labels/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "start.py"
+      - "setup_local.py"
+      - "run.sh"
+      - "run.cmd"
+      - ".github/workflows/review-app.yml"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m pytest
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+  windows:
+    # Checks startup and the offline suite, not OCR weights, CUDA, or paid RunPod calls.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Create the project virtual environment
+        run: python -m venv .venv
+      - name: Install offline test dependencies
+        run: '& ".\.venv\Scripts\python.exe" -m pip install -r requirements-test.txt'
+      - name: Run Python tests
+        run: '& ".\.venv\Scripts\python.exe" -m pytest'
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm.cmd ci
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm.cmd test
+      - name: Build frontend
+        working-directory: frontend
+        run: npm.cmd run build
+      - name: Check the Windows launcher
+        run: '& ".\run.cmd" --help'
+      - name: Verify missing OCR stops startup without installing
+        run: |
+          $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
+          $checkExit = $LASTEXITCODE
+          Write-Host $diagnostics
+          if ($checkExit -ne 1) {
+            throw "Expected missing OCR packages to stop the launcher with exit 1."
+          }
+          if ($diagnostics -notmatch '\[누락\] (torch|torchvision|easyocr)' -or
+              $diagnostics -notmatch 'pip install -r requirements.txt' -or
+              $diagnostics -notmatch '--download-models') {
+            throw "Missing OCR diagnostics did not include actionable preparation commands."
+          }
+          & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert importlib.util.find_spec('easyocr') is None"
+          if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
+      - name: Verify Paddle-only startup does not require EasyOCR
+        run: |
+          # 단독 선택은 Paddle 준비 명령만 안내하고 격리 환경도 자동 생성하지 않는다.
+          $env:OCR_PIPELINE = "paddle-only"
+          $env:RUN_TARGET = "local"
+          $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
+          $checkExit = $LASTEXITCODE
+          Write-Host $diagnostics
+          if ($checkExit -ne 1) {
+            throw "Expected missing Paddle environment to stop the launcher with exit 1."
+          }
+          if ($diagnostics -notmatch 'requirements-paddle.txt' -or
+              $diagnostics -notmatch 'scripts.prepare_paddle --include-detection') {
+            throw "Paddle-only diagnostics did not include explicit preparation commands."
+          }
+          if ($diagnostics -match '\[누락\] (torch|torchvision|easyocr)' -or
+              $diagnostics -match 'pip install -r requirements\.txt' -or
+              $diagnostics -match 'backend.app.ocr_runtime --download-models') {
+            throw "Paddle-only startup must not require EasyOCR packages or models."
+          }
+          if (Test-Path ".runtime/paddle-env") {
+            throw "The checker must not create or install the Paddle environment."
+          }
+          & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert all(importlib.util.find_spec(name) is None for name in ('easyocr', 'torch', 'paddleocr'))"
+          if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
+      - name: Smoke test the API and React on the same origin
+        run: |
+          $python = (Resolve-Path ".\.venv\Scripts\python.exe").Path
+          $stdout = Join-Path $env:RUNNER_TEMP "review-app-stdout.log"
+          $stderr = Join-Path $env:RUNNER_TEMP "review-app-stderr.log"
+          $server = $null
+          try {
+            $server = Start-Process -FilePath $python `
+              -ArgumentList @("-m", "uvicorn", "backend.app.api:app", "--host", "127.0.0.1", "--port", "18765") `
+              -WorkingDirectory $env:GITHUB_WORKSPACE `
+              -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              if ($server.HasExited) {
+                throw "Server exited before becoming ready (exit $($server.ExitCode))."
+              }
+              try {
+                $health = Invoke-WebRequest "http://127.0.0.1:18765/api/health" -TimeoutSec 2
+                if ($health.StatusCode -eq 200) {
+                  $ready = $true
+                  break
+                }
+              } catch {
+                # The server may still be starting; retry for up to 60 attempts.
+              }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $ready) {
+              throw "The API did not become ready."
+            }
+            $page = Invoke-WebRequest "http://127.0.0.1:18765/" -TimeoutSec 5
+            if ($page.StatusCode -ne 200 -or $page.Content -notmatch '<div id="root">') {
+              throw "The built React page was not served successfully."
+            }
+            Write-Host "GET /api/health and GET / returned HTTP 200."
+          } finally {
+            if ($null -ne $server -and -not $server.HasExited) {
+              Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+            }
+            foreach ($log in @($stdout, $stderr)) {
+              if (Test-Path $log) {
+                Get-Content $log
+              }
+            }
+          }

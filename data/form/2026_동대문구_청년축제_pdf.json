@@ -1,0 +1,26 @@
+{
+  "id": "team-eb07f1f20d00",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_동대문구_청년축제.pdf",
+    "source_url": null,
+    "format": "pdf",
+    "sha256": "eb07f1f20d00d1788c800ab207064c5231162e831e56cf921f14efe20236409e",
+    "width": null,
+    "height": null,
+    "note": "이미지 파일이 아님(검수에 쓰려면 PNG 변환 필요)"
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

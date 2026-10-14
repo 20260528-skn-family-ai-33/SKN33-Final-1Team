@@ -1,0 +1,63 @@
+{
+  "id": "team-dcfb2b128f7f",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_순창장류축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "dcfb2b128f7f1955445bf98c24602c3aed4b30c0e6018c07c374ad77b3e0b5e3",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "순창장류축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-15",
+    "end_date": "2026-10-18",
+    "venue": "순창전통고추장민속마을 일원",
+    "address": "전북특별자치도 순창군 순창읍 민속마을길 6-3",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "063-652-9301",
+    "homepage": "http://www.jangfestival.co.kr",
+    "venue_url": null,
+    "organizer": "순창장류축제추진위원회",
+    "host": "전북특별자치도 순창군청",
+    "sponsor": "문화체육관광부+전북특별자치도+한국관광공사",
+    "program": "문화공연+장류체험+전시+판매+주민참여 프로그램 등",
+    "gps": {
+      "lat": 35.36859967,
+      "lng": 127.109986
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "순창장류축제",
+      "start_date": "2026-10-15",
+      "end_date": "2026-10-18",
+      "venues": [
+        "순창전통고추장민속마을 일원"
+      ],
+      "organizer": "순창장류축제추진위원회",
+      "contact": "063-652-9301",
+      "url": "http://www.jangfestival.co.kr"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-23",
+    "match": "파일명 '순창장류축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,61 @@
+{
+  "id": "team-842bc598560e",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_제주들불축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "842bc598560e5f46c5046b34cdc256d2a47369dbe5c06ed9f4b1ebcb3be343e1",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "제주들불축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-03-09",
+    "end_date": "2026-03-14",
+    "venue": "새별오름일대",
+    "address": "제주특별자치도 제주시 애월읍 봉성리 산59-8",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": null,
+    "homepage": null,
+    "venue_url": null,
+    "organizer": "제주특별자치도 제주시",
+    "host": "제주특별자치도 제주시",
+    "sponsor": null,
+    "program": "주제공연·문화 공연·체험 프로그램·친환경 프로그램 등 다양한 프로그램 운영",
+    "gps": {
+      "lat": 33.3672332075,
+      "lng": 126.3553134369
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제주들불축제",
+      "start_date": "2026-03-09",
+      "end_date": "2026-03-14",
+      "venues": [
+        "새별오름일대"
+      ],
+      "organizer": "제주특별자치도 제주시"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-31",
+    "match": "파일명 '제주들불축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

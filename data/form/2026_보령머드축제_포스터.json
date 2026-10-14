@@ -1,0 +1,63 @@
+{
+  "id": "team-04bff3736584",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_보령머드축제_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "04bff373658404c3f0ece36257faa534b2ab1f0ea0f0189d638994fb4ee8adef",
+    "width": 443,
+    "height": 627
+  },
+  "event": {
+    "title": "보령머드축제",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-07-24",
+    "end_date": "2026-08-09",
+    "venue": "보령머드엑스포광장",
+    "address": "충청남도 보령시 신흑동 2282",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "041-930-0891",
+    "homepage": "https://mudfestival.or.kr/festival/view",
+    "venue_url": null,
+    "organizer": "재단법인 보령축제관광재단",
+    "host": "충청남도 보령시",
+    "sponsor": "문화체육관광부+한국관광공사+충청남도청",
+    "program": "머드체험존+머드몹신공연+빅머드쇼+머드락페스타+보령머드 월드투어",
+    "gps": {
+      "lat": 36.31449394,
+      "lng": 126.5151849
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "보령머드축제",
+      "start_date": "2026-07-24",
+      "end_date": "2026-08-09",
+      "venues": [
+        "보령머드엑스포광장"
+      ],
+      "organizer": "재단법인 보령축제관광재단",
+      "contact": "041-930-0891",
+      "url": "https://mudfestival.or.kr/festival/view"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-16",
+    "match": "파일명 '보령머드축제' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

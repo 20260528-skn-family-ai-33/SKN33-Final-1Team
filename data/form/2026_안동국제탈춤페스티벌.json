@@ -1,0 +1,63 @@
+{
+  "id": "team-374898f64d83",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_안동국제탈춤페스티벌.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "374898f64d83ec5b96931c4e413960ce5ee979bece86c02f87afb02135b4ba10",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "안동국제탈춤페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-09-24",
+    "end_date": "2026-10-04",
+    "venue": "중앙선1942 안동역+탈춤공원+원도심 일원",
+    "address": "경상북도 안동시 육사로 239 (운흥동)",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "054-840-3400",
+    "homepage": "https://www.maskdance.com/2024/intro.asp",
+    "venue_url": null,
+    "organizer": "한국정신문화재단",
+    "host": "한국정신문화재단",
+    "sponsor": "문화체육관광부+문화재청+경상북도+경상북도 안동시",
+    "program": "국내외 탈춤공연행사+마당극&창작극공연+세계탈놀이경연대회+탈 탈랜트+세계창작탈공모전+대동난장+탈 만들기+탈춤 따라배우기 등",
+    "gps": {
+      "lat": 36.5605065,
+      "lng": 128.7306335
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "안동국제탈춤페스티벌",
+      "start_date": "2026-09-24",
+      "end_date": "2026-10-04",
+      "venues": [
+        "중앙선1942 안동역+탈춤공원+원도심 일원"
+      ],
+      "organizer": "한국정신문화재단",
+      "contact": "054-840-3400",
+      "url": "https://www.maskdance.com/2024/intro.asp"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-09-16",
+    "match": "파일명 '안동국제탈춤페스티벌' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

@@ -1,0 +1,4 @@
+# 기존 EasyOCR 환경과 분리된 .runtime/paddle-env에 설치한다.
+paddlepaddle==3.3.1
+paddleocr==3.7.0
+paddlex==3.7.2

@@ -1,0 +1,128 @@
+{
+  "schema_version": "poster.benchmark-label.v1",
+  "case_id": "p02",
+  "source_sha256": "dd6b8f8734742fb4e4b9e1c55ff1e8b5d41a23ff7df2467bb886d2347b3fccbb",
+  "coordinate_space": "normalized_original_pixels",
+  "dimensions": [
+    443,
+    627
+  ],
+  "method": "assistant_visual_draft_before_inference",
+  "human_verified": false,
+  "review_status": "needs_human_review",
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "use_for_training": false,
+  "notes": [
+    "픽셀 시각 판독 초안. 사람 확인 전 정답 정확도로 보고하지 않는다.",
+    "regions는 문자 진단용이며 추론·탐지·crop 생성에 전달하지 않는다.",
+    "unresolved는 미라벨/판독 불가이며 실제 부재를 의미하지 않는다."
+  ],
+  "regions": [
+    {
+      "id": "title1",
+      "text": "춘천",
+      "bbox_xyxy": [
+        338,
+        213,
+        426,
+        259
+      ]
+    },
+    {
+      "id": "title2",
+      "text": "마임",
+      "bbox_xyxy": [
+        299,
+        259,
+        389,
+        310
+      ]
+    },
+    {
+      "id": "title3",
+      "text": "축제",
+      "bbox_xyxy": [
+        338,
+        310,
+        426,
+        357
+      ]
+    },
+    {
+      "id": "year",
+      "text": "2026",
+      "bbox_xyxy": [
+        296,
+        358,
+        364,
+        383
+      ]
+    },
+    {
+      "id": "date",
+      "text": "5.24 - 5.31",
+      "bbox_xyxy": [
+        296,
+        382,
+        435,
+        413
+      ]
+    }
+  ],
+  "fields": {
+    "event_name": {
+      "value": "춘천마임축제",
+      "status": "visible",
+      "region_ids": [
+        "title1",
+        "title2",
+        "title3"
+      ]
+    },
+    "start_date": {
+      "value": "2026-05-24",
+      "status": "visible",
+      "region_ids": [
+        "year",
+        "date"
+      ]
+    },
+    "end_date": {
+      "value": "2026-05-31",
+      "status": "visible",
+      "region_ids": [
+        "year",
+        "date"
+      ]
+    },
+    "location_raw": {
+      "value": null,
+      "status": "unresolved",
+      "region_ids": []
+    }
+  },
+  "criteria": [
+    {
+      "id": "name",
+      "text": "행사명: 춘천마임축제",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "title1",
+        "title2",
+        "title3"
+      ]
+    },
+    {
+      "id": "period",
+      "text": "기간: 2026.05.24 ~ 05.31",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "year",
+        "date"
+      ]
+    }
+  ]
+}

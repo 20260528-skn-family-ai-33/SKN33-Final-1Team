@@ -1,0 +1,135 @@
+{
+  "schema_version": "poster.benchmark-label.v1",
+  "case_id": "p01",
+  "source_sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+  "coordinate_space": "normalized_original_pixels",
+  "dimensions": [
+    600,
+    848
+  ],
+  "method": "assistant_visual_draft_before_inference",
+  "human_verified": false,
+  "review_status": "needs_human_review",
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "use_for_training": false,
+  "notes": [
+    "픽셀 시각 판독 초안. 사람 확인 전 정답 정확도로 보고하지 않는다.",
+    "regions는 문자 진단용이며 추론·탐지·crop 생성에 전달하지 않는다.",
+    "unresolved는 미라벨/판독 불가이며 실제 부재를 의미하지 않는다."
+  ],
+  "regions": [
+    {
+      "id": "title",
+      "text": "김천김밥축제",
+      "bbox_xyxy": [
+        100,
+        112,
+        505,
+        212
+      ]
+    },
+    {
+      "id": "date",
+      "text": "2026. 10. 23 금 ~ 10. 25 일",
+      "bbox_xyxy": [
+        130,
+        221,
+        475,
+        267
+      ]
+    },
+    {
+      "id": "place",
+      "text": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+      "bbox_xyxy": [
+        100,
+        277,
+        506,
+        306
+      ]
+    }
+  ],
+  "fields": {
+    "event_name": {
+      "value": "김천김밥축제",
+      "status": "visible",
+      "region_ids": [
+        "title"
+      ]
+    },
+    "start_date": {
+      "value": "2026-10-23",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "end_date": {
+      "value": "2026-10-25",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "location_raw": {
+      "value": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+      "status": "visible",
+      "region_ids": [
+        "place"
+      ]
+    }
+  },
+  "criteria": [
+    {
+      "id": "name",
+      "text": "행사명: 김천김밥축제",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "title"
+      ]
+    },
+    {
+      "id": "period",
+      "text": "기간: 2026.10.23 ~ 10.25",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "date"
+      ]
+    },
+    {
+      "id": "venue",
+      "text": "장소: 친환경생태공원",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "place"
+      ]
+    },
+    {
+      "id": "wrong-venue",
+      "text": "장소: 친환경생대공원",
+      "type": "information",
+      "expected_status": "fail",
+      "region_ids": [
+        "place"
+      ]
+    },
+    {
+      "id": "logo",
+      "text": "김천시 로고 포함",
+      "type": "visual",
+      "expected_status": "review",
+      "region_ids": []
+    },
+    {
+      "id": "clipping",
+      "text": "문구·이미지 잘림 없음",
+      "type": "visual",
+      "expected_status": "review",
+      "region_ids": []
+    }
+  ]
+}

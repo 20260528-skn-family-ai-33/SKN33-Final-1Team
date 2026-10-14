@@ -1,0 +1,63 @@
+{
+  "id": "team-2d3ac4e96cb1",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_강남페스티벌_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "2d3ac4e96cb1de5cac87a52ef8478921ef4a7d0a7451b332ac2d78ff85623c29",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "강남페스티벌",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-03",
+    "end_date": "2026-10-05",
+    "venue": "코엑스26+영동대로 등",
+    "address": "서울특별시 강남구 도산대로 도산공원 사거리",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "02-3423-5534",
+    "homepage": "https://visitgangnam.net/cultural-events/",
+    "venue_url": null,
+    "organizer": "서울특별시 강남구청",
+    "host": "서울특별시 강남구청",
+    "sponsor": null,
+    "program": "퍼레이드, 패밀리콘서트, K-POP콘서트, 패션쇼, 미식여행 등",
+    "gps": {
+      "lat": 37.52153885,
+      "lng": 127.0338552
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "강남페스티벌",
+      "start_date": "2026-10-03",
+      "end_date": "2026-10-05",
+      "venues": [
+        "코엑스26+영동대로 등"
+      ],
+      "organizer": "서울특별시 강남구청",
+      "contact": "02-3423-5534",
+      "url": "https://visitgangnam.net/cultural-events/"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-07-30",
+    "match": "파일명 '강남페스티벌' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

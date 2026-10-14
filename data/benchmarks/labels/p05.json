@@ -1,0 +1,135 @@
+{
+  "schema_version": "poster.benchmark-label.v1",
+  "case_id": "p05",
+  "source_sha256": "374898f64d83ec5b96931c4e413960ce5ee979bece86c02f87afb02135b4ba10",
+  "coordinate_space": "normalized_original_pixels",
+  "dimensions": [
+    445,
+    627
+  ],
+  "method": "assistant_visual_draft_before_inference",
+  "human_verified": false,
+  "review_status": "needs_human_review",
+  "reviewed_by": null,
+  "reviewed_at": null,
+  "use_for_training": false,
+  "notes": [
+    "픽셀 시각 판독 초안. 사람 확인 전 정답 정확도로 보고하지 않는다.",
+    "regions는 문자 진단용이며 추론·탐지·crop 생성에 전달하지 않는다.",
+    "unresolved는 미라벨/판독 불가이며 실제 부재를 의미하지 않는다."
+  ],
+  "regions": [
+    {
+      "id": "title1",
+      "text": "안동국제",
+      "bbox_xyxy": [
+        14,
+        500,
+        154,
+        541
+      ]
+    },
+    {
+      "id": "title2",
+      "text": "탈춤페스티벌",
+      "bbox_xyxy": [
+        14,
+        541,
+        211,
+        584
+      ]
+    },
+    {
+      "id": "place1",
+      "text": "중앙선 1942 안동역,",
+      "bbox_xyxy": [
+        289,
+        508,
+        428,
+        532
+      ]
+    },
+    {
+      "id": "place2",
+      "text": "원도심, 탈춤공원 일원",
+      "bbox_xyxy": [
+        286,
+        533,
+        428,
+        557
+      ]
+    },
+    {
+      "id": "date",
+      "text": "2026. 9. 24 (목) - 10.4 (일)",
+      "bbox_xyxy": [
+        232,
+        557,
+        429,
+        584
+      ]
+    }
+  ],
+  "fields": {
+    "event_name": {
+      "value": "안동국제탈춤페스티벌",
+      "status": "visible",
+      "region_ids": [
+        "title1",
+        "title2"
+      ]
+    },
+    "start_date": {
+      "value": "2026-09-24",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "end_date": {
+      "value": "2026-10-04",
+      "status": "visible",
+      "region_ids": [
+        "date"
+      ]
+    },
+    "location_raw": {
+      "value": "중앙선 1942 안동역, 원도심, 탈춤공원 일원",
+      "status": "visible",
+      "region_ids": [
+        "place1",
+        "place2"
+      ]
+    }
+  },
+  "criteria": [
+    {
+      "id": "name",
+      "text": "행사명: 안동국제탈춤페스티벌",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "title1",
+        "title2"
+      ]
+    },
+    {
+      "id": "period",
+      "text": "기간: 2026.09.24 ~ 10.04",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "date"
+      ]
+    },
+    {
+      "id": "venue",
+      "text": "장소: 탈춤공원 일원",
+      "type": "information",
+      "expected_status": "pass",
+      "region_ids": [
+        "place2"
+      ]
+    }
+  ]
+}

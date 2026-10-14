@@ -1,0 +1,63 @@
+{
+  "id": "team-894545144f6a",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:58+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_파주페어_북앤컬처_포스터.jpg",
+    "source_url": null,
+    "format": "jpeg",
+    "sha256": "894545144f6a207901104616f55aa52fd14d54cfae67d46c8868f27871c7e5f1",
+    "width": 445,
+    "height": 627
+  },
+  "event": {
+    "title": "제3회 파주 페어 북앤컬처",
+    "service": "행사/축제",
+    "category": "축제",
+    "start_date": "2026-10-09",
+    "end_date": "2026-10-18",
+    "venue": "아시아출판문화정보센터 등 출판도시 일원",
+    "address": "경기도 파주시 회동길 145",
+    "region": null,
+    "district": null,
+    "price": null,
+    "contact": "031-940-4721",
+    "homepage": "https://pajufair.com",
+    "venue_url": null,
+    "organizer": "(재)출판도시문화재단",
+    "host": "경기도 파주시청",
+    "sponsor": null,
+    "program": "뮤지컬+연극+프린지공연+낭독공연+버스킹+동네책방+오픈하우스+전시 등",
+    "gps": {
+      "lat": 37.70854964,
+      "lng": 126.6868336
+    }
+  },
+  "reference": {
+    "event": {
+      "name": "제3회 파주 페어 북앤컬처",
+      "start_date": "2026-10-09",
+      "end_date": "2026-10-18",
+      "venues": [
+        "아시아출판문화정보센터 등 출판도시 일원"
+      ],
+      "organizer": "(재)출판도시문화재단",
+      "contact": "031-940-4721",
+      "url": "https://pajufair.com"
+    }
+  },
+  "reference_status": "matched",
+  "source": {
+    "provider": "전국문화축제표준데이터 (data.go.kr 15013104)",
+    "api": "tn_pubr_public_cltur_fstvl_api",
+    "record_id": null,
+    "reference_date": "2026-08-13",
+    "match": "파일명 '파주페어_북앤컬처' ↔ 축제명·시작일 대조",
+    "license": "공공데이터포털 표준데이터",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

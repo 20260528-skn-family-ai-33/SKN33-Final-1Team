@@ -1,0 +1,25 @@
+{
+  "id": "team-de4dd8863811",
+  "collected_at": null,
+  "registered_at": "2026-10-12T11:18:57+09:00",
+  "collector": "JiHeum",
+  "image": {
+    "file": "data/img/2026_서일_별빛_페스타.png",
+    "source_url": null,
+    "format": "png",
+    "sha256": "de4dd88638113f82da330b884a812329f110ef1b11322e1c636b9939964c099d",
+    "width": 4761,
+    "height": 6735
+  },
+  "event": null,
+  "reference": null,
+  "reference_status": "not_found",
+  "source": {
+    "provider": null,
+    "match": "전국문화축제표준데이터·문화포털 API에서 찾지 못함",
+    "image_rights": "미확인. 팀원이 수집한 포스터, 출처 URL 미기록"
+  },
+  "ai_generated_suspected": null,
+  "ai_judgment": "미판정",
+  "label_status": "not_labeled"
+}

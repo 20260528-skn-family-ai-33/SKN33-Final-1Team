@@ -1,0 +1,11 @@
+# Python 3.12; local CUDA/MPS/CPU inference. Install a compatible CUDA wheel
+# from the official PyTorch index first when your NVIDIA environment needs it.
+torch==2.10.0
+torchvision==0.25.0
+easyocr==1.7.2
+Pillow==12.3.0
+numpy==2.5.3
+opencv-python-headless==5.0.0.93
+fastapi==0.143.0
+uvicorn==0.54.0
+python-multipart==0.0.32
