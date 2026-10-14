@@ -24,7 +24,7 @@ html{scroll-behavior:smooth}h1,h2,h3,[id]{scroll-margin-top:24px}.doc-nav,.role-
 
 <div class="notice" id="current-scope">
 <p><strong>현재 가능한 흐름</strong><br>admin 로그인 → PNG·JPEG·WEBP 이미지 1장과 요구사항 입력 → 항목 편집·선택·기준 확정 → OCR → 충족·위반·확인 필요와 문구·근거 박스·JSON 확인.</p>
-<p>React·FastAPI·BackgroundTasks와 로컬 JSON/이미지 저장을 사용합니다. 기본 OCR은 EasyOCR baseline이며 paddle-only를 선택하면 PaddleOCR 단독 경로로 실행합니다. 현재 다시 실행은 새 검수 ID 생성이며 업무 이력·수정본 연결은 예정입니다.</p>
+<p>React·FastAPI·BackgroundTasks와 로컬 JSON/이미지 저장을 사용합니다. 로컬 기본 OCR은 PaddleOCR 단독(paddle-only)이며 run.sh·run.cmd만 실행합니다. EasyOCR 비교는 OCR_PIPELINE=baseline으로 선택하고 RunPod 기본은 baseline입니다. 현재 다시 실행은 새 검수 ID 생성이며 업무 이력·수정본 연결은 예정입니다.</p>
 <p><strong>최신 실제 시연</strong><br>2026-10-14 10:45:10 KST 김천 포스터: 충족 6·위반 0·확인 필요 1. 김천시 로고는 글자 확인을 사용하는 임시 정책이며 심벌 검증이 아닙니다. 문구·이미지 잘림은 자동 판정하지 않습니다.</p>
 <p><strong>다음 구현 범위</strong><br>문서 기준 추출·5종 요청 분류·공식 행사 정보 대조·RAG·PostgreSQL(SQLAlchemy·Alembic 예정)·독립 worker·수정 티켓·전체 재검수·사람 승인. 시각 검수와 8개 AI 역할 통합은 P1 목표입니다.</p>
 </div>
@@ -1166,7 +1166,7 @@ html{scroll-behavior:smooth}h1,h2,h3,[id]{scroll-margin-top:24px}.doc-nav,.role-
 <td>시스템 검사 / R03 확인</td>
 <td>P0</td>
 <td>P0 · 문구 / P1 · 시각</td>
-<td>부분 구현<span class="implementation-detail">문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 기본 baseline은 EasyOCR, paddle은 혼합, paddle-only는 PaddleOCR 단독이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</span>
+<td>부분 구현<span class="implementation-detail">문구·날짜·장소 추출·규칙 비교·OCR 좌표 표시와 여러 줄 결합·불확실 영역 재인식이 구현되어 있다. 로컬 기본 paddle-only는 PaddleOCR 단독이며 baseline은 EasyOCR 비교, paddle은 혼합 경로다. RunPod 기본은 baseline이다. 로고 심벌·개수·배치·잘림 자동 검사는 미구현이다.</span>
 </td>
 <td><a class="requirement-ref" href="./02_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html#FR-04-02">FR-04-02</a></td>
 </tr>

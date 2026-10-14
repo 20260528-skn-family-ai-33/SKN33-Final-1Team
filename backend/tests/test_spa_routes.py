@@ -1,13 +1,31 @@
-"""로그인 직접 접근을 지원하면서 API와 정적 파일의 404를 유지한다."""
+"""운영체제 경로가 달라도 React 직접 접근과 API·정적 파일 응답을 유지한다."""
 
+import ntpath
 import pytest
 from fastapi.testclient import TestClient
 
 from backend.app import api as backend
+from backend.app.spa import ReviewStaticFiles
 
 
-@pytest.fixture
-def spa_client(tmp_path, monkeypatch):
+@pytest.fixture(params=["native", "windows"])
+def spa_client(tmp_path, monkeypatch, request):
+    """같은 요청을 기본 경로와 Windows 내부 경로로 각각 검사한다."""
+    if request.param == "windows":
+        get_path = ReviewStaticFiles.get_path
+        lookup_path = ReviewStaticFiles.lookup_path
+
+        def windows_get_path(self, scope):
+            """현재 운영체제와 무관하게 Windows의 경로 구분자를 재현한다."""
+            return ntpath.normpath(get_path(self, scope))
+
+        def host_lookup_path(self, path):
+            """모의 Windows 경로도 테스트 파일은 실제 운영체제에서 찾게 한다."""
+            return lookup_path(self, path.replace("\\", "/"))
+
+        monkeypatch.setattr(ReviewStaticFiles, "get_path", windows_get_path)
+        monkeypatch.setattr(ReviewStaticFiles, "lookup_path", host_lookup_path)
+
     # 실제 빌드 유무와 무관하게 공개 앱의 라우팅 경계를 검증한다.
     frontend = tmp_path / "frontend" / "dist"
     assets = frontend / "assets"

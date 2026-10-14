@@ -30,6 +30,7 @@ from .review_rules import review_criteria
 from .sample import sample_image_path
 from .spa import ReviewStaticFiles
 from .local_auth import local_auth_router
+from .ocr_config import selected_pipeline
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -118,8 +119,8 @@ def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
 
 
 def _default_recognizer(path: Path) -> dict:
-    # 미검증 모델 채택과 구분하여 개선 경로를 명시적으로 선택할 수 있게 한다.
-    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    # 실행 전 검사와 같은 기본값을 사용하고 명시한 비교 경로도 유지한다.
+    pipeline = selected_pipeline()
     if pipeline == "paddle-only":
         # 탐지부터 인식까지 Paddle로 처리하여 EasyOCR 패키지·가중치를 요구하지 않는다.
         from .paddle_ocr import recognize_paddle
@@ -141,7 +142,7 @@ def _default_recognizer(path: Path) -> dict:
 
 def _runtime_identity() -> dict:
     """실패 전에도 선택한 엔진과 실행 경로를 민감 정보 없이 표시한다."""
-    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    pipeline = selected_pipeline()
     engine = {"paddle-only": "paddleocr", "paddle": "easyocr+paddleocr", "qwen": "easyocr+qwen3-vl"}.get(pipeline, "easyocr")
     metadata = {"engine": engine, "execution_target": os.getenv("RUN_TARGET", "local").strip().lower()}
     name = {"multiline": "multiline_v2", "adaptive": "adaptive_v1", "paddle": "paddle_regions_v1",
@@ -153,7 +154,7 @@ def _runtime_identity() -> dict:
 
 def _default_runtime_status() -> dict:
     """선택한 경로만 점검하여 Paddle 단독 건강 검사에서 EasyOCR를 불러오지 않는다."""
-    pipeline = os.getenv("OCR_PIPELINE", "baseline").strip().lower()
+    pipeline = selected_pipeline()
     target = os.getenv("RUN_TARGET", "local").strip().lower()
     identity = _runtime_identity()
     if pipeline not in PIPELINE_NAMES or target not in {"local", "runpod"}:

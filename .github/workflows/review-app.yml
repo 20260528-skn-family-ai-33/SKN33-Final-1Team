@@ -89,6 +89,8 @@ jobs:
         run: '& ".\run.cmd" --help'
       - name: Verify missing OCR stops startup without installing
         run: |
+          # 기준선 비교는 명시적으로 선택하고, 다음 단계에서 기본 Paddle 경로를 검사한다.
+          $env:OCR_PIPELINE = "baseline"
           $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
           $checkExit = $LASTEXITCODE
           Write-Host $diagnostics
@@ -102,14 +104,18 @@ jobs:
           }
           & ".\.venv\Scripts\python.exe" -c "import importlib.util; assert importlib.util.find_spec('easyocr') is None"
           if ($LASTEXITCODE -ne 0) { throw "The checker must not install OCR packages." }
-      - name: Verify Paddle-only startup does not require EasyOCR
+      - name: Verify default Paddle-only startup does not require EasyOCR
         run: |
-          # 단독 선택은 Paddle 준비 명령만 안내하고 격리 환경도 자동 생성하지 않는다.
-          $env:OCR_PIPELINE = "paddle-only"
+          # 선택값 없이 실행해도 Paddle만 점검하고 격리 환경을 자동 생성하지 않는다.
+          Remove-Item Env:OCR_PIPELINE -ErrorAction SilentlyContinue
           $env:RUN_TARGET = "local"
           $diagnostics = (& ".\run.cmd" --check-only 2>&1 | Out-String)
           $checkExit = $LASTEXITCODE
           Write-Host $diagnostics
+          if ($diagnostics -notmatch 'OCR_PIPELINE=paddle-only' -or
+              $diagnostics -notmatch '\$env:OCR_PIPELINE = "baseline"') {
+            throw "Default OCR and alternative launch commands were not shown."
+          }
           if ($checkExit -ne 1) {
             throw "Expected missing Paddle environment to stop the launcher with exit 1."
           }
