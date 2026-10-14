@@ -4,6 +4,7 @@ Run with ``uvicorn backend.app.api:app --host 127.0.0.1 --port 8000``. Uploaded 
 normalised images, immutable criteria and job results stay under .runtime.
 The configured OCR runtime alone controls any explicitly enabled remote call.
 """
+
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -32,7 +33,6 @@ from .spa import ReviewStaticFiles
 from .local_auth import local_auth_router
 from .ocr_config import selected_pipeline
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 # The OCR runtime accepts 40 MP. A fixed 2x scale multiplies pixels by four.
@@ -41,13 +41,25 @@ MAX_IMAGE_SIDE = 8192
 ALLOWED_FORMATS = {"PNG", "JPEG", "WEBP"}
 CRITERIA_MAX_JSON = 250_000
 PIPELINE_NAMES = {"baseline", "multiline", "adaptive", "paddle", "paddle-only", "qwen"}
-MULTILINE_PIPELINES = {"multiline_v2", "adaptive_v1", "paddle_regions_v1", "paddle_full_v1", "qwen_regions_v1"}
+MULTILINE_PIPELINES = {
+    "multiline_v2",
+    "adaptive_v1",
+    "paddle_regions_v1",
+    "paddle_full_v1",
+    "qwen_regions_v1",
+}
 LOCAL_PIPELINES = {"adaptive", "paddle", "paddle-only", "qwen"}
 RECOGNITION_ENGINES = {"easyocr", "paddleocr", "qwen3-vl"}
-SELECTION_REASONS = {"new_model_candidate_unverified", "model_abstained_keep_original",
-                     "conflicting_candidates_keep_original", "stronger_candidate_unverified",
-                     "new_detection_unverified", "vlm_location_unverified",
-                     "same_text_without_confidence_boost", "refinement_incomplete"}
+SELECTION_REASONS = {
+    "new_model_candidate_unverified",
+    "model_abstained_keep_original",
+    "conflicting_candidates_keep_original",
+    "stronger_candidate_unverified",
+    "new_detection_unverified",
+    "vlm_location_unverified",
+    "same_text_without_confidence_boost",
+    "refinement_incomplete",
+}
 
 
 class Criterion(BaseModel):
@@ -78,7 +90,10 @@ def _now() -> str:
 
 def _write_json(path: Path, value: dict) -> None:
     temp = path.with_suffix(f".{uuid4().hex}.tmp")
-    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+    temp.write_text(
+        json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False),
+        encoding="utf-8",
+    )
     temp.replace(path)
 
 
@@ -94,19 +109,36 @@ def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
             with Image.open(io.BytesIO(data)) as decoded:
                 actual_format = decoded.format
                 if actual_format not in ALLOWED_FORMATS:
-                    raise HTTPException(415, "JPEG, PNG, WEBP 래스터 이미지만 지원합니다. PDF·SVG는 이미지로 변환해 주세요.")
+                    raise HTTPException(
+                        415,
+                        "JPEG, PNG, WEBP 래스터 이미지만 지원합니다. PDF·SVG는 이미지로 변환해 주세요.",
+                    )
                 width, height = decoded.size
-                if width * height > MAX_IMAGE_PIXELS or max(width, height) > MAX_IMAGE_SIDE:
-                    raise HTTPException(413, "이미지는 1,000만 픽셀 이하, 한 변 8,192픽셀 이하로 줄여 주세요.")
+                if (
+                    width * height > MAX_IMAGE_PIXELS
+                    or max(width, height) > MAX_IMAGE_SIDE
+                ):
+                    raise HTTPException(
+                        413,
+                        "이미지는 1,000만 픽셀 이하, 한 변 8,192픽셀 이하로 줄여 주세요.",
+                    )
                 if getattr(decoded, "n_frames", 1) != 1:
-                    raise HTTPException(415, "애니메이션은 지원하지 않습니다. 단일 이미지로 저장해 주세요.")
+                    raise HTTPException(
+                        415,
+                        "애니메이션은 지원하지 않습니다. 단일 이미지로 저장해 주세요.",
+                    )
                 decoded.load()
                 oriented = ImageOps.exif_transpose(decoded).convert("RGBA")
-                rgb = Image.alpha_composite(Image.new("RGBA", oriented.size, "white"), oriented).convert("RGB")
+                rgb = Image.alpha_composite(
+                    Image.new("RGBA", oriented.size, "white"), oriented
+                ).convert("RGB")
                 metadata = {
-                    "actual_format": actual_format, "original_dimensions": [width, height],
-                    "original_sha256": hashlib.sha256(data).hexdigest(), "original_bytes": len(data),
-                    "oriented_dimensions": list(rgb.size), "ocr_scale": 2,
+                    "actual_format": actual_format,
+                    "original_dimensions": [width, height],
+                    "original_sha256": hashlib.sha256(data).hexdigest(),
+                    "original_bytes": len(data),
+                    "oriented_dimensions": list(rgb.size),
+                    "ocr_scale": 2,
                     "normalization": "EXIF transpose; alpha composited onto white; RGB; 2x Lanczos for OCR",
                 }
                 return rgb, metadata
@@ -115,7 +147,10 @@ def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
     except (Image.DecompressionBombError, Image.DecompressionBombWarning):
         raise HTTPException(413, "이미지의 픽셀 수가 허용 범위를 초과합니다.") from None
     except (UnidentifiedImageError, OSError, ValueError, SyntaxError):
-        raise HTTPException(415, "이미지를 읽을 수 없습니다. 손상되지 않은 JPEG, PNG, WEBP 파일을 선택해 주세요.") from None
+        raise HTTPException(
+            415,
+            "이미지를 읽을 수 없습니다. 손상되지 않은 JPEG, PNG, WEBP 파일을 선택해 주세요.",
+        ) from None
 
 
 def _default_recognizer(path: Path) -> dict:
@@ -124,16 +159,22 @@ def _default_recognizer(path: Path) -> dict:
     if pipeline == "paddle-only":
         # 탐지부터 인식까지 Paddle로 처리하여 EasyOCR 패키지·가중치를 요구하지 않는다.
         from .paddle_ocr import recognize_paddle
+
         return recognize_paddle(path, path.parent / "paddle-only")
     if pipeline in {"paddle", "qwen"}:
         from .model_ocr import recognize_models
+
         return recognize_models(path, path.parent / pipeline, pipeline)
     if pipeline == "adaptive":
         from .adaptive_ocr import recognize_adaptive
+
         return recognize_adaptive(path, path.parent / "adaptive")
     if pipeline not in {"baseline", "multiline"}:
-        raise ValueError("OCR_PIPELINE must be baseline, multiline, adaptive, paddle, paddle-only or qwen")
+        raise ValueError(
+            "OCR_PIPELINE must be baseline, multiline, adaptive, paddle, paddle-only or qwen"
+        )
     from .ocr_runtime import recognize_image
+
     payload = recognize_image(path)
     if pipeline == "multiline":
         payload["pipeline"] = "multiline_v2"
@@ -143,10 +184,22 @@ def _default_recognizer(path: Path) -> dict:
 def _runtime_identity() -> dict:
     """실패 전에도 선택한 엔진과 실행 경로를 민감 정보 없이 표시한다."""
     pipeline = selected_pipeline()
-    engine = {"paddle-only": "paddleocr", "paddle": "easyocr+paddleocr", "qwen": "easyocr+qwen3-vl"}.get(pipeline, "easyocr")
-    metadata = {"engine": engine, "execution_target": os.getenv("RUN_TARGET", "local").strip().lower()}
-    name = {"multiline": "multiline_v2", "adaptive": "adaptive_v1", "paddle": "paddle_regions_v1",
-            "paddle-only": "paddle_full_v1", "qwen": "qwen_regions_v1"}.get(pipeline)
+    engine = {
+        "paddle-only": "paddleocr",
+        "paddle": "easyocr+paddleocr",
+        "qwen": "easyocr+qwen3-vl",
+    }.get(pipeline, "easyocr")
+    metadata = {
+        "engine": engine,
+        "execution_target": os.getenv("RUN_TARGET", "local").strip().lower(),
+    }
+    name = {
+        "multiline": "multiline_v2",
+        "adaptive": "adaptive_v1",
+        "paddle": "paddle_regions_v1",
+        "paddle-only": "paddle_full_v1",
+        "qwen": "qwen_regions_v1",
+    }.get(pipeline)
     if name:
         metadata["pipeline"] = name
     return metadata
@@ -158,29 +211,65 @@ def _default_runtime_status() -> dict:
     target = os.getenv("RUN_TARGET", "local").strip().lower()
     identity = _runtime_identity()
     if pipeline not in PIPELINE_NAMES or target not in {"local", "runpod"}:
-        return {**identity, "ready": False, "status": "not_ready", "detail": "Invalid OCR configuration"}
+        return {
+            **identity,
+            "ready": False,
+            "status": "not_ready",
+            "detail": "Invalid OCR configuration",
+        }
     if pipeline in LOCAL_PIPELINES and target != "local":
-        return {**identity, "ready": False, "status": "not_ready", "detail": "Selected pipeline requires RUN_TARGET=local"}
+        return {
+            **identity,
+            "ready": False,
+            "status": "not_ready",
+            "detail": "Selected pipeline requires RUN_TARGET=local",
+        }
     if pipeline == "paddle-only":
         from .paddle_ocr import paddle_readiness
+
         ready, detail = paddle_readiness()
-        return {**identity, "device": "cpu", "ready": ready, "status": "ready" if ready else "not_ready", "detail": detail}
+        return {
+            **identity,
+            "device": "cpu",
+            "ready": ready,
+            "status": "ready" if ready else "not_ready",
+            "detail": detail,
+        }
     from .ocr_runtime import get_runtime_status
+
     status = get_runtime_status()
     if pipeline in {"paddle", "qwen"}:
         from .model_ocr import model_readiness, ENGINES, PIPELINES
+
         ready, detail = model_readiness(pipeline)
-        status.update(engine=ENGINES[pipeline], pipeline=PIPELINES[pipeline],
-                      ready=status["ready"] and ready, detail=detail, device="unknown")
+        status.update(
+            engine=ENGINES[pipeline],
+            pipeline=PIPELINES[pipeline],
+            ready=status["ready"] and ready,
+            detail=detail,
+            device="unknown",
+        )
     return status
 
 
 def _safe_runtime(payload: dict) -> dict:
     """Return public execution metadata, never URLs, credentials or tracebacks."""
     allowed_values = {
-        "engine": {"easyocr", "paddleocr", "easyocr+paddleocr", "easyocr+qwen3-vl"}, "execution_target": {"local", "runpod"},
+        "engine": {"easyocr", "paddleocr", "easyocr+paddleocr", "easyocr+qwen3-vl"},
+        "execution_target": {"local", "runpod"},
         "device": {"cuda", "mps", "cpu", "gpu", "runpod", "remote-auto", "unknown"},
-        "status": {"ok", "ready", "completed", "failed", "unavailable", "not_ready", "configured", "success", "skipped", "fallback"},
+        "status": {
+            "ok",
+            "ready",
+            "completed",
+            "failed",
+            "unavailable",
+            "not_ready",
+            "configured",
+            "success",
+            "skipped",
+            "fallback",
+        },
     }
     result = {}
     if isinstance(payload.get("ready"), bool):
@@ -191,11 +280,18 @@ def _safe_runtime(payload: dict) -> dict:
             result[key] = value.lower()
     if payload.get("pipeline") in MULTILINE_PIPELINES:
         result["pipeline"] = payload["pipeline"]
-    if payload.get("refinement_status") in {"completed", "partial", "timeout", "worker_failed"}:
+    if payload.get("refinement_status") in {
+        "completed",
+        "partial",
+        "timeout",
+        "worker_failed",
+    }:
         result["refinement_status"] = payload["refinement_status"]
     # Attempts deliberately omit free-form errors that may contain secrets.
     result["attempts"] = []
-    for attempt in payload.get("attempts", []) if isinstance(payload.get("attempts"), list) else []:
+    for attempt in (
+        payload.get("attempts", []) if isinstance(payload.get("attempts"), list) else []
+    ):
         if isinstance(attempt, dict):
             clean = {}
             for key in ("device", "execution_target", "status"):
@@ -223,7 +319,11 @@ def _map_records(payload: dict, width: int, height: int) -> list[dict]:
         if not isinstance(raw, dict) or not isinstance(raw.get("text"), str):
             raise ValueError("Invalid OCR text")
         record_id = raw.get("id", f"ocr-{index + 1}")
-        if not isinstance(record_id, (str, int)) or isinstance(record_id, bool) or record_id in seen:
+        if (
+            not isinstance(record_id, (str, int))
+            or isinstance(record_id, bool)
+            or record_id in seen
+        ):
             raise ValueError("Invalid OCR ID")
         seen.add(record_id)
         text = raw["text"].strip()
@@ -232,37 +332,59 @@ def _map_records(payload: dict, width: int, height: int) -> list[dict]:
         if len(text) > 10_000:
             raise ValueError("OCR text is too long")
         box = raw.get("bbox_xyxy")
-        if not isinstance(box, (list, tuple)) or len(box) != 4 or any(
-            isinstance(number, bool) or not isinstance(number, (int, float)) or not math.isfinite(number)
-            for number in box
+        if (
+            not isinstance(box, (list, tuple))
+            or len(box) != 4
+            or any(
+                isinstance(number, bool)
+                or not isinstance(number, (int, float))
+                or not math.isfinite(number)
+                for number in box
+            )
         ):
             raise ValueError("Invalid OCR bounding box")
         if box[2] <= box[0] or box[3] <= box[1]:
             raise ValueError("Degenerate OCR bounding box")
-        coordinates = [max(0, min(limit, float(number) / 2)) for number, limit in zip(box, [width, height, width, height])]
+        coordinates = [
+            max(0, min(limit, float(number) / 2))
+            for number, limit in zip(box, [width, height, width, height])
+        ]
         if coordinates[2] <= coordinates[0] or coordinates[3] <= coordinates[1]:
             raise ValueError("OCR bounding box outside image")
         confidence = raw.get("confidence")
         if confidence is not None and (
-            isinstance(confidence, bool) or not isinstance(confidence, (int, float))
-            or not math.isfinite(confidence) or not 0 <= confidence <= 1
+            isinstance(confidence, bool)
+            or not isinstance(confidence, (int, float))
+            or not math.isfinite(confidence)
+            or not 0 <= confidence <= 1
         ):
             raise ValueError("Invalid OCR confidence")
-        record = {"id": record_id, "text": text, "confidence": confidence, "bbox_xyxy": coordinates}
+        record = {
+            "id": record_id,
+            "text": text,
+            "confidence": confidence,
+            "bbox_xyxy": coordinates,
+        }
         # 재인식 정보도 허용한 값만 공개하고 입력 좌표는 한 번만 복원한다.
         if "requires_review" in raw:
             if type(raw["requires_review"]) is not bool:
                 raise ValueError("Invalid review flag")
             record["requires_review"] = raw["requires_review"]
         if "baseline_text" in raw:
-            if not isinstance(raw["baseline_text"], str) or len(raw["baseline_text"]) > 10_000:
+            if (
+                not isinstance(raw["baseline_text"], str)
+                or len(raw["baseline_text"]) > 10_000
+            ):
                 raise ValueError("Invalid baseline text")
             record["baseline_text"] = raw["baseline_text"]
         # 원문 근거의 점수·엔진·보류 사유를 검증해 항목별 재판정에 전달한다.
         if "baseline_confidence" in raw:
             baseline_confidence = raw["baseline_confidence"]
-            if baseline_confidence is not None and (type(baseline_confidence) not in (int, float)
-                    or not math.isfinite(baseline_confidence) or not 0 <= baseline_confidence <= 1):
+            if baseline_confidence is not None and (
+                type(baseline_confidence) not in (int, float)
+                or not math.isfinite(baseline_confidence)
+                or not 0 <= baseline_confidence <= 1
+            ):
                 raise ValueError("Invalid baseline confidence")
             record["baseline_confidence"] = baseline_confidence
         if "baseline_requires_review" in raw:
@@ -280,35 +402,65 @@ def _map_records(payload: dict, width: int, height: int) -> list[dict]:
             raise ValueError("Invalid OCR alternatives")
         if alternatives:
             # 후보에도 같은 좌표 검증을 적용하고 임의 속성은 공개하지 않는다.
-            candidates = [{"id": f"candidate-{i}", "text": c.get("text"), "confidence": c.get("confidence"),
-                           "bbox_xyxy": c.get("bbox_xyxy")} for i, c in enumerate(alternatives)]
-            record["alternatives"] = _map_records({"records": candidates}, width, height)
+            candidates = [
+                {
+                    "id": f"candidate-{i}",
+                    "text": c.get("text"),
+                    "confidence": c.get("confidence"),
+                    "bbox_xyxy": c.get("bbox_xyxy"),
+                }
+                for i, c in enumerate(alternatives)
+            ]
+            record["alternatives"] = _map_records(
+                {"records": candidates}, width, height
+            )
             for candidate, raw_candidate in zip(record["alternatives"], alternatives):
                 if raw_candidate.get("engine") in RECOGNITION_ENGINES:
                     candidate["engine"] = raw_candidate["engine"]
         # 단독 Paddle의 출처가 빠져도 EasyOCR 기본 점수 기준으로 낮아지지 않게 한다.
         if "recognition_engine" in raw:
-            if not isinstance(raw["recognition_engine"], str) or raw["recognition_engine"] not in RECOGNITION_ENGINES:
+            if (
+                not isinstance(raw["recognition_engine"], str)
+                or raw["recognition_engine"] not in RECOGNITION_ENGINES
+            ):
                 raise ValueError("Invalid recognition engine")
             record["recognition_engine"] = raw["recognition_engine"]
-        if payload.get("engine") == "paddleocr" or payload.get("pipeline") == "paddle_full_v1":
+        if (
+            payload.get("engine") == "paddleocr"
+            or payload.get("pipeline") == "paddle_full_v1"
+        ):
             if record.get("recognition_engine", "paddleocr") != "paddleocr":
                 raise ValueError("Paddle payload recognition engine mismatch")
             record["recognition_engine"] = "paddleocr"
         if raw.get("polygon") is not None:
             polygon = raw["polygon"]
-            if not isinstance(polygon, list) or len(polygon) < 4 or len(polygon) > 32 or any(
-                not isinstance(p, list) or len(p) != 2 or any(type(v) not in (int, float) or not math.isfinite(v) for v in p) for p in polygon
+            if (
+                not isinstance(polygon, list)
+                or len(polygon) < 4
+                or len(polygon) > 32
+                or any(
+                    not isinstance(p, list)
+                    or len(p) != 2
+                    or any(
+                        type(v) not in (int, float) or not math.isfinite(v) for v in p
+                    )
+                    for p in polygon
+                )
             ):
                 raise ValueError("Invalid OCR polygon")
-            record["polygon"] = [[max(0, min(width, p[0] / 2)), max(0, min(height, p[1] / 2))] for p in polygon]
+            record["polygon"] = [
+                [max(0, min(width, p[0] / 2)), max(0, min(height, p[1] / 2))]
+                for p in polygon
+            ]
         mapped.append(record)
     return mapped
 
 
 def create_app(
-    *, recognizer: Callable[[Path], dict] | None = None,
-    runtime_status: Callable[[], dict] | None = None, review_root: Path | None = None,
+    *,
+    recognizer: Callable[[Path], dict] | None = None,
+    runtime_status: Callable[[], dict] | None = None,
+    review_root: Path | None = None,
 ) -> FastAPI:
     recognize = recognizer or _default_recognizer
     runtime_health = runtime_status or _default_runtime_status
@@ -325,19 +477,39 @@ def create_app(
             try:
                 value = _read_json(path)
                 if value.get("status") in {"queued", "running"}:
-                    value.update(status="failed", stage="failed", error="서버가 재시작되어 검수가 중단됐습니다. 다시 실행해 주세요.", updated_at=_now())
+                    value.update(
+                        status="failed",
+                        stage="failed",
+                        error="서버가 재시작되어 검수가 중단됐습니다. 다시 실행해 주세요.",
+                        updated_at=_now(),
+                    )
                     _write_json(path, value)
             except (OSError, ValueError):
                 continue
         yield
 
-    application = FastAPI(title="바로검수 API", version="1.0.0", lifespan=lifespan)
+    application = FastAPI(title="체크메이트 API", version="1.0.0", lifespan=lifespan)
     # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
     if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
         application.include_router(local_auth_router())
-    allowed_origins = [value.strip() for value in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if value.strip()]
-    allowed_origins = [value for value in allowed_origins if value.startswith(("http://localhost:", "http://127.0.0.1:"))]
-    application.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+    allowed_origins = [
+        value.strip()
+        for value in os.getenv(
+            "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if value.strip()
+    ]
+    allowed_origins = [
+        value
+        for value in allowed_origins
+        if value.startswith(("http://localhost:", "http://127.0.0.1:"))
+    ]
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
 
     def directory(review_id: str) -> Path:
         try:
@@ -362,7 +534,9 @@ def create_app(
             update(target, status="running", stage=stage, progress=15)
             with Image.open(target / "normalized.png") as image:
                 width, height = image.size
-                image.resize((width * 2, height * 2), Image.Resampling.LANCZOS).save(target / "ocr_input.png")
+                image.resize((width * 2, height * 2), Image.Resampling.LANCZOS).save(
+                    target / "ocr_input.png"
+                )
             stage = "ocr"
             update(target, stage=stage, progress=30)
             payload = recognize(target / "ocr_input.png")
@@ -376,29 +550,61 @@ def create_app(
             if payload.get("pipeline") in MULTILINE_PIPELINES:
                 # 원시 후보와 시도 이력은 비공개 실행 폴더에 보존한다.
                 _write_json(target / "ocr.raw.json", payload)
-            ocr = {"records": records, "input_dimensions": [width * 2, height * 2], "coordinate_space": "normalized_original_pixels", "scale": 2}
+            ocr = {
+                "records": records,
+                "input_dimensions": [width * 2, height * 2],
+                "coordinate_space": "normalized_original_pixels",
+                "scale": 2,
+            }
             multiline = payload.get("pipeline") in MULTILINE_PIPELINES
             if multiline:
                 from .event_layout import extract_event_multiline
+
                 ocr["event"] = extract_event_multiline(records)
             _write_json(target / "ocr.json", {**ocr, **runtime})
             stage = "review"
             update(target, stage=stage, progress=80, ocr=ocr)
             snapshot = _read_json(target / "snapshot.json")
-            results = review_criteria(snapshot["criteria"], records, multiline=multiline)
-            update(target, status="completed", stage="completed", progress=100, results=results, error=None)
+            results = review_criteria(
+                snapshot["criteria"], records, multiline=multiline
+            )
+            update(
+                target,
+                status="completed",
+                stage="completed",
+                progress=100,
+                results=results,
+                error=None,
+            )
         except Exception as error:
             messages = {
                 "preprocessing": "이미지 전처리에 실패했습니다. 이미지 크기와 서버 저장 공간을 확인해 주세요.",
                 "ocr": "OCR 실행에 실패했습니다. 모델 설치·다운로드 설정과 CUDA/MPS/CPU 또는 RunPod 연결 설정을 확인한 뒤 다시 실행해 주세요.",
                 "review": "OCR 결과를 검수 기준과 비교하지 못했습니다. 기준 형식과 OCR 출력을 확인해 주세요.",
             }
-            if stage == "ocr" and getattr(error, "code", None) == "remote_image_too_large":
-                messages["ocr"] = "2배 전처리한 이미지가 RunPod의 전송 한도 7 MiB를 초과했습니다. 원본 이미지 크기를 줄이거나 로컬 실행(CUDA → MPS → CPU)을 선택해 주세요."
+            if (
+                stage == "ocr"
+                and getattr(error, "code", None) == "remote_image_too_large"
+            ):
+                messages["ocr"] = (
+                    "2배 전처리한 이미지가 RunPod의 전송 한도 7 MiB를 초과했습니다. 원본 이미지 크기를 줄이거나 로컬 실행(CUDA → MPS → CPU)을 선택해 주세요."
+                )
             failure_metadata = {}
             if stage == "ocr":
-                failure_metadata["runtime"] = _safe_runtime({**_runtime_identity(), "status": "failed", "attempts": getattr(error, "attempts", [])})
-            update(target, status="failed", stage="failed", error=messages[stage], **failure_metadata)
+                failure_metadata["runtime"] = _safe_runtime(
+                    {
+                        **_runtime_identity(),
+                        "status": "failed",
+                        "attempts": getattr(error, "attempts", []),
+                    }
+                )
+            update(
+                target,
+                status="failed",
+                stage="failed",
+                error=messages[stage],
+                **failure_metadata,
+            )
 
     def run_review(target: Path) -> None:
         # Only one image is expanded/inferred at a time in this local process.
@@ -410,9 +616,21 @@ def create_app(
     def health():
         try:
             status = runtime_health()
-            return {"status": "ok", "runtime": _safe_runtime(status), "limits": {"upload_bytes": MAX_UPLOAD_BYTES, "image_pixels": MAX_IMAGE_PIXELS, "image_side": MAX_IMAGE_SIDE}}
+            return {
+                "status": "ok",
+                "runtime": _safe_runtime(status),
+                "limits": {
+                    "upload_bytes": MAX_UPLOAD_BYTES,
+                    "image_pixels": MAX_IMAGE_PIXELS,
+                    "image_side": MAX_IMAGE_SIDE,
+                },
+            }
         except Exception:
-            return {"status": "degraded", "runtime": {"status": "unavailable"}, "message": "OCR 실행 환경을 확인해 주세요."}
+            return {
+                "status": "degraded",
+                "runtime": {"status": "unavailable"},
+                "message": "OCR 실행 환경을 확인해 주세요.",
+            }
 
     @application.get("/api/sample")
     def sample():
@@ -430,21 +648,34 @@ def create_app(
             image_format = image.format
         media_type = Image.MIME.get(image_format, "application/octet-stream")
         extension = {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
-        return FileResponse(reference, media_type=media_type, filename=f"gimcheon-2026.{extension}")
+        return FileResponse(
+            reference, media_type=media_type, filename=f"gimcheon-2026.{extension}"
+        )
 
     @application.post("/api/reviews", status_code=202)
     async def submit(
         background_tasks: BackgroundTasks,
-        image: UploadFile = File(...), criteria: str = Form(...),
+        image: UploadFile = File(...),
+        criteria: str = Form(...),
         criteria_version: int = Form(..., ge=1, le=1_000_000),
         project_name: str = Form(..., min_length=1, max_length=120),
     ):
         if len(criteria) > CRITERIA_MAX_JSON:
-            raise HTTPException(422, "검수 기준이 너무 깁니다. 최대 100개, 항목당 500자까지 입력해 주세요.")
+            raise HTTPException(
+                422,
+                "검수 기준이 너무 깁니다. 최대 100개, 항목당 500자까지 입력해 주세요.",
+            )
         try:
-            frozen = CriteriaSnapshot(criteria=json.loads(criteria), criteria_version=criteria_version, project_name=project_name)
+            frozen = CriteriaSnapshot(
+                criteria=json.loads(criteria),
+                criteria_version=criteria_version,
+                project_name=project_name,
+            )
         except (json.JSONDecodeError, ValidationError, TypeError):
-            raise HTTPException(422, "확정한 기준을 확인해 주세요. 고유 ID와 유형, 1~500자의 내용이 있는 기준 1~100개가 필요합니다.") from None
+            raise HTTPException(
+                422,
+                "확정한 기준을 확인해 주세요. 고유 ID와 유형, 1~500자의 내용이 있는 기준 1~100개가 필요합니다.",
+            ) from None
         try:
             data = await image.read(MAX_UPLOAD_BYTES + 1)
         finally:
@@ -464,11 +695,26 @@ def create_app(
         snapshot = {**frozen.model_dump(), "image_source": source, "created_at": _now()}
         _write_json(target / "snapshot.json", snapshot)
         result = {
-            "id": review_id, "status": "queued", "stage": "queued", "progress": 5,
-            "criteria_version": frozen.criteria_version, "project_name": frozen.project_name,
+            "id": review_id,
+            "status": "queued",
+            "stage": "queued",
+            "progress": 5,
+            "criteria_version": frozen.criteria_version,
+            "project_name": frozen.project_name,
             "criteria": [item.model_dump() for item in frozen.criteria],
-            "image": {"width": rgb.width, "height": rgb.height, "url": f"/api/reviews/{review_id}/image", "sha256": source["original_sha256"], "actual_format": source["actual_format"]},
-            "results": [], "runtime": None, "ocr": None, "error": None, "created_at": _now(), "updated_at": _now(),
+            "image": {
+                "width": rgb.width,
+                "height": rgb.height,
+                "url": f"/api/reviews/{review_id}/image",
+                "sha256": source["original_sha256"],
+                "actual_format": source["actual_format"],
+            },
+            "results": [],
+            "runtime": None,
+            "ocr": None,
+            "error": None,
+            "created_at": _now(),
+            "updated_at": _now(),
         }
         _write_json(target / "result.json", result)
         rgb.close()
@@ -482,12 +728,16 @@ def create_app(
 
     @application.get("/api/reviews/{review_id}/image")
     def review_image(review_id: str):
-        return FileResponse(directory(review_id) / "normalized.png", media_type="image/png")
+        return FileResponse(
+            directory(review_id) / "normalized.png", media_type="image/png"
+        )
 
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"
     if frontend.is_dir():
-        application.mount("/", ReviewStaticFiles(directory=frontend, html=True), name="frontend")
+        application.mount(
+            "/", ReviewStaticFiles(directory=frontend, html=True), name="frontend"
+        )
     return application
 
 
