@@ -1,8 +1,9 @@
-"""로컬 화면 개발을 위한 임시 admin 계정과 메모리 세션."""
+"""로컬 개발 계정과 외부 시연용 단일 계정의 메모리 세션."""
 from ipaddress import ip_address
 import os
 import secrets
 import time
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -21,12 +22,36 @@ class LocalCredentials(BaseModel):
     password: str = Field(max_length=128)
 
 
-def local_auth_router() -> APIRouter:
-    """앱마다 독립된 세션을 만들고 localhost에서만 임시 계정을 제공한다."""
+def create_auth():
+    """앱별 세션을 공유하는 인증 라우터와 API 접근 검사를 만든다."""
+    mode = os.getenv("AUTH_MODE", "local").strip().lower()
+    if mode not in {"local", "demo"}:
+        raise RuntimeError("AUTH_MODE must be local or demo")
+    demo = mode == "demo"
+    public_origin = os.getenv("PUBLIC_ORIGIN", "").rstrip("/")
+    username = os.getenv("DEMO_USERNAME", "reviewer") if demo else "admin"
+    password = os.getenv("DEMO_PASSWORD", "") if demo else "admin"
+    proxy_secret = os.getenv("API_PROXY_SECRET", "")
+    if demo:
+        origin = urlsplit(public_origin)
+        if (origin.scheme != "https" or not origin.hostname or origin.username or origin.password
+                or origin.path or origin.query or origin.fragment):
+            raise RuntimeError("PUBLIC_ORIGIN must be an HTTPS origin")
+        if not username or len(password) < 16 or len(proxy_secret) < 32:
+            raise RuntimeError("Demo credentials and API_PROXY_SECRET must be configured")
+    user = {"id": "demo-reviewer", "username": username, "display_name": "시연 계정"} if demo else LOCAL_USER
     sessions: dict[str, float] = {}
 
-    # 원격 접속에서는 고정 개발 계정의 인증 경로를 제공하지 않는다.
-    def require_local_request(request: Request):
+    def require_proxy(request: Request):
+        """외부 시연 API는 Pages의 서버 간 중계를 통해서만 받는다."""
+        supplied = request.headers.get("X-Review-Proxy-Key", "")
+        if demo and not secrets.compare_digest(supplied.encode(), proxy_secret.encode()):
+            raise HTTPException(403, {"code": "proxy_forbidden", "message": "허용되지 않은 요청입니다."})
+
+    def require_auth_request(request: Request):
+        if demo:
+            require_proxy(request)
+            return
         try:
             local_client = bool(request.client and ip_address(request.client.host).is_loopback)
         except ValueError:
@@ -34,18 +59,20 @@ def local_auth_router() -> APIRouter:
         if not local_client or request.url.hostname not in {"localhost", "127.0.0.1", "::1"}:
             raise HTTPException(404, "인증 경로를 찾을 수 없습니다.")
 
-    router = APIRouter(prefix="/api/v1/auth", dependencies=[Depends(require_local_request)])
+    router = APIRouter(prefix="/api/v1/auth", dependencies=[Depends(require_auth_request)])
 
     # 로그인과 로그아웃에서 동일 출처의 CSRF 토큰을 확인한다.
     def verify_csrf(request: Request):
         token = request.cookies.get(CSRF_COOKIE, "")
         header = request.headers.get("X-CSRFToken", "")
         origin = request.headers.get("Origin")
-        allowed_origins = {str(request.base_url).rstrip("/")}
-        allowed_origins.update(value.strip() for value in os.getenv(
-            "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-        ).split(",") if value.strip())
-        if (origin and origin not in allowed_origins) or not token or not secrets.compare_digest(token.encode(), header.encode()):
+        allowed_origins = {public_origin} if demo else {str(request.base_url).rstrip("/")}
+        if not demo:
+            allowed_origins.update(value.strip() for value in os.getenv(
+                "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+            ).split(",") if value.strip())
+        if ((demo and origin != public_origin) or (origin and origin not in allowed_origins)
+                or not token or not secrets.compare_digest(token.encode(), header.encode())):
             raise HTTPException(403, {"code": "CSRF_FAILED", "message": "보안 확인에 실패했습니다."})
 
     # 만료된 세션을 정리하고 쿠키에 해당하는 사용자만 반환한다.
@@ -54,7 +81,17 @@ def local_auth_router() -> APIRouter:
         for token, expires_at in list(sessions.items()):
             if expires_at <= now:
                 sessions.pop(token, None)
-        return LOCAL_USER if request.cookies.get(SESSION_COOKIE) in sessions else None
+        return user if request.cookies.get(SESSION_COOKIE) in sessions else None
+
+    def require_session(request: Request):
+        """시연 모드에서는 조회에 세션을, 변경 요청에는 CSRF도 요구한다."""
+        if not demo:
+            return
+        require_proxy(request)
+        if session_user(request) is None:
+            raise HTTPException(401, {"code": "not_authenticated", "message": "로그인해 주세요."})
+        if request.method not in {"GET", "HEAD", "OPTIONS"}:
+            verify_csrf(request)
 
     # 사용자 정보 응답과 인증 관련 쿠키가 캐시에 남지 않게 한다.
     def no_cache(response: Response):
@@ -64,7 +101,7 @@ def local_auth_router() -> APIRouter:
     async def csrf(response: Response):
         # 요청마다 새 CSRF 토큰을 쿠키와 응답 본문에 함께 제공한다.
         token = secrets.token_urlsafe(32)
-        response.set_cookie(CSRF_COOKIE, token, samesite="strict", path="/", secure=False)
+        response.set_cookie(CSRF_COOKIE, token, samesite="strict", path="/", secure=demo)
         no_cache(response)
         return {"csrf_token": token}
 
@@ -77,27 +114,28 @@ def local_auth_router() -> APIRouter:
 
     @router.post("/login")
     async def login(credentials: LocalCredentials, request: Request, response: Response):
-        # admin/admin만 승인하고 로그인마다 예측 불가능한 새 세션을 발급한다.
+        # 로컬 계정과 시연 계정을 분리하고 로그인마다 새 세션을 발급한다.
         verify_csrf(request)
-        if not (secrets.compare_digest(credentials.username.encode(), b"admin")
-                and secrets.compare_digest(credentials.password.encode(), b"admin")):
+        if not (secrets.compare_digest(credentials.username.encode(), username.encode())
+                and secrets.compare_digest(credentials.password.encode(), password.encode())):
             raise HTTPException(401, {"code": "invalid_credentials", "message": "아이디 또는 비밀번호를 확인해 주세요."})
         session_user(request)
         sessions.pop(request.cookies.get(SESSION_COOKIE, ""), None)
         token = secrets.token_urlsafe(32)
         sessions[token] = time.monotonic() + SESSION_SECONDS
         response.set_cookie(SESSION_COOKIE, token, max_age=SESSION_SECONDS, httponly=True,
-                            samesite="strict", path="/", secure=False)
+                            samesite="strict", path="/", secure=demo)
         no_cache(response)
-        return {"user": LOCAL_USER}
+        return {"user": user}
 
     @router.post("/logout", status_code=204)
     async def logout(request: Request, response: Response):
         # 서버의 세션을 폐기해 이전 쿠키로 다시 로그인 상태를 복원할 수 없게 한다.
         verify_csrf(request)
         sessions.pop(request.cookies.get(SESSION_COOKIE, ""), None)
-        response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, samesite="strict")
-        response.delete_cookie(CSRF_COOKIE, path="/", samesite="strict")
+        response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, samesite="strict", secure=demo)
+        response.delete_cookie(CSRF_COOKIE, path="/", samesite="strict", secure=demo)
         no_cache(response)
 
-    return router
+    # 메모리 세션은 Uvicorn 프로세스 하나에서 사용하며 재시작 시 만료된다.
+    return router, require_session, require_proxy

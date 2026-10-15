@@ -19,7 +19,7 @@ from typing import Callable, Literal
 from uuid import UUID, uuid4
 import warnings
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
@@ -29,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from .review_rules import review_criteria
 from .sample import sample_image_path
 from .spa import ReviewStaticFiles
-from .local_auth import local_auth_router
+from .local_auth import create_auth
 from .ocr_config import selected_pipeline
 
 
@@ -332,9 +332,9 @@ def create_app(
         yield
 
     application = FastAPI(title="바로검수 API", version="1.0.0", lifespan=lifespan)
-    # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
-    if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
-        application.include_router(local_auth_router())
+    auth_router, require_session, require_proxy = create_auth()
+    if os.getenv("AUTH_MODE", "local").strip().lower() == "demo" or os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
+        application.include_router(auth_router)
     allowed_origins = [value.strip() for value in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if value.strip()]
     allowed_origins = [value for value in allowed_origins if value.startswith(("http://localhost:", "http://127.0.0.1:"))]
     application.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
@@ -406,7 +406,7 @@ def create_app(
         with inference_lock:
             _run_review(target)
 
-    @application.get("/api/health")
+    @application.get("/api/health", dependencies=[Depends(require_proxy)])
     def health():
         try:
             status = runtime_health()
@@ -414,14 +414,14 @@ def create_app(
         except Exception:
             return {"status": "degraded", "runtime": {"status": "unavailable"}, "message": "OCR 실행 환경을 확인해 주세요."}
 
-    @application.get("/api/sample")
+    @application.get("/api/sample", dependencies=[Depends(require_session)])
     def sample():
         return {
             "project_name": "2026 김천김밥축제 포스터 검수",
             "requirements": "행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n장소: 사명대사공원\n장소: 친환경생태공원\n김천시 로고가 표시되어 있어야 합니다.\n문구와 이미지가 잘리지 않아야 합니다.",
         }
 
-    @application.get("/api/sample/image")
+    @application.get("/api/sample/image", dependencies=[Depends(require_proxy)])
     def sample_image():
         reference = sample_image_path()
         if reference is None:
@@ -432,7 +432,7 @@ def create_app(
         extension = {"PNG": "png", "JPEG": "jpg", "WEBP": "webp"}[image_format]
         return FileResponse(reference, media_type=media_type, filename=f"gimcheon-2026.{extension}")
 
-    @application.post("/api/reviews", status_code=202)
+    @application.post("/api/reviews", status_code=202, dependencies=[Depends(require_session)])
     async def submit(
         background_tasks: BackgroundTasks,
         image: UploadFile = File(...), criteria: str = Form(...),
@@ -475,12 +475,12 @@ def create_app(
         background_tasks.add_task(run_review, target)
         return {"id": review_id, "status": "queued"}
 
-    @application.get("/api/reviews/{review_id}")
+    @application.get("/api/reviews/{review_id}", dependencies=[Depends(require_session)])
     def get_review(review_id: str):
         with lock:
             return _read_json(directory(review_id) / "result.json")
 
-    @application.get("/api/reviews/{review_id}/image")
+    @application.get("/api/reviews/{review_id}/image", dependencies=[Depends(require_session)])
     def review_image(review_id: str):
         return FileResponse(directory(review_id) / "normalized.png", media_type="image/png")
 
