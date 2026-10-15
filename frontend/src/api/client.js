@@ -1,4 +1,4 @@
-import { isAnonymousError } from '../auth/helpers.js';
+import { csrfToken, isAnonymousError } from '../auth/helpers.js';
 
 // HTTP 상태와 서버 오류 코드를 함께 보관해 화면에서 실패 원인을 구분한다.
 export class ApiError extends Error {
@@ -27,6 +27,13 @@ function responseError(body, status) {
 // 같은 출처의 세션 쿠키를 전송하고 통신 오류와 HTTP 오류를 구분한다.
 export async function fetchJson(url, options = {}) {
   const { notifyAuthFailure = true, ...requestOptions } = options;
+  if (!['GET', 'HEAD', 'OPTIONS'].includes((requestOptions.method || 'GET').toUpperCase())) {
+    const token = csrfToken(null, typeof document === 'undefined' ? '' : document.cookie);
+    const headers = new Headers(requestOptions.headers);
+    if (token && !headers.has('X-CSRFToken')) {
+      requestOptions.headers = { ...Object.fromEntries(headers), 'X-CSRFToken': token };
+    }
+  }
   let response;
   try {
     response = await fetch(url, { ...requestOptions, credentials: 'same-origin' });
