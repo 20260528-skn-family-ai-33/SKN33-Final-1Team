@@ -1,4 +1,4 @@
-"""로컬 개발 계정과 외부 시연용 단일 계정의 메모리 세션."""
+"""로컬 개발 계정과 외부 시연 계정의 메모리 세션."""
 from ipaddress import ip_address
 import os
 import secrets
@@ -13,6 +13,7 @@ SESSION_COOKIE = "baro_local_session"
 CSRF_COOKIE = "csrftoken"
 SESSION_SECONDS = 8 * 60 * 60
 LOCAL_USER = {"id": "local-admin", "username": "admin", "display_name": "관리자 (개발용)"}
+LOCAL_PASSWORD = "admin"
 
 
 class LocalCredentials(BaseModel):
@@ -30,7 +31,8 @@ def create_auth():
     demo = mode == "demo"
     public_origin = os.getenv("PUBLIC_ORIGIN", "").rstrip("/")
     username = os.getenv("DEMO_USERNAME", "reviewer") if demo else "admin"
-    password = os.getenv("DEMO_PASSWORD", "") if demo else "admin"
+    password = os.getenv("DEMO_PASSWORD", "") if demo else LOCAL_PASSWORD
+    allow_local_admin = demo and os.getenv("DEMO_ALLOW_LOCAL_ADMIN", "0") == "1"
     proxy_secret = os.getenv("API_PROXY_SECRET", "")
     if demo:
         origin = urlsplit(public_origin)
@@ -40,7 +42,7 @@ def create_auth():
         if not username or len(password) < 16 or len(proxy_secret) < 32:
             raise RuntimeError("Demo credentials and API_PROXY_SECRET must be configured")
     user = {"id": "demo-reviewer", "username": username, "display_name": "시연 계정"} if demo else LOCAL_USER
-    sessions: dict[str, float] = {}
+    sessions: dict[str, tuple[float, dict]] = {}
 
     def require_proxy(request: Request):
         """외부 시연 API는 Pages의 서버 간 중계를 통해서만 받는다."""
@@ -78,10 +80,11 @@ def create_auth():
     # 만료된 세션을 정리하고 쿠키에 해당하는 사용자만 반환한다.
     def session_user(request: Request):
         now = time.monotonic()
-        for token, expires_at in list(sessions.items()):
+        for token, (expires_at, _) in list(sessions.items()):
             if expires_at <= now:
                 sessions.pop(token, None)
-        return user if request.cookies.get(SESSION_COOKIE) in sessions else None
+        session = sessions.get(request.cookies.get(SESSION_COOKIE))
+        return session[1] if session else None
 
     def require_session(request: Request):
         """시연 모드에서는 조회에 세션을, 변경 요청에는 CSRF도 요구한다."""
@@ -116,17 +119,24 @@ def create_auth():
     async def login(credentials: LocalCredentials, request: Request, response: Response):
         # 로컬 계정과 시연 계정을 분리하고 로그인마다 새 세션을 발급한다.
         verify_csrf(request)
-        if not (secrets.compare_digest(credentials.username.encode(), username.encode())
+        login_user = None
+        if (secrets.compare_digest(credentials.username.encode(), username.encode())
                 and secrets.compare_digest(credentials.password.encode(), password.encode())):
+            login_user = user
+        elif (allow_local_admin
+                and secrets.compare_digest(credentials.username.encode(), LOCAL_USER["username"].encode())
+                and secrets.compare_digest(credentials.password.encode(), LOCAL_PASSWORD.encode())):
+            login_user = LOCAL_USER
+        if login_user is None:
             raise HTTPException(401, {"code": "invalid_credentials", "message": "아이디 또는 비밀번호를 확인해 주세요."})
         session_user(request)
         sessions.pop(request.cookies.get(SESSION_COOKIE, ""), None)
         token = secrets.token_urlsafe(32)
-        sessions[token] = time.monotonic() + SESSION_SECONDS
+        sessions[token] = (time.monotonic() + SESSION_SECONDS, login_user)
         response.set_cookie(SESSION_COOKIE, token, max_age=SESSION_SECONDS, httponly=True,
                             samesite="strict", path="/", secure=demo)
         no_cache(response)
-        return {"user": user}
+        return {"user": login_user}
 
     @router.post("/logout", status_code=204)
     async def logout(request: Request, response: Response):
@@ -137,5 +147,5 @@ def create_auth():
         response.delete_cookie(CSRF_COOKIE, path="/", samesite="strict", secure=demo)
         no_cache(response)
 
-    # 메모리 세션은 Uvicorn 프로세스 하나에서 사용하며 재시작 시 만료된다.
+    # shortcut: 메모리 세션은 재시작 시 만료된다. 다중 서버는 공용 세션 저장소로 교체한다.
     return router, require_session, require_proxy

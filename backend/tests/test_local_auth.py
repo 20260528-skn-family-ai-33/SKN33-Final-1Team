@@ -92,3 +92,29 @@ def test_development_login_can_be_disabled(tmp_path, monkeypatch):
     app = create_app(review_root=tmp_path)
     with TestClient(app, base_url="http://127.0.0.1", client=("127.0.0.1", 12345)) as other:
         assert other.get("/api/v1/auth/me").status_code == 404
+
+
+@pytest.mark.parametrize("allow_admin", ["0", "1"])
+def test_demo_development_login_is_opt_in_and_sessions_keep_their_users(tmp_path, monkeypatch, allow_admin):
+    origin = "https://review.example"
+    proxy_key = "test-proxy-key-" * 3
+    for name, value in {"AUTH_MODE": "demo", "PUBLIC_ORIGIN": origin, "DEMO_USERNAME": "reviewer",
+                        "DEMO_PASSWORD": "test-demo-password", "API_PROXY_SECRET": proxy_key,
+                        "DEMO_ALLOW_LOCAL_ADMIN": allow_admin}.items():
+        monkeypatch.setenv(name, value)
+    app = create_app(review_root=tmp_path)
+    headers = {"X-Review-Proxy-Key": proxy_key}
+    with TestClient(app, base_url=origin, headers=headers) as admin, TestClient(app, base_url=origin, headers=headers) as reviewer:
+        admin_headers = {**csrf_headers(admin), "Origin": origin}
+        response = admin.post("/api/v1/auth/login", json={"username": "admin", "password": "admin"}, headers=admin_headers)
+        assert response.status_code == (200 if allow_admin == "1" else 401)
+        reviewer_headers = {**csrf_headers(reviewer), "Origin": origin}
+        assert reviewer.post("/api/v1/auth/login", json={"username": "reviewer", "password": "test-demo-password"}, headers=reviewer_headers).status_code == 200
+        assert reviewer.get("/api/v1/auth/me").json()["user"]["username"] == "reviewer"
+        session = admin.get("/api/v1/auth/me").json()
+        assert session["authenticated"] is (allow_admin == "1")
+        if allow_admin == "1":
+            assert session["user"]["username"] == "admin"
+            assert admin.post("/api/v1/auth/logout", headers=admin_headers).status_code == 204
+            assert admin.get("/api/v1/auth/me").json()["authenticated"] is False
+            assert reviewer.get("/api/v1/auth/me").json()["authenticated"] is True
