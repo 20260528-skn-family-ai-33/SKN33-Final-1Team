@@ -1,0 +1,15 @@
+**
+!backend/
+!backend/__init__.py
+!backend/app/
+!backend/app/*.py
+!scripts/
+!scripts/prepare_paddle.py
+!data/
+!data/img/
+!data/img/*
+!requirements-paddle.txt
+!deploy/
+!deploy/oci/
+!deploy/oci/Dockerfile
+!deploy/oci/requirements-api.txt

@@ -1,0 +1,52 @@
+name: baro-review
+services:
+  api:
+    image: baro-review-api:local
+    build:
+      context: ../..
+      dockerfile: deploy/oci/Dockerfile
+    platform: linux/arm64
+    restart: unless-stopped
+    init: true
+    cpus: 2.0
+    mem_limit: 10g
+    pids_limit: 256
+    environment:
+      AUTH_MODE: demo
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set PUBLIC_ORIGIN}
+      DEMO_USERNAME: ${DEMO_USERNAME:-reviewer}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD}
+      API_PROXY_SECRET: ${API_PROXY_SECRET:?Set API_PROXY_SECRET}
+      # Ampere에서 Paddle 3.3.1의 다중 스레드 추론이 충돌하여 1개로 제한한다.
+      PADDLE_PDX_CPU_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+    volumes:
+      - reviews:/app/.runtime/reviews
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,os,urllib.request; r=urllib.request.Request('http://127.0.0.1:8000/api/health',headers={'X-Review-Proxy-Key':os.environ['API_PROXY_SECRET']}); assert json.load(urllib.request.urlopen(r,timeout=8))['runtime']['ready']"
+      interval: 60s
+      timeout: 10s
+      start_period: 20s
+  tunnel:
+    image: cloudflare/cloudflared:2026.9.3-arm64
+    platform: linux/arm64
+    command: [tunnel, --no-autoupdate, run]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Set TUNNEL_TOKEN}
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    cpus: 0.25
+    mem_limit: 128m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+volumes:
+  reviews:

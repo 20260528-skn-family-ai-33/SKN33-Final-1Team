@@ -1,0 +1,5 @@
+# Paddle 추론은 별도 환경에서 실행한다. API에 필요한 기존 버전만 설치한다.
+fastapi==0.143.0
+uvicorn==0.54.0
+python-multipart==0.0.32
+Pillow==12.3.0
