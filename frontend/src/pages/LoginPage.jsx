@@ -77,7 +77,7 @@ export function LoginPage() {
     <header className="auth-header"><Brand onClick={() => navigate('/')} /><Link className="auth-home-link" to="/">서비스 소개로 돌아가기<Icon name="arrow" /></Link></header>
     <main className="auth-main">
       <section className="auth-intro" aria-label="로그인 안내">
-        <span className="pill">기준부터 결과까지, 체크메이트</span>
+        <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
         <h1>검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>
         <ol className="auth-steps" aria-label="이용 순서">

@@ -488,7 +488,9 @@ def create_app(
                 continue
         yield
 
-    application = FastAPI(title="체크메이트 API", version="1.0.0", lifespan=lifespan)
+    application = FastAPI(
+        title="크리에이티브체커 API", version="1.0.0", lifespan=lifespan
+    )
     # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
     if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
         application.include_router(local_auth_router())
