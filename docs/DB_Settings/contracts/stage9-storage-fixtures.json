@@ -1,0 +1,808 @@
+{
+  "fixture_version": "cc-stage9-storage-fixtures-v1",
+  "fixture_notice": "Synthetic specification data only. No actual files were promoted collected imported backed up or restored. Input contents are JSON strings for digest examples; the fixture does not assert that a real image or database binding exists.",
+  "source_contents_utf8": {
+    "result.json": "{\"id\":\"external-review-1\",\"status\":\"completed\",\"criteria_version\":1,\"results\":[{\"criterion_id\":\"criterion-1\",\"status\":\"review\",\"reason\":\"합성 확인 필요\"}]}\n",
+    "snapshot.json": "{\"project_name\":\"합성 검토\",\"criteria_version\":1,\"criteria\":[{\"id\":\"criterion-1\",\"text\":\"예제 행사명\",\"type\":\"information\",\"source\":\"예제 요구사항\"}]}\n"
+  },
+  "hash_cases": [
+    {
+      "id": "IMPORT-01",
+      "purpose": "Base inventory and explicit recipient/projection decisions",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b"
+    },
+    {
+      "id": "IMPORT-02",
+      "purpose": "Different enumeration order is sorted before hashing",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b"
+    },
+    {
+      "id": "IMPORT-03",
+      "purpose": "Even semantically equal JSON with changed bytes is a different original package",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "163",
+              "sha256": "7b99af166fba36abbc875f1fce899963a58e462daef0ba770c04534a890b0334"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"163\",\"relative_path\":\"result.json\",\"sha256\":\"7b99af166fba36abbc875f1fce899963a58e462daef0ba770c04534a890b0334\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "7012de00093b342d4e1d8a57fe55606f73acce17fa0cc342b1c2b080723fcded"
+    },
+    {
+      "id": "IMPORT-04",
+      "purpose": "Changed target project changes package digest",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000003",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000003\"}}",
+      "utf8_bytes": 703,
+      "sha256": "cdc1726eab4fe77797eeaa2600dc65be7d07f344805238c0e1baa995ff5066dd"
+    },
+    {
+      "id": "IMPORT-05",
+      "purpose": "Changed projection version changes digest",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v2",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v2\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "d75a6ae89981d8f3fe202645c7cd59d4606e024d4349f1e8735d7ec203562074"
+    },
+    {
+      "id": "IMPORT-06",
+      "purpose": "Changed explicit binding changes digest",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000004"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000004\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "e1993827ac0ee4e7060313896d82d111a550055aa370e00a4e277e43a74e8a88"
+    },
+    {
+      "id": "IMPORT-07",
+      "purpose": "Operational UUIDs and timestamps remain outside hash input",
+      "input": {
+        "contract": "cc-import-envelope-v1",
+        "kind": "import_package",
+        "payload": {
+          "source_namespace": "legacy-runtime-review/v1",
+          "target_project_id": "10000000-0000-4000-8000-000000000001",
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ],
+          "projection_profile": {
+            "name": "legacy-review",
+            "version": "fixture-only-v1",
+            "assignment": {
+              "existing_image_id": "10000000-0000-4000-8000-000000000002"
+            },
+            "policies": {
+              "unknown_requester": "preserve_null",
+              "verdict": "source_only",
+              "coordinates": "preserve_reported"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-envelope-v1\",\"kind\":\"import_package\",\"payload\":{\"projection_profile\":{\"assignment\":{\"existing_image_id\":\"10000000-0000-4000-8000-000000000002\"},\"name\":\"legacy-review\",\"policies\":{\"coordinates\":\"preserve_reported\",\"unknown_requester\":\"preserve_null\",\"verdict\":\"source_only\"},\"version\":\"fixture-only-v1\"},\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}],\"source_namespace\":\"legacy-runtime-review/v1\",\"target_project_id\":\"10000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 703,
+      "sha256": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b"
+    },
+    {
+      "id": "SOURCE-01",
+      "purpose": "Source inventory ignores recipient and projection",
+      "input": {
+        "contract": "cc-source-inventory-v1",
+        "kind": "source_inventory",
+        "payload": {
+          "source_files": [
+            {
+              "relative_path": "result.json",
+              "byte_size": "162",
+              "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+            },
+            {
+              "relative_path": "snapshot.json",
+              "byte_size": "166",
+              "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-source-inventory-v1\",\"kind\":\"source_inventory\",\"payload\":{\"source_files\":[{\"byte_size\":\"162\",\"relative_path\":\"result.json\",\"sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\"},{\"byte_size\":\"166\",\"relative_path\":\"snapshot.json\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"}]}}",
+      "utf8_bytes": 346,
+      "sha256": "1054afead4c48d0bcacc20770c7c7b2c80aa3c4b7152a085efb8528ccb261e3a"
+    },
+    {
+      "id": "PROJECTION-01",
+      "purpose": "Local imported criteria structure, not a service confirmation",
+      "input": {
+        "contract": "cc-import-projection-v1",
+        "kind": "criteria_import",
+        "payload": {
+          "project_id": "10000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "10000000-0000-4000-8000-000000000005",
+          "image_id": "10000000-0000-4000-8000-000000000002",
+          "package_fingerprint": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b",
+          "source_snapshot": {
+            "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51",
+            "pointer": "/criteria"
+          },
+          "source_version": 1,
+          "items": [
+            {
+              "criteria_item_id": "10000000-0000-4000-8000-00000000000a",
+              "external_item_id": "criterion-1",
+              "position": 1,
+              "category": "information",
+              "text": "예제 행사명",
+              "source_text": "예제 요구사항",
+              "rule_code": null,
+              "field_code": null,
+              "expected_value": null,
+              "is_required": null,
+              "source_asset_version_id": null,
+              "source_locator": null,
+              "applicability": null,
+              "check_scope": null,
+              "source_item": {
+                "id": "criterion-1",
+                "text": "예제 행사명",
+                "type": "information",
+                "source": "예제 요구사항"
+              }
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-projection-v1\",\"kind\":\"criteria_import\",\"payload\":{\"criteria_set_id\":\"10000000-0000-4000-8000-000000000005\",\"image_id\":\"10000000-0000-4000-8000-000000000002\",\"items\":[{\"applicability\":null,\"category\":\"information\",\"check_scope\":null,\"criteria_item_id\":\"10000000-0000-4000-8000-00000000000a\",\"expected_value\":null,\"external_item_id\":\"criterion-1\",\"field_code\":null,\"is_required\":null,\"position\":1,\"rule_code\":null,\"source_asset_version_id\":null,\"source_item\":{\"id\":\"criterion-1\",\"source\":\"예제 요구사항\",\"text\":\"예제 행사명\",\"type\":\"information\"},\"source_locator\":null,\"source_text\":\"예제 요구사항\",\"text\":\"예제 행사명\"}],\"package_fingerprint\":\"08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b\",\"project_id\":\"10000000-0000-4000-8000-000000000001\",\"source_snapshot\":{\"pointer\":\"/criteria\",\"sha256\":\"5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51\"},\"source_version\":1}}",
+      "utf8_bytes": 945,
+      "sha256": "4234e332ff2d278842e124a94b90afb598f4f5d830bdc36647037193de21adbf"
+    },
+    {
+      "id": "PROJECTION-02",
+      "purpose": "Local structural seal preserves source status and keeps local verdict null",
+      "input": {
+        "contract": "cc-import-projection-v1",
+        "kind": "review_import",
+        "payload": {
+          "project_id": "10000000-0000-4000-8000-000000000001",
+          "run_id": "10000000-0000-4000-8000-00000000000c",
+          "image_id": "10000000-0000-4000-8000-000000000002",
+          "criteria_version_id": "10000000-0000-4000-8000-00000000000b",
+          "imported_group_id": "10000000-0000-4000-8000-00000000000d",
+          "package_fingerprint": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b",
+          "source_result_sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6",
+          "source_status": "completed",
+          "local_status": "imported",
+          "overall_verdict": null,
+          "results_complete": true,
+          "result_bindings": [
+            {
+              "criteria_item_id": "10000000-0000-4000-8000-00000000000a",
+              "result_id": "10000000-0000-4000-8000-00000000000e",
+              "position": 1,
+              "source_result_pointer": "/results/0",
+              "execution_status": "imported",
+              "verdict": null,
+              "source_status": "review",
+              "observed_value": null,
+              "reason": "합성 확인 필요",
+              "method_code": null,
+              "checker_version": null,
+              "limitations": null,
+              "next_action": null,
+              "source_result": {
+                "criterion_id": "criterion-1",
+                "status": "review",
+                "reason": "합성 확인 필요"
+              },
+              "evidence_ids": []
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-import-projection-v1\",\"kind\":\"review_import\",\"payload\":{\"criteria_version_id\":\"10000000-0000-4000-8000-00000000000b\",\"image_id\":\"10000000-0000-4000-8000-000000000002\",\"imported_group_id\":\"10000000-0000-4000-8000-00000000000d\",\"local_status\":\"imported\",\"overall_verdict\":null,\"package_fingerprint\":\"08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b\",\"project_id\":\"10000000-0000-4000-8000-000000000001\",\"result_bindings\":[{\"checker_version\":null,\"criteria_item_id\":\"10000000-0000-4000-8000-00000000000a\",\"evidence_ids\":[],\"execution_status\":\"imported\",\"limitations\":null,\"method_code\":null,\"next_action\":null,\"observed_value\":null,\"position\":1,\"reason\":\"합성 확인 필요\",\"result_id\":\"10000000-0000-4000-8000-00000000000e\",\"source_result\":{\"criterion_id\":\"criterion-1\",\"reason\":\"합성 확인 필요\",\"status\":\"review\"},\"source_result_pointer\":\"/results/0\",\"source_status\":\"review\",\"verdict\":null}],\"results_complete\":true,\"run_id\":\"10000000-0000-4000-8000-00000000000c\",\"source_result_sha256\":\"3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6\",\"source_status\":\"completed\"}}",
+      "utf8_bytes": 1123,
+      "sha256": "0ed7ea2464dd76d1fe37d0a7a03580804c7d1905b1f3c3e64009ee6ab761ee4a"
+    }
+  ],
+  "hash_relations": [
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-02",
+      "comparison": "equal"
+    },
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-07",
+      "comparison": "equal"
+    },
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-03",
+      "comparison": "different"
+    },
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-04",
+      "comparison": "different"
+    },
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-05",
+      "comparison": "different"
+    },
+    {
+      "left": "IMPORT-01",
+      "right": "IMPORT-06",
+      "comparison": "different"
+    }
+  ],
+  "ignored_operational_metadata_examples": [
+    {
+      "operation_id": "10000000-0000-4000-8000-000000000014",
+      "imported_by": "10000000-0000-4000-8000-000000000015",
+      "created_at": "2026-10-17T03:00:00.000000Z"
+    },
+    {
+      "operation_id": "10000000-0000-4000-8000-000000000016",
+      "imported_by": "10000000-0000-4000-8000-000000000017",
+      "created_at": "2026-10-18T03:00:00.000000Z"
+    }
+  ],
+  "file_decision_cases": [
+    {
+      "id": "FILE-01",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "eligible_for_quarantine",
+      "purpose": "Confirmed orphan after grace and all checks"
+    },
+    {
+      "id": "FILE-02",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": false,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "preserve_unknown",
+      "purpose": "Database unavailable is not proof of absence"
+    },
+    {
+      "id": "FILE-03",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": false,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "skip_active",
+      "purpose": "Live operation cannot be collected"
+    },
+    {
+      "id": "FILE-04",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": false,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "skip_active",
+      "purpose": "A commit can outlive its file-writing process"
+    },
+    {
+      "id": "FILE-05",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": false,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "skip_active",
+      "purpose": "No exclusive storage gate"
+    },
+    {
+      "id": "FILE-06",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": true,
+        "resource_row_exists": false
+      },
+      "expected": "keep_registered",
+      "purpose": "Any stored_files row protects bytes"
+    },
+    {
+      "id": "FILE-07",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": true,
+        "resource_row_exists": false,
+        "file_state": "missing"
+      },
+      "expected": "keep_registered",
+      "purpose": "Missing row remains a protected historical reference"
+    },
+    {
+      "id": "FILE-08",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": true
+      },
+      "expected": "keep_registered",
+      "purpose": "Conflicting resource intent requires investigation"
+    },
+    {
+      "id": "FILE-09",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": false,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "preserve_unknown",
+      "purpose": "Unknown commit keeps files"
+    },
+    {
+      "id": "FILE-10",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": false,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "preserve_unknown",
+      "purpose": "Same hash is not ownership evidence"
+    },
+    {
+      "id": "FILE-11",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": false,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "preserve_unknown",
+      "purpose": "No intact journal means no automatic deletion"
+    },
+    {
+      "id": "FILE-12",
+      "context": {
+        "scope": "v1_owned",
+        "location": "objects",
+        "age_hours": 23,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "defer_grace",
+      "purpose": "Not past 24 hour grace"
+    },
+    {
+      "id": "FILE-13",
+      "context": {
+        "scope": "legacy",
+        "location": "objects",
+        "age_hours": 25,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "preserve_scope",
+      "purpose": "Legacy source does not enter v1 GC"
+    },
+    {
+      "id": "FILE-14",
+      "context": {
+        "scope": "v1_owned",
+        "location": "quarantine",
+        "age_hours": 167,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "defer_grace",
+      "purpose": "Quarantine has a separate seven day grace"
+    },
+    {
+      "id": "FILE-15",
+      "context": {
+        "scope": "v1_owned",
+        "location": "quarantine",
+        "age_hours": 169,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": false,
+        "resource_row_exists": false
+      },
+      "expected": "eligible_for_delete",
+      "purpose": "Only fully rechecked unreferenced quarantine bytes are eligible"
+    },
+    {
+      "id": "FILE-16",
+      "context": {
+        "scope": "v1_owned",
+        "location": "quarantine",
+        "age_hours": 169,
+        "gate_exclusive": true,
+        "operation_lock_acquired": true,
+        "db_operation_lock_acquired": true,
+        "primary_available": true,
+        "ownership_verified": true,
+        "journal_intact": true,
+        "commit_outcome_resolved": true,
+        "file_row_exists": true,
+        "resource_row_exists": false
+      },
+      "expected": "keep_registered",
+      "purpose": "Recheck protects registered bytes even at deletion time"
+    }
+  ],
+  "journal_example": {
+    "contract_version": "cc-storage-journal-v1",
+    "operation_id": "10000000-0000-4000-8000-000000000014",
+    "kind": "import",
+    "project_id": "10000000-0000-4000-8000-000000000001",
+    "created_at": "2026-10-17T03:00:00.000000Z",
+    "updated_at": "2026-10-17T03:00:00.000000Z",
+    "file_phase": "planned",
+    "db_outcome": "unconfirmed",
+    "file_intents": [
+      {
+        "file_id": "10000000-0000-4000-8000-00000000001e",
+        "storage_key": "objects/projects/10000000-0000-4000-8000-000000000001/files/10000000-0000-4000-8000-00000000001e/payload.bin",
+        "role": "source_json",
+        "byte_size": "162",
+        "sha256": "3b7964c831c4c82123c3cff92ef3b79a9b48b237f9255f9ade34311b49ba83d6"
+      },
+      {
+        "file_id": "10000000-0000-4000-8000-00000000001f",
+        "storage_key": "objects/projects/10000000-0000-4000-8000-000000000001/files/10000000-0000-4000-8000-00000000001f/payload.bin",
+        "role": "source_json",
+        "byte_size": "166",
+        "sha256": "5020e5123ceb3c3aa917824d92c3eedd43037ee6099edc05e08ae983145dfb51"
+      }
+    ],
+    "resource_intents": [
+      {
+        "type": "import_package",
+        "id": "10000000-0000-4000-8000-000000000021"
+      }
+    ],
+    "package_fingerprint": "08411dc34dd800382016a7918145bf9d7ffe29335ddfe12e1ed196b1df00b60b"
+  },
+  "backup_manifest_skeleton": {
+    "contract_version": "cc-backup-set-v1",
+    "backup_id": "10000000-0000-4000-8000-000000000028",
+    "state": "not_executed",
+    "restore_ready": false,
+    "captured_at": null,
+    "application_revision": null,
+    "schema_revision": null,
+    "postgresql_version": null,
+    "dump": null,
+    "files": [],
+    "intake_included": false,
+    "legacy_included": false,
+    "validation": {
+      "status": "not_run",
+      "restore_drill": "not_run"
+    }
+  },
+  "limitations": [
+    "Digest examples verify normalized metadata and byte identities only.",
+    "File decisions are declared examples, not OS or PostgreSQL race tests.",
+    "Image decoding role permissions trigger execution backup and restore require later live validation."
+  ]
+}

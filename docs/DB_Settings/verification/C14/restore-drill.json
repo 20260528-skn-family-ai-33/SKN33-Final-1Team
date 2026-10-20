@@ -1,0 +1,34 @@
+{
+  "backup_capture_seconds": 0.9794,
+  "restore_seconds": 1.0062,
+  "source_tables": 28,
+  "registered_files": 11,
+  "source_state_preserved": true,
+  "sessions_revoked": 1,
+  "keys_rotated": true,
+  "checks": {
+    "schema": {
+      "status": "schema_ready",
+      "revision": "M008",
+      "business_tables": 26,
+      "columns": 395,
+      "foreign_keys": 81,
+      "additional_indexes": 27,
+      "trigger_instances": 35,
+      "functions": 19,
+      "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+      "scope": "database_schema_and_privileges"
+    },
+    "all_foreign_keys_checked": true,
+    "all_roots_and_lineage_checked": true,
+    "service_manifests_checked": 1,
+    "import_manifests_checked": 1
+  },
+  "restored_old_cookie_rejected": true,
+  "new_login_and_write": true,
+  "new_synthetic_review_completed": true,
+  "restart_read": true,
+  "remote_calls": 0,
+  "rpo_sla_verified": false,
+  "rto_sla_verified": false
+}

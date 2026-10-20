@@ -1,0 +1,626 @@
+{
+  "fixture_version": "cc-stage8-hash-vectors-v1",
+  "fixture_notice": "Synthetic specification examples only. UUIDs model names timestamps and file hashes do not identify real records or successful executions.",
+  "algorithm": "SHA-256 over UTF-8 JCS of the complete input envelope, no trailing newline or BOM",
+  "cases": [
+    {
+      "id": "HASH-01",
+      "purpose": "Full draft including unselected item",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_draft",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "source_documents": null,
+          "items": [
+            {
+              "id": "criterion-1",
+              "text": "행사명: 예시 축제",
+              "type": "information",
+              "source": "행사명: 예시 축제",
+              "selected": true
+            },
+            {
+              "id": "criterion-2",
+              "text": "로고가 보여야 합니다.",
+              "type": "visual",
+              "source": "로고가 있어야 합니다.",
+              "selected": false
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_draft\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\",\"type\":\"information\"},{\"id\":\"criterion-2\",\"selected\":false,\"source\":\"로고가 있어야 합니다.\",\"text\":\"로고가 보여야 합니다.\",\"type\":\"visual\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 603,
+      "sha256": "5e92ad1e2079e2ecf3f40dfcd60e6c0cc7e6d5efb503befa50716cbd8d9c5289"
+    },
+    {
+      "id": "HASH-02",
+      "purpose": "Object key insertion order does not change digest",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_draft",
+        "payload": {
+          "items": [
+            {
+              "id": "criterion-1",
+              "text": "행사명: 예시 축제",
+              "type": "information",
+              "source": "행사명: 예시 축제",
+              "selected": true
+            },
+            {
+              "id": "criterion-2",
+              "text": "로고가 보여야 합니다.",
+              "type": "visual",
+              "source": "로고가 있어야 합니다.",
+              "selected": false
+            }
+          ],
+          "source_documents": null,
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "project_id": "00000000-0000-4000-8000-000000000001"
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_draft\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\",\"type\":\"information\"},{\"id\":\"criterion-2\",\"selected\":false,\"source\":\"로고가 있어야 합니다.\",\"text\":\"로고가 보여야 합니다.\",\"type\":\"visual\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 603,
+      "sha256": "5e92ad1e2079e2ecf3f40dfcd60e6c0cc7e6d5efb503befa50716cbd8d9c5289"
+    },
+    {
+      "id": "HASH-03",
+      "purpose": "Unselected text changes full draft digest",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_draft",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "source_documents": null,
+          "items": [
+            {
+              "id": "criterion-1",
+              "text": "행사명: 예시 축제",
+              "type": "information",
+              "source": "행사명: 예시 축제",
+              "selected": true
+            },
+            {
+              "id": "criterion-2",
+              "text": "로고의 위치도 확인합니다.",
+              "type": "visual",
+              "source": "로고가 있어야 합니다.",
+              "selected": false
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_draft\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\",\"type\":\"information\"},{\"id\":\"criterion-2\",\"selected\":false,\"source\":\"로고가 있어야 합니다.\",\"text\":\"로고의 위치도 확인합니다.\",\"type\":\"visual\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 609,
+      "sha256": "51d760d1a54b9995e89516e91d2682cd13a85c27f544a0c245759e9b881e5de0"
+    },
+    {
+      "id": "HASH-04",
+      "purpose": "Only selected items in immutable criteria snapshot",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_snapshot",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "source_documents": null,
+          "items": [
+            {
+              "external_item_id": "criterion-1",
+              "position": 1,
+              "category": "information",
+              "text": "행사명: 예시 축제",
+              "source_text": "행사명: 예시 축제",
+              "rule_code": null,
+              "field_code": null,
+              "expected_value": null,
+              "is_required": null,
+              "source_asset_version_id": null,
+              "source_locator": null,
+              "applicability": null,
+              "check_scope": null,
+              "source_item": {
+                "id": "criterion-1",
+                "text": "행사명: 예시 축제",
+                "type": "information",
+                "source": "행사명: 예시 축제",
+                "selected": true
+              }
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_snapshot\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"applicability\":null,\"category\":\"information\",\"check_scope\":null,\"expected_value\":null,\"external_item_id\":\"criterion-1\",\"field_code\":null,\"is_required\":null,\"position\":1,\"rule_code\":null,\"source_asset_version_id\":null,\"source_item\":{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\",\"type\":\"information\"},\"source_locator\":null,\"source_text\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 801,
+      "sha256": "ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c"
+    },
+    {
+      "id": "HASH-05",
+      "purpose": "Same selected snapshot after unselected draft edit",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_snapshot",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "source_documents": null,
+          "items": [
+            {
+              "external_item_id": "criterion-1",
+              "position": 1,
+              "category": "information",
+              "text": "행사명: 예시 축제",
+              "source_text": "행사명: 예시 축제",
+              "rule_code": null,
+              "field_code": null,
+              "expected_value": null,
+              "is_required": null,
+              "source_asset_version_id": null,
+              "source_locator": null,
+              "applicability": null,
+              "check_scope": null,
+              "source_item": {
+                "id": "criterion-1",
+                "text": "행사명: 예시 축제",
+                "type": "information",
+                "source": "행사명: 예시 축제",
+                "selected": true
+              }
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_snapshot\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"applicability\":null,\"category\":\"information\",\"check_scope\":null,\"expected_value\":null,\"external_item_id\":\"criterion-1\",\"field_code\":null,\"is_required\":null,\"position\":1,\"rule_code\":null,\"source_asset_version_id\":null,\"source_item\":{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\",\"type\":\"information\"},\"source_locator\":null,\"source_text\":\"행사명: 예시 축제\",\"text\":\"행사명: 예시 축제\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 801,
+      "sha256": "ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c"
+    },
+    {
+      "id": "HASH-06",
+      "purpose": "Confirmation request includes actor and expected revision",
+      "input": {
+        "contract": "cc-request-jcs-v1",
+        "kind": "confirm_criteria",
+        "payload": {
+          "actor_user_id": "00000000-0000-4000-8000-000000000002",
+          "operation": "confirm_criteria",
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "body": {
+            "draft_id": "00000000-0000-4000-8000-000000000006",
+            "expected_revision": "3"
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-request-jcs-v1\",\"kind\":\"confirm_criteria\",\"payload\":{\"actor_user_id\":\"00000000-0000-4000-8000-000000000002\",\"body\":{\"draft_id\":\"00000000-0000-4000-8000-000000000006\",\"expected_revision\":\"3\"},\"operation\":\"confirm_criteria\",\"project_id\":\"00000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 291,
+      "sha256": "e8534ee00ee9e6d136edcfa4206dd53f3fab2da03c5a720c2833ec3732451864"
+    },
+    {
+      "id": "HASH-07",
+      "purpose": "Create review request excludes changing server configuration",
+      "input": {
+        "contract": "cc-request-jcs-v1",
+        "kind": "create_review",
+        "payload": {
+          "actor_user_id": "00000000-0000-4000-8000-000000000002",
+          "operation": "create_review",
+          "body": {
+            "project_id": "00000000-0000-4000-8000-000000000001",
+            "image_id": "00000000-0000-4000-8000-000000000003",
+            "criteria_version_id": "00000000-0000-4000-8000-000000000007"
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-request-jcs-v1\",\"kind\":\"create_review\",\"payload\":{\"actor_user_id\":\"00000000-0000-4000-8000-000000000002\",\"body\":{\"criteria_version_id\":\"00000000-0000-4000-8000-000000000007\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"project_id\":\"00000000-0000-4000-8000-000000000001\"},\"operation\":\"create_review\"}}",
+      "utf8_bytes": 322,
+      "sha256": "1fcc2275dff374009eb2db179edc0ea12647074cdf0f042799c57115483a88bc"
+    },
+    {
+      "id": "HASH-08",
+      "purpose": "Explicit retry has operation and source run",
+      "input": {
+        "contract": "cc-request-jcs-v1",
+        "kind": "retry_review",
+        "payload": {
+          "actor_user_id": "00000000-0000-4000-8000-000000000002",
+          "operation": "retry_review",
+          "source_run_id": "00000000-0000-4000-8000-000000000009",
+          "body": {}
+        }
+      },
+      "canonical": "{\"contract\":\"cc-request-jcs-v1\",\"kind\":\"retry_review\",\"payload\":{\"actor_user_id\":\"00000000-0000-4000-8000-000000000002\",\"body\":{},\"operation\":\"retry_review\",\"source_run_id\":\"00000000-0000-4000-8000-000000000009\"}}",
+      "utf8_bytes": 213,
+      "sha256": "991b423f2bc280763d21c2955e6600f198fef8928b0b2dac94e255daaa42d24b"
+    },
+    {
+      "id": "HASH-09",
+      "purpose": "Actual example file digests and fixed configuration, no future OCR input digest",
+      "input": {
+        "contract": "cc-manifest-jcs-v1",
+        "kind": "review_input",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "image": {
+            "image_id": "00000000-0000-4000-8000-000000000003",
+            "original_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "display_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "width": 400,
+            "height": 600,
+            "coordinate_space": "normalized_original_pixels",
+            "preprocessing_version": "fixture-display-v1",
+            "ocr_scale": 2
+          },
+          "criteria": {
+            "criteria_version_id": "00000000-0000-4000-8000-000000000007",
+            "criteria_hash": "ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c"
+          },
+          "execution": {
+            "workflow_version": "fixture-workflow-1",
+            "execution_target": "local",
+            "requested_config": {
+              "pipeline": "fixture-only",
+              "model_name": "fixture-ocr",
+              "model_revision": "fixture-only",
+              "device_policy": [
+                "cpu"
+              ],
+              "preprocessing": {
+                "version": "fixture-display-v1",
+                "ocr_scale": 2
+              }
+            },
+            "aggregation_policy_version": "all_selected_v1",
+            "retry_policy": {
+              "max_attempts": 1,
+              "executor_kind": "background_tasks"
+            }
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-manifest-jcs-v1\",\"kind\":\"review_input\",\"payload\":{\"criteria\":{\"criteria_hash\":\"ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c\",\"criteria_version_id\":\"00000000-0000-4000-8000-000000000007\"},\"execution\":{\"aggregation_policy_version\":\"all_selected_v1\",\"execution_target\":\"local\",\"requested_config\":{\"device_policy\":[\"cpu\"],\"model_name\":\"fixture-ocr\",\"model_revision\":\"fixture-only\",\"pipeline\":\"fixture-only\",\"preprocessing\":{\"ocr_scale\":2,\"version\":\"fixture-display-v1\"}},\"retry_policy\":{\"executor_kind\":\"background_tasks\",\"max_attempts\":1},\"workflow_version\":\"fixture-workflow-1\"},\"image\":{\"coordinate_space\":\"normalized_original_pixels\",\"display_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"height\":600,\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"ocr_scale\":2,\"original_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"preprocessing_version\":\"fixture-display-v1\",\"width\":400},\"project_id\":\"00000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 1027,
+      "sha256": "c005a171a13a0e15a4e2beb6b04f239b609105bd1ae0300d6d7fc8c59d06a6f3"
+    },
+    {
+      "id": "HASH-10",
+      "purpose": "Result manifest contains immutable content and evidence",
+      "input": {
+        "contract": "cc-manifest-jcs-v1",
+        "kind": "review_result",
+        "payload": {
+          "run_id": "00000000-0000-4000-8000-000000000009",
+          "selected_attempt_id": "00000000-0000-4000-8000-00000000000a",
+          "execution_status": "completed",
+          "overall_verdict": "pass",
+          "aggregation_policy_version": "all_selected_v1",
+          "input_manifest_hash": "c005a171a13a0e15a4e2beb6b04f239b609105bd1ae0300d6d7fc8c59d06a6f3",
+          "ocr": {
+            "ocr_run_id": "00000000-0000-4000-8000-00000000000b",
+            "ocr_input_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "source_json_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          },
+          "extraction": null,
+          "items": [
+            {
+              "criteria_item_id": "00000000-0000-4000-8000-000000000008",
+              "result_id": "00000000-0000-4000-8000-00000000000d",
+              "position": 1,
+              "execution_status": "completed",
+              "verdict": "pass",
+              "observed_value": "예시 축제",
+              "reason": "합성 문구를 비교한 예제입니다.",
+              "method_code": "fixture_text_match",
+              "checker_version": "fixture-checker-1",
+              "limitations": null,
+              "evidence": [
+                {
+                  "id": "00000000-0000-4000-8000-00000000000e",
+                  "source_kind": "ocr",
+                  "text": "예시 축제",
+                  "bbox_xyxy": [
+                    10,
+                    20,
+                    110,
+                    60
+                  ],
+                  "polygon": null,
+                  "confidence": 0.75,
+                  "frame_id": "00000000-0000-4000-8000-00000000000c",
+                  "coordinate_space": "normalized_original_pixels",
+                  "token_ids": [
+                    "00000000-0000-4000-8000-00000000000f"
+                  ],
+                  "method_code": "fixture_text_match",
+                  "limitations": null
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-manifest-jcs-v1\",\"kind\":\"review_result\",\"payload\":{\"aggregation_policy_version\":\"all_selected_v1\",\"execution_status\":\"completed\",\"extraction\":null,\"input_manifest_hash\":\"c005a171a13a0e15a4e2beb6b04f239b609105bd1ae0300d6d7fc8c59d06a6f3\",\"items\":[{\"checker_version\":\"fixture-checker-1\",\"criteria_item_id\":\"00000000-0000-4000-8000-000000000008\",\"evidence\":[{\"bbox_xyxy\":[10,20,110,60],\"confidence\":0.75,\"coordinate_space\":\"normalized_original_pixels\",\"frame_id\":\"00000000-0000-4000-8000-00000000000c\",\"id\":\"00000000-0000-4000-8000-00000000000e\",\"limitations\":null,\"method_code\":\"fixture_text_match\",\"polygon\":null,\"source_kind\":\"ocr\",\"text\":\"예시 축제\",\"token_ids\":[\"00000000-0000-4000-8000-00000000000f\"]}],\"execution_status\":\"completed\",\"limitations\":null,\"method_code\":\"fixture_text_match\",\"observed_value\":\"예시 축제\",\"position\":1,\"reason\":\"합성 문구를 비교한 예제입니다.\",\"result_id\":\"00000000-0000-4000-8000-00000000000d\",\"verdict\":\"pass\"}],\"ocr\":{\"ocr_input_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"ocr_run_id\":\"00000000-0000-4000-8000-00000000000b\",\"source_json_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\"},\"overall_verdict\":\"pass\",\"run_id\":\"00000000-0000-4000-8000-000000000009\",\"selected_attempt_id\":\"00000000-0000-4000-8000-00000000000a\"}}",
+      "utf8_bytes": 1350,
+      "sha256": "3aeaae1162b51c36724a9e85f097313110e7e80f3037bd463d107d2fc0c24e53"
+    },
+    {
+      "id": "HASH-11",
+      "purpose": "JCS serialization edge only; large integral values are outside API input profile",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "number_and_key_order",
+        "payload": {
+          "2": "second",
+          "10": "tenth",
+          "😀": "emoji",
+          "": "private",
+          "values": [
+            0,
+            1e-07,
+            100000000000000000000,
+            1e+21,
+            4.5,
+            0.002
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"number_and_key_order\",\"payload\":{\"10\":\"tenth\",\"2\":\"second\",\"values\":[0,1e-7,100000000000000000000,1e+21,4.5,0.002],\"😀\":\"emoji\",\"\":\"private\"}}",
+      "utf8_bytes": 189,
+      "sha256": "57194a6fb9da1c734bb4201f9406a93d14cdb10ae3a5e273e5b1a4202eb83a97",
+      "raw_input_json": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"number_and_key_order\",\"payload\":{\"10\":\"tenth\",\"2\":\"second\",\"values\":[-0,1e-7,100000000000000000000,1e+21,4.5,0.002],\"😀\":\"emoji\",\"\":\"private\"}}"
+    },
+    {
+      "id": "HASH-12",
+      "purpose": "Missing field differs from explicit null",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "presence",
+        "payload": {}
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"presence\",\"payload\":{}}",
+      "utf8_bytes": 65,
+      "sha256": "43b6134842f1a1ce5abfb850468e6036ec6b93ca81b8cf8a0a4512faf97d1dc8"
+    },
+    {
+      "id": "HASH-13",
+      "purpose": "Explicit null differs from missing field",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "presence",
+        "payload": {
+          "a": null
+        }
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"presence\",\"payload\":{\"a\":null}}",
+      "utf8_bytes": 73,
+      "sha256": "c37d719e54e54abb4441a2ff44b1557f8b1ed29b0d8f0f648f6bd36684c30275"
+    },
+    {
+      "id": "HASH-14",
+      "purpose": "Array order is retained",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "order",
+        "payload": [
+          1,
+          2
+        ]
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"order\",\"payload\":[1,2]}",
+      "utf8_bytes": 65,
+      "sha256": "0e07507132cc52adfadfb23a2fecdd97c467e4b777665b9cfe18aa1ca3f92226"
+    },
+    {
+      "id": "HASH-15",
+      "purpose": "Reversed array changes digest",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "order",
+        "payload": [
+          2,
+          1
+        ]
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"order\",\"payload\":[2,1]}",
+      "utf8_bytes": 65,
+      "sha256": "546e48d20f0c6bd5de4d0be63e90dbf1f8810599bafe040b43fcc7da92a2c948"
+    },
+    {
+      "id": "HASH-16",
+      "purpose": "Precomposed Korean is not normalized into decomposed Korean",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "unicode",
+        "payload": {
+          "text": "가"
+        }
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"unicode\",\"payload\":{\"text\":\"가\"}}",
+      "utf8_bytes": 76,
+      "sha256": "8ec06d88b9622093cb489b891cacd821583b12bd83ffcb2b6e390c0ec6789268"
+    },
+    {
+      "id": "HASH-17",
+      "purpose": "Decomposed Korean remains distinct",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "unicode",
+        "payload": {
+          "text": "가"
+        }
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"unicode\",\"payload\":{\"text\":\"가\"}}",
+      "utf8_bytes": 79,
+      "sha256": "d027403319960fcd810a569cc753f9dceac9fcbeaac2fc8439b1cc5ee7703bf0"
+    },
+    {
+      "id": "HASH-18",
+      "purpose": "String escaping is part of canonical representation",
+      "input": {
+        "contract": "fixture-jcs-edge-v1",
+        "kind": "escaped",
+        "payload": {
+          "text": "줄\n바꿈",
+          "quote": "\"",
+          "slash": "\\"
+        }
+      },
+      "canonical": "{\"contract\":\"fixture-jcs-edge-v1\",\"kind\":\"escaped\",\"payload\":{\"quote\":\"\\\"\",\"slash\":\"\\\\\",\"text\":\"줄\\n바꿈\"}}",
+      "utf8_bytes": 110,
+      "sha256": "c1852a7ecd2c010c64f4169dfffcfdf1105cfef84d4025c15fc0301b2f82a055"
+    },
+    {
+      "id": "HASH-19",
+      "purpose": "Changed expected revision changes request digest",
+      "input": {
+        "contract": "cc-request-jcs-v1",
+        "kind": "confirm_criteria",
+        "payload": {
+          "actor_user_id": "00000000-0000-4000-8000-000000000002",
+          "operation": "confirm_criteria",
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "body": {
+            "draft_id": "00000000-0000-4000-8000-000000000006",
+            "expected_revision": "4"
+          }
+        }
+      },
+      "canonical": "{\"contract\":\"cc-request-jcs-v1\",\"kind\":\"confirm_criteria\",\"payload\":{\"actor_user_id\":\"00000000-0000-4000-8000-000000000002\",\"body\":{\"draft_id\":\"00000000-0000-4000-8000-000000000006\",\"expected_revision\":\"4\"},\"operation\":\"confirm_criteria\",\"project_id\":\"00000000-0000-4000-8000-000000000001\"}}",
+      "utf8_bytes": 291,
+      "sha256": "7b5627307fc976679c5dc47dd6185f230cd4e37e9605da4f0e6b752aa56ec61c"
+    },
+    {
+      "id": "HASH-20",
+      "purpose": "Selected item edit changes criteria digest",
+      "input": {
+        "contract": "cc-content-jcs-v1",
+        "kind": "criteria_snapshot",
+        "payload": {
+          "project_id": "00000000-0000-4000-8000-000000000001",
+          "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+          "image_id": "00000000-0000-4000-8000-000000000003",
+          "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+          "source_documents": null,
+          "items": [
+            {
+              "external_item_id": "criterion-1",
+              "position": 1,
+              "category": "information",
+              "text": "수정한 행사명",
+              "source_text": "행사명: 예시 축제",
+              "rule_code": null,
+              "field_code": null,
+              "expected_value": null,
+              "is_required": null,
+              "source_asset_version_id": null,
+              "source_locator": null,
+              "applicability": null,
+              "check_scope": null,
+              "source_item": {
+                "id": "criterion-1",
+                "text": "수정한 행사명",
+                "type": "information",
+                "source": "행사명: 예시 축제",
+                "selected": true
+              }
+            }
+          ]
+        }
+      },
+      "canonical": "{\"contract\":\"cc-content-jcs-v1\",\"kind\":\"criteria_snapshot\",\"payload\":{\"criteria_set_id\":\"00000000-0000-4000-8000-000000000005\",\"image_id\":\"00000000-0000-4000-8000-000000000003\",\"items\":[{\"applicability\":null,\"category\":\"information\",\"check_scope\":null,\"expected_value\":null,\"external_item_id\":\"criterion-1\",\"field_code\":null,\"is_required\":null,\"position\":1,\"rule_code\":null,\"source_asset_version_id\":null,\"source_item\":{\"id\":\"criterion-1\",\"selected\":true,\"source\":\"행사명: 예시 축제\",\"text\":\"수정한 행사명\",\"type\":\"information\"},\"source_locator\":null,\"source_text\":\"행사명: 예시 축제\",\"text\":\"수정한 행사명\"}],\"project_id\":\"00000000-0000-4000-8000-000000000001\",\"raw_requirements\":\"행사명: 예시 축제\\n로고가 있어야 합니다.\",\"source_documents\":null}}",
+      "utf8_bytes": 791,
+      "sha256": "df0b9ebb1098854b8e07be51930fcc81572f318730c230dd048890353cfad388"
+    }
+  ],
+  "relations": [
+    {
+      "left": "HASH-01",
+      "right": "HASH-02",
+      "comparison": "equal"
+    },
+    {
+      "left": "HASH-01",
+      "right": "HASH-03",
+      "comparison": "different"
+    },
+    {
+      "left": "HASH-04",
+      "right": "HASH-05",
+      "comparison": "equal"
+    },
+    {
+      "left": "HASH-06",
+      "right": "HASH-19",
+      "comparison": "different"
+    },
+    {
+      "left": "HASH-04",
+      "right": "HASH-20",
+      "comparison": "different"
+    },
+    {
+      "left": "HASH-12",
+      "right": "HASH-13",
+      "comparison": "different"
+    },
+    {
+      "left": "HASH-14",
+      "right": "HASH-15",
+      "comparison": "different"
+    },
+    {
+      "left": "HASH-16",
+      "right": "HASH-17",
+      "comparison": "different"
+    }
+  ],
+  "invalid_api_inputs": [
+    {
+      "id": "INVALID-01",
+      "raw_json": "{\"a\":1,\"a\":2}",
+      "reason": "duplicate_property"
+    },
+    {
+      "id": "INVALID-02",
+      "raw_json": "{\"n\":NaN}",
+      "reason": "nonfinite_number"
+    },
+    {
+      "id": "INVALID-03",
+      "raw_json": "{\"n\":1e400}",
+      "reason": "nonfinite_number"
+    },
+    {
+      "id": "INVALID-04",
+      "raw_json": "{\"n\":9007199254740993}",
+      "reason": "unsafe_integer"
+    },
+    {
+      "id": "INVALID-05",
+      "raw_json": "{\"text\":\"\\ud800\"}",
+      "reason": "lone_surrogate"
+    },
+    {
+      "id": "INVALID-06",
+      "raw_json": "{\"text\":\"\\u0000\"}",
+      "reason": "nul_character"
+    }
+  ],
+  "limitations": [
+    "These examples do not validate a server implementation or full RFC 8785 compliance.",
+    "The generic JCS numeric edge case is not an accepted business API payload."
+  ]
+}

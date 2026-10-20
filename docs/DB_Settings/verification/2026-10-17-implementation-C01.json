@@ -1,0 +1,262 @@
+{
+  "unit": "C01",
+  "status": "complete",
+  "review_date": "2026-10-17",
+  "generated_at_utc": "2026-10-17T06:47:36.534770+00:00",
+  "next_unit": "C02",
+  "scope": "Independent DB configuration, Core Engine, service UoW and safe read-only diagnostics; no API integration",
+  "environment": {
+    "python": "3.12.14",
+    "system": "Darwin",
+    "machine": "arm64",
+    "sqlalchemy": "2.1.5",
+    "psycopg": "3.3.6",
+    "postgres_server_version_num": 170011
+  },
+  "installed_packages": [
+    {
+      "name": "SQLAlchemy",
+      "version": "2.1.5",
+      "archive_sha256": "3eb1907fc67aacc160276e7f61c1f71a7a38c10e84ff87b74d90cae0abd137bb"
+    },
+    {
+      "name": "psycopg",
+      "version": "3.3.6",
+      "archive_sha256": "a1db9f7148b06a28606767efaca51fa6f9398c5c0a3810519be69d7000bdb631"
+    },
+    {
+      "name": "psycopg-binary",
+      "version": "3.3.6",
+      "archive_sha256": "612382ac3ed13651c7fa44b5fee9fbf7baaa2ddbc6f500391672682c5f1df9e0"
+    }
+  ],
+  "pip_check": {
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "test_runs": [
+    {
+      "command": ".venv/bin/python -m pytest -q --junitxml=/private/tmp/creative-checker-c01-offline.xml",
+      "exit_code": 0,
+      "unique_cases_passed": 387,
+      "new_c01_unit_cases": 42,
+      "existing_regression_cases": 345,
+      "additional_subtests_passed": 7,
+      "db_integration_deselected": 8,
+      "junit_sha256": "64050c9849612803464ac1255c116e82171e2638267f2675cff914d44f56ccbc"
+    },
+    {
+      "command": "TEST_DB_ENV_FILE=<explicit test-only file> .venv/bin/python -m pytest backend/tests/test_db_integration.py -m db_integration -q",
+      "executed_credential_supply": "Equivalent TEST_DB_* values were passed only in the child environment from explicit local settings; no secrets in argv/output",
+      "exit_code": 0,
+      "cases_passed": 8,
+      "junit_sha256": "c444bebd7ead09484e3b583cdbc32e6ce601ee682c4ad422a32098fc8216f200",
+      "cases": [
+        "test_application_exception_rolls_back",
+        "test_commit_persists_to_an_independent_connection",
+        "test_connection_identity_limits_and_release",
+        "test_deferred_commit_rejection_is_not_success_or_unknown",
+        "test_privileged_role_is_rejected_even_if_configuration_omits_owner",
+        "test_sql_failure_rolls_back_and_pool_recovers",
+        "test_statement_cancellation_releases_connection",
+        "test_threads_have_independent_live_connections"
+      ]
+    }
+  ],
+  "read_only_app_check": {
+    "command": "PERSISTENCE_MODE=postgres .venv/bin/python -m scripts.check_database --env-file .env",
+    "exit_code": 0,
+    "result": {
+      "status": "connected",
+      "database": "creative_checker",
+      "current_user": "creative_checker_app",
+      "timezone": "UTC",
+      "server_version_num": 170011,
+      "client_encoding": "UTF8"
+    }
+  },
+  "invalid_password_check": {
+    "exit_code": 1,
+    "diagnostic": {
+      "status": "error",
+      "code": "DB_CONNECTION_FAILED",
+      "message": "Cannot open the configured application database.",
+      "outcome": "not_started",
+      "sqlstate": null,
+      "retryable": false
+    },
+    "stderr_empty": true,
+    "secret_not_echoed": true
+  },
+  "database_isolation": {
+    "generated_name_pattern": "creative_checker_test_<uuid hex>",
+    "owner_created_probe_only": "c01_probe.records",
+    "user_supplied_database_name_accepted": false,
+    "business_public_relations_before": [],
+    "business_public_relations_after": [],
+    "business_schema_unchanged": true,
+    "test_databases_cleaned": true,
+    "container_id": "4d46cb612091",
+    "container_or_volume_recreated": false,
+    "business_tables_created": false,
+    "account_seed_executed": false,
+    "migration_executed": false
+  },
+  "preserved_behaviors": {
+    "legacy_api_uses_json": true,
+    "admin_admin_unchanged": true,
+    "frontend_ocr_launchers_and_existing_requirements_unchanged": true,
+    "protected_tracked_paths_diff_clean": true
+  },
+  "static_review": {
+    "git_diff_check": "passed",
+    "compileall": "passed",
+    "local_links_checked": 262,
+    "local_heading_anchors_checked": 8,
+    "design_plan_preserved": true
+  },
+  "runtime_source_files": [
+    {
+      "path": "backend/app/config.py",
+      "sha256": "5e3d21ffd78f786f76c5ff6f5755e722530f0fafd7ec1c43d271b606a20e4b86"
+    },
+    {
+      "path": "backend/app/persistence/__init__.py",
+      "sha256": "85ec6140b11084c76ddf3c92e85c92b2e5cf0c1df4cdd6b60617dee8f445dda0"
+    },
+    {
+      "path": "backend/app/persistence/database.py",
+      "sha256": "113a458fff829ce2dad59eefd0531cfd0d151b9b8d629d5729944c6bcc94d71b"
+    },
+    {
+      "path": "backend/app/persistence/transaction.py",
+      "sha256": "b7cb707c0cb6a5f2ab2210f70a8de5dd088af7df9e7c5c6cdab53b9c91d9c6b4"
+    },
+    {
+      "path": "scripts/check_database.py",
+      "sha256": "4030a0171406feb4dc0ae60dd218b4652e7412d8eddcb11948a61d8eda855b46"
+    },
+    {
+      "path": "backend/tests/test_db_config.py",
+      "sha256": "1f7ba4350c92eab43494c39f8cd5e626c6e1da53112fc5b54158a41b85dc12c2"
+    },
+    {
+      "path": "backend/tests/test_db_transaction.py",
+      "sha256": "35e482c17b3ff771aec2f5ce8313e74f6b16bd7147c88eb639efc94a8652d4bd"
+    },
+    {
+      "path": "backend/tests/test_db_integration.py",
+      "sha256": "1a644db260e9dccfdbb5b40bdbeff97de0280ee1ea68f5447ec0cbe6860f004f"
+    },
+    {
+      "path": "requirements-db.txt",
+      "sha256": "4869b1c49e4020dfa6fc3e6fa4f476c679b2563fc83e54b64442430fd3ed0744"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "7aa46bddea6a88a1360e7c370ca532dea4bdd4d4af8c63e12149ec2a5bf24ee8"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "671e186422e467c1bea78fa5486da92aee71171d1c0140f1c3b15b414fb619fc"
+    }
+  ],
+  "documentation_files": [
+    {
+      "path": "docs/DB_Settings/구현_C01_DB연결과트랜잭션.md",
+      "sha256": "f38efa7b58a5c1f2ecc60d22aa1480ff695608e7a8da00c063365cd7cdcd4b2d"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "8e9318a52dea59d03eda69c3c304e97b3c8eecdd51a87ad0615e6a5e2d206be0"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "d383ae650edb58ab438746f3044f74ff301bbca3c79e6ece586ab54065cea546"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "6f3bfdc15fa0d9fc4eb9543798d57711ecbafdf1f69e0248ba1723c7d195bc1b"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "d8e1651026de76b73f6a640e4e6f8c3feddc68ffe6d8164e620a48587192ef87"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "c7674da01b27c23aee2a9b38ebd674cad826e4f7731acfb7b5302e33905c06de"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "51330bea590e6d09f96b30b5548a9779fc91af24f8c72daf97dac88515cbb6dd"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "470aa6286c1f55ced1e203b1fed529fc332b09c775db073b7d5acdb4b15396ea"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "2a6eabd63759621c72bb8f0bdf36c4cf904b51b229dc771419d8313a8341cb7e"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "5b6b20fe9b2676b32dfd0538b09a5ca1607d9d7bd09fb59232c7194856b67a3a"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "db81f986d288314e6d55259a66425d7c2fc79b69da067afc8ab6abb80cee38e1"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+      "sha256": "b81bf331f93458e0884288efda00411a25c6aaa4e8b643fa0ae2d50d5437afce"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+      "sha256": "5bf18987f967a6e91e66ca774fb3dcd8fa0bdffffb27e8aca8bd67ce12cf3940"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "57199e3ab8285966e87a0e94c7e6f790780f01540c4bec3a828621f0cbda5899"
+    },
+    {
+      "path": "실행가이드.md",
+      "sha256": "b2e1038acc0ebae60345da48c34eccae093bf7cad2a7266db1af6a40d0eb419c"
+    }
+  ],
+  "frozen_design_plan": {
+    "path": "docs/DB_Settings/contracts/stage10-implementation-plan.json",
+    "sha256": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6"
+  },
+  "historical_proofs": [
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    }
+  ],
+  "limitations": [
+    "Only macOS Python and the existing PostgreSQL 17.11 container were exercised; Linux/Windows were not executed.",
+    "Commit acknowledgement loss and rollback/cleanup failure classifications were tested with deterministic faults, not real network fault injection.",
+    "No business metadata, Alembic migration, DB-backed login/session, API persistence, new DB CI job, browser or real OCR execution in C01.",
+    "DB/AUTH/API/STORE/IMPL design suites are not all implemented or passed."
+  ]
+}

@@ -1,0 +1,566 @@
+{
+  "contract_version": "cc-api-v1",
+  "fixture_notice": "Synthetic specification examples only. UUIDs model names timestamps and file hashes do not identify real records or successful executions.",
+  "ids": {
+    "project": "00000000-0000-4000-8000-000000000001",
+    "user": "00000000-0000-4000-8000-000000000002",
+    "image": "00000000-0000-4000-8000-000000000003",
+    "asset": "00000000-0000-4000-8000-000000000004",
+    "criteria_set": "00000000-0000-4000-8000-000000000005",
+    "draft": "00000000-0000-4000-8000-000000000006",
+    "criteria_version": "00000000-0000-4000-8000-000000000007",
+    "criteria_item": "00000000-0000-4000-8000-000000000008",
+    "run": "00000000-0000-4000-8000-000000000009",
+    "attempt": "00000000-0000-4000-8000-00000000000a",
+    "ocr": "00000000-0000-4000-8000-00000000000b",
+    "frame": "00000000-0000-4000-8000-00000000000c",
+    "result": "00000000-0000-4000-8000-00000000000d",
+    "evidence": "00000000-0000-4000-8000-00000000000e",
+    "token": "00000000-0000-4000-8000-00000000000f"
+  },
+  "requests": {
+    "project_create": {
+      "name": "API 계약 예제"
+    },
+    "criteria_set_create": {
+      "name": "예제 기준"
+    },
+    "draft_create": {
+      "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+      "source_documents": null,
+      "items": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "selected": true
+        },
+        {
+          "id": "criterion-2",
+          "text": "로고가 보여야 합니다.",
+          "type": "visual",
+          "source": "로고가 있어야 합니다.",
+          "selected": false
+        }
+      ]
+    },
+    "draft_update": {
+      "expected_revision": "2",
+      "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+      "items": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "selected": true
+        },
+        {
+          "id": "criterion-2",
+          "text": "로고가 보여야 합니다.",
+          "type": "visual",
+          "source": "로고가 있어야 합니다.",
+          "selected": false
+        }
+      ],
+      "source_documents": null
+    },
+    "confirm": {
+      "draft_id": "00000000-0000-4000-8000-000000000006",
+      "expected_revision": "3"
+    },
+    "review_create": {
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "criteria_version_id": "00000000-0000-4000-8000-000000000007"
+    },
+    "review_retry": {}
+  },
+  "responses": {
+    "project": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "API 계약 예제",
+      "business_state": "active",
+      "archived_at": null,
+      "my_role": "owner",
+      "created_at": "2026-10-17T03:00:00.000000Z",
+      "updated_at": "2026-10-17T03:00:00.000000Z",
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "image": {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "asset_id": "00000000-0000-4000-8000-000000000004",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "version_no": 1,
+      "width": 400,
+      "height": 600,
+      "original_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "display_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "actual_format": "PNG",
+      "content_type": "image/png",
+      "coordinate_space": "normalized_original_pixels",
+      "frame_id": "00000000-0000-4000-8000-00000000000c",
+      "url": "/api/v1/images/00000000-0000-4000-8000-000000000003/content",
+      "created_at": "2026-10-17T03:00:00.000000Z",
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "draft": {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+      "source_documents": null,
+      "items": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "selected": true
+        },
+        {
+          "id": "criterion-2",
+          "text": "로고가 보여야 합니다.",
+          "type": "visual",
+          "source": "로고가 있어야 합니다.",
+          "selected": false
+        }
+      ],
+      "revision": "3",
+      "state": "editing",
+      "updated_by": "00000000-0000-4000-8000-000000000002",
+      "created_at": "2026-10-17T03:00:00.000000Z",
+      "updated_at": "2026-10-17T03:00:00.000000Z",
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "criteria_version": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "version_no": 1,
+      "origin_kind": "service_confirmation",
+      "confirmation_state": "confirmed",
+      "source_draft_id": "00000000-0000-4000-8000-000000000006",
+      "source_draft_revision": "3",
+      "criteria_hash": "ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c",
+      "hash_version": "cc-content-jcs-v1",
+      "confirmed_by": "00000000-0000-4000-8000-000000000002",
+      "confirmed_at": "2026-10-17T03:00:00.000000Z",
+      "criteria": [
+        {
+          "criteria_item_id": "00000000-0000-4000-8000-000000000008",
+          "id": "criterion-1",
+          "position": 1,
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "is_required": null
+        }
+      ],
+      "draft_is_current": true,
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "review_accepted": {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "status": "queued",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "criteria_version_id": "00000000-0000-4000-8000-000000000007",
+      "retry_of": null,
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "review_completed": {
+      "id": "00000000-0000-4000-8000-000000000009",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "criteria_version_id": "00000000-0000-4000-8000-000000000007",
+      "status": "completed",
+      "stage": "completed",
+      "progress": 100,
+      "project_name": "API 계약 예제",
+      "criteria_version": 1,
+      "origin_kind": "service_execution",
+      "source": null,
+      "retry_of": null,
+      "criteria": [
+        {
+          "criteria_item_id": "00000000-0000-4000-8000-000000000008",
+          "id": "criterion-1",
+          "position": 1,
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "is_required": null
+        }
+      ],
+      "image": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "asset_id": "00000000-0000-4000-8000-000000000004",
+        "project_id": "00000000-0000-4000-8000-000000000001",
+        "version_no": 1,
+        "width": 400,
+        "height": 600,
+        "original_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "display_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "actual_format": "PNG",
+        "content_type": "image/png",
+        "coordinate_space": "normalized_original_pixels",
+        "frame_id": "00000000-0000-4000-8000-00000000000c",
+        "url": "/api/v1/images/00000000-0000-4000-8000-000000000003/content",
+        "created_at": "2026-10-17T03:00:00.000000Z"
+      },
+      "results": [
+        {
+          "result_id": "00000000-0000-4000-8000-00000000000d",
+          "criteria_item_id": "00000000-0000-4000-8000-000000000008",
+          "criterion_id": "criterion-1",
+          "criterion": "행사명: 예시 축제",
+          "type": "information",
+          "processing_status": "completed",
+          "verdict": "pass",
+          "status": "pass",
+          "observed_value": "예시 축제",
+          "observed_text": "예시 축제",
+          "reason": "합성 문구를 비교한 예제입니다.",
+          "check_method": "fixture_text_match",
+          "limitations": null,
+          "evidence": [],
+          "evidence_count": 1,
+          "evidence_complete": false,
+          "evidence_url": "/api/v1/reviews/00000000-0000-4000-8000-000000000009/results/00000000-0000-4000-8000-00000000000d/evidence"
+        }
+      ],
+      "results_complete": true,
+      "overall_verdict": "pass",
+      "aggregation_policy_version": "all_selected_v1",
+      "runtime": {
+        "attempt_no": 1,
+        "execution_status": "succeeded",
+        "execution_target": "local",
+        "actual_device": "cpu",
+        "model_name": "fixture-ocr",
+        "model_revision": "fixture-only"
+      },
+      "ocr": {
+        "id": "00000000-0000-4000-8000-00000000000b",
+        "record_count": 1,
+        "records_url": "/api/v1/reviews/00000000-0000-4000-8000-000000000009/ocr-records",
+        "coordinate_space": "normalized_original_pixels",
+        "input_dimensions": [
+          800,
+          1200
+        ],
+        "scale": 2
+      },
+      "event_extraction": null,
+      "error": null,
+      "created_at": "2026-10-17T03:00:00.000000Z",
+      "updated_at": "2026-10-17T03:00:00.000000Z",
+      "started_at": "2026-10-17T03:00:00.000000Z",
+      "finished_at": "2026-10-17T03:00:00.000000Z",
+      "sealed_at": "2026-10-17T03:00:00.000000Z",
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "ocr_page": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-00000000000f",
+          "external_token_id": "1",
+          "external_token_type": "integer",
+          "order": 0,
+          "text": "예시 축제",
+          "confidence": 0.75,
+          "bbox_xyxy": [
+            10,
+            20,
+            110,
+            60
+          ],
+          "polygon": null,
+          "coordinate_space": "normalized_original_pixels",
+          "frame_id": "00000000-0000-4000-8000-00000000000c"
+        }
+      ],
+      "availability": "available",
+      "has_more": false,
+      "next_cursor": null,
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "evidence_page": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-00000000000e",
+          "source_kind": "ocr",
+          "text": "예시 축제",
+          "bbox_xyxy": [
+            10,
+            20,
+            110,
+            60
+          ],
+          "polygon": null,
+          "confidence": 0.75,
+          "frame_id": "00000000-0000-4000-8000-00000000000c",
+          "coordinate_space": "normalized_original_pixels",
+          "token_ids": [
+            "00000000-0000-4000-8000-00000000000f"
+          ],
+          "method_code": "fixture_text_match",
+          "limitations": null
+        }
+      ],
+      "has_more": false,
+      "next_cursor": null,
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "error_conflict": {
+      "error": {
+        "code": "DRAFT_REVISION_CONFLICT",
+        "message": "다른 변경이 저장되어 있습니다. 최신 초안을 확인해 주세요.",
+        "fields": {
+          "/expected_revision": [
+            "현재 서버 revision과 다릅니다."
+          ]
+        }
+      },
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    },
+    "health": {
+      "status": "degraded",
+      "checks": {
+        "api": {
+          "state": "ready",
+          "checked_at": "2026-10-17T03:00:00.000000Z"
+        },
+        "db": {
+          "state": "ready",
+          "checked_at": "2026-10-17T03:00:00.000000Z"
+        },
+        "worker": {
+          "state": "unknown",
+          "checked_at": null
+        },
+        "ocr_runtime": {
+          "state": "unknown",
+          "checked_at": null
+        },
+        "model": {
+          "state": "unknown",
+          "checked_at": null
+        }
+      },
+      "limits": {
+        "upload_bytes": 20971520,
+        "image_pixels": 10000000,
+        "image_side": 8192,
+        "json_request_bytes": 262144,
+        "criteria_items": 100,
+        "sample_available": false
+      },
+      "meta": {
+        "contract_version": "cc-api-v1",
+        "request_id": "00000000-0000-4000-8000-000000000010"
+      }
+    }
+  },
+  "hash_payloads": {
+    "draft": {
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+      "source_documents": null,
+      "items": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 예시 축제",
+          "type": "information",
+          "source": "행사명: 예시 축제",
+          "selected": true
+        },
+        {
+          "id": "criterion-2",
+          "text": "로고가 보여야 합니다.",
+          "type": "visual",
+          "source": "로고가 있어야 합니다.",
+          "selected": false
+        }
+      ]
+    },
+    "criteria": {
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "criteria_set_id": "00000000-0000-4000-8000-000000000005",
+      "image_id": "00000000-0000-4000-8000-000000000003",
+      "raw_requirements": "행사명: 예시 축제\n로고가 있어야 합니다.",
+      "source_documents": null,
+      "items": [
+        {
+          "external_item_id": "criterion-1",
+          "position": 1,
+          "category": "information",
+          "text": "행사명: 예시 축제",
+          "source_text": "행사명: 예시 축제",
+          "rule_code": null,
+          "field_code": null,
+          "expected_value": null,
+          "is_required": null,
+          "source_asset_version_id": null,
+          "source_locator": null,
+          "applicability": null,
+          "check_scope": null,
+          "source_item": {
+            "id": "criterion-1",
+            "text": "행사명: 예시 축제",
+            "type": "information",
+            "source": "행사명: 예시 축제",
+            "selected": true
+          }
+        }
+      ]
+    },
+    "confirm_request": {
+      "actor_user_id": "00000000-0000-4000-8000-000000000002",
+      "operation": "confirm_criteria",
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "body": {
+        "draft_id": "00000000-0000-4000-8000-000000000006",
+        "expected_revision": "3"
+      }
+    },
+    "create_request": {
+      "actor_user_id": "00000000-0000-4000-8000-000000000002",
+      "operation": "create_review",
+      "body": {
+        "project_id": "00000000-0000-4000-8000-000000000001",
+        "image_id": "00000000-0000-4000-8000-000000000003",
+        "criteria_version_id": "00000000-0000-4000-8000-000000000007"
+      }
+    },
+    "retry_request": {
+      "actor_user_id": "00000000-0000-4000-8000-000000000002",
+      "operation": "retry_review",
+      "source_run_id": "00000000-0000-4000-8000-000000000009",
+      "body": {}
+    },
+    "input_manifest": {
+      "project_id": "00000000-0000-4000-8000-000000000001",
+      "image": {
+        "image_id": "00000000-0000-4000-8000-000000000003",
+        "original_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "display_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "width": 400,
+        "height": 600,
+        "coordinate_space": "normalized_original_pixels",
+        "preprocessing_version": "fixture-display-v1",
+        "ocr_scale": 2
+      },
+      "criteria": {
+        "criteria_version_id": "00000000-0000-4000-8000-000000000007",
+        "criteria_hash": "ca06fc1b20a7e6643ec4e70bc9f993513869b024ae742eba3df91f709909234c"
+      },
+      "execution": {
+        "workflow_version": "fixture-workflow-1",
+        "execution_target": "local",
+        "requested_config": {
+          "pipeline": "fixture-only",
+          "model_name": "fixture-ocr",
+          "model_revision": "fixture-only",
+          "device_policy": [
+            "cpu"
+          ],
+          "preprocessing": {
+            "version": "fixture-display-v1",
+            "ocr_scale": 2
+          }
+        },
+        "aggregation_policy_version": "all_selected_v1",
+        "retry_policy": {
+          "max_attempts": 1,
+          "executor_kind": "background_tasks"
+        }
+      }
+    },
+    "result_manifest": {
+      "run_id": "00000000-0000-4000-8000-000000000009",
+      "selected_attempt_id": "00000000-0000-4000-8000-00000000000a",
+      "execution_status": "completed",
+      "overall_verdict": "pass",
+      "aggregation_policy_version": "all_selected_v1",
+      "input_manifest_hash": "c005a171a13a0e15a4e2beb6b04f239b609105bd1ae0300d6d7fc8c59d06a6f3",
+      "ocr": {
+        "ocr_run_id": "00000000-0000-4000-8000-00000000000b",
+        "ocr_input_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "source_json_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "extraction": null,
+      "items": [
+        {
+          "criteria_item_id": "00000000-0000-4000-8000-000000000008",
+          "result_id": "00000000-0000-4000-8000-00000000000d",
+          "position": 1,
+          "execution_status": "completed",
+          "verdict": "pass",
+          "observed_value": "예시 축제",
+          "reason": "합성 문구를 비교한 예제입니다.",
+          "method_code": "fixture_text_match",
+          "checker_version": "fixture-checker-1",
+          "limitations": null,
+          "evidence": [
+            {
+              "id": "00000000-0000-4000-8000-00000000000e",
+              "source_kind": "ocr",
+              "text": "예시 축제",
+              "bbox_xyxy": [
+                10,
+                20,
+                110,
+                60
+              ],
+              "polygon": null,
+              "confidence": 0.75,
+              "frame_id": "00000000-0000-4000-8000-00000000000c",
+              "coordinate_space": "normalized_original_pixels",
+              "token_ids": [
+                "00000000-0000-4000-8000-00000000000f"
+              ],
+              "method_code": "fixture_text_match",
+              "limitations": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

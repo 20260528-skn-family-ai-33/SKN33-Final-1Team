@@ -1,0 +1,771 @@
+{
+  "contract": "cc-implementation-plan-v1",
+  "review_date": "2026-10-17",
+  "stage": 10,
+  "kind": "design_plan_not_runtime_implementation",
+  "design_status": "complete",
+  "next_implementation_unit": "C01",
+  "remaining_design_steps": [],
+  "execution": {
+    "one_unit_per_next_request": true,
+    "runtime_code_changed": false,
+    "packages_installed": false,
+    "database_changed": false,
+    "migration_executed": false,
+    "runtime_tests_run": false
+  },
+  "database_approach": {
+    "library": "SQLAlchemy Core",
+    "driver": "postgresql+psycopg",
+    "mode": "synchronous",
+    "isolation": "READ COMMITTED",
+    "transaction_owner": "service Unit of Work",
+    "connection_scope": "one Connection opened used closed in the same thread per Unit of Work",
+    "pool_per_process": true,
+    "web_pool": {
+      "size": 5,
+      "max_overflow": 0,
+      "timeout_seconds": 5,
+      "pre_ping": true
+    },
+    "worker_pool_size": 2,
+    "connect_timeout_seconds": 5,
+    "lock_timeout_seconds": 2,
+    "statement_timeout_seconds": 10,
+    "import_statement_timeout_seconds": 60,
+    "create_all_at_startup": false,
+    "migration_at_startup": false,
+    "seed_at_startup": false
+  },
+  "selected_packages": [
+    {
+      "name": "SQLAlchemy",
+      "version": "2.1.5",
+      "introduced_in": "C01",
+      "purpose": "C01. Core 쿼리·Connection·pool·metadata",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/SQLAlchemy/",
+        "https://docs.sqlalchemy.org/en/21/core/connections.html"
+      ]
+    },
+    {
+      "name": "psycopg[binary]",
+      "version": "3.3.6",
+      "introduced_in": "C01",
+      "purpose": "C01. PostgreSQL 17 동기 드라이버",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/psycopg/3.3.6/",
+        "https://www.psycopg.org/psycopg3/docs/basic/install.html#binary-installation"
+      ]
+    },
+    {
+      "name": "Alembic",
+      "version": "1.20.0",
+      "introduced_in": "C02",
+      "purpose": "C02. revision 실행·이력",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/alembic/1.20.0/"
+      ]
+    },
+    {
+      "name": "argon2-cffi",
+      "version": "25.1.0",
+      "introduced_in": "C08",
+      "purpose": "C08. 7단계 비밀번호 해시·검증",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/argon2-cffi/25.1.0/"
+      ]
+    },
+    {
+      "name": "email-validator",
+      "version": "2.3.0",
+      "introduced_in": "C08",
+      "purpose": "C08. ASCII 이메일 형식, DNS 검사 끔",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/email-validator/2.3.0/"
+      ]
+    },
+    {
+      "name": "rfc8785",
+      "version": "0.1.4",
+      "introduced_in": "C09",
+      "purpose": "C09. 내용/요청/manifest의 JCS 바이트",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/rfc8785/0.1.4/"
+      ]
+    },
+    {
+      "name": "portalocker",
+      "version": "3.2.0",
+      "introduced_in": "C09",
+      "purpose": "C09. 작업·공유/배타 gate·서비스 파일 잠금",
+      "installed_in_current_venv": false,
+      "official_sources": [
+        "https://pypi.org/project/portalocker/3.2.0/",
+        "https://portalocker.readthedocs.io/en/latest/"
+      ]
+    }
+  ],
+  "observed_environment": {
+    "python": "3.12.14",
+    "fastapi": "0.143.0",
+    "starlette": "1.7.0",
+    "pydantic": "2.13.5",
+    "httpx": "0.28.1",
+    "pytest": "9.1.1",
+    "postgres_compose_image": "postgres:17.11-bookworm",
+    "postgres_runtime_rechecked_this_stage": false,
+    "frontend_lock": {
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "react-router": "7.18.4",
+      "vite": "7.3.7",
+      "@playwright/test": "1.62.1"
+    },
+    "ci_node_major": 22
+  },
+  "planned_dependency_files": [
+    {
+      "path": "requirements-db.txt",
+      "C01": [
+        "SQLAlchemy",
+        "psycopg[binary]"
+      ],
+      "C02": [
+        "Alembic"
+      ]
+    },
+    {
+      "path": "requirements-v1.txt",
+      "C08": [
+        "DB dependency include",
+        "argon2-cffi",
+        "email-validator",
+        "pydantic direct pin 2.13.5"
+      ],
+      "C09": [
+        "rfc8785",
+        "portalocker"
+      ]
+    }
+  ],
+  "planned_modules": [
+    {
+      "path": "backend/app/config.py",
+      "responsibility": "순수 설정 파싱·검증·비밀 마스킹. import 시 DB/파일/모델 작업 없음",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/database.py",
+      "responsibility": "프로세스별 Engine 생성/종료·연결 점검. owner 연결을 웹에 제공하지 않음",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/transaction.py",
+      "responsibility": "Connection 수명·commit/rollback·미확인 commit 분류·SQLSTATE 변환",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/schema/identity.py",
+      "responsibility": "users/user_sessions/projects/project_members Core metadata",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/schema/files.py",
+      "responsibility": "assets/asset_versions/stored_files/frames/aliases metadata",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/schema/ocr.py",
+      "responsibility": "규격/인계/감사/OCR/토큰/추출/관찰/근거 metadata",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/schema/criteria.py",
+      "responsibility": "set/draft/version/item metadata",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/schema/reviews.py",
+      "responsibility": "run/attempt/result/selection metadata",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/persistence/repositories/",
+      "responsibility": "Connection을 받아 SQL 수행. HTTP·파일·OCR·commit 책임 없음",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/contracts/",
+      "responsibility": "strict 요청/응답 DTO·enum·revision 문자열·오류/크기 제한",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/security/",
+      "responsibility": "비밀번호·세션·서명 CSRF·Origin·개발 경계·시도 제한",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/services/",
+      "responsibility": "권한·락 순서·초안/기준·접수/재전송·봉인·감사·트랜잭션 조율",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/storage/",
+      "responsibility": "안전한 파일 핸들·staging/확정·저널·잠금·GC dry-run·복구",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/hashing/",
+      "responsibility": "버전별 명시적 payload builder·rfc8785 직렬화·SHA256",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/routes/v1/",
+      "responsibility": "HTTP 파싱·CSRF/인증·서비스 호출·DTO 응답. 직접 SQL/추론 없음",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/execution/",
+      "responsibility": "기존 OCR/판정 어댑터·고정 설정·출력 검증·BackgroundTasks 실행",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/worker.py",
+      "responsibility": "postgres_worker 진입점·인수/heartbeat/lease·종료. app 요청 상태 공유 없음",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/management/",
+      "responsibility": "계정·개발 초기화·수입·백업/복원·무결성 점검의 명시적 argparse CLI",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/app/main.py",
+      "responsibility": "명시적 프로필 app factory·startup/readiness·라우터 연결·종료",
+      "status": "planned_not_created"
+    },
+    {
+      "path": "backend/migrations/",
+      "responsibility": "Alembic env·검토한 revision·제약/트리거 정의. app에서 실행 금지",
+      "status": "planned_not_created"
+    }
+  ],
+  "migration_revisions": [
+    {
+      "id": "M001",
+      "domain": "identity",
+      "tables_created": [
+        "users",
+        "user_sessions",
+        "projects",
+        "project_members"
+      ],
+      "cumulative_business_tables": 4,
+      "implementation_units": [
+        "C02"
+      ],
+      "status": "planned_not_created",
+      "objects": "columns, PK, UNIQUE, CHECK; FK deferred to M006"
+    },
+    {
+      "id": "M002",
+      "domain": "files",
+      "tables_created": [
+        "assets",
+        "asset_versions",
+        "stored_files",
+        "image_coordinate_frames",
+        "record_aliases"
+      ],
+      "cumulative_business_tables": 9,
+      "implementation_units": [
+        "C03"
+      ],
+      "status": "planned_not_created",
+      "objects": "columns, PK, UNIQUE, CHECK; FK deferred to M006"
+    },
+    {
+      "id": "M003",
+      "domain": "ocr",
+      "tables_created": [
+        "schema_definitions",
+        "import_packages",
+        "audit_events",
+        "ocr_runs",
+        "ocr_tokens",
+        "poster_extractions",
+        "poster_field_observations",
+        "evidence_records",
+        "evidence_ocr_tokens"
+      ],
+      "cumulative_business_tables": 18,
+      "implementation_units": [
+        "C04"
+      ],
+      "status": "planned_not_created",
+      "objects": "columns, PK, UNIQUE, CHECK; FK deferred to M006"
+    },
+    {
+      "id": "M004",
+      "domain": "criteria",
+      "tables_created": [
+        "criteria_sets",
+        "criteria_drafts",
+        "criteria_versions",
+        "criteria_items"
+      ],
+      "cumulative_business_tables": 22,
+      "implementation_units": [
+        "C05"
+      ],
+      "status": "planned_not_created",
+      "objects": "columns, PK, UNIQUE, CHECK; FK deferred to M006"
+    },
+    {
+      "id": "M005",
+      "domain": "reviews",
+      "tables_created": [
+        "review_runs",
+        "review_attempts",
+        "item_results",
+        "run_item_selections"
+      ],
+      "cumulative_business_tables": 26,
+      "implementation_units": [
+        "C06"
+      ],
+      "status": "planned_not_created",
+      "objects": "columns, PK, UNIQUE, CHECK; FK deferred to M006"
+    },
+    {
+      "id": "M006",
+      "domain": "relations",
+      "tables_created": [],
+      "cumulative_business_tables": 26,
+      "implementation_units": [
+        "C06"
+      ],
+      "status": "planned_not_created",
+      "objects": "81 immediate RESTRICT MATCH SIMPLE foreign keys after all tables exist"
+    },
+    {
+      "id": "M007",
+      "domain": "guards",
+      "tables_created": [],
+      "cumulative_business_tables": 26,
+      "implementation_units": [
+        "C07a",
+        "C07b"
+      ],
+      "status": "planned_not_created",
+      "objects": "25 ordinary indexes, 2 partial unique indexes, 30 guard rule names expanded into actual trigger instances"
+    },
+    {
+      "id": "M008",
+      "domain": "grants",
+      "tables_created": [],
+      "cumulative_business_tables": 26,
+      "implementation_units": [
+        "C07c"
+      ],
+      "status": "planned_not_created",
+      "objects": "explicit per-column privileges and complete schema inventory"
+    }
+  ],
+  "migration_policy": {
+    "m001_revoke_owner_default_app_table_dml_before_table_creation": true,
+    "initial_empty_upgrade_transactional": true,
+    "reject_partial_head_readiness": true,
+    "business_table_count_excludes_alembic_version": true,
+    "shared_applied_revision_immutable": true,
+    "automatic_downgrade_with_business_data": false,
+    "web_and_worker_initial_role": "creative_checker_app",
+    "owner_supplied_to_web_or_worker": false
+  },
+  "schema_counts": {
+    "tables": 26,
+    "columns": 395,
+    "primary_keys": 26,
+    "unique_constraints": 41,
+    "foreign_keys": 81,
+    "check_groups": 77,
+    "ordinary_indexes": 25,
+    "partial_unique_indexes": 2,
+    "trigger_rule_names": 30
+  },
+  "execution_profiles": {
+    "initial": "background_tasks",
+    "web_processes": 1,
+    "later": "postgres_worker",
+    "production_storage_validation_target": "single Linux host local filesystem",
+    "macos": "development and explicitly measured DB/function/locking only",
+    "windows": "existing launcher offline and DB connection; v1 operational storage durability not verified"
+  },
+  "verification_bundles": [
+    {
+      "prefix": "DB",
+      "count": 18,
+      "source": "물리설계_06_전체정합성.md",
+      "execution_status": "not_run"
+    },
+    {
+      "prefix": "AUTH",
+      "count": 28,
+      "source": "추가설계_07_인증과권한.md",
+      "execution_status": "not_run"
+    },
+    {
+      "prefix": "API",
+      "count": 32,
+      "source": "추가설계_08_API와화면JSON.md",
+      "execution_status": "not_run"
+    },
+    {
+      "prefix": "STORE",
+      "count": 36,
+      "source": "추가설계_09_저장과이전복구.md",
+      "execution_status": "not_run"
+    }
+  ],
+  "planned_existing_cases": 114,
+  "planned_implementation_cases": [
+    {
+      "id": "IMPL-01",
+      "topic": "의존성/환경",
+      "criterion": "선택 버전 설치·pip check·플랫폼/전이 의존성 기록",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-02",
+      "topic": "import 부작용",
+      "criterion": "config/metadata/hash import에 DB/파일/가중치/네트워크 작업 없음",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-03",
+      "topic": "설정/비밀",
+      "criterion": "누락/포트/역할 오류·특수문자 비밀번호 인코딩·로그 마스킹",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-04",
+      "topic": "Connection 수명",
+      "criterion": "독립 호출/스레드/worker 연결 분리·오류 뒤 pool 회복",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-05",
+      "topic": "UoW",
+      "criterion": "실제 commit/rollback·deferred 오류·미확인 commit 구분",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-06",
+      "topic": "schema",
+      "criterion": "26/395와 모든 키·조건·트리거 인스턴스·revision 일치",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-07",
+      "topic": "migration",
+      "criterion": "빈 DB→head·실패 롤백·부분 head readiness 거부·자동 seed 없음",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-08",
+      "topic": "DB 권한",
+      "criterion": "app DDL/DELETE/불변 UPDATE 거부·허용 컬럼 동작·owner 미노출",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-09",
+      "topic": "계정 관리",
+      "criterion": "실제 입력/UUID·Argon2 설정·개발 초기화 재사용/동시성",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-10",
+      "topic": "실행 프로필",
+      "criterion": "BackgroundTasks 단일 서비스·다른 executor 큐 혼용 없음",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-11",
+      "topic": "JCS",
+      "criterion": "실제 선택 라이브러리와 30개 기존 벡터·규격 경계 일치",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-12",
+      "topic": "저장소 capability",
+      "criterion": "공유/배타/비차단·fsync/rename·OS별 결과, 미검증 운영 차단",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-13",
+      "topic": "dev proxy",
+      "criterion": "직접/Vite·Origin/Host/forwarded 위조·원격 요청 모두 검증",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-14",
+      "topic": "운영 HTTPS",
+      "criterion": "__Host/Secure·SameSite/CSRF·신뢰 프록시·개발 계정 비활성",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-15",
+      "topic": "테스트 DB 보호",
+      "criterion": "일상 DB/루트 거부·DB job 전체 skip 불가·격리 대상 정리",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-16",
+      "topic": "스레드/취소",
+      "criterion": "event loop에서 동기 DB/Argon2/파일/OCR 차단 없음·늦은 응답 무시",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-17",
+      "topic": "CI/회귀",
+      "criterion": "기존 Python/React/launcher와 새 DB/E2E job의 실제 결과",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-18",
+      "topic": "OCR 경계",
+      "criterion": "test adapter vs 실제 모델/장치/RunPod 검증 분리",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-19",
+      "topic": "backup/restore",
+      "criterion": "별도 DB/루트 전체 검증·세션 폐기·resume 정책·시간 측정",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "IMPL-20",
+      "topic": "전환",
+      "criterion": "pre-cutover 백업·스키마 호환·구형 POST 종료·단일 쓰기",
+      "execution_status": "not_run"
+    }
+  ],
+  "existing_hash_fixtures": {
+    "stage8": 20,
+    "stage9": 10,
+    "actual_selected_jcs_library_run": false
+  },
+  "planned_test_layers": [
+    "offline_unit",
+    "postgresql_integration",
+    "filesystem_process_integration",
+    "api_with_explicit_test_ocr_adapter",
+    "http_dev_browser",
+    "https_production_browser",
+    "real_ocr_per_enabled_profile",
+    "backup_restore_drill"
+  ],
+  "test_database_policy": {
+    "explicit_test_connection_required": true,
+    "database_name_prefix": "creative_checker_test_",
+    "business_database_fallback": false,
+    "selected_db_job_missing_database_is_failure": true,
+    "c01_only_test_owned_probe_ddl": true
+  },
+  "implementation_units": [
+    {
+      "id": "C01",
+      "scope": "DB 설정·Engine/UoW·접속/롤백·안전한 오류/비밀 검증. 기존 API 미연결",
+      "depends_on": [],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C02",
+      "scope": "Alembic 기반·identity metadata/M001·권한 기본값 회수",
+      "depends_on": [
+        "C01"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C03",
+      "scope": "파일 metadata/M002·빈 스키마 검사",
+      "depends_on": [
+        "C02"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C04",
+      "scope": "규격/인계/OCR metadata/M003·빈 스키마 검사",
+      "depends_on": [
+        "C03"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C05",
+      "scope": "기준 metadata/M004·범위/NULL/키 검사",
+      "depends_on": [
+        "C04"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C06",
+      "scope": "실행/결과 metadata/M005·M006 전체 FK 검사",
+      "depends_on": [
+        "C05"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C07a",
+      "scope": "M007의 인덱스·predicate·조회 계획 기준",
+      "depends_on": [
+        "C06"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C07b",
+      "scope": "M007 봉인/전이/교차 행 가드와 실제 경쟁/롤백",
+      "depends_on": [
+        "C07a"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C07c",
+      "scope": "M008 권한·완전 head·schema inventory와 DB-01~18",
+      "depends_on": [
+        "C07b"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C08",
+      "scope": "이메일/개발 DB 인증·계정 CLI·쿠키/CSRF·역할·main/profile",
+      "depends_on": [
+        "C07c"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C09",
+      "scope": "파일 저장/잠금/저널·실제 JCS·업로드/초안/확정",
+      "depends_on": [
+        "C08"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C10",
+      "scope": "v1 run 접수·멱등/상세·BackgroundTasks·원자적 결과",
+      "depends_on": [
+        "C09"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C11",
+      "scope": "React 프로젝트/초안/이력·URL 복원·근거·이메일 UI",
+      "depends_on": [
+        "C10"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C12",
+      "scope": "통합 E2E·개발/운영 proxy·실제 OCR 선택 경로 검증",
+      "depends_on": [
+        "C11"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C13",
+      "scope": "독립 postgres_worker·인수/lease/회수·원격 미확인 정책",
+      "depends_on": [
+        "C12"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C14",
+      "scope": "수입 dry-run/apply·GC 관리·실제 backup/restore 훈련",
+      "depends_on": [
+        "C13"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    },
+    {
+      "id": "C15",
+      "scope": "배포 프로필 전체 검증·구형 쓰기 종료·운영 전환 자료",
+      "depends_on": [
+        "C14"
+      ],
+      "design_prerequisite_complete": true,
+      "status": "not_started"
+    }
+  ],
+  "first_unit": {
+    "id": "C01",
+    "planned_paths": [
+      "backend/app/config.py",
+      "backend/app/persistence/__init__.py",
+      "backend/app/persistence/database.py",
+      "backend/app/persistence/transaction.py",
+      "requirements-db.txt",
+      "dedicated connection tests and check command",
+      ".env.example",
+      "execution documentation"
+    ],
+    "acceptance_criteria": [
+      "기존 .env의 DB_HOST/PORT/POSTGRES_DB/APP 이름을 재사용하고 PERSISTENCE_MODE가 꺼져 있으면 DB 없이 새 모듈을 읽을 수 있다. 비밀이 없는 안전한 설정/점검 결과만 노출한다.",
+      "명시적으로 켠 DB 모드에서 잘못된 포트·누락 비밀·owner를 app 사용자로 지정하는 구성을 거부하고 SQLAlchemy URL.create로 비밀번호 특수문자를 보존한다.",
+      "실제 PostgreSQL에 app 역할로 접속해 SELECT 1·current_user·UTC·서버 버전과 연결 닫힘을 확인한다. 값을 로그에 출력할 때 DSN/비밀번호는 제외한다.",
+      "격리 test DB의 owner가 만든 probe에서 app의 commit·의도한 예외 rollback·실패 뒤 새 연결 재사용을 검증한다. probe는 업무 테이블이 아니며 대상/정리를 test DB 밖으로 확장하지 않는다.",
+      "DB 모드 오류는 명확한 설정/연결 예외로 전달하고 JSON 저장·다른 DSN·owner로 조용히 우회하지 않는다. 기존 API/개발 로그인 offline 회귀를 확인한다.",
+      "실제 설치 버전·명령·DB 대상의 안전한 식별 정보·실행한 테스트/미실행 항목을 기록하고 **C01만** 완료로 보고한다. 실제 통합 검증이 막혔으면 정적 검사를 접속/롤백 성공으로 바꾸지 않는다."
+    ],
+    "excluded": [
+      "business metadata and DDL",
+      "migration",
+      "account/session seed",
+      "login behavior change",
+      "existing API integration",
+      "React/OCR changes",
+      "Compose volume changes",
+      "business history import or deletion"
+    ],
+    "actual_runtime_validation_required": [
+      "app SELECT 1/current_user/timezone/server version",
+      "isolated probe commit rollback and new connection after failure",
+      "existing API/development login offline regression"
+    ]
+  }
+}

@@ -1,0 +1,1371 @@
+{
+  "unit": "C07b",
+  "status": "complete",
+  "review_date": "2026-10-18",
+  "generated_at_utc": "2026-10-18T05:03:26.769470+00:00",
+  "next_unit": "C07c",
+  "scope": "Promote complete official M007: frozen C07a indexes plus transition/append/deferred/cross-row/lineage/owner/import guards; no M008 grants, daily DB upgrade, API or worker integration",
+  "environment": {
+    "python": "3.12.14",
+    "system": "Darwin",
+    "machine": "arm64",
+    "sqlalchemy": "2.1.5",
+    "psycopg": "3.3.6",
+    "alembic": "1.20.0",
+    "postgres_server_version_num": 170011
+  },
+  "new_packages_installed": false,
+  "pip_check": {
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "official_schema": {
+    "revision": "M007",
+    "down_revision": "M006",
+    "business_tables": 26,
+    "columns": 395,
+    "primary_keys": 26,
+    "unique_constraints": 41,
+    "check_constraints": 77,
+    "foreign_keys": 81,
+    "additional_indexes": 27,
+    "lookup_indexes": 25,
+    "partial_unique_indexes": 2,
+    "business_indexes_including_pk_uq": 94,
+    "tool_table_excluded": "alembic_version",
+    "guard_rule_names": 30,
+    "trigger_instances": 35,
+    "before_triggers": 17,
+    "initially_deferred_after_row_triggers": 18,
+    "plpgsql_functions": 19,
+    "complete_runtime_permissions": false,
+    "m008_present": false
+  },
+  "migration_sources": [
+    {
+      "path": "backend/migrations/versions/M007_guards.py",
+      "sha256": "2ab151dc605d1d23d2167d8d815d35ea6f82016dabb85a375f478b0d2f837343"
+    },
+    {
+      "path": "backend/migrations/sql/M007_guards.sql",
+      "sha256": "6ecda4837bdc1a7e4c85f94541d4fdbee56c4e4f1f41a463d532b681c5144038"
+    }
+  ],
+  "historical_candidate": {
+    "path": "backend/migrations/candidates/M007_indexes_draft.py",
+    "unchanged": true,
+    "official_revision": false,
+    "note": "Historical C07a tests remove promoted M007 from a temporary migration copy before staging the gated index-only candidate."
+  },
+  "test_runs": [
+    {
+      "command": ".venv/bin/python -m pytest -q --junitxml=/private/tmp/creative-checker-c07b-offline.xml",
+      "exit_code": 0,
+      "unique_cases_passed": 433,
+      "new_c07b_cases": 3,
+      "additional_subtests_passed": 7,
+      "db_cases_deselected": 984,
+      "junit_sha256": "566ea30dacf361859d81a7583225d24e3a1c0416083e72d62ca7da67bf2e9c5a"
+    },
+    {
+      "command": "PYTHONPATH=. .venv/bin/python /private/tmp/creative-checker-c07b-full-verify.py",
+      "equivalent_pytest_selection": ".venv/bin/python -m pytest -m db_integration -q",
+      "executed_credential_supply": "Explicit TEST_DB_* child environment from existing local role credentials; generated test DB names only; no secrets in argv/output",
+      "exit_code": 0,
+      "cases_passed": 984,
+      "prior_regression_cases": 880,
+      "new_c07b_cases": 104,
+      "new_c07b_modules": {
+        "backend.tests.test_guard_concurrency_integration": 4,
+        "backend.tests.test_guard_lifecycle_integration": 32,
+        "backend.tests.test_guard_migration_integration": 1,
+        "backend.tests.test_guard_rules_integration": 66,
+        "backend.tests.test_guard_upgrade_integration": 1
+      },
+      "c07b_cases": [
+        "test_late_result_waits_for_completion_lock_then_rejects_sealed_run",
+        "test_mutual_parent_edits_serialize_and_reject_second_cycle",
+        "test_two_owners_cannot_both_remove_their_membership[membership]",
+        "test_two_owners_cannot_both_remove_their_membership[user]",
+        "test_completed_import_preserves_history_when_file_later_goes_missing",
+        "test_expired_worker_authority_cannot_be_revived_or_write_late_results[heartbeat]",
+        "test_expired_worker_authority_cannot_be_revived_or_write_late_results[result]",
+        "test_expired_worker_authority_cannot_be_revived_or_write_late_results[succeed]",
+        "test_failed_import_revalidation_requires_explicit_audit[False]",
+        "test_failed_import_revalidation_requires_explicit_audit[True]",
+        "test_file_import_binding_is_one_time[clear]",
+        "test_file_import_binding_is_one_time[replace]",
+        "test_guard_rejects_repeatable_read_write_skew_assumptions",
+        "test_import_completion_requires_linked_stored_manifest[missing]",
+        "test_import_completion_requires_linked_stored_manifest[unlinked]",
+        "test_import_completion_requires_linked_stored_manifest[wrong_role]",
+        "test_live_worker_can_heartbeat_and_finish_safely",
+        "test_predecessor_version_must_be_smaller[criteria_versions]",
+        "test_predecessor_version_must_be_smaller[poster_extractions]",
+        "test_project_cannot_commit_without_active_user_owner[membership]",
+        "test_project_cannot_commit_without_active_user_owner[new_project]",
+        "test_project_cannot_commit_without_active_user_owner[user]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[background]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[dispatched]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[limit]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[malformed]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[not_retryable]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[unknown]",
+        "test_requeue_requires_safe_closed_attempt_and_fixed_policy[valid]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[assets]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[criteria_versions]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[image_coordinate_frames]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[import_packages]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[poster_extractions]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[review_runs]",
+        "test_single_statement_multirow_lineage_cycles_cannot_commit[stored_files]",
+        "test_m007_graph_commits_and_catalog",
+        "test_active_attempt_and_run_pointer_must_commit_together[lost_active]",
+        "test_active_attempt_and_run_pointer_must_commit_together[orphan_active]",
+        "test_active_attempt_and_run_pointer_must_commit_together[worker_without_lease]",
+        "test_completed_run_requires_whole_same_attempt_context[extraction_ocr]",
+        "test_completed_run_requires_whole_same_attempt_context[hash]",
+        "test_completed_run_requires_whole_same_attempt_context[missing_selection]",
+        "test_completed_run_requires_whole_same_attempt_context[ocr_attempt]",
+        "test_completed_run_requires_whole_same_attempt_context[selected_state]",
+        "test_completed_run_requires_whole_same_attempt_context[summary]",
+        "test_confirmation_must_match_locked_source_draft_snapshot[patch0]",
+        "test_confirmation_must_match_locked_source_draft_snapshot[patch1]",
+        "test_criteria_snapshot_requires_one_to_100_contiguous_items[empty]",
+        "test_criteria_snapshot_requires_one_to_100_contiguous_items[gap]",
+        "test_criteria_snapshot_requires_one_to_100_contiguous_items[over_100]",
+        "test_draft_content_requires_exact_revision_increment[change0]",
+        "test_draft_content_requires_exact_revision_increment[change1]",
+        "test_draft_content_requires_exact_revision_increment[change2]",
+        "test_draft_edit_archive_and_stale_confirmation",
+        "test_imported_structure_seals_without_inventing_local_approval_or_verdict",
+        "test_new_run_cannot_accept_stale_or_archived_confirmation[archived]",
+        "test_new_run_cannot_accept_stale_or_archived_confirmation[revision]",
+        "test_new_service_roots_cannot_attach_to_completed_run[attempt]",
+        "test_new_service_roots_cannot_attach_to_completed_run[ocr]",
+        "test_observation_evidence_must_use_real_input_ocr_and_frame[bounds]",
+        "test_observation_evidence_must_use_real_input_ocr_and_frame[image_file]",
+        "test_observation_evidence_must_use_real_input_ocr_and_frame[ocr_source]",
+        "test_ocr_creation_can_progress_and_failure_seal_in_one_transaction",
+        "test_ocr_geometry_is_bounded_by_actual_frame[bbox]",
+        "test_ocr_geometry_is_bounded_by_actual_frame[polygon]",
+        "test_ocr_metadata_context_must_match_frame_and_file_roles[file_role]",
+        "test_ocr_metadata_context_must_match_frame_and_file_roles[space]",
+        "test_real_commit_failure_rolls_back_parent_children_and_audit[criteria]",
+        "test_real_commit_failure_rolls_back_parent_children_and_audit[extraction]",
+        "test_real_commit_failure_rolls_back_parent_children_and_audit[ocr]",
+        "test_schema_can_become_available_once_and_shared_access_can_be_revoked",
+        "test_schema_files_and_available_definition_cannot_be_rewritten[hash]",
+        "test_schema_files_and_available_definition_cannot_be_rewritten[regression]",
+        "test_schema_files_and_available_definition_cannot_be_rewritten[replace]",
+        "test_schema_files_and_available_definition_cannot_be_rewritten[role]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[criteria_items]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[evidence_ocr_tokens]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[evidence_records]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[item_results]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[ocr_tokens]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[poster_field_observations]",
+        "test_sealed_roots_reject_all_seven_late_child_paths[run_item_selections]",
+        "test_submitted_dispatch_cannot_be_cleared_or_rewound[None]",
+        "test_submitted_dispatch_cannot_be_cleared_or_rewound[dispatching]",
+        "test_submitted_dispatch_cannot_be_cleared_or_rewound[not_dispatched]",
+        "test_terminal_ocr_remains_immutable_after_seal[completed]",
+        "test_terminal_ocr_remains_immutable_after_seal[failed]",
+        "test_terminal_ocr_remains_immutable_after_seal[imported]",
+        "test_transition_rejects_immutable_identity_or_input[criteria_drafts]",
+        "test_transition_rejects_immutable_identity_or_input[criteria_versions]",
+        "test_transition_rejects_immutable_identity_or_input[import_packages]",
+        "test_transition_rejects_immutable_identity_or_input[ocr_runs]",
+        "test_transition_rejects_immutable_identity_or_input[poster_extractions]",
+        "test_transition_rejects_immutable_identity_or_input[review_attempts]",
+        "test_transition_rejects_immutable_identity_or_input[review_runs]",
+        "test_transition_rejects_immutable_identity_or_input[schema_definitions]",
+        "test_transition_rejects_immutable_identity_or_input[stored_files]",
+        "test_unsealed_snapshots_cannot_commit[criteria]",
+        "test_unsealed_snapshots_cannot_commit[extraction]",
+        "test_unsealed_snapshots_cannot_commit[ocr]",
+        "test_valid_criteria_cardinalities_and_final_row_recheck[100]",
+        "test_valid_criteria_cardinalities_and_final_row_recheck[one]",
+        "test_existing_rows_collision_and_final_failure_are_atomic"
+      ],
+      "junit_sha256": "30c26d106062cff6988092682780a60e5fd4018039e50c9e7cadd6f93ae07224"
+    }
+  ],
+  "checks_passed": [
+    "M001-M006 and frozen C07a index definitions/candidate unchanged; production metadata now registers exactly 27 indexes",
+    "Independent reviewed rule list matches actual 30 names and 35 table-specific trigger instances; 18 AFTER ROW constraints initially deferred, all 35 enabled",
+    "19 functions SECURITY INVOKER, VOLATILE, fixed search_path; PUBLIC EXECUTE revoked; app has neither business-table DML nor function execution privileges",
+    "All 7 child append gates reject sealed-root writes; service OCR/attempt root insertion cannot attach to completed runs",
+    "Parent-before-child-before-seal normal graphs commit; final-row recheck accepts intermediate unsealed states only within the transaction",
+    "Three actual COMMIT failures for unsealed OCR/extraction/criteria roll back parents, children and audit together",
+    "Criteria item count 1..100 and contiguous positions checked; source draft revision/text and new-run confirmation freshness checked under locks",
+    "OCR/frame space and file roles, schema file metadata hash/roles, frame dimensions and bounded OCR/evidence coordinates checked",
+    "Completed runs require whole same-attempt selections, input manifest, OCR attempt and extraction OCR consistency, selected succeeded attempt and all_selected_v1 summary",
+    "Imported criteria/run/attempt/result/selection graph commits with unconfirmed local criteria and NULL local verdict/times/progress despite confirmed/pass source reports",
+    "All 7 single-statement multirow lineage cycles rejected; extraction/criteria predecessor order rejected",
+    "Owner invariant rejects missing membership/user activation/new-project owner; concurrent membership demotions and user deactivations each yield one commit and one ct_project_owner error",
+    "Concurrent mutual asset parents yield one commit and one ct_lineage_assets error under project locking and fresh READ COMMITTED queries",
+    "Observed pg_blocking_pids confirms late result waits for actual completion row lock, then reads sealed state and rejects with cc_run_append_context",
+    "Expired lease cannot be renewed or succeed/write late outputs; valid worker heartbeat and completion accepted; submitted dispatch cannot rewind or be cleared to NULL",
+    "Safe requeue requires postgres_worker, closed failed retryable not_dispatched attempt and remaining fixed max_attempts 1..3; background/unknown/dispatched/nonretryable/limit/malformed cases rejected",
+    "Stored-file import binding cannot be replaced/cleared; completed import requires linked stored manifest, blocks late files and immutable edits, permits later independent missing observation",
+    "Failed import revalidation requires owner connection and explicit audit; schema availability upgrade/share revocation accepted while replacement/regression rejected",
+    "Invalid existing M006 input manifest rejects full M007, preserving rows/OIDs/revision/default ACL; no automatic business-row repair",
+    "Conflicting existing function rejected and preserved; injected final failure rolls back indexes/functions/triggers; successful M007 preserves business rows/default ACL; repeat succeeds and downgrade rejects",
+    "Fresh empty-to-head M007 final failure rolls back all tables/functions/default ACL; fresh success leaves all business tables empty",
+    "Daily public relations/default ACL unchanged and all generated test DBs cleaned"
+  ],
+  "guard_rule_inventory": [
+    {
+      "name": "ct_criteria_snapshot",
+      "table": "criteria_versions"
+    },
+    {
+      "name": "ct_extraction_snapshot",
+      "table": "poster_extractions"
+    },
+    {
+      "name": "ct_import_integrity",
+      "table": "import_packages"
+    },
+    {
+      "name": "ct_lineage_assets",
+      "table": "assets"
+    },
+    {
+      "name": "ct_lineage_criteria_versions",
+      "table": "criteria_versions"
+    },
+    {
+      "name": "ct_lineage_image_coordinate_frames",
+      "table": "image_coordinate_frames"
+    },
+    {
+      "name": "ct_lineage_import_packages",
+      "table": "import_packages"
+    },
+    {
+      "name": "ct_lineage_poster_extractions",
+      "table": "poster_extractions"
+    },
+    {
+      "name": "ct_lineage_review_runs",
+      "table": "review_runs"
+    },
+    {
+      "name": "ct_lineage_stored_files",
+      "table": "stored_files"
+    },
+    {
+      "name": "ct_ocr_snapshot",
+      "table": "ocr_runs"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "project_members"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "projects"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "users"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "item_results"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "review_attempts"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "review_runs"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "run_item_selections"
+    },
+    {
+      "name": "tr_criteria_drafts_transition",
+      "table": "criteria_drafts"
+    },
+    {
+      "name": "tr_criteria_items_append_gate",
+      "table": "criteria_items"
+    },
+    {
+      "name": "tr_criteria_versions_transition",
+      "table": "criteria_versions"
+    },
+    {
+      "name": "tr_evidence_ocr_tokens_append_gate",
+      "table": "evidence_ocr_tokens"
+    },
+    {
+      "name": "tr_evidence_records_append_gate",
+      "table": "evidence_records"
+    },
+    {
+      "name": "tr_import_packages_transition",
+      "table": "import_packages"
+    },
+    {
+      "name": "tr_item_results_append_gate",
+      "table": "item_results"
+    },
+    {
+      "name": "tr_ocr_runs_transition",
+      "table": "ocr_runs"
+    },
+    {
+      "name": "tr_ocr_tokens_append_gate",
+      "table": "ocr_tokens"
+    },
+    {
+      "name": "tr_poster_extractions_transition",
+      "table": "poster_extractions"
+    },
+    {
+      "name": "tr_poster_field_observations_append_gate",
+      "table": "poster_field_observations"
+    },
+    {
+      "name": "tr_review_attempts_transition",
+      "table": "review_attempts"
+    },
+    {
+      "name": "tr_review_runs_transition",
+      "table": "review_runs"
+    },
+    {
+      "name": "tr_run_item_selections_append_gate",
+      "table": "run_item_selections"
+    },
+    {
+      "name": "tr_schema_definitions_transition",
+      "table": "schema_definitions"
+    },
+    {
+      "name": "tr_stored_files_import_gate",
+      "table": "stored_files"
+    },
+    {
+      "name": "tr_stored_files_transition",
+      "table": "stored_files"
+    }
+  ],
+  "actual_trigger_catalog": [
+    {
+      "name": "ct_criteria_snapshot",
+      "table": "criteria_versions",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_extraction_snapshot",
+      "table": "poster_extractions",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_import_integrity",
+      "table": "import_packages",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_assets",
+      "table": "assets",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_criteria_versions",
+      "table": "criteria_versions",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_image_coordinate_frames",
+      "table": "image_coordinate_frames",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_import_packages",
+      "table": "import_packages",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_poster_extractions",
+      "table": "poster_extractions",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_review_runs",
+      "table": "review_runs",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_lineage_stored_files",
+      "table": "stored_files",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_ocr_snapshot",
+      "table": "ocr_runs",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "project_members",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "projects",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_project_owner",
+      "table": "users",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "item_results",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 5,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "review_attempts",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "review_runs",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 21,
+      "enabled": "O"
+    },
+    {
+      "name": "ct_review_integrity",
+      "table": "run_item_selections",
+      "deferrable": true,
+      "initially_deferred": true,
+      "tgtype": 5,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_criteria_drafts_transition",
+      "table": "criteria_drafts",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 19,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_criteria_items_append_gate",
+      "table": "criteria_items",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_criteria_versions_transition",
+      "table": "criteria_versions",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 19,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_evidence_ocr_tokens_append_gate",
+      "table": "evidence_ocr_tokens",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_evidence_records_append_gate",
+      "table": "evidence_records",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_import_packages_transition",
+      "table": "import_packages",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 19,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_item_results_append_gate",
+      "table": "item_results",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_ocr_runs_transition",
+      "table": "ocr_runs",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 23,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_ocr_tokens_append_gate",
+      "table": "ocr_tokens",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_poster_extractions_transition",
+      "table": "poster_extractions",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 19,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_poster_field_observations_append_gate",
+      "table": "poster_field_observations",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_review_attempts_transition",
+      "table": "review_attempts",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 23,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_review_runs_transition",
+      "table": "review_runs",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 23,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_run_item_selections_append_gate",
+      "table": "run_item_selections",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 7,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_schema_definitions_transition",
+      "table": "schema_definitions",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 23,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_stored_files_import_gate",
+      "table": "stored_files",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 23,
+      "enabled": "O"
+    },
+    {
+      "name": "tr_stored_files_transition",
+      "table": "stored_files",
+      "deferrable": false,
+      "initially_deferred": false,
+      "tgtype": 19,
+      "enabled": "O"
+    }
+  ],
+  "actual_function_catalog": [
+    {
+      "name": "cc_append_gate",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_bounds",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_criteria",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_evidence",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_extraction",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_frame",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_import",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_lineage",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_ocr",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_owner",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_check_review",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_fail",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_gate_owner",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_lock_live_run",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_lock_project",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_schema_files",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_snapshot_guard",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_stored_import_gate",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    },
+    {
+      "name": "cc_transition",
+      "security_definer": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog, public"
+      ],
+      "acl": "{creative_checker_owner=X/creative_checker_owner}"
+    }
+  ],
+  "concurrency_cases": {
+    "two_membership_owners": "one commit / one ct_project_owner",
+    "two_user_owners": "one commit / one ct_project_owner",
+    "mutual_asset_parents": "one commit / one ct_lineage_assets",
+    "late_result": "actual blocking observed, then 23514 cc_run_append_context after completion commit"
+  },
+  "implementation_refinements": [
+    "Four transition rules also cover INSERT: schema_definitions, ocr_runs, review_runs, review_attempts; names and rule count retained.",
+    "Project lock/requery paths explicitly support READ COMMITTED and reject other isolation modes; FOR NO KEY UPDATE remains compatible with FK key-share locks.",
+    "Attempt UPDATE already locks its target before its BEFORE trigger. Future entry points must prelock run then attempt; triggers alone do not establish caller lock order.",
+    "Historical tests compare copied metadata stripped only of later indexes; frozen old migration sources remain unchanged."
+  ],
+  "database_isolation": {
+    "server_version_num": 170011,
+    "pytest_exit_code": 0,
+    "before": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": [],
+      "server_version_num": 170011
+    },
+    "after": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": [],
+      "server_version_num": 170011
+    },
+    "daily_schema_and_default_privileges_unchanged": true,
+    "temporary_databases_cleaned": true
+  },
+  "static_review": {
+    "git_diff_check": "passed",
+    "compileall": "passed",
+    "local_links_checked": 531,
+    "local_heading_anchors_checked": 29,
+    "protected_baseline_files_preserved": 65
+  },
+  "preserved_behaviors": {
+    "admin_admin_login_unchanged": true,
+    "legacy_api_json_unchanged": true,
+    "frontend_ocr_launchers_unchanged": true,
+    "m001_through_m006_sources_unchanged": true,
+    "c07a_indexes_and_candidate_unchanged": true,
+    "connection_configuration_and_requirements_unchanged": true
+  },
+  "runtime_source_files": [
+    {
+      "path": "backend/app/persistence/schema/__init__.py",
+      "sha256": "87ca6067d5eb7cea77ba825e52caca6ead15213d3e109284f459ea5afa973643"
+    },
+    {
+      "path": "backend/migrations/versions/M007_guards.py",
+      "sha256": "2ab151dc605d1d23d2167d8d815d35ea6f82016dabb85a375f478b0d2f837343"
+    },
+    {
+      "path": "backend/migrations/sql/M007_guards.sql",
+      "sha256": "6ecda4837bdc1a7e4c85f94541d4fdbee56c4e4f1f41a463d532b681c5144038"
+    },
+    {
+      "path": "backend/tests/guard_fixtures.py",
+      "sha256": "c85283ee016c810f8dd94fca83f03cabfb73859dc8dfc0d12b6b432216b37082"
+    },
+    {
+      "path": "backend/tests/test_guard_schema.py",
+      "sha256": "4d44fb58fcf4b87e4f9be5159183fc3a440255e8c07c46d6b0b307eb1b37ec80"
+    },
+    {
+      "path": "backend/tests/test_guard_migration_integration.py",
+      "sha256": "0c2e4c4f57f9f6c8cf9b614787c0123ddd63da7ebbcf46d5758a33ccd407710b"
+    },
+    {
+      "path": "backend/tests/test_guard_rules_integration.py",
+      "sha256": "bb8f84ab2cac37064327c4a796a89e87df45f4cb22c37e6718b39e32e790b278"
+    },
+    {
+      "path": "backend/tests/test_guard_lifecycle_integration.py",
+      "sha256": "07701ff2e0222bad1595318347703a347d74d955e2d04ec3b1baf840506934a5"
+    },
+    {
+      "path": "backend/tests/test_guard_concurrency_integration.py",
+      "sha256": "0c0a65a48a9fe2be4edd0d5325e3c8988a99253e8112df7db61e9ea9212f1bc4"
+    },
+    {
+      "path": "backend/tests/test_guard_upgrade_integration.py",
+      "sha256": "a6bb4247b041894216027d7d732958fecd146e95dd6023c9b5b747be79328f3e"
+    },
+    {
+      "path": "backend/tests/schema_helpers.py",
+      "sha256": "1f41431043dc37aaab22cda71abbcaaf191b10305eb4171d04780530e8c08f85"
+    },
+    {
+      "path": "backend/tests/index_fixtures.py",
+      "sha256": "80103a48570d49a1dc790f382ae42d07b8dc952de6b3aa3af66ec223975ee4a1"
+    },
+    {
+      "path": "backend/tests/test_index_schema.py",
+      "sha256": "619fed4a74243ee8296c4978943774c3a111fec3da2375b9092ee94eb94b5194"
+    },
+    {
+      "path": "backend/tests/test_index_migration_integration.py",
+      "sha256": "0667a4c66659a410c5e6b54b0d53490ef8831f8fdc05f5b87e80d91f01572a93"
+    },
+    {
+      "path": "backend/tests/test_review_schema.py",
+      "sha256": "755a91f3db89fa68d45a1abb40d7e8d50dba0cf223076ff5b125c8beb3ca6c74"
+    },
+    {
+      "path": "backend/tests/test_initial_migrations_integration.py",
+      "sha256": "8c1a425de46c2a9748183c4830f87596d7ce3844d184dad63122e99b37fa1c29"
+    }
+  ],
+  "documentation_files": [
+    {
+      "path": "docs/DB_Settings/구현_C01_DB연결과트랜잭션.md",
+      "sha256": "0c3325fcfdb003eaf3e15071f078313c0dbdfcbd8b4b73e64f1cb04fcf41aa77"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C02_Alembic과사용자스키마.md",
+      "sha256": "cfb73a67f4907bc3727c980638b2ce37c8f4369760f26dd3ad44d3a500591154"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C03_파일스키마와M002.md",
+      "sha256": "973ba5e6e43a1a440b2a6eb25a04230236710049514378e98ff13c51209cd324"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C04_OCR스키마와M003.md",
+      "sha256": "9115940c0d8a81e9f0d23a709bf06e9f0443271957f5bc7f238e5f5ce790c991"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C05_검수기준스키마와M004.md",
+      "sha256": "78b28db13d3df8aeae47b61851aeb5e20c6da09a05edbe06e82630fd2500a7cf"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C06_실행결과와전체FK.md",
+      "sha256": "4930d3ca27e7909e23b87af43be8f785e17e4a16c1bb378231feae26357a8b79"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C07a_인덱스와조회계획.md",
+      "sha256": "00c497b4fccb940ae1d4dcef54fb26efb3caf01b64b92adb679271c9446042a0"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C07b_봉인전이와M007.md",
+      "sha256": "2b604b99dfa58a6d875f33c68ad5a9a23e470f5902c758cf8395b4358d3fcd12"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "c12731c787401e83128a169819a1c516adf82516bf3a4bb1e250fa007c4897f2"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "5e40bc3814cdf4f1120029876439f8fef8bd37ef305873a247206a13c06309e4"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "92a99c11f3e3cc6c9a25e864215fd28b2a19ec41add512986ebb4baa976bcbb5"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "ebc799cbf397fbe46cf4fb97482cacab14c238831afb9051bc47df3a35ef1938"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "ecb8dc375e705a93b0b78c10159585f37c0b34838cf91b353d32ea2c5f3601c5"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "9fcb85b0219fb36d95a71ee25b3223fcc4d1b060d9426762548813dca9c36f33"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "41011b6c40668d48e478e250f2409ad8b4303cec2ef96dc4ef85158dfe8f6d37"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "e53f4f3f405b806432ed5b442d4805926d904860e2a05405839d9f5a9e52b568"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "1ac2bee6cb8e5fefe27a6a70c0275e5fb5a0b91ec5f415470f81e94c7064b69a"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "d66a4dacd954ae927402e89d1b2200a3ba4f0f40f7122b1ead0834e87fd4b0ca"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+      "sha256": "2624373d5dba30fceaa95bdc949a22b74812fb804a43c1d8b780ae511e07e0b9"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+      "sha256": "bdd69969a811f0513b00c3532735fa92e167c6728483fc655b71bf1c0c1bbed1"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "d1f22e5c55ad5f75c9665146d64d05fc213b06fd5543f39d917681c9ea71166b"
+    },
+    {
+      "path": "실행가이드.md",
+      "sha256": "cfa6ba6cadc1213c1cc6d2864a08937b475b32e5bb0fc43ba46b2df3d90e319f"
+    }
+  ],
+  "historical_proofs": [
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C01.json",
+      "sha256": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C02.json",
+      "sha256": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C03.json",
+      "sha256": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C04.json",
+      "sha256": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C05.json",
+      "sha256": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C06.json",
+      "sha256": "c788b6946890d7416d9cd2acdc2eb7533f58d07cd1f80a1b90272ad770f38617"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-18-implementation-C07a.json",
+      "sha256": "a3acafab8727a74a11a869ad51d0f6d773d1cef543d4033c33c451dd1d4662ad"
+    }
+  ],
+  "preserved_baseline_files": [
+    {
+      "path": "backend/app/api.py",
+      "sha256": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626"
+    },
+    {
+      "path": "backend/app/config.py",
+      "sha256": "5e3d21ffd78f786f76c5ff6f5755e722530f0fafd7ec1c43d271b606a20e4b86"
+    },
+    {
+      "path": "backend/app/local_auth.py",
+      "sha256": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4"
+    },
+    {
+      "path": "backend/app/persistence/database.py",
+      "sha256": "113a458fff829ce2dad59eefd0531cfd0d151b9b8d629d5729944c6bcc94d71b"
+    },
+    {
+      "path": "backend/app/persistence/schema/criteria.py",
+      "sha256": "d10f8569734566c4dea80ba11c00bd39d7893f9f0d82887630b94e0ce035c1d7"
+    },
+    {
+      "path": "backend/app/persistence/schema/files.py",
+      "sha256": "e34cd18dc22388e5d649e7d979a8005edc1e683beccde393dbfd51a9219428c8"
+    },
+    {
+      "path": "backend/app/persistence/schema/identity.py",
+      "sha256": "22fa826bff7cfd6353a9f83c13b2cf2cc919a4bd9a4e49ad68ea0b7e685f705f"
+    },
+    {
+      "path": "backend/app/persistence/schema/indexes.py",
+      "sha256": "f8d5669c91d37673fe6f27694a65326e029eaddce53566abd46962f65e44bb5a"
+    },
+    {
+      "path": "backend/app/persistence/schema/ocr.py",
+      "sha256": "6a11cdef3e4d1c609790311ac77c9d415c156666e3872a4c03b929413be6f59f"
+    },
+    {
+      "path": "backend/app/persistence/schema/relations.py",
+      "sha256": "45d023d81a5bcec1f3ebaff954bd4848327de8b5b4b949130fe38c8a0eaf68a9"
+    },
+    {
+      "path": "backend/app/persistence/schema/reviews.py",
+      "sha256": "46abc1a1dfe1ab0a6ff0f4baf6285cac1ab49e1571afbc98a414e7b5c4500f4f"
+    },
+    {
+      "path": "backend/app/persistence/transaction.py",
+      "sha256": "b7cb707c0cb6a5f2ab2210f70a8de5dd088af7df9e7c5c6cdab53b9c91d9c6b4"
+    },
+    {
+      "path": "backend/migrations/candidates/M007_indexes_draft.py",
+      "sha256": "187e553f9cf76e2c15a5af8815f41ad9594b7f7ba4e22aa21629a5e511ec5ac2"
+    },
+    {
+      "path": "backend/migrations/configuration.py",
+      "sha256": "dd9a541a33ba6aca609f2e58b1790b6e90c832d71a3a758a44018976b65e1206"
+    },
+    {
+      "path": "backend/migrations/env.py",
+      "sha256": "32335be722a00b5513325254c5a2a577a2ec8064fdf5d30a61e7921c41b0cd09"
+    },
+    {
+      "path": "backend/migrations/versions/M001_identity.py",
+      "sha256": "bf80a337dfe1ca7e5d71b1dfad741714713cac6e394623d7449e37e1b7a50731"
+    },
+    {
+      "path": "backend/migrations/versions/M002_files.py",
+      "sha256": "7b3b906c7584c44cf117e87475f9be8ff923062ba09bb323a5a7d8f38a0f0744"
+    },
+    {
+      "path": "backend/migrations/versions/M003_ocr.py",
+      "sha256": "335f8dee58daddc32ca1e2b5f7f31e25767154867410d82466678830c782d072"
+    },
+    {
+      "path": "backend/migrations/versions/M004_criteria.py",
+      "sha256": "2129db3978905dd9b760616e5a3ba98bc53143ab84900cddb01e59855fe4a204"
+    },
+    {
+      "path": "backend/migrations/versions/M005_reviews.py",
+      "sha256": "4725cac6f0051a39862f2fe233e8159c6036b1328ba28001699ede10b15af0e4"
+    },
+    {
+      "path": "backend/migrations/versions/M006_relations.py",
+      "sha256": "2bd30f064718c3333a9a31bd6ad0566116c4056e32f3c44e1861f13bffa67b9f"
+    },
+    {
+      "path": "compose.yaml",
+      "sha256": "3e44b468bba82ca2a4e608fb0046fb2c1941315f05f49b456fc6828c0a7db466"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C01.json",
+      "sha256": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C02.json",
+      "sha256": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C03.json",
+      "sha256": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C04.json",
+      "sha256": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C05.json",
+      "sha256": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C06.json",
+      "sha256": "c788b6946890d7416d9cd2acdc2eb7533f58d07cd1f80a1b90272ad770f38617"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-18-implementation-C07a.json",
+      "sha256": "a3acafab8727a74a11a869ad51d0f6d773d1cef543d4033c33c451dd1d4662ad"
+    },
+    {
+      "path": "frontend/src/App.jsx",
+      "sha256": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6"
+    },
+    {
+      "path": "frontend/src/api/auth.js",
+      "sha256": "5764a2ffda413e4ec314e26bd05b5bdaf82c3df9ac05bc8585db59a5fa1b7085"
+    },
+    {
+      "path": "frontend/src/api/client.js",
+      "sha256": "1515ed8f333e5edc46c64a642935e1b99a9eda7b57a91be504cbf7732099e47e"
+    },
+    {
+      "path": "frontend/src/auth/AuthProvider.jsx",
+      "sha256": "eaad201a2827ead0f0c5d4d6373da961563f8c63b9592a65f366c66219bc8f87"
+    },
+    {
+      "path": "frontend/src/auth/RequireAuth.jsx",
+      "sha256": "b9f324a849da064e4706b5b97883c7c1bcd6bff1de5018036a4daca6390648c6"
+    },
+    {
+      "path": "frontend/src/auth/auth.test.js",
+      "sha256": "9a679a1dbc5f72ef40288e2792af9272f9c201695487540c75b1ada1730adf16"
+    },
+    {
+      "path": "frontend/src/auth/helpers.js",
+      "sha256": "2878e807ed53a121b58d387192f6d12f8bfdfedfe68b56c2e4e1ac51c6f7a5b6"
+    },
+    {
+      "path": "frontend/src/components/Brand.jsx",
+      "sha256": "017690b39b1254ced7a6658e6071f2df2f43c17ac03afade26b0dd0a4710e14b"
+    },
+    {
+      "path": "frontend/src/components/ErrorMessage.jsx",
+      "sha256": "979efac52945d649d8101f14de5582abb4dfcbf869577baf8fd0113355254bb7"
+    },
+    {
+      "path": "frontend/src/components/Heading.jsx",
+      "sha256": "a804c0614bdbcc9fa00e30f361157eccf7633d29c7fa0772fafdc3d486b4015e"
+    },
+    {
+      "path": "frontend/src/components/Icon.jsx",
+      "sha256": "d201b6800cc42b5c8cbfea3965313535b937c0c93d1936ebf70384c7872872bc"
+    },
+    {
+      "path": "frontend/src/components/Summary.jsx",
+      "sha256": "3ab4424a01515edcbf475fa8480bb4de287a3312c1955a0646f9dc7c928ea7eb"
+    },
+    {
+      "path": "frontend/src/layouts/ReviewLayout.jsx",
+      "sha256": "d9ab24d4e5d9b0e0bd931f1bcd1420657c719156dd81a00c3f6ee4dcd57382f9"
+    },
+    {
+      "path": "frontend/src/main.jsx",
+      "sha256": "05c6f50f68fed0d164393283863b8c2addc6e271aefbef9d06e5b599a5da4ffe"
+    },
+    {
+      "path": "frontend/src/pages/LandingPage.jsx",
+      "sha256": "19f78904b4fe2edf9d48f05848e327fae955f68828109cc52b21d5157b49f4a5"
+    },
+    {
+      "path": "frontend/src/pages/LoginPage.jsx",
+      "sha256": "7253ae65e55fd6db0d0b1fa58647b9531b564b908c0ff9eb9e0987329c92baf5"
+    },
+    {
+      "path": "frontend/src/pages/review/CriteriaPage.jsx",
+      "sha256": "04846a5fc83b8b1807f9cb6630c112d40ee87398d99118de4375014584764c22"
+    },
+    {
+      "path": "frontend/src/pages/review/InputPage.jsx",
+      "sha256": "73dd7c28198febff858e8b53b39513d61cbf6c07cb4bb0022962b2241cf3216a"
+    },
+    {
+      "path": "frontend/src/pages/review/ResultsPage.jsx",
+      "sha256": "a013caba061f78152c09cb5abc30ae252c8a2e38a84d3de2e5177f0ebfa0e052"
+    },
+    {
+      "path": "frontend/src/pages/review/ReviewPage.jsx",
+      "sha256": "fc674c1e7239048b46936282b2dac666283241ce094e6241fb5176c2a53eb5b5"
+    },
+    {
+      "path": "frontend/src/pages/review/ReviewProvider.jsx",
+      "sha256": "87a7b80ed6c1d6874ad16986c0d243a0506f7f05c272a46ccfc8e2ee6c667f32"
+    },
+    {
+      "path": "frontend/src/pages/review/RunningPage.jsx",
+      "sha256": "b2fdca6a2b4d6fbdaca8161002e557634c06be9df225222ed35704e7e9fcac8e"
+    },
+    {
+      "path": "frontend/src/reviewConstants.js",
+      "sha256": "cc343844a7bf14a67b2c91cbdc7819e50644f083e8f6150e211894e20be5f908"
+    },
+    {
+      "path": "frontend/src/styles.css",
+      "sha256": "0433a46e20c06cfddbaf58e11109a5f5785e6cb13cd5fa58f912fd305ee6bdd7"
+    },
+    {
+      "path": "frontend/src/styles/auth.css",
+      "sha256": "f2f7091e474e730b12a4c1e1abd9387a3d34ea2507dbeb7cd3b5538bd0d764ac"
+    },
+    {
+      "path": "frontend/src/workflow.js",
+      "sha256": "328d9ea9e6987f84597e60693d4b6e24ef66a9d88c1a3fc53c7850b2d8b0b28a"
+    },
+    {
+      "path": "frontend/src/workflow.test.js",
+      "sha256": "5437ab7360b6c051f9707713593664792b55c5ad8f52ae8b0adc5fc8c6d820c3"
+    },
+    {
+      "path": "requirements-db.txt",
+      "sha256": "5f47c6f4843ee0e0d515837519c53e0b515a894f07ed3454e5dbb04232ceb1d8"
+    },
+    {
+      "path": "run.cmd",
+      "sha256": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a"
+    },
+    {
+      "path": "run.sh",
+      "sha256": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d"
+    }
+  ],
+  "frozen_design_plan": {
+    "path": "docs/DB_Settings/contracts/stage10-implementation-plan.json",
+    "sha256": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6"
+  },
+  "limitations": [
+    "M007 is complete for C07b but M008 column/table/function privileges and final readiness are pending C07c. App writes remain closed; no claim of operational readiness.",
+    "No daily DB migration, account seed, login/session API, user authorization, business API/React/worker integration, file writes or actual OCR execution.",
+    "Guards compare stored metadata, not actual file bytes, image decoding/transform correctness, canonical JSON/hash computation, current HTTP identity or supplied worker-token equality. Those remain service/storage responsibilities.",
+    "Prelock run then attempt in future mutation entry points; deadlock/serialization rollback policy and full worker acquisition/late-token behavior need C10/C13 integration tests.",
+    "Owner/asset project checks require READ COMMITTED. No blanket proof for all isolation modes, batch lock orders or production workloads.",
+    "Only macOS Python 3.12.14 and PostgreSQL 17.11 exercised. Linux/Windows, browser, real network COMMIT-response loss, file durability and backup/restore not tested.",
+    "Administrative owner/superuser DDL, trigger disabling and historical-data repair procedures are not prevented by these application guards."
+  ]
+}

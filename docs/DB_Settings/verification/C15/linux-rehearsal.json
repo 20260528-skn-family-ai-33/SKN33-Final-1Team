@@ -1,0 +1,160 @@
+{
+  "scope": "local_linux_compose_rehearsal_only",
+  "synthetic_worker": true,
+  "actual_paddle_inference": false,
+  "remote_paid_calls": 0,
+  "https_cookie_verified": true,
+  "api_worker_uid": 10001,
+  "read_only_containers": true,
+  "api_worker_public_ports": false,
+  "legacy_write_status": 410,
+  "legacy_read_status": 404,
+  "original_source_database_preserved": true,
+  "preflight": {
+    "contract_version": "cc-release-check-v1",
+    "state": "preflight_passed",
+    "schema_revision": "M008",
+    "backup_id": "2b5489e9-0b29-42df-9f10-89c7068bbbf4",
+    "restore_drills": 1,
+    "checks": {
+      "schema": {
+        "status": "schema_ready",
+        "revision": "M008",
+        "business_tables": 26,
+        "columns": 395,
+        "foreign_keys": 81,
+        "additional_indexes": 27,
+        "trigger_instances": 35,
+        "functions": 19,
+        "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+        "scope": "database_schema_and_privileges"
+      },
+      "all_foreign_keys_checked": true,
+      "all_roots_and_lineage_checked": true,
+      "service_manifests_checked": 1,
+      "import_manifests_checked": 0
+    },
+    "pending": {
+      "queued_runs": 0,
+      "unfinished_imports": 0
+    },
+    "compatibility": {
+      "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+      "frontend_sha256": "6e08a5e2e0cd63aa2db706cf071c63ff619d39e636449100d09fca479294cdf8",
+      "worker_config_sha256": "2c32ef758b581363a78ebfec298c4adc28111fcf8e99ed043e75bda8a3768a7a",
+      "schema_structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4"
+    },
+    "single_writer": "v1_only; legacy writes return 410; legacy reads are not mounted",
+    "worker_runtime_verified": false,
+    "production_cutover_performed": false,
+    "remaining_operator_checks": [
+      "Verify this exact Linux image/model through an actual local OCR run.",
+      "Verify target TLS, proxy/network isolation and backup encryption/off-host retention/scheduling.",
+      "Stop old writers, preserve original history, then select one v1 deployment; never reopen legacy writes after v1 data."
+    ]
+  },
+  "restored_schema": {
+    "status": "schema_ready",
+    "revision": "M008",
+    "business_tables": 26,
+    "columns": 395,
+    "foreign_keys": 81,
+    "additional_indexes": 27,
+    "trigger_instances": 35,
+    "functions": 19,
+    "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+    "scope": "database_schema_and_privileges"
+  },
+  "sessions_revoked": 1,
+  "fresh_keys": true,
+  "old_cookie_rejected": true,
+  "restored_image_export": true,
+  "new_review_completed": true,
+  "restart_read": true,
+  "capture_seconds": 0.9743,
+  "restore_seconds": 0.9717,
+  "source_flow": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": false,
+    "project_id": "46397101-2a03-494e-8e22-b22e2e331770",
+    "image_id": "0386bdce-de78-407d-9b87-1243d041dd16",
+    "draft_id": "9d4d8bd0-d638-43ef-81d5-99a00b04a645",
+    "criteria_version_id": "534bf035-785e-4067-9415-fbe2a24a8a82",
+    "runPath": "/projects/46397101-2a03-494e-8e22-b22e2e331770/reviews/4fd7547f-1ad2-4648-ab35-ba1d8368ebd9",
+    "run_id": "4fd7547f-1ad2-4648-ab35-ba1d8368ebd9",
+    "ocr_records": 1,
+    "results": 1,
+    "runtime": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "device": "cpu",
+      "execution_target": "local",
+      "status": "completed"
+    },
+    "input_manifest_hash": "ad40043cb6b544b429bde8064f81c3b6e9f242e4d9f1a1832e5039e3e94e0aff",
+    "result_manifest_hash": "8bd262cd173c5d6e11c9ba9e7c029a924eabddd445e7ec5424a841a1972adadd",
+    "model_config": {
+      "pipeline": "paddle_full_v1",
+      "model_name": "SYNTHETIC_REHEARSAL_NOT_A_MODEL",
+      "model_revision": {
+        "synthetic_rehearsal": true
+      },
+      "device_policy": [
+        "cpu"
+      ],
+      "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+      "preprocessing": {
+        "version": "cc-display-2x-lanczos-v1",
+        "ocr_scale": 2
+      }
+    },
+    "export_contract": "cc-review-export-v1",
+    "secure_cookie_verified": true,
+    "post_count": 7,
+    "status": "passed"
+  },
+  "restored_flow": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": false,
+    "project_id": "e91f3a5f-2595-4d65-949d-ba16724c0bfc",
+    "image_id": "82b96739-2da0-4e15-b937-224c66e4c881",
+    "draft_id": "1eca4723-70c1-4bcf-89e3-716d6c6b522a",
+    "criteria_version_id": "a0e616c0-ace9-4cb6-ab6d-e4b1c6f92d6a",
+    "runPath": "/projects/e91f3a5f-2595-4d65-949d-ba16724c0bfc/reviews/33feb436-d155-4d66-877e-80a6dc905a46",
+    "run_id": "33feb436-d155-4d66-877e-80a6dc905a46",
+    "ocr_records": 1,
+    "results": 1,
+    "runtime": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "device": "cpu",
+      "execution_target": "local",
+      "status": "completed"
+    },
+    "input_manifest_hash": "a3c35fdded56a67a7f4aa8461e990d07602fc65f5c79bc41aa600ec59937bbb0",
+    "result_manifest_hash": "9b220e091cc83320dff6f4478a32cc383d5225c2b1df3b7ee9896b3d1310aea0",
+    "model_config": {
+      "pipeline": "paddle_full_v1",
+      "model_name": "SYNTHETIC_REHEARSAL_NOT_A_MODEL",
+      "model_revision": {
+        "synthetic_rehearsal": true
+      },
+      "device_policy": [
+        "cpu"
+      ],
+      "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+      "preprocessing": {
+        "version": "cc-display-2x-lanczos-v1",
+        "ocr_scale": 2
+      }
+    },
+    "export_contract": "cc-review-export-v1",
+    "secure_cookie_verified": true,
+    "post_count": 7,
+    "status": "passed"
+  },
+  "production_cutover_performed": false,
+  "rpo_rto_sla_verified": false
+}

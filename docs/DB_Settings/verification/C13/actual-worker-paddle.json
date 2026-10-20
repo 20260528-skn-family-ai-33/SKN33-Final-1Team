@@ -1,0 +1,25 @@
+{
+  "scope": "one_real_poster_local_cpu_separate_production_cli_worker",
+  "poster_sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+  "display_dimensions": [
+    600,
+    848
+  ],
+  "input_dimensions": [
+    1200,
+    1696
+  ],
+  "ocr_records": 18,
+  "criteria_items": 1,
+  "worker_attempts": 1,
+  "run_status": "completed",
+  "profile": {
+    "inference_seconds": 6.601092750000134,
+    "load_seconds": 2.9572594999999637,
+    "peak_rss_bytes": 8853061632,
+    "wall_seconds": 9.91445787500004
+  },
+  "worker_process_seconds": 10.7874,
+  "automatic_remote_submissions": 0,
+  "accuracy_evaluation": false
+}

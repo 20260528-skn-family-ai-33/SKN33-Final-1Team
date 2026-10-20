@@ -1,0 +1,2183 @@
+{
+  "unit": "C06",
+  "status": "complete",
+  "review_date": "2026-10-17",
+  "generated_at_utc": "2026-10-17T08:53:05.325511+00:00",
+  "next_unit": "C07a",
+  "scope": "M005 four review tables and M006 all 81 FK constraints; migrations only in randomly generated isolated test DBs; no guards/indexes/grants/API or worker integration",
+  "environment": {
+    "python": "3.12.14",
+    "system": "Darwin",
+    "machine": "arm64",
+    "sqlalchemy": "2.1.5",
+    "psycopg": "3.3.6",
+    "alembic": "1.20.0",
+    "postgres_server_version_num": 170011
+  },
+  "new_packages_installed": false,
+  "pip_check": {
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "added_schema": {
+    "revision": "M005",
+    "down_revision": "M004",
+    "business_tables": 4,
+    "columns": 96,
+    "primary_keys": 4,
+    "unique_constraints": 9,
+    "check_constraints": 13,
+    "foreign_keys": 0,
+    "additional_indexes": 0,
+    "tables": [
+      {
+        "name": "review_runs",
+        "columns": 40
+      },
+      {
+        "name": "review_attempts",
+        "columns": 24
+      },
+      {
+        "name": "item_results",
+        "columns": 23
+      },
+      {
+        "name": "run_item_selections",
+        "columns": 9
+      }
+    ]
+  },
+  "added_relationships": {
+    "revision": "M006",
+    "down_revision": "M005",
+    "business_tables_created": 0,
+    "foreign_key_constraints_added": 81,
+    "on_delete": "RESTRICT",
+    "on_update": "RESTRICT",
+    "deferrable": false,
+    "initially_deferred": false,
+    "match": "SIMPLE",
+    "all_existing_rows_validated": true
+  },
+  "implemented_schema": {
+    "revision": "M006",
+    "business_tables": 26,
+    "columns": 395,
+    "primary_keys": 26,
+    "unique_constraints": 41,
+    "check_constraints": 77,
+    "foreign_keys": 81,
+    "additional_indexes": 0,
+    "tool_table_excluded": "alembic_version"
+  },
+  "test_runs": [
+    {
+      "command": ".venv/bin/python -m pytest -q --junitxml=/private/tmp/creative-checker-c06-offline.xml",
+      "exit_code": 0,
+      "unique_cases_passed": 425,
+      "new_c06_cases": 7,
+      "additional_subtests_passed": 7,
+      "db_cases_deselected": 833,
+      "junit_sha256": "9a479cf0b05a7e1492d3382afc0ecf608d24310fbf4724e1f3afca167bc6c82e"
+    },
+    {
+      "command": "PYTHONPATH=. .venv/bin/python /private/tmp/creative-checker-c06-verify.py",
+      "pytest_arguments": [
+        "backend/tests/test_db_integration.py",
+        "backend/tests/test_identity_migration_integration.py",
+        "backend/tests/test_file_migration_integration.py",
+        "backend/tests/test_ocr_migration_integration.py",
+        "backend/tests/test_criteria_migration_integration.py",
+        "backend/tests/test_review_migration_integration.py",
+        "backend/tests/test_relations_migration_integration.py",
+        "backend/tests/test_initial_migrations_integration.py",
+        "-m",
+        "db_integration",
+        "-q",
+        "--junitxml=/private/tmp/creative-checker-c06-postgres.xml",
+        "--tb=short",
+        "-x"
+      ],
+      "executed_credential_supply": "Explicit TEST_DB_* child environment from existing local role credentials; no secrets in argv/output; no business DB name passed to test fixtures",
+      "exit_code": 0,
+      "cases_passed": 833,
+      "new_c06_cases": 342,
+      "m005_cases": 211,
+      "m006_cases": 131,
+      "prior_regression_cases": 491,
+      "junit_sha256": "9b8c4a06701959e6c5a55b1c2c4a7b8c4d3179457fc7b5ca132ce7676ee7a848",
+      "c06_cases": [
+        "test_context_null_cannot_bypass_composite_foreign_keys[evidence_ocr_tokens-asset_version_id]",
+        "test_context_null_cannot_bypass_composite_foreign_keys[item_results-criteria_version_id]",
+        "test_context_null_cannot_bypass_composite_foreign_keys[ocr_tokens-project_id]",
+        "test_context_null_cannot_bypass_composite_foreign_keys[run_item_selections-project_id]",
+        "test_every_fk_path_rejects_orphan_reference[fk_asset_versions_asset]",
+        "test_every_fk_path_rejects_orphan_reference[fk_asset_versions_created_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_asset_versions_display_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_asset_versions_original_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_assets_created_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_assets_parent_asset]",
+        "test_every_fk_path_rejects_orphan_reference[fk_assets_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_audit_events_actor_user]",
+        "test_every_fk_path_rejects_orphan_reference[fk_audit_events_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_drafts_criteria_set]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_drafts_target_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_drafts_updated_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_items_criteria_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_items_source_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_sets_created_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_sets_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_confirmed_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_criteria_set]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_source_criteria_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_source_draft]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_source_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_criteria_versions_target_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_ocr_tokens_evidence]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_ocr_tokens_token]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_frame]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_item_result]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_observation]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_source_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_evidence_records_source_ocr_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_image_coordinate_frames_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_image_coordinate_frames_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_image_coordinate_frames_parent_frame]",
+        "test_every_fk_path_rejects_orphan_reference[fk_import_packages_imported_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_import_packages_manifest_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_import_packages_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_import_packages_replaces_import]",
+        "test_every_fk_path_rejects_orphan_reference[fk_item_results_attempt]",
+        "test_every_fk_path_rejects_orphan_reference[fk_item_results_criteria_item]",
+        "test_every_fk_path_rejects_orphan_reference[fk_item_results_extraction]",
+        "test_every_fk_path_rejects_orphan_reference[fk_item_results_ocr_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_item_results_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_attempt]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_frame]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_input_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_schema]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_runs_source_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_ocr_tokens_ocr_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_ocr_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_predecessor]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_schema]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_extractions_source_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_poster_field_observations_extraction]",
+        "test_every_fk_path_rejects_orphan_reference[fk_project_members_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_project_members_user]",
+        "test_every_fk_path_rejects_orphan_reference[fk_projects_created_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_record_aliases_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_record_aliases_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_attempts_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_active_attempt]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_asset_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_criteria_version]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_requested_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_retry_of_run]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_selected_attempt]",
+        "test_every_fk_path_rejects_orphan_reference[fk_review_runs_source_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_run_item_selections_result]",
+        "test_every_fk_path_rejects_orphan_reference[fk_schema_definitions_specification_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_schema_definitions_validation_schema_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_stored_files_created_by]",
+        "test_every_fk_path_rejects_orphan_reference[fk_stored_files_import_package]",
+        "test_every_fk_path_rejects_orphan_reference[fk_stored_files_parent_file]",
+        "test_every_fk_path_rejects_orphan_reference[fk_stored_files_project]",
+        "test_every_fk_path_rejects_orphan_reference[fk_user_sessions_user]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[asset_versions-asset_id-assets-asset_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[asset_versions-original_file_id-stored_files-file_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[assets-parent_asset_id-assets-asset_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[criteria_drafts-criteria_set_id-criteria_sets-criteria_set_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[criteria_items-criteria_version_id-criteria_versions-criteria_version_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[criteria_versions-source_draft_id-criteria_drafts-draft_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[evidence_ocr_tokens-token_id-ocr_tokens-token_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[evidence_records-frame_id-image_coordinate_frames-frame_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[evidence_records-source_ocr_run_id-ocr_runs-ocr_run_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[image_coordinate_frames-file_id-stored_files-file_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[item_results-criteria_item_id-criteria_items-criteria_item_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[item_results-ocr_run_id-ocr_runs-ocr_run_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[ocr_runs-attempt_id-review_attempts-attempt_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[ocr_runs-frame_id-image_coordinate_frames-frame_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[ocr_tokens-ocr_run_id-ocr_runs-ocr_run_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[poster_extractions-ocr_run_id-ocr_runs-ocr_run_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[poster_field_observations-extraction_id-poster_extractions-extraction_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[record_aliases-asset_version_id-asset_versions-asset_version_id-project]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[review_attempts-run_id-review_runs-run_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[review_runs-criteria_version_id-criteria_versions-criteria_version_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[run_item_selections-result_id-item_results-result_id-image]",
+        "test_existing_ids_from_wrong_project_or_image_are_rejected[run_item_selections-result_id-item_results-result_id-project]",
+        "test_final_inventory_all_81_columns_policies_and_validation_flags",
+        "test_global_schema_file_exception_optional_nulls_and_post_fk_valid_graph",
+        "test_m006_repeat_downgrade_guard_and_app_privileges_stay_closed",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-asset_versions]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-criteria_versions]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-item_results]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-ocr_tokens]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-projects]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-review_attempts]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-stored_files]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[delete-users]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-asset_versions]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-criteria_versions]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-item_results]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-ocr_tokens]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-projects]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-review_attempts]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-stored_files]",
+        "test_referenced_parent_delete_and_key_change_are_restricted[update_key-users]",
+        "test_same_image_different_ocr_cannot_be_mixed_in_evidence_link[evidence]",
+        "test_same_image_different_ocr_cannot_be_mixed_in_evidence_link[token]",
+        "test_same_image_wrong_run_or_item_cannot_be_connected[result_attempt]",
+        "test_same_image_wrong_run_or_item_cannot_be_connected[selected_attempt]",
+        "test_same_image_wrong_run_or_item_cannot_be_connected[selection_item]",
+        "test_app_permissions_repeat_and_downgrade_guard",
+        "test_m005_full_inventory_and_prior_rows_preserved",
+        "test_primary_keys_are_unique[item_results]",
+        "test_primary_keys_are_unique[review_attempts]",
+        "test_primary_keys_are_unique[review_runs]",
+        "test_primary_keys_are_unique[run_item_selections]",
+        "test_review_checks_reject_invalid_rows[item_results-changes120-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes121-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes122-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes123-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes124-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes125-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes126-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes127-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes128-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes129-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes130-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes131-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes132-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes133-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes134-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes135-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes136-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes137-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes138-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes145-hashes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes146-hashes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes174-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes175-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes176-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes177-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes178-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes179-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes180-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes181-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes182-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes183-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes184-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes185-json_shapes]",
+        "test_review_checks_reject_invalid_rows[item_results-changes188-times]",
+        "test_review_checks_reject_invalid_rows[item_results-changes23-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes24-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes25-domain]",
+        "test_review_checks_reject_invalid_rows[item_results-changes26-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes10-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes104-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes105-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes106-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes107-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes108-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes109-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes11-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes110-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes111-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes112-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes113-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes114-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes115-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes116-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes117-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes118-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes119-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes12-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes13-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes14-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes15-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes159-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes16-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes160-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes161-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes162-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes163-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes164-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes165-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes166-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes167-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes168-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes169-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes17-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes170-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes171-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes172-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes173-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes18-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes187-times]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes19-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes196-times]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes197-times]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes198-times]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes199-times]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes20-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes21-domain]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes22-22003]",
+        "test_review_checks_reject_invalid_rows[review_attempts-changes9-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes0-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes1-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes100-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes101-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes102-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes103-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes139-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes140-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes141-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes142-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes143-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes144-hashes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes147-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes148-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes149-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes150-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes151-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes152-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes153-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes154-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes155-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes156-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes157-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes158-json_shapes]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes186-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes189-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes190-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes191-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes192-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes193-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes194-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes195-times]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes2-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes3-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes31-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes32-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes33-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes34-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes35-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes36-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes37-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes38-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes39-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes4-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes40-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes41-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes42-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes43-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes44-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes45-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes46-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes47-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes48-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes49-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes5-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes50-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes51-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes52-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes53-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes54-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes55-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes56-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes57-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes58-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes59-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes6-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes60-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes61-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes62-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes63-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes64-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes65-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes66-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes67-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes68-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes69-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes7-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes70-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes71-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes72-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes73-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes74-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes75-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes76-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes77-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes78-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes79-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes8-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes80-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes81-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes82-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes83-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes84-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes85-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes86-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes87-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes88-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes89-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes90-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes91-22003]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes92-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes93-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes94-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes95-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes96-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes97-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes98-domain]",
+        "test_review_checks_reject_invalid_rows[review_runs-changes99-domain]",
+        "test_review_checks_reject_invalid_rows[run_item_selections-changes200-times]",
+        "test_review_checks_reject_invalid_rows[run_item_selections-changes27-domain]",
+        "test_review_checks_reject_invalid_rows[run_item_selections-changes28-domain]",
+        "test_review_checks_reject_invalid_rows[run_item_selections-changes29-domain]",
+        "test_review_checks_reject_invalid_rows[run_item_selections-changes30-23502]",
+        "test_semantic_unique_keys[attempt_number]",
+        "test_semantic_unique_keys[result_attempt_item]",
+        "test_semantic_unique_keys[run_request]",
+        "test_valid_states_unknown_values_decimal_cost_and_request_scopes"
+      ]
+    }
+  ],
+  "checks_passed": [
+    "M001-M004 byte-for-byte preserved; historical revision metadata copies omit later relationships without changing production metadata or DB constraints",
+    "Saved physical design column order, PostgreSQL types, NULL/default and PK/UQ/CHECK names match metadata",
+    "Actual PostgreSQL inventory and metadata match 26 tables, 395 columns, PK26, UQ41, CHECK77 and FK81",
+    "M005 four new tables empty; all prior M004 row contents preserved; all 13 new CHECK groups reject invalid rows",
+    "Service/imported run lifetimes, conditional NULLs, pointers, progress and verdict combinations remain distinct",
+    "Attempt lifecycle, paired lease/heartbeat, unknown retryability and finite nonnegative NUMERIC(20,8) costs enforced",
+    "Service completed/failed/unsupported versus imported item result verdicts, reasons and source records remain distinct",
+    "User/operation request keys reject duplicates while explicit new requests and create/retry operations remain distinct",
+    "Independent reviewed contract and PostgreSQL catalog match all 81 FK names, ordered source/target columns and public schema",
+    "All FK convalidated=true, condeferrable=false, condeferred=false, MATCH SIMPLE and RESTRICT update/delete",
+    "All 81 orphan-reference mutation paths reject with 23503; requested and actually reported FK recorded because incoming/redundant FK can fire first",
+    "22 existing wrong-project/image combinations, 2 same-image wrong-OCR links and 3 same-image wrong-run/item links rejected",
+    "4 required context NULLs reject with 23502; 16 referenced parent DELETE/key-update cases reject with 23503",
+    "Optional nullable references and the deliberate global schema/file exception remain accepted",
+    "A complete new synthetic metadata graph and both insertion cycles succeed while every FK stays enabled",
+    "M005 collision/final failure preserves M004 OIDs/rows/version/default ACLs; failed M004->M006 also rolls back new M005 tables",
+    "Invalid last FK rejects existing orphan rows and rolls back the first 80 additions without altering rows",
+    "Injected M006 final failure preserves M005 OIDs/rows/version/default ACLs; fresh empty->head failure rolls back entire chain",
+    "Repeat M005/M006 succeeds; destructive downgrades refused; all app table privileges stay closed and actual SELECT refused",
+    "Temporary test databases cleaned; daily public relations and default privileges unchanged"
+  ],
+  "exercised_check_constraints": [
+    "ck_item_results_domain",
+    "ck_item_results_hashes",
+    "ck_item_results_json_shapes",
+    "ck_item_results_times",
+    "ck_review_attempts_domain",
+    "ck_review_attempts_json_shapes",
+    "ck_review_attempts_times",
+    "ck_review_runs_domain",
+    "ck_review_runs_hashes",
+    "ck_review_runs_json_shapes",
+    "ck_review_runs_times",
+    "ck_run_item_selections_domain",
+    "ck_run_item_selections_times"
+  ],
+  "foreign_key_inventory": [
+    {
+      "source_table": "asset_versions",
+      "name": "fk_asset_versions_asset",
+      "source_columns": [
+        "project_id",
+        "asset_id"
+      ],
+      "target_table": "assets",
+      "target_columns": [
+        "project_id",
+        "asset_id"
+      ]
+    },
+    {
+      "source_table": "asset_versions",
+      "name": "fk_asset_versions_created_by",
+      "source_columns": [
+        "created_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "asset_versions",
+      "name": "fk_asset_versions_display_file",
+      "source_columns": [
+        "project_id",
+        "display_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "asset_versions",
+      "name": "fk_asset_versions_original_file",
+      "source_columns": [
+        "project_id",
+        "original_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "assets",
+      "name": "fk_assets_created_by",
+      "source_columns": [
+        "created_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "assets",
+      "name": "fk_assets_parent_asset",
+      "source_columns": [
+        "project_id",
+        "parent_asset_id"
+      ],
+      "target_table": "assets",
+      "target_columns": [
+        "project_id",
+        "asset_id"
+      ]
+    },
+    {
+      "source_table": "assets",
+      "name": "fk_assets_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "audit_events",
+      "name": "fk_audit_events_actor_user",
+      "source_columns": [
+        "actor_user_id"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "audit_events",
+      "name": "fk_audit_events_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "criteria_drafts",
+      "name": "fk_criteria_drafts_criteria_set",
+      "source_columns": [
+        "project_id",
+        "criteria_set_id"
+      ],
+      "target_table": "criteria_sets",
+      "target_columns": [
+        "project_id",
+        "criteria_set_id"
+      ]
+    },
+    {
+      "source_table": "criteria_drafts",
+      "name": "fk_criteria_drafts_target_asset_version",
+      "source_columns": [
+        "project_id",
+        "target_asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "criteria_drafts",
+      "name": "fk_criteria_drafts_updated_by",
+      "source_columns": [
+        "updated_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "criteria_items",
+      "name": "fk_criteria_items_criteria_version",
+      "source_columns": [
+        "project_id",
+        "target_asset_version_id",
+        "criteria_version_id"
+      ],
+      "target_table": "criteria_versions",
+      "target_columns": [
+        "project_id",
+        "target_asset_version_id",
+        "criteria_version_id"
+      ]
+    },
+    {
+      "source_table": "criteria_items",
+      "name": "fk_criteria_items_source_asset_version",
+      "source_columns": [
+        "project_id",
+        "source_asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "criteria_sets",
+      "name": "fk_criteria_sets_created_by",
+      "source_columns": [
+        "created_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "criteria_sets",
+      "name": "fk_criteria_sets_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_confirmed_by",
+      "source_columns": [
+        "confirmed_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_criteria_set",
+      "source_columns": [
+        "project_id",
+        "criteria_set_id"
+      ],
+      "target_table": "criteria_sets",
+      "target_columns": [
+        "project_id",
+        "criteria_set_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_source_criteria_version",
+      "source_columns": [
+        "project_id",
+        "source_criteria_version_id"
+      ],
+      "target_table": "criteria_versions",
+      "target_columns": [
+        "project_id",
+        "criteria_version_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_source_draft",
+      "source_columns": [
+        "project_id",
+        "criteria_set_id",
+        "target_asset_version_id",
+        "source_draft_id"
+      ],
+      "target_table": "criteria_drafts",
+      "target_columns": [
+        "project_id",
+        "criteria_set_id",
+        "target_asset_version_id",
+        "draft_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_source_file",
+      "source_columns": [
+        "project_id",
+        "source_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "criteria_versions",
+      "name": "fk_criteria_versions_target_asset_version",
+      "source_columns": [
+        "project_id",
+        "target_asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "evidence_ocr_tokens",
+      "name": "fk_evidence_ocr_tokens_evidence",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id",
+        "evidence_id"
+      ],
+      "target_table": "evidence_records",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "source_ocr_run_id",
+        "evidence_id"
+      ]
+    },
+    {
+      "source_table": "evidence_ocr_tokens",
+      "name": "fk_evidence_ocr_tokens_token",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id",
+        "token_id"
+      ],
+      "target_table": "ocr_tokens",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id",
+        "token_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_frame",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "frame_id"
+      ],
+      "target_table": "image_coordinate_frames",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "frame_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_item_result",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "item_result_id"
+      ],
+      "target_table": "item_results",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "result_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_observation",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "observation_id"
+      ],
+      "target_table": "poster_field_observations",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "observation_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_source_file",
+      "source_columns": [
+        "project_id",
+        "source_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "evidence_records",
+      "name": "fk_evidence_records_source_ocr_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "source_ocr_run_id"
+      ],
+      "target_table": "ocr_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ]
+    },
+    {
+      "source_table": "image_coordinate_frames",
+      "name": "fk_image_coordinate_frames_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "image_coordinate_frames",
+      "name": "fk_image_coordinate_frames_file",
+      "source_columns": [
+        "project_id",
+        "file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "image_coordinate_frames",
+      "name": "fk_image_coordinate_frames_parent_frame",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "parent_frame_id"
+      ],
+      "target_table": "image_coordinate_frames",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "frame_id"
+      ]
+    },
+    {
+      "source_table": "import_packages",
+      "name": "fk_import_packages_imported_by",
+      "source_columns": [
+        "imported_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "import_packages",
+      "name": "fk_import_packages_manifest_file",
+      "source_columns": [
+        "project_id",
+        "manifest_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "import_packages",
+      "name": "fk_import_packages_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "import_packages",
+      "name": "fk_import_packages_replaces_import",
+      "source_columns": [
+        "project_id",
+        "replaces_import_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "item_results",
+      "name": "fk_item_results_attempt",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "attempt_id"
+      ],
+      "target_table": "review_attempts",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "attempt_id"
+      ]
+    },
+    {
+      "source_table": "item_results",
+      "name": "fk_item_results_criteria_item",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "criteria_item_id"
+      ],
+      "target_table": "criteria_items",
+      "target_columns": [
+        "project_id",
+        "target_asset_version_id",
+        "criteria_version_id",
+        "criteria_item_id"
+      ]
+    },
+    {
+      "source_table": "item_results",
+      "name": "fk_item_results_extraction",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "extraction_id"
+      ],
+      "target_table": "poster_extractions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "extraction_id"
+      ]
+    },
+    {
+      "source_table": "item_results",
+      "name": "fk_item_results_ocr_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ],
+      "target_table": "ocr_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ]
+    },
+    {
+      "source_table": "item_results",
+      "name": "fk_item_results_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "run_id"
+      ],
+      "target_table": "review_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "run_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_attempt",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "attempt_id"
+      ],
+      "target_table": "review_attempts",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "attempt_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_frame",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "frame_id"
+      ],
+      "target_table": "image_coordinate_frames",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "frame_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_input_file",
+      "source_columns": [
+        "project_id",
+        "input_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_schema",
+      "source_columns": [
+        "schema_id"
+      ],
+      "target_table": "schema_definitions",
+      "target_columns": [
+        "schema_id"
+      ]
+    },
+    {
+      "source_table": "ocr_runs",
+      "name": "fk_ocr_runs_source_file",
+      "source_columns": [
+        "project_id",
+        "source_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "ocr_tokens",
+      "name": "fk_ocr_tokens_ocr_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ],
+      "target_table": "ocr_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_ocr_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ],
+      "target_table": "ocr_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "ocr_run_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_predecessor",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "predecessor_id"
+      ],
+      "target_table": "poster_extractions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "extraction_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_schema",
+      "source_columns": [
+        "schema_id"
+      ],
+      "target_table": "schema_definitions",
+      "target_columns": [
+        "schema_id"
+      ]
+    },
+    {
+      "source_table": "poster_extractions",
+      "name": "fk_poster_extractions_source_file",
+      "source_columns": [
+        "project_id",
+        "source_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "poster_field_observations",
+      "name": "fk_poster_field_observations_extraction",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "extraction_id"
+      ],
+      "target_table": "poster_extractions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "extraction_id"
+      ]
+    },
+    {
+      "source_table": "project_members",
+      "name": "fk_project_members_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "project_members",
+      "name": "fk_project_members_user",
+      "source_columns": [
+        "user_id"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "projects",
+      "name": "fk_projects_created_by",
+      "source_columns": [
+        "created_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "record_aliases",
+      "name": "fk_record_aliases_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "record_aliases",
+      "name": "fk_record_aliases_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "review_attempts",
+      "name": "fk_review_attempts_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id"
+      ],
+      "target_table": "review_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_active_attempt",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "active_attempt_id"
+      ],
+      "target_table": "review_attempts",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "attempt_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_asset_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id"
+      ],
+      "target_table": "asset_versions",
+      "target_columns": [
+        "project_id",
+        "asset_version_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_criteria_version",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id"
+      ],
+      "target_table": "criteria_versions",
+      "target_columns": [
+        "project_id",
+        "target_asset_version_id",
+        "criteria_version_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_requested_by",
+      "source_columns": [
+        "requested_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_retry_of_run",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "retry_of_run_id"
+      ],
+      "target_table": "review_runs",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "run_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_selected_attempt",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "selected_attempt_id"
+      ],
+      "target_table": "review_attempts",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "run_id",
+        "attempt_id"
+      ]
+    },
+    {
+      "source_table": "review_runs",
+      "name": "fk_review_runs_source_file",
+      "source_columns": [
+        "project_id",
+        "source_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "run_item_selections",
+      "name": "fk_run_item_selections_result",
+      "source_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "run_id",
+        "criteria_item_id",
+        "result_id"
+      ],
+      "target_table": "item_results",
+      "target_columns": [
+        "project_id",
+        "asset_version_id",
+        "criteria_version_id",
+        "run_id",
+        "criteria_item_id",
+        "result_id"
+      ]
+    },
+    {
+      "source_table": "schema_definitions",
+      "name": "fk_schema_definitions_specification_file",
+      "source_columns": [
+        "specification_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "schema_definitions",
+      "name": "fk_schema_definitions_validation_schema_file",
+      "source_columns": [
+        "validation_schema_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "stored_files",
+      "name": "fk_stored_files_created_by",
+      "source_columns": [
+        "created_by"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    },
+    {
+      "source_table": "stored_files",
+      "name": "fk_stored_files_import_package",
+      "source_columns": [
+        "project_id",
+        "import_package_id"
+      ],
+      "target_table": "import_packages",
+      "target_columns": [
+        "project_id",
+        "import_id"
+      ]
+    },
+    {
+      "source_table": "stored_files",
+      "name": "fk_stored_files_parent_file",
+      "source_columns": [
+        "project_id",
+        "parent_file_id"
+      ],
+      "target_table": "stored_files",
+      "target_columns": [
+        "project_id",
+        "file_id"
+      ]
+    },
+    {
+      "source_table": "stored_files",
+      "name": "fk_stored_files_project",
+      "source_columns": [
+        "project_id"
+      ],
+      "target_table": "projects",
+      "target_columns": [
+        "project_id"
+      ]
+    },
+    {
+      "source_table": "user_sessions",
+      "name": "fk_user_sessions_user",
+      "source_columns": [
+        "user_id"
+      ],
+      "target_table": "users",
+      "target_columns": [
+        "user_id"
+      ]
+    }
+  ],
+  "orphan_path_constraint_observations": {
+    "requested_paths": 81,
+    "distinct_reported_constraints": 67,
+    "note": "Some overlapping/incoming FK reject first; all 81 definitions and validation flags are independently catalog-checked.",
+    "paths": [
+      {
+        "requested": "fk_asset_versions_asset",
+        "reported": "fk_asset_versions_asset"
+      },
+      {
+        "requested": "fk_asset_versions_created_by",
+        "reported": "fk_asset_versions_created_by"
+      },
+      {
+        "requested": "fk_asset_versions_display_file",
+        "reported": "fk_asset_versions_display_file"
+      },
+      {
+        "requested": "fk_asset_versions_original_file",
+        "reported": "fk_asset_versions_original_file"
+      },
+      {
+        "requested": "fk_assets_created_by",
+        "reported": "fk_assets_created_by"
+      },
+      {
+        "requested": "fk_assets_parent_asset",
+        "reported": "fk_assets_parent_asset"
+      },
+      {
+        "requested": "fk_assets_project",
+        "reported": "fk_asset_versions_asset"
+      },
+      {
+        "requested": "fk_audit_events_actor_user",
+        "reported": "fk_audit_events_actor_user"
+      },
+      {
+        "requested": "fk_audit_events_project",
+        "reported": "fk_audit_events_project"
+      },
+      {
+        "requested": "fk_criteria_drafts_criteria_set",
+        "reported": "fk_criteria_versions_source_draft"
+      },
+      {
+        "requested": "fk_criteria_drafts_target_asset_version",
+        "reported": "fk_criteria_versions_source_draft"
+      },
+      {
+        "requested": "fk_criteria_drafts_updated_by",
+        "reported": "fk_criteria_drafts_updated_by"
+      },
+      {
+        "requested": "fk_criteria_items_criteria_version",
+        "reported": "fk_item_results_criteria_item"
+      },
+      {
+        "requested": "fk_criteria_items_source_asset_version",
+        "reported": "fk_criteria_items_source_asset_version"
+      },
+      {
+        "requested": "fk_criteria_sets_created_by",
+        "reported": "fk_criteria_sets_created_by"
+      },
+      {
+        "requested": "fk_criteria_sets_project",
+        "reported": "fk_criteria_drafts_criteria_set"
+      },
+      {
+        "requested": "fk_criteria_versions_confirmed_by",
+        "reported": "fk_criteria_versions_confirmed_by"
+      },
+      {
+        "requested": "fk_criteria_versions_criteria_set",
+        "reported": "fk_criteria_versions_criteria_set"
+      },
+      {
+        "requested": "fk_criteria_versions_import_package",
+        "reported": "fk_criteria_versions_import_package"
+      },
+      {
+        "requested": "fk_criteria_versions_source_criteria_version",
+        "reported": "fk_criteria_versions_source_criteria_version"
+      },
+      {
+        "requested": "fk_criteria_versions_source_draft",
+        "reported": "fk_criteria_versions_source_draft"
+      },
+      {
+        "requested": "fk_criteria_versions_source_file",
+        "reported": "fk_criteria_versions_source_file"
+      },
+      {
+        "requested": "fk_criteria_versions_target_asset_version",
+        "reported": "fk_criteria_items_criteria_version"
+      },
+      {
+        "requested": "fk_evidence_ocr_tokens_evidence",
+        "reported": "fk_evidence_ocr_tokens_evidence"
+      },
+      {
+        "requested": "fk_evidence_ocr_tokens_token",
+        "reported": "fk_evidence_ocr_tokens_token"
+      },
+      {
+        "requested": "fk_evidence_records_asset_version",
+        "reported": "fk_evidence_ocr_tokens_evidence"
+      },
+      {
+        "requested": "fk_evidence_records_frame",
+        "reported": "fk_evidence_records_frame"
+      },
+      {
+        "requested": "fk_evidence_records_item_result",
+        "reported": "fk_evidence_records_item_result"
+      },
+      {
+        "requested": "fk_evidence_records_observation",
+        "reported": "fk_evidence_records_observation"
+      },
+      {
+        "requested": "fk_evidence_records_source_file",
+        "reported": "fk_evidence_records_source_file"
+      },
+      {
+        "requested": "fk_evidence_records_source_ocr_run",
+        "reported": "fk_evidence_ocr_tokens_evidence"
+      },
+      {
+        "requested": "fk_image_coordinate_frames_asset_version",
+        "reported": "fk_ocr_runs_frame"
+      },
+      {
+        "requested": "fk_image_coordinate_frames_file",
+        "reported": "fk_image_coordinate_frames_file"
+      },
+      {
+        "requested": "fk_image_coordinate_frames_parent_frame",
+        "reported": "fk_image_coordinate_frames_parent_frame"
+      },
+      {
+        "requested": "fk_import_packages_imported_by",
+        "reported": "fk_import_packages_imported_by"
+      },
+      {
+        "requested": "fk_import_packages_manifest_file",
+        "reported": "fk_import_packages_manifest_file"
+      },
+      {
+        "requested": "fk_import_packages_project",
+        "reported": "fk_stored_files_import_package"
+      },
+      {
+        "requested": "fk_import_packages_replaces_import",
+        "reported": "fk_import_packages_replaces_import"
+      },
+      {
+        "requested": "fk_item_results_attempt",
+        "reported": "fk_item_results_attempt"
+      },
+      {
+        "requested": "fk_item_results_criteria_item",
+        "reported": "fk_run_item_selections_result"
+      },
+      {
+        "requested": "fk_item_results_extraction",
+        "reported": "fk_item_results_extraction"
+      },
+      {
+        "requested": "fk_item_results_ocr_run",
+        "reported": "fk_item_results_ocr_run"
+      },
+      {
+        "requested": "fk_item_results_run",
+        "reported": "fk_run_item_selections_result"
+      },
+      {
+        "requested": "fk_ocr_runs_asset_version",
+        "reported": "fk_ocr_tokens_ocr_run"
+      },
+      {
+        "requested": "fk_ocr_runs_attempt",
+        "reported": "fk_ocr_runs_attempt"
+      },
+      {
+        "requested": "fk_ocr_runs_frame",
+        "reported": "fk_ocr_runs_frame"
+      },
+      {
+        "requested": "fk_ocr_runs_import_package",
+        "reported": "fk_ocr_runs_import_package"
+      },
+      {
+        "requested": "fk_ocr_runs_input_file",
+        "reported": "fk_ocr_runs_input_file"
+      },
+      {
+        "requested": "fk_ocr_runs_schema",
+        "reported": "fk_ocr_runs_schema"
+      },
+      {
+        "requested": "fk_ocr_runs_source_file",
+        "reported": "fk_ocr_runs_source_file"
+      },
+      {
+        "requested": "fk_ocr_tokens_ocr_run",
+        "reported": "fk_evidence_ocr_tokens_token"
+      },
+      {
+        "requested": "fk_poster_extractions_asset_version",
+        "reported": "fk_poster_field_observations_extraction"
+      },
+      {
+        "requested": "fk_poster_extractions_import_package",
+        "reported": "fk_poster_extractions_import_package"
+      },
+      {
+        "requested": "fk_poster_extractions_ocr_run",
+        "reported": "fk_poster_extractions_ocr_run"
+      },
+      {
+        "requested": "fk_poster_extractions_predecessor",
+        "reported": "fk_poster_extractions_predecessor"
+      },
+      {
+        "requested": "fk_poster_extractions_schema",
+        "reported": "fk_poster_extractions_schema"
+      },
+      {
+        "requested": "fk_poster_extractions_source_file",
+        "reported": "fk_poster_extractions_source_file"
+      },
+      {
+        "requested": "fk_poster_field_observations_extraction",
+        "reported": "fk_poster_field_observations_extraction"
+      },
+      {
+        "requested": "fk_project_members_project",
+        "reported": "fk_project_members_project"
+      },
+      {
+        "requested": "fk_project_members_user",
+        "reported": "fk_project_members_user"
+      },
+      {
+        "requested": "fk_projects_created_by",
+        "reported": "fk_projects_created_by"
+      },
+      {
+        "requested": "fk_record_aliases_asset_version",
+        "reported": "fk_record_aliases_asset_version"
+      },
+      {
+        "requested": "fk_record_aliases_import_package",
+        "reported": "fk_record_aliases_import_package"
+      },
+      {
+        "requested": "fk_review_attempts_run",
+        "reported": "fk_review_runs_selected_attempt"
+      },
+      {
+        "requested": "fk_review_runs_active_attempt",
+        "reported": "fk_review_runs_active_attempt"
+      },
+      {
+        "requested": "fk_review_runs_asset_version",
+        "reported": "fk_review_attempts_run"
+      },
+      {
+        "requested": "fk_review_runs_criteria_version",
+        "reported": "fk_item_results_run"
+      },
+      {
+        "requested": "fk_review_runs_import_package",
+        "reported": "fk_review_runs_import_package"
+      },
+      {
+        "requested": "fk_review_runs_project",
+        "reported": "fk_review_attempts_run"
+      },
+      {
+        "requested": "fk_review_runs_requested_by",
+        "reported": "fk_review_runs_requested_by"
+      },
+      {
+        "requested": "fk_review_runs_retry_of_run",
+        "reported": "fk_review_runs_retry_of_run"
+      },
+      {
+        "requested": "fk_review_runs_selected_attempt",
+        "reported": "fk_review_runs_selected_attempt"
+      },
+      {
+        "requested": "fk_review_runs_source_file",
+        "reported": "fk_review_runs_source_file"
+      },
+      {
+        "requested": "fk_run_item_selections_result",
+        "reported": "fk_run_item_selections_result"
+      },
+      {
+        "requested": "fk_schema_definitions_specification_file",
+        "reported": "fk_schema_definitions_specification_file"
+      },
+      {
+        "requested": "fk_schema_definitions_validation_schema_file",
+        "reported": "fk_schema_definitions_validation_schema_file"
+      },
+      {
+        "requested": "fk_stored_files_created_by",
+        "reported": "fk_stored_files_created_by"
+      },
+      {
+        "requested": "fk_stored_files_import_package",
+        "reported": "fk_stored_files_import_package"
+      },
+      {
+        "requested": "fk_stored_files_parent_file",
+        "reported": "fk_stored_files_parent_file"
+      },
+      {
+        "requested": "fk_stored_files_project",
+        "reported": "fk_asset_versions_original_file"
+      },
+      {
+        "requested": "fk_user_sessions_user",
+        "reported": "fk_user_sessions_user"
+      }
+    ]
+  },
+  "database_isolation": {
+    "server_version_num": 170011,
+    "pytest_exit_code": 0,
+    "before": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": [],
+      "server_version_num": 170011
+    },
+    "after": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": [],
+      "server_version_num": 170011
+    },
+    "daily_schema_and_default_privileges_unchanged": true,
+    "temporary_databases_cleaned": true
+  },
+  "static_review": {
+    "git_diff_check": "passed",
+    "compileall": "passed",
+    "local_links_checked": 443,
+    "local_heading_anchors_checked": 25,
+    "protected_baseline_files_preserved": 57,
+    "default_public_schema_alias_normalized_only_for_autogenerate_comparison": true
+  },
+  "preserved_behaviors": {
+    "admin_admin_login_unchanged": true,
+    "legacy_api_json_unchanged": true,
+    "frontend_ocr_launchers_unchanged": true,
+    "owner_configuration_and_package_requirements_unchanged": true
+  },
+  "runtime_source_files": [
+    {
+      "path": "backend/app/persistence/schema/__init__.py",
+      "sha256": "98587a53d9080faa884df58b0bae28bbc9ff74b1e503c150dcd010471bf4860f"
+    },
+    {
+      "path": "backend/app/persistence/schema/reviews.py",
+      "sha256": "46abc1a1dfe1ab0a6ff0f4baf6285cac1ab49e1571afbc98a414e7b5c4500f4f"
+    },
+    {
+      "path": "backend/app/persistence/schema/relations.py",
+      "sha256": "45d023d81a5bcec1f3ebaff954bd4848327de8b5b4b949130fe38c8a0eaf68a9"
+    },
+    {
+      "path": "backend/migrations/versions/M005_reviews.py",
+      "sha256": "4725cac6f0051a39862f2fe233e8159c6036b1328ba28001699ede10b15af0e4"
+    },
+    {
+      "path": "backend/migrations/versions/M006_relations.py",
+      "sha256": "2bd30f064718c3333a9a31bd6ad0566116c4056e32f3c44e1861f13bffa67b9f"
+    },
+    {
+      "path": "backend/tests/test_review_schema.py",
+      "sha256": "14425d7b434c5f6fe96b047f1360b10464648e5f3fc784936813ecdcf7c4bd86"
+    },
+    {
+      "path": "backend/tests/test_review_migration_integration.py",
+      "sha256": "db8c2379f24fce327e445599bd32c3e84544c11a768b05fcb0c66e74eb376280"
+    },
+    {
+      "path": "backend/tests/test_relations_migration_integration.py",
+      "sha256": "9c793770852af7970a7a0b8fd2700fdfb0e25610c879091c10fa9521f76c314c"
+    },
+    {
+      "path": "backend/tests/relation_fixtures.py",
+      "sha256": "9bfef22478f772e82dae7a02e5ef6ea530693fc702bbccc28982716e3ca9cc8a"
+    },
+    {
+      "path": "backend/tests/schema_helpers.py",
+      "sha256": "969528eedab3d4ee43ae2831a620d2f1954da2e54644c8d04a4d049c12f1978b"
+    },
+    {
+      "path": "backend/tests/test_identity_schema.py",
+      "sha256": "a94507daf94982921da0969399ea7d3717fd4f1e6e8ed7401023d240ad0dbad9"
+    },
+    {
+      "path": "backend/tests/test_file_schema.py",
+      "sha256": "605ef4dcb62de03b21f68d5398ac3bb5c3ef26babc01f56d79acb91d4f2f469b"
+    },
+    {
+      "path": "backend/tests/test_ocr_schema.py",
+      "sha256": "d19d8d32ca4b38d165dce906981f509346bea165741c67297c1814aeec4bd630"
+    },
+    {
+      "path": "backend/tests/test_criteria_schema.py",
+      "sha256": "0d3c58db0531964dbc62621f47da3428242b178dcae22ff801e63c850067bce7"
+    },
+    {
+      "path": "backend/tests/test_identity_migration_integration.py",
+      "sha256": "b8b1e37a3ad09c4b9ec0eeb8ce19771d2826559b6850366c7c4b0a4a1d38c5c3"
+    },
+    {
+      "path": "backend/tests/test_file_migration_integration.py",
+      "sha256": "3d5bb7f46dea43a2c37856772db32a57d9dfa106d1b47f006081209a10c1d21c"
+    },
+    {
+      "path": "backend/tests/test_ocr_migration_integration.py",
+      "sha256": "9aab7b895daf50c67e3bc734a29e1e67f98e8e3e32fa6ba78c4bf002d41d7053"
+    },
+    {
+      "path": "backend/tests/test_criteria_migration_integration.py",
+      "sha256": "286dfb949d7250fcd70f7b1dfc931d4c871ed859e1566da6db8d21ad352a84a0"
+    },
+    {
+      "path": "backend/tests/test_initial_migrations_integration.py",
+      "sha256": "469bb550eebd09ca56b0c2178faf8258756b1750ed1b9d49a97d11ee91be1275"
+    }
+  ],
+  "documentation_files": [
+    {
+      "path": "docs/DB_Settings/구현_C01_DB연결과트랜잭션.md",
+      "sha256": "e7c8e09a09a4d62155a808dcc901828c35c309240b132172c51e84959aefde86"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C02_Alembic과사용자스키마.md",
+      "sha256": "c1eb0941183708d6396d75da183f456b89a76cdf846fc7a66c7fd562ce359b88"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C03_파일스키마와M002.md",
+      "sha256": "77c685c862dcf6e07e4f765afe1cab8b0e03e2aee282d673e86bad6478e5e1b4"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C04_OCR스키마와M003.md",
+      "sha256": "a41eb72cf32c688b0531bac59ddc4698668294b6e299e2a670751a4abfe18a7f"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C05_검수기준스키마와M004.md",
+      "sha256": "d25ab7b53eda59645a6b245ca7df75427037e5e1ec40a336dcbd53198bf89180"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C06_실행결과와전체FK.md",
+      "sha256": "6add08d0e9a4e9cdb1a70dce84b967eb0aa7772713007819205c2f28dae82925"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "83f331ed842ecde6b6d77bc19c5ffe1170b8b638b005655c810b66560af931d8"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "e3efce44fe344042c3b8b8945ac9424c6eeef78ba564631d70aabf3f4485454d"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "8e4c1ea7a25f8cd248b80da553efd27506c5a3973a42692e1265cb6209dd8c87"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "414baa32460183e928d325d3cb7c5c92538b0392f6a91322c479a4eb5e463a17"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "97f1d63743926d6ebb4bbeee0b7222a012e005fefc314dbedb4957c70834e796"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "0be4756506a69843d09cfdcf1b849832d6f5f8252b7a6da110ebcb09fae7d793"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "3b7f0a952bdb997000e1b33b5552d2b23e9929662f0606a8c359eeb85bcd5d05"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "2a6eabd63759621c72bb8f0bdf36c4cf904b51b229dc771419d8313a8341cb7e"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "c416daae24ccb4cc9df4eea28d8566dea6855f9b9040ba90a22720bb86816ce3"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "0bf73ff36b428d63b65112ff7ad266628e916ac9f5504bd89b7e766eb66f5521"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+      "sha256": "190c20204ea8edd4f5079b7ad21176d95c17dd88949429b1946b1e33641d3c91"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+      "sha256": "89e7bdbf92e9ded06dd65033032502889473f7af9bcc17aebb5db8e7219e0ece"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "a22f0ef820f01fdbcffc7f22bc09595b4975296a9a0b870b39d3a1fe8bcc9a84"
+    },
+    {
+      "path": "실행가이드.md",
+      "sha256": "dd0fc7497145ed46e0048bc53a0efb07dcd262ca7afaae02cb48a1c117d02b33"
+    }
+  ],
+  "historical_proofs": [
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C01.json",
+      "sha256": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C02.json",
+      "sha256": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C03.json",
+      "sha256": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C04.json",
+      "sha256": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C05.json",
+      "sha256": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    }
+  ],
+  "frozen_design_plan": {
+    "path": "docs/DB_Settings/contracts/stage10-implementation-plan.json",
+    "sha256": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6"
+  },
+  "limitations": [
+    "M006 completes first-scope tables/relations only; lookup/partial indexes, cross-row/seal/immutability/transition guards in M007 and final grants in M008 are pending.",
+    "FK verifies identity/context, not current membership or file bytes/roles/hash/frame bounds, exact OCR attempt input, complete selected item set or human approval.",
+    "No daily DB upgrade, hash calculation, authentication/account seed, API/React/worker integration, file writes or actual OCR execution.",
+    "Only macOS Python and PostgreSQL 17.11 were exercised; Linux/Windows, browser, real network COMMIT faults and backup/restore were not tested."
+  ]
+}

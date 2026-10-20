@@ -1,0 +1,22 @@
+{
+  "flow": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": false,
+    "project_id": "b4ddff14-aad3-4692-94f2-32b5b2be6cc4",
+    "image_id": "12866199-c4fe-4432-8bd4-91c874eb00eb",
+    "draft_id": "ce29fdce-2651-4922-a050-15b3781d91b2",
+    "criteria_version_id": "0fe84e9e-0bb2-4255-9da1-4b13eeb7e835",
+    "disabled_runtime_rejected": true,
+    "secure_cookie_verified": true,
+    "post_count": 7,
+    "status": "passed"
+  },
+  "linux": true,
+  "nonroot_uid": 10001,
+  "proxy": "nginx:1.28-alpine",
+  "proxy_wire_allowlist_verified": true,
+  "untrusted_forwarded_rejected": true,
+  "temporary_tls_certificate": true,
+  "actual_ocr_in_this_profile": false
+}

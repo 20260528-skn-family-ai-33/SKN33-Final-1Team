@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17.11-bookworm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-creative_checker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+      TZ: UTC
+      PGTZ: UTC
+      DB_OWNER_USER: ${DB_OWNER_USER:-creative_checker_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:?Set DB_OWNER_PASSWORD in .env}
+      DB_APP_USER: ${DB_APP_USER:-creative_checker_app}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?Set DB_APP_PASSWORD in .env}
+    command: ["postgres", "-c", "timezone=UTC", "-c", "log_timezone=UTC"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - type: bind
+        source: ./docker/postgres/init
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      # TCP stays unavailable until the image's first-run initialization finishes.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  pgdata:

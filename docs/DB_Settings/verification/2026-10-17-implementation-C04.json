@@ -1,0 +1,627 @@
+{
+  "unit": "C04",
+  "status": "complete",
+  "review_date": "2026-10-17",
+  "generated_at_utc": "2026-10-17T08:19:08.407886+00:00",
+  "next_unit": "C05",
+  "scope": "Nine schema/import/audit/OCR/extraction/observation/evidence metadata tables and frozen M003; only randomly generated isolated test DBs upgraded; no API or storage integration",
+  "environment": {
+    "python": "3.12.14",
+    "system": "Darwin",
+    "machine": "arm64",
+    "sqlalchemy": "2.1.5",
+    "psycopg": "3.3.6",
+    "alembic": "1.20.0",
+    "postgres_server_version_num": 170011
+  },
+  "new_packages_installed": false,
+  "pip_check": {
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "added_schema": {
+    "revision": "M003",
+    "down_revision": "M002",
+    "business_tables": 9,
+    "columns": 148,
+    "primary_keys": 9,
+    "unique_constraints": 14,
+    "check_constraints": 28,
+    "foreign_keys": 0,
+    "additional_indexes": 0,
+    "tables": [
+      {
+        "name": "schema_definitions",
+        "columns": 10
+      },
+      {
+        "name": "import_packages",
+        "columns": 15
+      },
+      {
+        "name": "audit_events",
+        "columns": 10
+      },
+      {
+        "name": "ocr_runs",
+        "columns": 27
+      },
+      {
+        "name": "ocr_tokens",
+        "columns": 15
+      },
+      {
+        "name": "poster_extractions",
+        "columns": 30
+      },
+      {
+        "name": "poster_field_observations",
+        "columns": 15
+      },
+      {
+        "name": "evidence_records",
+        "columns": 19
+      },
+      {
+        "name": "evidence_ocr_tokens",
+        "columns": 7
+      }
+    ]
+  },
+  "implemented_schema": {
+    "revision": "M003",
+    "business_tables": 18,
+    "columns": 236,
+    "primary_keys": 18,
+    "unique_constraints": 23,
+    "check_constraints": 53,
+    "foreign_keys": 0,
+    "additional_indexes": 0,
+    "tool_table_excluded": "alembic_version"
+  },
+  "test_runs": [
+    {
+      "command": ".venv/bin/python -m pytest -q --junitxml=/private/tmp/creative-checker-c04-offline.xml",
+      "exit_code": 0,
+      "unique_cases_passed": 413,
+      "new_c04_cases": 5,
+      "additional_subtests_passed": 7,
+      "db_cases_deselected": 361,
+      "junit_sha256": "eabe9d3b80aeb02bb9b8a98e618afa9dfaa140062bf03324bd24de374ae16020"
+    },
+    {
+      "command": "PYTHONPATH=. .venv/bin/python /private/tmp/creative-checker-c04-verify.py",
+      "pytest_arguments": [
+        "backend/tests/test_db_integration.py",
+        "backend/tests/test_identity_migration_integration.py",
+        "backend/tests/test_file_migration_integration.py",
+        "backend/tests/test_ocr_migration_integration.py",
+        "backend/tests/test_initial_migrations_integration.py",
+        "-m",
+        "db_integration",
+        "-q",
+        "--junitxml=/private/tmp/creative-checker-c04-postgres.xml",
+        "--tb=short",
+        "-x"
+      ],
+      "executed_credential_supply": "Explicit TEST_DB_* child environment set by the test harness from existing local role credentials; no secrets in argv/output, no business DB name passed to fixtures",
+      "exit_code": 0,
+      "cases_passed": 361,
+      "new_c04_cases": 250,
+      "c01_c02_c03_regression_cases": 111,
+      "junit_sha256": "e3c03783b3394490200aae05236ccbf8c0f30c91d0209879be67290a4654a756",
+      "c04_cases": [
+        "test_app_permissions_repeat_upgrade_and_downgrade_guard",
+        "test_complete_rows_do_not_require_guessed_schema_or_versions",
+        "test_full_inventory_and_prior_data_preserved",
+        "test_json_null_variable_values_and_real_source_kinds",
+        "test_null_import_fingerprints_do_not_merge_and_contexts_stay_distinct",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes17-domain]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes18-domain]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes19-domain]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes20-domain]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes21-domain]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes74-times]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes95-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes96-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[audit_events-changes97-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_ocr_tokens-changes70-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_ocr_tokens-changes71-23502]",
+        "test_ocr_checks_reject_invalid_rows[evidence_ocr_tokens-changes82-times]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes122-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes123-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes124-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes151-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes152-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes153-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes154-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes155-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes156-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes157-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes158-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes159-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes160-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes161-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes162-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes163-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes164-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes165-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes166-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes167-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes168-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes169-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes170-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes171-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes172-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes173-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes174-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes175-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes176-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes201-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes202-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes58-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes59-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes60-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes61-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes62-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes63-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes64-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes65-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes66-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes67-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes68-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes69-domain]",
+        "test_ocr_checks_reject_invalid_rows[evidence_records-changes81-times]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes10-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes11-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes12-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes13-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes14-hashes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes15-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes16-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes206-22001]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes207-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes208-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes209-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes210-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes211-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes212-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes73-times]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes8-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes86-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes87-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes88-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes89-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes9-domain]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes90-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes91-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes92-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes93-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[import_packages-changes94-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes100-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes101-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes102-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes103-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes104-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes105-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes106-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes213-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes214-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes215-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes216-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes217-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes22-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes225-times]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes226-times]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes23-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes24-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes25-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes26-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes27-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes28-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes29-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes30-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes31-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes32-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes33-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes34-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes35-times]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes75-times]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes76-times]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes98-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_runs-changes99-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes107-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes108-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes109-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes125-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes126-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes127-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes128-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes129-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes130-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes131-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes132-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes133-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes134-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes135-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes136-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes137-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes138-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes139-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes140-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes141-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes142-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes143-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes144-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes145-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes146-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes147-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes148-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes149-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes150-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes177-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes178-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes179-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes180-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes181-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes182-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes183-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes184-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes185-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes186-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes203-23502]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes205-22001]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes36-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes37-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes38-domain]",
+        "test_ocr_checks_reject_invalid_rows[ocr_tokens-changes77-times]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes110-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes111-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes112-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes113-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes114-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes115-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes116-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes117-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes118-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes187-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes188-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes189-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes190-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes191-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes192-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes193-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes194-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes195-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes196-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes197-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes198-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes199-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes200-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes204-23502]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes220-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes221-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes222-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes223-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes224-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes39-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes40-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes41-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes42-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes43-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes44-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes45-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes46-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes47-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes48-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes78-times]",
+        "test_ocr_checks_reject_invalid_rows[poster_extractions-changes79-times]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes119-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes120-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes121-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes49-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes50-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes51-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes52-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes53-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes54-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes55-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes56-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes57-domain]",
+        "test_ocr_checks_reject_invalid_rows[poster_field_observations-changes80-times]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes0-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes1-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes2-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes218-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes219-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes3-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes4-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes5-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes6-domain]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes7-hashes]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes72-times]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes83-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes84-json_shapes]",
+        "test_ocr_checks_reject_invalid_rows[schema_definitions-changes85-json_shapes]",
+        "test_partial_dates_and_contradictory_ranges_preserve_original",
+        "test_primary_keys_reject_duplicates[audit_events]",
+        "test_primary_keys_reject_duplicates[evidence_ocr_tokens]",
+        "test_primary_keys_reject_duplicates[evidence_records]",
+        "test_primary_keys_reject_duplicates[import_packages]",
+        "test_primary_keys_reject_duplicates[ocr_runs]",
+        "test_primary_keys_reject_duplicates[ocr_tokens]",
+        "test_primary_keys_reject_duplicates[poster_extractions]",
+        "test_primary_keys_reject_duplicates[poster_field_observations]",
+        "test_primary_keys_reject_duplicates[schema_definitions]",
+        "test_semantic_unique_keys_reject_duplicates[evidence_ocr_tokens-duplicate_columns6]",
+        "test_semantic_unique_keys_reject_duplicates[import_packages-duplicate_columns1]",
+        "test_semantic_unique_keys_reject_duplicates[ocr_tokens-duplicate_columns2]",
+        "test_semantic_unique_keys_reject_duplicates[ocr_tokens-duplicate_columns3]",
+        "test_semantic_unique_keys_reject_duplicates[poster_extractions-duplicate_columns4]",
+        "test_semantic_unique_keys_reject_duplicates[poster_field_observations-duplicate_columns5]",
+        "test_semantic_unique_keys_reject_duplicates[schema_definitions-duplicate_columns0]",
+        "test_uncertainty_defaults_and_source_values_are_not_fabricated"
+      ]
+    }
+  ],
+  "checks_passed": [
+    "M001 and M002 byte-for-byte preserved; prior tests pinned to M001/M002 metadata scope",
+    "Saved physical design column order, PostgreSQL types, NULL/default and all named PK/UQ/CHECK groups match metadata",
+    "Actual PostgreSQL inventory matches cumulative 18 tables and 236 columns including PK/UQ column order and comments",
+    "All nine new tables empty after upgrade; prior identity and file test rows preserved",
+    "All 28 new named CHECK groups exercised by rejected rows; conditional required NULLs tested separately",
+    "Schema availability/access scope and import completion requirements stay distinct from actual file checks and approval",
+    "String and integer OCR IDs remain distinct; canonical signed integer strings up to column length preserved",
+    "Confidence NULL and float precision preserved; NaN, infinity and out-of-range scores rejected",
+    "Malformed bbox/polygon rejected with CHECK SQLSTATE 23514, including JSON null, scalars, nested arrays, bools and strings",
+    "Partial and contradictory dates preserved; DATE projections require finite dates and matching components",
+    "SQL NULL and explicit JSON null distinguished; absent and resolved states require correct non-guessed values",
+    "Evidence ownership XOR, source-specific required values and coordinate frame presence enforced",
+    "NULL import fingerprints do not merge; real duplicate keys rejected within their project/namespace context",
+    "Conflicting preexisting evidence_records survives failed upgrade; partially created M003 tables roll back",
+    "Injected M003 failure preserves M002 object OIDs, rows, default ACLs and revision",
+    "Fresh empty DB -> M001 -> M002 -> M003 failure rolls back entire DDL/version/default ACL chain",
+    "No new app table privileges; actual app SELECT refused; same revision repeat succeeds; destructive downgrade refused",
+    "Temporary test databases cleaned; daily public relations and default privileges unchanged"
+  ],
+  "exercised_check_constraints": [
+    "ck_audit_events_domain",
+    "ck_audit_events_json_shapes",
+    "ck_audit_events_times",
+    "ck_evidence_ocr_tokens_domain",
+    "ck_evidence_ocr_tokens_times",
+    "ck_evidence_records_domain",
+    "ck_evidence_records_json_shapes",
+    "ck_evidence_records_times",
+    "ck_import_packages_domain",
+    "ck_import_packages_hashes",
+    "ck_import_packages_json_shapes",
+    "ck_import_packages_times",
+    "ck_ocr_runs_domain",
+    "ck_ocr_runs_json_shapes",
+    "ck_ocr_runs_times",
+    "ck_ocr_tokens_domain",
+    "ck_ocr_tokens_json_shapes",
+    "ck_ocr_tokens_times",
+    "ck_poster_extractions_domain",
+    "ck_poster_extractions_json_shapes",
+    "ck_poster_extractions_times",
+    "ck_poster_field_observations_domain",
+    "ck_poster_field_observations_json_shapes",
+    "ck_poster_field_observations_times",
+    "ck_schema_definitions_domain",
+    "ck_schema_definitions_hashes",
+    "ck_schema_definitions_json_shapes",
+    "ck_schema_definitions_times"
+  ],
+  "database_isolation": {
+    "pytest_exit_code": 0,
+    "before": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": []
+    },
+    "after": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": []
+    },
+    "daily_schema_and_default_privileges_unchanged": true,
+    "temporary_databases_cleaned": true,
+    "server_version_num": 170011
+  },
+  "static_review": {
+    "git_diff_check": "passed",
+    "compileall": "passed",
+    "local_links_checked": 369,
+    "local_heading_anchors_checked": 20,
+    "protected_baseline_files_preserved": 39
+  },
+  "preserved_behaviors": {
+    "admin_admin_login_unchanged": true,
+    "legacy_api_json_unchanged": true,
+    "frontend_ocr_launchers_unchanged": true,
+    "owner_configuration_and_package_requirements_unchanged": true
+  },
+  "runtime_source_files": [
+    {
+      "path": "backend/app/persistence/schema/__init__.py",
+      "sha256": "db3e4c9d634dcb1985a86cc6ed25f8326f2c8d1884189787e4558662557f58e2"
+    },
+    {
+      "path": "backend/app/persistence/schema/ocr.py",
+      "sha256": "6a11cdef3e4d1c609790311ac77c9d415c156666e3872a4c03b929413be6f59f"
+    },
+    {
+      "path": "backend/migrations/versions/M003_ocr.py",
+      "sha256": "335f8dee58daddc32ca1e2b5f7f31e25767154867410d82466678830c782d072"
+    },
+    {
+      "path": "backend/tests/test_ocr_schema.py",
+      "sha256": "5f7d851953d1d1e180cd8fde42419f3e9d5928d78aa166622b8600d05f89bf49"
+    },
+    {
+      "path": "backend/tests/test_ocr_migration_integration.py",
+      "sha256": "92a1482414971f7b21c45c326ce1cfc0e3c75f549e38c27ceb77793506bbc3af"
+    },
+    {
+      "path": "backend/tests/test_file_schema.py",
+      "sha256": "9dd9908b48876b655d74cfced4ec6e5d21f7cfc9e8bea25b963b84480ad0fefb"
+    },
+    {
+      "path": "backend/tests/test_file_migration_integration.py",
+      "sha256": "5ba459d76614006d010eac12251b22458fa87fa79f300fb58a2738ede0a8adc3"
+    },
+    {
+      "path": "backend/tests/test_initial_migrations_integration.py",
+      "sha256": "469bb550eebd09ca56b0c2178faf8258756b1750ed1b9d49a97d11ee91be1275"
+    }
+  ],
+  "documentation_files": [
+    {
+      "path": "docs/DB_Settings/구현_C01_DB연결과트랜잭션.md",
+      "sha256": "3dd75dabbf19989ffa96a541b0613440351973135bda51831ee2fec16d4c118a"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C02_Alembic과사용자스키마.md",
+      "sha256": "73c93bb0c99545ece69d7382e543b3145375aacd7476f80119903135d1fc3cc6"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C03_파일스키마와M002.md",
+      "sha256": "3382fd4ea190e6dead071aee5b70c58691a2606413a1fa52b5ddf9eef339d07e"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C04_OCR스키마와M003.md",
+      "sha256": "a0782804c02ecadc70183923b3f05fc5c7017283b83dcc1e6d2033fa069cb586"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "13da4f85d4b3884d85c1c141a25faf06754bc2d90fd3609e512e664a587b09d6"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "675dc39a94ed5f75f53d9b95f840a22273f4967f4c91956c90fe0296167ad1ff"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "88e837aabb71b0aca54fd61862c4754d658f3b01324ee44cc229302be383db08"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "a8f52d24371783851e5a8f612e9bbcf24204b0822f413b9ce9aeebbd1b53de38"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "d951d337b114c1d39eebb399c1101c57e437bd913dd8dd259e5a3ace77053d60"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "4f87dddc6ce01fd23ee7e2d1f558b9b304be8264a38d218e2a2cc61ac065edf3"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "8699f9a9fe4426c6f3eddc229d2e377cc688c3a5110c0fabf9cc097bf3d391e9"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "2a6eabd63759621c72bb8f0bdf36c4cf904b51b229dc771419d8313a8341cb7e"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "4906158e5a0a13dea934fd82c672da5cae093e03f1699cdee13e6c05b3ccd662"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "ecdb8713b902880203e370b7ddfd2494cc432c65948aa7954dd2a685a851d230"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+      "sha256": "004f4e0a57a34fc336f2a985359284b340009f5d45c1fb1176f7c978ef5286c7"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+      "sha256": "fb0386ca0f400fc015e2b91fa72f0edb526906c4a8dca86f755be1a2af7f059e"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "2b42ca3ed3cbe543f312f43a50cbce4cff6e01c93d60ddeb8a84cd34e23b0839"
+    },
+    {
+      "path": "실행가이드.md",
+      "sha256": "38ba2c3f8049bfbe8687f0230c50fd90a5166a3669a5fa01cc11cecea3d85e7d"
+    }
+  ],
+  "historical_proofs": [
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C01.json",
+      "sha256": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C02.json",
+      "sha256": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C03.json",
+      "sha256": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    }
+  ],
+  "frozen_design_plan": {
+    "path": "docs/DB_Settings/contracts/stage10-implementation-plan.json",
+    "sha256": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6"
+  },
+  "limitations": [
+    "M003 is a partial schema. FK in M006, cross-row/seal/immutability/index guards in M007, final grants in M008 remain pending.",
+    "No daily DB upgrade, actual storage/file checks, external schema validation, account seed, email login, API/React integration, worker or real OCR execution.",
+    "Only macOS Python and PostgreSQL 17.11 were exercised; Linux/Windows, browser, real network COMMIT faults and backup/restore were not tested."
+  ]
+}
