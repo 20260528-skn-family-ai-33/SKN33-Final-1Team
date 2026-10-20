@@ -15,7 +15,7 @@ SQL_PATH=Path('backend/migrations/sql/M007_guards.sql')
 
 
 def guard_contract():
-    source=Path('docs/DB_Settings/물리설계_06_제약목록.md').read_text().split('## 4. 전이·추가·커밋 검증 규칙')[1].split('## 5.')[0]
+    source=Path('docs/DB_Settings/contracts/schema/물리설계_06_제약목록.md').read_text().split('## 4. 전이·추가·커밋 검증 규칙')[1].split('## 5.')[0]
     result=[]
     for line in source.splitlines():
         match=re.match(r'\| `(\w+)` \| ([^|]+) \|',line)

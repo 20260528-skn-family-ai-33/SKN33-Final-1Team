@@ -4,7 +4,7 @@ import re
 
 
 def update_policy():
-    source=Path('docs/DB_Settings/물리설계_06_전체정합성.md').read_text()
+    source=Path('docs/DB_Settings/contracts/schema/물리설계_06_전체정합성.md').read_text()
     section=source.split('| 테이블 | UPDATE 허용 컬럼 |')[1].split('관리자의 DDL')[0]
     result={}
     for line in section.splitlines():

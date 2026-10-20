@@ -65,7 +65,7 @@ def test_m001_through_m007_and_packaged_m008_fingerprints():
     contract=json.loads(CONTRACT.read_text())
     for path,digest in contract['migration_sha256'].items():
         assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest,path
-    prior=json.loads(Path('docs/DB_Settings/verification/2026-10-18-implementation-C07b.json').read_text())
+    prior=json.loads(Path('docs/DB_Settings/verification/reports/2026-10-18-implementation-C07b.json').read_text())
     for item in prior['migration_sources']:
         assert contract['migration_sha256'][item['path']]==item['sha256']
     for item in prior['preserved_baseline_files']:

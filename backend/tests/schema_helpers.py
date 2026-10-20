@@ -29,7 +29,7 @@ def foreign_key_contract():
     """Read the independent reviewed FK contract, never production definitions."""
     from pathlib import Path
     import re
-    source = Path('docs/DB_Settings/물리설계_06_제약목록.md').read_text().split('## 3. 추가 조회')[0]
+    source = Path('docs/DB_Settings/contracts/schema/물리설계_06_제약목록.md').read_text().split('## 3. 추가 조회')[0]
     result = []
     for section in re.split(r'^### ', source, flags=re.M)[1:]:
         table = section.splitlines()[0].strip()

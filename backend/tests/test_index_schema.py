@@ -69,7 +69,7 @@ def test_real_head_is_m007_and_m001_through_m006_are_unchanged():
     assert list(Path('backend/migrations/versions').glob('M007*'))
     fingerprints={}
     for unit in ('C02','C03','C04','C05','C06'):
-        proof=json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-'+unit+'.json').read_text())
+        proof=json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-'+unit+'.json').read_text())
         fingerprints.update({x['path']:x['sha256'] for x in proof['runtime_source_files']})
     for path in Path('backend/migrations/versions').glob('*.py'):
         if path.name.startswith(('M007','M008')):continue

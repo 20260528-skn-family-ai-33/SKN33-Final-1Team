@@ -1,7 +1,7 @@
 """Real owner CLI in a child process and PTY. Passwords never appear in argv/output."""
 from pathlib import Path
 from uuid import UUID,uuid4
-import json,os,pty,select,subprocess,sys,time
+import json,os,subprocess,sys,time
 import pytest
 from backend.tests.test_db_integration import database  # noqa: F401
 from backend.tests.test_v1_auth_integration import auth_database  # noqa: F401
@@ -28,6 +28,8 @@ def run(owner_file,*args):
 
 
 def protected_input(owner_file,args,password):
+    import pty,select
+
     master,slave=pty.openpty()
     process=subprocess.Popen([sys.executable,'-m','backend.app.management','--env-file',str(owner_file),*args],stdin=slave,stdout=slave,stderr=slave)
     os.close(slave);output=b'';sent=0;deadline=time.monotonic()+15
@@ -51,6 +53,7 @@ def protected_input(owner_file,args,password):
         os.close(master)
 
 
+@pytest.mark.skipif(os.name != 'posix', reason='Protected terminal input requires a POSIX PTY.')
 def test_real_cli_bootstrap_protected_creation_reset_email_membership_activation(auth_database,owner_file):
     db,owner,manager,settings,setup=auth_database
     assert run(owner_file,'bootstrap-development')==setup

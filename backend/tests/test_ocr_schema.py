@@ -51,7 +51,7 @@ def test_ocr_metadata_keys_checks_defaults_and_json_null_policy():
 
 
 def test_ocr_columns_types_nulls_and_default_values_match_design():
-    source = Path('docs/DB_Settings/물리설계_03_규격과OCR근거.md').read_text()
+    source = Path('docs/DB_Settings/contracts/schema/물리설계_03_규격과OCR근거.md').read_text()
     for name in OCR_TABLES:
         section = re.search(r'^## \d+\. ' + name + r' — .*?(?=^## |\Z)', source, re.M | re.S)[0]
         rows = re.findall(r'^\| `(\w+)` \| `([^`]+)` \| (필수|선택) \| ([^|]+) \|', section, re.M)
@@ -69,7 +69,7 @@ def test_ocr_columns_types_nulls_and_default_values_match_design():
 
 
 def test_named_constraint_inventory_matches_design():
-    source = Path('docs/DB_Settings/물리설계_06_제약목록.md').read_text()
+    source = Path('docs/DB_Settings/contracts/schema/물리설계_06_제약목록.md').read_text()
     for name in OCR_TABLES:
         section = re.search(r'^### ' + name + r'\n.*?(?=^### |^## |\Z)', source, re.M | re.S)[0]
         expected = set(re.findall(r'^\| (?:PK|UNIQUE|CHECK) \| `(\w+)`', section, re.M))
@@ -93,8 +93,8 @@ def test_incremental_m003_offline_sql_has_nine_tables_without_seed_or_relations(
 
 
 def test_prior_revisions_are_frozen_and_m003_has_no_live_schema_import():
-    proof = json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-C03.json').read_text())
-    old_proof = json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-C02.json').read_text())
+    proof = json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-C03.json').read_text())
+    old_proof = json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-C02.json').read_text())
     for path, record in [('backend/migrations/versions/M001_identity.py', old_proof),
                          ('backend/migrations/versions/M002_files.py', proof)]:
         expected = next(x['sha256'] for x in record['runtime_source_files'] if x['path'] == path)

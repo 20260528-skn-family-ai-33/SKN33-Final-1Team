@@ -7,7 +7,7 @@ DRAFT = Path('backend/migrations/candidates/M007_indexes_draft.py')
 
 
 def index_contract():
-    source=Path('docs/DB_Settings/물리설계_06_제약목록.md').read_text().split('## 3. 추가 조회·부분 유일 인덱스')[1].split('## 4.')[0]
+    source=Path('docs/DB_Settings/contracts/schema/물리설계_06_제약목록.md').read_text().split('## 3. 추가 조회·부분 유일 인덱스')[1].split('## 4.')[0]
     result=[]
     for line in source.splitlines():
         m=re.search(r'^\| `(\w+)`( \*\*UNIQUE\*\*)? \| `(\w+)\(([^)]+)\)` \| ([^|]+) \|',line)

@@ -47,7 +47,7 @@ def test_criteria_metadata_keys_checks_defaults_and_json_null_policy():
 
 
 def test_criteria_columns_types_nulls_and_default_values_match_design():
-    source = Path('docs/DB_Settings/물리설계_04_검수기준.md').read_text()
+    source = Path('docs/DB_Settings/contracts/schema/물리설계_04_검수기준.md').read_text()
     for name in CRITERIA_TABLES:
         section = re.search(r'^## \d+\. ' + name + r' — .*?(?=^## |\Z)', source, re.M | re.S)[0]
         rows = re.findall(r'^\| `(\w+)` \| `([^`]+)` \| (필수|선택) \| ([^|]+) \|', section, re.M)
@@ -65,7 +65,7 @@ def test_criteria_columns_types_nulls_and_default_values_match_design():
 
 
 def test_named_constraint_inventory_matches_design():
-    source = Path('docs/DB_Settings/물리설계_06_제약목록.md').read_text()
+    source = Path('docs/DB_Settings/contracts/schema/물리설계_06_제약목록.md').read_text()
     for name in CRITERIA_TABLES:
         section = re.search(r'^### ' + name + r'\n.*?(?=^### |^## |\Z)', source, re.M | re.S)[0]
         expected = set(re.findall(r'^\| (?:PK|UNIQUE|CHECK) \| `(\w+)`', section, re.M))
@@ -89,10 +89,10 @@ def test_incremental_m004_offline_sql_has_four_tables_without_seed_or_relations(
 
 
 def test_prior_revisions_are_frozen_and_m004_has_no_live_schema_import():
-    proof = json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-C04.json').read_text())
-    previous = json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-C02.json').read_text())
+    proof = json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-C04.json').read_text())
+    previous = json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-C02.json').read_text())
     files = [*previous['runtime_source_files'], *proof['runtime_source_files']]
-    c03 = json.loads(Path('docs/DB_Settings/verification/2026-10-17-implementation-C03.json').read_text())
+    c03 = json.loads(Path('docs/DB_Settings/verification/reports/2026-10-17-implementation-C03.json').read_text())
     files.extend(c03['runtime_source_files'])
     for path in ('backend/migrations/versions/M001_identity.py', 'backend/migrations/versions/M002_files.py', 'backend/migrations/versions/M003_ocr.py'):
         expected = next(x['sha256'] for x in files if x['path'] == path)

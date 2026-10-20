@@ -40,7 +40,7 @@ def test_file_metadata_counts_and_unique_null_policy():
 
 
 def test_columns_types_and_null_flags_match_saved_design():
-    source=Path("docs/DB_Settings/물리설계_02_사용자와파일.md").read_text()
+    source=Path("docs/DB_Settings/contracts/schema/물리설계_02_사용자와파일.md").read_text()
     for name in FILE_TABLES:
         section=re.search(r"^## \d+\. "+name+r" — .*?(?=^## |\Z)",source,re.M|re.S)[0]
         rows=re.findall(r"^\| `(\w+)` \| `([^`]+)` \| (필수|선택) \|",section,re.M)
@@ -65,7 +65,7 @@ def test_incremental_offline_sql_only_creates_five_tables():
 
 
 def test_existing_revision_is_unchanged_and_new_revision_has_no_live_schema_import():
-    proof=json.loads(Path("docs/DB_Settings/verification/2026-10-17-implementation-C02.json").read_text())
+    proof=json.loads(Path("docs/DB_Settings/verification/reports/2026-10-17-implementation-C02.json").read_text())
     old=Path("backend/migrations/versions/M001_identity.py")
     expected=next(x["sha256"] for x in proof["runtime_source_files"] if x["path"]==str(old))
     assert hashlib.sha256(old.read_bytes()).hexdigest()==expected
