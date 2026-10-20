@@ -13,7 +13,8 @@ def payload():return dict(status='success',device='cpu',execution_target='local'
 
 @pytest.mark.parametrize('path,value',[
  ('status','failed'),('device','cuda'),('execution_target','runpod'),('input_dimensions',[4,3]),('records',{}),
- ('confidence',True),('confidence',float('nan')),('confidence',1.1),('confidence',-0.1),('text',1),('text','x'*2001),
+ ('confidence',True),('confidence',float('nan')),('confidence',1.1),('confidence',-0.1),('text',1),
+ pytest.param('text','x'*2001,id='oversized-text'),
  ('id',True),('id',None),('id',' '),('id',2**53),('bbox_xyxy',[0,0,9,6]),('bbox_xyxy',[1,1,1,2]),
  ('bbox_xyxy',[0,0,8]),('polygon',[[0,0],[1,1]]),('requires_review','yes'),('recognition_engine','invented')])
 def test_strict_ocr_contract(path,value):

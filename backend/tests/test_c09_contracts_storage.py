@@ -167,7 +167,11 @@ def test_exif_transpose_once_and_original_dimensions():
     with Image.open(BytesIO(display)) as image: assert image.getexif().get(274) is None
 
 
-@pytest.mark.parametrize('raw', [b'',b'not image',b'x'*(20*1024*1024+1)])
+@pytest.mark.parametrize('raw', [
+    pytest.param(b'',id='empty-image'),
+    pytest.param(b'not image',id='invalid-image'),
+    pytest.param(b'x'*(20*1024*1024+1),id='oversized-image'),
+])
 def test_invalid_or_oversized_image(raw):
     with pytest.raises(AuthError): normalize(raw)
 

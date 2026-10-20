@@ -122,9 +122,12 @@ def test_http_invalid_auth_structure_is_422_and_never_echoes_secret(client,body)
 
 
 @pytest.mark.parametrize('content,content_type,status',[
- ('{"username":"admin","username":"admin","password":"admin"}','application/json',400),
- ('{"password":NaN}','application/json',400),('{','application/json',400),
- ('x'*4097,'application/json',413),('{}','text/plain',415)])
+ pytest.param('{"username":"admin","username":"admin","password":"admin"}','application/json',400,id='duplicate-key'),
+ pytest.param('{"password":NaN}','application/json',400,id='nonfinite-number'),
+ pytest.param('{','application/json',400,id='invalid-json'),
+ pytest.param('x'*4097,'application/json',413,id='oversized-body'),
+ pytest.param('{}','text/plain',415,id='wrong-content-type'),
+])
 def test_http_body_parser_is_bounded_strict_and_safe(client,content,content_type,status):
     response=client.post('/api/v1/auth/login',content=content,headers={**csrf(client),'Content-Type':content_type})
     assert response.status_code==status

@@ -397,9 +397,15 @@ with s.lock('operation-'+v['operation_id']),s.lock('gate',shared=True):
         assert list(recovered.app.state.storage.journals())[0]['db_outcome']=='not_committed'
 
 
-@pytest.mark.parametrize('body,status',[(b'{"name":"a","name":"b"}',400),(b'{"name":"\\ud800"}',400),
-    (b'{"name":NaN}',400),(b' '*262145,413),(b'{"name":1}',422),(b'{"name":"x","role":"owner"}',422),
-    (b'['*34+b'0'+b']'*34,400)])
+@pytest.mark.parametrize('body,status',[
+    pytest.param(b'{"name":"a","name":"b"}',400,id='duplicate-key'),
+    pytest.param(b'{"name":"\\ud800"}',400,id='unpaired-surrogate'),
+    pytest.param(b'{"name":NaN}',400,id='nonfinite-number'),
+    pytest.param(b' '*262145,413,id='oversized-body'),
+    pytest.param(b'{"name":1}',422,id='wrong-type'),
+    pytest.param(b'{"name":"x","role":"owner"}',422,id='extra-field'),
+    pytest.param(b'['*34+b'0'+b']'*34,400,id='excessive-depth'),
+])
 def test_business_json_errors_are_bounded_and_safe(client,body,status):
     response=client.post('/api/v1/projects',content=body,headers={**csrf(client),'Content-Type':'application/json'})
     assert response.status_code==status,response.text
