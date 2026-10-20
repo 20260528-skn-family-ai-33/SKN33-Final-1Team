@@ -1,0 +1,51 @@
+{
+  "mode": "vite",
+  "flow": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": true,
+    "project_id": "0425ebf8-5e57-4501-a3b5-12647fb4fdf3",
+    "image_id": "22fa78a4-ab92-43a9-ae8d-7daeb382d6ca",
+    "draft_id": "96158c26-5290-4e12-b2dd-3240026ef671",
+    "criteria_version_id": "e5fcf70e-6e1b-4edf-9824-abcc8b39cacb",
+    "runPath": "/projects/0425ebf8-5e57-4501-a3b5-12647fb4fdf3/reviews/11472775-10e0-40fd-b408-d68b6d23105b",
+    "run_id": "11472775-10e0-40fd-b408-d68b6d23105b",
+    "ocr_records": 1,
+    "results": 1,
+    "runtime": {
+      "engine": "paddleocr",
+      "pipeline": "synthetic-only",
+      "device": "cpu",
+      "execution_target": "local",
+      "status": "completed"
+    },
+    "input_manifest_hash": "cb09e295563feb735e8260069a1c59cec7d6af49b947b423d37663bade8e7d6f",
+    "result_manifest_hash": "8ebbe3babb502b24e8f7db178a9e8fcd369492168e7e63709c4ee5ecc22a0382",
+    "model_config": {
+      "pipeline": "synthetic-only",
+      "model_name": "NO_REAL_MODEL",
+      "model_revision": "synthetic-only-v1",
+      "device_policy": [
+        "cpu"
+      ],
+      "code_revision": "synthetic-test-code",
+      "preprocessing": {
+        "version": "cc-display-2x-lanczos-v1",
+        "ocr_scale": 2
+      }
+    },
+    "export_contract": "cc-review-export-v1",
+    "post_count": 8,
+    "status": "passed"
+  },
+  "restart": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": false,
+    "session_survived_restart": true,
+    "logout_verified": true,
+    "post_count": 1,
+    "status": "passed"
+  },
+  "viewer_and_nonmember_verified": true
+}

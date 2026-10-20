@@ -1,3 +1,5 @@
 [tool.pytest.ini_options]
 testpaths = ["backend/tests", "tests"]
 pythonpath = ["."]
+addopts = "-m 'not db_integration and not ocr_external'"
+markers = ["db_integration: explicit isolated PostgreSQL tests; selected runs fail if configuration is missing", "ocr_external: explicitly enabled real local model inference; never part of default CI"]

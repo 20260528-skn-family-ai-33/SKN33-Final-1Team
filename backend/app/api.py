@@ -462,10 +462,17 @@ def create_app(
     runtime_status: Callable[[], dict] | None = None,
     review_root: Path | None = None,
 ) -> FastAPI:
+    # Retirement is explicit. The original development launcher keeps its default.
+    readonly = os.getenv('LEGACY_READ_ONLY', '0')
+    if readonly not in ('0', '1') or readonly == '1' and os.getenv('APP_ENV', 'development') not in ('development', 'test'):
+        raise ValueError('Legacy read-only mode is restricted to explicit local development.')
+    readonly = readonly == '1'
     recognize = recognizer or _default_recognizer
     runtime_health = runtime_status or _default_runtime_status
     storage = review_root or PROJECT_ROOT / ".runtime" / "reviews"
-    storage.mkdir(parents=True, exist_ok=True)
+    if readonly:
+        if not storage.is_dir():raise ValueError('Legacy read-only mode requires existing history.')
+    else:storage.mkdir(parents=True, exist_ok=True)
     lock = threading.RLock()
     inference_lock = threading.Lock()
 
@@ -473,7 +480,7 @@ def create_app(
     async def lifespan(_app: FastAPI):
         # Background work is local to this process. Never present interrupted
         # persisted jobs as if inference were still running after a restart.
-        for path in storage.glob("*/result.json"):
+        for path in (() if readonly else storage.glob("*/result.json")):
             try:
                 value = _read_json(path)
                 if value.get("status") in {"queued", "running"}:
@@ -491,6 +498,18 @@ def create_app(
     application = FastAPI(
         title="크리에이티브체커 API", version="1.0.0", lifespan=lifespan
     )
+    if readonly:
+        from .legacy_boundary import local_read_request, review_path, retired_response
+        from starlette.responses import JSONResponse
+        @application.middleware('http')
+        async def legacy_read_boundary(request, call_next):
+            if not local_read_request(request):
+                return JSONResponse({'detail': '찾을 수 없습니다.'}, status_code=404)
+            if review_path(request.url.path) and request.method not in ('GET', 'HEAD', 'OPTIONS'):
+                return retired_response(str(uuid4()))
+            response = await call_next(request)
+            response.headers['Cache-Control'] = 'no-store'
+            return response
     # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
     if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
         application.include_router(local_auth_router())

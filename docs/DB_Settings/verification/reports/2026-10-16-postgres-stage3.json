@@ -1,0 +1,67 @@
+{
+  "before": {
+    "id": "0d28dd6484b7274f33f971007e9745035bb18aeb95a16c60dc1ab98651d44615",
+    "image_id": "sha256:bb96c2f03a0b490277250ef12f9fd17e43244db37811cca90711e135bd98ece2",
+    "started_at": "2026-10-16T02:47:34.119027257Z",
+    "status": "running",
+    "health": "healthy",
+    "volume": "skn33-final-1team_pgdata"
+  },
+  "tables_before": [],
+  "app_permissions": {
+    "schema_create": false,
+    "select": true,
+    "insert": true,
+    "update": true,
+    "delete": true
+  },
+  "before_restart": {
+    "rows": 1,
+    "marker": "180a1b8f-2bd4-4a8e-bf11-eb2ed0e8ef72",
+    "note": "persisted",
+    "database": "creative_checker",
+    "account": "creative_checker_app",
+    "timezone": "UTC"
+  },
+  "after_restart": {
+    "container": {
+      "id": "0d28dd6484b7274f33f971007e9745035bb18aeb95a16c60dc1ab98651d44615",
+      "image_id": "sha256:bb96c2f03a0b490277250ef12f9fd17e43244db37811cca90711e135bd98ece2",
+      "started_at": "2026-10-16T06:34:40.518469342Z",
+      "status": "running",
+      "health": "healthy",
+      "volume": "skn33-final-1team_pgdata"
+    },
+    "data": {
+      "rows": 1,
+      "marker": "180a1b8f-2bd4-4a8e-bf11-eb2ed0e8ef72",
+      "note": "persisted",
+      "database": "creative_checker",
+      "account": "creative_checker_app",
+      "timezone": "UTC"
+    }
+  },
+  "after_recreate": {
+    "container": {
+      "id": "4d46cb6120910ea80e35a537dad9a991e3c505823de59cbdbd4c6307bcb3fff9",
+      "image_id": "sha256:bb96c2f03a0b490277250ef12f9fd17e43244db37811cca90711e135bd98ece2",
+      "started_at": "2026-10-16T06:34:46.464983678Z",
+      "status": "running",
+      "health": "healthy",
+      "volume": "skn33-final-1team_pgdata"
+    },
+    "data": {
+      "rows": 1,
+      "marker": "180a1b8f-2bd4-4a8e-bf11-eb2ed0e8ef72",
+      "note": "persisted",
+      "database": "creative_checker",
+      "account": "creative_checker_app",
+      "timezone": "UTC"
+    }
+  },
+  "cleanup": {
+    "tables_after": [],
+    "matches_before": true
+  },
+  "finished_at": "2026-10-16T06:34:52.442339+00:00"
+}

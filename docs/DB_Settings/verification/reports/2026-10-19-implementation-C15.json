@@ -1,0 +1,896 @@
+{
+  "unit": "C15",
+  "status": "complete",
+  "scope": "User-selected local Linux deployment rehearsal and cutover documentation only.",
+  "review_date": "2026-10-19",
+  "generated_at_utc": "2026-10-19T07:41:21.710422+00:00",
+  "next_unit": null,
+  "implementation_sequence": "C01-C15 complete within recorded per-phase validation boundaries; actual production qualification/cutover is separate.",
+  "migration_head": "M008",
+  "new_revision_added": false,
+  "production_cutover_performed": false,
+  "real_linux_paddle_verified": false,
+  "environment": {
+    "host": {
+      "system": "Darwin",
+      "machine": "arm64",
+      "python": "3.12.14"
+    },
+    "api_container": {
+      "system": "Linux",
+      "machine": "aarch64",
+      "python": "3.12.14"
+    },
+    "api_image": "creative-checker-c15-api:test",
+    "api_image_id": "sha256:c2337e95fedeff07863aaccf4cddad87e6841eea7ebd1a268cf886a14b32e9fc",
+    "postgres_server_version_num": 170011,
+    "postgres_tools_image": "postgres:17.11-bookworm",
+    "proxy_image": "nginx:1.28-alpine",
+    "compose_version": "5.1.4",
+    "packages": {
+      "fastapi": "0.143.0",
+      "SQLAlchemy": "2.1.5",
+      "psycopg": "3.3.6",
+      "alembic": "1.20.0",
+      "Pillow": "12.3.0",
+      "portalocker": "3.2.0"
+    },
+    "browser": {
+      "playwright": "1.62.1",
+      "version": "151.0.7922.34",
+      "revision": 1234
+    }
+  },
+  "deployment": {
+    "base_compose": "deploy/compose.v1.yaml",
+    "api_worker_uid": 10001,
+    "read_only_api_worker_root": true,
+    "api_worker_ports_published": false,
+    "loopback_tls_proxy": true,
+    "owner_admin_credentials_in_runtime": false,
+    "shared_private_volume": true,
+    "raw_environment_literal_roundtrip_verified": true,
+    "synthetic_test_worker_override": true,
+    "synthetic_code_in_release_image": false,
+    "worker_dockerfile_static_check_passed": true,
+    "actual_worker_image_built": false,
+    "independent_worker_health": "unknown, never promoted from container liveness or config presence"
+  },
+  "test_runs": [
+    {
+      "kind": "offline",
+      "exit_code": 0,
+      "unique_cases_passed": 686,
+      "additional_subtests_passed": 7,
+      "junit_sha256": "1e5e16a2aa3d3b4e356c67bcec81b5c8bddde96964946d9afe1a63eb876dafe9",
+      "c15_cases": [
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_explicit_legacy_read_mode_preserves_running_json_and_development_login"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[background]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[developer]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[http]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[owner]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[wildcard_proxy]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[worker_db]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[worker_password]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[worker_root]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_invalid_deployment_profiles_are_rejected[worker_secret]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_legacy_read_mode_cannot_be_enabled_for_production[1-production]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_legacy_read_mode_cannot_be_enabled_for_production[yes-test]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_matching_linux_target_profiles_can_be_inspected_without_starting_a_worker"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_v1_rejects_old_writes_before_body_parsing_csrf_or_database_access[/api/reviews/]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_v1_rejects_old_writes_before_body_parsing_csrf_or_database_access[/api/reviews/f8884df4-bcfe-40d9-9a2a-366bdbfd5d23/retry]"
+        },
+        {
+          "module": "backend.tests.test_c15_release",
+          "name": "test_v1_rejects_old_writes_before_body_parsing_csrf_or_database_access[/api/reviews]"
+        }
+      ]
+    },
+    {
+      "kind": "release",
+      "exit_code": 0,
+      "unique_cases_passed": 5,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "5db55bef96fbcbd793986597415caf67785f64cd683e194bdcfbef5e5d316839",
+      "c15_cases": [
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_actual_restore_proof_is_required_for_an_unrehearsed_set[False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_fresh_backup_full_restore_proof_and_profiles_pass_without_business_writes[False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_preflight_rejects_changes_after_the_validated_backup[database-False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_preflight_rejects_changes_after_the_validated_backup[files-False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_real_release_cli_never_emits_credentials_and_never_switches_a_service[False]"
+        }
+      ]
+    },
+    {
+      "kind": "core",
+      "exit_code": 0,
+      "unique_cases_passed": 1327,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "8146a82ceb0ea522a9c85693cca55b3cdba66ea763034b6e37da1d39cd540626",
+      "c15_cases": [
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_actual_restore_proof_is_required_for_an_unrehearsed_set[False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_fresh_backup_full_restore_proof_and_profiles_pass_without_business_writes[False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_preflight_rejects_changes_after_the_validated_backup[database-False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_preflight_rejects_changes_after_the_validated_backup[files-False]"
+        },
+        {
+          "module": "backend.tests.test_c15_release_integration",
+          "name": "test_real_release_cli_never_emits_credentials_and_never_switches_a_service[False]"
+        }
+      ]
+    },
+    {
+      "kind": "https",
+      "exit_code": 0,
+      "unique_cases_passed": 1,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "ddd2c29b9537e6473e5190d8e082b3caa991cb28041905cd51f52e596b766221",
+      "c15_cases": []
+    },
+    {
+      "kind": "deployment",
+      "exit_code": 0,
+      "unique_cases_passed": 2,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "2079102158f474bcf896e65b759b7951e74e1150bcf583a08c7899d5fb4c7671",
+      "c15_cases": [
+        {
+          "module": "backend.tests.test_c15_deployment_integration",
+          "name": "test_linux_compose_https_queue_pre_cutover_backup_restore_and_single_writer[False]"
+        },
+        {
+          "module": "backend.tests.test_c15_deployment_integration",
+          "name": "test_linux_production_api_and_real_worker_refuse_active_developer[False]"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "exit_code": 0,
+      "unique_cases_passed": 2,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "8bfabb2d4d961fa56d783aad245e7afc2f7a4c72831a3619166a8227085ccfbb",
+      "c15_cases": []
+    }
+  ],
+  "c15_new_offline_cases": 16,
+  "c15_new_postgres_preflight_cases": 5,
+  "c15_new_linux_deployment_cases": 2,
+  "c15_total_new_cases": 23,
+  "total_postgres_linked_unique_cases": 1332,
+  "targeted_5_repeated_in_core_not_added_twice": true,
+  "frontend_unit_runs": [
+    {
+      "kind": "legacy",
+      "exit_code": 0,
+      "counts": {
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "skipped": 0
+      },
+      "output_sha256": "7fea072ce99a118991651ea0cf940093d0c4e90634304a866a4c720d383af323"
+    },
+    {
+      "kind": "v1",
+      "exit_code": 0,
+      "counts": {
+        "tests": 35,
+        "pass": 35,
+        "fail": 0,
+        "skipped": 0
+      },
+      "output_sha256": "9018d177eb68b5713ed4d1828a0cb4f15c2e86ef6e9b07fe93d1a576c17a79e3"
+    }
+  ],
+  "frontend_v1_build_passed": true,
+  "frontend_v1_build_sha256": {
+    "frontend/dist-v1/index.html": "a1b85eab37d083921972c52a8d7038d6e3af94b0e235891900d08a3e59ee153b",
+    "frontend/dist-v1/cc-frontend.json": "eee2eb973740008299a053064c7d6dc3ac75fd5754ff3375325e23690d072523",
+    "frontend/dist-v1/assets/index-DwzlGx2b.js": "b2d83f1dd4c0d7615eecb6c53b18fb4cfcd8d78fd0891b85e5312f2678eb3fc3",
+    "frontend/dist-v1/assets/App-KcFU8yQ1.js": "b19ac6772ca4060d7e9c8d5619859a018516aad07e1c0aec09c5d5e5e6440782",
+    "frontend/dist-v1/assets/App-cJQjoZkJ.css": "80fba11a711bee9aae1100bd7d2dccabbebc415e347378e5ed06a797bd37949a",
+    "frontend/dist-v1/assets/index-BXhd9wcj.css": "2d3e8202902742c2892c6a2c5472389d8dc59eb15f46a4c1c61832f77f27a949"
+  },
+  "pip_check_passed": true,
+  "bash_launcher_syntax_passed": true,
+  "actual_linux_rehearsal": {
+    "scope": "local_linux_compose_rehearsal_only",
+    "synthetic_worker": true,
+    "actual_paddle_inference": false,
+    "remote_paid_calls": 0,
+    "https_cookie_verified": true,
+    "api_worker_uid": 10001,
+    "read_only_containers": true,
+    "api_worker_public_ports": false,
+    "legacy_write_status": 410,
+    "legacy_read_status": 404,
+    "original_source_database_preserved": true,
+    "preflight": {
+      "contract_version": "cc-release-check-v1",
+      "state": "preflight_passed",
+      "schema_revision": "M008",
+      "backup_id": "2b5489e9-0b29-42df-9f10-89c7068bbbf4",
+      "restore_drills": 1,
+      "checks": {
+        "schema": {
+          "status": "schema_ready",
+          "revision": "M008",
+          "business_tables": 26,
+          "columns": 395,
+          "foreign_keys": 81,
+          "additional_indexes": 27,
+          "trigger_instances": 35,
+          "functions": 19,
+          "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+          "scope": "database_schema_and_privileges"
+        },
+        "all_foreign_keys_checked": true,
+        "all_roots_and_lineage_checked": true,
+        "service_manifests_checked": 1,
+        "import_manifests_checked": 0
+      },
+      "pending": {
+        "queued_runs": 0,
+        "unfinished_imports": 0
+      },
+      "compatibility": {
+        "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+        "frontend_sha256": "6e08a5e2e0cd63aa2db706cf071c63ff619d39e636449100d09fca479294cdf8",
+        "worker_config_sha256": "2c32ef758b581363a78ebfec298c4adc28111fcf8e99ed043e75bda8a3768a7a",
+        "schema_structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4"
+      },
+      "single_writer": "v1_only; legacy writes return 410; legacy reads are not mounted",
+      "worker_runtime_verified": false,
+      "production_cutover_performed": false,
+      "remaining_operator_checks": [
+        "Verify this exact Linux image/model through an actual local OCR run.",
+        "Verify target TLS, proxy/network isolation and backup encryption/off-host retention/scheduling.",
+        "Stop old writers, preserve original history, then select one v1 deployment; never reopen legacy writes after v1 data."
+      ]
+    },
+    "restored_schema": {
+      "status": "schema_ready",
+      "revision": "M008",
+      "business_tables": 26,
+      "columns": 395,
+      "foreign_keys": 81,
+      "additional_indexes": 27,
+      "trigger_instances": 35,
+      "functions": 19,
+      "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+      "scope": "database_schema_and_privileges"
+    },
+    "sessions_revoked": 1,
+    "fresh_keys": true,
+    "old_cookie_rejected": true,
+    "restored_image_export": true,
+    "new_review_completed": true,
+    "restart_read": true,
+    "capture_seconds": 0.9743,
+    "restore_seconds": 0.9717,
+    "source_flow": {
+      "browser": "151.0.7922.34",
+      "api_mocked": false,
+      "response_loss_injected": false,
+      "project_id": "46397101-2a03-494e-8e22-b22e2e331770",
+      "image_id": "0386bdce-de78-407d-9b87-1243d041dd16",
+      "draft_id": "9d4d8bd0-d638-43ef-81d5-99a00b04a645",
+      "criteria_version_id": "534bf035-785e-4067-9415-fbe2a24a8a82",
+      "runPath": "/projects/46397101-2a03-494e-8e22-b22e2e331770/reviews/4fd7547f-1ad2-4648-ab35-ba1d8368ebd9",
+      "run_id": "4fd7547f-1ad2-4648-ab35-ba1d8368ebd9",
+      "ocr_records": 1,
+      "results": 1,
+      "runtime": {
+        "engine": "paddleocr",
+        "pipeline": "paddle_full_v1",
+        "device": "cpu",
+        "execution_target": "local",
+        "status": "completed"
+      },
+      "input_manifest_hash": "ad40043cb6b544b429bde8064f81c3b6e9f242e4d9f1a1832e5039e3e94e0aff",
+      "result_manifest_hash": "8bd262cd173c5d6e11c9ba9e7c029a924eabddd445e7ec5424a841a1972adadd",
+      "model_config": {
+        "pipeline": "paddle_full_v1",
+        "model_name": "SYNTHETIC_REHEARSAL_NOT_A_MODEL",
+        "model_revision": {
+          "synthetic_rehearsal": true
+        },
+        "device_policy": [
+          "cpu"
+        ],
+        "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+        "preprocessing": {
+          "version": "cc-display-2x-lanczos-v1",
+          "ocr_scale": 2
+        }
+      },
+      "export_contract": "cc-review-export-v1",
+      "secure_cookie_verified": true,
+      "post_count": 7,
+      "status": "passed"
+    },
+    "restored_flow": {
+      "browser": "151.0.7922.34",
+      "api_mocked": false,
+      "response_loss_injected": false,
+      "project_id": "e91f3a5f-2595-4d65-949d-ba16724c0bfc",
+      "image_id": "82b96739-2da0-4e15-b937-224c66e4c881",
+      "draft_id": "1eca4723-70c1-4bcf-89e3-716d6c6b522a",
+      "criteria_version_id": "a0e616c0-ace9-4cb6-ab6d-e4b1c6f92d6a",
+      "runPath": "/projects/e91f3a5f-2595-4d65-949d-ba16724c0bfc/reviews/33feb436-d155-4d66-877e-80a6dc905a46",
+      "run_id": "33feb436-d155-4d66-877e-80a6dc905a46",
+      "ocr_records": 1,
+      "results": 1,
+      "runtime": {
+        "engine": "paddleocr",
+        "pipeline": "paddle_full_v1",
+        "device": "cpu",
+        "execution_target": "local",
+        "status": "completed"
+      },
+      "input_manifest_hash": "a3c35fdded56a67a7f4aa8461e990d07602fc65f5c79bc41aa600ec59937bbb0",
+      "result_manifest_hash": "9b220e091cc83320dff6f4478a32cc383d5225c2b1df3b7ee9896b3d1310aea0",
+      "model_config": {
+        "pipeline": "paddle_full_v1",
+        "model_name": "SYNTHETIC_REHEARSAL_NOT_A_MODEL",
+        "model_revision": {
+          "synthetic_rehearsal": true
+        },
+        "device_policy": [
+          "cpu"
+        ],
+        "code_revision": "a0dfcf4e410036d7c465578a8230aea3f04241e64f429f8e5853b838fd6ad4b3",
+        "preprocessing": {
+          "version": "cc-display-2x-lanczos-v1",
+          "ocr_scale": 2
+        }
+      },
+      "export_contract": "cc-review-export-v1",
+      "secure_cookie_verified": true,
+      "post_count": 7,
+      "status": "passed"
+    },
+    "production_cutover_performed": false,
+    "rpo_rto_sla_verified": false
+  },
+  "retirement": {
+    "v1_legacy_write_status": 410,
+    "v1_legacy_read_status": 404,
+    "legacy_read_mode": "Explicit LEGACY_READ_ONLY=1; development/test and loopback only; unchanged source JSON even for running state.",
+    "legacy_default_write_behavior_retained": true,
+    "developer_admin_login_retained": true,
+    "actual_old_listener_stopped": false,
+    "intentional_legacy_api_edit": {
+      "path": "backend/app/api.py",
+      "before_sha256": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626",
+      "after_sha256": "814d25394fe42215e790c992a43763edf3bf1b7e2de0a4e7c89056c0a60495f6"
+    }
+  },
+  "preflight": {
+    "read_only_business_tables": true,
+    "requires_actual_restore_record": true,
+    "requires_current_backup_rows_and_files": true,
+    "validates_web_worker_same_target_password_root": true,
+    "requires_email_owners_and_no_active_developer": true,
+    "records_code_build_worker_schema_fingerprints": true,
+    "does_not_start_services_or_flip_settings": true
+  },
+  "database_guard": {
+    "release": {
+      "suite": "release",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 5,
+      "failed_cases": 0
+    },
+    "core": {
+      "suite": "core",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 1327,
+      "failed_cases": 0
+    },
+    "https": {
+      "suite": "https",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 1,
+      "failed_cases": 0
+    },
+    "deployment": {
+      "suite": "deployment",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 2,
+      "failed_cases": 0
+    },
+    "browser": {
+      "suite": "browser",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 2,
+      "failed_cases": 0
+    }
+  },
+  "resource_cleanup": {
+    "all_owned_test_databases_removed": true,
+    "all_owned_c15_containers_networks_volumes_removed": true,
+    "owned_pgtools_containers_remaining": 0,
+    "existing_postgres_container_retained": true,
+    "daily_database_modified": false,
+    "private_test_credentials_removed": true,
+    "private_cookie_env_dump_artifacts_published": false,
+    "local_test_api_image_retained": true
+  },
+  "ci": {
+    "core_and_https_and_deployment_suites_defined": true,
+    "explicit_synthetic_deployment_label": true,
+    "yaml_parsed": true,
+    "remote_actions_executed": false
+  },
+  "known_limits": [
+    "No external production server/domain publication, daily schema migration, actual legacy history import or production service cutover.",
+    "Linux arm64 rehearsal uses an explicit test-only synthetic worker; real Linux Paddle worker image/package/model inference is not certified. Worker Dockerfile received only a static build check.",
+    "The stopped Linux volume was snapshotted, dumped/restored by macOS management tools, then copied to a distinct new Linux volume and validated through the real HTTPS app. This is not a Linux-native scheduled backup or other-device disaster recovery certification.",
+    "Backup encryption, off-host storage, retention scheduling/failure notifications and actual production TLS/network/mount policy remain unimplemented or unverified.",
+    "Small synthetic fixture timings are not RPO/RTO or production capacity/accuracy evidence; paid remote calls remain zero.",
+    "Only current-version restart and restored-target restart were rehearsed. No prior-version image rollback was qualified; reopening the legacy JSON writer after v1 writes remains prohibited by the runbook.",
+    "C12/C13 real local macOS Paddle evidence is retained, not rerun or relabeled Linux inference this phase. Windows launcher content is retained; Windows execution is not tested."
+  ],
+  "protected_baseline_file_count": 105,
+  "protected_unchanged_file_count": 105,
+  "protected_baseline_sha256": {
+    "backend/migrations/configuration.py": "dd9a541a33ba6aca609f2e58b1790b6e90c832d71a3a758a44018976b65e1206",
+    "backend/migrations/script.py.mako": "3a88b10fc0e01bd50c130537a76513fbf14de15975fbe753eee27001568481da",
+    "backend/migrations/env.py": "32335be722a00b5513325254c5a2a577a2ec8064fdf5d30a61e7921c41b0cd09",
+    "backend/migrations/alembic.ini": "9d8b024b08ce8d5f3833d28a3e5c32f591fc06b328739c3bef7530ef07bd4526",
+    "backend/migrations/__init__.py": "f4feb1697fa882ae02829188b26acf51458dddb6e5178e60507cb8710a790e4d",
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "backend/migrations/candidates/M007_indexes_draft.py": "187e553f9cf76e2c15a5af8815f41ad9594b7f7ba4e22aa21629a5e511ec5ac2",
+    "backend/migrations/versions/M002_files.py": "7b3b906c7584c44cf117e87475f9be8ff923062ba09bb323a5a7d8f38a0f0744",
+    "backend/migrations/versions/M005_reviews.py": "4725cac6f0051a39862f2fe233e8159c6036b1328ba28001699ede10b15af0e4",
+    "backend/migrations/versions/M004_criteria.py": "2129db3978905dd9b760616e5a3ba98bc53143ab84900cddb01e59855fe4a204",
+    "backend/migrations/versions/M008_grants.py": "6d8451c40bc00ae0b39b0fac0bd72ac2fc02aa7857467fe539255642ca76ca4e",
+    "backend/migrations/versions/M001_identity.py": "bf80a337dfe1ca7e5d71b1dfad741714713cac6e394623d7449e37e1b7a50731",
+    "backend/migrations/versions/M007_guards.py": "2ab151dc605d1d23d2167d8d815d35ea6f82016dabb85a375f478b0d2f837343",
+    "backend/migrations/versions/M003_ocr.py": "335f8dee58daddc32ca1e2b5f7f31e25767154867410d82466678830c782d072",
+    "backend/migrations/versions/M006_relations.py": "2bd30f064718c3333a9a31bd6ad0566116c4056e32f3c44e1861f13bffa67b9f",
+    "backend/migrations/sql/M007_guards.sql": "6ecda4837bdc1a7e4c85f94541d4fdbee56c4e4f1f41a463d532b681c5144038",
+    "backend/app/persistence/schema_contract.json": "21e5463395079ad0ff3a08f028aa42a9df0f46808511e82518f123e79ed19ca5",
+    "docs/DB_Settings/contracts/stage10-implementation-plan.json": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6",
+    "docs/DB_Settings/contracts/stage9-storage-fixtures.json": "9c2c40f4e72cd5d00e3fcf1fbd8f73c5f4ea5b138ebd1d589aa6ef436387c4dd",
+    "docs/DB_Settings/contracts/stage8-examples.json": "1178af08aa9c7e81552c4b57376d4e16da91aeaa3e101627cd840be245f12a63",
+    "docs/DB_Settings/contracts/stage8-hash-vectors.json": "8bca11ad970f7ac3b4960481543098365e11a179adfe564742011bcf6a2f9dc8",
+    "docs/DB_Settings/verification/2026-10-19-implementation-C14.json": "03856b299dd95049ce7bff2eb79089f975c72a9ead11fb6f37462ef860a9487d",
+    "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C11.json": "bd46d412957436b0c407506c4aebeae734e15d49023af0b16b22c052728ddc67",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C10.json": "f59b6b7353fc53eb9277c1d151e0d3ad303a1f7a1a6425d9cd9fdf5ea925286e",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C06.json": "c788b6946890d7416d9cd2acdc2eb7533f58d07cd1f80a1b90272ad770f38617",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C01.json": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c",
+    "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307",
+    "docs/DB_Settings/verification/2026-10-19-implementation-C13.json": "58e66c2e85b392fbc607da93b1c1548bf65dadd6c583c2a71685797a925ad3c7",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07a.json": "a3acafab8727a74a11a869ad51d0f6d773d1cef543d4033c33c451dd1d4662ad",
+    "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C03.json": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07b.json": "d26e717328b3de6d2349fe05fc37eb6546aae5d2d9233e938266f151436419a4",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07c.json": "92361d19694fb1ec76e8188a25f36f161807e15897be5375dec1d69cc1a4a4ae",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C02.json": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C09.json": "1803666ffe646f92b0807e6365ba4692d2db9bc73c1776b2f8a156a0a39c04cf",
+    "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53",
+    "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C05.json": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C04.json": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C12.json": "74e6ce038ac16db8dfbe94758f0ce0abb21526d986ca196a18d031f05a3e1331",
+    "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C08.json": "d1bcfc8f370a8aab4291f3be956c2ef5c30798803809748b1a42856d62cc555d",
+    "docs/DB_Settings/verification/C14/restore-drill.json": "ce7e204a64c85705a303938f171f5d3e34ac11a15914bfae2572b8350713f7f1",
+    "docs/DB_Settings/verification/C13/actual-worker-paddle.json": "be5da07b5be83fe89b9793ed839692f27aa6b42b7bb3e66de439223808a6c9ba",
+    "docs/DB_Settings/verification/C12/real-ocr-mobile.png": "173feafd7009a36790aea60594c88fb8a826ed4f02b2616fdee5711e3cd0ab0a",
+    "docs/DB_Settings/verification/C12/vite-flow.json": "85cafbde0089d776f7b8dc90d4354f8f1e3c9844e2990e1f0e61bfa09b683994",
+    "docs/DB_Settings/verification/C12/direct-flow.json": "3ab515b50c9a1d92094ae9a142c84b8f804cddb5c49f20558f5a7c7fcca19e2d",
+    "docs/DB_Settings/verification/C12/linux-https.json": "9112863d494702ad1e83e1148a22705f1333a4937e6c8867c6885b90b030f583",
+    "docs/DB_Settings/verification/C12/real-ocr-desktop.png": "ec7e3f1422620c207f745d21d01007852eb37e06a6f3e02366e989b2572218f0",
+    "docs/DB_Settings/verification/C12/actual-paddle.json": "491aad58bf1b87d92b8ade478f70f61291e515cd4fc447ff350a77ba3d97930b",
+    "docs/DB_Settings/verification/C12/https-desktop.png": "76630f8cdbfba8d469793e87715be50a0939f423f58e233eeeac9ae4e06ea85d",
+    "docs/DB_Settings/verification/C11/desktop.png": "9d7af45868e6db93098d835afbe773a8e01e7c5bc2519c48eefcb79a1d1e4509",
+    "docs/DB_Settings/verification/C11/mobile.png": "35904ce386dbd2091923e7269e224c0ecc906c06814b4c358d67717331b4caec",
+    "frontend/src/styles.css": "0433a46e20c06cfddbaf58e11109a5f5785e6cb13cd5fa58f912fd305ee6bdd7",
+    "frontend/src/workflow.test.js": "5437ab7360b6c051f9707713593664792b55c5ad8f52ae8b0adc5fc8c6d820c3",
+    "frontend/src/workflow.js": "328d9ea9e6987f84597e60693d4b6e24ef66a9d88c1a3fc53c7850b2d8b0b28a",
+    "frontend/src/main.jsx": "a449f7c5b1c1bd346dde872bfd5dfddbe924d8b2db87ab39cd1e86e0197ca061",
+    "frontend/src/reviewConstants.js": "cc343844a7bf14a67b2c91cbdc7819e50644f083e8f6150e211894e20be5f908",
+    "frontend/src/App.jsx": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6",
+    "frontend/src/v1/components.jsx": "0777cd759b1d3df371d573eb1fb1d8ab6ab745b1ef0b8d9fabea88fbf16cc8a0",
+    "frontend/src/v1/reviewPages.jsx": "89caf971754c6252ef41af78fbbe20188889950ba0778b24bbc8fab56f89f9a1",
+    "frontend/src/v1/pending.js": "708ab0081fb865bc26bb533004d468af4b4c8114b197e6fd3e370cfe675f4a56",
+    "frontend/src/v1/criteriaPages.jsx": "72f740b06c5f8babc859c35cb6f147920ec5e72ef74fea1771148e44fae28a2a",
+    "frontend/src/v1/v1.css": "95b7d6ec1e17ec147e41ea4139311f1d69f5843d51f12d30d62045ed3759010b",
+    "frontend/src/v1/polling.js": "a0abb7f4831730c676f115e943a2b81b30f4f1e5bcdfc848974f0e9644bf2c65",
+    "frontend/src/v1/hooks.jsx": "d4fbbe8c497da5ff4864f4c8aa081347b735d8c067ab99aaf8e1e29f1570410e",
+    "frontend/src/v1/App.jsx": "c2ad3288e29f213d48d08dbebd5282dc8c96d5bd3ad475b3707ef717d706b04f",
+    "frontend/src/v1/auth.jsx": "2b11391c0c817dfc568d749a297c0cf056f8bbd8512de9e4018ca516443397d5",
+    "frontend/src/v1/projectPages.jsx": "b0f2639e68e587952bbfff09797d60338e68f780404d7436e680a46e5e71d32c",
+    "frontend/src/v1/api.js": "41e00b7d2619e561a1e7747b43f96eb44acc17dc1acecdf8c8d6cd77c959aec2",
+    "frontend/src/v1/contracts.js": "0c621bfc09453283842542f9b4ec2495a5efeb0e05fc0a42da86fb8194b4b504",
+    "frontend/src/auth/AuthProvider.jsx": "eaad201a2827ead0f0c5d4d6373da961563f8c63b9592a65f366c66219bc8f87",
+    "frontend/src/auth/auth.test.js": "9a679a1dbc5f72ef40288e2792af9272f9c201695487540c75b1ada1730adf16",
+    "frontend/src/auth/helpers.js": "2878e807ed53a121b58d387192f6d12f8bfdfedfe68b56c2e4e1ac51c6f7a5b6",
+    "frontend/src/auth/RequireAuth.jsx": "b9f324a849da064e4706b5b97883c7c1bcd6bff1de5018036a4daca6390648c6",
+    "frontend/src/styles/auth.css": "f2f7091e474e730b12a4c1e1abd9387a3d34ea2507dbeb7cd3b5538bd0d764ac",
+    "frontend/src/components/Summary.jsx": "3ab4424a01515edcbf475fa8480bb4de287a3312c1955a0646f9dc7c928ea7eb",
+    "frontend/src/components/Brand.jsx": "017690b39b1254ced7a6658e6071f2df2f43c17ac03afade26b0dd0a4710e14b",
+    "frontend/src/components/ErrorMessage.jsx": "979efac52945d649d8101f14de5582abb4dfcbf869577baf8fd0113355254bb7",
+    "frontend/src/components/Icon.jsx": "d201b6800cc42b5c8cbfea3965313535b937c0c93d1936ebf70384c7872872bc",
+    "frontend/src/components/Heading.jsx": "a804c0614bdbcc9fa00e30f361157eccf7633d29c7fa0772fafdc3d486b4015e",
+    "frontend/src/layouts/ReviewLayout.jsx": "d9ab24d4e5d9b0e0bd931f1bcd1420657c719156dd81a00c3f6ee4dcd57382f9",
+    "frontend/src/api/client.js": "1515ed8f333e5edc46c64a642935e1b99a9eda7b57a91be504cbf7732099e47e",
+    "frontend/src/api/auth.js": "5764a2ffda413e4ec314e26bd05b5bdaf82c3df9ac05bc8585db59a5fa1b7085",
+    "frontend/src/pages/LoginPage.jsx": "7253ae65e55fd6db0d0b1fa58647b9531b564b908c0ff9eb9e0987329c92baf5",
+    "frontend/src/pages/LandingPage.jsx": "19f78904b4fe2edf9d48f05848e327fae955f68828109cc52b21d5157b49f4a5",
+    "frontend/src/pages/review/ResultsPage.jsx": "a013caba061f78152c09cb5abc30ae252c8a2e38a84d3de2e5177f0ebfa0e052",
+    "frontend/src/pages/review/ReviewPage.jsx": "fc674c1e7239048b46936282b2dac666283241ce094e6241fb5176c2a53eb5b5",
+    "frontend/src/pages/review/CriteriaPage.jsx": "04846a5fc83b8b1807f9cb6630c112d40ee87398d99118de4375014584764c22",
+    "frontend/src/pages/review/RunningPage.jsx": "b2fdca6a2b4d6fbdaca8161002e557634c06be9df225222ed35704e7e9fcac8e",
+    "frontend/src/pages/review/InputPage.jsx": "73dd7c28198febff858e8b53b39513d61cbf6c07cb4bb0022962b2241cf3216a",
+    "frontend/src/pages/review/ReviewProvider.jsx": "87a7b80ed6c1d6874ad16986c0d243a0506f7f05c272a46ccfc8e2ee6c667f32",
+    "frontend/tests/v1/contracts.test.mjs": "0eed727298342fc1e7064a144750997b390324c1aed615998774b93308e53d3f",
+    "frontend/tests/v1/poster.png": "0132e423a65dae17bafc7aeb3a1032b3028632b588aaf94413a326b06d39700a",
+    "frontend/tests/v1/fixtures.mjs": "765b544a14aa356cc807f13be150cfe34d4c579d03447e9138c56d7db3ef1fdf",
+    "frontend/tests/v1/api.test.mjs": "b85c439d2f99baefbe70407054b72b0ceeb3db7cb85d9534223e95de2b21344c",
+    "frontend/tests/v1/browser.spec.mjs": "d15198cfdb33836ae6da43f0681cf3345fec78b8bb88faff32de59166efb62d3",
+    "frontend/tests/v1/polling.test.mjs": "e96f2e08dc0a5ada2cf568c3a3805730850fd7e5f52f74d410e00cb66c171c45",
+    "frontend/tests/v1/pending.test.mjs": "8b9f447d0330193ad3a6b56577893a2afe7843a664854841f683ae4894eedeba",
+    "frontend/tests/live/v1-flow.mjs": "d04fa864a410d3b360e5e1ab17d4d01aacae68fc0ddab179d54ba76998e469e8",
+    "frontend/tests/e2e/login.spec.mjs": "76fc5c5e1cc2b8b2e4972676d8975d8aa870826d992b82ded9e7bdee3d3b2791",
+    "frontend/tests/e2e/local-admin.spec.mjs": "a907755f0c16bcaac5edd9dd3508f3b4c8f6ed7e355719c1ffde02456c502e40",
+    "run.sh": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d",
+    "run.cmd": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a"
+  },
+  "unchanged_legacy_launch_auth_sha256": {
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "run.cmd": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a",
+    "run.sh": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d"
+  },
+  "intended_existing_edits": [
+    ".github/workflows/v1-integration.yml",
+    "backend/app/api.py",
+    "backend/app/main.py",
+    "backend/app/management/operations.py",
+    "backend/app/worker.py",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+    "docs/DB_Settings/물리설계_01_범위와관계.md",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+    "docs/DB_Settings/물리설계_04_검수기준.md",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+    "docs/DB_Settings/물리설계_06_전체정합성.md",
+    "docs/DB_Settings/추가설계_07_인증과권한.md",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+    "docs/project-specification.md",
+    "scripts/verify_v1.py",
+    "실행가이드.md"
+  ],
+  "new_files": [
+    ".env.deploy.example",
+    "backend/app/legacy_boundary.py",
+    "backend/app/management/release.py",
+    "backend/tests/c15_helpers.py",
+    "backend/tests/c15_worker_process.py",
+    "backend/tests/test_c15_deployment_integration.py",
+    "backend/tests/test_c15_release.py",
+    "backend/tests/test_c15_release_integration.py",
+    "deploy/Dockerfile.worker",
+    "deploy/Dockerfile.worker.dockerignore",
+    "deploy/compose.v1.yaml",
+    "docs/DB_Settings/verification/C15/linux-rehearsal.json",
+    "docs/DB_Settings/검증_C15_배포와전환_대응표.md",
+    "docs/DB_Settings/구현_C15_Linux배포리허설과전환.md"
+  ],
+  "source_sha256": {
+    "backend/app/worker.py": "6fb0867a6d6aa54ee3224cacba7337e7340a64755687426a3b048e7ed31c28cd",
+    "backend/app/legacy_boundary.py": "dcce16ad51145de31957ea5e3acec139e82b7c0b5d32cf425493bf75c766c9b9",
+    "backend/app/api.py": "814d25394fe42215e790c992a43763edf3bf1b7e2de0a4e7c89056c0a60495f6",
+    "backend/app/main.py": "0277dec15420a644148cfe75efe7ea58f6cb20a1a78e9b9e8cdd8067a4b8cc42",
+    "backend/tests/test_c15_deployment_integration.py": "90f381b5fb95d8b44bfc3dc926c01107184b2f8b8c039882e488ef4e6fe0089c",
+    "backend/tests/c15_helpers.py": "4c89fd873dd7c40e579e83751cab46c0512762c71af78f83c2eb138f42f88b0c",
+    "backend/tests/test_c15_release_integration.py": "bf22e22e4d68e43983fc3034233c4de2068ed299ba3504727b344e09e0b4fe5a",
+    "backend/tests/test_c15_release.py": "09bb8f5a7a36a0eb4e898ab6a22687764c3053abfc97b4dcf280955ae8d61a97",
+    "backend/tests/c15_worker_process.py": "385fae00e16c7c3e9c2e02c399ea56d2be3f4b01d5c3342ffd7da139fa41f1a3",
+    "backend/app/management/release.py": "baefef11332d62c1dae3b4c371c5bdb2db95ae24c93d318088f932298c76b306",
+    "backend/app/management/operations.py": "61ce8c5f9dc83d635be426958048d024e736cda443a04639996db55223c9ce99",
+    "scripts/verify_v1.py": "9907c1f658d4349c7091ffccbd204474553e9cd68950220d389804afca584d95",
+    "deploy/compose.v1.yaml": "1c2309fb835d81c0f083baed308ffbf1e28abb326ec83690c14df5889fba4873",
+    "deploy/Dockerfile.worker.dockerignore": "6a83c38ddcaca79098672c5117d13ef5cecc7f25dcf7e2ea6f5fa50a104ccd18",
+    "deploy/Dockerfile.worker": "7dd2e2f72af90e5159bb19227bdc9fbc37aabf6134c9cc7ad094af3576e67853",
+    ".env.deploy.example": "0553426344a073c38408f2098ae449c9f85d0488af1215652d2ea92b4888057b",
+    ".github/workflows/v1-integration.yml": "b9eef25a878b1f6d1807c2528aeddf09dce23ddbc5301f188638871719a7e3c4"
+  },
+  "document_sha256": {
+    "docs/DB_Settings/검증_C15_배포와전환_대응표.md": "3580225bf2a6cbc33c9dd0c1c049e9fdd077f52aacc9dd3e5325af669c4c9b36",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md": "31bdf7c171888ab4e30ee59c44b8f285cdffc0b93935dc75335a06ac8dfdcd7e",
+    "docs/DB_Settings/물리설계_01_범위와관계.md": "204c88de084e342eca918209c717225d1847f8d74c1133f26e6b7196796bc914",
+    "docs/DB_Settings/물리설계_06_전체정합성.md": "3aaafc456aaf92074153dca916dac34235b6f3eb12dda89be12dcb67624838a6",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md": "8b4fc30396e7ed27b612275d2bb9acbd0510856424c5847c30fda45cc1d7372d",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md": "bd3c5b43e240e398be254fcde4530207a6dcff487313fe69c732a365b2c4c9b8",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md": "f6d0cbf0c62a47bbe7ebb0b84f76e504dd9a1572f2a3e802080d183134b7c0e9",
+    "docs/DB_Settings/추가설계_07_인증과권한.md": "add0334eb47287c121f0c7e4359bbe771848bd7d45c6fc052db7172b2249f58e",
+    "docs/DB_Settings/물리설계_04_검수기준.md": "b8b177303e2a4a3f90c7bb8885f6d557d7305c3e5c3118aeed99a0a38988a275",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md": "26fb80cacd156bdaad0dd44c4a0a4aaf7d70f6a7c92846af924ff5dd25d388f1",
+    "docs/DB_Settings/구현_C15_Linux배포리허설과전환.md": "d7a866448a612bca847139b593daa43c6813b9fb1b719eef3a3a22f938908e08",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md": "c97b667432374f8d9e2d15095a735f2642456e18199279c45a218248a6d2cf91",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md": "2325bb7bf9f9f209ea26effec8e5cd0f2c8441246c32da0ad9cecdc9885f180b",
+    "docs/project-specification.md": "17883246ca16e6b49a4bddb77596fe14a520fecca8d774c043207034263bd3ee",
+    "실행가이드.md": "0944e5de77ccd3d1404c9288be231c3c0b512310ed718cd4daba6396e1231d0f"
+  },
+  "artifact_sha256": {
+    "docs/DB_Settings/verification/C15/linux-rehearsal.json": "311517f48ea32271cd3e6c8bb8160fa35bf80e84cfb1a2c43d003bcdd89a16dd"
+  },
+  "verification_report_script_sha256": "e983f3211a90e8f39d679fdc80c172e95a711ce887b92e9b5715977b6a377e20"
+}

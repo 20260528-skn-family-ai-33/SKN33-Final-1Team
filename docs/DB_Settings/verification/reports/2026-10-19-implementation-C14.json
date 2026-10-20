@@ -1,0 +1,899 @@
+{
+  "unit": "C14",
+  "status": "complete",
+  "review_date": "2026-10-19",
+  "generated_at_utc": "2026-10-19T06:23:53.096587+00:00",
+  "next_unit": "C15",
+  "migration_head": "M008",
+  "new_revision_added": false,
+  "scope": "Owner-only source-preserving import dry-run/apply, conservative payload GC, exact-byte repair, actual PostgreSQL custom dump and fresh-target DB/files restore with full validation and session/key reset.",
+  "environment": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.12.14",
+    "postgres_server_version_num": 170011,
+    "postgresql_tools_image": "postgres:17.11-bookworm",
+    "postgresql_tools_policy": "Explicit installed PostgreSQL 17 tools; Docker --pull=never; no credentials in argv.",
+    "packages": {
+      "fastapi": "0.143.0",
+      "SQLAlchemy": "2.1.5",
+      "psycopg": "3.3.6",
+      "alembic": "1.20.0",
+      "Pillow": "12.3.0",
+      "portalocker": "3.2.0"
+    },
+    "browser": {
+      "playwright": "1.62.1",
+      "version": "151.0.7922.34",
+      "revision": 1234,
+      "channel": "pinned Chromium headless shell"
+    }
+  },
+  "policy": {
+    "import_profile": "conservative-source-v1",
+    "input_files_limit": 500,
+    "input_bytes_limit": 536870912,
+    "import_projection": "Source-only OCR/coordinates; unconfirmed criteria and imported results; unknown requester, inference time and local verdict remain NULL.",
+    "gc_default": "dry_run",
+    "quarantine_min_age_hours": 24,
+    "quarantine_retention_days": 7,
+    "gc_registered_file_policy": "Preserve every stored_files row in every state; preserve unknown/intake/diagnostic/journal paths.",
+    "backup_files_limit": 10000,
+    "backup_bytes_limit": 4294967296,
+    "backup_rows_per_table_limit": 1000000,
+    "maintenance_max_drain_seconds": 900,
+    "restore_target": "Different empty database with the same existing owner/app roles and new private storage root.",
+    "restore_security": "Revoke every restored unrevoked session; require two fresh secrets; fail-closed hold until explicit validation release."
+  },
+  "test_runs": [
+    {
+      "kind": "offline",
+      "exit_code": 0,
+      "unique_cases_passed": 670,
+      "additional_subtests_passed": 7,
+      "junit_sha256": "4e1c6f4e255d46d38559304794c3fd9490173dfad4210dbacac252a57fae0693",
+      "c14_cases": [
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_backup_requires_explicit_versioned_tools[values0]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_backup_requires_explicit_versioned_tools[values1]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_backup_requires_explicit_versioned_tools[values2]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_backup_requires_explicit_versioned_tools[values3]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_existing_stage9_hash_vectors_remain_exact"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_private_output_never_overwrites_or_accepts_public_permissions"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_restore_hold_prevents_runtime_start_until_explicit_release"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_restore_rendering_repair_rejects_every_unrelated_schema_change[function]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_restore_rendering_repair_rejects_every_unrelated_schema_change[predicate]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_restore_rendering_repair_rejects_every_unrelated_schema_change[privileges]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_allowed_root_and_frozen_digest_are_explicit"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_decimal_roundtrip_and_raw_bytes_are_distinct_facts"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[byte_limit]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[case_collision]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[directory_symlink]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[file_limit]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[hardlink]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[nfc_collision]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_source_tree_rejects_unsafe_or_ambiguous_inventory[symlink]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"a\":1,\"a\":2}]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"v\":\"\\u0000\"}]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"v\":\"\\ud800\"}]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"v\":0.12345678901234567890123}]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"v\":9007199254740993}]"
+        },
+        {
+          "module": "backend.tests.test_c14_operations",
+          "name": "test_unsafe_source_json_never_becomes_a_normal_snapshot[{\"v\":NaN}]"
+        }
+      ]
+    },
+    {
+      "kind": "operations",
+      "exit_code": 0,
+      "unique_cases_passed": 37,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "14f18bc86e8714f6d59fee8af78fba4df0350e248b63eb46cbde9adc3e9150c1",
+      "c14_cases": [
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_active_service_or_unfinished_inference_does_not_create_a_complete_backup"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_actual_dump_restore_new_target_full_graph_sessions_keys_and_restart"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[dump]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[file]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[manifest]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[missing_complete]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_interrupted_restore_keeps_fresh_target_held"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_missing_registered_payload_is_degraded_and_not_automatically_restorable"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_owner_table_locks_block_writes_outside_the_web_process"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_real_backup_cli_and_offline_inspection_do_not_expose_credentials"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_restore_rejects_old_security_keys_and_populated_target"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[missing_criteria]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[missing_image]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[multi_poster]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[precision]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[provider_hash]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[unknown_result]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_apply_rejects_source_changes_and_staging_changes"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_dry_run_has_no_business_writes_and_same_fingerprint_with_new_ids"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_frozen_plan_resource_ids_cannot_be_edited_behind_the_fingerprint"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_dry_run_quarantine_and_seven_day_delete_are_separate"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_interruption_resumes_only_its_recorded_owned_files[partial_delete]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_interruption_resumes_only_its_recorded_owned_files[quarantine_link]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[database]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[gate]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[no_journal]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[operation]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[registered_missing]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_graph_transaction_is_atomic_and_unknown_commit_is_reconciled[ack_loss]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_graph_transaction_is_atomic_and_unknown_commit_is_reconciled[rollback]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_import_preserves_source_without_creating_local_verdict_or_requester[False]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_import_preserves_source_without_creating_local_verdict_or_requester[True]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_maintenance_http_reports_not_ready_and_refuses_login"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_missing_file_503_and_exact_byte_repair_preserve_image_and_hash"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_partial_source_results_remain_partial_without_invented_passes"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_real_management_cli_dry_run_and_apply"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_same_package_concurrent_apply_and_confirmed_rollback_revalidation"
+        }
+      ]
+    },
+    {
+      "kind": "core",
+      "exit_code": 0,
+      "unique_cases_passed": 1322,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "f82faf387a3e947bd3910ca07f156145a7b2455e03fffd46c4dd0390088d182c",
+      "c14_cases": [
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_active_service_or_unfinished_inference_does_not_create_a_complete_backup"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_actual_dump_restore_new_target_full_graph_sessions_keys_and_restart"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[dump]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[file]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[manifest]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_corrupt_or_partial_backup_is_never_a_restore_candidate[missing_complete]"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_interrupted_restore_keeps_fresh_target_held"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_missing_registered_payload_is_degraded_and_not_automatically_restorable"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_owner_table_locks_block_writes_outside_the_web_process"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_real_backup_cli_and_offline_inspection_do_not_expose_credentials"
+        },
+        {
+          "module": "backend.tests.test_c14_backup_integration",
+          "name": "test_restore_rejects_old_security_keys_and_populated_target"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[missing_criteria]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[missing_image]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[multi_poster]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[precision]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[provider_hash]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_ambiguous_source_is_intake_only_needs_review[unknown_result]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_apply_rejects_source_changes_and_staging_changes"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_dry_run_has_no_business_writes_and_same_fingerprint_with_new_ids"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_frozen_plan_resource_ids_cannot_be_edited_behind_the_fingerprint"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_dry_run_quarantine_and_seven_day_delete_are_separate"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_interruption_resumes_only_its_recorded_owned_files[partial_delete]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_interruption_resumes_only_its_recorded_owned_files[quarantine_link]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[database]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[gate]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[no_journal]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[operation]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_gc_preserves_busy_registered_and_unowned_files[registered_missing]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_graph_transaction_is_atomic_and_unknown_commit_is_reconciled[ack_loss]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_graph_transaction_is_atomic_and_unknown_commit_is_reconciled[rollback]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_import_preserves_source_without_creating_local_verdict_or_requester[False]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_import_preserves_source_without_creating_local_verdict_or_requester[True]"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_maintenance_http_reports_not_ready_and_refuses_login"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_missing_file_503_and_exact_byte_repair_preserve_image_and_hash"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_partial_source_results_remain_partial_without_invented_passes"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_real_management_cli_dry_run_and_apply"
+        },
+        {
+          "module": "backend.tests.test_c14_import_gc_integration",
+          "name": "test_same_package_concurrent_apply_and_confirmed_rollback_revalidation"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "exit_code": 0,
+      "unique_cases_passed": 2,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "fab43297dd58bb8b351e452a9dfb2a0879a11212fdedb974972abebf120e5007",
+      "c14_cases": []
+    }
+  ],
+  "c14_new_offline_cases": 25,
+  "c14_new_postgres_cases": 37,
+  "c14_total_new_cases": 62,
+  "total_postgres_linked_unique_cases": 1324,
+  "targeted_37_repeated_in_core_not_added_twice": true,
+  "actual_restore_drill": {
+    "backup_capture_seconds": 0.9794,
+    "restore_seconds": 1.0062,
+    "source_tables": 28,
+    "registered_files": 11,
+    "source_state_preserved": true,
+    "sessions_revoked": 1,
+    "keys_rotated": true,
+    "checks": {
+      "schema": {
+        "status": "schema_ready",
+        "revision": "M008",
+        "business_tables": 26,
+        "columns": 395,
+        "foreign_keys": 81,
+        "additional_indexes": 27,
+        "trigger_instances": 35,
+        "functions": 19,
+        "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+        "scope": "database_schema_and_privileges"
+      },
+      "all_foreign_keys_checked": true,
+      "all_roots_and_lineage_checked": true,
+      "service_manifests_checked": 1,
+      "import_manifests_checked": 1
+    },
+    "restored_old_cookie_rejected": true,
+    "new_login_and_write": true,
+    "new_synthetic_review_completed": true,
+    "restart_read": true,
+    "remote_calls": 0,
+    "rpo_sla_verified": false,
+    "rto_sla_verified": false
+  },
+  "fault_injection": {
+    "import_graph_rollback": true,
+    "import_commit_ack_loss": true,
+    "changed_source_intake_and_frozen_plan": true,
+    "concurrent_import_apply": true,
+    "live_os_and_database_operation_locks": true,
+    "registered_missing_files_preserved": true,
+    "quarantine_link_unlink_interruption": true,
+    "recorded_partial_deletion_interruption": true,
+    "missing_file_503_and_exact_repair": true,
+    "active_service_and_inference_backup_rejection": true,
+    "share_table_lock_blocks_non_web_dml": true,
+    "dump_file_manifest_complete_corruption": true,
+    "degraded_missing_file_backup": true,
+    "interrupted_restore_remains_held": true,
+    "unrelated_schema_function_and_privilege_differences_rejected": true,
+    "note": "24-hour and 7-day grace tests use controlled test-owned file timestamps/internal clocks; no production CLI short-grace option. Synthetic inference only in C14."
+  },
+  "database_guard": {
+    "operations": {
+      "suite": "operations",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 37,
+      "failed_cases": 0
+    },
+    "core": {
+      "suite": "core",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 1322,
+      "failed_cases": 0
+    },
+    "browser": {
+      "suite": "browser",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 2,
+      "failed_cases": 0
+    }
+  },
+  "resource_cleanup": {
+    "all_owned_test_databases_removed": true,
+    "daily_database_modified": false,
+    "private_test_credentials_removed": true,
+    "existing_postgres_container_retained": true,
+    "private_backup_archives_published": false
+  },
+  "ci": {
+    "core_includes_c14_import_gc_actual_restore": true,
+    "yaml_parsed": true,
+    "remote_actions_executed": false
+  },
+  "execution_notes": [
+    "Actual PostgreSQL 17 dump/restore exposed missing database-level ACLs in a no-create archive. Only the NEW target receives the exact existing M008 CREATE/TEMP/CONNECT boundary.",
+    "PostgreSQL dump/reparse changes a VARCHAR IN array cast spelling. The restore-only path permits exactly this observed rendering, reinstalls the original CHECK with validation, and passes the unchanged byte-exact schema validator. Other catalog/privilege differences are rejected.",
+    "Full regression exposed a preexisting C13 NOWAIT test race with short heartbeat updates. The assertion now waits at most 500ms while inference remains gated for four seconds; production worker behavior is unchanged.",
+    "Full regression exposed ambiguous ordering of equal trigger names across tables in the historical migration test snapshot. The snapshot now includes the table name and orders by table and trigger; no migration or constraint was changed.",
+    "Earlier failed regression runs are not included in passed counts. The final complete core and direct/Vite browser reruns passed with the daily database guard unchanged."
+  ],
+  "known_limits": [
+    "Single-host macOS private POSIX storage and small synthetic datasets; no Linux C14 restore, alternate-host disaster recovery or power-loss durability certification.",
+    "Actual dump and restore timings are measurements of a tiny local fixture, not production RPO/RTO or capacity evidence.",
+    "Archives use private local permissions but are not encrypted remote backups; production retention, scheduling, encryption, cutover and recovery runbook acceptance remain C15 scope.",
+    "Only a conservative single-poster legacy/explicit external mapping is projected; ambiguous or unsupported input remains needs_review, with original bytes preserved.",
+    "Registered files, unknown paths, original intake, diagnostics and journals are never automatically pruned. Completed result verification requires the retained immutable staging plan/journal.",
+    "No daily schema migration, actual legacy-history import, production GC, account provisioning, service cutover or paid remote call was performed.",
+    "C12 Linux HTTPS and C12/C13 real Paddle evidence, frontend source/unit/build and legacy launchers are retained; C14 reruns default Python, full PostgreSQL core and direct/Vite browser flows."
+  ],
+  "protected_baseline_file_count": 104,
+  "protected_unchanged_file_count": 104,
+  "protected_baseline_sha256": {
+    "backend/migrations/configuration.py": "dd9a541a33ba6aca609f2e58b1790b6e90c832d71a3a758a44018976b65e1206",
+    "backend/migrations/script.py.mako": "3a88b10fc0e01bd50c130537a76513fbf14de15975fbe753eee27001568481da",
+    "backend/migrations/env.py": "32335be722a00b5513325254c5a2a577a2ec8064fdf5d30a61e7921c41b0cd09",
+    "backend/migrations/alembic.ini": "9d8b024b08ce8d5f3833d28a3e5c32f591fc06b328739c3bef7530ef07bd4526",
+    "backend/migrations/__init__.py": "f4feb1697fa882ae02829188b26acf51458dddb6e5178e60507cb8710a790e4d",
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "backend/app/api.py": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626",
+    "backend/app/persistence/schema_contract.json": "21e5463395079ad0ff3a08f028aa42a9df0f46808511e82518f123e79ed19ca5",
+    "backend/migrations/candidates/M007_indexes_draft.py": "187e553f9cf76e2c15a5af8815f41ad9594b7f7ba4e22aa21629a5e511ec5ac2",
+    "backend/migrations/versions/M002_files.py": "7b3b906c7584c44cf117e87475f9be8ff923062ba09bb323a5a7d8f38a0f0744",
+    "backend/migrations/versions/M005_reviews.py": "4725cac6f0051a39862f2fe233e8159c6036b1328ba28001699ede10b15af0e4",
+    "backend/migrations/versions/M004_criteria.py": "2129db3978905dd9b760616e5a3ba98bc53143ab84900cddb01e59855fe4a204",
+    "backend/migrations/versions/M008_grants.py": "6d8451c40bc00ae0b39b0fac0bd72ac2fc02aa7857467fe539255642ca76ca4e",
+    "backend/migrations/versions/M001_identity.py": "bf80a337dfe1ca7e5d71b1dfad741714713cac6e394623d7449e37e1b7a50731",
+    "backend/migrations/versions/M007_guards.py": "2ab151dc605d1d23d2167d8d815d35ea6f82016dabb85a375f478b0d2f837343",
+    "backend/migrations/versions/M003_ocr.py": "335f8dee58daddc32ca1e2b5f7f31e25767154867410d82466678830c782d072",
+    "backend/migrations/versions/M006_relations.py": "2bd30f064718c3333a9a31bd6ad0566116c4056e32f3c44e1861f13bffa67b9f",
+    "backend/migrations/sql/M007_guards.sql": "6ecda4837bdc1a7e4c85f94541d4fdbee56c4e4f1f41a463d532b681c5144038",
+    "docs/DB_Settings/contracts/stage10-implementation-plan.json": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6",
+    "docs/DB_Settings/contracts/stage9-storage-fixtures.json": "9c2c40f4e72cd5d00e3fcf1fbd8f73c5f4ea5b138ebd1d589aa6ef436387c4dd",
+    "docs/DB_Settings/contracts/stage8-examples.json": "1178af08aa9c7e81552c4b57376d4e16da91aeaa3e101627cd840be245f12a63",
+    "docs/DB_Settings/contracts/stage8-hash-vectors.json": "8bca11ad970f7ac3b4960481543098365e11a179adfe564742011bcf6a2f9dc8",
+    "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C11.json": "bd46d412957436b0c407506c4aebeae734e15d49023af0b16b22c052728ddc67",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C10.json": "f59b6b7353fc53eb9277c1d151e0d3ad303a1f7a1a6425d9cd9fdf5ea925286e",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C06.json": "c788b6946890d7416d9cd2acdc2eb7533f58d07cd1f80a1b90272ad770f38617",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C01.json": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c",
+    "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307",
+    "docs/DB_Settings/verification/2026-10-19-implementation-C13.json": "58e66c2e85b392fbc607da93b1c1548bf65dadd6c583c2a71685797a925ad3c7",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07a.json": "a3acafab8727a74a11a869ad51d0f6d773d1cef543d4033c33c451dd1d4662ad",
+    "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C03.json": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07b.json": "d26e717328b3de6d2349fe05fc37eb6546aae5d2d9233e938266f151436419a4",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07c.json": "92361d19694fb1ec76e8188a25f36f161807e15897be5375dec1d69cc1a4a4ae",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C02.json": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C09.json": "1803666ffe646f92b0807e6365ba4692d2db9bc73c1776b2f8a156a0a39c04cf",
+    "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53",
+    "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C05.json": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C04.json": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C12.json": "74e6ce038ac16db8dfbe94758f0ce0abb21526d986ca196a18d031f05a3e1331",
+    "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C08.json": "d1bcfc8f370a8aab4291f3be956c2ef5c30798803809748b1a42856d62cc555d",
+    "docs/DB_Settings/verification/C13/actual-worker-paddle.json": "be5da07b5be83fe89b9793ed839692f27aa6b42b7bb3e66de439223808a6c9ba",
+    "docs/DB_Settings/verification/C12/real-ocr-mobile.png": "173feafd7009a36790aea60594c88fb8a826ed4f02b2616fdee5711e3cd0ab0a",
+    "docs/DB_Settings/verification/C12/vite-flow.json": "85cafbde0089d776f7b8dc90d4354f8f1e3c9844e2990e1f0e61bfa09b683994",
+    "docs/DB_Settings/verification/C12/direct-flow.json": "3ab515b50c9a1d92094ae9a142c84b8f804cddb5c49f20558f5a7c7fcca19e2d",
+    "docs/DB_Settings/verification/C12/linux-https.json": "9112863d494702ad1e83e1148a22705f1333a4937e6c8867c6885b90b030f583",
+    "docs/DB_Settings/verification/C12/real-ocr-desktop.png": "ec7e3f1422620c207f745d21d01007852eb37e06a6f3e02366e989b2572218f0",
+    "docs/DB_Settings/verification/C12/actual-paddle.json": "491aad58bf1b87d92b8ade478f70f61291e515cd4fc447ff350a77ba3d97930b",
+    "docs/DB_Settings/verification/C12/https-desktop.png": "76630f8cdbfba8d469793e87715be50a0939f423f58e233eeeac9ae4e06ea85d",
+    "docs/DB_Settings/verification/C11/desktop.png": "9d7af45868e6db93098d835afbe773a8e01e7c5bc2519c48eefcb79a1d1e4509",
+    "docs/DB_Settings/verification/C11/mobile.png": "35904ce386dbd2091923e7269e224c0ecc906c06814b4c358d67717331b4caec",
+    "frontend/src/styles.css": "0433a46e20c06cfddbaf58e11109a5f5785e6cb13cd5fa58f912fd305ee6bdd7",
+    "frontend/src/workflow.test.js": "5437ab7360b6c051f9707713593664792b55c5ad8f52ae8b0adc5fc8c6d820c3",
+    "frontend/src/workflow.js": "328d9ea9e6987f84597e60693d4b6e24ef66a9d88c1a3fc53c7850b2d8b0b28a",
+    "frontend/src/main.jsx": "a449f7c5b1c1bd346dde872bfd5dfddbe924d8b2db87ab39cd1e86e0197ca061",
+    "frontend/src/reviewConstants.js": "cc343844a7bf14a67b2c91cbdc7819e50644f083e8f6150e211894e20be5f908",
+    "frontend/src/App.jsx": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6",
+    "frontend/src/v1/components.jsx": "0777cd759b1d3df371d573eb1fb1d8ab6ab745b1ef0b8d9fabea88fbf16cc8a0",
+    "frontend/src/v1/reviewPages.jsx": "89caf971754c6252ef41af78fbbe20188889950ba0778b24bbc8fab56f89f9a1",
+    "frontend/src/v1/pending.js": "708ab0081fb865bc26bb533004d468af4b4c8114b197e6fd3e370cfe675f4a56",
+    "frontend/src/v1/criteriaPages.jsx": "72f740b06c5f8babc859c35cb6f147920ec5e72ef74fea1771148e44fae28a2a",
+    "frontend/src/v1/v1.css": "95b7d6ec1e17ec147e41ea4139311f1d69f5843d51f12d30d62045ed3759010b",
+    "frontend/src/v1/polling.js": "a0abb7f4831730c676f115e943a2b81b30f4f1e5bcdfc848974f0e9644bf2c65",
+    "frontend/src/v1/hooks.jsx": "d4fbbe8c497da5ff4864f4c8aa081347b735d8c067ab99aaf8e1e29f1570410e",
+    "frontend/src/v1/App.jsx": "c2ad3288e29f213d48d08dbebd5282dc8c96d5bd3ad475b3707ef717d706b04f",
+    "frontend/src/v1/auth.jsx": "2b11391c0c817dfc568d749a297c0cf056f8bbd8512de9e4018ca516443397d5",
+    "frontend/src/v1/projectPages.jsx": "b0f2639e68e587952bbfff09797d60338e68f780404d7436e680a46e5e71d32c",
+    "frontend/src/v1/api.js": "41e00b7d2619e561a1e7747b43f96eb44acc17dc1acecdf8c8d6cd77c959aec2",
+    "frontend/src/v1/contracts.js": "0c621bfc09453283842542f9b4ec2495a5efeb0e05fc0a42da86fb8194b4b504",
+    "frontend/src/auth/AuthProvider.jsx": "eaad201a2827ead0f0c5d4d6373da961563f8c63b9592a65f366c66219bc8f87",
+    "frontend/src/auth/auth.test.js": "9a679a1dbc5f72ef40288e2792af9272f9c201695487540c75b1ada1730adf16",
+    "frontend/src/auth/helpers.js": "2878e807ed53a121b58d387192f6d12f8bfdfedfe68b56c2e4e1ac51c6f7a5b6",
+    "frontend/src/auth/RequireAuth.jsx": "b9f324a849da064e4706b5b97883c7c1bcd6bff1de5018036a4daca6390648c6",
+    "frontend/src/styles/auth.css": "f2f7091e474e730b12a4c1e1abd9387a3d34ea2507dbeb7cd3b5538bd0d764ac",
+    "frontend/src/components/Summary.jsx": "3ab4424a01515edcbf475fa8480bb4de287a3312c1955a0646f9dc7c928ea7eb",
+    "frontend/src/components/Brand.jsx": "017690b39b1254ced7a6658e6071f2df2f43c17ac03afade26b0dd0a4710e14b",
+    "frontend/src/components/ErrorMessage.jsx": "979efac52945d649d8101f14de5582abb4dfcbf869577baf8fd0113355254bb7",
+    "frontend/src/components/Icon.jsx": "d201b6800cc42b5c8cbfea3965313535b937c0c93d1936ebf70384c7872872bc",
+    "frontend/src/components/Heading.jsx": "a804c0614bdbcc9fa00e30f361157eccf7633d29c7fa0772fafdc3d486b4015e",
+    "frontend/src/layouts/ReviewLayout.jsx": "d9ab24d4e5d9b0e0bd931f1bcd1420657c719156dd81a00c3f6ee4dcd57382f9",
+    "frontend/src/api/client.js": "1515ed8f333e5edc46c64a642935e1b99a9eda7b57a91be504cbf7732099e47e",
+    "frontend/src/api/auth.js": "5764a2ffda413e4ec314e26bd05b5bdaf82c3df9ac05bc8585db59a5fa1b7085",
+    "frontend/src/pages/LoginPage.jsx": "7253ae65e55fd6db0d0b1fa58647b9531b564b908c0ff9eb9e0987329c92baf5",
+    "frontend/src/pages/LandingPage.jsx": "19f78904b4fe2edf9d48f05848e327fae955f68828109cc52b21d5157b49f4a5",
+    "frontend/src/pages/review/ResultsPage.jsx": "a013caba061f78152c09cb5abc30ae252c8a2e38a84d3de2e5177f0ebfa0e052",
+    "frontend/src/pages/review/ReviewPage.jsx": "fc674c1e7239048b46936282b2dac666283241ce094e6241fb5176c2a53eb5b5",
+    "frontend/src/pages/review/CriteriaPage.jsx": "04846a5fc83b8b1807f9cb6630c112d40ee87398d99118de4375014584764c22",
+    "frontend/src/pages/review/RunningPage.jsx": "b2fdca6a2b4d6fbdaca8161002e557634c06be9df225222ed35704e7e9fcac8e",
+    "frontend/src/pages/review/InputPage.jsx": "73dd7c28198febff858e8b53b39513d61cbf6c07cb4bb0022962b2241cf3216a",
+    "frontend/src/pages/review/ReviewProvider.jsx": "87a7b80ed6c1d6874ad16986c0d243a0506f7f05c272a46ccfc8e2ee6c667f32",
+    "frontend/tests/v1/contracts.test.mjs": "0eed727298342fc1e7064a144750997b390324c1aed615998774b93308e53d3f",
+    "frontend/tests/v1/poster.png": "0132e423a65dae17bafc7aeb3a1032b3028632b588aaf94413a326b06d39700a",
+    "frontend/tests/v1/fixtures.mjs": "765b544a14aa356cc807f13be150cfe34d4c579d03447e9138c56d7db3ef1fdf",
+    "frontend/tests/v1/api.test.mjs": "b85c439d2f99baefbe70407054b72b0ceeb3db7cb85d9534223e95de2b21344c",
+    "frontend/tests/v1/browser.spec.mjs": "d15198cfdb33836ae6da43f0681cf3345fec78b8bb88faff32de59166efb62d3",
+    "frontend/tests/v1/polling.test.mjs": "e96f2e08dc0a5ada2cf568c3a3805730850fd7e5f52f74d410e00cb66c171c45",
+    "frontend/tests/v1/pending.test.mjs": "8b9f447d0330193ad3a6b56577893a2afe7843a664854841f683ae4894eedeba",
+    "frontend/tests/live/v1-flow.mjs": "d04fa864a410d3b360e5e1ab17d4d01aacae68fc0ddab179d54ba76998e469e8",
+    "frontend/tests/e2e/login.spec.mjs": "76fc5c5e1cc2b8b2e4972676d8975d8aa870826d992b82ded9e7bdee3d3b2791",
+    "frontend/tests/e2e/local-admin.spec.mjs": "a907755f0c16bcaac5edd9dd3508f3b4c8f6ed7e355719c1ffde02456c502e40",
+    "run.sh": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d",
+    "run.cmd": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a"
+  },
+  "legacy_prior_proof_hashes": {
+    "backend/app/api.py": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626",
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "run.cmd": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a",
+    "run.sh": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d"
+  },
+  "intended_existing_edits": [
+    ".github/workflows/v1-integration.yml",
+    "backend/app/main.py",
+    "backend/app/management/__main__.py",
+    "backend/app/storage/local.py",
+    "backend/tests/test_c13_worker_integration.py",
+    "backend/tests/test_guard_upgrade_integration.py",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+    "docs/DB_Settings/물리설계_01_범위와관계.md",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+    "docs/DB_Settings/물리설계_04_검수기준.md",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+    "docs/DB_Settings/물리설계_06_전체정합성.md",
+    "docs/DB_Settings/추가설계_07_인증과권한.md",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+    "docs/project-specification.md",
+    "scripts/verify_v1.py",
+    "실행가이드.md"
+  ],
+  "new_files": [
+    ".env.operations.example",
+    "backend/app/management/backup.py",
+    "backend/app/management/files.py",
+    "backend/app/management/imports.py",
+    "backend/app/management/io.py",
+    "backend/app/management/maintenance.py",
+    "backend/app/management/operations.py",
+    "backend/tests/c14_helpers.py",
+    "backend/tests/test_c14_backup_integration.py",
+    "backend/tests/test_c14_import_gc_integration.py",
+    "backend/tests/test_c14_operations.py",
+    "docs/DB_Settings/verification/C14/restore-drill.json",
+    "docs/DB_Settings/검증_C14_수입GC와복원_대응표.md",
+    "docs/DB_Settings/구현_C14_수입GC와백업복원.md"
+  ],
+  "source_sha256": {
+    "backend/app/main.py": "3c3ec8cf9eba87b48831533fbfcd20d816d310a05d966e74b1521956a82f26f0",
+    "backend/tests/test_c14_operations.py": "9df56c9025e3a4d4a799c4a0cb1ef0c94d37de9c1aa8860e89bf6c1e68a1d372",
+    "backend/tests/test_c14_backup_integration.py": "f651c93c7660e535c58422395e23c30839398050e68b3c2bd31403b7490ee24f",
+    "backend/tests/test_c13_worker_integration.py": "0302616abf6b1a5c34b19b15ce8d9d61725b00ceee360170b44d7cce47371055",
+    "backend/tests/c14_helpers.py": "dd909725df8268fc5d40ab743c94621c2659b886f4c4825e7463ceae08e3c928",
+    "backend/tests/test_guard_upgrade_integration.py": "b928cc3e17f50213cdc874f6b584ee8c87b927d3ab8113f8399a0f58ddbe56ad",
+    "backend/tests/test_c14_import_gc_integration.py": "ed2ec77d17d0129abcb4fa85360d302a389e02dbaee9ad0cb6281ce165b107e0",
+    "backend/app/management/files.py": "2ffcf12fe6217ea9033532ef6adb9b681fb46ce3091fca2fce635c8120deaad8",
+    "backend/app/management/backup.py": "031ea94a55dcfdf2fd9e8f8e8a9071c58ff608c2ea6d81d45b2e4333003abf15",
+    "backend/app/management/maintenance.py": "b0b04bbf0ada518b4f87280c7ce656f32789dc9db68a43fe5fb0756ab4263f88",
+    "backend/app/management/io.py": "d3a12dfb4d32cb30d4b0e88193aa4ce935b23a5e73881ce89fd35283dbb848a0",
+    "backend/app/management/imports.py": "03dc6c776b7f8a13cd160d88c49fb12aae88c37ef0691f5bc6975479aa5a212d",
+    "backend/app/management/operations.py": "64d60feccd49c955c385f1815e260df77aae7d20b23ff044800d3538412e8f3d",
+    "backend/app/management/__main__.py": "e9478c7ad0472493def902fe8827f36fc7307efa017339c2d5a0407ab006f873",
+    "backend/app/storage/local.py": "7003383b5cffaebd35ebf7111ed759b45db83e27dffa98fcb833ef4dce513a76",
+    "scripts/verify_v1.py": "a12542f99448c38f151be98bb4040c9706e3b5ba37d6d34051217514eb959e42",
+    ".env.operations.example": "d23f073dab5798559148218a5ec8e5b8413c03dadfdcab5d442f0b31d635d611",
+    ".github/workflows/v1-integration.yml": "d2a89baefc9eb60806df4a78b78ad90c91579c5d8e55cb2da0b2301661284af3"
+  },
+  "document_sha256": {
+    "docs/DB_Settings/구현_C14_수입GC와백업복원.md": "44cd34568174c0b20800e6afe401461ea144812c9101d1eb5145efe2e8a68ad8",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md": "45d8f5eaf85fd15c0beb468b1df0497f211b958d97f05f9de572300d7838a47a",
+    "docs/DB_Settings/물리설계_01_범위와관계.md": "3512732f7adfbbd8311721c537ceba351f744919a2965e39f5d5fb1521f37006",
+    "docs/DB_Settings/물리설계_06_전체정합성.md": "d9802e037af459ede9695f5d47181bf7c65b25af658edef7673aed72c654b825",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md": "9bac5ef9cdffd808edf37468b3576fd0ce38841ea95141bf38ccd883f8c8d9f7",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md": "47217df40f97c2168cd8f28375053ede86137ba54ec37f6b2df86e52bbff9649",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md": "64ed874c69ee52eb1aefe41abe718705d03f357583a4fabbd998e6803c80520a",
+    "docs/DB_Settings/추가설계_07_인증과권한.md": "652e4e5a1efef90f4e8eaf09d265bf2138d01eefa89ff386650ebfb6a9cfffde",
+    "docs/DB_Settings/물리설계_04_검수기준.md": "0bf9b5102882af8c5a21bc987c0de0ef7ef92d0fb12c9ffbed030aebf6ecf383",
+    "docs/DB_Settings/검증_C14_수입GC와복원_대응표.md": "dd8bc6921c121e6a4d7362398002c02feb31e17d3929b0a9031eee3f35edc83b",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md": "b5dae21c744903fd76ad75bdb979ff71bab59560df84bf0f44759619ccf48cb6",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md": "ab85a6a703862112d887e59426a4e58af37036f6fb2015737a1942655c6bc099",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md": "5ac55eebd37f10a4296f2d7ea8b087e6763fdfb5e39e00107d5b831b27d4e153",
+    "docs/project-specification.md": "911f12adb26dbbc7f59ec84074ee779d85ce481fb5b6ff4eab475b67039d6b2d",
+    "실행가이드.md": "f3d73afd52e43e6a5a39cbe318f2d3f441f1c9b0421652a237ff37b0198fe52b"
+  },
+  "artifact_sha256": {
+    "docs/DB_Settings/verification/C14/restore-drill.json": "ce7e204a64c85705a303938f171f5d3e34ac11a15914bfae2572b8350713f7f1"
+  },
+  "verification_report_script_sha256": "94c3152444316239e6679c3da520999ceb467704399abd23edfde7950319830e"
+}

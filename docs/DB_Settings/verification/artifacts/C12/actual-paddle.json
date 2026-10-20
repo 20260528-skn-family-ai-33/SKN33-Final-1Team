@@ -1,0 +1,107 @@
+{
+  "flow": {
+    "browser": "151.0.7922.34",
+    "api_mocked": false,
+    "response_loss_injected": false,
+    "project_id": "34dec95c-d87c-43ca-a5fc-95da536eb2ba",
+    "image_id": "66251fbc-afbd-4173-adbc-dfb3d1ab685a",
+    "draft_id": "4ecba431-de9d-4933-8edd-35183b4162ff",
+    "criteria_version_id": "49b6543c-5ac8-482e-b6c4-c1a53c6ab282",
+    "runPath": "/projects/34dec95c-d87c-43ca-a5fc-95da536eb2ba/reviews/7e61c7b6-c85c-42e7-92b2-5c30e3ff6c6c",
+    "run_id": "7e61c7b6-c85c-42e7-92b2-5c30e3ff6c6c",
+    "ocr_records": 18,
+    "results": 1,
+    "runtime": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "device": "cpu",
+      "execution_target": "local",
+      "status": "completed"
+    },
+    "input_manifest_hash": "d24fa5e7239f4fe10fecb3461e74f7496d9760d748b2384ff45db051e969c6e9",
+    "result_manifest_hash": "ae236c8455d10b2f87457ad53d2b41bb48faa7f9ac75a719cb79b43a2a934524",
+    "model_config": {
+      "pipeline": "paddle_full_v1",
+      "model_name": "korean_PP-OCRv5_mobile_rec",
+      "model_revision": {
+        "detection": {
+          "model": "PP-OCRv5_server_det",
+          "sha256": {
+            "inference.yml": "28fb721efc3634fc8aa677e474b9602cb815a91cf569ef357a7a553d7b3ce685",
+            "inference.json": "af5876933d8806a1b50d895867e0781e135cd92ff37381992828fc8d1b842d28",
+            "inference.pdiparams": "183146fe9d9910352f68482f623bcbbb9fa7b9e8fa1463b9ad288cef00524d2d"
+          },
+          "revision": "ca867c897ecbca8873081573a802ad70d499cb94",
+          "repository": "PaddlePaddle/PP-OCRv5_server_det"
+        },
+        "recognition": {
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "sha256": {
+            "inference.yml": "f757fa1c40e99edcf27e9cce879b93eb2a51fa46f5ef39095689b8c37dd75998",
+            "inference.json": "562404e3c590c50c93778d5f0a94df21b47b5ab8f3ea6d47c7f8a7930c3bc844",
+            "inference.pdiparams": "cac3e5f12cf04aaa77f6a5bc704e4e736ef2908476551891d84b41b4e9090462"
+          },
+          "revision": "c02ecaf1f22bfd1c618cce154fd19185b47e663a",
+          "repository": "PaddlePaddle/korean_PP-OCRv5_mobile_rec"
+        }
+      },
+      "device_policy": [
+        "cpu"
+      ],
+      "code_revision": "886c25f03262b1de0bffb3a1f67d99e909533039508383e42946e0581ad1eabc",
+      "preprocessing": {
+        "version": "cc-display-2x-lanczos-v1",
+        "ocr_scale": 2
+      }
+    },
+    "export_contract": "cc-review-export-v1",
+    "post_count": 7,
+    "status": "passed"
+  },
+  "health": {
+    "status": "degraded",
+    "scope": "business",
+    "checks": {
+      "worker": {
+        "state": "unknown",
+        "checked_at": null
+      },
+      "ocr_runtime": {
+        "state": "ready",
+        "checked_at": "2026-10-18T08:26:30.405773Z"
+      },
+      "model": {
+        "state": "ready",
+        "checked_at": "2026-10-18T08:26:30.405773Z"
+      },
+      "storage": {
+        "state": "ready",
+        "checked_at": "2026-10-18T08:26:30.405773Z"
+      },
+      "api": {
+        "state": "ready",
+        "checked_at": "2026-10-18T08:26:30.405773Z"
+      },
+      "db": {
+        "state": "ready",
+        "checked_at": "2026-10-18T08:26:30.405773Z"
+      }
+    },
+    "limits": {
+      "login_json_bytes": 4096,
+      "sample_available": false
+    },
+    "meta": {
+      "contract_version": "cc-api-v1",
+      "request_id": "521fd5b2-a508-48b3-b7ec-8b491c90af6c"
+    }
+  },
+  "quality_evaluation": false,
+  "scope": "One existing poster; actual CPU model/path and persistence, not OCR accuracy or SLA.",
+  "measured_profile": {
+    "wall_seconds": 7.465400624998438,
+    "load_seconds": 1.1420068750012433,
+    "inference_seconds": 5.9386624159997154,
+    "peak_rss_bytes": 8616361984
+  }
+}

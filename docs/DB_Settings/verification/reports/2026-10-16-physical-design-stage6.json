@@ -1,0 +1,396 @@
+{
+  "review_date": "2026-10-16",
+  "generated_at_utc": "2026-10-16T08:31:30.740759+00:00",
+  "validation_kind": "static_document_review",
+  "status": "passed",
+  "postgresql_runtime_tests_run": false,
+  "sql_or_migration_executed": false,
+  "runtime_code_changed": false,
+  "counts": {
+    "tables": 26,
+    "columns": 394,
+    "primary_keys": 26,
+    "unique_constraints": 41,
+    "foreign_keys": 81,
+    "check_groups": 77,
+    "partial_unique_indexes": 1,
+    "ordinary_indexes": 25,
+    "trigger_rule_names": 30,
+    "self_reference_tables": 7,
+    "multi_table_cycles": [
+      [
+        "review_attempts",
+        "review_runs"
+      ],
+      [
+        "import_packages",
+        "stored_files"
+      ]
+    ],
+    "local_links_checked": 96,
+    "local_heading_anchors_checked": 4
+  },
+  "original_erd_relation_coverage": {
+    "direct": 68,
+    "via_item_results": 2,
+    "deferred": 11
+  },
+  "checks_passed": [
+    "26 domain tables and 394 columns match the catalog input",
+    "26 primary keys and 41 unique keys reference existing columns",
+    "81 foreign keys have matching column counts types and declared target keys",
+    "Composite FK context columns are NOT NULL",
+    "11 deferred columns and FK targets remain excluded",
+    "Original ERD relations covered by 68 direct and 2 transitive mappings",
+    "7 self reference tables and 2 multi table cycles identified",
+    "All constraint index and trigger rule names unique and at most 63 bytes",
+    "UPDATE allowlists and index column references match domain columns",
+    "All 18 database test scenarios are documented as future runtime checks",
+    "Markdown structure local links and local heading anchors verified",
+    "Step 6 complete and next step 7 only; no step 7 artifact created",
+    "Backend frontend and requirements have no tracked changes",
+    "git diff --check and new Markdown whitespace checks passed"
+  ],
+  "tables": [
+    {
+      "name": "users",
+      "columns": 7,
+      "primary_key": [
+        "user_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 0,
+      "check_groups": 2
+    },
+    {
+      "name": "user_sessions",
+      "columns": 6,
+      "primary_key": [
+        "session_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 1,
+      "check_groups": 3
+    },
+    {
+      "name": "projects",
+      "columns": 10,
+      "primary_key": [
+        "project_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 1,
+      "check_groups": 3
+    },
+    {
+      "name": "project_members",
+      "columns": 6,
+      "primary_key": [
+        "project_id",
+        "user_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 2,
+      "check_groups": 2
+    },
+    {
+      "name": "assets",
+      "columns": 8,
+      "primary_key": [
+        "asset_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3,
+      "check_groups": 2
+    },
+    {
+      "name": "asset_versions",
+      "columns": 15,
+      "primary_key": [
+        "asset_version_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4,
+      "check_groups": 4
+    },
+    {
+      "name": "stored_files",
+      "columns": 16,
+      "primary_key": [
+        "file_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4,
+      "check_groups": 4
+    },
+    {
+      "name": "image_coordinate_frames",
+      "columns": 12,
+      "primary_key": [
+        "frame_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3,
+      "check_groups": 3
+    },
+    {
+      "name": "record_aliases",
+      "columns": 7,
+      "primary_key": [
+        "alias_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2,
+      "check_groups": 2
+    },
+    {
+      "name": "schema_definitions",
+      "columns": 10,
+      "primary_key": [
+        "schema_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2,
+      "check_groups": 4
+    },
+    {
+      "name": "import_packages",
+      "columns": 15,
+      "primary_key": [
+        "import_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4,
+      "check_groups": 4
+    },
+    {
+      "name": "audit_events",
+      "columns": 10,
+      "primary_key": [
+        "event_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 2,
+      "check_groups": 3
+    },
+    {
+      "name": "ocr_runs",
+      "columns": 27,
+      "primary_key": [
+        "ocr_run_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 7,
+      "check_groups": 3
+    },
+    {
+      "name": "ocr_tokens",
+      "columns": 15,
+      "primary_key": [
+        "token_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 1,
+      "check_groups": 3
+    },
+    {
+      "name": "poster_extractions",
+      "columns": 30,
+      "primary_key": [
+        "extraction_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 6,
+      "check_groups": 3
+    },
+    {
+      "name": "poster_field_observations",
+      "columns": 15,
+      "primary_key": [
+        "observation_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 1,
+      "check_groups": 3
+    },
+    {
+      "name": "evidence_records",
+      "columns": 19,
+      "primary_key": [
+        "evidence_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 6,
+      "check_groups": 3
+    },
+    {
+      "name": "evidence_ocr_tokens",
+      "columns": 7,
+      "primary_key": [
+        "evidence_id",
+        "token_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2,
+      "check_groups": 2
+    },
+    {
+      "name": "criteria_sets",
+      "columns": 6,
+      "primary_key": [
+        "criteria_set_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2,
+      "check_groups": 2
+    },
+    {
+      "name": "criteria_drafts",
+      "columns": 12,
+      "primary_key": [
+        "draft_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3,
+      "check_groups": 3
+    },
+    {
+      "name": "criteria_versions",
+      "columns": 27,
+      "primary_key": [
+        "criteria_version_id"
+      ],
+      "unique_constraints": 4,
+      "foreign_keys": 7,
+      "check_groups": 4
+    },
+    {
+      "name": "criteria_items",
+      "columns": 18,
+      "primary_key": [
+        "criteria_item_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 2,
+      "check_groups": 2
+    },
+    {
+      "name": "review_runs",
+      "columns": 40,
+      "primary_key": [
+        "run_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 9,
+      "check_groups": 4
+    },
+    {
+      "name": "review_attempts",
+      "columns": 24,
+      "primary_key": [
+        "attempt_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 1,
+      "check_groups": 3
+    },
+    {
+      "name": "item_results",
+      "columns": 23,
+      "primary_key": [
+        "result_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 5,
+      "check_groups": 4
+    },
+    {
+      "name": "run_item_selections",
+      "columns": 9,
+      "primary_key": [
+        "run_id",
+        "criteria_item_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 1,
+      "check_groups": 2
+    }
+  ],
+  "deferred_columns": {
+    "evidence_records": [
+      "human_decision_id",
+      "reference_field_result_id",
+      "reference_record_id"
+    ],
+    "criteria_items": [
+      "source_reference_record_id"
+    ],
+    "review_runs": [
+      "submission_version_id"
+    ],
+    "review_attempts": [
+      "work_unit_id"
+    ],
+    "item_results": [
+      "adjudicates_conflict_id",
+      "agent_execution_id",
+      "reference_check_id",
+      "work_unit_id"
+    ],
+    "run_item_selections": [
+      "selection_event_id"
+    ]
+  },
+  "source_files": [
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "cdf28d1edbaef490258b5728bed1934a65dc938f4a282ca632e1cf4097e33e73"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "ffe5d1ba9fd3d1ae9a755b7eaafb12bef0357dee0ec825d4e404460c6e5f1711"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "ca2256755276262af248ee5de096711f0868bc4a011e95383ef658df321751ad"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "e79425978f5ee1ab9f41be593dcae6e3ac8ff1368c9317de70a8e8f79b694207"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "7990261c7f1ebdbd7751778cb36bcf7e130a8da279b39dc192ed6c0f26b7648e"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "70961d1f7002359182e34092e839a420c7e737a75be6c8865461137f9f6c05a9"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "c3062231477f4fc6510cae88c8df576318c64eda870ec9abdd3a1bfd8d7025c5"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "706fbb596f86e019808c230fbd3ef84c7c3862d1a5e0a6df431ee7456868d4bc"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "8a01d054cf12df0e879b6118238eb184d347135fb6adddf1dca9d8ce2ef44d9d"
+    },
+    {
+      "path": "docs/ERD_물리.md",
+      "sha256": "7acdc5d6840189e48b5a631b73079ca7e03b140d788b96e927eedb533e2d7067"
+    }
+  ],
+  "remaining_design_steps": [
+    "7 authentication and authorization",
+    "8 API UI JSON and hash contracts",
+    "9 persistence files import and recovery",
+    "10 implementation boundaries and validation specifications"
+  ],
+  "limitations": [
+    "Checks validate document structure and declared interfaces only.",
+    "SQL CHECK expressions triggers row locks concurrency query plans backup and restore require later real PostgreSQL validation."
+  ]
+}

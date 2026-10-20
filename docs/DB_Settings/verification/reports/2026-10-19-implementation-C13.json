@@ -1,0 +1,674 @@
+{
+  "unit": "C13",
+  "status": "complete",
+  "review_date": "2026-10-19",
+  "generated_at_utc": "2026-10-19T05:19:13.029671+00:00",
+  "next_unit": "C14",
+  "migration_head": "M008",
+  "new_revision_added": false,
+  "scope": "Explicit PostgreSQL queue web admission and separate local Paddle worker; fenced claims, heartbeat/lease, pre-dispatch-only recovery, uncertain-commit reconciliation and graceful drain.",
+  "environment": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "python": "3.12.14",
+    "postgres_server_version_num": 170011,
+    "packages": {
+      "fastapi": "0.143.0",
+      "SQLAlchemy": "2.1.5",
+      "psycopg": "3.3.6",
+      "alembic": "1.20.0",
+      "Pillow": "12.3.0",
+      "portalocker": "3.2.0"
+    },
+    "browser": {
+      "playwright": "1.62.1",
+      "version": "151.0.7922.34",
+      "revision": 1234,
+      "channel": "pinned Chromium headless shell"
+    }
+  },
+  "policy": {
+    "heartbeat_seconds": 15,
+    "lease_seconds": 90,
+    "max_total_attempts": 3,
+    "backoff_seconds": [
+      5,
+      30
+    ],
+    "automatic_retry": "proven_not_dispatched_only",
+    "max_pending_per_executor": 16,
+    "execution_target": "local",
+    "remote_adapter_implemented": false
+  },
+  "test_runs": [
+    {
+      "kind": "offline",
+      "exit_code": 0,
+      "unique_cases_passed": 645,
+      "additional_subtests_passed": 7,
+      "junit_sha256": "60382de28b9eb2604fcec3c21a9e2091df3bcba0625a7ffac3f62922a7066c28",
+      "c13_cases": [
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[REVIEW_EXECUTOR-background_tasks]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[REVIEW_PIPELINE-disabled]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[RUN_TARGET-runpod]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[STORAGE_ROOT-relative]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[STORAGE_ROOT-/tmp/../etc]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[LOCAL_ADMIN_LOGIN-1]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[DB_OWNER_PASSWORD-private]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[POSTGRES_PASSWORD-private]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_worker_rejects_implicit_or_privileged_profiles[PERSISTENCE_MODE-legacy_json]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_minimal_worker_needs_no_browser_or_session_secrets"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_description_is_bounded_frozen_and_never_overwritten"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[target]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[revision]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[device]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[scale]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[duplicate]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[oversize]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_invalid_worker_description[symlink]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_ambiguous_executor_profiles[values0]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_ambiguous_executor_profiles[values1]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_ambiguous_executor_profiles[values2]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_ambiguous_executor_profiles[values3]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_rejects_ambiguous_executor_profiles[values4]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_web_worker_admission_preserves_developer_login_without_local_model"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_failed_heartbeat_never_reacquires_authority"
+        },
+        {
+          "module": "backend.tests.test_c13_worker",
+          "name": "test_cli_checks_configuration_without_db_or_model"
+        }
+      ]
+    },
+    {
+      "kind": "core",
+      "exit_code": 0,
+      "unique_cases_passed": 1285,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "e3c9790fa3449fa812d54667ce8ac78f6e77d15429a499bd41334d3664ed6050",
+      "c13_cases": [
+        {
+          "module": "backend.tests.test_c13_process_integration",
+          "name": "test_web_stopped_worker_completes_and_web_restart_reads_same_run"
+        },
+        {
+          "module": "backend.tests.test_c13_process_integration",
+          "name": "test_sigkill_recovers_only_predispatch_without_automatic_ocr_replay[True]"
+        },
+        {
+          "module": "backend.tests.test_c13_process_integration",
+          "name": "test_sigkill_recovers_only_predispatch_without_automatic_ocr_replay[False]"
+        },
+        {
+          "module": "backend.tests.test_c13_process_integration",
+          "name": "test_sigterm_drains_active_work_and_does_not_claim_next_run"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_web_only_admits_and_replays_worker_jobs"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_two_workers_claim_once_then_commit_complete_graph"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_skip_locked_projects_and_available_time"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_heartbeat_runs_while_inference_has_no_db_transaction"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_expired_predispatch_requeues_with_fresh_token_and_three_attempt_cap"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_expired_after_dispatch_never_resubmits[dispatching]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_expired_after_dispatch_never_resubmits[submitted]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_expired_after_dispatch_never_resubmits[unknown]"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_current_token_wrong_token_and_late_result_are_fenced"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_mismatched_config_and_background_queue_are_never_claimed"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_live_storage_owners_coexist_and_background_exclusive_is_rejected"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_lease_is_checked_after_waited_lock_using_actual_db_time"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_unconfirmed_claim_never_executes_or_claims_again"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_unconfirmed_dispatch_never_calls_ocr_or_automatically_resubmits"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_result_commit_ack_loss_reconciles_without_second_ocr"
+        },
+        {
+          "module": "backend.tests.test_c13_worker_integration",
+          "name": "test_expired_plan_cannot_publish_any_database_result"
+        }
+      ]
+    },
+    {
+      "kind": "browser",
+      "exit_code": 0,
+      "unique_cases_passed": 2,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "63caa5f0136e45b61e5666c89b0f8e3807de2d2d25111037589811c2c07a581a",
+      "c13_cases": []
+    },
+    {
+      "kind": "worker-ocr",
+      "exit_code": 0,
+      "unique_cases_passed": 1,
+      "additional_subtests_passed": 0,
+      "junit_sha256": "52e5ef999eb5dbcce019bb0391276c4b0e8bf1c6cdcdb97f4d7cd338f8008c6e",
+      "c13_cases": [
+        {
+          "module": "backend.tests.test_c13_real_ocr_integration",
+          "name": "test_production_worker_cli_frozen_description_and_one_real_paddle_poster"
+        }
+      ]
+    }
+  ],
+  "c13_new_offline_cases": 26,
+  "c13_new_synthetic_postgres_process_cases": 20,
+  "c13_new_actual_worker_ocr_cases": 1,
+  "c13_total_new_cases": 47,
+  "total_postgres_linked_unique_cases": 1288,
+  "targeted_20_repeated_in_core_not_added_twice": true,
+  "actual_ocr": {
+    "scope": "one_real_poster_local_cpu_separate_production_cli_worker",
+    "poster_sha256": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924",
+    "display_dimensions": [
+      600,
+      848
+    ],
+    "input_dimensions": [
+      1200,
+      1696
+    ],
+    "ocr_records": 18,
+    "criteria_items": 1,
+    "worker_attempts": 1,
+    "run_status": "completed",
+    "profile": {
+      "inference_seconds": 6.601092750000134,
+      "load_seconds": 2.9572594999999637,
+      "peak_rss_bytes": 8853061632,
+      "wall_seconds": 9.91445787500004
+    },
+    "worker_process_seconds": 10.7874,
+    "automatic_remote_submissions": 0,
+    "accuracy_evaluation": false
+  },
+  "fault_injection": {
+    "owned_worker_sigkill": true,
+    "sigterm_drain": true,
+    "claim_commit_ack_loss": true,
+    "dispatch_commit_ack_loss": true,
+    "result_commit_ack_loss": true,
+    "remote_submitted_state": "synthetic row only; no paid call or remote lookup",
+    "test_only_short_lease_seconds": 1,
+    "test_only_short_heartbeat_seconds": 0.1,
+    "note": "Additional direct service tests use sub-second leases. Production CLI exposes no shortened timing flags. Real CLI uses fixed 90/15 policy."
+  },
+  "database_guard": {
+    "core": {
+      "suite": "core",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 1285,
+      "failed_cases": 0
+    },
+    "browser": {
+      "suite": "browser",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 2,
+      "failed_cases": 0
+    },
+    "worker-ocr": {
+      "suite": "worker-ocr",
+      "pytest_exit_code": 0,
+      "before": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "after": {
+        "temporary_databases": [],
+        "postgres_version_num": 170011,
+        "daily_public_relations": [],
+        "default_privileges": [
+          [
+            "creative_checker_owner",
+            2200,
+            "S",
+            "{creative_checker_app=rU/creative_checker_owner}"
+          ],
+          [
+            "creative_checker_owner",
+            2200,
+            "r",
+            "{creative_checker_app=arwd/creative_checker_owner}"
+          ]
+        ]
+      },
+      "guard_unchanged": true,
+      "daily_guard_executed": true,
+      "unique_cases": 1,
+      "failed_cases": 0
+    }
+  },
+  "resource_cleanup": {
+    "all_owned_test_databases_removed": true,
+    "all_owned_child_processes_exited": true,
+    "daily_database_modified": false,
+    "existing_postgres_container_retained": true
+  },
+  "ci": {
+    "core_includes_c13_synthetic_worker": true,
+    "yaml_parsed": true,
+    "remote_actions_executed": false,
+    "real_ocr_opt_in_not_ci": true
+  },
+  "execution_notes": [
+    "Two automatic approval service capacity errors before any execution; later approved normally without bypass.",
+    "Docker Desktop was stopped; started existing daemon/container before isolated tests.",
+    "Prior temporary Chromium missing; downloaded the same pinned 151.0.7922.34 revision 1234, then both browser tests passed."
+  ],
+  "known_limits": [
+    "Single-host private POSIX storage; no NFS/multi-host worker certification.",
+    "Actual new worker inference: one local macOS CPU poster, not accuracy/SLA evidence or a Linux Paddle worker deployment.",
+    "No production/daily schema migration, seed, cutover, importer, GC or backup/restore in C13.",
+    "No remote paid job submission, query or result recovery adapter. Legacy RunPod path unchanged.",
+    "Independent worker health remains unknown without a dedicated liveness registry.",
+    "Frontend source/unit/build and previous C12 Linux HTTPS/source OCR evidence retained; only direct/Vite browser flow rerun this phase."
+  ],
+  "protected_baseline_file_count": 100,
+  "protected_unchanged_file_count": 100,
+  "protected_baseline_sha256": {
+    "backend/migrations/configuration.py": "dd9a541a33ba6aca609f2e58b1790b6e90c832d71a3a758a44018976b65e1206",
+    "backend/migrations/script.py.mako": "3a88b10fc0e01bd50c130537a76513fbf14de15975fbe753eee27001568481da",
+    "backend/migrations/env.py": "32335be722a00b5513325254c5a2a577a2ec8064fdf5d30a61e7921c41b0cd09",
+    "backend/migrations/alembic.ini": "9d8b024b08ce8d5f3833d28a3e5c32f591fc06b328739c3bef7530ef07bd4526",
+    "backend/migrations/__init__.py": "f4feb1697fa882ae02829188b26acf51458dddb6e5178e60507cb8710a790e4d",
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "backend/app/api.py": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626",
+    "backend/app/persistence/schema_contract.json": "21e5463395079ad0ff3a08f028aa42a9df0f46808511e82518f123e79ed19ca5",
+    "backend/migrations/candidates/M007_indexes_draft.py": "187e553f9cf76e2c15a5af8815f41ad9594b7f7ba4e22aa21629a5e511ec5ac2",
+    "backend/migrations/versions/M002_files.py": "7b3b906c7584c44cf117e87475f9be8ff923062ba09bb323a5a7d8f38a0f0744",
+    "backend/migrations/versions/M005_reviews.py": "4725cac6f0051a39862f2fe233e8159c6036b1328ba28001699ede10b15af0e4",
+    "backend/migrations/versions/M004_criteria.py": "2129db3978905dd9b760616e5a3ba98bc53143ab84900cddb01e59855fe4a204",
+    "backend/migrations/versions/M008_grants.py": "6d8451c40bc00ae0b39b0fac0bd72ac2fc02aa7857467fe539255642ca76ca4e",
+    "backend/migrations/versions/M001_identity.py": "bf80a337dfe1ca7e5d71b1dfad741714713cac6e394623d7449e37e1b7a50731",
+    "backend/migrations/versions/M007_guards.py": "2ab151dc605d1d23d2167d8d815d35ea6f82016dabb85a375f478b0d2f837343",
+    "backend/migrations/versions/M003_ocr.py": "335f8dee58daddc32ca1e2b5f7f31e25767154867410d82466678830c782d072",
+    "backend/migrations/versions/M006_relations.py": "2bd30f064718c3333a9a31bd6ad0566116c4056e32f3c44e1861f13bffa67b9f",
+    "backend/migrations/sql/M007_guards.sql": "6ecda4837bdc1a7e4c85f94541d4fdbee56c4e4f1f41a463d532b681c5144038",
+    "frontend/src/styles.css": "0433a46e20c06cfddbaf58e11109a5f5785e6cb13cd5fa58f912fd305ee6bdd7",
+    "frontend/src/workflow.test.js": "5437ab7360b6c051f9707713593664792b55c5ad8f52ae8b0adc5fc8c6d820c3",
+    "frontend/src/workflow.js": "328d9ea9e6987f84597e60693d4b6e24ef66a9d88c1a3fc53c7850b2d8b0b28a",
+    "frontend/src/main.jsx": "a449f7c5b1c1bd346dde872bfd5dfddbe924d8b2db87ab39cd1e86e0197ca061",
+    "frontend/src/reviewConstants.js": "cc343844a7bf14a67b2c91cbdc7819e50644f083e8f6150e211894e20be5f908",
+    "frontend/src/App.jsx": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6",
+    "frontend/src/v1/components.jsx": "0777cd759b1d3df371d573eb1fb1d8ab6ab745b1ef0b8d9fabea88fbf16cc8a0",
+    "frontend/src/v1/reviewPages.jsx": "89caf971754c6252ef41af78fbbe20188889950ba0778b24bbc8fab56f89f9a1",
+    "frontend/src/v1/pending.js": "708ab0081fb865bc26bb533004d468af4b4c8114b197e6fd3e370cfe675f4a56",
+    "frontend/src/v1/criteriaPages.jsx": "72f740b06c5f8babc859c35cb6f147920ec5e72ef74fea1771148e44fae28a2a",
+    "frontend/src/v1/v1.css": "95b7d6ec1e17ec147e41ea4139311f1d69f5843d51f12d30d62045ed3759010b",
+    "frontend/src/v1/polling.js": "a0abb7f4831730c676f115e943a2b81b30f4f1e5bcdfc848974f0e9644bf2c65",
+    "frontend/src/v1/hooks.jsx": "d4fbbe8c497da5ff4864f4c8aa081347b735d8c067ab99aaf8e1e29f1570410e",
+    "frontend/src/v1/App.jsx": "c2ad3288e29f213d48d08dbebd5282dc8c96d5bd3ad475b3707ef717d706b04f",
+    "frontend/src/v1/auth.jsx": "2b11391c0c817dfc568d749a297c0cf056f8bbd8512de9e4018ca516443397d5",
+    "frontend/src/v1/projectPages.jsx": "b0f2639e68e587952bbfff09797d60338e68f780404d7436e680a46e5e71d32c",
+    "frontend/src/v1/api.js": "41e00b7d2619e561a1e7747b43f96eb44acc17dc1acecdf8c8d6cd77c959aec2",
+    "frontend/src/v1/contracts.js": "0c621bfc09453283842542f9b4ec2495a5efeb0e05fc0a42da86fb8194b4b504",
+    "frontend/src/auth/AuthProvider.jsx": "eaad201a2827ead0f0c5d4d6373da961563f8c63b9592a65f366c66219bc8f87",
+    "frontend/src/auth/auth.test.js": "9a679a1dbc5f72ef40288e2792af9272f9c201695487540c75b1ada1730adf16",
+    "frontend/src/auth/helpers.js": "2878e807ed53a121b58d387192f6d12f8bfdfedfe68b56c2e4e1ac51c6f7a5b6",
+    "frontend/src/auth/RequireAuth.jsx": "b9f324a849da064e4706b5b97883c7c1bcd6bff1de5018036a4daca6390648c6",
+    "frontend/src/styles/auth.css": "f2f7091e474e730b12a4c1e1abd9387a3d34ea2507dbeb7cd3b5538bd0d764ac",
+    "frontend/src/components/Summary.jsx": "3ab4424a01515edcbf475fa8480bb4de287a3312c1955a0646f9dc7c928ea7eb",
+    "frontend/src/components/Brand.jsx": "017690b39b1254ced7a6658e6071f2df2f43c17ac03afade26b0dd0a4710e14b",
+    "frontend/src/components/ErrorMessage.jsx": "979efac52945d649d8101f14de5582abb4dfcbf869577baf8fd0113355254bb7",
+    "frontend/src/components/Icon.jsx": "d201b6800cc42b5c8cbfea3965313535b937c0c93d1936ebf70384c7872872bc",
+    "frontend/src/components/Heading.jsx": "a804c0614bdbcc9fa00e30f361157eccf7633d29c7fa0772fafdc3d486b4015e",
+    "frontend/src/layouts/ReviewLayout.jsx": "d9ab24d4e5d9b0e0bd931f1bcd1420657c719156dd81a00c3f6ee4dcd57382f9",
+    "frontend/src/api/client.js": "1515ed8f333e5edc46c64a642935e1b99a9eda7b57a91be504cbf7732099e47e",
+    "frontend/src/api/auth.js": "5764a2ffda413e4ec314e26bd05b5bdaf82c3df9ac05bc8585db59a5fa1b7085",
+    "frontend/src/pages/LoginPage.jsx": "7253ae65e55fd6db0d0b1fa58647b9531b564b908c0ff9eb9e0987329c92baf5",
+    "frontend/src/pages/LandingPage.jsx": "19f78904b4fe2edf9d48f05848e327fae955f68828109cc52b21d5157b49f4a5",
+    "frontend/src/pages/review/ResultsPage.jsx": "a013caba061f78152c09cb5abc30ae252c8a2e38a84d3de2e5177f0ebfa0e052",
+    "frontend/src/pages/review/ReviewPage.jsx": "fc674c1e7239048b46936282b2dac666283241ce094e6241fb5176c2a53eb5b5",
+    "frontend/src/pages/review/CriteriaPage.jsx": "04846a5fc83b8b1807f9cb6630c112d40ee87398d99118de4375014584764c22",
+    "frontend/src/pages/review/RunningPage.jsx": "b2fdca6a2b4d6fbdaca8161002e557634c06be9df225222ed35704e7e9fcac8e",
+    "frontend/src/pages/review/InputPage.jsx": "73dd7c28198febff858e8b53b39513d61cbf6c07cb4bb0022962b2241cf3216a",
+    "frontend/src/pages/review/ReviewProvider.jsx": "87a7b80ed6c1d6874ad16986c0d243a0506f7f05c272a46ccfc8e2ee6c667f32",
+    "frontend/tests/v1/contracts.test.mjs": "0eed727298342fc1e7064a144750997b390324c1aed615998774b93308e53d3f",
+    "frontend/tests/v1/poster.png": "0132e423a65dae17bafc7aeb3a1032b3028632b588aaf94413a326b06d39700a",
+    "frontend/tests/v1/fixtures.mjs": "765b544a14aa356cc807f13be150cfe34d4c579d03447e9138c56d7db3ef1fdf",
+    "frontend/tests/v1/api.test.mjs": "b85c439d2f99baefbe70407054b72b0ceeb3db7cb85d9534223e95de2b21344c",
+    "frontend/tests/v1/browser.spec.mjs": "d15198cfdb33836ae6da43f0681cf3345fec78b8bb88faff32de59166efb62d3",
+    "frontend/tests/v1/polling.test.mjs": "e96f2e08dc0a5ada2cf568c3a3805730850fd7e5f52f74d410e00cb66c171c45",
+    "frontend/tests/v1/pending.test.mjs": "8b9f447d0330193ad3a6b56577893a2afe7843a664854841f683ae4894eedeba",
+    "frontend/tests/live/v1-flow.mjs": "d04fa864a410d3b360e5e1ab17d4d01aacae68fc0ddab179d54ba76998e469e8",
+    "frontend/tests/e2e/login.spec.mjs": "76fc5c5e1cc2b8b2e4972676d8975d8aa870826d992b82ded9e7bdee3d3b2791",
+    "frontend/tests/e2e/local-admin.spec.mjs": "a907755f0c16bcaac5edd9dd3508f3b4c8f6ed7e355719c1ffde02456c502e40",
+    "docs/DB_Settings/contracts/stage10-implementation-plan.json": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6",
+    "docs/DB_Settings/contracts/stage9-storage-fixtures.json": "9c2c40f4e72cd5d00e3fcf1fbd8f73c5f4ea5b138ebd1d589aa6ef436387c4dd",
+    "docs/DB_Settings/contracts/stage8-examples.json": "1178af08aa9c7e81552c4b57376d4e16da91aeaa3e101627cd840be245f12a63",
+    "docs/DB_Settings/contracts/stage8-hash-vectors.json": "8bca11ad970f7ac3b4960481543098365e11a179adfe564742011bcf6a2f9dc8",
+    "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C11.json": "bd46d412957436b0c407506c4aebeae734e15d49023af0b16b22c052728ddc67",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C10.json": "f59b6b7353fc53eb9277c1d151e0d3ad303a1f7a1a6425d9cd9fdf5ea925286e",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C06.json": "c788b6946890d7416d9cd2acdc2eb7533f58d07cd1f80a1b90272ad770f38617",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C01.json": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c",
+    "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07a.json": "a3acafab8727a74a11a869ad51d0f6d773d1cef543d4033c33c451dd1d4662ad",
+    "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C03.json": "5892aa7c0ab0a34fff8da2a52df809730196aeb0bdb8b19be3ef9adac90f879d",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07b.json": "d26e717328b3de6d2349fe05fc37eb6546aae5d2d9233e938266f151436419a4",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C07c.json": "92361d19694fb1ec76e8188a25f36f161807e15897be5375dec1d69cc1a4a4ae",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C02.json": "9fb3fb24ce97183ef7052d9d448e96da9cc7c73a30de9353dce95c62309d0099",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C09.json": "1803666ffe646f92b0807e6365ba4692d2db9bc73c1776b2f8a156a0a39c04cf",
+    "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53",
+    "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C05.json": "7729d12fedfda8584d0ce66c3caa69d4b08dbfddc520f6537d35c18024de25df",
+    "docs/DB_Settings/verification/2026-10-17-implementation-C04.json": "c6a42c4aaf81544908f09ea01c968fe1b6bd97d230fdddd1b42018c354d0b227",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C12.json": "74e6ce038ac16db8dfbe94758f0ce0abb21526d986ca196a18d031f05a3e1331",
+    "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289",
+    "docs/DB_Settings/verification/2026-10-18-implementation-C08.json": "d1bcfc8f370a8aab4291f3be956c2ef5c30798803809748b1a42856d62cc555d",
+    "docs/DB_Settings/verification/C12/real-ocr-mobile.png": "173feafd7009a36790aea60594c88fb8a826ed4f02b2616fdee5711e3cd0ab0a",
+    "docs/DB_Settings/verification/C12/vite-flow.json": "85cafbde0089d776f7b8dc90d4354f8f1e3c9844e2990e1f0e61bfa09b683994",
+    "docs/DB_Settings/verification/C12/direct-flow.json": "3ab515b50c9a1d92094ae9a142c84b8f804cddb5c49f20558f5a7c7fcca19e2d",
+    "docs/DB_Settings/verification/C12/linux-https.json": "9112863d494702ad1e83e1148a22705f1333a4937e6c8867c6885b90b030f583",
+    "docs/DB_Settings/verification/C12/real-ocr-desktop.png": "ec7e3f1422620c207f745d21d01007852eb37e06a6f3e02366e989b2572218f0",
+    "docs/DB_Settings/verification/C12/actual-paddle.json": "491aad58bf1b87d92b8ade478f70f61291e515cd4fc447ff350a77ba3d97930b",
+    "docs/DB_Settings/verification/C12/https-desktop.png": "76630f8cdbfba8d469793e87715be50a0939f423f58e233eeeac9ae4e06ea85d",
+    "docs/DB_Settings/verification/C11/desktop.png": "9d7af45868e6db93098d835afbe773a8e01e7c5bc2519c48eefcb79a1d1e4509",
+    "docs/DB_Settings/verification/C11/mobile.png": "35904ce386dbd2091923e7269e224c0ecc906c06814b4c358d67717331b4caec"
+  },
+  "legacy_prior_proof_hashes": {
+    "backend/app/api.py": "7adfd22a79d1632b7c65dc6fb28be7a7088b7f9fbcccb5345ce82e7a31fa2626",
+    "backend/app/local_auth.py": "adad40e711c5aecd75a4b45d021591441a8dbb2efa391497d140b0c8b09b96d4",
+    "run.cmd": "98f3a08cc7734a8f842a118310cb72fa58f166dac1bea5a02d026b4d1602c00a",
+    "run.sh": "877c62d3b1de80494ba7ab3dcc59ca4ccff5261ac8e869ec147f61ca2541029d"
+  },
+  "supplemental_baseline_from_c12_proof": {
+    "docs/project-specification.md": "56c1b3607f2b8578d75313472baaa5eff4af10d318705f8cda3e7b99a14a774b",
+    ".env.test.v1.example": "a37c7452efbccc49b111d5a4ca2d6af83a1d2bc8a47ef80629d306570ad0c375"
+  },
+  "intended_existing_edits": [
+    ".env.test.v1.example",
+    ".env.v1.example",
+    ".github/workflows/v1-integration.yml",
+    "backend/app/execution/pipeline.py",
+    "backend/app/main.py",
+    "backend/app/services/files.py",
+    "backend/app/services/review_results.py",
+    "backend/app/services/reviews.py",
+    "backend/app/storage/local.py",
+    "backend/app/v1_config.py",
+    "backend/tests/c12_helpers.py",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+    "docs/DB_Settings/물리설계_01_범위와관계.md",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+    "docs/DB_Settings/물리설계_04_검수기준.md",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+    "docs/DB_Settings/물리설계_06_전체정합성.md",
+    "docs/DB_Settings/추가설계_07_인증과권한.md",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+    "docs/project-specification.md",
+    "scripts/verify_v1.py",
+    "실행가이드.md"
+  ],
+  "new_files": [
+    ".env.worker.example",
+    "backend/app/execution/queue.py",
+    "backend/app/execution/worker_config.py",
+    "backend/app/worker.py",
+    "backend/tests/c13_worker_process.py",
+    "backend/tests/test_c13_process_integration.py",
+    "backend/tests/test_c13_real_ocr_integration.py",
+    "backend/tests/test_c13_worker.py",
+    "backend/tests/test_c13_worker_integration.py",
+    "docs/DB_Settings/verification/C13/actual-worker-paddle.json",
+    "docs/DB_Settings/검증_C13_Worker와장애복구_대응표.md",
+    "docs/DB_Settings/구현_C13_독립Worker와회수.md"
+  ],
+  "source_sha256": {
+    "backend/app/worker.py": "73a350c2b080e7c87e553964cfe2d3926794c5dbd6dcc65635b1f529838dfdd8",
+    "backend/app/v1_config.py": "8ad4142db94d38f32a495e0fb9a34469830d13f8cd1bcae5bedd1dfcbd20f80e",
+    "backend/app/main.py": "da0431961dffba9df1872f95cd0a06082e19ca157d421256d8eab96fbe8119c9",
+    "backend/tests/test_c13_worker.py": "0a7d26cf8cf41504f2b410fa19a5e296f4c57405ad9c93ef28aca8167ec77b3f",
+    "backend/tests/test_c13_process_integration.py": "52d98ee3b191b7620e9025e2be8a5a059e69c366c6c4014d12fc005ce32c8a1b",
+    "backend/tests/c12_helpers.py": "3f892ac83dc2c36247878bbe8d03fe5306ebd50075468dbbc55acc8a19096ae8",
+    "backend/tests/c13_worker_process.py": "e83cfd2e19f837a87dbb0f335628c356166f432e1476053cfcf20de86c266d10",
+    "backend/tests/test_c13_worker_integration.py": "68a8174a85c643a7eb95e1cfca4cd828f8c35ddc3533ac3245f8227a372fbb46",
+    "backend/tests/test_c13_real_ocr_integration.py": "3f4912117a918a3389592e53ab5f83cbcfcf01093b9932d7d791ee4793cef93f",
+    "backend/app/storage/local.py": "fd413d1723a74c9e08f5e6d2b1f1e7367ffdf1a35f3cf5398c4ff254e8ceae56",
+    "backend/app/execution/queue.py": "c1f725cabfa7642a0e78f94624dac815697f6bfd82f4d3c04056681d13d573fa",
+    "backend/app/execution/worker_config.py": "813f9be6f593f1f5edefd11f59cfda3c745f03256be6ff7274f8c5e397de0fea",
+    "backend/app/execution/pipeline.py": "199f7f3aace711c5521043d58cb153b4ec05aadb731a22657fc926b2349eb1c2",
+    "backend/app/services/review_results.py": "b65d636c9a784dafb4d334fb6330aa1fbcc7b000d487d690f7ac31a02b430ec4",
+    "backend/app/services/files.py": "40e88ae7bd8f1d58288322986869ab05e075e399631ca90cba59c9bd95738359",
+    "backend/app/services/reviews.py": "f420db77b9f595305319b7affc750b8f25993b568724f0793aab445589af1765",
+    "scripts/verify_v1.py": "21bb716067bddc00b2cd3626bea53913ad901a51a8c41f5532c0d03ce8b88a73",
+    ".env.v1.example": "8273c6b2a1e1814c14ab9adac6a71e3ea6c991263f10b8b3b7804f7d11c2651f",
+    ".env.worker.example": "2d8f97f2f2ce0818f2c9d918be131bb801dec0229c50b070943c4cefb7e5ce9b",
+    ".env.test.v1.example": "99771944d01ad5eabb3bb425868b75f90993af34270fe28229edbddca89000fd",
+    ".github/workflows/v1-integration.yml": "8f21f47b4fc972067599cf8d140f7144129f25cd4db969d733a6aa88a5b47839"
+  },
+  "document_sha256": {
+    "docs/DB_Settings/검증_C13_Worker와장애복구_대응표.md": "d2e3f5de3efbef2267f8d8ceeb336cc5ba655a259c149504d9df2032d095f70f",
+    "docs/DB_Settings/물리설계_05_검수실행과결과.md": "f48c476ba9e7add282853d62a25f08517ef169267145b599e8fa617bcd95bcde",
+    "docs/DB_Settings/물리설계_01_범위와관계.md": "7433838bab267821060be4910348cf5ca6e62d58ecce4070ef2a2f176093dafb",
+    "docs/DB_Settings/물리설계_06_전체정합성.md": "771707d933b0ae4093020b41d7af086d01cc77b61519a8baf6cf44c447dd32a7",
+    "docs/DB_Settings/도커 및 포스트그리SQL세팅.md": "746e55ffd354841016d18a3df1126c67ca43eb738d9e1adf91a20c4dae729d48",
+    "docs/DB_Settings/추가설계_10_구현구조와검증명세.md": "40f0cc2ba167a002112d3ede250a9cf44da6b51a30baf5cd251b9cccde913e5b",
+    "docs/DB_Settings/물리설계_02_사용자와파일.md": "d01faa0e72e8a9f10685c41ed3f1e0eb5939cd78c0d5a7a4b1141d37a6ace64a",
+    "docs/DB_Settings/추가설계_07_인증과권한.md": "84225c3cdceec5addf176408d9b6ee26b29f335a9ad5761d5e77013327e342c7",
+    "docs/DB_Settings/구현_C13_독립Worker와회수.md": "322d524250c44fea50ca9ad724bbba29be2df9ed7cd535934a3a07929418c1f3",
+    "docs/DB_Settings/물리설계_04_검수기준.md": "b3be69bb0492df19923a3cc26f5b75993a033286d084d43c54a5b5ace109aa29",
+    "docs/DB_Settings/추가설계_09_저장과이전복구.md": "3042652e1dd00fabb0e623e9c416fc7c7649549f9d7a278eae8a32a1e3a711de",
+    "docs/DB_Settings/추가설계_08_API와화면JSON.md": "dfda467d6661838a72054ad125bbbc73396e1930a7c918e28e32d196f1a91b60",
+    "docs/DB_Settings/물리설계_03_규격과OCR근거.md": "07d4c6f1b82b21036fdde73eb9ccfe56f679ca057a3f805704c76e408dc5d82b",
+    "docs/project-specification.md": "ce77174420fa417264b312714fe23c1a4542300803dd4d06749f14acda091825",
+    "실행가이드.md": "322c4b11016614f875deea2e42b6aa0efdbfab1440795c6db78ccc047fc18229"
+  },
+  "artifact_sha256": {
+    "docs/DB_Settings/verification/C13/actual-worker-paddle.json": "be5da07b5be83fe89b9793ed839692f27aa6b42b7bb3e66de439223808a6c9ba"
+  },
+  "verification_report_script_sha256": "701be37d0af1ca5e7cb46ea21fc2ae53043e6b71b5796f3d530207ad180cf16c"
+}

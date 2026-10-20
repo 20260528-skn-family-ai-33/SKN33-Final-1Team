@@ -1,0 +1,12 @@
+.git
+.env*
+.venv*
+.runtime
+artifacts
+node_modules
+frontend
+docs
+tests
+**/__pycache__
+**/*.pyc
+backend/tests

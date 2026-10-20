@@ -1,8 +1,8 @@
 -- 크리에이티브체커 관계도 가져오기용: 논리명 한글, 물리명 영어
--- 작성 기준일: 2026년 10월 14일
+-- 작성 기준일: 2026년 10월 16일 — 이메일 로그인용 사용자·세션 설계 반영
 -- 테이블과 컬럼 및 외래키 제약명은 소문자 영어와 밑줄로 표기합니다.
 -- 표와 속성의 한글 논리명은 설명 문장에 그대로 보존합니다.
--- 기존 모델의 엔터티와 속성 및 키와 관계와 자료형은 유지합니다.
+-- 이메일 로그인용 사용자 컬럼과 사용자세션을 추가하고 나머지 업무 모델은 유지합니다.
 -- 자료형은 관계도 가져오기를 위한 임시 지정이며 운영 배포용 완성 스키마가 아닙니다.
 -- 모든 표를 먼저 정의하고 뒤에서 관계와 한글 설명을 추가합니다.
 -- 실제 데이터 생성이나 삭제 및 검수 실행 문장은 포함하지 않습니다.
@@ -13,11 +13,35 @@
 CREATE TABLE "users" (
     "user_id" UUID NOT NULL,
     "email" VARCHAR(254) NOT NULL,
+    "password_hash" TEXT NOT NULL,
     "display_name" VARCHAR(100) NOT NULL,
-    "is_active" BOOLEAN NOT NULL,
-    "created_at" TIMESTAMP NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT TRUE,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("user_id"),
-    UNIQUE ("email")
+    UNIQUE ("email"),
+    CONSTRAINT "ck_users_email_normalized"
+        CHECK ("email" = lower(btrim("email")) AND "email" <> ''),
+    CONSTRAINT "ck_users_password_hash_nonempty"
+        CHECK ("password_hash" <> '')
+);
+
+-- 사용자세션: 브라우저에는 난수 토큰, DB에는 토큰의 SHA256 해시만 보관합니다.
+CREATE TABLE "user_sessions" (
+    "session_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "token_hash" VARCHAR(64) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMPTZ NOT NULL,
+    "revoked_at" TIMESTAMPTZ,
+    PRIMARY KEY ("session_id"),
+    UNIQUE ("token_hash"),
+    CONSTRAINT "ck_user_sessions_token_hash_format"
+        CHECK ("token_hash" ~ '^[0-9a-f]{64}$'),
+    CONSTRAINT "ck_user_sessions_expiry"
+        CHECK ("expires_at" > "created_at"),
+    CONSTRAINT "ck_user_sessions_revocation"
+        CHECK ("revoked_at" IS NULL OR "revoked_at" >= "created_at")
 );
 
 -- 프로젝트
@@ -750,6 +774,9 @@ CREATE TABLE "remediation_submissions" (
 
 -- 표 사이의 관계
 
+ALTER TABLE "user_sessions" ADD CONSTRAINT "fk_user_sessions_user_id"
+    FOREIGN KEY ("user_id") REFERENCES "users" ("user_id") ON DELETE RESTRICT;
+
 ALTER TABLE "projects" ADD CONSTRAINT "fk_projects_created_by"
     FOREIGN KEY ("created_by") REFERENCES "users" ("user_id");
 
@@ -1232,9 +1259,19 @@ ALTER TABLE "remediation_submissions" ADD CONSTRAINT "fk_remediation_submissions
 COMMENT ON TABLE "users" IS '사용자';
 COMMENT ON COLUMN "users"."user_id" IS '사용자식별자';
 COMMENT ON COLUMN "users"."email" IS '이메일';
+COMMENT ON COLUMN "users"."password_hash" IS '비밀번호해시';
 COMMENT ON COLUMN "users"."display_name" IS '표시이름';
 COMMENT ON COLUMN "users"."is_active" IS '활성여부';
 COMMENT ON COLUMN "users"."created_at" IS '등록시각';
+COMMENT ON COLUMN "users"."updated_at" IS '수정시각';
+
+COMMENT ON TABLE "user_sessions" IS '사용자세션';
+COMMENT ON COLUMN "user_sessions"."session_id" IS '세션식별자';
+COMMENT ON COLUMN "user_sessions"."user_id" IS '사용자식별자';
+COMMENT ON COLUMN "user_sessions"."token_hash" IS '세션토큰해시';
+COMMENT ON COLUMN "user_sessions"."created_at" IS '발급시각';
+COMMENT ON COLUMN "user_sessions"."expires_at" IS '만료시각';
+COMMENT ON COLUMN "user_sessions"."revoked_at" IS '폐기시각';
 
 COMMENT ON TABLE "projects" IS '프로젝트';
 COMMENT ON COLUMN "projects"."project_id" IS '프로젝트식별자';
@@ -1792,4 +1829,3 @@ COMMENT ON COLUMN "remediation_submissions"."resolution_state" IS '해결확인�
 COMMENT ON COLUMN "remediation_submissions"."verified_by" IS '확인자식별자';
 COMMENT ON COLUMN "remediation_submissions"."submitted_at" IS '제출시각';
 COMMENT ON COLUMN "remediation_submissions"."verified_at" IS '확인시각';
-

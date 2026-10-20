@@ -164,20 +164,25 @@ def test_prepare_defaults_to_recognition_and_detection_is_explicit(monkeypatch):
     assert [entry.args[0] for entry in call.call_args_list] == [provision.MODEL, provision.DETECTION_MODEL]
 
 
-def test_full_worker_uses_only_explicit_local_models_and_disables_transforms(monkeypatch, tmp_path):
+@pytest.mark.parametrize("filename", ("input.png", "10000000-0000-4000-8000-000000000001"))
+def test_full_worker_uses_only_explicit_local_models_and_disables_transforms(monkeypatch, tmp_path, filename):
     """추가 자동 다운로드가 생기는 문서 보정·회전 모델을 모두 끈다."""
     monkeypatch.setattr(worker, "verify_model", fake_identity)
     monkeypatch.setattr(worker.importlib.metadata, "version", lambda name: "test")
     monkeypatch.setenv("HF_HUB_OFFLINE", "1")
     monkeypatch.setenv("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
     monkeypatch.setenv("PADDLE_PDX_CACHE_HOME", str(tmp_path))
-    model = Mock(return_value=SimpleNamespace(predict=lambda **kwargs: [SimpleNamespace(json=raw_result())]))
+    predictor = Mock(return_value=[SimpleNamespace(json=raw_result())])
+    model = Mock(return_value=SimpleNamespace(predict=predictor))
     monkeypatch.setitem(sys.modules, "paddle", SimpleNamespace(get_device=lambda: "cpu", __version__="test"))
     monkeypatch.setitem(sys.modules, "paddleocr", SimpleNamespace(PaddleOCR=model))
     monkeypatch.setitem(sys.modules, "easyocr", None)
-    source = tmp_path / "input.png"
-    Image.new("RGB", (200, 100)).save(source)
+    source = tmp_path / filename
+    Image.new("RGB", (200, 100), (10, 20, 30)).save(source, format="PNG")
     worker.run(source, tmp_path / "raw.json", tmp_path / "det", tmp_path / "rec")
+    pixels = predictor.call_args.kwargs["input"]
+    assert pixels.shape == (100, 200, 3) and pixels[0, 0].tolist() == [30, 20, 10]
+    assert pixels.flags.c_contiguous
     args = model.call_args.kwargs
     for option in ("use_doc_orientation_classify", "use_doc_unwarping", "use_textline_orientation"):
         assert args[option] is False

@@ -1,0 +1,14 @@
+# New PostgreSQL API profile; legacy/OCR requirements remain separate.
+-r requirements-db.txt
+fastapi==0.143.0
+starlette==1.7.0
+pydantic==2.13.5
+uvicorn==0.54.0
+argon2-cffi==25.1.0
+email-validator==2.3.0
+
+# C09 canonical JSON, cooperative file locks and bounded image uploads.
+rfc8785==0.1.4
+portalocker==3.2.0
+Pillow==12.3.0
+python-multipart==0.0.32

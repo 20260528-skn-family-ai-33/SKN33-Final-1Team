@@ -1,9 +1,23 @@
+-- 2026-10-16: 이메일 로그인용 비밀번호 해시·사용자세션 설계 반영.
+-- 관계도 가져오기용 논리 설계이며 운영 DB 적용 이력을 뜻하지 않습니다.
+
 CREATE TABLE `사용자` (
 	`사용자식별자`	UUID	NOT NULL	COMMENT '사용자식별자',
 	`이메일`	VARCHAR(254)	NOT NULL	COMMENT '이메일',
+	`비밀번호해시`	TEXT	NOT NULL	COMMENT '비밀번호해시',
 	`표시이름`	VARCHAR(100)	NOT NULL	COMMENT '표시이름',
-	`활성여부`	BOOLEAN	NOT NULL	COMMENT '활성여부',
-	`등록시각`	TIMESTAMP	NOT NULL	COMMENT '등록시각'
+	`활성여부`	BOOLEAN	NOT NULL DEFAULT TRUE	COMMENT '활성여부',
+	`등록시각`	TIMESTAMPTZ	NOT NULL DEFAULT CURRENT_TIMESTAMP	COMMENT '등록시각',
+	`수정시각`	TIMESTAMPTZ	NOT NULL DEFAULT CURRENT_TIMESTAMP	COMMENT '수정시각'
+);
+
+CREATE TABLE `사용자세션` (
+	`세션식별자`	UUID	NOT NULL	COMMENT '세션식별자',
+	`사용자식별자`	UUID	NOT NULL	COMMENT '사용자식별자',
+	`세션토큰해시`	VARCHAR(64)	NOT NULL	COMMENT '세션토큰해시',
+	`발급시각`	TIMESTAMPTZ	NOT NULL DEFAULT CURRENT_TIMESTAMP	COMMENT '발급시각',
+	`만료시각`	TIMESTAMPTZ	NOT NULL	COMMENT '만료시각',
+	`폐기시각`	TIMESTAMPTZ	NULL	COMMENT '폐기시각'
 );
 
 CREATE TABLE `프로젝트` (
@@ -612,6 +626,33 @@ ALTER TABLE `사용자` ADD CONSTRAINT `PK_사용자` PRIMARY KEY (
 	`사용자식별자`
 );
 
+ALTER TABLE `사용자` ADD CONSTRAINT `UQ_사용자_이메일` UNIQUE (
+	`이메일`
+);
+
+ALTER TABLE `사용자` ADD CONSTRAINT `CK_사용자_이메일정규화`
+CHECK (`이메일` = LOWER(TRIM(`이메일`)) AND `이메일` <> '');
+
+ALTER TABLE `사용자` ADD CONSTRAINT `CK_사용자_비밀번호해시필수`
+CHECK (`비밀번호해시` <> '');
+
+ALTER TABLE `사용자세션` ADD CONSTRAINT `PK_사용자세션` PRIMARY KEY (
+	`세션식별자`
+);
+
+ALTER TABLE `사용자세션` ADD CONSTRAINT `UQ_사용자세션_토큰해시` UNIQUE (
+	`세션토큰해시`
+);
+
+ALTER TABLE `사용자세션` ADD CONSTRAINT `CK_사용자세션_토큰해시형식`
+CHECK (`세션토큰해시` REGEXP '^[0-9a-f]{64}$');
+
+ALTER TABLE `사용자세션` ADD CONSTRAINT `CK_사용자세션_만료시각`
+CHECK (`만료시각` > `발급시각`);
+
+ALTER TABLE `사용자세션` ADD CONSTRAINT `CK_사용자세션_폐기시각`
+CHECK (`폐기시각` IS NULL OR `폐기시각` >= `발급시각`);
+
 ALTER TABLE `프로젝트` ADD CONSTRAINT `PK_프로젝트` PRIMARY KEY (
 	`프로젝트식별자`
 );
@@ -802,6 +843,13 @@ ALTER TABLE `보완제출이력` ADD CONSTRAINT `PK_보완제출이력` PRIMARY 
 	`보완제출식별자`
 );
 
+ALTER TABLE `사용자세션` ADD CONSTRAINT `FK_사용자_TO_사용자세션_1` FOREIGN KEY (
+	`사용자식별자`
+)
+REFERENCES `사용자` (
+	`사용자식별자`
+) ON DELETE RESTRICT;
+
 ALTER TABLE `프로젝트참여자` ADD CONSTRAINT `FK_프로젝트_TO_프로젝트참여자_1` FOREIGN KEY (
 	`프로젝트식별자`
 )
@@ -913,4 +961,3 @@ ALTER TABLE `납품자료연결` ADD CONSTRAINT `FK_자료버전_TO_납품자료
 REFERENCES `자료버전` (
 	`자료버전식별자`
 );
-

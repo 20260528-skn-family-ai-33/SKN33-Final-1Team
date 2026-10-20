@@ -1,0 +1,4 @@
+# Optional C01/C02 infrastructure; the existing API/offline dependencies are unchanged.
+SQLAlchemy==2.1.5
+psycopg[binary]==3.3.6
+alembic==1.20.0

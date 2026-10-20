@@ -2,12 +2,12 @@
 
 | 항목 | 내용 |
 |---|---|
-| 문서 버전 | v0.2 |
-| 최초 작성일 / 개정일 | 2026-10-12 / 2026-10-14 |
+| 문서 버전 | v0.24 |
+| 최초 작성일 / 개정일 | 2026-10-12 / 2026-10-19 |
 | 대상 저장소 | SKN33-Final-1Team |
-| 현재 코드 기준 | `ffa287b` — React·FastAPI 검수 시제품 |
+| 현재 코드 기준 | `ffa287b` 시제품 + 로컬 C01~C15: M008·이메일/개발 인증·검수 API/v1 React·독립 worker·수입/GC·복원·Linux 배포 리허설 |
 | 문서 상태 | **현재 구현과 후속 확장 설계 — 팀 공유용** |
-| 이번 산출물 | React + FastAPI 유지 결정 반영. PostgreSQL·영속 worker·운영 인증은 미구현 목표 |
+| 이번 산출물 | C15 Linux Compose·구형 쓰기 410/로컬 읽기 전용·최신 백업/복원 전환 검사·HTTPS/큐/새 Linux 볼륨 재가동 리허설·운영 절차. 실제 Linux OCR/외부 운영 공개는 후속 |
 
 ## 1. 목적과 결정 사항
 
@@ -16,7 +16,7 @@
 **2026-10-14 결정한 구조와 제약**
 
 - 프런트엔드는 **React**, 공개 업무 API는 **FastAPI**를 유지한다. 기존 로그인·자료 입력 → 기준 확정 → 검수 실행 → 결과 확인 흐름을 확장한다.
-- 업무 DB의 목표는 **PostgreSQL**이다. 현재 JSON 저장을 DB 기반 기록으로 확장하되 DB 접근·마이그레이션 라이브러리는 아직 선정하지 않았다.
+- 업무 DB의 목표는 **PostgreSQL**이다. 현재 JSON 저장을 DB 기반 기록으로 확장한다. 후속 10단계에서 SQLAlchemy Core·psycopg·Alembic을 선택했고 C01 연결 계층과 C02~C07c의 Alembic/M001~M008을 구현·검증했다.
 - 무거운 검수는 **독립 Python worker**가 기존 OCR 모듈을 직접 호출하고 추출·판정·결과 저장까지 수행하도록 분리한다. 별도 내부 OCR HTTP 서버는 필수 구성에 넣지 않는다.
 - **Apple Vision을 사용하지 않는다.** 현재 EasyOCR 로컬 경로는 CUDA → MPS → CPU를 선택한다. Paddle 단독 경로는 별도 Python 환경의 CPU 작업자로 실행한다. 서로 다른 경로의 장치 지원을 동일하게 가정하지 않는다.
 - RunPod 실행은 명시적으로 선택한 경우에만 사용한다. 로컬 실패를 이유로 유료 원격 실행으로 자동 전환하지 않는다. 선택한 OCR 경로의 원격 지원 여부도 실행 전에 확인한다.
@@ -25,20 +25,23 @@
 
 **이 명세서의 구현 제안**
 
-PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세션, 프로젝트별 접근 권한, 서버가 발급하는 불변 기준 버전을 도입한다. 모두 후속 구현이며 현재의 임시 로그인·JSON 저장·`BackgroundTasks`와 구분한다. 초기에는 Redis/Celery와 OCR 전용 HTTP 서버를 필수로 추가하지 않는다.
+PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세션, 프로젝트별 접근 권한, 서버가 발급하는 불변 기준 버전을 도입한다. 서버 세션·프로젝트 권한·불변 기준과 파일 저장 API는 C08/C09의 별도 v1 앱에 구현했다. C10에서 별도 v1 검수 실행/결과도 구현했다. C11/C12의 화면 연결과 C13의 독립 worker도 별도 v1 프로필에서 구현·검증했다. 기존 시제품의 임시 로그인·JSON 저장·`BackgroundTasks`와 구분한다. 초기에는 Redis/Celery와 OCR 전용 HTTP 서버를 필수로 추가하지 않는다.
 
 ## 2. 현재 구현과 변경 범위
 
+아래 현재 화면/검수 경로는 기존 시제품 기준이다. 별도 v1 백엔드는 C08 인증·C09 파일/기준·C10 검수 접수/실행/원자적 결과·이력 조회까지 구현·검증했다. C11은 별도 v1 React 화면과 계약 기반 합성 API 브라우저 검증까지 완료했다. C12에서 실제 DB/API/브라우저 직접·Vite, Linux Nginx HTTPS, 로컬 Paddle CPU 포스터 1장 경로도 확인했다. C10 백엔드 통합은 합성 OCR을 사용했다. C13에서는 독립 worker의 DB/프로세스 장애와 실제 로컬 Paddle CLI 경로도 확인했으며 운영 Linux OCR/공개 배포는 별도다.
+
 | 구분 | 현재 구현 | 목표 구현 |
 |---|---|---|
-| 화면 | React 19 + Vite 7, 소개·로그인·검수 화면 | 기존 화면 유지 + 프로젝트 목록·이력 상세·작업 재진입 |
+| 화면 | 기본 legacy 유지. C11 v1 프로필에 이메일/개발 로그인·프로젝트·초안·확정본·검수 이력·URL 재진입 구현/합성 API 검증 | C12 직접/Vite·Linux HTTPS·로컬 Paddle CPU 검증 완료. 운영 전환 후속 |
 | 공개 API | FastAPI가 로그인·업로드·OCR 실행·판정·결과 조회 제공 | 같은 FastAPI에서 운영 인증·프로젝트·기준 버전·이력 API 확장 |
 | 검수 기록 | `.runtime/reviews/<UUID>/`의 JSON·이미지 | PostgreSQL의 관계형 데이터 + 파일 저장소 |
+| DB 연결 기반 | C01 Core Engine/UoW와 C02~C06 Alembic/M001~M006, 26개 테이블·81개 FK 및 C07a 인덱스 27개·C07b 가드 35개 트리거·C07c M008 최소 권한/최종 스키마 검증. 새 C08 main의 시작 점검 연결, 기존 API 저장 미연결 | C09/C10 서비스·업무 API 저장 연결 |
 | 기준 확정 | 브라우저 스냅샷·정수 버전, 실행 요청 때 서버에 함께 저장 | 서버에 별도로 확정·저장하는 프로젝트별 불변 버전 |
 | 실행 | FastAPI `BackgroundTasks`, 프로세스 내부 잠금 | PostgreSQL 작업 기록 + 독립 Python worker |
 | OCR | 로컬 기본 Paddle 단독(`paddle-only`), EasyOCR 기준선·줄 결합·재인식 등 비교 경로. RunPod 기본은 `baseline` | 기존 OCR 모듈을 worker에서 호출하고 실행 설정·근거·시도 기록 보존 |
 | 판정·행사 정보 추출 | `review_rules.py`, `extract_event.py`, `event_layout.py` | 기존 규칙·추출기를 worker에서 재사용 |
-| 사용자·권한 | localhost용 `admin / admin`, 메모리 세션·로그인/로그아웃 CSRF | 실제 사용자·서버 저장 세션·프로젝트 멤버십·검수 접근 통제 |
+| 사용자·권한 | 기존 화면의 localhost `admin / admin` 유지. 별도 C08 main에 이메일/개발 DB 세션·서명 CSRF·권한 helper·계정 CLI 구현 | 기존 React와 실제 업무 API의 새 인증/접근 통제 연결 |
 | 재실행 | 새 UUID 생성, 이전 실행과 관계 없음 | 새 실행에 `retry_of` 연결, 이전 결과 보존 |
 | 재시작 | 남아 있는 queued/running JSON을 failed 처리 | DB 작업 상태와 시도 기록을 기준으로 복구·실패 판정 |
 
@@ -51,13 +54,13 @@ PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세�
 | 검수 생성 | `POST /api/reviews` — 이미지·기준 배열·정수 버전·프로젝트명을 함께 보내는 multipart 요청 |
 | 진행·결과·이미지 | `GET /api/reviews/{id}`, `GET /api/reviews/{id}/image` |
 
-현재 임시 로그인은 8시간 메모리 세션이며 서버 재시작 때 사라진다. 검수 API에는 아직 사용자·프로젝트별 접근 검사가 연결되어 있지 않다. 프로젝트 DB·이력 목록·영속 작업 큐·새로고침 후 작업 복원 화면도 후속 구현이다.
+현재 임시 로그인은 8시간 메모리 세션이며 서버 재시작 때 사라진다. 검수 API에는 아직 사용자·프로젝트별 접근 검사가 연결되어 있지 않다. 이 문단은 기존 시제품의 설명이다. 별도 v1은 C08~C10 DB/API와 C11 이력·작업 복원 화면까지 구현했으며, 영속 worker는 C13·실제 종합 연계도 C12에서 격리 환경으로 검증했다.
 
 현재 코드 근거: [검수 API](../backend/app/api.py), [임시 인증](../backend/app/local_auth.py), [OCR 런타임](../backend/app/ocr_runtime.py), [Paddle 단독 연결](../backend/app/paddle_ocr.py), [여러 줄 추출](../backend/app/event_layout.py), [React 경로 구성](../frontend/src/App.jsx), [화면 상태 전이](../frontend/src/workflow.js), [데이터 파이프라인](data-pipeline.md).
 
 ## 3. 서비스 구성과 책임
 
-다음은 **후속 확장 목표**다. 현재 시제품은 FastAPI 프로세스의 `BackgroundTasks`로 검수를 실행하며 로컬 JSON에 결과를 저장한다.
+다음은 확장 구조다. C13의 별도 v1 프로필에서 로컬 Paddle worker까지 구현·검증했다. 아래 EasyOCR/RunPod 분기는 후속 adapter 범위다. 기존 시제품은 FastAPI의 `BackgroundTasks`·JSON 저장을 유지한다.
 
 ```mermaid
 flowchart LR
@@ -104,18 +107,18 @@ Paddle 전용 Python 환경의 모델 작업자와 여기서 설계하는 영속
 
 검수 이력이 없으면 빈 목록과 새 검수 버튼을 표시한다. 임의의 성공 결과를 넣지 않는다. 상태 조회 통신 실패는 OCR 작업 실패와 구분하여 ‘진행 상태 다시 확인’을 제공한다. `progress`는 단계 진행 표시이며 남은 시간이나 OCR 정확도를 뜻하지 않는다.
 
-이미지 업로드와 기준 확정이 성공해 서버의 이미지 UUID·기준 UUID·버전을 받은 뒤에만 실행 버튼을 활성화한다. 미확정 편집 초안의 새로고침 복원은 초기 범위에 포함하지 않는다. 이미 확정된 버전과 실행 이력은 서버에서 재조회한다.
+이미지 업로드와 기준 확정이 성공해 서버의 이미지 UUID·기준 UUID·버전을 받은 뒤에만 실행 버튼을 활성화한다. 서버에 저장한 편집 초안은 draft UUID/revision으로 복원하고, 미저장 입력·업로드 전 File은 복원하지 않는다. 이미 확정된 버전과 실행 이력도 서버에서 재조회한다.
 
 이번 단계에서 말하는 **검수 이력**은 기준 확정·실행·자동 판정·재실행 기록이다. 사람의 최종 승인·반려와 수정 라벨을 남기는 별도 검토 기능은 후속 범위로 둔다. 자동 처리 `completed`를 사람의 승인 완료로 표시하지 않는다.
 
 ## 5. PostgreSQL 데이터 모델
 
-모든 업무 ID는 UUID를 기본으로 하고 시각은 timezone-aware UTC로 저장한다. 화면에서는 사용자 시간대에 맞춰 표시한다. 아래는 목표 논리 모델이며 실제 테이블 이름과 DB 접근·마이그레이션 도구는 구현 단계에서 확정한다. 현재 PostgreSQL 연결이나 ORM을 채택·구현한 상태가 아니다.
+모든 업무 ID는 UUID를 기본으로 하고 시각은 timezone-aware UTC로 저장한다. 화면에서는 사용자 시간대에 맞춰 표시한다. 아래는 목표 논리 모델이며 실제 첫 테이블/컬럼은 상세 물리 설계를 따른다. DB 접근은 SQLAlchemy Core·동기 psycopg, 구조 이력은 Alembic으로 10단계에서 선택했다. C01에서 선택 DB 패키지와 독립 연결/UoW를 구현·검증했다. C02의 M001은 identity 4개 테이블·30개 컬럼·PK/UQ/CHECK와 기본 권한 회수까지 구현·격리 DB 검증했다. C03에서 파일 관련 5개 테이블·58개 컬럼을 M002로 추가해 누적 9개 테이블·88개 컬럼을 검증했다. C04에서 규격·인계·감사·OCR·추출·관찰·근거 9개 테이블·148개 컬럼을 M003으로 추가해 누적 18개 테이블·236개 컬럼을 검증했다. C05에서 검수 기준 4개 테이블·63개 컬럼을 M004로 추가해 누적 22개 테이블·299개 컬럼을 검증했다. C06에서 실행·결과 4개 테이블·96개 컬럼과 전체 FK를 M005/M006으로 추가해 26개 테이블·395개 컬럼·81개 FK를 검증했다. C07a에서 27개 인덱스 후보·조회 계획도 검증했다. C07b에서 봉인·전이·교차 행 가드를 완성해 정식 M007로 승격·검증했다. 일상 DB 적용·M008 최종 권한·기존 API 저장 연결은 후속이다.
 
 | 모델 | 주요 필드·관계 | 주요 제약 |
 |---|---|---|
-| User | 로그인 식별자, 비밀번호 해시, 활성 상태, 생성일 | 평문 비밀번호 저장 금지; 해시·검증 라이브러리는 구현 시 선정 |
-| UserSession | user, 세션 식별자 해시, 만료·폐기 시각 | 임의 세션 토큰을 HttpOnly 쿠키로 제공; 서버에서 만료·폐기 관리 |
+| User (`users`) | account_kind, 이메일, 비밀번호 해시, 표시 이름, 활성 상태, 생성·수정 시각 | email 종류는 정규화 이메일·해시 필수·이메일 유일; developer 종류는 이메일/해시 NULL·DB당 최대 1행. Argon2id, 평문 저장 금지 |
+| UserSession (`user_sessions`) | 세션 UUID, user, 토큰 해시, 발급·만료·폐기 시각 | 토큰 해시 유일; 임의 세션 토큰을 HttpOnly 쿠키로 제공; 서버에서 사용자 활성 여부·세션 만료·폐기 확인 |
 | Project | 이름, owner, 생성일, archived_at | 동명 프로젝트를 이름으로 합치지 않음 |
 | ProjectMembership | project, user, role | `(project, user)` 유일; owner/editor/viewer |
 | ImageAsset | project, uploader, 원본/표시 파일 키·SHA256·크기, 실제 MIME, 각 이미지 치수, EXIF 처리 정보 | 실행에서 참조한 원본·표시 이미지 불변 |
@@ -130,61 +133,54 @@ Paddle 전용 Python 환경의 모델 작업자와 여기서 설계하는 영속
 | ReviewEvent | run, 이벤트 유형, 이전/새 상태, actor, 발생 시각, 안전한 사유 | 서비스에서 추가만 허용, 수정·삭제 API 없음 |
 | IdempotencyRecord | user, operation, key, request_hash, 생성된 리소스 ID | `(user, operation, key)` 유일 |
 
+`IdempotencyRecord`는 논리적 책임이며 별도 물리 테이블을 첫 범위에 추가한다는 뜻은 아니다. [물리 설계 4단계](DB_Settings/DB_통합설계서.html#source-05)에서는 기준 확정 operation의 사용자·키·요청 해시를 `criteria_versions`에 함께 저장하고 `(confirmed_by, confirmation_key)`를 유일 키로 둔다. [물리 설계 5단계](DB_Settings/DB_통합설계서.html#source-06)에서는 검수 생성·재검수의 기록을 `review_runs`에 저장하고 `(requested_by, request_operation, idempotency_key)`를 유일 키로 둔다. 전체 키 범위는 물리 설계 6단계에서 대조한다.
+
+[물리 설계 6단계](DB_Settings/DB_통합설계서.html#source-07)와 [제약 목록](DB_Settings/DB_통합설계서.html#source-08)에서 첫 26개 테이블의 키·상태·권한·조회 인덱스를 대조했다. 규격의 availability와 access_scope를 분리하고, OCR·추출본·기준 버전 및 실행의 로컬 sealed_at으로 봉인 후 자식 추가도 금지하도록 설계했다. 수입의 봉인은 로컬 구조 저장의 완료이며 과거 추론·사람 승인을 뜻하지 않는다. [추가 설계 7단계](DB_Settings/DB_통합설계서.html#source-09)의 account_kind까지 반영한 현재 범위는 26개 테이블·395개 컬럼이다. [추가 설계 8단계](DB_Settings/DB_통합설계서.html#source-10)에서 서버 초안·API·화면·JSON·해시 계약을 정했다. [추가 설계 9단계](DB_Settings/DB_통합설계서.html#source-11)에서 파일/DB 커밋·수입·백업/복원을 정했다. [추가 설계 10단계](DB_Settings/DB_통합설계서.html#source-12)에서 도구·모듈·8개 revision·17개 구현 단위와 PostgreSQL/E2E 검증 명세를 확정했다. 설계에 이어 [C01](DB_Settings/DB_통합설계서.html#source-13)의 설정·DB 연결·UoW 및 격리 접속/롤백 검증을 완료했다. 이후 [C02](DB_Settings/DB_통합설계서.html#source-14)의 Alembic/M001·identity 4개 테이블·30개 컬럼·기본 권한 회수도 구현·격리 DB 검증했다. [C03](DB_Settings/DB_통합설계서.html#source-15)의 파일 5개 테이블·58개 컬럼을 추가해 M002까지 구현·검증했다. [C04](DB_Settings/DB_통합설계서.html#source-16)의 9개 테이블·148개 컬럼·M003도 구현·검증했다. [C05](DB_Settings/DB_통합설계서.html#source-17)의 4개 테이블·63개 컬럼·M004도 구현·검증했다. [C06](DB_Settings/DB_통합설계서.html#source-18)의 실행·결과 4개 테이블·96개 컬럼과 전체 81개 FK를 M005/M006으로 구현·검증했다. [C07a](DB_Settings/DB_통합설계서.html#source-19)의 27개 인덱스 초안·predicate·조회 계획도 구현·검증했다. [C07b](DB_Settings/DB_통합설계서.html#source-20)의 봉인·전이·교차 행 가드와 정식 M007도 구현·검증했다. [C07c](DB_Settings/DB_통합설계서.html#source-21)의 M008 최소 권한·최종 inventory도 검증했다. [C08](DB_Settings/DB_통합설계서.html#source-22)의 이메일/개발 DB 인증·세션/CSRF·권한 검사·계정 CLI·별도 main도 구현·검증했다. [C09](DB_Settings/DB_통합설계서.html#source-23)의 전용 저장소·JCS·프로젝트/이미지/초안/기준 확정 API도 구현·격리 검증했다. [C10](DB_Settings/DB_통합설계서.html#source-24)의 검수 접수·명시적 재검수·BackgroundTasks·원자적 결과·조회/다운로드·중단 복구도 구현·검증했다. [C11](DB_Settings/DB_통합설계서.html#source-25)의 별도 v1 React 연결·이메일 UI·서버 상태/URL 복원·근거 조회도 구현·합성 API 브라우저 검증했다. 현재 head는 M008이며 [C12](DB_Settings/DB_통합설계서.html#source-26)의 실제 직접/Vite·Linux HTTPS·로컬 Paddle CPU 경로도 검증했다. [C13](DB_Settings/DB_통합설계서.html#source-27)의 독립 postgres_worker·인수/lease/회수·실제 CLI/Paddle 경로도 검증했다. [C14](DB_Settings/DB_통합설계서.html#source-28)의 수입/GC·실제 DB/파일 복원도 격리 환경에서 검증했다. [C15](DB_Settings/DB_통합설계서.html#source-29)의 Linux 배포 리허설·구형 쓰기 경계·전환 전 검사도 완료했다. 일상 DB 적용·실제 Linux OCR·운영 공개는 후속이다.
+
+2026-10-16 이메일 기반 정식 로그인 요구사항에 따라 `users.password_hash`와 `user_sessions`를 [논리 ERD](ERD_논리.md)·[물리 ERD](ERD_물리.md)에 반영했다. 첫 구축 범위는 기존 검수용 25개에 사용자세션을 추가한 26개다. **기존 `admin/admin`은 개발용 계정으로 유지한다.** 현재의 localhost·`LOCAL_ADMIN_LOGIN` 경계를 유지하고 정식 이메일 계정과 구분한다. 이메일/개발 DB 로그인·세션과 프로젝트 권한 helper는 C08의 별도 main에 구현했다. C11/C12의 별도 v1 화면과 C09/C10의 업무 API로 연결했으며 기본 launcher의 운영 전환은 후속이다. 상세 컬럼·키는 [물리 설계 2단계](DB_Settings/DB_통합설계서.html#source-03)를 기준으로 확인한다.
+
+7단계에서 developer의 이메일/해시 NULL 예외를 종류별 CHECK로 확정했다. ERD 가져오기용 SQL의 기존 NOT NULL과 account_kind 누락은 최종 마이그레이션에서 반영할 차이이며, 현재 상세 설계 문서를 우선한다. 해당 설계 당시에는 SQL을 생성·실행하지 않았다. 이후 C02~C06의 M001~M006는 별도 소스로 작성해 격리 DB에서 검증했다.
+
 `ReviewRun` 상태·생성 시각, 프로젝트별 생성 시각, worker 대상 queued 작업, lease 만료 시각에 조회용 인덱스를 둔다. OCR 설정·추출 필드·안전한 오류 상세처럼 형태가 달라지는 작은 데이터에는 PostgreSQL JSONB를 사용하되 주요 관계와 상태를 통째로 JSON 파일처럼 저장하지 않는다.
 
 확정 기준의 버전 번호는 프로젝트 행 잠금과 DB 유일 제약으로 발급한다. 실행이 참조하는 기준·이미지는 삭제를 제한하고 첫 버전의 프로젝트 삭제는 보관 처리로 제공한다. 프로젝트 생성 시 owner 멤버십을 함께 만들며, 이력의 요청자·확정자 참조도 계정 비활성화 이후 보존한다.
 
-파일 바이트는 PostgreSQL에 넣지 않는다. 초기 파일 저장소는 영속 로컬 볼륨, 추후 object storage로 교체 가능한 인터페이스로 둔다. DB와 파일을 하나의 트랜잭션처럼 가정하지 않는다. 같은 볼륨의 임시 파일 → UUID 최종 경로로 atomic rename → DB 메타데이터 저장 순서로 처리한다. DB 저장 실패 시에는 해당 업로드가 만든 파일만 정리한다. 별도 미참조 파일 정리는 진행 중 업로드를 제외하고 유예기간 후 수행하여 파일 확정과 DB 커밋 사이의 삭제 경쟁을 막는다. 보관 중인 실행이 참조하는 파일은 정리 대상에서 제외한다.
+파일 바이트는 PostgreSQL에 넣지 않는다. [9단계 저장·복구 계약](DB_Settings/DB_통합설계서.html#source-11)에 따라 신규 v1은 단일 호스트의 별도 영속 STORAGE_ROOT와 UUID 파일 키를 사용한다. 같은 볼륨 staging→실제 바이트/해시·내구성 확인→파일 확정→짧은 DB 커밋 순서다. DB 커밋 결과 미확인은 파일을 보존하고 primary에서 실제 UUID/요청 지문을 확인한다. 작업 저널·OS gate/작업 잠금·트랜잭션 advisory lock으로 GC와 늦은 커밋의 경합을 막는다. GC는 기본 dry-run이며 모든 stored_files 행과 unresolved 작업을 보호한다. 업무 행·세션의 자동 물리 삭제는 첫 범위에 없다.
 
 ## 6. FastAPI 공개 API 계약 — 후속 구현
 
-새 API의 기본 경로는 `/api/v1`이며 trailing slash 없이 통일한다. 아래는 목표 계약이다. `/auth`의 경로는 현재 임시 인증과 겹치지만 운영 인증으로 확장해야 한다. 기존 multipart 검수 제출은 이미지 업로드·기준 확정·검수 생성으로 분리하므로 React 요청도 함께 수정한다. 프레임워크를 유지하더라도 이 API 변경은 자동으로 적용되지 않는다.
+[추가 설계 8단계 — API·화면·JSON·해시 계약](DB_Settings/DB_통합설계서.html#source-10)이 상세 기준이다. 요청·응답·nullable 필드·오류·한도·페이지·해시 입력과 [합성 예제](DB_Settings/contracts/stage8-examples.json)를 함께 확인한다. 아래는 요약이며 아직 구현한 API 목록이 아니다.
+
+기본 경로는 `/api/v1`이며 trailing slash 없이 통일한다. 첫 DB 쓰기는 **이미지 업로드 → 서버 초안 저장 → 기준 확정 → 검수 생성**으로 통일한다. 현재 multipart 검수 제출을 자동 DB 어댑터로 전환하지 않으며 React의 메모리 확정·버전 증가·제출을 새 경로로 교체한다.
 
 | 메서드·경로 | 동작 |
 |---|---|
-| `GET /api/v1/auth/csrf` | CSRF 쿠키·토큰 준비 |
-| `POST /api/v1/auth/login`, `POST /api/v1/auth/logout` | 세션 로그인·로그아웃, 로그인도 CSRF 검증 |
-| `GET /api/v1/auth/me` | 현재 사용자·로그인 상태 |
-| `GET /api/v1/projects`, `POST /api/v1/projects` | 권한 있는 프로젝트 목록·생성 |
-| `GET /api/v1/projects/{id}`, `PATCH /api/v1/projects/{id}` | 상세·이름 변경·보관 처리 |
-| `POST /api/v1/projects/{id}/images` | 원본 업로드, `201`과 이미지 ID·표시 이미지 정보 반환 |
-| `GET /api/v1/images/{id}`, `GET /api/v1/images/{id}/content` | 파일 메타데이터·권한 검사된 표시 이미지 |
-| `GET /api/v1/projects/{id}/criteria-versions` | 확정 버전 목록·항목 조회 |
-| `POST /api/v1/projects/{id}/criteria-versions` | 기준 확정, `201`과 UUID·서버 버전 반환; 멱등키 필수 |
-| `POST /api/v1/reviews` | 검수 생성, `202 {id,status:"queued"}`; 멱등키 필수 |
-| `GET /api/v1/projects/{id}/reviews` | 최신순 검수 이력; status 필터, cursor 페이지네이션 |
-| `GET /api/v1/reviews/{id}` | 진행·기준 스냅샷·OCR·행사 정보·판정 상세 |
-| `POST /api/v1/reviews/{id}/retry` | 같은 이미지·기준으로 새 실행 생성; 멱등키 필수 |
-| `GET /api/v1/reviews/{id}/image` | 해당 실행과 연결된 표시 이미지 |
-| `GET /api/v1/sample`, `GET /api/v1/sample/image` | 샘플 입력 정보·이미지 |
-| `GET /api/v1/health` | 공개 가능한 서비스 준비 상태·입력 제한; 비밀 설정 제외 |
+| `GET /auth/csrf`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` | 7단계 쿠키·DB 세션·서명 CSRF, 개발 로그인 허용 여부 |
+| `GET/POST /projects`, `GET/PATCH /projects/{project_id}` | 소속 목록·생성과 owner의 이름·보관/복원 |
+| `GET/POST /projects/{project_id}/images`, `GET /images/{image_id}`, `GET /images/{image_id}/content` | 이미지 버전 저장·메타·고정 표시 PNG |
+| `GET/POST /projects/{project_id}/criteria-sets` | 기준 묶음 목록·생성 |
+| `GET/POST /projects/{project_id}/criteria-drafts`, `GET/PUT /projects/{project_id}/criteria-drafts/{draft_id}` | 초안 저장·전체 조회·expected_revision으로 동시 수정 검사 |
+| `GET/POST /projects/{project_id}/criteria-versions`, `GET /projects/{project_id}/criteria-versions/{criteria_version_id}` | 불변 기준 확정·목록·상세 |
+| `POST /reviews`, `GET /projects/{project_id}/reviews`, `GET /reviews/{run_id}`, `POST /reviews/{run_id}/retry` | 접수·이력·현재 상태·명시적 재검수 |
+| `GET /reviews/{run_id}/image`, `GET /reviews/{run_id}/ocr-records`, `GET /reviews/{run_id}/results/{result_id}/evidence` | 고정 이미지·채택 OCR·근거 페이지 |
+| `GET /reviews/{run_id}/export` | 출처·검증 상태를 보존한 로컬 결과 JSON. 외부 인계 규격 파일과 구분 |
+| `GET /sample`, `GET /sample/image`, `GET /health` | 인증 후 번들 예제, 공개 가능한 준비 상태·한도 |
 
-검수 생성 요청 예시:
+표의 상대 경로 앞에 `/api/v1`을 붙인다. image_id는 `asset_versions.asset_version_id`이며 자료 asset_id와 구분한다. 초안 생성 때 대상 이미지와 기준 묶음을 고정한다. revision은 BIGINT의 십진 문자열이고, 기준 확정 본문은 `{draft_id,expected_revision}`뿐이다. 서버가 선택 항목을 복사·봉인하고 프로젝트별 version_no·UUID를 발급한다. 초안의 미선택 항목은 편집 이력에 남기며 is_required를 true로 추정하지 않는다.
 
-```http
-POST /api/v1/reviews
-Content-Type: application/json
-Idempotency-Key: <클라이언트가 생성한 UUID>
-X-CSRFToken: <CSRF 토큰>
+검수 생성 본문은 `{project_id,image_id,criteria_version_id}`, 재검수는 종료된 원 실행 경로와 `{}`다. 세 리소스의 프로젝트·이미지 일치, 활성 권한·확정 상태·현재 초안 revision을 검사한다. 실행 장치·서버 주소·모델은 클라이언트가 주입하지 못하며 서버가 실제 설정·버전을 스냅샷으로 고정한다. 이미 접수한 실행은 이후 초안 편집 때문에 무효화되지 않는다.
 
-{
-  "project_id": "<프로젝트 UUID>",
-  "image_id": "<이미지 UUID>",
-  "criteria_version_id": "<확정 기준 UUID>"
-}
-```
+확정·생성·재검수에는 UUID Idempotency-Key와 X-CSRFToken을 보낸다. 최초 확정은 201, 최초 실행 접수는 202, 같은 요청 재전송은 200과 동일 UUID·현재 실제 상태를 반환한다. 같은 사용자·operation·키에 다른 지문은 409다. 기존 키의 접근 권한·지문 검사를 현재 초안/서버 설정 검사보다 먼저 하므로 성공 후 편집·설정 변경에도 동일 요청을 복원할 수 있다. 연결 단절은 접수 실패로 단정하지 않으며 보낸 키·본문을 유지한다. 다른 POST의 영속 멱등성은 보장하지 않는다.
 
-서버는 세 리소스가 같은 프로젝트에 속하는지와 요청자의 권한을 검증한다. 클라이언트가 임의 장치·서버 주소를 주입하지 못하도록 실행 대상은 서버 설정에서 결정하고 실행에 스냅샷으로 저장한다. 명시적 재검수는 기존 실행이 종료된 후 허용하며, 기준을 바꾸려면 일반 검수 생성 API를 사용한다.
+상세는 id/status/stage/progress/project_name/criteria_version/image/results/runtime/ocr 등의 표시 책임을 유지하고 UUID·출처·자동 요약·전체성 정보를 추가한다. results[].verdict는 실제 자동 판정/null, 표시 status는 pass/fail/review다. failed/unsupported/imported 항목의 표시 review가 로컬 verdict를 생성하지 않는다. 일반 상세의 근거 배열은 지연 조회하고 evidence_count/evidence_complete/evidence_url로 부재와 미조회 상태를 구분한다. 표시 bbox는 이미 복원한 표시 이미지 픽셀이다.
 
-동일 operation·멱등키·정규화한 요청 내용이면 기존 리소스를 반환하고, 같은 키에 다른 내용이면 `409`이다. 멱등 기록과 기준 버전 또는 검수 실행은 같은 atomic 트랜잭션에서 생성한다. 키의 유일 제약 충돌 시 해당 트랜잭션을 롤백하고 기존 요청 해시·리소스를 조회하며 새 리소스를 따로 생성하지 않는다. 재전송된 검수 생성은 작업이 이미 종료됐더라도 동일 ID와 **현재 실제 상태**를 반환한다. 멱등키는 연결된 리소스가 보존되는 동안 함께 보존한다.
+일반 응답은 `meta.contract_version=cc-api-v1`·request_id를 포함하고 오류는 `{error:{code,message,fields},meta}`다. fields는 JSON Pointer→메시지 배열이다. 현재 FastAPI detail·오류 문자열은 전환 어댑터에서 명시적으로 처리한다. 401은 인증 만료, 403은 CSRF/역할 거절, 404는 접근 불가, 409는 상태/동시 수정/멱등 충돌이다. 통신 실패를 서버 run 실패로 바꾸지 않는다.
 
-상세 응답은 기존 React 결과 컴포넌트가 사용하는 `id/status/stage/progress/project_name/criteria_version/image/results/runtime/ocr/created_at/updated_at` 구조를 유지하고 프로젝트·기준 UUID, `retry_of`, `event_extraction`을 추가한다. `results[].status`는 `pass|fail|review`이며 작업 상태와 구분한다. `evidence[].bbox_xyxy`는 표시 이미지 좌표다.
+JSON 요청은 256 KiB·depth 32, 초안 항목 최대 100개다. 목록·OCR·근거는 서명 cursor와 기본 20/최대 100개 페이지를 쓴다. 일반 응답 2 MiB·export 50 MiB 한도와 초과 처리, 정확한 문자/이미지 한도는 8단계를 따른다. source_draft_hash/criteria_hash, 요청 지문, 입력/결과 manifest는 목적을 분리하고 버전 있는 JCS+SHA256을 사용한다. JSONB의 텍스트 출력이나 예쁘게 출력한 파일을 대신 해시하지 않는다.
 
-목표 오류 형식은 `{ "error": { "code": "...", "message": "...", "fields": {} } }`로 통일하고 작업 상세의 오류는 같은 객체 또는 `null`로 한다. 미인증·세션 만료는 `401`, CSRF 실패·권한 거절은 `403`, 접근 불가 리소스는 `404`, 충돌은 `409`, 크기 초과는 `413`, 지원하지 않는 이미지 형식은 `415`, 요청 스키마 검증 실패는 `422`, 그 밖의 잘못된 요청은 `400`, 과부하는 `429/503`으로 구분한다. `auth/me`는 로그인 전에도 `200`과 `authenticated: false`로 상태를 알 수 있게 한다.
+화면은 프로젝트·초안·확정·실행 UUID가 있는 URL로 복원한다. 미저장 파일은 재선택하고 저장한 이미지·초안·run은 서버에서 읽는다. sessionStorage에는 주체·operation·pending 키/본문만 저장하며 비밀번호·토큰·이미지 바이트는 넣지 않는다. health의 api/db/worker/ocr_runtime/model 점검과 실제 모델 준비·추론 성공을 구분하고 미확인은 unknown으로 표시한다.
 
-현재 FastAPI는 `detail` 기반 오류를 반환하고, 저장된 검수 실패 `error`는 문자열이다. 현재 로그인 자격 증명 오류는 `401`, 로그인·로그아웃 CSRF 오류는 `403`이다. 목표 오류 객체·운영 세션·보호 API의 인증 처리는 아직 완성된 공통 계약이 아니므로 React의 요청 처리와 서버 오류 변환을 함께 검증한다.
-
-health 응답은 `status/checks/limits`로 구성하고 `limits.upload_bytes/image_pixels/image_side`는 유지한다. checks의 API·DB·worker·OCR 런타임·모델 준비 상태는 각각 `ready/not_ready/unknown`과 점검 시각을 제공한다. React의 기존 단일 `runtime.ready` 판독은 새 어댑터로 교체하고, 확인되지 않은 원격 상태는 unknown으로 표시한다. 모델 파일 준비·로딩 여부·마지막 실제 추론 성공은 별도 정보로 표시한다.
+기존 `/api/reviews`의 쓰기 종료·개발 전용 구형 읽기·운영 수입은 8·9단계의 고정 계획·보존·복구 순서를 따른다. 이번 문서 개정은 현재 경로·JSON 저장·인증 코드를 삭제하거나 변경한 것이 아니다.
 
 ## 7. 이미지 전처리와 worker·OCR 모듈 계약
 
@@ -243,11 +239,11 @@ worker는 ID·해시·스키마 버전·치수·좌표계, 중복 OCR ID, NaN/In
 
 ## 8. 작업 상태·재시도·장애 처리
 
-아래는 아직 구현되지 않은 영속 worker의 목표다. 현재의 `BackgroundTasks`와 서버 재시작 시 실패 처리에 이 복구 기능이 있다는 뜻은 아니다.
+아래 로컬 영속 큐·lease/회수는 [C13](DB_Settings/DB_통합설계서.html#source-27)의 명시적 postgres_worker 프로필에 구현·검증했다. 기존 `BackgroundTasks`의 재시작 실패 처리와 구분한다. 원격 job 조회/복구 adapter는 후속이다.
 
 ### 8.1 영속 작업 큐
 
-`ReviewRun`의 queued 행 자체를 PostgreSQL 작업 큐로 사용한다. FastAPI는 작업·첫 이벤트를 짧은 트랜잭션으로 저장한 뒤 반환한다. 별도 worker는 PostgreSQL의 `SELECT ... FOR UPDATE SKIP LOCKED`에 해당하는 동작으로 작업을 인수하고 시도 번호·lease를 기록한 후 커밋한다. 구체적인 DB 라이브러리 호출은 도구 선정 후 정한다. **OCR 모듈 실행·RunPod 응답 대기 중에는 DB 행 잠금이나 트랜잭션을 계속 잡지 않는다.**
+`ReviewRun`의 queued 행 자체를 PostgreSQL 작업 큐로 사용한다. FastAPI는 작업·첫 이벤트를 짧은 트랜잭션으로 저장한 뒤 반환한다. 별도 worker는 PostgreSQL의 `SELECT ... FOR UPDATE SKIP LOCKED`에 해당하는 동작으로 작업을 인수하고 시도 번호·lease를 기록한 후 커밋한다. C13은 동기 SQLAlchemy Core·psycopg와 M008의 기존 큐/lease 제약을 사용한다. **OCR 모듈 실행·RunPod 응답 대기 중에는 DB 행 잠금이나 트랜잭션을 계속 잡지 않는다.**
 
 worker는 호출 중 별도 heartbeat로 lease를 갱신하고, 주기적으로 만료 작업을 회수한다. heartbeat·완료 커밋에는 현재 시도·lease token 일치뿐 아니라 `ReviewRun.status=running`, 시도 `status=active`, `lease_expiry > DB 현재 시각`을 조건으로 둔다. 만료 lease를 늦은 heartbeat로 되살리지 않는다. 유효한 응답의 OCR 근거·추출 정보·판정·완료 이벤트는 한 트랜잭션으로 저장하고 늦게 도착한 이전 worker의 결과는 받지 않는다. 이 설계에서는 별도 outbox가 초기 필수는 아니다. 나중에 메시지 브로커를 도입하면 DB 커밋과 메시지 전달 사이의 유실 방지를 별도로 설계한다.
 
@@ -306,16 +302,18 @@ OCR 성능은 [프로젝트 소개의 최종 비교](../README.md#최종-ocr-비
 
 현재 `local_auth.py`는 localhost용 임시 계정·8시간 메모리 세션·로그인/로그아웃 CSRF 검사를 제공한다. 운영 인증의 목표는 **FastAPI에서 검증하는 쿠키 세션 + CSRF**다. 실제 계정·비밀번호 해시 검증·DB 세션 저장·만료·폐기·권한 검사·관리자 계정 발급은 후속 구현이며 FastAPI 자체가 이 기능을 자동 제공한다고 가정하지 않는다.
 
-React 개발 서버는 `/api`를 FastAPI에 프록시하고 운영에서는 같은 사이트로 제공하는 구성을 유지한다. 로그인 자체를 포함한 변경 요청에 CSRF를 적용한다. 운영 세션 쿠키는 HTTPS에서 `Secure`·`HttpOnly`와 적절한 `SameSite` 정책을 적용하고, 로컬 개발 쿠키 설정과 구분한다. 기존 `admin / admin`은 운영 계정으로 사용하지 않는다.
+React 개발 서버는 `/api`를 FastAPI에 프록시하고 운영에서는 같은 HTTPS origin으로 제공한다. [추가 설계 7단계 — 인증·권한](DB_Settings/DB_통합설계서.html#source-09)에서 email/password와 개발 username/password의 분기, 계정 발급·Argon2id, 절대 8시간 DB 세션과 폐기, 세션에 결합한 서명 CSRF를 확정했다. 로그인 자체를 포함한 모든 변경 요청에 Origin/CSRF 검사를 적용한다. 운영 세션 쿠키는 `__Host-baro_session`·Secure·HttpOnly·SameSite=Strict이며 localhost 개발 쿠키와 구분한다. 실제 구현·패키지·환경 설정 적용은 후속 단계다.
+
+기존 `admin/admin`은 APP_ENV=development/test·LOCAL_ADMIN_LOGIN=1·검증한 loopback에서만 허용하고 모든 개발 세션 요청에 조건을 다시 검사한다. 명시적 초기화로 만든 developer UUID와 프로젝트 멤버십을 사용하며 업무 권한을 우회하지 않는다. 운영 DB에 남은 개발 주체는 비활성으로 보존하고 새로 시드하지 않는다.
 
 | 역할 | 목표 권한 |
 |---|---|
 | viewer | 프로젝트·기준·이력·근거 이미지·결과 조회 |
 | editor | viewer 권한 + 이미지 업로드·기준 확정·검수·재검수 |
 | owner | editor 권한 + 프로젝트 이름·보관 상태 관리 |
-| 운영 관리자 | 별도 보호된 관리 명령 또는 관리 API로 계정·멤버십 관리 |
+| 운영 관리 경로 | 첫 범위는 별도 보호된 관리 명령으로 계정·멤버십 관리. 웹의 전역 admin 역할 없음 |
 
-프로젝트 생성자는 owner가 된다. 공개 회원가입·SSO·프런트 멤버 관리 화면은 후속 범위다. 목록·상세뿐 아니라 이미지 다운로드·JSON 결과에도 같은 접근 검사를 적용한다. 관리 기능도 확정 기준·완료 결과·이벤트를 임의 수정하지 못하게 한다. 관리 명령·API의 구체적 인터페이스는 구현 시 정한다.
+프로젝트 생성자는 owner가 된다. 공개 회원가입·이메일 소유 확인·셀프 비밀번호 재설정·SSO·프런트 멤버 관리 화면은 후속 범위다. 목록·상세뿐 아니라 이미지 다운로드·JSON 결과에도 같은 접근 검사를 적용한다. 비밀번호/이메일 변경·계정 비활성화는 세션 전체를 함께 폐기하고 마지막 활성 owner 제거를 거부한다. 관리 기능도 확정 기준·완료 결과·이벤트를 임의 수정하지 못하게 한다. 관리 명령별 입력·행위는 7단계를 따르고 실행 진입점·패키지·프로필 기준은 [10단계](DB_Settings/DB_통합설계서.html#source-12)를 따르고 실제 배포 환경은 코드 적용 때 검증한다.
 
 비밀 설정은 환경변수로 분리한다. FastAPI에는 DB 연결·세션 관련 비밀 설정을, worker에는 DB 연결·OCR 대상·모델 경로·필요한 RunPod 키를 둔다. 별도 내부 OCR 서버를 추가할 경우에만 서버 간 주소·토큰 설정을 추가한다. 프런트에 DB·세션 비밀값·RunPod 키를 전달하지 않는다. 비밀키·업로드·모델·DB 볼륨은 Git에서 제외한다.
 
@@ -323,7 +321,7 @@ health는 웹 프로세스 응답, DB 접근, worker heartbeat, 모델 파일 �
 
 ## 11. 개발 환경·폴더 구성 제안
 
-현재 기술 기준은 Python 3.12, React 19/Vite 7, FastAPI·Uvicorn, 경로별 EasyOCR/PyTorch 및 PaddleOCR 런타임이다. PostgreSQL은 목표 업무 DB로 유지하며 이전 제안의 17 버전을 기준으로 구현 시 호환성·운영 버전을 확인한다. DB 접근·마이그레이션 라이브러리는 미선정이며, 특정 도구가 FastAPI에 필수라고 가정하지 않는다. [FastAPI DB 안내](https://fastapi.tiangolo.com/tutorial/sql-databases/)를 참고하여 구현 시 선정한다. 웹·검수 worker·Paddle 모델 환경의 의존성과 모델 로딩 책임을 구분한다.
+현재 기술 기준은 Python 3.12, React 19/Vite 7, FastAPI·Uvicorn, 경로별 EasyOCR/PyTorch 및 PaddleOCR 런타임이다. PostgreSQL은 현재 Compose의 postgres:17.11-bookworm을 기준으로 한다. [10단계](DB_Settings/DB_통합설계서.html#source-12)에서 SQLAlchemy Core 2.1.5·psycopg[binary] 3.3.6·Alembic 1.20.0을 선택했으며 서비스 UoW가 같은 스레드에서 Connection을 열고 닫는다. ORM·asyncpg는 추가하지 않는다. C01에서 SQLAlchemy·psycopg를 실제 설치하고 macOS Python 3.12.14/PostgreSQL 17.11 접속·commit/rollback을 검증했다. C02에서 Alembic 1.20.0을 설치·검증했다. 인증/JSON/잠금 패키지는 후속 단위에 추가하며 Linux/Windows의 실제 플랫폼 검증은 남아 있다. 웹·검수 worker·Paddle 모델 환경의 의존성과 모델 로딩 책임을 구분한다.
 
 ### 현재 주요 구성
 
@@ -335,11 +333,14 @@ backend/
   app/
     api.py                        # 공개 API, BackgroundTasks, 결과 저장
     local_auth.py                 # localhost 임시 계정·메모리 세션
+    config.py                     # C01: 독립 DB 설정·검증, API 미연결
+    persistence/                  # C01 Engine/UoW, C02~C06 전체 metadata·FK, C07b 인덱스/M007 가드, C07c 최종 스키마 점검, C08 인증 repository
     ocr_runtime.py                # EasyOCR·장치 선택·RunPod 연결
     paddle_ocr.py                 # Paddle 단독 실행 어댑터
     paddle_full_worker.py         # Paddle 모델 환경의 하위 작업자
     event_layout.py               # 여러 줄 제목·날짜 결합
     review_rules.py               # 근거 기반 기준 판정
+  migrations/                     # 정식 M001~M008, sql/의 고정 가드 SQL, candidates/의 과거 인덱스 초안
   tests/
 scripts/                          # 라벨링·전처리·비교 CLI
 start.py                          # 실행 전 검사 및 FastAPI 시작
@@ -350,28 +351,35 @@ docs/
 
 ### 후속 확장의 모듈 구성 제안
 
-다음 경로·이름은 구현 시 확정할 제안이며 아직 생성되지 않았다. 기존 `backend/app` 안에서 책임을 나누고 현재 공개 API·OCR 모듈을 점진적으로 재사용한다.
+다음은 10단계에서 정한 목표 모듈이다. C01의 config.py·database.py/transaction.py, C02~C06의 전체 테이블/M001~M005와 관계/M006과 C07a 인덱스·C07b 가드와 C07c 최소 권한/읽기 전용 스키마 점검과 C08 security/services/routes/management/main을 생성·검증했으며 나머지는 후속이다. 기존 `backend/app` 안에서 책임을 나누고 현재 공개 API·OCR 모듈을 점진적으로 재사용한다.
 
 ```text
 backend/app/
-  routes/                         # FastAPI 업무 API
+  config.py                       # 순수 설정·검증·비밀 마스킹
+  main.py                         # 명시적 app factory·프로필·수명
+  routes/v1/                      # FastAPI 업무 API
   services/                       # 계정·프로젝트·기준·검수 업무 로직
-  persistence/                    # PostgreSQL 접근·트랜잭션
+  persistence/                    # 동기 Core Connection/UoW·schema·repositories
+  security/                       # 이메일/개발 인증·DB 세션·CSRF·접근 경계
+  storage/                        # 파일 확정·잠금·저널·복구
+  hashing/                        # 버전별 payload·rfc8785·SHA256
+  management/                     # 명시적 계정/수입/백업/복원 CLI
+  execution/                      # OCR/판정·BackgroundTasks·독립 DB 큐/고정 설정
   contracts/                      # API·worker 입력/출력 스키마
   worker.py                       # 별도 프로세스의 작업 인수·복구·OCR 호출
   ...                             # 기존 OCR·추출·판정 모듈 유지
-backend/migrations/               # 도구 선정 후 DB 변경 이력
-compose.yaml                      # PostgreSQL 등 로컬 기반 서비스, 구현 예정
+backend/migrations/               # Alembic 수동 revision·제약·권한 이력
+compose.yaml                      # PostgreSQL 기반. 업무 schema M008/worker 격리 검증 완료
 ```
 
 | 프로세스 | 기본 주소·실행 방식 |
 |---|---|
 | React 개발 서버 | 현재 `127.0.0.1:5173`, API는 FastAPI에 프록시 |
 | FastAPI 업무 API | 현재 기본 `127.0.0.1:8000`, 빌드된 React 제공 |
-| 독립 Python worker | 후속 구현, 별도 Python 실행 진입점, HTTP 포트 없음 |
-| PostgreSQL | 후속 구현, `127.0.0.1:5432`와 영속 볼륨 제안 |
+| 독립 Python worker | C13 `python -m backend.app.worker --env-file .env.worker`, HTTP 포트 없음. 별도 v1 접수 프로필과 같은 DB/파일 루트 |
+| PostgreSQL | 기초 컨테이너/역할·접속·보존 검증 기록 있음. C01~C06 M001~M006와 C07a 인덱스·C07b 가드·C07c M008 최소 권한/최종 스키마 격리 DB 검증 완료. 정식 head M008, 일상 DB/API 저장 연결은 후속 |
 
-현재 `run.sh`·`run.cmd`는 준비 상태를 검사하고 **FastAPI만 시작**한다. PostgreSQL이나 영속 worker를 자동 설치·실행하지 않는다. 현재 실행 옵션·포트는 [실행가이드](../실행가이드.md)를 따른다. 새 worker 명령·DB 준비·마이그레이션·포트 설정은 실제 구현 후 안내에 추가한다.
+현재 `run.sh`·`run.cmd`는 준비 상태를 검사하고 **FastAPI만 시작**한다. PostgreSQL이나 영속 worker를 자동 설치·실행하지 않는다. 현재 실행 옵션·포트는 [실행가이드](../실행가이드.md)를 따른다. worker 실행/설정은 [C13 가이드](DB_Settings/DB_통합설계서.html#source-27)를 따른다. [C15 Linux 배포 리허설/전환 가이드](DB_Settings/DB_통합설계서.html#source-29)까지 완료했다. 실제 운영 서버·모델·보관 정책을 정한 뒤 운영 전환을 별도로 진행한다.
 
 Mac의 EasyOCR MPS는 호스트 Python 프로세스를 기준으로 한다. Linux Docker 안에서 macOS MPS를 사용하는 것으로 가정하지 않는다. Paddle 단독의 CPU 실행과 운영 CUDA 지원은 각각 구분하여 검증한다. DB는 먼저 PostgreSQL 컨테이너로 제공할 수 있으며 파일·DB 백업과 복원 절차도 추가한다.
 
@@ -398,7 +406,11 @@ Mac의 EasyOCR MPS는 호스트 Python 프로세스를 기준으로 한다. Linu
 
 A와 D는 DB 트랜잭션·작업 상태 계약을 함께 맞추고, B의 OCR·판정 모듈을 worker에서 재사용한다. E는 새 API 계약과 인증·오류 처리를 연결한다. 기존 기능을 유지한 상태에서 새 경로를 검증한 후 이전 검수 API의 호환·정리 시점을 정한다. 문서 개정만으로 기존 `/api/reviews` 경로를 삭제하지 않는다. 데이터 파이프라인 CLI import 경로도 함께 보존·검증한다.
 
-기존 JSON 이력은 자동 삭제하거나 시작 시 무조건 DB로 가져오지 않는다. 이전 도구는 기본 dry-run으로 목록·누락·형식·해시를 검증하고 대상 프로젝트·귀속 사용자를 명시적으로 받아 실행한다. 기존 UUID를 이전 식별자로 보존하여 반복 실행 시 중복을 막는다. 같은 숫자 기준 버전에 서로 다른 내용이 있으면 별도 서버 버전으로 매핑하고 원래 값을 기록한다. 중단된 과거 실행은 재실행하지 않고 중단 이력으로 가져온다. 원본 이력은 검증 완료 전후에도 별도 보존한다.
+기존 JSON 이력은 자동 삭제하거나 시작 시 무조건 DB로 가져오지 않는다. 이전 도구는 기본 dry-run으로 목록·누락·형식·해시를 검증하고 대상 프로젝트·namespace·고정 변환/연결 결정을 받아 실행한다. 기존 UUID/문자열 ID는 외부 별칭으로 보존하고 cc-import-envelope-v1 지문과 package 유일 키로 반복 적용을 구분한다. imported_by와 과거 requester를 구분하며 미확인 과거 주체는 NULL이다. 같은 숫자 기준 버전에 서로 다른 내용이 있으면 별도 서버 버전으로 매핑하고 원래 값을 기록한다. 중단된 과거 실행은 재실행하지 않고 중단 이력으로 가져온다. 원본 이력은 검증 완료 전후에도 별도 보존한다.
+
+[9단계](DB_Settings/DB_통합설계서.html#source-11)는 수입 기준/결과를 cc-import-projection-v1의 로컬 구조 봉인으로 구분한다. 원문 completed/pass/confirmed를 로컬 판정/확정으로 승격하지 않는다. 새 실행은 실제 사용자가 새 초안·정상 확정 API로 재확정한 기준을 사용한다. 첫 범위에 자동 복제·과거 사용자 가장·completed 수입 삭제/undo를 추가하지 않는다.
+
+백업은 쓰기·worker·GC 중지와 정상 drain 후 DB custom dump·파일 inventory·schema/설정 버전을 한 세트로 보관한다. 별도 DB/파일 루트 복원·전체 봉인/참조/파일/권한 대조·세션 전체 폐기·worker 재개 판단 전에 공개하지 않는다. DB만의 dump나 화면 조회 성공을 전체 복구로 간주하지 않는다. 기존 상태는 보존하며 실제 RPO/RTO는 복원 훈련에서 측정한다. 새 v1 쓰기가 생긴 뒤의 구형 코드/이전 DB 복귀는 데이터 손실과 호환성을 별도로 판단한다.
 
 ## 13. 완료 기준과 검증 범위
 
@@ -417,7 +429,17 @@ A와 D는 DB 트랜잭션·작업 상태 계약을 함께 맞추고, B의 OCR·�
 | AC-11 | 기존 OCR·판정·추출·데이터셋·React 테스트를 유지하고 변경한 API 계약과 이력 복원 시나리오를 추가 검증한다. |
 | AC-12 | 초기 설치, DB migration, 각 프로세스 실행, 포트 변경, 장애 확인, DB+파일 백업·복원 절차가 문서화된다. |
 
-이 완료 기준은 후속 구현의 검증 목록이다. 기존 [실행가이드](../실행가이드.md)의 테스트·실행 기록과 날짜별 OCR 보고서는 당시 코드에 대한 검증이며 **PostgreSQL·독립 worker·운영 인증 구현이 완료됐다는 근거가 아니다.** CUDA 실장비, 실제 RunPod 호출, RunPod Docker 빌드도 각각 별도 확인 대상으로 남는다. 이번 v0.2 개정은 문서 변경이며 애플리케이션 코드·DB·서버 설정을 변경하지 않았다.
+이 완료 기준은 후속 구현의 검증 목록이다. 기존 [실행가이드](../실행가이드.md)의 테스트·실행 기록과 날짜별 OCR 보고서는 당시 코드에 대한 검증이며 **PostgreSQL·독립 worker·운영 인증 구현이 완료됐다는 근거가 아니다.** CUDA 실장비, 실제 RunPod 호출, RunPod Docker 빌드도 각각 별도 확인 대상으로 남는다. v0.17 개정에서는 [C08](DB_Settings/DB_통합설계서.html#source-22)의 이메일/개발 DB 인증·계정 CLI·세션/서명 CSRF·권한 검사·별도 main을 반영한다. 기본 Python 491개·하위 검사 7개, DB/API 총 1,158개를 통과했다(기존/신규 통합 1,157개와 실제 Uvicorn/HTTP·재시작 1개를 별도 실행). Argon2id·이메일 형식 검증 패키지를 설치하고 실제 해시 비용·reset/login/owner/권한 경합·PTY 비밀번호 입력·웹 재시작 세션을 확인했다. [AUTH-01~28 대응표](DB_Settings/DB_통합설계서.html#source-31)는 백엔드 검증 20개·부분 7개·새 UI 미실행 1개를 구분한다. 당시 실제 브라우저·외부 proxy·새 React 인증 화면·파일/worker/복원은 후속이었다. 이후 C09/C10의 백엔드와 C11의 새 화면을 순차 구현했다. M001~M008와 기존 연결/UoW·JSON API·개발 인증·React/OCR/launcher·일상 DB는 보존했다. 실제 계정/개발 프로젝트 발급이나 일상 DB 업그레이드를 하지 않았으며 합성 데이터를 쓴 무작위 격리 DB와 테스트 서버만 생성·검증·정리했다.
+
+이번 v0.20은 C11 신규 단위 35개·합성 API Chrome 14개, 기존 프런트 단위 18개·Chrome 16개·기본/v1 빌드 성공과 Python 592개·하위 7개 회귀를 반영한다. [C11 대응표](DB_Settings/DB_통합설계서.html#source-34)와 [증거](DB_Settings/verification/reports/2026-10-18-implementation-C11.json)를 따른다. C10 DB/API 1,265개는 이번에 재실행하지 않았으며 실제 DB/API/OCR/프록시를 연결한 브라우저 E2E로 합산하지 않는다. 이후 v0.21의 C12에서 실제 연결까지 검증했고, C15의 로컬 Linux 배포 리허설까지 진행했다.
+
+v0.21 C12에서는 기본 Python 619개·하위 7개, 기존 DB/API 1,265개와 신규 실제 연결 4개(총 1,269개), 프런트 단위 53개·기본/v1 빌드를 검증했다. 고정 Chromium 151.0.7922.34·실제 Nginx/Linux HTTPS·실제 로컬 Paddle CPU 포스터 1장(18 OCR/1 항목) 경로를 구분한다. [C12 대응표](DB_Settings/DB_통합설계서.html#source-35)·[증거](DB_Settings/verification/reports/2026-10-18-implementation-C12.json)를 따른다. CI job은 추가/문법 확인만 했으며 원격 실행은 하지 않았다. 일상 DB·기존 launcher·M008을 유지했고 독립 worker·복원·운영 공개는 후속이다.
+
+v0.22 C13은독립 postgres_worker의 경쟁 인수·heartbeat/lease·중단 회수·늦은 결과 거부·커밋 미확인·정상 drain을 구현했다. 기본 Python 645개·하위 7개와 DB/API core 1,285개·실제 직접/Vite 브라우저 2개·실제 worker OCR 1개(통합 고유 1,288개)를 통과했다. 실제 배포용 worker CLI가 웹과 별도로 로컬 Paddle CPU 포스터 1장(18 OCR/1 항목/attempt 1회)을 완료했다. 실제 유료 원격 호출은 0회이며 원격 조회 adapter·Linux Paddle worker 배포·수입/GC/backup/restore·운영 공개는 후속이다. [C13 대응표](DB_Settings/DB_통합설계서.html#source-36)·[증거](DB_Settings/verification/reports/2026-10-19-implementation-C13.json)를 따른다. 이후 C14 수입/복원과 C15 로컬 Linux 리허설도 완료했다.
+
+v0.23 C14는 원본 불변 dry-run·고정 계획의 멱등 수입·미확정/원문 판정 구분·미참조 payload 격리/7일 보존 삭제·파일 가용성/동일 바이트 복구를 구현했다. 실제 PostgreSQL 17 custom dump를 새 template0 DB/새 저장소에 복원하고 M008 전체 구조/권한·행 수/행 SHA·전체 FK/봉인/manifest·파일·세션 폐기/새 키·새 로그인/검수/재시작을 검증했다. DB 단위 ACL과 PostgreSQL CHECK의 알려진 재파싱 표기는 새 복원 대상에서만 검토 정책으로 적용하고 기존 byte-exact 검사를 유지한다. 검증 수치/실측은 [C14 기록](DB_Settings/DB_통합설계서.html#source-28)·[대응표](DB_Settings/DB_통합설계서.html#source-37)·[증거](DB_Settings/verification/reports/2026-10-19-implementation-C14.json)를 따른다. 기존 일상 DB/JSON 이력에 실제 수입·GC·복원을 적용하지 않았으며 운영 공개·암호화 원격 보관·RPO/RTO SLA 달성을 선언하지 않는다. 이후 C15 로컬 Linux 배포 리허설도 완료했다.
+
+v0.24 C15는 사용자가 선택한 로컬 Linux 리허설과 전환 자료 범위다. Compose의 HTTPS 프록시·비공개 API·독립 worker·공유 영속 볼륨·UID10001/read-only 경계, 구형 변경 요청 410·구형 조회 404, 명시적 로컬 legacy 읽기 모드의 원문 불변/개발 로그인, 실제 복원 증거와 현재 DB/파일·웹/worker 설정을 대조하는 release-check를 구현했다. 실제 Linux 브라우저 검수→중지한 볼륨 고정 스냅샷→PostgreSQL custom dump/새 DB·루트 복원→새 Linux 볼륨 재가동→원 쿠키 거부·새 로그인/검수·재시작 조회를 통과했다. OCR worker는 명시적인 테스트 override의 합성이며 실제 Linux Paddle·모델 이미지 빌드·암호화 원격 보관·RPO/RTO SLA·이전 버전 이미지 롤백·외부 운영 공개는 미검증/미실행으로 남긴다. [C15 기록](DB_Settings/DB_통합설계서.html#source-29)·[대응표](DB_Settings/DB_통합설계서.html#source-38)·[증거](DB_Settings/verification/reports/2026-10-19-implementation-C15.json)를 따른다. 일상 DB/JSON·기존 launcher/admin 개발 기본값·M008은 유지했다. C01~C15 구현 단위를 마쳤으며 실제 대상 운영 검증은 별도 후속이다.
 
 ## 14. 후속 범위
 

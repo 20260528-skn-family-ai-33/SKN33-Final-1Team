@@ -1,0 +1,344 @@
+{
+  "unit": "C02",
+  "status": "complete",
+  "review_date": "2026-10-17",
+  "generated_at_utc": "2026-10-17T07:12:11.396470+00:00",
+  "next_unit": "C03",
+  "scope": "Alembic environment, owner-only configuration, explicit M001 identity DDL and default privilege revocation; applied only in isolated test DBs",
+  "environment": {
+    "python": "3.12.14",
+    "system": "Darwin",
+    "machine": "arm64",
+    "sqlalchemy": "2.1.5",
+    "psycopg": "3.3.6",
+    "alembic": "1.20.0",
+    "postgres_server_version_num": 170011
+  },
+  "installed_packages": [
+    {
+      "name": "alembic",
+      "version": "1.20.0",
+      "archive_sha256": "77eb101048d95f982c0353e9233404889dcd7a6fc244c107836c0e2fc9cf7d9d"
+    },
+    {
+      "name": "Mako",
+      "version": "1.4.3",
+      "archive_sha256": "723296007c870bfd6b3f0c3230dba7198096e5269297ebf5e4eff9e7ffa39d4f"
+    }
+  ],
+  "pip_check": {
+    "exit_code": 0,
+    "result": "No broken requirements found."
+  },
+  "implemented_schema": {
+    "revision": "M001",
+    "business_tables": 4,
+    "columns": 30,
+    "primary_keys": 4,
+    "unique_constraints": 2,
+    "check_constraints": 10,
+    "foreign_keys": 0,
+    "additional_indexes": 0,
+    "tool_table_excluded": "alembic_version",
+    "tables": [
+      {
+        "name": "users",
+        "columns": 8
+      },
+      {
+        "name": "user_sessions",
+        "columns": 6
+      },
+      {
+        "name": "projects",
+        "columns": 10
+      },
+      {
+        "name": "project_members",
+        "columns": 6
+      }
+    ]
+  },
+  "test_runs": [
+    {
+      "command": ".venv/bin/python -m pytest -q --junitxml=/private/tmp/creative-checker-c02-offline.xml",
+      "exit_code": 0,
+      "unique_cases_passed": 404,
+      "new_c02_cases": 17,
+      "additional_subtests_passed": 7,
+      "db_cases_deselected": 46,
+      "junit_sha256": "97b9f812ad99c01e1561a396ce120dfa5f0a3590062774053054d8b20649562b"
+    },
+    {
+      "command": "TEST_DB_ENV_FILE=<explicit test-only file> .venv/bin/python -m pytest backend/tests/test_db_integration.py backend/tests/test_identity_migration_integration.py -m db_integration -q",
+      "executed_credential_supply": "Explicit TEST_DB_* child environment; no secrets in argv/output and no business DB name supplied to test fixtures",
+      "exit_code": 0,
+      "cases_passed": 46,
+      "new_c02_cases": 38,
+      "c01_regression_cases": 8,
+      "junit_sha256": "0c46b14c6a3d418c39ac2ab4fd4939fa25ba83b071964b83f345af9241cc2180",
+      "c02_cases": [
+        "test_account_domain_conditions[developer-None-None-\\uac1c\\ubc1c\\uc790-True]",
+        "test_account_domain_conditions[developer-None-fake-hash-\\uac1c\\ubc1c\\uc790-False]",
+        "test_account_domain_conditions[developer-fake@example.com-None-\\uac1c\\ubc1c\\uc790-False]",
+        "test_account_domain_conditions[email- user@example.com-fixture-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-None-fixture-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-USER@example.com-fixture-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-\\uc0ac\\uc6a9\\uc790@example.com-fixture-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-user@example.com-  -\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-user@example.com-$argon2id$fixture-only-\\uc0ac\\uc6a9\\uc790-True]",
+        "test_account_domain_conditions[email-user@example.com-None-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_account_domain_conditions[email-user@example.com-fixture- \\t-False]",
+        "test_account_domain_conditions[unknown-None-None-\\uc0ac\\uc6a9\\uc790-False]",
+        "test_app_has_no_table_or_version_privileges_and_new_defaults_stay_closed",
+        "test_app_role_cannot_run_owner_migration",
+        "test_inventory_metadata_types_defaults_constraints_comments_and_no_seed",
+        "test_repeat_upgrade_and_destructive_downgrade_guard",
+        "test_single_row_checks[project_members-values15-23514]",
+        "test_single_row_checks[project_members-values16-23514]",
+        "test_single_row_checks[projects-values10-23514]",
+        "test_single_row_checks[projects-values11-23514]",
+        "test_single_row_checks[projects-values12-23514]",
+        "test_single_row_checks[projects-values13-23514]",
+        "test_single_row_checks[projects-values14-23514]",
+        "test_single_row_checks[projects-values6-23514]",
+        "test_single_row_checks[projects-values7-23514]",
+        "test_single_row_checks[projects-values8-23514]",
+        "test_single_row_checks[projects-values9-23514]",
+        "test_single_row_checks[user_sessions-values2-23514]",
+        "test_single_row_checks[user_sessions-values3-23514]",
+        "test_single_row_checks[user_sessions-values4-23514]",
+        "test_single_row_checks[user_sessions-values5-23514]",
+        "test_single_row_checks[users-values0-23514]",
+        "test_single_row_checks[users-values1-23514]",
+        "test_unique_and_primary_keys[email]",
+        "test_unique_and_primary_keys[member]",
+        "test_unique_and_primary_keys[token]",
+        "test_unique_and_primary_keys[user_pk]",
+        "test_valid_defaults_multiple_sessions_and_duplicate_project_names"
+      ]
+    }
+  ],
+  "checks_passed": [
+    "Owner/app role and UTC/UTF8/PostgreSQL 17 preflight",
+    "4 tables and 30 columns match Core metadata via actual PostgreSQL introspection and Alembic compare_metadata",
+    "All named PK/UQ/CHECK, defaults, NULL flags, table/column comments; no initial seed",
+    "Normalized conditional email/developer accounts, session hash/finite times, JSON string arrays, project states and membership roles",
+    "Global and public default TABLES/SEQUENCES grants to app and PUBLIC revoked before table creation",
+    "Previously created Alembic version table grants revoked; app has no business/version table privileges",
+    "Future table/sequence probe receives no app grants; probe DDL rolled back",
+    "Existing public relation preserved on initial migration refusal",
+    "Injected SQLSTATE 22012 after all M001 DDL rolls back tables/version/default ACL as one transaction",
+    "Repeat head upgrade is idempotent; destructive downgrade and app-role migration refused",
+    "All temporary DBs cleaned; daily DB public relations and default ACL unchanged",
+    "C01 code hashes and historical proof JSON preserved; legacy API/auth/frontend/OCR/launchers unchanged"
+  ],
+  "database_isolation": {
+    "pytest_exit_code": 0,
+    "before": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": []
+    },
+    "after": {
+      "public_relations": [],
+      "default_privileges": [
+        [
+          "creative_checker_owner",
+          2200,
+          "S",
+          "{creative_checker_app=rU/creative_checker_owner}"
+        ],
+        [
+          "creative_checker_owner",
+          2200,
+          "r",
+          "{creative_checker_app=arwd/creative_checker_owner}"
+        ]
+      ],
+      "test_databases": []
+    },
+    "daily_schema_and_default_privileges_unchanged": true,
+    "temporary_databases_cleaned": true
+  },
+  "static_review": {
+    "git_diff_check": "passed",
+    "compileall": "passed",
+    "local_links_checked": 291,
+    "local_heading_anchors_checked": 9,
+    "c01_baseline_hashes_preserved": true
+  },
+  "runtime_source_files": [
+    {
+      "path": "backend/migrations/__init__.py",
+      "sha256": "f4feb1697fa882ae02829188b26acf51458dddb6e5178e60507cb8710a790e4d"
+    },
+    {
+      "path": "backend/migrations/alembic.ini",
+      "sha256": "9d8b024b08ce8d5f3833d28a3e5c32f591fc06b328739c3bef7530ef07bd4526"
+    },
+    {
+      "path": "backend/migrations/configuration.py",
+      "sha256": "dd9a541a33ba6aca609f2e58b1790b6e90c832d71a3a758a44018976b65e1206"
+    },
+    {
+      "path": "backend/migrations/env.py",
+      "sha256": "32335be722a00b5513325254c5a2a577a2ec8064fdf5d30a61e7921c41b0cd09"
+    },
+    {
+      "path": "backend/migrations/script.py.mako",
+      "sha256": "3a88b10fc0e01bd50c130537a76513fbf14de15975fbe753eee27001568481da"
+    },
+    {
+      "path": "backend/migrations/versions/M001_identity.py",
+      "sha256": "bf80a337dfe1ca7e5d71b1dfad741714713cac6e394623d7449e37e1b7a50731"
+    },
+    {
+      "path": "backend/app/persistence/schema/__init__.py",
+      "sha256": "83dfa076ee12767cab0a50e0fe21965188c963d1cba226ebcaf94fbf96aaa4c9"
+    },
+    {
+      "path": "backend/app/persistence/schema/identity.py",
+      "sha256": "22fa826bff7cfd6353a9f83c13b2cf2cc919a4bd9a4e49ad68ea0b7e685f705f"
+    },
+    {
+      "path": "backend/tests/test_migration_config.py",
+      "sha256": "90046abf5d4d9e2175b90efe970e6d2d376ab70c83999269722b5414f60ef184"
+    },
+    {
+      "path": "backend/tests/test_identity_schema.py",
+      "sha256": "52ded6a5175b7ba27cf19145841098ce2653126c88f8a1bac79840dfdbd3f9c4"
+    },
+    {
+      "path": "backend/tests/test_identity_migration_integration.py",
+      "sha256": "b9d1717a8e0c315e4bf968b9589dc2aaf738bda448f248e303a8d3c01ca39614"
+    },
+    {
+      "path": "requirements-db.txt",
+      "sha256": "5f47c6f4843ee0e0d515837519c53e0b515a894f07ed3454e5dbb04232ceb1d8"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "2bb9a690433d60960572c200a65f0b46c5059e5924e3f469a5c23c431006c5b1"
+    }
+  ],
+  "documentation_files": [
+    {
+      "path": "docs/DB_Settings/구현_C01_DB연결과트랜잭션.md",
+      "sha256": "c03812e855fe2ca7803c4386c3b968a9d24c9c7210ea9d1108cd8b3b2f0661ef"
+    },
+    {
+      "path": "docs/DB_Settings/구현_C02_Alembic과사용자스키마.md",
+      "sha256": "e34e9d184cf8ae2cc4c905e9a7864122b80b685c297a74d5be6cc8e30fd1782c"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "6c1c395f463eb418639004a8d4b58679e4c4b5e86e2a2352249da1a2c10de524"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "4f3b0dc8ee794b45b47e9c3962c2b4ff48da77a407d01d3ec5f7a96c56c19942"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "b2d92823bedaf786559fafe4fe3660adb9a5744549cfe0baf6ee46933b6fd391"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "05ba306fe2689f15d409d1f00333478186b777f24fd39ed49066d58f00d945a6"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "d8d4955eb53cb6f0a42cc7926891cfdc63c8174efb5127bc3e3fa6e38cfb1a9b"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "6a8649c9b2a31eadc75f3b170554348fd34a534049ab5e166d95d4edf08d6e38"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "4700b56d631e3da8fdb8efbd19440d7b5fd7673e1ca9751e539d244c1147ffc7"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "2a6eabd63759621c72bb8f0bdf36c4cf904b51b229dc771419d8313a8341cb7e"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "1135f55b932b72349978dd8de4163779d1ae7c0906f657803f46ad5b9cd3f0b4"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "929c62d9ec9a63365eb8267a311299b2f7b504eebc557f86124feaa77746ee98"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_09_저장과이전복구.md",
+      "sha256": "2267268545e6eb92a7f80defa60607b9f342057d33c5b144e76b8c55ccde1a4e"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_10_구현구조와검증명세.md",
+      "sha256": "4d47a5a9453d698694c1e2bafac7325c8eb4c41a55d630f6cc0bf861f6d491b1"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "f0a6c27565fb721588ec410f284e4c95f2edd1d02050ceec1efa3fe0991b45c3"
+    },
+    {
+      "path": "실행가이드.md",
+      "sha256": "1b58735836c0b594eba121ee991ab9741d76fce78170e09855355e60dedaf3c4"
+    }
+  ],
+  "historical_proofs": [
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+      "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-postgres-stage3.json",
+      "sha256": "1e37feb5c561f12a896769d59fd5073ef503d0d71798975a892dbad8a0208307"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-api-design-stage8.json",
+      "sha256": "6a2f0fd8f8ab4d2f47164befbc2162f014035d1d32fea3d39947403f1a2f766e"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-C01.json",
+      "sha256": "4d885c74c292e709c83e351ac7c26fba4973079d40ea625250f4307e37381f0c"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-implementation-design-stage10.json",
+      "sha256": "fa858359f791448630212860e0ba899a74a94ffaabac4724b0d006b06a62b232"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-17-storage-design-stage9.json",
+      "sha256": "29cf16c1b355fede5c94c1ee399165f39e3d3e41be8b9206717e2d87f7b6d4a4"
+    }
+  ],
+  "frozen_design_plan": {
+    "path": "docs/DB_Settings/contracts/stage10-implementation-plan.json",
+    "sha256": "cea3898439c09c536d3fe8cdcc510741d761abd30201728cb6ebe034af3a53a6"
+  },
+  "limitations": [
+    "M001 remains a partial schema; full FK/index/trigger/grant revisions and v1 writes are not available.",
+    "The daily creative_checker database was not upgraded; migrations ran only in generated UUID test databases.",
+    "Only macOS Python with PostgreSQL 17.11 container was exercised; Linux/Windows and network COMMIT fault injection were not run.",
+    "No email login implementation, seed, worker, browser/OCR execution or new DB CI job in C02."
+  ]
+}

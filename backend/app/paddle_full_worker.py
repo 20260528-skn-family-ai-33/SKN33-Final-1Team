@@ -20,10 +20,14 @@ def run(image_path, output_path, detection_dir, recognition_dir):
                   "recognition": verify_model(recognition_dir, MODEL)}
     started = time.perf_counter()
     from PIL import Image
+    import numpy as np
     import paddle
     from paddleocr import PaddleOCR
     with Image.open(image_path) as opened:
         dimensions = list(opened.size)
+        # Storage keys deliberately have no suffix. Decode the verified image bytes;
+        # Paddle's array reader expects BGR, just like its normal OpenCV file reader.
+        pixels = np.asarray(opened.convert('RGB'))[:, :, ::-1].copy()
     model = PaddleOCR(
         text_detection_model_name=DETECTION_MODEL, text_detection_model_dir=str(detection_dir),
         text_recognition_model_name=MODEL, text_recognition_model_dir=str(recognition_dir),
@@ -34,7 +38,7 @@ def run(image_path, output_path, detection_dir, recognition_dir):
         text_recognition_batch_size=8,
     )
     loaded = time.perf_counter()
-    outputs = list(model.predict(input=str(image_path)))
+    outputs = list(model.predict(input=pixels))
     if len(outputs) != 1:
         raise ValueError("Expected exactly one Paddle OCR image result")
     raw = outputs[0].json

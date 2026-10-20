@@ -1,0 +1,18 @@
+export const uid = n => `10000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+export const ids = { actor: uid(1), project: uid(2), image: uid(3), asset: uid(4), frame: uid(5), set: uid(6), draft: uid(7), version: uid(8), run: uid(9), result: uid(10), criterion: uid(11), evidence: uid(12), ocr: uid(13), token: uid(14), run2: uid(15) };
+export const wrap = value => ({ ...structuredClone(value), meta: { contract_version: 'cc-api-v1', request_id: uid(999) } });
+export function fixtures() {
+  const user = { id: ids.actor, display_name: '검수 담당자', account_kind: 'email', email: 'reviewer@example.test' };
+  const project = { id: ids.project, name: '가을 포스터 검수', my_role: 'owner', business_state: 'active' };
+  const image = { id: ids.image, asset_id: ids.asset, project_id: ids.project, version_no: 1, width: 200, height: 300, frame_id: ids.frame, coordinate_space: 'normalized_original_pixels', url: `/api/v1/images/${ids.image}/content`, original_sha256: 'a'.repeat(64), display_sha256: 'b'.repeat(64), actual_format: 'PNG', content_type: 'image/png' };
+  const set = { id: ids.set, project_id: ids.project, name: '포스터 필수 정보' };
+  const draft = { id: ids.draft, project_id: ids.project, criteria_set_id: ids.set, image_id: ids.image, revision: '9007199254740993', state: 'editing', raw_requirements: '행사명을 표시해 주세요.', items: [{ id: 'requirement-1', text: '행사명 표시', type: 'information', source: '요구사항 원문', selected: true }], source_documents: null };
+  const criteria = { id: ids.version, project_id: ids.project, criteria_set_id: ids.set, image_id: ids.image, version_no: 37, origin_kind: 'service_confirmation', confirmation_state: 'confirmed', source_draft_id: ids.draft, source_draft_revision: draft.revision, draft_is_current: true, criteria: [{ criteria_item_id: ids.criterion, id: 'requirement-1', position: 1, text: '행사명 표시', type: 'information', source: '요구사항 원문', is_required: null }] };
+  const receipt = { id: ids.run, project_id: ids.project, image_id: ids.image, criteria_version_id: ids.version, retry_of: null, status: 'queued' };
+  const evidence = { id: ids.evidence, source_kind: 'ocr', text: '가을 문화 축제', bbox_xyxy: [20, 30, 180, 90], polygon: null, confidence: null, frame_id: ids.frame, coordinate_space: 'normalized_original_pixels', token_ids: [ids.token], method_code: 'ocr', limitations: null };
+  const token = { id: ids.token, external_token_id: '0', external_token_type: 'integer', order: 0, text: '가을 문화 축제', confidence: .96, bbox_xyxy: [20, 30, 180, 90], polygon: null, coordinate_space: 'normalized_original_pixels', frame_id: ids.frame };
+  const run = { ...receipt, status: 'completed', stage: 'completed', progress: 100, project_name: project.name, criteria_version: 37, origin_kind: 'service_execution', source: null, criteria: criteria.criteria, image, results_complete: true, overall_verdict: 'pass', runtime: { pipeline: 'fixture-only' }, ocr: { id: ids.ocr, record_count: 1, frame_id: ids.frame, coordinate_space: image.coordinate_space, input_dimensions: [400, 600], scale: 2 }, error: null,
+    results: [{ result_id: ids.result, criteria_item_id: ids.criterion, criterion_id: 'requirement-1', criterion: '행사명 표시', type: 'information', processing_status: 'completed', verdict: 'pass', status: 'pass', observed_text: null, observed_value: { title: '가을 문화 축제' }, reason: '등록된 행사명을 확인했습니다.', check_method: 'fixture', limitations: ['브라우저 계약 검증용 합성 응답'], evidence: [], evidence_count: 1, evidence_complete: false }], created_at: '2026-10-18T01:00:00.000000Z' };
+  return structuredClone({ user, project, image, set, draft, criteria, receipt, evidence, token, run });
+}
+export const page = (items, extra = {}) => wrap({ items, has_more: false, next_cursor: null, ...extra });

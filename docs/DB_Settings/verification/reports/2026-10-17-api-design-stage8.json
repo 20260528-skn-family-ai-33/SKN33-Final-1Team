@@ -1,0 +1,358 @@
+{
+  "review_date": "2026-10-17",
+  "generated_at_utc": "2026-10-17T05:28:45.157312+00:00",
+  "stage": 8,
+  "validation_kind": "static_document_review",
+  "status": "passed",
+  "runtime_code_changed": false,
+  "sql_or_migration_executed": false,
+  "postgresql_runtime_tests_run": false,
+  "browser_auth_tests_run": false,
+  "counts": {
+    "tables": 26,
+    "columns": 395,
+    "primary_keys": 26,
+    "unique_constraints": 41,
+    "foreign_keys": 81,
+    "check_groups": 77,
+    "partial_unique_indexes": 2,
+    "ordinary_indexes": 25,
+    "trigger_rule_names": 30,
+    "planned_auth_cases": 28,
+    "local_links_checked": 160,
+    "local_heading_anchors_checked": 7
+  },
+  "checks_passed": [
+    "Domain tables and column counts parsed from saved Markdown",
+    "All FK types and referenced unique keys match",
+    "All composite FK context prefixes are NOT NULL",
+    "Declared key and index columns exist",
+    "Constraint and index names are unique and at most 63 bytes",
+    "Conditional account fields and developer partial uniqueness documented",
+    "28 future auth cases and 18 future PostgreSQL cases present",
+    "Markdown fences whitespace local paths and anchors checked",
+    "Runtime source and dependencies unchanged",
+    "Historical 394-column stage 6 proof preserved"
+  ],
+  "historical_stage6": {
+    "path": "docs/DB_Settings/verification/2026-10-16-physical-design-stage6.json",
+    "sha256": "382ada2e9330b1a8b44620f528071051cc9c13f1b0c08ab641abca397ddb0289",
+    "columns": 394
+  },
+  "tables": [
+    {
+      "name": "users",
+      "columns": 8,
+      "primary_key": [
+        "user_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 0
+    },
+    {
+      "name": "user_sessions",
+      "columns": 6,
+      "primary_key": [
+        "session_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 1
+    },
+    {
+      "name": "projects",
+      "columns": 10,
+      "primary_key": [
+        "project_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 1
+    },
+    {
+      "name": "project_members",
+      "columns": 6,
+      "primary_key": [
+        "project_id",
+        "user_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 2
+    },
+    {
+      "name": "assets",
+      "columns": 8,
+      "primary_key": [
+        "asset_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3
+    },
+    {
+      "name": "asset_versions",
+      "columns": 15,
+      "primary_key": [
+        "asset_version_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4
+    },
+    {
+      "name": "stored_files",
+      "columns": 16,
+      "primary_key": [
+        "file_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4
+    },
+    {
+      "name": "image_coordinate_frames",
+      "columns": 12,
+      "primary_key": [
+        "frame_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3
+    },
+    {
+      "name": "record_aliases",
+      "columns": 7,
+      "primary_key": [
+        "alias_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2
+    },
+    {
+      "name": "schema_definitions",
+      "columns": 10,
+      "primary_key": [
+        "schema_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2
+    },
+    {
+      "name": "import_packages",
+      "columns": 15,
+      "primary_key": [
+        "import_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 4
+    },
+    {
+      "name": "audit_events",
+      "columns": 10,
+      "primary_key": [
+        "event_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 2
+    },
+    {
+      "name": "ocr_runs",
+      "columns": 27,
+      "primary_key": [
+        "ocr_run_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 7
+    },
+    {
+      "name": "ocr_tokens",
+      "columns": 15,
+      "primary_key": [
+        "token_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 1
+    },
+    {
+      "name": "poster_extractions",
+      "columns": 30,
+      "primary_key": [
+        "extraction_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 6
+    },
+    {
+      "name": "poster_field_observations",
+      "columns": 15,
+      "primary_key": [
+        "observation_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 1
+    },
+    {
+      "name": "evidence_records",
+      "columns": 19,
+      "primary_key": [
+        "evidence_id"
+      ],
+      "unique_constraints": 2,
+      "foreign_keys": 6
+    },
+    {
+      "name": "evidence_ocr_tokens",
+      "columns": 7,
+      "primary_key": [
+        "evidence_id",
+        "token_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2
+    },
+    {
+      "name": "criteria_sets",
+      "columns": 6,
+      "primary_key": [
+        "criteria_set_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 2
+    },
+    {
+      "name": "criteria_drafts",
+      "columns": 12,
+      "primary_key": [
+        "draft_id"
+      ],
+      "unique_constraints": 1,
+      "foreign_keys": 3
+    },
+    {
+      "name": "criteria_versions",
+      "columns": 27,
+      "primary_key": [
+        "criteria_version_id"
+      ],
+      "unique_constraints": 4,
+      "foreign_keys": 7
+    },
+    {
+      "name": "criteria_items",
+      "columns": 18,
+      "primary_key": [
+        "criteria_item_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 2
+    },
+    {
+      "name": "review_runs",
+      "columns": 40,
+      "primary_key": [
+        "run_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 9
+    },
+    {
+      "name": "review_attempts",
+      "columns": 24,
+      "primary_key": [
+        "attempt_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 1
+    },
+    {
+      "name": "item_results",
+      "columns": 23,
+      "primary_key": [
+        "result_id"
+      ],
+      "unique_constraints": 3,
+      "foreign_keys": 5
+    },
+    {
+      "name": "run_item_selections",
+      "columns": 9,
+      "primary_key": [
+        "run_id",
+        "criteria_item_id"
+      ],
+      "unique_constraints": 0,
+      "foreign_keys": 1
+    }
+  ],
+  "source_files": [
+    {
+      "path": "docs/DB_Settings/물리설계_01_범위와관계.md",
+      "sha256": "1d4b9f77839baede127888e9de7eb9d76f5f7d5095da8c318af6085c53dc0c87"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_02_사용자와파일.md",
+      "sha256": "07b74bd1d389e5695ba341f3f0839fbe26755f2d49968115257271c31b2dc606"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_03_규격과OCR근거.md",
+      "sha256": "fae71a718bb8d7906addfecc8b036c7cf8debe125c4d1c3ad90a11428d1ac4b8"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_04_검수기준.md",
+      "sha256": "1e1921260c58bc1fa73eac1d56548dbd55cf4989a31921b779b8927abcefffdc"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_05_검수실행과결과.md",
+      "sha256": "88863c41b9f67d1fb1ad76237d09a6e630aa0aaa7ae8a5a983a96308abd6b3aa"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_전체정합성.md",
+      "sha256": "a2538d3272a086f8f2d934765017146a3c3ca38465a2c2997e2994cf54f874b3"
+    },
+    {
+      "path": "docs/DB_Settings/물리설계_06_제약목록.md",
+      "sha256": "4cc77d12f07757c38a6f41dbc682d0e67197e24dad925b0a0ec5b916c290c931"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_07_인증과권한.md",
+      "sha256": "b27cfbca5bc25fb1c459dc0eca4b39bd004d61ff81aabe2a99e4e1f64d1e9f2d"
+    },
+    {
+      "path": "docs/DB_Settings/추가설계_08_API와화면JSON.md",
+      "sha256": "58bd5a64893643750989787bd2fcd38210e6718f5eddc68893898709c86d8543"
+    },
+    {
+      "path": "docs/DB_Settings/도커 및 포스트그리SQL세팅.md",
+      "sha256": "1a3eb9d42ae2509900a17a725b104163a6946eb07aad1fd0da47e890d2344b47"
+    },
+    {
+      "path": "docs/project-specification.md",
+      "sha256": "95b5cdca6e838b5e5aa620013e9d14fde2cafa9ebc4817a2b52245f6d5440f5c"
+    }
+  ],
+  "remaining_design_steps": [
+    "9 persistence files import and recovery",
+    "10 implementation boundaries and validation specifications"
+  ],
+  "limitations": [
+    "Static document checks only; SQL constraints locks concurrency auth cookies Argon2 and browser flows require implementation-time validation."
+  ],
+  "api_contract_review": {
+    "endpoint_contracts": 32,
+    "future_api_test_cases": 32,
+    "hash_vectors_recomputed": 20,
+    "hash_equality_relations_checked": 8,
+    "invalid_api_inputs_rejected_by_fixture_checker": 6,
+    "request_response_graph_checked": true,
+    "independent_replay": "Node generation and Python fixture-value canonical replay plus hashlib SHA256. Not a general JCS compliance suite.",
+    "stage9_artifact_created": false
+  },
+  "fixture_files": [
+    {
+      "path": "docs/DB_Settings/contracts/stage8-examples.json",
+      "sha256": "1178af08aa9c7e81552c4b57376d4e16da91aeaa3e101627cd840be245f12a63"
+    },
+    {
+      "path": "docs/DB_Settings/contracts/stage8-hash-vectors.json",
+      "sha256": "8bca11ad970f7ac3b4960481543098365e11a179adfe564742011bcf6a2f9dc8"
+    },
+    {
+      "path": "docs/DB_Settings/verification/2026-10-16-auth-design-stage7.json",
+      "sha256": "e5ca135b0af54b25b34d008c2cdc14d05ddcfe4d13f03fe0561f48ac0efcfa53"
+    }
+  ]
+}
