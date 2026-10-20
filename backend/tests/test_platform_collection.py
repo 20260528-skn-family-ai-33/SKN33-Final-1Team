@@ -69,3 +69,44 @@ assert not audit.oversized, f'Use short explicit parameter IDs: {audit.oversized
         env=environment, capture_output=True, text=True, timeout=30,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_offline_contracts_run_without_posix_storage_primitives():
+    script = """
+import os
+import pytest
+
+for name in ('O_DIRECTORY', 'O_NOFOLLOW'):
+    if hasattr(os, name):
+        delattr(os, name)
+
+class Results:
+    skipped = []
+    passed = []
+
+    def pytest_runtest_logreport(self, report):
+        if report.skipped:
+            self.skipped.append(report.nodeid)
+        elif report.when == 'call' and report.passed:
+            self.passed.append(report.nodeid)
+
+results = Results()
+code = pytest.main([
+    '-q', '--tb=short',
+    'backend/tests/test_c09_contracts_storage.py',
+    'backend/tests/test_c13_worker.py',
+    'backend/tests/test_c14_operations.py',
+], plugins=[results])
+assert code == 0, f'Offline tests failed without POSIX storage primitives: {code}'
+assert len(results.skipped) == 27, f'Expected only the 27 private POSIX filesystem cases to skip: {results.skipped}'
+assert any('test_minimal_worker_needs_no_browser_or_session_secrets' in node for node in results.passed)
+assert any('test_web_worker_admission_preserves_developer_login_without_local_model' in node for node in results.passed)
+assert any('test_cli_checks_configuration_without_db_or_model' in node for node in results.passed)
+"""
+    environment = {key: value for key, value in os.environ.items()
+                   if not key.startswith('TEST_DB_')}
+    result = subprocess.run(
+        [sys.executable, '-c', script], cwd=Path(__file__).resolve().parents[2],
+        env=environment, capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

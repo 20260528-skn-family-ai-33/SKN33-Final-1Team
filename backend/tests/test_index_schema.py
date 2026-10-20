@@ -73,7 +73,7 @@ def test_real_head_is_m007_and_m001_through_m006_are_unchanged():
         fingerprints.update({x['path']:x['sha256'] for x in proof['runtime_source_files']})
     for path in Path('backend/migrations/versions').glob('*.py'):
         if path.name.startswith(('M007','M008')):continue
-        assert hashlib.sha256(path.read_bytes()).hexdigest()==fingerprints[str(path)]
+        assert hashlib.sha256(path.read_bytes()).hexdigest()==fingerprints[path.as_posix()]
     tree=ast.parse(DRAFT.read_text())
     assert not any(isinstance(n,ast.ImportFrom) and (n.module or '').startswith('backend') for n in ast.walk(tree))
 

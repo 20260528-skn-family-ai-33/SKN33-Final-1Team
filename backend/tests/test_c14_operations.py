@@ -19,7 +19,7 @@ def test_source_decimal_roundtrip_and_raw_bytes_are_distinct_facts():
 
 
 @pytest.mark.parametrize('kind',('symlink','hardlink','directory_symlink','case_collision','nfc_collision','file_limit','byte_limit'))
-def test_source_tree_rejects_unsafe_or_ambiguous_inventory(tmp_path,kind,monkeypatch):
+def test_source_tree_rejects_unsafe_or_ambiguous_inventory(tmp_path,kind,monkeypatch,posix_storage):
     source=tmp_path/'source';source.mkdir();(source/'one').write_bytes(b'1')
     if kind=='symlink':(source/'two').symlink_to(tmp_path/'outside')
     if kind=='hardlink':os.link(source/'one',source/'two')
@@ -37,7 +37,7 @@ def test_source_tree_rejects_unsafe_or_ambiguous_inventory(tmp_path,kind,monkeyp
         with pytest.raises(OpsError):tree.inventory(max_files=0 if kind=='file_limit' else 500,max_bytes=0 if kind=='byte_limit' else 512*1024*1024)
 
 
-def test_source_allowed_root_and_frozen_digest_are_explicit(tmp_path):
+def test_source_allowed_root_and_frozen_digest_are_explicit(tmp_path,posix_storage):
     source=tmp_path/'source';source.mkdir();(source/'b').write_bytes(b'b');(source/'a').write_bytes(b'a')
     with source_tree(source,tmp_path) as tree:items=tree.inventory()
     assert [item['relative_path'] for item in items]==['a','b']
@@ -48,7 +48,7 @@ def test_source_allowed_root_and_frozen_digest_are_explicit(tmp_path):
     envelope['projection_profile']['version']='v2';assert first!=digest('import_package',envelope,'cc-import-envelope-v1')
 
 
-def test_private_output_never_overwrites_or_accepts_public_permissions(tmp_path):
+def test_private_output_never_overwrites_or_accepts_public_permissions(tmp_path,posix_storage):
     path=tmp_path/'private'
     with Tree(path,create=True,private=True) as tree:
         tree.write('test.json',b'{}')
@@ -58,7 +58,7 @@ def test_private_output_never_overwrites_or_accepts_public_permissions(tmp_path)
     with pytest.raises(OpsError):Tree(path,private=True)
 
 
-def test_restore_hold_prevents_runtime_start_until_explicit_release(tmp_path):
+def test_restore_hold_prevents_runtime_start_until_explicit_release(tmp_path,posix_storage):
     path=tmp_path.resolve()/'files';LocalStorage.initialize(path);storage=LocalStorage(path)
     try:
         storage.write_new('restore-hold.json',b'{}')

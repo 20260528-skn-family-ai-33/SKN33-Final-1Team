@@ -1,6 +1,7 @@
 """C13 offline profile, description, shutdown and heartbeat authority contracts."""
 from pathlib import Path
 import time
+import tempfile
 import pytest
 from backend.app.config import ConfigurationError
 from backend.app.worker import load_worker_settings,AttemptLease,main
@@ -12,9 +13,12 @@ from backend.app.security.errors import AuthError
 
 
 def environment(**extra):
-    return dict(PERSISTENCE_MODE='postgres',DB_HOST='127.0.0.1',DB_PORT='5432',POSTGRES_DB='synthetic_test',
+    values=dict(PERSISTENCE_MODE='postgres',DB_HOST='127.0.0.1',DB_PORT='5432',POSTGRES_DB='synthetic_test',
         DB_APP_USER='creative_checker_app',DB_APP_PASSWORD='synthetic-app-secret',APP_ENV='test',
-        STORAGE_ROOT='/private/tmp/cc-test-only',REVIEW_EXECUTOR='postgres_worker',REVIEW_PIPELINE='paddle-only',**extra)
+        STORAGE_ROOT=str(Path(tempfile.gettempdir()).resolve()/'cc-test-only'),
+        REVIEW_EXECUTOR='postgres_worker',REVIEW_PIPELINE='paddle-only')
+    values.update(extra)
+    return values
 
 
 @pytest.mark.parametrize('key,value',[
@@ -26,9 +30,10 @@ def test_worker_rejects_implicit_or_privileged_profiles(key,value):
     with pytest.raises(ConfigurationError):load_worker_settings(values)
 
 
-def test_minimal_worker_needs_no_browser_or_session_secrets():
-    settings=load_worker_settings(environment())
-    assert settings.persistence_mode=='postgres' and settings.storage_root==Path('/private/tmp/cc-test-only')
+def test_minimal_worker_needs_no_browser_or_session_secrets(tmp_path):
+    root=tmp_path/'worker-files'
+    settings=load_worker_settings(environment(STORAGE_ROOT=str(root)))
+    assert settings.persistence_mode=='postgres' and settings.storage_root==root
     assert 'synthetic-app-secret' not in repr(settings)
 
 
@@ -37,7 +42,7 @@ def manifest():
     return config
 
 
-def test_description_is_bounded_frozen_and_never_overwritten(tmp_path):
+def test_description_is_bounded_frozen_and_never_overwritten(tmp_path,posix_storage):
     path=tmp_path/'config.json';config=manifest();write_config(path,config);pipeline=QueuedPipeline(path)
     assert pipeline.describe()==config
     value=pipeline.describe();value['pipeline']='changed';assert pipeline.describe()==config
@@ -46,7 +51,7 @@ def test_description_is_bounded_frozen_and_never_overwritten(tmp_path):
 
 
 @pytest.mark.parametrize('change',('target','revision','device','scale','duplicate','oversize','symlink'))
-def test_web_rejects_invalid_worker_description(tmp_path,change):
+def test_web_rejects_invalid_worker_description(tmp_path,change,posix_storage):
     path=tmp_path/'config.json';config=manifest()
     if change=='target':config['execution_target']='runpod'
     if change=='revision':config['code_revision']='old'
@@ -65,14 +70,16 @@ def test_web_rejects_invalid_worker_description(tmp_path,change):
  {'REVIEW_EXECUTOR':'postgres_worker','STORAGE_ROOT':'/tmp/storage','REVIEW_CONFIG_FILE':'relative'},
  {'REVIEW_EXECUTOR':'postgres_worker','STORAGE_ROOT':'/tmp/storage','REVIEW_CONFIG_FILE':'/tmp/config','REVIEW_PIPELINE':'paddle-only'},
  {'REVIEW_CONFIG_FILE':'/tmp/config'}])
-def test_web_rejects_ambiguous_executor_profiles(values):
+def test_web_rejects_ambiguous_executor_profiles(values,tmp_path):
     from backend.app.v1_config import load_v1_settings
+    values={key:str(tmp_path/Path(value).name) if value in ('/tmp/storage','/tmp/config') else value
+            for key,value in values.items()}
     with pytest.raises(ConfigurationError):load_v1_settings(auth_environment(**values))
 
 
-def test_web_worker_admission_preserves_developer_login_without_local_model():
+def test_web_worker_admission_preserves_developer_login_without_local_model(tmp_path):
     from backend.app.v1_config import load_v1_settings
-    settings=load_v1_settings(auth_environment(REVIEW_EXECUTOR='postgres_worker',STORAGE_ROOT='/tmp/storage',REVIEW_CONFIG_FILE='/tmp/config'))
+    settings=load_v1_settings(auth_environment(REVIEW_EXECUTOR='postgres_worker',STORAGE_ROOT=str(tmp_path/'storage'),REVIEW_CONFIG_FILE=str(tmp_path/'config')))
     assert settings.developer_login and settings.review_pipeline=='disabled' and settings.review_executor=='postgres_worker'
 
 

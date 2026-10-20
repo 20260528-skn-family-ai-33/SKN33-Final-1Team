@@ -69,7 +69,7 @@ def test_cursors_bind_context_and_expiry():
 
 
 @pytest.fixture
-def storage(tmp_path):
+def storage(tmp_path,posix_storage):
     root = tmp_path.resolve() / 'storage'
     LocalStorage.initialize(root)
     current = LocalStorage(root)

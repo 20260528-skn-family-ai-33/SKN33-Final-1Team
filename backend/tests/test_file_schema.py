@@ -67,7 +67,7 @@ def test_incremental_offline_sql_only_creates_five_tables():
 def test_existing_revision_is_unchanged_and_new_revision_has_no_live_schema_import():
     proof=json.loads(Path("docs/DB_Settings/verification/reports/2026-10-17-implementation-C02.json").read_text())
     old=Path("backend/migrations/versions/M001_identity.py")
-    expected=next(x["sha256"] for x in proof["runtime_source_files"] if x["path"]==str(old))
+    expected=next(x["sha256"] for x in proof["runtime_source_files"] if x["path"]==old.as_posix())
     assert hashlib.sha256(old.read_bytes()).hexdigest()==expected
     tree=ast.parse(Path("backend/migrations/versions/M002_files.py").read_text())
     assert not any(isinstance(n,ast.ImportFrom) and (n.module or "").startswith("backend") for n in ast.walk(tree))
