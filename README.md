@@ -8,6 +8,7 @@
 
 ## 목차
 
+- [RunPod 포스터 모델 학습·평가](experiments/poster_benchmark/README.md)
 - [최종 OCR 비교 결과](#최종-ocr-비교-결과)
 - [기획 배경과 대상 사용자](#기획-배경과-대상-사용자)
 - [전체 업무 흐름](#전체-업무-흐름)

@@ -31,10 +31,14 @@ htmlcov/
 # Secrets and local environment
 .env
 .env.*
+.env_*
+*.env
+*.env.*
 !.env.example
 !.env.sample
 !.env.template
 !.env.*.example
+!*.env.example
 
 # Local Docker volume data
 /docker-data/
@@ -47,3 +51,10 @@ Desktop.ini
 # Local OCR models, uploaded files, and reproducible diagnostics
 /.runtime/
 /artifacts/
+
+# RunPod poster experiment: download payloads; never commit keys or model outputs.
+/experiments/poster_benchmark/assets/
+/experiments/poster_benchmark/runs/
+/experiments/poster_benchmark/.cache/
+/experiments/poster_benchmark/*.tar*
+*.gpu_owner.lock

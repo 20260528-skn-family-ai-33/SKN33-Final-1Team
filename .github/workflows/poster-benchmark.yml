@@ -1,0 +1,23 @@
+name: Poster benchmark packet
+on:
+  push:
+    paths: ['experiments/poster_benchmark/**', '.gitignore', '.github/workflows/poster-benchmark.yml']
+  pull_request:
+    paths: ['experiments/poster_benchmark/**', '.gitignore', '.github/workflows/poster-benchmark.yml']
+permissions:
+  contents: read
+jobs:
+  portable-packet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check shell syntax
+        run: |
+          for script in experiments/poster_benchmark/{start,setup_runpod,run}.sh; do
+            bash -n "$script"
+          done
+      - name: Test packet integrity, extraction and Git exclusions
+        run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_assets.py -v

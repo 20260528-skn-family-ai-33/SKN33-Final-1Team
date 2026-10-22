@@ -1,0 +1,10 @@
+# torch/torchvision CUDA12.8 wheels are installed separately by setup_runpod.sh.
+# Versions match the previous local baseline; keep experiments in a dedicated venv.
+sentence-transformers==6.2.0
+transformers==5.20.2
+numpy==2.5.4
+Pillow==12.3.0
+scikit-learn==1.9.1
+huggingface-hub==2.2.0
+safetensors==0.8.0
+tokenizers==0.23.3
