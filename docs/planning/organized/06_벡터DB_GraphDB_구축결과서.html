@@ -1,0 +1,799 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="크리에이티브체커의 Neo4j 핵심 관계 조회·Qdrant 보조 검색 구축 결과와 독립 실측, 메타데이터 및 서비스 연동 계획"><title>크리에이티브체커 · 벡터DB·그래프DB 구축 결과서</title><style>
+      :root {
+        --paper: #f4f3ee;
+        --card: #fffefb;
+        --ink: #203d34;
+        --muted: #69746b;
+        --line: #dbded3;
+        --accent: #315b48;
+        --soft: #e9eee3;
+        --warm: #f4e9df;
+        --radius: 19px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        color: #9b603c;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      summary {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #bf7543;
+        outline-offset: 4px;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      button,
+      .button {
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: var(--ink);
+      }
+      .skip {
+        position: absolute;
+        left: 18px;
+        top: -70px;
+        padding: 12px;
+        background: var(--ink);
+        color: white;
+        z-index: 5;
+      }
+      .skip:focus {
+        top: 10px;
+      }
+      .site-head {
+        max-width: 1420px;
+        margin: auto;
+        padding: 26px 36px 18px;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .brand {
+        font-weight: 750;
+        text-decoration: none;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 9px;
+        background: var(--ink);
+        color: #fcfaf3;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+      .doc-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .doc-nav a {
+        padding: 8px 15px;
+        border: 1px solid var(--line);
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 13px;
+        background: var(--card);
+      }
+      .doc-nav a[aria-current="page"] {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .hero {
+        max-width: 1420px;
+        margin: auto;
+        padding: 30px 36px 33px;
+        border-top: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 750;
+        color: #6d785d;
+      }
+      .hero h1 {
+        font-size: clamp(31px, 4.5vw, 54px);
+        line-height: 1.22;
+        letter-spacing: -0.065em;
+        margin: 12px 0;
+      }
+      .hero p {
+        max-width: 900px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        margin: 2px 5px 2px 0;
+        background: var(--soft);
+        border: 1px solid #d7dfcf;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 650;
+        color: #416348;
+      }
+      .badge.warm {
+        background: var(--warm);
+        border-color: #e9d8ca;
+        color: #865b3c;
+      }
+      .layout {
+        max-width: 1420px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 208px minmax(0, 1fr);
+        gap: 24px;
+        padding: 0 36px 54px;
+      }
+      .side {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+      }
+      .side .caption {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 4px 10px 12px;
+        letter-spacing: 0.1em;
+      }
+      .tablist {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tablist button {
+        display: flex;
+        gap: 11px;
+        text-align: left;
+        font-size: 13px;
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 11px 13px;
+        line-height: 1.5;
+      }
+      .tablist button span {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        opacity: 0.6;
+      }
+      .tablist button[aria-selected="true"] {
+        color: white;
+        background: var(--ink);
+        border-color: var(--ink);
+        box-shadow: 0 5px 14px #234c4015;
+      }
+      .side-note {
+        padding: 18px 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+      .doc-panel {
+        padding: 32px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        min-width: 0;
+        margin-bottom: 20px;
+      }
+      .doc-panel[hidden] {
+        display: none;
+      }
+      .doc-panel h2 {
+        font-size: clamp(24px, 2.6vw, 33px);
+        line-height: 1.4;
+        letter-spacing: -0.045em;
+        margin: 0 0 16px;
+      }
+      .doc-panel h3 {
+        font-size: 18px;
+        letter-spacing: -0.025em;
+        margin: 22px 0 10px;
+      }
+      .doc-panel h4 {
+        font-size: 15px;
+        margin: 20px 0 8px;
+      }
+      .lead {
+        font-size: 18px;
+        max-width: 820px;
+      }
+      .muted,
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .meta strong {
+        color: var(--ink);
+      }
+      .section-intro {
+        margin-bottom: 26px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card,
+      .link-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        background: #fafbf7;
+        min-width: 0;
+      }
+      .card h3,
+      .link-card h3 {
+        margin: 8px 0 10px;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .note {
+        border: 1px solid #d9e2d0;
+        border-left: 4px solid #74906c;
+        border-radius: 10px;
+        padding: 16px 19px;
+        background: #f0f4eb;
+        margin: 23px 0;
+        font-size: 13px;
+      }
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin: 20px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #edf0e8;
+        font-weight: 750;
+        white-space: normal;
+        min-width: 90px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:nth-child(even) {
+        background: #fcfcf8;
+      }
+      td p:first-child {
+        margin-top: 0;
+      }
+      td ul {
+        padding-left: 17px;
+      }
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      details {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0 19px;
+        background: #fcfcf9;
+        margin: 14px 0;
+      }
+      summary {
+        cursor: pointer;
+        padding: 16px 0;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+      details[open] > summary {
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 14px;
+      }
+      details > details {
+        background: white;
+      }
+      details .table-wrap {
+        margin: 15px 0;
+      }
+      details > :last-child:not(summary) {
+        margin-bottom: 20px;
+      }
+      input[type="search"],
+      input[data-search-input] {
+        width: 100%;
+        border: 1px solid #aabda1;
+        border-radius: 11px;
+        padding: 12px 15px;
+        background: white;
+        color: var(--ink);
+      }
+      [data-search][hidden] {
+        display: none;
+      }
+      pre {
+        background: #edf1e8;
+        border-radius: 12px;
+        padding: 20px;
+        overflow: auto;
+        font-size: 12px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.92em;
+      }
+      p code,
+      td code,
+      li code {
+        background: #eaf0e3;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px 20px;
+      }
+      dt {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+      footer {
+        max-width: 1420px;
+        margin: auto;
+        padding: 20px 36px 36px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 0;
+      }
+      .panel-footer span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .doc-cards .link-card {
+        display: block;
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--card);
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+      .doc-cards .link-card:hover {
+        transform: translateY(-3px);
+        border-color: #769267;
+      }
+      .link-card strong {
+        display: block;
+        font-size: 24px;
+        letter-spacing: -0.035em;
+        margin: 10px 0;
+      }
+      .link-card .arrow {
+        float: right;
+        font-size: 21px;
+      }
+      .index-main {
+        max-width: 1420px;
+        margin: auto;
+        padding: 0 36px 48px;
+      }
+      .index-main .doc-panel {
+        margin-top: 25px;
+      }
+      .feature-card:target,
+      details:target {
+        outline: 3px solid #c89568;
+        outline-offset: 4px;
+        scroll-margin-top: 25px;
+      }
+      .empty-search {
+        padding: 20px;
+        color: var(--muted);
+        background: var(--soft);
+        border-radius: 10px;
+      }
+      .source-tag {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 26px;
+      }
+      @media (max-width: 1000px) {
+        .layout {
+          grid-template-columns: 170px minmax(0, 1fr);
+          gap: 18px;
+        }
+        .doc-panel {
+          padding: 25px;
+        }
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 700px) {
+        .site-head,
+        .hero {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .hero {
+          padding-top: 23px;
+        }
+        .layout {
+          display: block;
+          padding: 0 18px 30px;
+        }
+        .side {
+          position: static;
+        }
+        .tablist {
+          flex-direction: row;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+          gap: 6px;
+        }
+        .tablist button {
+          font-size: 12px;
+          border: 1px solid var(--line);
+          padding: 8px 10px;
+          background: var(--card);
+        }
+        .tablist button span {
+          display: none;
+        }
+        .side-note,
+        .side .caption {
+          display: none;
+        }
+        .doc-panel {
+          padding: 22px 17px;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-nav {
+          gap: 6px;
+        }
+        .doc-nav a {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
+        .brand-row {
+          align-items: flex-start;
+        }
+        .brand-row .badge {
+          display: none;
+        }
+        .index-main {
+          padding: 0 18px 30px;
+        }
+        footer {
+          padding: 20px 18px;
+        }
+        dl {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        dd {
+          margin-bottom: 12px;
+        }
+        .lead {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        @page {
+          size: A4;
+          margin: 14mm;
+        }
+        body {
+          background: white;
+          font-size: 10pt;
+          color: #18251e;
+        }
+        .site-head,
+        .side,
+        .panel-footer,
+        .print-button,
+        .doc-nav,
+        .skip,
+        input[data-search-input],
+        [data-search-count],
+        .empty-search {
+          display: none !important;
+        }
+        .hero {
+          padding: 0 0 18px;
+          border: 0;
+        }
+        .hero h1 {
+          font-size: 26pt;
+        }
+        .layout,
+        .index-main {
+          display: block;
+          padding: 0;
+        }
+        .doc-panel,
+        .doc-panel[hidden] {
+          display: block !important;
+          min-height: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          break-before: page;
+        }
+        .doc-panel:first-child {
+          break-before: auto;
+        }
+        .doc-panel h2 {
+          font-size: 20pt;
+        }
+        details {
+          border: 0;
+          padding: 0;
+        }
+        summary {
+          font-size: 12pt;
+        }
+        details::details-content {
+          content-visibility: visible !important;
+          height: auto !important;
+        }
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .card,
+        .note {
+          break-inside: avoid;
+          padding: 12px;
+        }
+        .table-wrap {
+          overflow: visible;
+          border-radius: 0;
+        }
+        th,
+        td {
+          padding: 6px;
+          font-size: 9pt;
+          min-width: 0;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        pre {
+          font-size: 8pt;
+        }
+        footer {
+          padding: 15px 0;
+        }
+        .source-tag {
+          font-size: 8pt;
+        }
+        [data-search][hidden] {
+          display: revert !important;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .workflow-scroll {
+          overflow: visible !important;
+        }
+        .workflow-svg {
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+      }
+      @media print {
+        .workflow-source {
+          display: block !important;
+        }
+        .workflow-source pre {
+          max-height: none;
+          overflow: visible;
+          white-space: pre-wrap;
+          background: #f4f4f4;
+          color: #18251e;
+        }
+        .workflow-source code {
+          font-size: 8pt;
+        }
+      }
+    
+
+html{scroll-behavior:smooth}body{word-break:keep-all}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+[hidden]{display:none!important}caption{text-align:left;padding:13px 14px;background:#f5f6ef;color:var(--muted);font-size:12px;border-bottom:1px solid var(--line)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}.metric{border:1px solid var(--line);padding:18px 16px;border-radius:14px;background:#f6f8ef}.metric span,.metric small{display:block;font-size:11px;color:var(--muted);line-height:1.7}.metric strong{display:block;font-size:27px;letter-spacing:-1px;line-height:1.6;color:var(--accent);font-variant-numeric:tabular-nums}.selection{font-size:15px}.selection>strong{font-size:17px}.selection p{margin:8px 0 0}
+.inline-actions,.switches{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.switches button{font-size:12px;padding:8px 13px}.switches [aria-pressed=true]{color:white;background:var(--ink);border-color:var(--ink)}
+.flow{display:flex;list-style:none;padding:0;margin:24px 0;gap:18px}.flow li{position:relative;flex:1;padding:14px 10px;background:var(--soft);border:1px solid #d2dbc8;border-radius:10px;font-size:12px;line-height:1.65;min-width:0;margin:0}.flow li:not(:last-child):after{content:'→';position:absolute;right:-17px;top:calc(50% - 12px);color:#6f8064}.flow b,.flow span{display:block}.flow span{font-size:10px;color:var(--muted);margin-top:7px}
+.filters{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin:22px 0}.filters label{font-size:12px;display:flex;gap:9px;align-items:center}.filters select{border:1px solid #aabda1;border-radius:9px;background:white;padding:8px 30px 8px 10px;color:var(--ink);max-width:100%}
+.bar-line{display:grid;grid-template-columns:112px minmax(0,1fr) 95px;gap:12px;align-items:center;margin:16px 0;font-size:12px;font-variant-numeric:tabular-nums}.bar-line>b{text-align:right;white-space:nowrap}.bar-track{height:13px;border-radius:4px;background:#e8eadd;overflow:hidden}.bar-track i{height:100%;background:#a28e70;display:block}.bar-track .neo{background:#4d7658}.bar-track .dense{background:#76819b}.card h3:first-child{margin-top:0}
+.panel-footer{display:flex;justify-content:space-between;align-items:center;margin:28px 0 0;padding-top:16px;border-top:1px solid var(--line);gap:10px}.source-list li{margin:12px 0}td{font-variant-numeric:tabular-nums}.hero .source-tag{max-width:none}.brand-actions{display:flex;gap:9px;align-items:center}.brand-actions a{font-size:12px}.table-wrap{scrollbar-gutter:stable}#graph-bars{padding:4px 0}#quality-view table,#timing-view table{min-width:440px}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{flex-wrap:wrap}.flow li{flex-basis:27%}.flow li:after{display:none}}
+@media(max-width:700px){.metrics{gap:8px}.metric{padding:14px 11px}.metric strong{font-size:23px}.metric span,.metric small{font-size:10px}.flow{display:grid;grid-template-columns:1fr;gap:9px}.flow li{padding:13px}.flow li:not(:last-child):after{display:block;content:'↓';top:auto;bottom:-16px;right:calc(50% - 5px)}.filters{gap:10px}.filters label{width:100%;justify-content:space-between}.filters select{max-width:72%;font-size:12px}.bar-line{grid-template-columns:94px minmax(0,1fr) 78px;gap:8px;font-size:11px}.brand-actions{flex-wrap:wrap;justify-content:flex-end}.brand-actions .badge{display:none}.doc-nav a{padding:6px 9px}.panel-footer{flex-wrap:wrap}}
+@media print{[hidden]{display:block!important}.metrics{grid-template-columns:repeat(2,1fr)}.flow{display:grid;grid-template-columns:repeat(2,1fr)}.filters,.switches,.inline-actions,.panel-footer{display:none!important}.metric{break-inside:avoid}.bar-line{break-inside:avoid}.table-wrap table{min-width:0!important}.doc-panel{break-before:page}.doc-panel:first-child{break-before:auto}}
+</style></head><body>
+<a class="skip" href="#main">본문으로 바로가기</a><header class="site-head"><div class="brand-row"><a class="brand" href="../../../README.md"><small>SKN33 FINAL · 1TEAM</small><span class="brand-mark">C</span>크리에이티브체커</a><div class="brand-actions"><span class="badge">정리 · 2026.10.22</span><a href="https://docs.google.com/document/d/1utxuv39_xYWyjkSV8gdxtXzpvAf5CN8d/edit" target="_blank" rel="noopener">구글 원문 ↗</a></div></div><nav class="doc-nav" aria-label="문서 종류"><a href="./01_기획서.html">기획서</a><a href="./02_기능정의서.html">기능정의서</a><a href="./03_화면정의서.html">화면정의서</a><a href="./04_기술스펙정의서.html">기술스펙정의서</a><a href="./05_사용자별_기능정의서.html">사용자별 기능정의서</a><a href="./06_벡터DB_GraphDB_구축결과서.html" aria-current="page">벡터·그래프DB 결과서</a></nav></header>
+<div class="hero"><span class="eyebrow">PROJECT DOCUMENTS / 06</span><h1>벡터DB·그래프DB 구축 결과서</h1><p>Neo4j 메인 · Qdrant 보조 — 관계·근거 추적을 중심으로 정리한 구축 및 검증 기록</p><span class="badge">PostgreSQL 원천</span><span class="badge">Neo4j 관계 조회</span><span class="badge">BGE-M3 1024 + BM25 / RRF</span><span class="badge warm">현재 구현 · 독립 실험 · 향후 구현 구분</span><p class="source-tag">HTML v1.0 · 결과서 v2 반영 · 실험 기준 2026-10-21 / 정리 2026-10-22</p></div>
+<div class="layout"><aside class="side"><p class="caption">CONTENTS / 09</p><div class="tablist" role="tablist" aria-label="DB 구축 결과서 목차" aria-orientation="vertical"><button type="button" role="tab" id="tab-overview" data-panel="overview" aria-controls="overview" aria-selected="true" tabindex="0"><span>01</span>개요·선택 근거</button><button type="button" role="tab" id="tab-architecture" data-panel="architecture" aria-controls="architecture" aria-selected="false" tabindex="-1"><span>02</span>구조·역할</button><button type="button" role="tab" id="tab-status" data-panel="status" aria-controls="status" aria-selected="false" tabindex="-1"><span>03</span>구현 상태</button><button type="button" role="tab" id="tab-graph" data-panel="graph" aria-controls="graph" aria-selected="false" tabindex="-1"><span>04</span>그래프 실측</button><button type="button" role="tab" id="tab-retrieval" data-panel="retrieval" aria-controls="retrieval" aria-selected="false" tabindex="-1"><span>05</span>벡터·검색 실측</button><button type="button" role="tab" id="tab-metadata" data-panel="metadata" aria-controls="metadata" aria-selected="false" tabindex="-1"><span>06</span>메타데이터·모델</button><button type="button" role="tab" id="tab-data" data-panel="data" aria-controls="data" aria-selected="false" tabindex="-1"><span>07</span>데이터·적재 현황</button><button type="button" role="tab" id="tab-plan" data-panel="plan" aria-controls="plan" aria-selected="false" tabindex="-1"><span>08</span>연동·검증 계획</button><button type="button" role="tab" id="tab-sources" data-panel="sources" aria-controls="sources" aria-selected="false" tabindex="-1"><span>09</span>근거 자료·용어</button></div><p class="side-note">관계 검증과 검색 품질은 별도 실험입니다.<br>측정값의 데이터·범위·환경을 함께 확인하세요.</p></aside><main id="main"><section class="doc-panel" id="overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"><h2>개요·선택 근거</h2>
+<p class="lead">Neo4j로 기준·예외·출처·변경 영향을 연결하고, Qdrant로 추가 근거 후보를 검색합니다.</p>
+<p>확정 기준·권한·버전·실행 결과의 원천은 PostgreSQL입니다. Neo4j 메인은 <strong>핵심 관계 조회의 역할</strong>을 뜻하며 업무 데이터 원천의 교체를 뜻하지 않습니다.</p>
+<div class="metrics">
+ <div class="metric"><span>추가 관계 실험 · 두 DB 각각</span><strong>951 / 951</strong><small>동결 정답 일치 · 합성 정책 검증</small></div>
+ <div class="metric"><span>확장 변경 영향 · 평균 지연</span><strong>22.8% ↓</strong><small>PG 12.039 → Neo4j 9.288 ms</small></div>
+ <div class="metric"><span>같은 조건 · p95 지연</span><strong>38.8% ↓</strong><small>PG 40.789 → Neo4j 24.949 ms</small></div>
+ <div class="metric"><span>문서·질의 Dense 임베딩</span><strong>1,024차원</strong><small>BGE-M3 · QdrantLocal 독립 실험</small></div>
+</div>
+<div class="note selection"><strong>Neo4j 선택 근거</strong><p>다른 조회에서는 PostgreSQL이 빨랐지만, 핵심인 변경 영향 추적의 확장 조건에서 평균 22.8%·p95 38.8%의 지연 단축을 확인해 Neo4j를 선택했습니다.</p><p class="muted">합성 예비 실험의 특정 조건에 한정됩니다. 9개 조건 중 8개는 PostgreSQL 평균이 더 짧았고, 두 DB 모두 기능 정답을 충족했습니다.</p></div>
+<div class="grid three"><div class="card"><span class=eyebrow>SERVICE</span><h3>현재 구현</h3><p>PostgreSQL 기반 기준 확정·큐/worker·OCR 결과 저장 코드와 로컬 검증 기록이 있습니다.</p></div><div class="card"><span class=eyebrow>EXPERIMENT</span><h3>독립 실험</h3><p>Neo4j 관계 조회 비교와 QdrantLocal 임베딩·검색 비교를 별도 환경에서 실행했습니다.</p></div><div class="card"><span class=eyebrow>NEXT</span><h3>향후 구현</h3><p>두 DB를 검수 API·worker·화면과 연결하고 실제 승인·동기화·재검수 흐름을 검증합니다.</p></div></div><div class="inline-actions"><button data-goto="graph">그래프 실측 보기 →</button><button data-goto="retrieval">검색 비교 보기 →</button></div><details><summary>팀 내부 설명 메모</summary><p><strong>PostgreSQL로도 가능한가?</strong> 가능합니다. 같은 정답을 두 DB가 모두 반환했습니다. Neo4j 선택은 관계 경로 모델링 목적과 확장 변경 영향 조건의 관측 지연을 근거로 설명합니다.</p><p><strong>하이브리드가 검색 품질 1위인가?</strong> 이 결과로 그렇게 말할 수 없습니다. 실제 포스터 평가에서는 Dense가 가장 높았습니다. 기본 Hybrid는 Dense + BM25 / RRF 1:1을 가리키며, 운영 정책의 최종 확정과 구분합니다.</p><p><strong>951/951이 실제 검수 정확도인가?</strong> 합성 정책에 대한 프로그램 정답 일치입니다. 실제 계약 위반 판정, 사람 승인 정확도, 업무 시간 절감 수치로 사용하지 않습니다.</p></details><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">1 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="architecture" role="tabpanel" aria-labelledby="tab-architecture" tabindex="0" hidden><h2>구조·역할</h2>
+<p class="section-intro">관계로 직접 연결된 근거를 우선 확인하고, 연결 밖의 추가 문서 후보가 필요할 때 의미·키워드 검색을 사용합니다.</p>
+<div class="grid three"><div class="card"><span class=eyebrow>원천 데이터</span><h3>PostgreSQL</h3><p>프로젝트 권한, 기준 확정, 불변 버전, 실행·재시도 상태와 판정 결과를 보존합니다.</p></div><div class="card"><span class=eyebrow>핵심 관계 조회 · 목표</span><h3>Neo4j</h3><p>기준에서 출처·매체·유효 예외를 추적하고, 변경 조항이 영향을 주는 검수 실행을 조회합니다.</p></div><div class="card"><span class=eyebrow>추가 근거 검색 · 목표</span><h3>Qdrant</h3><p>문서 청크의 Dense·BM25 후보를 검색합니다. 검색 결과는 기준이나 예외의 승인 자체가 아닙니다.</p></div></div><h3>목표 처리 흐름</h3>
+<ol class="flow"><li><b>권한·버전 확인</b><span>사용자·프로젝트·허용 문서</span></li><li><b>확정 기준 전체 확보</b><span>PostgreSQL 기준 스냅샷</span></li><li><b>관계·직접 근거 조회</b><span>Neo4j 출처·매체·예외</span></li><li><b>추가 근거 후보 검색</b><span>필요한 경우 Qdrant</span></li><li><b>전체 검사·결과 보존</b><span>OCR·규칙 검사 → PostgreSQL</span></li></ol>
+<p class="note">확정 기준은 모두 검사합니다. 그래프 연결이 없거나 검색 Top-k 밖이라는 이유로 기준을 제외하지 않습니다. 관계 누락·버전 불일치·근거 부족은 ‘확인 필요’로 처리합니다.</p>
+<h3>관계 조회 시나리오</h3><div class="switches" role="group" aria-label="관계 시나리오"><button data-scenario="trace" aria-pressed="true">근거 추적</button><button data-scenario="exception" aria-pressed="false">예외 검증</button><button data-scenario="impact" aria-pressed="false">변경 영향</button></div>
+<div id="scenario-view" aria-live="polite"><ol class="flow"><li><b>검수 실행</b></li><li><b>사용 기준</b></li><li><b>의존 기준</b></li><li><b>출처 청크</b></li><li><b>문서 버전</b></li></ol><p>완료 실행이 사용한 기준과 원문 경로·버전·해시를 추적합니다. 과거 적용 기록은 현재 승인 상태로 숨기지 않습니다.</p></div>
+<p class="muted">위 도식은 실험 정책과 목표 기능을 설명하는 예시입니다. 이 HTML에서 DB를 호출하지 않습니다. 원본 파일은 현재 로컬 보존이며 S3 운영 연결은 향후 범위입니다. LangGraph는 실행 흐름 도구이고 Neo4j 관계 저장소와 구분합니다.</p><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">2 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="status" role="tabpanel" aria-labelledby="tab-status" tabindex="0" hidden><h2>구현 상태</h2>
+<p>현재 구현과 독립 실험은 <strong>2026-10-21 결과서의 확인 시점</strong>을 기준으로 구분했습니다. 이번 HTML 작성에서 저장소 전체나 운영 DB를 다시 감사한 결과는 아닙니다.</p>
+<div class="switches" role="group" aria-label="구현 상태 필터"><button data-state="전체" aria-pressed="true">전체</button><button data-state="현재 구현" aria-pressed="false">현재 구현</button><button data-state="독립 실험" aria-pressed="false">독립 실험</button><button data-state="향후 구현" aria-pressed="false">향후 구현</button></div><div class="table-wrap "><table id="status-table"><caption>코드·로컬 검증·독립 실험·서비스 통합 구분</caption><thead><tr><th scope="col">영역</th><th scope="col">구분</th><th scope="col">확인 내용</th><th scope="col">남은 범위</th></tr></thead><tbody><tr><td>PostgreSQL 기반 서비스</td><td>현재 구현</td><td>권한·기준 확정·불변 버전·접수/조회·큐/worker·OCR 결과/근거 저장 코드</td><td>운영 배포 전체 검증</td></tr><tr><td>M008 예비 적재</td><td>독립 실험</td><td>업무 26테이블·39행, 원본·출처·해시·재실행 검증</td><td>승인된 운영 자료 적재</td></tr><tr><td>Neo4j 관계 조회</td><td>독립 실험</td><td>기존 동일성 244/244 및 추가 기능 비교 951/951</td><td>업무 API·worker·관계 화면 연결</td></tr><tr><td>Qdrant 보조 검색</td><td>독립 실험</td><td>BGE-M3 1024차원, BM25·Dense·Hybrid, 추가 이미지 412개 비교</td><td>서비스 검색·공통 ID·현재 권한 연결</td></tr><tr><td>실제 예외·변경 영향</td><td>향후 구현</td><td>현재 승인·변경 이벤트와 실행 관계는 합성 시험</td><td>실제 승인 정책·변경 이벤트·재검수 실행</td></tr><tr><td>동기화·복구·화면</td><td>향후 구현</td><td>현재 독립 산출물과 업무 데이터를 분리 보존</td><td>반영 상태·재시도·권한 회수·재구축·E2E</td></tr></tbody></table></div><p id="state-count" class="muted" role="status">6개 영역</p><p class="note">코드 근거는 결과서의 저장소 <code>fbd6596</code> 및 C01~C15 검증 기록입니다. C13 실제 OCR 검증은 CPU 포스터 1장·기준 1개이고, C15 Linux 리허설은 합성 worker를 사용했습니다. 성능 평가나 운영 완료로 확대하지 않습니다.</p><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">3 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="graph" role="tabpanel" aria-labelledby="tab-graph" tabindex="0" hidden><h2>그래프 실측</h2>
+<p class="section-intro">기존 244개 조회 비교와 추가 951개 관계 기능 비교는 <strong>서로 다른 실험</strong>입니다. 아래의 선택 근거는 추가 기능 비교에서 나왔습니다.</p>
+<h3>추가 관계 기능 비교 · 951개 사례</h3><div class="table-wrap "><table><caption>독립 Python 정답과 두 DB 결과 대조 · 합성 정책 사례</caption><thead><tr><th scope="col">기능</th><th scope="col">사례 수(양성 / 음성)</th><th scope="col">PG 일치</th><th scope="col">Neo4j 일치</th><th scope="col">두 DB 각각오탐 / 누락</th></tr></thead><tbody><tr><td>근거 추적</td><td>70 (42 / 28)</td><td>70/70</td><td>70/70</td><td>0 / 0</td></tr><tr><td>예외 검증</td><td>806 (320 / 486)</td><td>806/806</td><td>806/806</td><td>0 / 0</td></tr><tr><td>변경 영향</td><td>75 (66 / 9)</td><td>75/75</td><td>75/75</td><td>0 / 0</td></tr><tr><td>전체</td><td>951 (428 / 523)</td><td>951/951</td><td>951/951</td><td>0 / 0</td></tr></tbody></table></div><p>근거 추적은 의존 기준과 출처를 따라 최대 7관계 경로를 확인했습니다. 예외는 1~4단계의 모든 조상에 승인·기간 <code>[시작, 종료)</code>·매체·유효 출처의 교집합을 요구했습니다. 변경 영향은 자산별 최신 완료 실행을 대상으로 합니다.</p>
+<div class="filters"><label for="graph-scope">데이터 범위 <select id="graph-scope"><option>기본</option><option>중간</option><option selected>확장</option></select></label><label for="graph-task">조회 기능 <select id="graph-task"><option>근거 추적</option><option>예외 검증</option><option selected>변경 영향</option></select></label></div>
+<div class="card"><h3 id="graph-title">확장 · 변경 영향</h3><p class="muted">평균 지연 · 짧을수록 빠름 · 막대 길이는 선택 조건의 큰 값 기준</p><div id="graph-bars"><div class="bar-line"><span>PostgreSQL</span><div class="bar-track"><i style="width:100%"></i></div><b>12.039 ms</b></div><div class="bar-line"><span>Neo4j</span><div class="bar-track"><i class="neo" style="width:77.148%"></i></div><b>9.288 ms</b></div></div><p id="graph-result" class="note" aria-live="polite">Neo4j 평균 22.8% · p95 38.8% 단축</p><p id="graph-tail" class="muted">p95 — PostgreSQL 40.789 ms / Neo4j 24.949 ms</p></div>
+<h3>모든 조건의 평균·p95</h3><div class="table-wrap "><table><caption>각 행은 DB별 100회 · 단위 ms · 추가 기능 실험</caption><thead><tr><th scope="col">범위 및 기능</th><th scope="col">PG 평균</th><th scope="col">PG p95</th><th scope="col">Neo4j 평균</th><th scope="col">Neo4j p95</th><th scope="col">관측 평균↓</th></tr></thead><tbody><tr><td>기본 근거 추적</td><td>1.061</td><td>2.072</td><td>2.251</td><td>5.218</td><td>PG</td></tr><tr><td>기본 예외 검증</td><td>0.436</td><td>0.631</td><td>1.198</td><td>1.946</td><td>PG</td></tr><tr><td>기본 변경 영향</td><td>1.242</td><td>1.725</td><td>1.819</td><td>2.412</td><td>PG</td></tr><tr><td>중간 근거 추적</td><td>0.747</td><td>1.465</td><td>2.187</td><td>3.975</td><td>PG</td></tr><tr><td>중간 예외 검증</td><td>0.473</td><td>0.946</td><td>1.183</td><td>2.180</td><td>PG</td></tr><tr><td>중간 변경 영향</td><td>3.565</td><td>10.035</td><td>3.887</td><td>9.988</td><td>PG</td></tr><tr><td>확장 근거 추적</td><td>0.620</td><td>1.108</td><td>1.136</td><td>1.888</td><td>PG</td></tr><tr><td>확장 예외 검증</td><td>0.407</td><td>0.576</td><td>0.959</td><td>1.431</td><td>PG</td></tr><tr><td>확장 변경 영향</td><td>12.039</td><td>40.789</td><td>9.288</td><td>24.949</td><td>Neo4j</td></tr></tbody></table></div><div class="note"><strong>해석 범위</strong><p>9개 조건 중 8개는 PostgreSQL 평균이 더 짧았습니다. 중간 변경 영향의 p95 차이는 10.035 대 9.988 ms로 작아 별도 우위 근거로 사용하지 않습니다. 정확성만으로 Neo4j가 우월하거나 PostgreSQL로 구현할 수 없다고 결론 내리지 않습니다.</p></div><details><summary>측정 환경·순서·데이터 범위</summary><p>2026-10-21 17:00:33~17:00:39 KST. PostgreSQL 17.11·Neo4j Community 2026.10.0, 컨테이너 각각 2 CPU·2 GiB. PostgreSQL은 타입별 15테이블·FK·양방향 인덱스·ANALYZE, Neo4j는 UID 유일성 및 조회 인덱스를 사용했습니다.</p><p>단일 클라이언트·재사용 연결에서 DB 순서를 교대했습니다. 조건별 양성 50회·빈 결과 50회, 총 1,800표본이며 전용 예열 180회와 첫 실행 18회는 제외했습니다. 결과 전송·디코딩·전체 소비를 포함하고 연결 생성·정답 대조는 제외했습니다.</p><p>검증 조회로 준비된 캐시와 고정된 범위 순서를 사용한 단일 예비 실행입니다. 냉캐시·동시 부하·통계적 유의성·운영 우위는 검증하지 않았습니다.</p><div class="table-wrap "><table><caption>같은 원천에서 합성 관계 파급 수를 늘린 세 범위 · 한 DB 안에서 공존</caption><thead><tr><th scope="col">범위</th><th scope="col">합성 업무 세트</th><th scope="col">노드 수</th><th scope="col">관계 수</th></tr></thead><tbody><tr><td>기본</td><td>1</td><td>309</td><td>837</td></tr><tr><td>중간</td><td>20</td><td>2,380</td><td>11,914</td></tr><tr><td>확장</td><td>100</td><td>11,100</td><td>58,554</td></tr><tr><td>전체</td><td>121</td><td>13,789</td><td>71,305</td></tr></tbody></table></div></details><details><summary>기존 관계 조회 실험 · 244개 사례 / 3,200 지연 표본</summary><p>가상·미승인 계약 초안 1종의 기준 20개·출처 57개를 원천으로 했습니다. 문서 기반 노드는 범위별 복제이며 예외·공통 근거는 합성입니다. 동결 정답 244/244(양성 204·빈 결과 40)가 일치했습니다.</p><div class="table-wrap "><table><caption>기존 조회 동일성</caption><thead><tr><th scope="col">조회 유형</th><th scope="col">검증 기준</th><th scope="col">실측 결과</th></tr></thead><tbody><tr><td>PK 기반 기준 조회</td><td>프로젝트·버전·기준 ID·내용·상태 일치</td><td>68/68 일치</td></tr><tr><td>기준-출처 조회</td><td>공통 chunk_id·문서 버전·해시·페이지 일치</td><td>66/66 일치</td></tr><tr><td>매체별 예외 탐색</td><td>합성 테스트 승인 상태·조상 경로·매체·정렬 일치</td><td>12/12 일치</td></tr><tr><td>복수 기준의 공통 근거</td><td>근거 ID·버전·중복 제거·정렬 일치</td><td>98/98 일치</td></tr></tbody></table></div><div class="table-wrap "><table><caption>기존 기본·확장 네 유형 · DB별 n=200 · ms</caption><thead><tr><th scope="col">조회 범위·유형</th><th scope="col">PG 평균</th><th scope="col">PG p95</th><th scope="col">Neo4j 평균</th><th scope="col">Neo4j p95</th><th scope="col">관측 평균↓</th></tr></thead><tbody><tr><td>기본: PK 기준</td><td>0.361</td><td>0.438</td><td>1.311</td><td>1.821</td><td>PG</td></tr><tr><td>기본: 기준-출처</td><td>0.366</td><td>0.672</td><td>1.060</td><td>2.119</td><td>PG</td></tr><tr><td>기본: 다단계 예외</td><td>1.897</td><td>2.365</td><td>2.472</td><td>3.837</td><td>PG</td></tr><tr><td>기본: 공통 근거</td><td>0.511</td><td>1.008</td><td>1.479</td><td>2.631</td><td>PG</td></tr><tr><td>확장: PK 기준</td><td>0.316</td><td>0.394</td><td>0.911</td><td>1.439</td><td>PG</td></tr><tr><td>확장: 기준-출처</td><td>0.365</td><td>0.455</td><td>0.963</td><td>1.394</td><td>PG</td></tr><tr><td>확장: 다단계 예외</td><td>8.848</td><td>11.249</td><td>29.341</td><td>36.714</td><td>PG</td></tr><tr><td>확장: 공통 근거</td><td>0.420</td><td>0.524</td><td>0.943</td><td>1.370</td><td>PG</td></tr></tbody></table></div><p>이 8개 유형·범위 조건에서는 PostgreSQL 평균·p95가 더 짧았습니다. 추가 951개 기능 실험과 한 시험셋으로 합산하지 않습니다.</p></details><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">4 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="retrieval" role="tabpanel" aria-labelledby="tab-retrieval" tabindex="0" hidden><h2>벡터·검색 실측</h2>
+<p class="lead">기본 Hybrid = BGE-M3 Dense + 한국어 BM25 / RRF 1:1</p>
+<p>Dense는 문맥 기반 문서 후보를, BM25는 토큰 기반 후보를 찾습니다. 원점수를 직접 더하지 않고 순위로 결합합니다. <strong>1:1은 기본 비교군의 정의</strong>이며 전체 과업 최우수 또는 운영 채택 확정을 뜻하지 않습니다.</p>
+<div class="grid three"><div class="card"><h3>실제 포스터 252장</h3><p>카탈로그 식별자가 정답. 평가 140장·280질의이며 예비 52장은 검색 후보에만 포함합니다.</p></div><div class="card"><h3>가상 포스터·문서 80쌍</h3><p>각 80장으로 총 160개 이미지. v1 40쌍 개발, v2 40쌍 평가입니다.</p></div><div class="card"><h3>총 412개 이미지</h3><p>OCR 원문으로 검색. 총 1,120질의를 동결했고 반복 지연은 별도 1,800요청입니다.</p></div></div><div class="filters"><label for="search-task">비교 과업 <select id="search-task"><option value="real">실제 포스터 찾기</option><option value="pair">가상 포스터 → 기준 문서</option><option value="field">문서 내 필드 근거</option></select></label><span id="search-count" class="badge">평가 280질의</span></div>
+<p id="search-description">실제 포스터 252장 중 평가 포스터 140장에 대한 280개 카탈로그 질의입니다. 행사명·지역·시작일로 지정 포스터를 찾는 과업이며 계약 준수 판정 정확도가 아닙니다.</p><div class="card"><h3>상위 5개 정답 적중률 · Hit@5</h3><div id="search-bars"><div class="bar-line"><span>BM25</span><div class="bar-track"><i class="" style="width:61.43%"></i></div><b>61.43%</b></div><div class="bar-line"><span>Dense</span><div class="bar-track"><i class="dense" style="width:96.07%"></i></div><b>96.07%</b></div><div class="bar-line"><span>Hybrid 1:1</span><div class="bar-track"><i class="neo" style="width:91.79%"></i></div><b>91.79%</b></div><div class="bar-line"><span>Hybrid 1:2</span><div class="bar-track"><i class="neo" style="width:92.14%"></i></div><b>92.14%</b></div><div class="bar-line"><span>Hybrid 2:1</span><div class="bar-track"><i class="neo" style="width:78.57%"></i></div><b>78.57%</b></div></div><p class="muted">막대 기준은 0~100%입니다. 같은 과업 안에서 비교하며 과업 간 정확도를 합산하지 않습니다.</p></div>
+<div id="quality-view"><div class="table-wrap "><table><caption>평가 분할 검색 품질</caption><thead><tr><th scope="col">방식 / 실제 포스터 찾기</th><th scope="col">Hit@5</th><th scope="col">Hit@1</th><th scope="col">MRR@5</th></tr></thead><tbody><tr><td>BM25</td><td>172/280 (61.43%)</td><td>142/280 (50.71%)</td><td>0.5470</td></tr><tr><td>Dense</td><td>269/280 (96.07%)</td><td>245/280 (87.50%)</td><td>0.9115</td></tr><tr><td>Hybrid 1:1</td><td>257/280 (91.79%)</td><td>201/280 (71.79%)</td><td>0.7883</td></tr><tr><td>Hybrid 1:2</td><td>258/280 (92.14%)</td><td>208/280 (74.29%)</td><td>0.8044</td></tr><tr><td>Hybrid 2:1</td><td>220/280 (78.57%)</td><td>191/280 (68.21%)</td><td>0.7275</td></tr></tbody></table></div></div><div id="timing-view"><div class="table-wrap "><table><caption>로컬 반복 지연 · ms</caption><thead><tr><th scope="col">방식 / 실제 포스터 찾기</th><th scope="col">평균 ms</th><th scope="col">중앙값 ms</th><th scope="col">p95 ms</th></tr></thead><tbody><tr><td>BM25</td><td>1.25</td><td>1.30</td><td>1.75</td></tr><tr><td>Dense</td><td>14.96</td><td>13.74</td><td>21.22</td></tr><tr><td>Hybrid 1:1</td><td>16.31</td><td>14.82</td><td>22.96</td></tr><tr><td>Hybrid 1:2</td><td>16.40</td><td>15.01</td><td>23.75</td></tr><tr><td>Hybrid 2:1</td><td>15.86</td><td>14.32</td><td>22.57</td></tr></tbody></table></div></div><p class="muted">지연은 과업별 평가 질의 40개 × 3회로 방식별 n=120입니다. 매번 질의 임베딩을 포함하며 OCR·문서 적재·네트워크·화면 시간은 제외했습니다.</p>
+<p id="retrieval-result" class="note" aria-live="polite">실제 포스터 평가에서 Dense는 269/280(96.07%), 기본 Hybrid 1:1은 257/280(91.79%)였습니다. Dense를 회수율 기준선으로 유지하며 운영 검색 정책은 새 정답과 질의에서 검증합니다.</p><details><summary>전체 과업의 원문 수치</summary><div class="table-wrap "><table><caption>실제 포스터 찾기 · 품질</caption><thead><tr><th scope="col">방식 / 실제 포스터 찾기</th><th scope="col">Hit@5</th><th scope="col">Hit@1</th><th scope="col">MRR@5</th></tr></thead><tbody><tr><td>BM25</td><td>172/280 (61.43%)</td><td>142/280 (50.71%)</td><td>0.5470</td></tr><tr><td>Dense</td><td>269/280 (96.07%)</td><td>245/280 (87.50%)</td><td>0.9115</td></tr><tr><td>Hybrid 1:1</td><td>257/280 (91.79%)</td><td>201/280 (71.79%)</td><td>0.7883</td></tr><tr><td>Hybrid 1:2</td><td>258/280 (92.14%)</td><td>208/280 (74.29%)</td><td>0.8044</td></tr><tr><td>Hybrid 2:1</td><td>220/280 (78.57%)</td><td>191/280 (68.21%)</td><td>0.7275</td></tr></tbody></table></div><div class="table-wrap "><table><caption>실제 포스터 찾기 · 지연 ms</caption><thead><tr><th scope="col">방식 / 실제 포스터 찾기</th><th scope="col">평균 ms</th><th scope="col">중앙값 ms</th><th scope="col">p95 ms</th></tr></thead><tbody><tr><td>BM25</td><td>1.25</td><td>1.30</td><td>1.75</td></tr><tr><td>Dense</td><td>14.96</td><td>13.74</td><td>21.22</td></tr><tr><td>Hybrid 1:1</td><td>16.31</td><td>14.82</td><td>22.96</td></tr><tr><td>Hybrid 1:2</td><td>16.40</td><td>15.01</td><td>23.75</td></tr><tr><td>Hybrid 2:1</td><td>15.86</td><td>14.32</td><td>22.57</td></tr></tbody></table></div><div class="table-wrap "><table><caption>가상 포스터 → 기준 문서 · 품질</caption><thead><tr><th scope="col">방식 / 가상 포스터 → 기준 문서</th><th scope="col">Hit@5</th><th scope="col">Hit@1</th><th scope="col">MRR@5</th></tr></thead><tbody><tr><td>BM25</td><td>40/40 (100.00%)</td><td>40/40 (100.00%)</td><td>1.0000</td></tr><tr><td>Dense</td><td>40/40 (100.00%)</td><td>39/40 (97.50%)</td><td>0.9875</td></tr><tr><td>Hybrid 1:1</td><td>40/40 (100.00%)</td><td>39/40 (97.50%)</td><td>0.9875</td></tr><tr><td>Hybrid 1:2</td><td>40/40 (100.00%)</td><td>39/40 (97.50%)</td><td>0.9875</td></tr><tr><td>Hybrid 2:1</td><td>40/40 (100.00%)</td><td>40/40 (100.00%)</td><td>1.0000</td></tr></tbody></table></div><div class="table-wrap "><table><caption>가상 포스터 → 기준 문서 · 지연 ms</caption><thead><tr><th scope="col">방식 / 가상 포스터 → 기준 문서</th><th scope="col">평균 ms</th><th scope="col">중앙값 ms</th><th scope="col">p95 ms</th></tr></thead><tbody><tr><td>BM25</td><td>1.78</td><td>1.73</td><td>2.09</td></tr><tr><td>Dense</td><td>22.73</td><td>21.26</td><td>28.66</td></tr><tr><td>Hybrid 1:1</td><td>24.39</td><td>22.88</td><td>31.46</td></tr><tr><td>Hybrid 1:2</td><td>24.22</td><td>23.07</td><td>30.68</td></tr><tr><td>Hybrid 2:1</td><td>23.77</td><td>22.82</td><td>29.51</td></tr></tbody></table></div><div class="table-wrap "><table><caption>문서 내 필드 근거 · 품질</caption><thead><tr><th scope="col">방식 / 가상 문서 내 필드 근거 찾기</th><th scope="col">Hit@5</th><th scope="col">Hit@1</th><th scope="col">MRR@5</th></tr></thead><tbody><tr><td>BM25</td><td>240/320 (75.00%)</td><td>227/320 (70.94%)</td><td>0.7297</td></tr><tr><td>Dense</td><td>320/320 (100.00%)</td><td>298/320 (93.12%)</td><td>0.9641</td></tr><tr><td>Hybrid 1:1</td><td>320/320 (100.00%)</td><td>279/320 (87.19%)</td><td>0.9323</td></tr><tr><td>Hybrid 1:2</td><td>320/320 (100.00%)</td><td>282/320 (88.12%)</td><td>0.9370</td></tr><tr><td>Hybrid 2:1</td><td>320/320 (100.00%)</td><td>278/320 (86.88%)</td><td>0.9307</td></tr></tbody></table></div><div class="table-wrap "><table><caption>문서 내 필드 근거 · 지연 ms</caption><thead><tr><th scope="col">방식 / 가상 문서 내 필드 근거 찾기</th><th scope="col">평균 ms</th><th scope="col">중앙값 ms</th><th scope="col">p95 ms</th></tr></thead><tbody><tr><td>BM25</td><td>3.07</td><td>3.05</td><td>3.50</td></tr><tr><td>Dense</td><td>21.47</td><td>21.09</td><td>28.11</td></tr><tr><td>Hybrid 1:1</td><td>25.68</td><td>24.89</td><td>30.28</td></tr><tr><td>Hybrid 1:2</td><td>24.12</td><td>24.28</td><td>27.92</td></tr><tr><td>Hybrid 2:1</td><td>24.19</td><td>24.15</td><td>29.13</td></tr></tbody></table></div></details><details><summary>초기 1문서 실험과 가중치 조정</summary><p>가상 계약 초안 1종·57청크·50질의의 초기 실험입니다. 전체 양성 40질의와 평가 양성 22질의의 결과를 구분합니다. 초기 정답표의 행 ID 오류 2건을 정정한 v2 집계이며 원래 기록도 보존했습니다.</p><div class="table-wrap "><table><caption>초기 1문서 실험 · BM25 / Dense / Hybrid 1:1</caption><thead><tr><th scope="col">분할 / 양성 질의 수</th><th scope="col">BM25 Hit@5 / MRR</th><th scope="col">Dense Hit@5 / MRR</th><th scope="col">Hybrid 1:1 Hit@5 / MRR</th></tr></thead><tbody><tr><td>전체 / 40개</td><td>87.50% / 0.7967</td><td>97.50% / 0.8383</td><td>92.50% / 0.8571</td></tr><tr><td>개발 / 18개</td><td>88.89% / 0.8241</td><td>100.00% / 0.8750</td><td>88.89% / 0.8611</td></tr><tr><td>평가 / 22개</td><td>86.36% / 0.7742</td><td>95.45% / 0.8083</td><td>95.45% / 0.8538</td></tr></tbody></table></div><div class="table-wrap "><table><caption>Hybrid 가중치 후보 · 개발 / 재사용 평가 구분</caption><thead><tr><th scope="col">분할</th><th scope="col">BM25:Dense</th><th scope="col">Hit@5</th><th scope="col">MRR@5</th><th scope="col">Recall@5</th><th scope="col">적중/질의</th></tr></thead><tbody><tr><td>개발</td><td>1:1</td><td>88.89%</td><td>0.8611</td><td>88.89%</td><td>16/18</td></tr><tr><td>개발</td><td>1:2</td><td>94.44%</td><td>0.8750</td><td>94.44%</td><td>17/18</td></tr><tr><td>개발</td><td>2:1</td><td>88.89%</td><td>0.8611</td><td>88.89%</td><td>16/18</td></tr><tr><td>재사용 평가</td><td>1:1</td><td>95.45%</td><td>0.8538</td><td>93.18%</td><td>21/22</td></tr><tr><td>재사용 평가</td><td>1:2</td><td>95.45%</td><td>0.8561</td><td>93.18%</td><td>21/22</td></tr><tr><td>재사용 평가</td><td>2:1</td><td>90.91%</td><td>0.8182</td><td>90.91%</td><td>20/22</td></tr></tbody></table></div><p>1:2는 개발 질의에서 선택한 후속 후보입니다. 재사용한 평가 결과를 새 독립 평가로 표현하지 않습니다. 추가 실제 포스터 실험에서도 Dense가 더 높은 적중률을 보여 1:2를 운영 정책으로 사전 확정하지 않습니다.</p></details><details><summary>실패 사례와 평가 한계</summary><p>「강남청년축제」는 질의에서 ‘강남·청년·축제’, 문서에서 하나의 토큰으로 분석돼 BM25 후보에서 누락됐고 Dense 정답이 Hybrid에서 Top5 밖으로 밀린 사례입니다. 복합어·띄어쓰기 전처리는 개발 자료에서 보완한 뒤 새 질의로 검증해야 합니다.</p><p>가상 자료는 같은 테마와 양식을 공유하고 필드 질문 8개를 반복했습니다. 실제 포스터의 대응 확정 계약서가 없어 실제 계약 준수율을 산출하지 않았습니다. 불일치 검수 F1·실제 OCR CER·최종 LLM 판정 정확도는 이번 검색 실험의 측정 항목이 아닙니다.</p></details><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">5 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="metadata" role="tabpanel" aria-labelledby="tab-metadata" tabindex="0" hidden><h2>메타데이터·모델</h2>
+<h3>초기 원문 실험의 벡터 설정</h3><div class="table-wrap "><table><caption>57청크 예비 실험의 실제 설정 · 추가 이미지 코퍼스와 구분</caption><thead><tr><th scope="col">항목</th><th scope="col">초기 설계·실행 설정</th><th scope="col">실측·보존 증빙</th></tr></thead><tbody><tr><td>Dense 모델·차원</td><td>BAAI/bge-m3 / 1,024차원. <br>문서·질의에 동일 모델·revision 사용</td><td>문서 57×1024, 질의 50×1024<br>revision·버전 로그 보존</td></tr><tr><td>Dense 거리·정규화</td><td>Qdrant named vector: dense, size=1024, Cosine. L2 정규화를 명시</td><td>NaN/Inf 0건<br>norm 0.99999988~1.0</td></tr><tr><td>청크 단위</td><td>조항·제목·표의 문맥 보존. 초기 목표 500토큰, <br>overlap 50토큰(BGE tokenizer 기준)</td><td>57청크, 36~242토큰. 모두 짧아 추가 분할·overlap 발생 0건</td></tr><tr><td>BM25 전처리</td><td>Kiwi 0.24.1 한국어 형태소 분석·용어 사전·숫자/단위 보존</td><td>같은 분석기를 문서·질의에 적용<br>토큰·사전 보존</td></tr><tr><td>BM25 초기값</td><td>k1=1.2, b=0.75. 평균 문서 길이는 고정 청크 코퍼스에서 계산</td><td>어휘 700개, avgdl=50.385965 <br>기본 원문 57청크로 통계 계산</td></tr><tr><td>희소 인덱스</td><td>named vector: bm25. 토큰 ID·가중치의 희소벡터이며 Dense와 별도 인덱스로 구성</td><td>IDF는 문서 희소 가중치에 1회 적용<br>DB modifier 비활성</td></tr><tr><td>검색·RRF</td><td>두 경로 각 Top 20 → chunk_id 중복 제거 → RRF → 최종 Top 5. 초기 1:1·상수 60<br>후속 가중치 후보 1:2(3.7.9)</td><td>k=60, 순위 위치 0부터. <br>Qdrant native RRF와 오차 0</td></tr><tr><td>공통 필터</td><td>프로젝트·현재 권한·허용 문서 버전·승인 상태를 두 검색 경로에 동일 적용</td><td>실험에서만 draft 허용. <br>타 프로젝트·구버전 등 합성 fixture 차단</td></tr><tr><td>현재 상태</td><td>로컬 임베딩·적재·검색·반복 측정 완료</td><td>Qdrant Cloud·RunPod·운영 성능은 미측정<br>로컬 관계 비교는 3.2~3.4</td></tr></tbody></table></div><p class="note"><strong>BM25는 고정 1,542차원 임베딩 모델이 아닙니다.</strong> 코퍼스의 토큰 ID와 가중치를 저장하는 희소 표현입니다. 초기 57청크의 어휘는 700개였으며 코퍼스가 달라지면 어휘 공간도 달라집니다. BGE-M3 학습 Sparse는 이 실험에 사용하지 않았습니다.</p>
+<h3>검색 point의 메타데이터</h3><div class="table-wrap "><table><caption>독립 실험 payload의 필드 정의</caption><thead><tr><th scope="col">구분</th><th scope="col">필드</th><th scope="col">자료형·용도</th></tr></thead><tbody><tr><td>식별자</td><td>project_id, document_id, chunk_id</td><td>문자열 / 필수. 프로젝트·문서·불변 청크 식별</td></tr><tr><td>버전·승인</td><td>document_version, ruleset_id, ruleset_version, approval_status</td><td>문자열 / 필수. 요청 스냅샷과 승인 상태 검증</td></tr><tr><td>권한</td><td>acl_group_ids</td><td>문자열 배열 / 필수. 현재 권한과 교차 검증<br>권한 원본은 PostgreSQL</td></tr><tr><td>원문·출처</td><td>text, source_file, source_uri</td><td>문자열 / 필수. 표시용 원문, 파일명, 원본 객체 위치. 만료 URL 대신 고정 위치</td></tr><tr><td>출처 위치</td><td>page_start, page_end, section</td><td>정수·문자열 / 페이지는 1부터 시작. 페이지 없는 원문은 null 및 section으로 추적</td></tr><tr><td>업무·그래프 연결</td><td>rule_ids, media_ids</td><td>문자열 배열 / 필수. 연결 미확정이면 빈 배열<br>적용 판단은 승인 관계로 확인</td></tr><tr><td>원천 무결성</td><td>source_hash</td><td>문자열 / 필수. 고정 원문 SHA-256<br>원본 변경 추적</td></tr><tr><td>생성 파이프라인</td><td>parser_version, chunking_version, tokenizer_version</td><td>문자열 / 필수. 파싱·분할·한국어 전처리 재현</td></tr><tr><td>검색 재현</td><td>embedding_model, embedding_revision, embedding_dimension, bm25_config_version, index_snapshot_id</td><td>차원은 정수 1024, 나머지는 문자열 / 필수. 모델·BM25·코퍼스 스냅샷 고정</td></tr><tr><td>적재 시점</td><td>created_at</td><td>UTC ISO 8601 문자열 / 필수. 생성 시점·재색인 이력 추적</td></tr></tbody></table></div><details><summary>실제 적재 payload 발췌 · 미승인 초안</summary><pre><code>{
+  &quot;project_id&quot;: &quot;benchmark-gc&quot;, &quot;document_id&quot;: &quot;CC-GC-2026-001&quot;,
+  &quot;document_version&quot;: &quot;v0.1&quot;, &quot;chunk_id&quot;: &quot;gc-v01-T01-00&quot;,
+  &quot;approval_status&quot;: &quot;draft&quot;, &quot;page_start&quot;: 6, &quot;rule_ids&quot;: [&quot;T01&quot;],
+  &quot;embedding_model&quot;: &quot;BAAI/bge-m3&quot;, &quot;embedding_dimension&quot;: 1024,
+  &quot;index_snapshot_id&quot;: &quot;16bd8136a85000daf15d&quot;, &quot;production_eligible&quot;: false
+}</code></pre><p>실험에서는 draft를 격리해 허용했고 <code>production_eligible=false</code>를 기록했습니다. 운영 승인 자료로 간주하지 않습니다.</p></details><h3>운영 연동 데이터 계약</h3><div class="table-wrap "><table><caption>요구사항 v3·DB 설계 v05에 맞출 서비스 계약 · 향후 연동</caption><thead><tr><th scope="col">항목</th><th scope="col">연동 기준</th><th scope="col">실험 표현과의 관계</th></tr></thead><tbody><tr><td>기준 항목 식별</td><td>criteria_item_id · 기준/문서 버전 · 프로젝트 ID</td><td>실험 Rule의 rule_id·rule_ids는 실험 별칭. 서비스 UUID와 명시적으로 대응</td></tr><tr><td>표시 코드</td><td>rule_code는 nullable / nonunique</td><td>T01 같은 표시 코드를 업무 PK로 사용하지 않음</td></tr><tr><td>근거 식별</td><td>공통 chunk_id · 원문 버전 · SHA-256 · 출처 위치</td><td>Neo4j와 Qdrant가 같은 원천을 가리키는지 재검증</td></tr><tr><td>실행·재검수</td><td>run_id · retry_of_run_id</td><td>과거 결과·사람 승인을 새 실행에 자동 승계하지 않음</td></tr><tr><td>검수 상태</td><td>completed / failed / unsupported 및 판정 분리</td><td>검색 없음·미준비·실패를 자동 통과로 처리하지 않음</td></tr><tr><td>이미지 좌표</td><td>bbox_xyxy 및 좌표계/이미지 버전</td><td>텍스트 청크 검색의 벡터와 이미지 좌표·시각 임베딩을 구분</td></tr></tbody></table></div><h3>Neo4j 목표 논리 모델</h3><div class="table-wrap "><table><caption>서비스 목표 노드</caption><thead><tr><th scope="col">노드</th><th scope="col">역할</th><th scope="col">주요 속성(설계안)</th></tr></thead><tbody><tr><td>Project</td><td>검수 프로젝트</td><td>id, name</td></tr><tr><td>RuleSetVersion</td><td>확정 체크리스트 버전</td><td>id, project_id, version, approval_status</td></tr><tr><td>Rule</td><td>검수 조건</td><td>id, project_id, ruleset_version, content</td></tr><tr><td>Media</td><td>적용 매체</td><td>id, project_id, name</td></tr><tr><td>Exception</td><td>조건부 예외</td><td>id, project_id, approval_status, condition</td></tr><tr><td>EvidenceChunk</td><td>원문 근거 청크</td><td>id, project_id, document_version, source_location</td></tr><tr><td>DocumentVersion</td><td>근거 문서의 고정 버전</td><td>id, project_id, document_id, version, sha256</td></tr></tbody></table></div><div class="table-wrap "><table><caption>서비스 목표 관계</caption><thead><tr><th scope="col">시작 노드</th><th scope="col">관계</th><th scope="col">도착 노드</th><th scope="col">의미</th></tr></thead><tbody><tr><td>Project</td><td>HAS_RULESET</td><td>RuleSetVersion</td><td>프로젝트의 확정 기준 버전</td></tr><tr><td>RuleSetVersion</td><td>HAS_RULE</td><td>Rule</td><td>버전에 포함된 검수 조건</td></tr><tr><td>Rule / Exception</td><td>SUPPORTED_BY</td><td>EvidenceChunk</td><td>조건·예외의 승인된 근거</td></tr><tr><td>EvidenceChunk</td><td>PART_OF</td><td>DocumentVersion</td><td>근거 청크의 원문 버전</td></tr><tr><td>Rule / Exception</td><td>APPLIES_TO</td><td>Media</td><td>조건·예외의 적용 매체</td></tr><tr><td>Rule</td><td>HAS_EXCEPTION</td><td>Exception</td><td>승인된 조건부 예외</td></tr></tbody></table></div><p class="muted">기존 비교 실험의 <code>Chunk / Document / FROM_DOCUMENT</code>와 목표의 <code>EvidenceChunk / DocumentVersion / PART_OF</code>는 명칭·ID 매핑이 필요합니다. 현재 서비스에 동일한 스키마가 연결됐다는 뜻은 아닙니다.</p><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">6 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="data" role="tabpanel" aria-labelledby="tab-data" tabindex="0" hidden><h2>데이터·적재 현황</h2>
+<p class="section-intro">업무 예비 적재 DB, 기존 관계 비교 DB, 추가 관계 기능 DB, 검색 컬렉션은 <strong>각각 다른 측정 대상</strong>입니다.</p><div class="table-wrap "><table><caption>서로 합산하면 안 되는 집계 범위</caption><thead><tr><th scope="col">대상</th><th scope="col">확인된 규모</th><th scope="col">해석 범위</th></tr></thead><tbody><tr><td>PostgreSQL 업무 예비 적재</td><td>26 업무 테이블 · 39행 / 관리 1테이블 · 1행 별도</td><td>2026-10-21 11:28:24 KST 스냅샷. 확정 기준 0, 검수 실행·승인 미실행</td></tr><tr><td>초기 QdrantLocal</td><td>57 원문 청크 · 285 point</td><td>기본 57 + 필터 검증용 복제 228. 문서 5종이 아님</td></tr><tr><td>기존 Neo4j 비교</td><td>3,522 노드 · 9,978 관계</td><td>기본/확장·대조군 합계. 같은 문서의 범위별 복제 포함</td></tr><tr><td>추가 관계 기능 비교</td><td>13,789 노드 · 71,305 관계</td><td>1/20/100 합성 업무 세트. 실제 문서 121종이 아님</td></tr><tr><td>추가 검색 실험</td><td>412 이미지 · 1,120 질의</td><td>실제 포스터 252 + 가상 포스터 80 + 가상 문서 80. 검색 실험</td></tr></tbody></table></div><div class="note"><strong>가상·합성 자료의 범위</strong><p>원천은 가상·미승인 김천 계약 초안 1종의 기준 20개·출처 57개입니다. 예외·업무 실행·승인 상태·유효기간·변경 이벤트는 합성했습니다. 실제 승인 또는 계약 효력을 변경한 실험이 아닙니다.</p><p>추가 실제 포스터의 출처는 제공 index.csv의 한국관광공사 TourAPI·원문 URL·공공누리 제3유형 기록입니다. 가상 행사·기관·전화번호는 실제 업무 정보가 아닙니다.</p></div>
+<h3>PostgreSQL 테이블별 행 수</h3><label for="table-search" class="sr-only">테이블 이름·역할 검색</label><input type="search" id="table-search" placeholder="테이블 이름 또는 역할 검색 · 예: criteria, 기준, 검수" /><p id="table-count" class="muted" role="status">업무 26개 + 마이그레이션 관리 1개</p><div class="table-wrap "><table id="rowcount-table"><caption>예비 적재 시점의 COUNT(*) · 현재 DB를 다시 조회한 값이 아님</caption><thead><tr><th scope="col">실제 테이블(public)</th><th scope="col">역할</th><th scope="col">행 수</th><th scope="col">적재 상태 / 비고</th></tr></thead><tbody><tr><td>asset_versions</td><td>자료 버전</td><td>1</td><td>REF-01 / unverified</td></tr><tr><td>assets</td><td>자료</td><td>1</td><td>문서 내 참고 이미지</td></tr><tr><td>audit_events</td><td>감사 이벤트</td><td>3</td><td>실제 적재 동작 3건</td></tr><tr><td>criteria_drafts</td><td>편집 초안</td><td>1</td><td>editing / 항목 20개 JSONB</td></tr><tr><td>criteria_items</td><td>기준 버전의 항목</td><td>20</td><td>R 7·D 7·T 2·E 4</td></tr><tr><td>criteria_sets</td><td>검수 기준 묶음</td><td>1</td><td>가상 계약 초안 v0.1</td></tr><tr><td>criteria_versions</td><td>불변 기준 버전</td><td>1</td><td>imported / unconfirmed</td></tr><tr><td>evidence_ocr_tokens</td><td>근거와 OCR 문구 연결</td><td>0</td><td>OCR·검수 미실행</td></tr><tr><td>evidence_records</td><td>근거</td><td>0</td><td>검수 근거 미생성</td></tr><tr><td>image_coordinate_frames</td><td>이미지 좌표계</td><td>2</td><td>원본·정규화 각 1개</td></tr><tr><td>import_packages</td><td>인계 묶음</td><td>1</td><td>completed = 반입 완료</td></tr><tr><td>item_results</td><td>시도별 기준 항목 결과</td><td>0</td><td>검수 미실행</td></tr><tr><td>ocr_runs</td><td>OCR 실행</td><td>0</td><td>OCR 미실행</td></tr><tr><td>ocr_tokens</td><td>OCR 문구</td><td>0</td><td>OCR 미실행</td></tr><tr><td>poster_extractions</td><td>행사 정보 추출본</td><td>0</td><td>행사 정보 추출 미실행</td></tr><tr><td>poster_field_observations</td><td>필드별 관찰</td><td>0</td><td>필드 관찰 미생성</td></tr><tr><td>project_members</td><td>프로젝트 참여자</td><td>1</td><td>개발 계정 owner</td></tr><tr><td>projects</td><td>프로젝트</td><td>1</td><td>미승인 예비 프로젝트</td></tr><tr><td>record_aliases</td><td>외부 식별 별칭</td><td>0</td><td>외부 이력 미반입</td></tr><tr><td>review_attempts</td><td>실행 전체의 처리 시도</td><td>0</td><td>검수 미실행</td></tr><tr><td>review_runs</td><td>검수 실행</td><td>0</td><td>검수 미실행</td></tr><tr><td>run_item_selections</td><td>실행의 최종 항목 채택</td><td>0</td><td>검수 미실행</td></tr><tr><td>schema_definitions</td><td>규격 정의</td><td>0</td><td>별도 규격 정의 미등록</td></tr><tr><td>stored_files</td><td>저장 파일</td><td>5</td><td>이미지 2·JSON 3</td></tr><tr><td>user_sessions</td><td>사용자 세션</td><td>0</td><td>로그인 세션 미발급</td></tr><tr><td>users</td><td>사용자</td><td>1</td><td>예비 적재용 개발 계정</td></tr><tr><td>alembic_version</td><td>마이그레이션 관리</td><td>1</td><td>적용 revision = M008</td></tr></tbody></table></div><p class="muted">M001~M008 적용 뒤 별도 READ ONLY·REPEATABLE READ 연결로 집계했습니다. 0행은 해당 예비 적재 시나리오에서 실행하지 않았다는 뜻이며 서비스 코드 구현 부재를 뜻하지 않습니다. 출처 57개는 JSON으로 보존했고 기준 20개는 unconfirmed 상태입니다.</p><details><summary>기존 Neo4j 비교의 라벨·관계 집계</summary><div class="table-wrap "><table><caption>기존 실험 노드 · 제어 노드 BenchmarkMeta 1개 별도</caption><thead><tr><th scope="col">실제 노드 라벨</th><th scope="col">건수</th><th scope="col">의미 / 합계 범위</th></tr></thead><tbody><tr><td>Project</td><td>6</td><td>기본·확장 범위의 실제/합성 프로젝트</td></tr><tr><td>RuleSetVersion</td><td>8</td><td>실문서 미승인 2·합성 테스트 버전 6</td></tr><tr><td>Rule</td><td>872</td><td>실문서 항목 40·합성 832</td></tr><tr><td>Media</td><td>18</td><td>합성 테스트 매체</td></tr><tr><td>Exception</td><td>1,664</td><td>전부 합성<br>test_approval_state</td></tr><tr><td>Chunk</td><td>946</td><td>실문서 청크 114·합성 832</td></tr><tr><td>Document</td><td>8</td><td>실문서 범위 복제 2·합성 6</td></tr><tr><td>비교용 전체</td><td>3,522</td><td>제어 노드 BenchmarkMeta 1개 별도<br>운영 승인 집계 아님</td></tr></tbody></table></div><div class="table-wrap "><table><caption>기존 실험 관계 · 전부 운영 관계라는 뜻은 아님</caption><thead><tr><th scope="col">실제 관계 타입</th><th scope="col">건수</th><th scope="col">방향 / 의미</th></tr></thead><tbody><tr><td>HAS_RULESET</td><td>8</td><td>Project → RuleSetVersion</td></tr><tr><td>HAS_RULE</td><td>872</td><td>RuleSetVersion → Rule</td></tr><tr><td>SUPPORTED_BY</td><td>3,160</td><td>Rule/Exception → Chunk</td></tr><tr><td>FROM_DOCUMENT</td><td>946</td><td>Chunk → Document</td></tr><tr><td>APPLIES_TO</td><td>2,912</td><td>Rule/Exception → Media</td></tr><tr><td>HAS_EXCEPTION</td><td>1,040</td><td>Rule → 합성 Exception</td></tr><tr><td>NARROWS_TO</td><td>1,040</td><td>합성 Exception → 하위 합성 Exception</td></tr><tr><td>비교용 전체</td><td>9,978</td><td>기본 383 + 확장 9,595<br>양 범위와 대조군 합계</td></tr></tbody></table></div></details><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">7 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0" hidden><h2>연동·검증 계획</h2>
+<p>아래는 향후 서비스 연동 계획입니다. 독립 실험 결과를 검수 API·worker·화면에 연결하고 실제 승인 자료로 다시 검증합니다. 일정은 WBS 계획안 기준입니다.</p><div class="table-wrap "><table><caption>핵심 관계·보조 검색의 다음 구현과 완료 기준</caption><thead><tr><th scope="col">작업</th><th scope="col">WBS</th><th scope="col">예정</th><th scope="col">완료 기준</th></tr></thead><tbody><tr><td>공통 ID·승인 원본·관계 투영</td><td>3.16 / SR-05-04</td><td>10/22~26</td><td>PostgreSQL 원천과 노드·청크의 ID·버전·해시 대응, 미승인 합성 자료 분리</td></tr><tr><td>근거·예외 API/MCP</td><td>3.17 / SR-05-01~02</td><td>10/29~30</td><td>기대 경로·정렬·중복 제거·승인·기간·매체 교집합 및 현재 권한 검증</td></tr><tr><td>변경 영향·재검수 후보 API</td><td>3.18 / SR-05-03</td><td>11/02~03</td><td>변경 청크에서 최신 완료 실행 추적, 누락·오탐 점검, 새 run 연결</td></tr><tr><td>관계 경로·보조 검색 화면</td><td>3.19 / SR-04-01</td><td>11/02~03</td><td>직접 근거와 검색 후보를 구분해 원문 위치·버전으로 이동</td></tr><tr><td>동기화·권한 회수·재구축</td><td>3.20 / SR-05-04</td><td>11/02~04</td><td>멱등 반영·재시도·삭제·취소·복원 후 건수/해시/경로 검증</td></tr><tr><td>서비스 E2E 인수</td><td>3.21 / TR-01-02</td><td>11/05~06</td><td>승인된 업무 사례와 무권한·구버전·만료·실패·재검수 흐름 검증</td></tr><tr><td>최종 관계·검색 비교</td><td>4.7~4.8 / TR-03-01</td><td>11/09~11</td><td>새 동결 정답, 평균·중앙값·p95·오탐/누락, 합성/실제 구분</td></tr></tbody></table></div><div class="grid two"><div class="card"><h3>필수 관계가 준비되지 않으면</h3><p>기준 항목을 확인 필요로 남깁니다. 현재 권한·원천 버전·반영 상태를 확인하며 누락 관계를 ‘적용 조건 없음’으로 해석하지 않습니다.</p></div><div class="card"><h3>보조 검색이 실패하면</h3><p>추가 근거를 확보하지 못한 상태로 구분합니다. 확정 기준 전체와 직접 근거 조회를 유지하고 자동 승인으로 연결하지 않습니다.</p></div></div><h3>추가로 수치화할 항목</h3><ul><li>서비스 연결 후 출처·버전 일치율, 권한 범위 위반, 기준 누락·예외 오적용·변경 영향 누락.</li><li>API 전체 지연, 첫 실행·준비 후 지연, 동시 부하별 평균·p95.</li><li>담당자의 근거 확인 시간, 최종 검수 오류율, 복구 RPO/RTO와 운영 비용.</li></ul><p class="muted">이 항목의 실측 결과는 현재 결과서에 없습니다. 합성 정확성·로컬 DB 지연을 실제 업무 개선 수치로 대체하지 않습니다.</p><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">8 / 9</span><button data-next type="button">다음 →</button></div></section><section class="doc-panel" id="sources" role="tabpanel" aria-labelledby="tab-sources" tabindex="0" hidden><h2>근거 자료·용어</h2>
+<h3>연결 문서</h3><ul class="source-list">
+<li><a href="https://docs.google.com/document/d/1utxuv39_xYWyjkSV8gdxtXzpvAf5CN8d/edit" target="_blank" rel="noopener">벡터DB·GraphDB 구축 결과서 v2 · 구글 문서</a> — 이번 HTML의 수치·원문 기준</li>
+<li><a href="https://docs.google.com/document/d/1MLnYLF4n1KM58V6dyTlgfqYVauAn3J-G/edit" target="_blank" rel="noopener">데이터베이스 설계 v05</a> · <a href="https://docs.google.com/spreadsheets/d/1CWegTuuiGDk4u_I_PrcKHe1J2D755YNU/edit" target="_blank" rel="noopener">요구사항 v3</a> · <a href="https://docs.google.com/spreadsheets/d/1WAbWGe6ZPDu9VRAjbizqNR5GXMzQqB_Jh3xK9-0zek0/edit" target="_blank" rel="noopener">WBS</a></li>
+<li><a href="../../../README.md">프로젝트 README</a> · 상단 메뉴의 기획서·기능·화면·기술스펙 문서</li></ul>
+<h3>측정 산출물</h3><div class="table-wrap "><table><caption>실험 산출물은 기존 작업 폴더의 상대 경로이며 웹 링크가 아닙니다.</caption><thead><tr><th scope="col">실험</th><th scope="col">보존 폴더(output/)</th><th scope="col">핵심 파일</th></tr></thead><tbody><tr><td>업무 예비 적재</td><td>postgresql-seed-2026-10-21/run-001</td><td>migration_validation.json · seed_validation.json · post-seed/inventory.json</td></tr><tr><td>기존 관계 비교</td><td>graph-db-benchmark-2026-10-21/run-001</td><td>cases.json · validation.json · queries.json · latencies.csv · summary.json</td></tr><tr><td>추가 관계 기능 비교</td><td>graph-functional-benchmark-2026-10-21/run-001</td><td>manifest.json · case_results.json · validation.json · latency_samples.csv · latency_summary.json</td></tr><tr><td>초기 검색·가중치 비교</td><td>vector-search-benchmark-2026-10-21/run-001</td><td>queries_v2.json · retrieval_results_v2.json · summary_v2.json · payload_sample_T01.json</td></tr><tr><td>추가 이미지 검색</td><td>sample-retrieval-benchmark-2026-10-21/run-001</td><td>quality_summary.json · latency_summary.json · metrics.csv · validation.json</td></tr></tbody></table></div><h3>지표 읽는 방법</h3><div class="table-wrap "><table><thead><tr><th scope="col">용어</th><th scope="col">읽는 방법</th><th scope="col">주의점</th></tr></thead><tbody><tr><td>Hit@5</td><td>상위 5개에 지정 정답이 하나 이상 있는 질의 비율</td><td>최종 검수 판정 정확도나 검색 점수와 다름</td></tr><tr><td>MRR@5</td><td>첫 정답 순위의 역수를 평균. Top5 밖이면 0</td><td>정답을 앞 순위에 배치하는 정도</td></tr><tr><td>Recall@5</td><td>지정된 복수 정답 중 상위 5개로 찾은 비율</td><td>질의 적중 비율 Hit@5와 구분</td></tr><tr><td>p95</td><td>요청 시간 분포의 95번째 백분위값</td><td>약 95% 요청이 이 값 이하. 정확도 95%라는 뜻이 아님</td></tr><tr><td>평균 단축률</td><td>(PG 지연 − Neo4j 지연) / PG 지연 × 100</td><td>이번 22.8%·38.8%는 확장 변경 영향 조건에 한정</td></tr><tr><td>RRF 1:1</td><td>BM25와 Dense의 검색 순위에 같은 가중치를 부여</td><td>원점수·확률을 직접 더하는 방식이 아님</td></tr></tbody></table></div><details><summary>원문 스냅샷·작성 기준</summary><p>HTML 작성일: 2026-10-22. 원문 결과서의 측정 기준일: 2026-10-21. 이 작업에서 DB·임베딩 실험을 다시 실행하지 않았습니다.</p><p>원문 파일 SHA-256</p><pre><code>381f08db91ee288b0dc25abfcb8c5ca93d32f9b5d589f2df861c21261736a3cb</code></pre><p>구글 문서의 수치·표를 읽어 요약했으며 운영 배포나 새로운 성능 검증을 뜻하지 않습니다. 본문은 외부 라이브러리·웹폰트 없이 읽을 수 있습니다. 연결 문서와 외부 링크를 열 때는 해당 파일 또는 네트워크가 필요합니다.</p></details><div class="panel-footer"><button data-prev type="button">← 이전</button><span class="meta">9 / 9</span><button data-next type="button">다음 →</button></div></section></main></div>
+<footer><p>크리에이티브체커 · 33기 1팀 · 벡터DB·그래프DB 구축 결과서 HTML</p><p>기존 기획서의 색상·레이아웃·탭 형식을 따랐습니다. 저장된 결과서와 실측 표를 정리했으며 이번 작성에서 새로운 DB·모델 실험을 실행하지 않았습니다.</p></footer><script type="application/json" id="report-data">{"search": [{"id": "real", "label": "실제 포스터 찾기", "count": "평가 280질의", "description": "실제 포스터 252장 중 평가 포스터 140장에 대한 280개 카탈로그 질의입니다. 행사명·지역·시작일로 지정 포스터를 찾는 과업이며 계약 준수 판정 정확도가 아닙니다.", "methods": [{"name": "BM25", "hit5": "172/280 (61.43%)", "hit1": "142/280 (50.71%)", "mrr": "0.5470", "pct": 61.43, "mean": "1.25", "median": "1.30", "p95": "1.75"}, {"name": "Dense", "hit5": "269/280 (96.07%)", "hit1": "245/280 (87.50%)", "mrr": "0.9115", "pct": 96.07, "mean": "14.96", "median": "13.74", "p95": "21.22"}, {"name": "Hybrid 1:1", "hit5": "257/280 (91.79%)", "hit1": "201/280 (71.79%)", "mrr": "0.7883", "pct": 91.79, "mean": "16.31", "median": "14.82", "p95": "22.96"}, {"name": "Hybrid 1:2", "hit5": "258/280 (92.14%)", "hit1": "208/280 (74.29%)", "mrr": "0.8044", "pct": 92.14, "mean": "16.40", "median": "15.01", "p95": "23.75"}, {"name": "Hybrid 2:1", "hit5": "220/280 (78.57%)", "hit1": "191/280 (68.21%)", "mrr": "0.7275", "pct": 78.57, "mean": "15.86", "median": "14.32", "p95": "22.57"}]}, {"id": "pair", "label": "가상 포스터 → 기준 문서", "count": "평가 40질의", "description": "가상 포스터 OCR에서 대응하는 가상 기준 문서를 찾았습니다. v1 40쌍은 개발, v2 40쌍은 평가이며 같은 테마와 양식을 공유합니다.", "methods": [{"name": "BM25", "hit5": "40/40 (100.00%)", "hit1": "40/40 (100.00%)", "mrr": "1.0000", "pct": 100.0, "mean": "1.78", "median": "1.73", "p95": "2.09"}, {"name": "Dense", "hit5": "40/40 (100.00%)", "hit1": "39/40 (97.50%)", "mrr": "0.9875", "pct": 100.0, "mean": "22.73", "median": "21.26", "p95": "28.66"}, {"name": "Hybrid 1:1", "hit5": "40/40 (100.00%)", "hit1": "39/40 (97.50%)", "mrr": "0.9875", "pct": 100.0, "mean": "24.39", "median": "22.88", "p95": "31.46"}, {"name": "Hybrid 1:2", "hit5": "40/40 (100.00%)", "hit1": "39/40 (97.50%)", "mrr": "0.9875", "pct": 100.0, "mean": "24.22", "median": "23.07", "p95": "30.68"}, {"name": "Hybrid 2:1", "hit5": "40/40 (100.00%)", "hit1": "40/40 (100.00%)", "mrr": "1.0000", "pct": 100.0, "mean": "23.77", "median": "22.82", "p95": "29.51"}]}, {"id": "field", "label": "문서 내 필드 근거", "count": "평가 320질의", "description": "가상 문서 40개 × 동일한 8개 필드 질문입니다. 프로젝트(set_id) 필터 뒤 지정 표 행을 찾는 반복 평가이며 독립적인 320가지 업무 질문을 뜻하지 않습니다.", "methods": [{"name": "BM25", "hit5": "240/320 (75.00%)", "hit1": "227/320 (70.94%)", "mrr": "0.7297", "pct": 75.0, "mean": "3.07", "median": "3.05", "p95": "3.50"}, {"name": "Dense", "hit5": "320/320 (100.00%)", "hit1": "298/320 (93.12%)", "mrr": "0.9641", "pct": 100.0, "mean": "21.47", "median": "21.09", "p95": "28.11"}, {"name": "Hybrid 1:1", "hit5": "320/320 (100.00%)", "hit1": "279/320 (87.19%)", "mrr": "0.9323", "pct": 100.0, "mean": "25.68", "median": "24.89", "p95": "30.28"}, {"name": "Hybrid 1:2", "hit5": "320/320 (100.00%)", "hit1": "282/320 (88.12%)", "mrr": "0.9370", "pct": 100.0, "mean": "24.12", "median": "24.28", "p95": "27.92"}, {"name": "Hybrid 2:1", "hit5": "320/320 (100.00%)", "hit1": "278/320 (86.88%)", "mrr": "0.9307", "pct": 100.0, "mean": "24.19", "median": "24.15", "p95": "29.13"}]}], "graph": [{"scope": "기본", "task": "근거 추적", "pg": 1.0610213, "pg95": 2.0715666499999976, "neo": 2.2513666900000002, "neo95": 5.218277099999997}, {"scope": "기본", "task": "예외 검증", "pg": 0.4357983, "pg95": 0.6311173, "neo": 1.19802503, "neo95": 1.9456308999999998}, {"scope": "기본", "task": "변경 영향", "pg": 1.24158621, "pg95": 1.7252773999999995, "neo": 1.81939423, "neo95": 2.4121776999999995}, {"scope": "중간", "task": "근거 추적", "pg": 0.74666704, "pg95": 1.46453365, "neo": 2.18747541, "neo95": 3.9747794499999998}, {"scope": "중간", "task": "예외 검증", "pg": 0.47313336, "pg95": 0.9459103999999996, "neo": 1.1830304, "neo95": 2.180472899999999}, {"scope": "중간", "task": "변경 영향", "pg": 3.56536377, "pg95": 10.034791699999998, "neo": 3.88652501, "neo95": 9.9882399}, {"scope": "확장", "task": "근거 추적", "pg": 0.6200958599999999, "pg95": 1.1083524, "neo": 1.13621422, "neo95": 1.88751935}, {"scope": "확장", "task": "예외 검증", "pg": 0.40696887, "pg95": 0.5762048, "neo": 0.95859289, "neo95": 1.4309860499999991}, {"scope": "확장", "task": "변경 영향", "pg": 12.03948831, "pg95": 40.789449649999995, "neo": 9.28847335, "neo95": 24.9494274}]}</script><script>
+(() => {
+ 'use strict';
+ const $=id=>document.getElementById(id), tabs=[...document.querySelectorAll('[data-panel]')], panels=tabs.map(t=>$(t.dataset.panel));let active=0;
+ function activate(n,focus=false,hash=true){active=(n+tabs.length)%tabs.length;tabs.forEach((t,i)=>{t.setAttribute('aria-selected',String(i===active));t.tabIndex=i===active?0:-1;panels[i].hidden=i!==active});if(focus)tabs[active].focus();if(hash)history.replaceState(null,'','#'+panels[active].id)}
+ function route(){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}const el=$(id);if(!el)return;const p=el.closest('.doc-panel'),i=panels.indexOf(p);if(i>=0){activate(i,false,false);for(let n=el;n&&n!==p;n=n.parentElement)if(n.tagName==='DETAILS')n.open=true}}
+ tabs.forEach((t,i)=>{t.addEventListener('click',()=>activate(i));t.addEventListener('keydown',ev=>{const map={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:tabs.length-1};if(Object.hasOwn(map,ev.key)){ev.preventDefault();activate(map[ev.key],true)}})});
+ document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=()=>activate(active-1));document.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>activate(active+1));document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>activate(panels.findIndex(p=>p.id===b.dataset.goto)));
+ const data=JSON.parse($('report-data').textContent);const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function tbl(headers,rows,caption){return '<div class="table-wrap"><table><caption>'+safe(caption)+'</caption><thead><tr>'+headers.map(h=>'<th scope="col">'+safe(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'}
+ function bar(label,value,max,neo=false,suffix=' ms'){return '<div class="bar-line"><span>'+safe(label)+'</span><div class="bar-track"><i class="'+(neo?'neo':'')+'" style="width:'+Math.min(100,value/max*100)+'%"></i></div><b>'+value.toFixed(suffix==='%'?2:3)+suffix+'</b></div>'}
+ function graph(){const g=data.graph.find(x=>x.scope===$('graph-scope').value&&x.task===$('graph-task').value);$('graph-title').textContent=g.scope+' · '+g.task;$('graph-bars').innerHTML=bar('PostgreSQL',g.pg,Math.max(g.pg,g.neo))+bar('Neo4j',g.neo,Math.max(g.pg,g.neo),true);const mean=(g.pg-g.neo)/g.pg*100,tail=(g.pg95-g.neo95)/g.pg95*100;$('graph-result').textContent=mean>=0?'Neo4j 평균 '+mean.toFixed(1)+'% · p95 '+tail.toFixed(1)+'% 단축':'PostgreSQL 평균이 '+((g.neo-g.pg)/g.neo*100).toFixed(1)+'% 짧음 — 이 조건은 Neo4j 속도 우위 근거가 아닙니다.';$('graph-tail').textContent='p95 — PostgreSQL '+g.pg95.toFixed(3)+' ms / Neo4j '+g.neo95.toFixed(3)+' ms'}
+ $('graph-scope').onchange=graph;$('graph-task').onchange=graph;graph();
+ function search(){const s=data.search.find(x=>x.id===$('search-task').value);$('search-count').textContent=s.count;$('search-description').textContent=s.description;$('search-bars').innerHTML=s.methods.map(m=>bar(m.name,m.pct,100,m.name.startsWith('Hybrid'),'%').replace('class=""',m.name==='Dense'?'class="dense"':'class=""')).join('');$('quality-view').innerHTML=tbl(['방식','Hit@5','Hit@1','MRR@5'],s.methods.map(m=>[m.name,m.hit5,m.hit1,m.mrr]),s.label+' · 평가 분할 품질');$('timing-view').innerHTML=tbl(['방식','평균 ms','중앙값 ms','p95 ms'],s.methods.map(m=>[m.name,m.mean,m.median,m.p95]),'로컬 반복 지연 · 매 요청 질의 임베딩 포함');$('retrieval-result').textContent=s.id==='real'?'실제 포스터 평가에서 Dense는 269/280(96.07%), 기본 Hybrid 1:1은 257/280(91.79%)였습니다. Dense를 회수율 기준선으로 유지하며 운영 정책은 새 정답·질의에서 검증합니다.':s.id==='pair'?'이 과업의 Hit@5는 5방식 모두 40/40으로 동률입니다. Hit@1·MRR에서는 BM25와 Hybrid 2:1이 1.0000이었습니다.':'Dense와 세 Hybrid의 Hit@5는 320/320으로 동률입니다. MRR@5는 Dense 0.9641이 가장 높았습니다. 동일한 8개 질문과 합성 양식의 반복 평가라는 한계를 함께 보고합니다.'}
+ $('search-task').onchange=search;search();
+ const scenarios={trace:{nodes:['검수 실행','사용 기준','의존 기준','출처 청크','문서 버전'],text:'완료 실행이 사용한 기준과 원문 경로·버전·해시를 추적합니다. 과거 적용 기록은 현재 승인 상태로 숨기지 않습니다.'},exception:{nodes:['검수 기준','예외 체인','동일 매체','승인·유효기간','유효 출처'],text:'모든 조상 예외가 승인·기간·매체·출처 조건을 충족해야 합니다. 초안·취소·순환·범위 이탈·종료 시각 경계를 합성 정답과 대조했습니다.'},impact:{nodes:['변경 청크','기준·예외','의존 기준','최신 완료 실행','재검수 후보'],text:'바뀐 원문의 직·간접 영향을 받는 실행을 조회합니다. 타 프로젝트·구버전·과거 완료·최신 실패는 제외하고, 실제 재검수 실행 연결은 향후 구현합니다.'}};
+ document.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-scenario]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const s=scenarios[b.dataset.scenario];$('scenario-view').innerHTML='<ol class="flow">'+s.nodes.map(n=>'<li><b>'+safe(n)+'</b></li>').join('')+'</ol><p>'+safe(s.text)+'</p>'});
+ document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-state]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));let n=0;$('status-table').querySelectorAll('tbody tr').forEach(r=>{r.hidden=b.dataset.state!=='전체'&&r.cells[1].textContent!==b.dataset.state;if(!r.hidden)n++});$('state-count').textContent=n+'개 영역'});
+ $('table-search').oninput=()=>{const q=$('table-search').value.trim().toLocaleLowerCase();let n=0;const rows=[...$('rowcount-table').querySelectorAll('tbody tr')];rows.forEach(r=>{r.hidden=!r.textContent.toLocaleLowerCase().includes(q);if(!r.hidden)n++});$('table-count').textContent=n+' / '+rows.length+'개 테이블';};
+ let printState=null;window.addEventListener('beforeprint',()=>{printState={active,hidden:[...document.querySelectorAll('[hidden]')],details:[...document.querySelectorAll('details')].map(d=>[d,d.open])};printState.hidden.forEach(x=>x.hidden=false);printState.details.forEach(([d])=>d.open=true)});window.addEventListener('afterprint',()=>{if(!printState)return;printState.hidden.forEach(x=>x.hidden=true);printState.details.forEach(([d,o])=>d.open=o);activate(printState.active,false,false);printState=null});
+ activate(0,false,false);route();window.addEventListener('hashchange',route);
+})();
+</script></body></html>
