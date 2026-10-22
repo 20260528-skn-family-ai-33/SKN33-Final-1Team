@@ -21,3 +21,5 @@ jobs:
           done
       - name: Test packet integrity, extraction and Git exclusions
         run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_assets.py -v
+      - name: Test standard Hugging Face cache symlinks and pinned hashes
+        run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_model_cache.py -v

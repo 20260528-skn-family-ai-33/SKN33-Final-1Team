@@ -1,5 +1,5 @@
 """CUDA-only RunPod entrypoint. validate is CPU-only; no paid resources created."""
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from datetime import datetime, timezone
 import argparse
 import gc
@@ -29,7 +29,13 @@ def get_model_dir(root, supplied, cache):
         folder = Path(snapshot_download(repo_id=MODEL_ID, revision=REVISION, cache_dir=str(cache),
                                        allow_patterns=list(expected['files'])))
     for name, checksum in expected['files'].items():
-        p = contained(folder, name)
+        relative = PurePosixPath(name)
+        if not relative.parts or relative.is_absolute() or '..' in relative.parts or '\\' in name:
+            raise ValueError('Invalid path in pinned model manifest: '+name)
+        # Hub snapshots legitimately link into the sibling blobs directory.
+        # Validate logical names and pinned file bytes, rather than requiring
+        # resolved blob paths to remain inside the snapshot directory.
+        p = folder.joinpath(*relative.parts)
         if not p.is_file() or sha(p) != checksum:
             raise ValueError('Downloaded model revision/file differs: '+name)
     return folder
