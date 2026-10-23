@@ -56,5 +56,6 @@ Desktop.ini
 /experiments/poster_benchmark/assets/
 /experiments/poster_benchmark/runs/
 /experiments/poster_benchmark/.cache/
+/experiments/poster_benchmark/.ocr-venv/
 /experiments/poster_benchmark/*.tar*
 *.gpu_owner.lock

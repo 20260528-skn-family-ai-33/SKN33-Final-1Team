@@ -2,6 +2,35 @@
 
 승인한 포스터187장으로 기존 ResNet18 본체 파인튜닝, 고정 EG2+분류기, EG2 본체 파인튜닝을 같은 CUDA GPU에서 비교합니다. `train`은 EG2를 다시 학습한 뒤 세 모델을 평가하며, `evaluate`는 전달한 기존 세 모델을 평가합니다. ResNet18 재학습은 포함하지 않습니다.
 
+## 완료한 학습 체크포인트로 PaddleOCR 포함 평가
+
+**RunPod에서 이미 `train`을 완료했다면 아래 명령만 사용합니다. 재학습하지 않습니다.** `run_pipeline.sh`는 완료한 CUDA train 폴더의 개발셋 선택 EG2 체크포인트·임계값과 기존 ResNet18·고정 EG2를 그대로 읽습니다. 기존 `run.sh evaluate`는 bundle의 과거 EG2 체크포인트를 사용하므로 이번 후속 평가에는 `run_pipeline.sh`를 사용합니다.
+
+```bash
+git -C /workspace/SKN33-Final-1Team pull --ff-only
+bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/setup_pipeline.sh
+bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/run_pipeline.sh --source-run latest
+```
+
+각 명령이 성공한 뒤 다음 명령으로 진행합니다. 설치는 별도 `POSTER_OCR_VENV`(기본 이 폴더의 `.ocr-venv/`)에서만 수행하고 기존 시각 모델 venv에는 패키지를 설치하지 않습니다. `setup_pipeline.sh`는 원본 train/체크포인트를 먼저 검증하고 Paddle GPU3.3.1/cu126, PaddleOCR3.7.0/PaddleX3.7.2 및 고정 해시의 OCR 모델을 준비합니다. GPU wheel은 [Paddle 공식 cu126 인덱스](https://www.paddlepaddle.org.cn/packages/stable/cu126/paddlepaddle-gpu/)를 사용합니다.
+
+- `latest`는 `POSTER_RUN_DIR` 또는 기본 `runs/`의 **가장 최근 train 실행**을 고릅니다. 그 실행이 완료되지 않았다면 실패하며, 과거 체크포인트로 자동 대체하지 않습니다. 직접 지정할 때는 두 스크립트에 동일한 `--source-run /workspace/.../train-실행폴더`를 전달합니다.
+- 기존 한국어 OCR 탐지·인식 모델(`PP-OCRv5_server_det`, `korean_PP-OCRv5_mobile_rec`)과 backend의 탐지/인식 설정을 유지합니다. OCR 입력은 원본 해상도이며, 시각 모델의448px letterbox와 구분합니다. [PaddleOCR 모델·파라미터 안내](https://www.paddleocr.ai/v3.1.1/en/version3.x/pipeline_usage/OCR.html)
+- 기본 OCR 장치는 **`gpu:0`**, 시각 모델은 동일 GPU의 `cuda:0`입니다. 기존 로컬 OCR의 CPU 실행 조건을 사용할 때는 `run_pipeline.sh --source-run latest --ocr-device cpu`를 사용합니다. 모든 비교 arm에는 같은 OCR 장치를 적용하며, GPU를 요청했을 때 CPU로 자동 전환하지 않습니다.
+- 같은37장, 모름14개 판정 제외/282개 알려진 판정, 기존 임계값·정밀도·시각 모델 환경을 유지합니다. 모델별3회 예열 후37장×3회 실행하며, OCR도 **매번 실제 수행**합니다. OCR과 분류는 순차 실행합니다.
+- `ocr_ms`: 원본 디코딩·PaddleOCR·작업자 IPC/결과 직렬화. `model_ms`: 시각 입력 디코딩·letterbox·processor·추론·분류·GPU 동기화. `total_ms`: OCR 요청 직전부터 분류 완료까지 **연속 wall-clock 실측**입니다. 각 구간 평균·중앙값·p95를 저장합니다. 다운로드·모델 로딩·예열·진단 파일 저장은 별도입니다.
+- OCR은 별도 장기 실행 프로세스에 한 번 로드합니다. 각 시각 모델도 로딩 후 반복 사용합니다. 전체 시간에는 실제 IPC가 포함됩니다. 이미지 디코딩을 공유하지 않는 현재 평가 경로의 측정이며, 웹 업로드·DB/API 시간은 포함하지 않습니다.
+- 시각 분류 확률·판정과 입력 픽셀을 기존 완료 결과와 비교하며, 일치하지 않으면 실패합니다. OCR 실패나 timeout도 건너뛰지 않습니다. 원본 train/체크포인트·라벨은 수정하지 않고 새 `pipeline-*` 폴더에 저장합니다.
+- OCR 원문·좌표·점수도 저장합니다. OCR 정답 텍스트는 이 라벨셋에 없으므로 CER 등 OCR 인식 정확도는 산출하지 않습니다. 표시되는 정확도는 계속 인물·사물 분류 정확도이며, OCR 텍스트를 시각 분류기에 새로 입력하지 않습니다.
+
+마지막 `pipeline_complete`와 새 폴더의 `status.json`에 `complete`, `PaddleOCR_executed: true`, `training_executed: false`가 있어야 완료입니다. 주요 결과는 `comparison_pipeline.csv`, `pipeline_summary.json`, 모델별 `timing_raw.csv`·`test_metrics.json`·`ocr_raw/`입니다. `protocol.json`, `environment.json`, `ocr_environment.json`, `paddle_worker.log`에 실행 조건과 모델 식별자를 남깁니다.
+
+```bash
+bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/run_pipeline.sh --show-results
+```
+
+전체 복사 가능한 SSH·업로드·재개 명령은 저장소 루트의 [런팟_실행명령어.md](../../런팟_실행명령어.md)에 정리했습니다. 이 문서의 이후 `train`/`evaluate` 속도는 기존 **OCR 제외** 평가를 설명합니다. OCR 포함 결과와 구분하세요.
+
 ## RunPod에서 시작
 
 Python **3.12**, CUDA12.8 호환 드라이버, 시스템 RAM32GB 이상인 GPU Pod가 필요합니다. 현재 선택한 A40 48GB가 후보이며 실제 사용 메모리는 smoke에서 검사합니다. `/workspace`에 **60GB 이상(권장80GB)**의 영속 볼륨을 연결합니다. GPU Pod 생성이나 과금 종료는 이 코드에서 자동 수행하지 않습니다.

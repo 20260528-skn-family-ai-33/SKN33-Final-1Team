@@ -1,9 +1,9 @@
 name: Poster benchmark packet
 on:
   push:
-    paths: ['experiments/poster_benchmark/**', '.gitignore', '.github/workflows/poster-benchmark.yml']
+    paths: ['experiments/poster_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
   pull_request:
-    paths: ['experiments/poster_benchmark/**', '.gitignore', '.github/workflows/poster-benchmark.yml']
+    paths: ['experiments/poster_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
 permissions:
   contents: read
 jobs:
@@ -16,10 +16,12 @@ jobs:
           python-version: '3.12'
       - name: Check shell syntax
         run: |
-          for script in experiments/poster_benchmark/{start,setup_runpod,run}.sh; do
+          for script in experiments/poster_benchmark/{start,setup_runpod,run,setup_pipeline,run_pipeline}.sh; do
             bash -n "$script"
           done
       - name: Test packet integrity, extraction and Git exclusions
         run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_assets.py -v
       - name: Test standard Hugging Face cache symlinks and pinned hashes
         run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_model_cache.py -v
+      - name: Test OCR timing, worker failures and immutable checkpoint selection
+        run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_pipeline_contracts.py -v
