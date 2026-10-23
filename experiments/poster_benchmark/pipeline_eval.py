@@ -1,4 +1,4 @@
-"""Evaluate an existing completed CUDA training run with real PaddleOCR; never train."""
+"""Evaluate existing checkpoints with real PaddleOCR; never train."""
 import argparse
 from contextlib import contextmanager, suppress
 from datetime import datetime, timezone
@@ -27,7 +27,7 @@ def source_run(value, runs):
     candidates = [p for p in Path(runs).glob('*/protocol.json')
                   if read(p).get('config', {}).get('command') == 'train']
     if not candidates:
-        raise ValueError('No existing train run. Pass --source-run /path/to/completed/train-run')
+        raise ValueError('No existing train run. Pass --source-run /path/to/train-run, or explicitly choose --source-run bundled')
     return max(candidates, key=lambda p: p.stat().st_mtime_ns).parent.resolve()
 
 
@@ -74,7 +74,22 @@ def validate_source(source, bundle):
         artifacts[arm] = sha(folder/'arm_complete.json')
     return dict(protocol=protocol, selection=selection, selection_sha256=selection_hash,
                 checkpoint=str(checkpoint), arm_hashes=artifacts,
-                environment=read(source/'environment.json'))
+                environment=read(source/'environment.json'), source_kind='completed_cuda_train')
+
+
+def validate_bundled(bundle):
+    """Explicitly selected original local checkpoints; never masquerade as a CUDA train."""
+    selected = read(bundle/'references/eg2_selection.json')
+    checkpoint = bundle/'references/eg2_full_finetune.pt'
+    if sha(checkpoint) != selected['checkpoint_sha256']:
+        raise ValueError('Bundled EG2 checkpoint differs from the original selection')
+    return dict(protocol={'config': {'precision': 'fp32'}},
+                selection=dict(kind='existing_MPS_selected_checkpoint', selected=selected,
+                               test_used_for_selection=False, previously_exposed_test=True),
+                selection_sha256=None, checkpoint=str(checkpoint), environment=None,
+                source_kind='bundled_local_checkpoint',
+                arm_hashes={'bundle_manifest.json': sha(bundle/'bundle_manifest.json'),
+                            'eg2_selection.json': sha(bundle/'references/eg2_selection.json')})
 
 
 class PaddleClient:
@@ -160,7 +175,9 @@ def show_results(runs):
     if not (folder/'status.json').is_file() or read(folder/'status.json').get('status') != 'complete':
         raise ValueError('Latest pipeline evaluation is incomplete; inspect '+str(folder))
     print('Results: '+str(folder))
-    for arm, value in read(folder/'pipeline_summary.json')['results'].items():
+    summary = read(folder/'pipeline_summary.json')
+    print('Checkpoint source: '+summary.get('config', {}).get('source_kind', 'completed_cuda_train'))
+    for arm, value in summary['results'].items():
         timing = value['timing']
         print(f"{arm}: accuracy={value['test_metrics']['label_wise_accuracy']:.2%}, "
               f"OCR={timing['ocr_ms']['mean_ms']:.2f} ms, "
@@ -187,14 +204,16 @@ def evaluate(args, bundle, source, provenance, out):
 
     args.precision = provenance['protocol']['config']['precision']
     env = cuda_environment(args)
-    if env != provenance['environment']:
+    if provenance['environment'] is not None and env != provenance['environment']:
         raise ValueError('GPU/runtime differs from source training evaluation; keep original visual venv/GPU')
     save(out/'environment.json', env)
     model_dir = get_model_dir(bundle, args.model_dir, args.cache_dir)
-    rows = load_test(bundle, source/'selection_frozen.json', provenance['selection_sha256'])
+    rows = load_test(bundle, out/'source_selection_frozen.json', provenance['selection_sha256'])
     y = targets(rows)
     if len(rows) != 37 or int(np.isfinite(y).sum()) != 282:
         raise ValueError('Expected the original37 test posters /282 known decisions')
+    if source is None and read(bundle/'references/local_results.json')['test_ids'] != [r['image_id'] for r in rows]:
+        raise ValueError('Bundled reference test population/order changed')
     heads = read(bundle/'references/eg2_heads.json')['heads']
     resnet = read(bundle/'references/resnet_selection.json')
     client = PaddleClient([str(args.ocr_python), '-u', str(HERE/'paddle_service.py'),
@@ -256,13 +275,16 @@ def evaluate(args, bundle, source, provenance, out):
                         lambda: client.predict(contained(bundle, row['image']), row['image_id']),
                         lambda: visual(row), torch.cuda.synchronize)
 
-                reference = np.load(source/'arms'/arm/'test_probs.npy', allow_pickle=False)
-                source_fingerprints = read(source/'arms'/arm/'shared_input_fingerprints.json')
+                reference_path = (source/'arms'/arm/'test_probs.npy' if source is not None
+                                  else bundle/'references'/f'{arm}_test_probs.npy')
+                reference = np.load(reference_path, allow_pickle=False)
+                source_fingerprints = (read(source/'arms'/arm/'shared_input_fingerprints.json')
+                                       if source is not None else None)
                 # Audit input equality outside the performance interval.
                 for row in rows:
                     im = image(bundle, row)
                     try:
-                        if source_fingerprints[row['image_id']] != hashlib_image(im):
+                        if source_fingerprints is not None and source_fingerprints[row['image_id']] != hashlib_image(im):
                             raise ValueError('Visual input differs from the source evaluation')
                     finally:
                         im.close()
@@ -277,7 +299,7 @@ def evaluate(args, bundle, source, provenance, out):
                     ocr, probability, stages = predict(row)
                     decision = probability >= np.asarray(cutoffs)
                     difference = float(np.max(np.abs(probability-reference[index])))
-                    if difference > 1e-5 or not np.array_equal(decision, reference[index] >= np.asarray(cutoffs)):
+                    if source is not None and (difference > 1e-5 or not np.array_equal(decision, reference[index] >= np.asarray(cutoffs))):
                         raise ValueError('Classification differs from source; no checkpoint/threshold replacement allowed')
                     if repeat == 0:
                         probabilities[index] = probability
@@ -301,9 +323,13 @@ def evaluate(args, bundle, source, provenance, out):
                      for i, row in enumerate(rows)])
                 save(folder/'ocr_text_counts.json', saved_texts)
                 save(folder/'timing_summary.json', timing)
+                changed = (probabilities >= np.asarray(cutoffs)) != (reference >= np.asarray(cutoffs))
                 results[arm] = dict(test_metrics=score, timing=timing, visual_load_seconds_excluded=load_seconds,
                                     source_probability_max_abs_difference=max(r['probability_max_abs_difference'] for r in raw),
-                                    source_binary_predictions_equal=True)
+                                    source_binary_predictions_equal=not bool(changed.any()),
+                                    source_changed_binary_decisions=int(changed.sum()),
+                                    source_changed_known_decisions=int((changed & np.isfinite(y)).sum()),
+                                    cross_backend_reference=source is None)
                 table.append(dict(model=arm, accuracy=score['label_wise_accuracy'], macro_f1=score['macro_f1'],
                     ocr_mean_ms=timing['ocr_ms']['mean_ms'], model_mean_ms=timing['model_ms']['mean_ms'],
                     total_mean_ms=timing['total_ms']['mean_ms'], ocr_p95_ms=timing['ocr_ms']['p95_ms'],
@@ -323,7 +349,7 @@ def evaluate(args, bundle, source, provenance, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     runs = Path(os.environ.get('POSTER_RUN_DIR', str(HERE/'runs')))
-    parser.add_argument('--source-run', default='latest', help='Completed train directory; latest selects latest train, requiring completion')
+    parser.add_argument('--source-run', default='latest', help='Completed train directory, latest, or bundled (original local checkpoints, no train required)')
     parser.add_argument('--bundle', type=Path, default=Path(os.environ.get('POSTER_BUNDLE_DIR', str(HERE/'assets'))))
     parser.add_argument('--run-dir', type=Path, default=runs/('pipeline-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')+'-'+str(os.getpid())))
     parser.add_argument('--ocr-python', type=Path, default=Path(os.environ.get('POSTER_OCR_VENV', str(HERE/'.ocr-venv')))/'bin/python')
@@ -344,22 +370,30 @@ def main():
             show_results(runs)
             return 0
         bundle = args.bundle.resolve(strict=True)
-        source = source_run(args.source_run, runs)
         verify_bundle(bundle)
-        provenance = validate_source(source, bundle)
+        source = None if args.source_run == 'bundled' else source_run(args.source_run, runs)
+        provenance = validate_bundled(bundle) if source is None else validate_source(source, bundle)
         if args.check_source:
-            print(json.dumps(dict(status='source_verified', source_run=str(source), checkpoint=provenance['checkpoint'], training_executed=False)))
+            print(json.dumps(dict(status='source_verified', source_kind=provenance['source_kind'],
+                  source_run=str(source) if source is not None else None,
+                  checkpoint=provenance['checkpoint'], training_executed=False)))
             return 0
         destination = args.run_dir.resolve()
-        if destination.is_relative_to(source) or destination.is_relative_to(bundle):
+        if (source is not None and destination.is_relative_to(source)) or destination.is_relative_to(bundle):
             raise ValueError('Use a separate new output directory, outside source run and bundle')
         if not args.ocr_python.is_file():
             raise FileNotFoundError('Run bash setup_pipeline.sh first; OCR Python missing')
         with exclusive_gpu(bundle):
             destination.mkdir(parents=True, exist_ok=False)
             out = destination
-            config = dict(command='evaluate_pipeline', source_run=str(source), training_executed=False,
-                          source_protocol_sha256=sha(source/'protocol.json'),
+            if source is None:
+                save(out/'source_selection_frozen.json', provenance['selection'])
+            else:
+                shutil.copyfile(source/'selection_frozen.json', out/'source_selection_frozen.json')
+            provenance['selection_sha256'] = sha(out/'source_selection_frozen.json')
+            config = dict(command='evaluate_pipeline', source_run=str(source) if source is not None else None,
+                          source_kind=provenance['source_kind'], training_executed=False,
+                          source_protocol_sha256=sha(source/'protocol.json') if source is not None else None,
                           source_selection_sha256=provenance['selection_sha256'],
                           source_checkpoint_sha256=provenance['selection']['selected']['checkpoint_sha256'],
                           ocr_device=args.ocr_device, visual_device='cuda:0', repeats=args.repeats,
@@ -372,11 +406,16 @@ def main():
                           scripts={name: sha(HERE/name) for name in ('pipeline_eval.py', 'paddle_service.py')},
                           source_artifacts=provenance['arm_hashes'])
             save(out/'protocol.json', dict(config=config, signature=digest(config)))
-            shutil.copyfile(source/'selection_frozen.json', out/'source_selection_frozen.json')
-            log(out, 'pipeline_started', source_run=str(source), training_executed=False)
+            log(out, 'pipeline_started', source_kind=provenance['source_kind'],
+                source_run=config['source_run'], training_executed=False)
             results, table = evaluate(args, bundle, source, provenance, out)
             verify_bundle(bundle)
-            validate_source(source, bundle)
+            if sha(out/'source_selection_frozen.json') != config['source_selection_sha256']:
+                raise ValueError('Frozen selection changed during evaluation')
+            if source is None:
+                validate_bundled(bundle)
+            else:
+                validate_source(source, bundle)
             csv_rows(out/'comparison_pipeline.csv', table)
             save(out/'pipeline_summary.json', dict(results=results, config=config, test_images=37,
                  known_cells=282, unknown_excluded=14, previous_test_exposure=True,

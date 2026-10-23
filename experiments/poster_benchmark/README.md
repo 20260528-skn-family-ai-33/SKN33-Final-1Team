@@ -4,6 +4,16 @@
 
 ## 완료한 학습 체크포인트로 PaddleOCR 포함 평가
 
+**smoke만 통과했고 CUDA train 결과가 없는 경우**에는 업로드한 원본 bundle의 기존 로컬 파인튜닝 체크포인트를 명시적으로 선택합니다. 재학습하지 않습니다.
+
+```bash
+git -C /workspace/SKN33-Final-1Team pull --ff-only
+bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/setup_pipeline.sh --source-run bundled
+bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/run_pipeline.sh --source-run bundled
+```
+
+이 모드는 `source_kind: bundled_local_checkpoint`로 표시하며, 기존 로컬 모델을 FP32 CUDA에서 다시 평가합니다. 로컬 참조 확률·판정과 차이가 있으면 별도로 기록하고, 임계값은 다시 고르지 않습니다. RunPod의 새 학습 결과로 표시하지 않습니다. bundle의 라벨·모델 파일 SHA256과 EG2 선택 기록을 모두 확인합니다. 두 명령에 `bundled`를 명시해야 하며, `latest`에서 자동 전환하지 않습니다.
+
 **RunPod에서 이미 `train`을 완료했다면 아래 명령만 사용합니다. 재학습하지 않습니다.** `run_pipeline.sh`는 완료한 CUDA train 폴더의 개발셋 선택 EG2 체크포인트·임계값과 기존 ResNet18·고정 EG2를 그대로 읽습니다. 기존 `run.sh evaluate`는 bundle의 과거 EG2 체크포인트를 사용하므로 이번 후속 평가에는 `run_pipeline.sh`를 사용합니다.
 
 ```bash
@@ -20,7 +30,7 @@ bash /workspace/SKN33-Final-1Team/experiments/poster_benchmark/run_pipeline.sh -
 - 같은37장, 모름14개 판정 제외/282개 알려진 판정, 기존 임계값·정밀도·시각 모델 환경을 유지합니다. 모델별3회 예열 후37장×3회 실행하며, OCR도 **매번 실제 수행**합니다. OCR과 분류는 순차 실행합니다.
 - `ocr_ms`: 원본 디코딩·PaddleOCR·작업자 IPC/결과 직렬화. `model_ms`: 시각 입력 디코딩·letterbox·processor·추론·분류·GPU 동기화. `total_ms`: OCR 요청 직전부터 분류 완료까지 **연속 wall-clock 실측**입니다. 각 구간 평균·중앙값·p95를 저장합니다. 다운로드·모델 로딩·예열·진단 파일 저장은 별도입니다.
 - OCR은 별도 장기 실행 프로세스에 한 번 로드합니다. 각 시각 모델도 로딩 후 반복 사용합니다. 전체 시간에는 실제 IPC가 포함됩니다. 이미지 디코딩을 공유하지 않는 현재 평가 경로의 측정이며, 웹 업로드·DB/API 시간은 포함하지 않습니다.
-- 시각 분류 확률·판정과 입력 픽셀을 기존 완료 결과와 비교하며, 일치하지 않으면 실패합니다. OCR 실패나 timeout도 건너뛰지 않습니다. 원본 train/체크포인트·라벨은 수정하지 않고 새 `pipeline-*` 폴더에 저장합니다.
+- 완료한 CUDA train 모드에서는 시각 분류 확률·판정과 입력 픽셀을 기존 완료 결과와 비교하며, 일치하지 않으면 실패합니다. `bundled`는 로컬/CUDA 실행 차이를 따로 기록하고 같은 CUDA 실행 내 반복 추론은 일치해야 합니다. OCR 실패나 timeout도 건너뛰지 않습니다. 원본 train/체크포인트·라벨은 수정하지 않고 새 `pipeline-*` 폴더에 저장합니다.
 - OCR 원문·좌표·점수도 저장합니다. OCR 정답 텍스트는 이 라벨셋에 없으므로 CER 등 OCR 인식 정확도는 산출하지 않습니다. 표시되는 정확도는 계속 인물·사물 분류 정확도이며, OCR 텍스트를 시각 분류기에 새로 입력하지 않습니다.
 
 마지막 `pipeline_complete`와 새 폴더의 `status.json`에 `complete`, `PaddleOCR_executed: true`, `training_executed: false`가 있어야 완료입니다. 주요 결과는 `comparison_pipeline.csv`, `pipeline_summary.json`, 모델별 `timing_raw.csv`·`test_metrics.json`·`ocr_raw/`입니다. `protocol.json`, `environment.json`, `ocr_environment.json`, `paddle_worker.log`에 실행 조건과 모델 식별자를 남깁니다.

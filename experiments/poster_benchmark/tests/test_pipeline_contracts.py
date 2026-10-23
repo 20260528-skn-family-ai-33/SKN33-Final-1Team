@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 from benchlib import ARMS, digest, read, save, sha
-from pipeline_eval import PaddleClient, main, measure_sample, show_results, source_run, validate_source
+from pipeline_eval import PaddleClient, main, measure_sample, show_results, source_run, validate_source, validate_bundled
 
 
 class PipelineContracts(unittest.TestCase):
@@ -68,6 +68,35 @@ class PipelineContracts(unittest.TestCase):
     def test_no_train_run_does_not_use_bundled_checkpoint(self):
         with self.assertRaisesRegex(ValueError, 'No existing train run'):
             source_run('latest', self.root/'absent')
+
+    def test_bundled_source_is_explicit_local_and_keeps_original_selection(self):
+        refs = self.bundle/'references'
+        refs.mkdir()
+        (refs/'eg2_full_finetune.pt').write_bytes(b'original local model')
+        selected = {'checkpoint_sha256': sha(refs/'eg2_full_finetune.pt'), 'thresholds': [.3]*8}
+        save(refs/'eg2_selection.json', selected)
+        provenance = validate_bundled(self.bundle)
+        self.assertEqual(provenance['source_kind'], 'bundled_local_checkpoint')
+        self.assertIsNone(provenance['environment'])
+        self.assertEqual(provenance['checkpoint'], str(refs/'eg2_full_finetune.pt'))
+        self.assertEqual(provenance['selection']['selected'], selected)
+        self.assertIs(provenance['selection']['test_used_for_selection'], False)
+        (refs/'eg2_full_finetune.pt').write_bytes(b'modified model')
+        with self.assertRaisesRegex(ValueError, 'Bundled EG2 checkpoint differs'):
+            validate_bundled(self.bundle)
+
+    def test_bundled_check_source_does_not_require_cuda_train_or_run_inference(self):
+        refs = self.bundle/'references'
+        refs.mkdir()
+        (refs/'eg2_full_finetune.pt').write_bytes(b'original local model')
+        save(refs/'eg2_selection.json', {'checkpoint_sha256': sha(refs/'eg2_full_finetune.pt'), 'thresholds': [.3]*8})
+        output = io.StringIO()
+        with patch('sys.argv', ['pipeline_eval.py', '--bundle', str(self.bundle), '--source-run', 'bundled', '--check-source']), \
+             patch('pipeline_eval.verify_bundle'), patch('pipeline_eval.evaluate') as inference, redirect_stdout(output):
+            self.assertEqual(main(), 0)
+            inference.assert_not_called()
+        self.assertIn('bundled_local_checkpoint', output.getvalue())
+        self.assertIn('"training_executed": false', output.getvalue())
 
     def test_corrupt_selected_checkpoint_is_rejected(self):
         (self.source/'selected.pt').write_bytes(b'modified')

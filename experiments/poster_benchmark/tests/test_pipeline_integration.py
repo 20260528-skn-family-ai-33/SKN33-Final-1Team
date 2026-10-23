@@ -14,6 +14,12 @@ sys.path.insert(0, str(HERE))
 
 class PipelineIntegration(unittest.TestCase):
     def test_three_arms_execute_ocr_342_times_without_training_or_test_retuning(self):
+        self.evaluate_checkpoints(bundled=False)
+
+    def test_bundled_models_run_without_cuda_train_and_report_cross_backend_changes(self):
+        self.evaluate_checkpoints(bundled=True)
+
+    def evaluate_checkpoints(self, bundled):
         import numpy as np
         import torch
         from PIL import Image
@@ -56,16 +62,20 @@ class PipelineIntegration(unittest.TestCase):
             rows = [dict(image_id=f'P{i:03}', image=f'data/{i}.png',
                          labels={k: (i+j) % 2 for j, k in enumerate(LABELS)}) for i in range(37)]
             for i in range(14): rows[i]['labels']['person'] = None
+            save(bundle/'references/local_results.json', {'test_ids': [r['image_id'] for r in rows]})
             for arm in ARMS:
                 folder = source/'arms'/arm
                 folder.mkdir(parents=True)
                 np.save(folder/'test_probs.npy', np.full((37, 8), .5))
+                np.save(bundle/'references'/f'{arm}_test_probs.npy', np.full((37, 8), .8))
                 save(folder/'shared_input_fingerprints.json', {r['image_id']: fingerprint for r in rows})
             args = SimpleNamespace(ocr_python=Path('/fake/python'), ocr_device='gpu:0',
                  ocr_models=root/'models', ocr_timeout=2, repeats=3, model_dir=None, cache_dir=root/'cache')
             provenance = dict(protocol={'config': {'precision': 'fp32'}}, environment={'test': True},
                  selection_sha256='frozen', checkpoint=str(source/'fresh-selected.pt'),
                  selection={'selected': {'thresholds': [.7]*8}})
+            if bundled:
+                provenance.update(environment=None, checkpoint=str(bundle/'references/eg2_full_finetune.pt'))
             loaded = []
             stack.enter_context(patch('models.ResNet', Visual))
             stack.enter_context(patch('models.EG', Visual))
@@ -81,10 +91,10 @@ class PipelineIntegration(unittest.TestCase):
             stack.enter_context(patch('pipeline_eval.load_test', return_value=rows))
             stack.enter_context(patch('pipeline_eval.PaddleClient', OCR))
             stack.enter_context(redirect_stdout(io.StringIO()))
-            results, table = evaluate(args, bundle, source, provenance, out)
+            results, table = evaluate(args, bundle, None if bundled else source, provenance, out)
             self.assertEqual(len(OCR.calls), (37*3+3)*3)
             self.assertTrue(OCR.closed)
-            self.assertEqual(loaded[-1], str(source/'fresh-selected.pt'))
+            self.assertEqual(loaded[-1], provenance['checkpoint'])
             self.assertEqual(len(table), 3)
             for arm, row in zip(ARMS, table):
                 self.assertEqual(row['known_cells'], 282)
@@ -96,6 +106,11 @@ class PipelineIntegration(unittest.TestCase):
                 self.assertAlmostEqual(row['total_mean_ms'], row['ocr_mean_ms']+row['model_mean_ms'])
             expected = sum(v == 0 for row in rows for v in row['labels'].values()) / 282
             self.assertEqual(table[-1]['accuracy'], expected)  # Frozen dev .7 threshold was retained.
+            if bundled:
+                self.assertTrue(results['eg2_full_finetune']['cross_backend_reference'])
+                self.assertEqual(results['eg2_full_finetune']['source_changed_known_decisions'], 282)
+            else:
+                self.assertTrue(results['eg2_full_finetune']['source_binary_predictions_equal'])
 
 
 if __name__ == '__main__':
