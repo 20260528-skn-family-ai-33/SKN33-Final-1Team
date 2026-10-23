@@ -66,4 +66,5 @@ jobs:
           path: |
             artifacts/ci-v1/**/pytest.xml
             artifacts/ci-v1/**/summary.json
+            artifacts/ci-v1/deployment/**/c15-diagnostics.json
           retention-days: 7

@@ -10,9 +10,10 @@ export function isAnonymousError(error) {
   return error?.status === 401 || (error?.status === 403 && anonymousCodes.has(normalizedCode(error)));
 }
 
-// 외부 주소나 다른 페이지를 로그인 복귀 경로로 사용하지 않는다.
+// 외부 주소나 등록되지 않은 페이지를 로그인 복귀 경로로 사용하지 않는다.
+const loginReturnPaths = new Set(['/review/new', '/video']);
 export function loginDestination(from) {
-  if (!from || typeof from !== 'object' || from.pathname !== '/review/new') return '/review/new';
+  if (!from || typeof from !== 'object' || !loginReturnPaths.has(from.pathname)) return '/review/new';
   const search = typeof from.search === 'string' && from.search.startsWith('?') ? from.search : '';
   const hash = typeof from.hash === 'string' && from.hash.startsWith('#') ? from.hash : '';
   return `${from.pathname}${search}${hash}`;

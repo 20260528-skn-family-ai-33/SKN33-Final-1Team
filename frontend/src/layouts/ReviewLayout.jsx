@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { Brand } from '../components/Brand.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
@@ -33,6 +34,7 @@ export default function ReviewLayout({ state, busy, health, healthBusy, checkHea
         })}
       </nav>
       <div className="sidebar-bottom">
+        <Link className="back-home" to="/video"><Icon name="image" />동영상 검수 (시연)</Link>
         <button className="back-home" onClick={onHome}><Icon name="home" />서비스 메인으로</button>
         <p>확정한 기준으로 검수합니다.<br />자료는 연결된 검수 서버로 전송되어 처리됩니다.</p>
       </div>
