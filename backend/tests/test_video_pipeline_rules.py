@@ -134,17 +134,15 @@ def _lines(frames, text, predicate=lambda t: True):
 def test_disclosure_table():
     d = 30000
     fr = _frames(d)
-    endorsement = validate_input({"kind": "endorsement", "title": "신상 리뷰", "voice": "no"})
+    endorsement = validate_input({"kind": "endorsement", "title": "신상 리뷰"})
     everywhere = judge_disclosure(endorsement, fr, _lines(fr, "#광고"), d)
     assert everywhere["text_time_status"] == "pass" and everywhere["status"] == "review"  # R5·R6 남음
     edges_only = judge_disclosure(endorsement, fr, _lines(fr, "#광고", lambda t: t < 3000 or t >= d - 3000), d)
     assert edges_only["rules"]["R3c"]["status"] == "review" and edges_only["status"] == "review"  # 중간 미확인은 위반 아님
     nothing = judge_disclosure(endorsement, fr, [], d)
-    assert nothing["status"] == "fail" and nothing["severity"] == "block"  # 다섯 조건이 모두 맞을 때만 위반
-    unknown = judge_disclosure(validate_input({"kind": "unknown", "title": "x", "voice": "no"}), fr, [], d)
+    assert nothing["status"] == "fail" and nothing["severity"] == "block"  # 조건이 모두 맞을 때만 위반
+    unknown = judge_disclosure(validate_input({"kind": "unknown", "title": "x"}), fr, [], d)
     assert unknown["status"] == "review"
-    voice = judge_disclosure(validate_input({"kind": "endorsement", "title": "x", "voice": "yes"}), fr, [], d)
-    assert voice["status"] == "review"
     failed = [dict(f, ocr_status="failed") if f["time_ms"] == 0 else f for f in fr]
     assert judge_disclosure(endorsement, failed, [], d)["status"] == "review"  # 창 OCR 실패면 위반 아님
     credit = judge_disclosure(endorsement, fr, _lines(fr, "협찬: 김천시"), d)

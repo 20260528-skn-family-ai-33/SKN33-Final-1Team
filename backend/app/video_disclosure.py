@@ -12,7 +12,6 @@ import unicodedata
 from .video_frames import EDGE_WINDOW_MS
 
 KINDS = {"self", "endorsement", "partial", "unknown"}       # 광고주 자체 광고 · 전체 추천·보증 · 일부 구간 · 모름
-VOICE = {"yes", "no", "unknown"}
 TITLE_WINDOW = 15
 SHORT_VIDEO_MS = 2 * EDGE_WINDOW_MS
 
@@ -42,9 +41,9 @@ def validate_input(value: dict | None) -> dict:
     result = {
         "kind": value.get("kind", "unknown"), "celebrity_exposure": bool(value.get("celebrity_exposure", False)),
         "title": str(value.get("title") or "")[:500], "caption": str(value.get("caption") or "")[:5000],
-        "voice": value.get("voice", "unknown"), "platform": str(value.get("platform") or "")[:50],
+        "platform": str(value.get("platform") or "")[:50],
     }
-    if result["kind"] not in KINDS or result["voice"] not in VOICE:
+    if result["kind"] not in KINDS:
         raise ValueError("Invalid disclosure input")
     return result
 
@@ -107,9 +106,9 @@ def judge_disclosure(info: dict, frames: list[dict], lines: list[dict], duration
 
     head_tail_ok = rules["R3a"].get("ocr_ok") and rules["R3b"].get("ocr_ok")
     no_trace = not allowed and not any(p.search(title) for p in ALLOWED) and not caption_allowed
-    violation = (not capped and (info["title"] or info["caption"]) and info["voice"] == "no" and head_tail_ok and no_trace)
+    violation = (not capped and (info["title"] or info["caption"]) and head_tail_ok and no_trace)
     if violation:
-        status, reason = "fail", "적용 대상 영상인데 제목·캡션·화면 어디에도 허용 표시 문구가 없고 음성 고지도 없습니다."
+        status, reason = "fail", "적용 대상 영상인데 제목·캡션·화면 어디에도 허용 표시 문구가 없습니다."
     else:
         status = "review"
         reason = ("표본에서 표시 문구·시간은 확인했지만, 시인성(R5)·가상인물(R6)이 남아 전체 광고 적합은 확인 필요입니다."

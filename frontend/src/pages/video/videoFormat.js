@@ -19,8 +19,6 @@ export const mismatchLabels = { variants: '프레임마다 다르게 읽힘', sp
 export const ruleLabels = {
   R0: '적용 대상', R1: '표시 문구', R2: '제목 앞 15자', R3a: '시작 3초', R3b: '끝 3초', R3c: '중간 반복', R4: '캡션만', R5: '형태·시인성', R6: '가상인물',
 };
-export const kindOptions = [['unknown', '모름'], ['endorsement', '추천·보증(영상 전체)'], ['partial', '추천·보증(일부 구간)'], ['self', '광고주 자체 광고']];
-export const voiceOptions = [['unknown', '모름'], ['yes', '있음'], ['no', '없음']];
 
 // 서버 기준 형식(포스터와 같이 정의되지 않은 필드는 거부)에 맞게 화면용 필드(selected 등)를 뺀다.
 export function criteriaPayload(criteria) {

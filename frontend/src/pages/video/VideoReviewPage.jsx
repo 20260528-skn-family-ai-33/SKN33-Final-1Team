@@ -7,8 +7,8 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { evidenceBoxStyle, parseRequirements } from '../../workflow.js';
 import {
-  criteriaPayload, diffChars, formatTime, isTerminal, kindOptions, mismatchLabels, reviewerLabels, roleLabels, ruleLabels,
-  severityLabels, stageLabels, statusLabels, voiceOptions,
+  criteriaPayload, diffChars, formatTime, isTerminal, mismatchLabels, reviewerLabels, roleLabels, ruleLabels,
+  severityLabels, stageLabels, statusLabels,
 } from './videoFormat.js';
 
 // 서버 준비 상태와 최근 동영상 검수 목록을 함께 불러온다.
@@ -58,7 +58,7 @@ function UploadCard({ status, onSubmitted }) {
   const [file, setFile] = useState(null);
   const [projectName, setProjectName] = useState('숏폼 검수');
   const [requirements, setRequirements] = useState('');
-  const [ad, setAd] = useState({ kind: 'unknown', celebrity_exposure: false, title: '', caption: '', voice: 'unknown', platform: '' });
+  const [ad, setAd] = useState({ kind: 'endorsement', celebrity_exposure: false, title: '', caption: '', platform: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const input = useRef(null);
@@ -109,11 +109,10 @@ function UploadCard({ status, onSubmitted }) {
           <span className="help">{criteria.length ? `기준 ${criteria.length}개 · 정보 ${criteria.filter(c => c.type === 'information').length} / 시각 ${criteria.filter(c => c.type === 'visual').length}` : '비워 두면 기준 판정 없이 자막 트랙과 광고 표시만 봅니다.'}</span>
         </label>
         <fieldset className="wide"><legend>광고·협찬 표시 입력</legend>
-          <label>영상 성격<select value={ad.kind} onChange={event => field('kind', event.target.value)}>{kindOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-          <label>음성 고지<select value={ad.voice} onChange={event => field('voice', event.target.value)}>{voiceOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label>게시물 제목<input value={ad.title} maxLength={500} onChange={event => field('title', event.target.value)} /></label>
-          <label>캡션<input value={ad.caption} maxLength={5000} onChange={event => field('caption', event.target.value)} /></label>
-          <label className="check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />유명인이 상품을 의도적으로 노출</label>
+          <label>태그<input value={ad.caption} maxLength={5000} onChange={event => field('caption', event.target.value)} /></label>
+          <label className="check"><input type="checkbox" checked={ad.kind === 'self'} onChange={event => field('kind', event.target.checked ? 'self' : 'endorsement')} />자사·자체 광고 (표시 의무 없어 검수 제외)</label>
+          <label className="check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />PPL/협찬</label>
         </fieldset>
       </div>
       {status?.sampling && <p className="help">{status.sampling}. CPU에서는 프레임 1장에 수 초~20초 걸립니다.</p>}

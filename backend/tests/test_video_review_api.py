@@ -81,7 +81,7 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
         assert client.get("/api/video-reviews/status").json()["limits"]["duration_seconds"] == 180
         response = upload(client, data, name="../../etc/passwd.mp4",
                           criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")],
-                          disclosure={"kind": "endorsement", "title": "#광고 신상 소개", "voice": "unknown"})
+                          disclosure={"kind": "endorsement", "title": "#광고 신상 소개"})
         assert response.status_code == 202
         job = client.get(f"/api/video-reviews/{response.json()['id']}").json()
 
