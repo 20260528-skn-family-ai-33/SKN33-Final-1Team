@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+runs/
+*.log
+package_manifest.json
+verification_report.json
