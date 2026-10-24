@@ -1,9 +1,9 @@
 name: Poster benchmark packet
 on:
   push:
-    paths: ['experiments/poster_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
+    paths: ['experiments/poster_benchmark/**', 'experiments/visual_classifier_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
   pull_request:
-    paths: ['experiments/poster_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
+    paths: ['experiments/poster_benchmark/**', 'experiments/visual_classifier_benchmark/**', 'scripts/prepare_paddle.py', '런팟_실행명령어.md', '.gitignore', '.github/workflows/poster-benchmark.yml']
 permissions:
   contents: read
 jobs:
@@ -25,3 +25,5 @@ jobs:
         run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_model_cache.py -v
       - name: Test OCR timing, worker failures and immutable checkpoint selection
         run: python -B -m unittest discover -s experiments/poster_benchmark/tests -p test_pipeline_contracts.py -v
+      - name: Test result exports, verification and report generation without model dependencies
+        run: python -B -m unittest discover -s experiments/visual_classifier_benchmark/tests -p test_result_tools.py -v
