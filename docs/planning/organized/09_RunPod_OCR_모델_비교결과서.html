@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="기존 체크포인트의 PaddleOCR 포함 RunPod 평가. 고정 EG2 기준 정확도 차이와 처리 시간 증감률, 로컬 MPS 참고 비교.">
+<title>크리에이티브체커 · RunPod OCR·모델 비교 결과서</title>
+<style>:root{--paper:#f4f3ee;--card:#fffefb;--ink:#203d34;--muted:#69746b;--line:#dbded3;--accent:#315b48;--soft:#e9eee3;--warm:#f4e9df;--good:#2d674d;--bad:#995936;color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.8;word-break:keep-all;overflow-wrap:break-word}a{color:var(--accent);text-underline-offset:4px}button,select{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 13px;font-size:12px}button:hover{background:var(--soft)}a:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #bf7543;outline-offset:4px}.skip{position:absolute;left:20px;top:-80px;background:var(--ink);color:#fff;padding:12px;z-index:10}.skip:focus{top:10px}
+.site-head,.hero,footer{max-width:1470px;margin:auto;padding:25px 38px}.brand-row{display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{font-weight:760;text-decoration:none;letter-spacing:-.025em;font-size:19px}.brand small{display:block;font-size:9px;font-weight:600;letter-spacing:.14em;color:var(--muted);margin-top:2px}.actions{display:flex;gap:8px}.hero{padding-top:34px;padding-bottom:35px;border-top:1px solid var(--line)}.eyebrow{font-size:10px;letter-spacing:.14em;font-weight:750;color:#6d785d}.hero h1{font-size:clamp(34px,4.5vw,58px);line-height:1.17;letter-spacing:-.055em;margin:15px 0 22px}.hero-lead{font-size:17px;line-height:1.75;color:var(--muted);max-width:790px}.badges{display:flex;gap:7px;flex-wrap:wrap;margin:19px 0 13px}.badge{background:var(--soft);border:1px solid #d7dfcf;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:650}.meta,.muted{color:var(--muted);font-size:12px}.meta{margin:12px 0 0}.layout{max-width:1470px;margin:auto;display:grid;grid-template-columns:205px minmax(0,1fr);gap:25px;padding:0 38px 54px}.side{position:sticky;top:25px;align-self:start}.caption{font-size:10px;color:var(--muted);letter-spacing:.12em;margin:4px 12px 15px}.toc{display:flex;flex-direction:column;gap:4px}.toc a{text-decoration:none;padding:9px 12px;border-radius:9px;font-size:12px;line-height:1.5}.toc a.active,.toc a:hover{background:var(--ink);color:#fff}.toc span{font-size:10px;font-family:ui-monospace,monospace;opacity:.65;margin-right:8px}.side-note{font-size:11px;color:var(--muted);padding:12px;line-height:1.9}
+.doc-panel{padding:32px;background:var(--card);border:1px solid var(--line);border-radius:18px;min-width:0;margin-bottom:22px;scroll-margin-top:20px}main{min-width:0}.doc-panel h2{font-size:clamp(22px,2.3vw,30px);line-height:1.4;letter-spacing:-.04em;margin:7px 0 20px}.doc-panel h3{font-size:17px;line-height:1.5;letter-spacing:-.025em;margin:22px 0 10px}.doc-panel p{margin:10px 0 17px}.lead{font-size:17px;line-height:1.9}.grid{display:grid;gap:14px;margin:22px 0}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{border:1px solid var(--line);border-radius:13px;padding:19px;background:#fafbf7;min-width:0}.card .label,.target-card .label{font-size:11px;color:var(--muted);display:block}.card .value{display:block;font-size:clamp(28px,3vw,38px);font-weight:760;letter-spacing:-.055em;line-height:1.4;margin-top:8px;font-variant-numeric:tabular-nums}.value span{font-size:16px;letter-spacing:-.02em;margin-left:4px}.card p{font-size:12px;line-height:1.8;margin:10px 0 0}.card h3{margin:9px 0 11px}.card.accent{background:#eaf0e5;border-color:#b9c8ac}.kicker{font-size:10px;letter-spacing:.1em;color:#6d785d;font-weight:700}.note{border:1px solid #d9e2d0;border-left:4px solid #74906c;border-radius:9px;padding:15px 18px;background:#f0f4eb;margin:22px 0;font-size:12px}.note p:last-child{margin-bottom:0}.note.warm{background:#fbf3eb;border-color:#e9d8ca;border-left-color:#ae7a4d}
+.table-wrap{overflow-x:auto;margin:19px 0;border:1px solid var(--line);border-radius:11px}table{border-collapse:collapse;width:100%;font-size:11.5px;line-height:1.65;font-variant-numeric:tabular-nums}caption{text-align:left;font-size:11px;padding:12px 13px;font-weight:650;background:#f9faf6}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;overflow-wrap:anywhere;word-break:normal}th{background:#edf0e8;font-weight:750}thead th{min-width:61px}tbody tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#fcfcf8}th:first-child,td:first-child{min-width:117px}#delta-table th:first-child,#delta-table td:first-child{min-width:125px}.sub{display:block;font-size:9.5px;color:var(--muted);margin-top:3px;white-space:nowrap}.delta{font-weight:720;white-space:nowrap}.better{color:var(--good)}.worse{color:var(--bad)}.neutral{color:var(--muted)}.mini-tag{display:inline-block;background:#e5ecdd;color:var(--accent);border-radius:4px;font-size:9px;padding:0 5px;margin-left:6px}.metric-legend{display:flex;align-items:center;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted)}
+.formula-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;margin-top:22px;overflow:hidden}.formula-grid>div{padding:18px 21px}.formula-grid>div+div{border-left:1px solid var(--line)}.formula-grid b{font-size:13px}.formula-grid code{display:block;margin-top:9px;font-size:11px;color:var(--muted)}.formula-grid p{font-size:12px;margin-bottom:0}.comparison-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:15px 17px;background:#f0f3e9;border-radius:11px}.comparison-controls label{font-size:12px;font-weight:700}.comparison-controls select{max-width:100%;min-width:240px}.comparison-controls button{margin-left:auto}.target-card{display:flex;gap:23px;align-items:center;flex-wrap:wrap;border:1px solid #c8d5be;background:#edf3e7;border-radius:13px;padding:23px;margin:22px 0}.target-card strong{display:block;font-size:31px;font-weight:750;letter-spacing:-.04em}.target-card strong small{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0}.target-arrow{font-size:28px;color:#7b8d70}.target-gap{font-size:13px;color:var(--accent);margin-left:auto}.target-gap b{font-size:25px;margin:0 3px}
+figure{margin:24px 0 17px;min-width:0}figure svg{display:block;max-width:100%;height:auto}figcaption{font-size:11px;line-height:1.8;color:var(--muted);border-top:1px solid var(--line);padding-top:11px;margin-top:7px}details{border:1px solid var(--line);border-radius:11px;padding:0 16px;background:#fcfcf9;margin:18px 0}summary{cursor:pointer;padding:14px 0;font-size:12px;font-weight:700}details[open]>summary{border-bottom:1px solid var(--line);margin-bottom:14px}details p{font-size:12px}details>:last-child:not(summary){margin-bottom:17px}.next-steps{list-style:none;counter-reset:step;padding:0}.next-steps li{counter-increment:step;position:relative;padding:15px 0 15px 43px;border-top:1px solid var(--line);font-size:13px}.next-steps li:before{content:'0' counter(step);position:absolute;left:0;top:16px;font-size:12px;color:#81916f;font-weight:750}.next-steps span{display:block;color:var(--muted);font-size:12px;margin-top:5px}.evidence-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:19px;border:1px solid var(--line);border-radius:12px;background:#f7f9f2}.evidence-strip span{display:block;font-size:10px;color:var(--muted)}.evidence-strip b{display:block;font-size:12px}.path-label{font-size:11px;color:var(--muted)}.path{display:block;padding:13px 15px;background:#edf1e8;border-radius:9px;font-size:10px;overflow-wrap:anywhere;word-break:break-all;font-family:ui-monospace,monospace}.hash{font-size:9px;word-break:break-all}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}ul{padding-left:21px}li{font-size:12px;margin:8px 0}footer{border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.foot-row{display:flex;justify-content:space-between;gap:18px}
+@media(max-width:1150px){.layout{grid-template-columns:166px minmax(0,1fr);gap:17px;padding-left:25px;padding-right:25px}.site-head,.hero,footer{padding-left:25px;padding-right:25px}.doc-panel{padding:25px}.grid.three{grid-template-columns:1fr}.grid.three .card{display:grid;grid-template-columns:1fr 1fr;align-items:center}.grid.three .label{grid-column:1/3}.grid.three .card p{margin:0}.target-gap{margin-left:0}.value{font-size:34px}}
+@media(max-width:740px){body{font-size:14px}.site-head,.hero,footer{padding-left:18px;padding-right:18px}.site-head{padding-top:19px;padding-bottom:19px}.brand-row{align-items:flex-start;gap:12px}.brand{font-size:16px}.brand small{font-size:7px;letter-spacing:.06em}.actions{flex-direction:column;gap:5px}.actions button{font-size:10px;padding:6px 9px}.hero{padding-top:28px;padding-bottom:27px}.hero h1{font-size:36px}.hero-lead{font-size:14px}.desktop-only{display:none}.layout{display:block;padding:0 15px 28px}.side{position:static;margin-bottom:18px}.caption,.side-note{display:none}.toc{flex-direction:row;gap:5px;flex-wrap:wrap}.toc a{background:var(--soft);padding:6px 8px;font-size:10px}.toc span{font-size:9px;margin-right:5px}.doc-panel{padding:23px 17px;border-radius:14px}.doc-panel h2{font-size:24px}.lead{font-size:15px}.grid.two,.formula-grid{grid-template-columns:1fr}.formula-grid>div+div{border-left:0;border-top:1px solid var(--line)}.grid.three .card{display:block}.grid.three .card p{margin-top:8px}.card .value{font-size:35px}.card{padding:17px}.comparison-controls{padding:13px;gap:8px}.comparison-controls label{width:100%}.comparison-controls select{min-width:0;width:100%;font-size:11px}.comparison-controls button{margin-left:0}table{font-size:10.5px}th,td{padding:9px 10px}.target-card{gap:13px;padding:18px}.target-card strong{font-size:27px}.target-arrow{font-size:22px}.target-gap{width:100%;border-top:1px solid #c8d5be;padding-top:10px}.evidence-strip{grid-template-columns:1fr;padding:16px}.foot-row{flex-direction:column;gap:4px}figcaption{font-size:10px}.note{padding:13px 14px}.metric-legend{font-size:10px;gap:7px}figure{margin-top:18px}}
+@page{size:A4;margin:14mm 12mm}
+@media print{html{scroll-behavior:auto}body{background:white;color:#162f27;font-size:9pt;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}.actions,.side,.skip,.comparison-controls{display:none!important}.site-head{padding:0 0 10px}.hero{padding:16px 0 20px;max-width:none}.hero h1{font-size:29pt;line-height:1.12}.hero-lead{font-size:10pt}.hero h1 br{display:none}.hero .meta{font-size:8pt}.layout{display:block;max-width:none;padding:0}.doc-panel{border:0;border-top:1px solid #cdd5c9;border-radius:0;padding:18px 0;margin:0;min-height:0;break-inside:auto}.doc-panel h2{font-size:18pt;margin-bottom:13px}.doc-panel h3{font-size:11pt}.lead{font-size:10pt}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.three .card{display:block}.grid.three .card p{margin-top:8px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:12px}.card .value{font-size:25pt}.card p,.note,details p{font-size:8pt}.card .label{font-size:7pt}.value span{font-size:10pt}.table-wrap{overflow:visible;border-radius:0;border:0}table{font-size:7.4pt;line-height:1.45;table-layout:fixed}th,td{padding:7px 5px;min-width:0!important;overflow-wrap:anywhere}th:first-child,td:first-child{width:18%}thead{display:table-header-group}tr,.card,.note,.formula-grid,.target-card,.evidence-strip,figure,.next-steps li{break-inside:avoid}h1,h2,h3,summary,caption{break-after:avoid}.sub{font-size:6.6pt;white-space:normal}.delta{white-space:normal}.eyebrow{font-size:7pt}.note{margin:14px 0;padding:11px 13px}.formula-grid{display:grid;grid-template-columns:1fr 1fr}.formula-grid>div{padding:13px}.formula-grid>div+div{border-left:1px solid var(--line);border-top:0}.formula-grid code,.formula-grid p{font-size:8pt}figure{margin:15px 0}figure svg{max-height:210px}figcaption{font-size:7.5pt}.target-card{padding:14px;gap:17px}.target-card strong{font-size:22pt}.target-card .label{font-size:7.5pt}.target-gap{font-size:9pt;margin-left:0}.target-gap b{font-size:18pt}.target-card strong small{font-size:8pt}.evidence-strip{padding:12px;gap:10px}.evidence-strip b{font-size:8pt}.evidence-strip span{font-size:7pt}.path{font-size:6.5pt;padding:9px}.hash{font-size:6pt}details{border:0;background:white;padding:0;margin:15px 0}summary{font-size:9pt;padding:8px 0}details::details-content{display:contents}.next-steps li{font-size:9pt;padding-top:10px;padding-bottom:10px}.next-steps span{font-size:8pt}.metric-legend,.muted{font-size:7.5pt}.badge{font-size:7pt}footer{max-width:none;padding:14px 0;font-size:7.5pt}.foot-row{flex-direction:row}a{color:inherit;text-decoration:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">본문 바로가기</a>
+<header class="site-head">
+  <div class="brand-row"><a class="brand" href="#overview">Creative Checker<small>SK NETWORKS FAMILY AI · 33기 1팀</small></a>
+    <div class="actions"><button id="download-data" type="button">분석 데이터 JSON</button><button id="print-document" type="button">인쇄 / PDF 저장</button></div>
+  </div>
+</header>
+<div class="hero">
+  <div class="eyebrow">GPU EVALUATION REPORT · 09 · 2026.10.23</div>
+  <h1>RunPod OCR·모델<br>비교 결과서</h1>
+  <p class="hero-lead">기존 모델을 RunPod에서 다시 평가하고,<br class="desktop-only"> 정확도와 처리 시간의 변화를 기준선 대비 수치로 확인했습니다.</p>
+  <div class="badges"><span class="badge">전체 평가 완료</span><span class="badge">PaddleOCR 포함</span><span class="badge">기존 체크포인트 · 재학습 없음</span></div>
+  <p class="meta">실행 완료 2026-10-23 16:26:54 KST · 평가 37장 · 8개 라벨 · 모델별 111회 측정</p>
+</div>
+<div class="layout">
+<aside class="side"><div class="caption">CONTENTS</div><nav class="toc" aria-label="문서 목차">
+  <a href="#overview"><span>01</span>핵심 결과</a>
+  <a href="#protocol"><span>02</span>비교 기준과 평가 범위</a>
+  <a href="#results"><span>03</span>RunPod 실행 결과</a>
+  <a href="#deltas"><span>04</span>기준선 대비 증감</a>
+  <a href="#historical"><span>05</span>기존 로컬 결과와 비교</a>
+  <a href="#labels"><span>06</span>라벨별 개선과 오류</a>
+  <a href="#interpretation"><span>07</span>해석과 다음 실험</a>
+  <a href="#evidence"><span>08</span>완료 기록과 검증 근거</a>
+</nav><p class="side-note">단일 HTML 문서<br>오프라인 열람 가능<br>그래프·수치·분석 데이터 내장<br><br>%p = 비율의 절대 차이<br>% = 기준값 대비 상대 변화</p></aside>
+<main id="main">
+<section id="overview" class="doc-panel">
+  <div class="eyebrow">SECTION 01 · READOUT</div><h2>정확도는 EG2, 처리 속도는 ResNet18</h2>
+  <p class="lead">EG2 파인튜닝은 고정 EG2보다 <strong>정확도 +1.77 %p</strong>, 전체 평균 시간은 <strong>+0.02%</strong>였습니다. ResNet18은 고정 EG2보다 정확도가 낮지만 전체 평균 시간이 <strong>52.62% 짧았습니다.</strong></p>
+  <div class="grid three">
+    <div class="card accent"><span class="label">최고 라벨 정확도 · EG2 파인튜닝</span><span class="value">80.50<span>%</span></span><p>227 / 282개 정답<br>고정 EG2 대비 <strong>+1.77 %p</strong></p></div>
+    <div class="card"><span class="label">가장 짧은 전체 평균 · ResNet18</span><span class="value">134.57<span>ms</span></span><p>PaddleOCR 89.96 + 모델 44.61 ms<br>EG2 파인튜닝 대비 <strong>약 2.11배 빠름</strong></p></div>
+    <div class="card"><span class="label">가장 높은 Macro F1 · 고정 EG2</span><span class="value">0.7815</span><p>EG2 파인튜닝 0.7798<br>정확도와 라벨별 균형의 순위가 다름</p></div>
+  </div>
+  <div class="note"><strong>이번 실행에서 확인한 변화</strong><p>세 모델 모두 기존 로컬 체크포인트와 최종 이진 판정이 같았습니다. RunPod로 옮기고 OCR을 포함한 실행이며, 추가 학습으로 정확도를 높인 결과는 아닙니다.</p></div>
+  <figure><svg role="img" aria-label="모델별 라벨 정확도와 90% 목표 비교" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" viewBox="0 0 748.8 234" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Creative Checker · measured poster benchmark</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 234 
+L 748.8 234 
+L 748.8 0 
+L 0 0 
+z
+" style="fill: #fffefb"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 142.272 182.52 
+L 718.848 182.52 
+L 718.848 30.42 
+L 142.272 30.42 
+z
+" style="fill: #fffefb"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <path d="M 142.272 182.52 
+L 142.272 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_2"/>
+     <g id="text_1">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="142.272" y="201.42" transform="rotate(-0 142.272 201.42)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_3">
+      <path d="M 257.5872 182.52 
+L 257.5872 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4"/>
+     <g id="text_2">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="257.5872" y="201.42" transform="rotate(-0 257.5872 201.42)">20</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_5">
+      <path d="M 372.9024 182.52 
+L 372.9024 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6"/>
+     <g id="text_3">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="372.9024" y="201.42" transform="rotate(-0 372.9024 201.42)">40</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_7">
+      <path d="M 488.2176 182.52 
+L 488.2176 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8"/>
+     <g id="text_4">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="488.2176" y="201.42" transform="rotate(-0 488.2176 201.42)">60</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_9">
+      <path d="M 603.5328 182.52 
+L 603.5328 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10"/>
+     <g id="text_5">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="603.5328" y="201.42" transform="rotate(-0 603.5328 201.42)">80</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_11">
+      <path d="M 718.848 182.52 
+L 718.848 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12"/>
+     <g id="text_6">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="718.848" y="201.42" transform="rotate(-0 718.848 201.42)">100</text>
+     </g>
+    </g>
+    <g id="text_7">
+     <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="430.56" y="224.62" transform="rotate(-0 430.56 224.62)">라벨별 정확도 (%) · 282개 알려진 항목</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_13"/>
+     <g id="text_8">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="63.88875" transform="rotate(-0 133.272 63.88875)">ResNet18 FT</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_14"/>
+     <g id="text_9">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="111.42" transform="rotate(-0 133.272 111.42)">EG2 고정 + LR</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_15"/>
+     <g id="text_10">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="158.95125" transform="rotate(-0 133.272 158.95125)">EG2 FT</text>
+     </g>
+    </g>
+   </g>
+   <g id="line2d_16">
+    <path d="M 661.1904 182.52 
+L 661.1904 30.42 
+" clip-path="url(#p47eb6c7022)" style="fill: none; stroke-dasharray: 5.2,3.9; stroke-dashoffset: 0; stroke: #ac754a; stroke-width: 1.3"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 142.272 48.719531 
+L 557.324936 48.719531 
+L 557.324936 69.157969 
+L 142.272 69.157969 
+z
+" clip-path="url(#p47eb6c7022)" style="fill: #a9b998"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 142.272 96.250781 
+L 596.172255 96.250781 
+L 596.172255 116.689219 
+L 142.272 116.689219 
+z
+" clip-path="url(#p47eb6c7022)" style="fill: #6f8c6b"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 142.272 143.782031 
+L 606.395234 143.782031 
+L 606.395234 164.220469 
+L 142.272 164.220469 
+z
+" clip-path="url(#p47eb6c7022)" style="fill: #234c40"/>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #ac754a" x="661.1904" y="31.845937" transform="rotate(-0 661.1904 31.845937)">목표 90%</text>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="565.397" y="62.23875" transform="rotate(-0 565.397 62.23875)">71.99%</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="604.244319" y="109.77" transform="rotate(-0 604.244319 109.77)">78.72%</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="614.467298" y="157.30125" transform="rotate(-0 614.467298 157.30125)">80.50%</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p47eb6c7022">
+   <rect x="142.272" y="30.42" width="576.576" height="152.1"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>라벨별 정확도는 알려진 282개 판정 항목을 기준으로 계산합니다. 90% 목표에는 아직 미달합니다.</figcaption></figure>
+</section>
+<section id="protocol" class="doc-panel">
+  <div class="eyebrow">SECTION 02 · COMPARISON CONTRACT</div><h2>무엇을 기준선으로 삼았는가</h2>
+  <div class="grid two">
+    <div class="card"><span class="kicker">A · 같은 RunPod 실행</span><h3>고정 EG2 + 분류기</h3><p>본체를 고정하고 학습한 LR 분류층을 주 기준선으로 삼습니다. EG2 본체 파인튜닝의 추가 효과를 비교하며, ResNet18도 같은 표에 배치합니다.</p><p class="muted">본문 04에서 기준 모델을 바꿔 증감치를 확인할 수 있습니다.</p></div>
+    <div class="card"><span class="kicker">B · 이전 실행과 비교</span><h3>같은 체크포인트의 로컬 MPS 결과</h3><p>이전 로컬 결과와 이번 RunPod 결과의 정확도·모델 구간 시간을 비교합니다. 이전에는 OCR 시간이 없으므로 전체 파이프라인 시간 증감률은 계산하지 않습니다.</p></div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">이번 보고서의 기준</th><th scope="col">확인 근거</th></tr></thead><tbody>
+    <tr><td>평가 데이터</td><td>포스터 37장 · 8개 시각 라벨 · 알려진 항목 282개 · 모름 14개 제외</td><td>모델별 완료 로그 + 기존 bundle 메타데이터</td></tr>
+    <tr><td>라벨 승인</td><td>사용자가 승인한 AI 보조 라벨 초안. 독립적인 전수 재라벨링을 뜻하지 않음</td><td>기존 bundle의 승인 메타데이터</td></tr>
+    <tr><td>모델·임계값</td><td>기존 체크포인트·개발셋 선택 임계값 재사용. 이번 실행에서 재학습 없음</td><td>실행 명령·완료 이벤트 · 원본 선택 파일은 아직 미수신</td></tr>
+    <tr><td>측정 표본</td><td>37장 × 3회 = 111회/모델, 세 모델 합계 333회</td><td>제공 로그 2건의 중복 제거 후 전 표본 복원</td></tr>
+    <tr><td>실행 경로</td><td>PaddleOCR → 시각 분류를 순차 실행. OCR 텍스트는 분류기에 입력하지 않음</td><td>평가 코드의 구현 및 단계별 실행 로그</td></tr>
+    <tr><td>장비·설정</td><td>정확한 GPU 기종·드라이버는 제공 로그에 없음. FP32·배치 1·워밍업 3은 코드 기본값</td><td>RunPod 원본 environment.json·protocol.json은 아직 미수신</td></tr>
+  </tbody></table></div>
+  <div class="formula-grid"><div><b>%p · 절대 차이</b><code>실행 비율(%) − 기준 비율(%)</code><p>80.50% − 78.72% ≈ <strong>+1.77 %p</strong></p></div><div><b>% · 상대 변화</b><code>(실행값 − 기준값) ÷ 기준값 × 100</code><p>정확도 상대 변화 <strong>+2.25%</strong><br>반올림 전 원수치로 계산</p></div></div>
+</section>
+<section id="results" class="doc-panel">
+  <div class="eyebrow">SECTION 03 · MEASURED RESULTS</div><h2>OCR까지 포함한 실제 처리 시간</h2>
+  <div class="table-wrap"><table class=""><caption>전체 처리 시간 = 실제 OCR 실행 + 시각 모델 처리 · 시간 단위 ms/장</caption><thead><tr><th scope="col">모델</th><th scope="col">정확도</th><th scope="col">정답</th><th scope="col">Macro F1</th><th scope="col">OCR 평균</th><th scope="col">모델 평균</th><th scope="col">전체 평균</th><th scope="col">전체 p95</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>71.99%</td><td>203/282</td><td>0.6647</td><td>89.96</td><td>44.61</td><td>134.57</td><td>248.30</td></tr><tr><td>고정 EG2 + 분류기</td><td>78.72%</td><td>222/282</td><td>0.7815</td><td>94.77</td><td>189.26</td><td>284.03</td><td>366.00</td></tr><tr><td>EG2 파인튜닝</td><td>80.50%</td><td>227/282</td><td>0.7798</td><td>95.19</td><td>188.91</td><td>284.10</td><td>367.98</td></tr></tbody></table></div>
+  <figure><svg role="img" aria-label="PaddleOCR와 모델 평균 시간, 전체 p95 비교" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" viewBox="0 0 748.8 234" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Creative Checker · measured poster benchmark</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 234 
+L 748.8 234 
+L 748.8 0 
+L 0 0 
+z
+" style="fill: #fffefb"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 142.272 182.52 
+L 718.848 182.52 
+L 718.848 30.42 
+L 142.272 30.42 
+z
+" style="fill: #fffefb"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <path d="M 142.272 182.52 
+L 142.272 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_2"/>
+     <g id="text_1">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="142.272" y="201.42" transform="rotate(-0 142.272 201.42)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_3">
+      <path d="M 210.912 182.52 
+L 210.912 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4"/>
+     <g id="text_2">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="210.912" y="201.42" transform="rotate(-0 210.912 201.42)">50</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_5">
+      <path d="M 279.552 182.52 
+L 279.552 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6"/>
+     <g id="text_3">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="279.552" y="201.42" transform="rotate(-0 279.552 201.42)">100</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_7">
+      <path d="M 348.192 182.52 
+L 348.192 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8"/>
+     <g id="text_4">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="348.192" y="201.42" transform="rotate(-0 348.192 201.42)">150</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_9">
+      <path d="M 416.832 182.52 
+L 416.832 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10"/>
+     <g id="text_5">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="416.832" y="201.42" transform="rotate(-0 416.832 201.42)">200</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_11">
+      <path d="M 485.472 182.52 
+L 485.472 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12"/>
+     <g id="text_6">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="485.472" y="201.42" transform="rotate(-0 485.472 201.42)">250</text>
+     </g>
+    </g>
+    <g id="xtick_7">
+     <g id="line2d_13">
+      <path d="M 554.112 182.52 
+L 554.112 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_14"/>
+     <g id="text_7">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="554.112" y="201.42" transform="rotate(-0 554.112 201.42)">300</text>
+     </g>
+    </g>
+    <g id="xtick_8">
+     <g id="line2d_15">
+      <path d="M 622.752 182.52 
+L 622.752 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_16"/>
+     <g id="text_8">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="622.752" y="201.42" transform="rotate(-0 622.752 201.42)">350</text>
+     </g>
+    </g>
+    <g id="xtick_9">
+     <g id="line2d_17">
+      <path d="M 691.392 182.52 
+L 691.392 30.42 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_18"/>
+     <g id="text_9">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="691.392" y="201.42" transform="rotate(-0 691.392 201.42)">400</text>
+     </g>
+    </g>
+    <g id="text_10">
+     <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="430.56" y="224.62" transform="rotate(-0 430.56 224.62)">처리 시간 (ms/장) · 막대는 평균, 세로 표식은 전체 p95</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_19"/>
+     <g id="text_11">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="63.88875" transform="rotate(-0 133.272 63.88875)">ResNet18 FT</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_20"/>
+     <g id="text_12">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="111.42" transform="rotate(-0 133.272 111.42)">EG2 고정 + LR</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_21"/>
+     <g id="text_13">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="158.95125" transform="rotate(-0 133.272 158.95125)">EG2 FT</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 142.272 48.719531 
+L 265.769733 48.719531 
+L 265.769733 69.157969 
+L 142.272 69.157969 
+z
+" clip-path="url(#p8297c904db)" style="fill: #a9b998"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 142.272 96.250781 
+L 272.368278 96.250781 
+L 272.368278 116.689219 
+L 142.272 116.689219 
+z
+" clip-path="url(#p8297c904db)" style="fill: #a9b998"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 142.272 143.782031 
+L 272.944195 143.782031 
+L 272.944195 164.220469 
+L 142.272 164.220469 
+z
+" clip-path="url(#p8297c904db)" style="fill: #a9b998"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 265.769733 48.719531 
+L 327.016116 48.719531 
+L 327.016116 69.157969 
+L 265.769733 69.157969 
+z
+" clip-path="url(#p8297c904db)" style="fill: #234c40"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 272.368278 96.250781 
+L 532.18909 96.250781 
+L 532.18909 116.689219 
+L 272.368278 116.689219 
+z
+" clip-path="url(#p8297c904db)" style="fill: #234c40"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 272.944195 143.782031 
+L 532.28349 143.782031 
+L 532.28349 164.220469 
+L 272.944195 164.220469 
+z
+" clip-path="url(#p8297c904db)" style="fill: #234c40"/>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="333.880116" y="61.93875" transform="rotate(-0 333.880116 61.93875)">134.57</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #ac754a" x="490.004886" y="61.93875" transform="rotate(-0 490.004886 61.93875)">248.30</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="539.05309" y="109.47" transform="rotate(-0 539.05309 109.47)">284.03</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #ac754a" x="651.584065" y="109.47" transform="rotate(-0 651.584065 109.47)">366.00</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="539.14749" y="157.00125" transform="rotate(-0 539.14749 157.00125)">284.10</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #ac754a" x="654.299722" y="157.00125" transform="rotate(-0 654.299722 157.00125)">367.98</text>
+   </g>
+   <g id="line2d_22">
+    <path d="M 483.140886 48.957187 
+L 483.140886 68.920312 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #ac754a; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_23">
+    <path d="M 644.720065 96.488438 
+L 644.720065 116.451563 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #ac754a; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_24">
+    <path d="M 647.435722 144.019688 
+L 647.435722 163.982813 
+" clip-path="url(#p8297c904db)" style="fill: none; stroke: #ac754a; stroke-width: 2; stroke-linecap: square"/>
+   </g>
+   <g id="legend_1">
+    <g id="patch_9">
+     <path d="M 145.50624 11.916 
+L 165.50624 11.916 
+L 165.50624 4.916 
+L 145.50624 4.916 
+z
+" style="fill: #a9b998"/>
+    </g>
+    <g id="text_20">
+     <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="173.50624" y="11.916" transform="rotate(-0 173.50624 11.916)">PaddleOCR 평균</text>
+    </g>
+    <g id="patch_10">
+     <path d="M 260.067178 11.916 
+L 280.067178 11.916 
+L 280.067178 4.916 
+L 260.067178 4.916 
+z
+" style="fill: #234c40"/>
+    </g>
+    <g id="text_21">
+     <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="288.067178" y="11.916" transform="rotate(-0 288.067178 11.916)">시각 모델 평균</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p8297c904db">
+   <rect x="142.272" y="30.42" width="576.576" height="152.1"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>p95는 측정 시간의 95번째 백분위입니다. 전체 p95는 각 표본의 실제 전체 시간에서 계산하며, OCR p95와 모델 p95를 더하지 않습니다.</figcaption></figure>
+  <div class="grid two"><div class="card"><h3>시간에 포함</h3><p><strong>OCR 구간:</strong> 원본 해상도 디코딩 + PaddleOCR + 프로세스 간 요청·응답<br><strong>모델 구간:</strong> 시각 입력 디코딩 + 448px letterbox + 모델 전처리·추론·분류층 + 동기화</p></div><div class="card"><h3>시간에서 제외</h3><p>패키지·가중치 다운로드, 모델 로딩, 워밍업, 결과 파일 저장, 학습. 웹 업로드·API·DB 처리 시간도 이 표에 포함되지 않습니다.</p></div></div>
+  <details><summary>회차별 평균과 모델 로딩 시간 확인</summary><div class="table-wrap"><table class=""><caption>회차별 평균 · 각 회차에 같은 평가 이미지 37장 사용</caption><thead><tr><th scope="col">모델</th><th scope="col">측정 회차</th><th scope="col">표본</th><th scope="col">OCR 평균 ms</th><th scope="col">모델 평균 ms</th><th scope="col">전체 평균 ms</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>1</td><td>37</td><td>104.07</td><td>53.47</td><td>157.55</td></tr><tr><td>ResNet18 파인튜닝</td><td>2</td><td>37</td><td>82.42</td><td>41.45</td><td>123.87</td></tr><tr><td>ResNet18 파인튜닝</td><td>3</td><td>37</td><td>83.39</td><td>38.92</td><td>122.30</td></tr><tr><td>고정 EG2 + 분류기</td><td>1</td><td>37</td><td>96.28</td><td>195.11</td><td>291.39</td></tr><tr><td>고정 EG2 + 분류기</td><td>2</td><td>37</td><td>93.14</td><td>185.93</td><td>279.07</td></tr><tr><td>고정 EG2 + 분류기</td><td>3</td><td>37</td><td>94.88</td><td>186.75</td><td>281.63</td></tr><tr><td>EG2 파인튜닝</td><td>1</td><td>37</td><td>94.19</td><td>194.68</td><td>288.88</td></tr><tr><td>EG2 파인튜닝</td><td>2</td><td>37</td><td>96.24</td><td>187.01</td><td>283.25</td></tr><tr><td>EG2 파인튜닝</td><td>3</td><td>37</td><td>95.13</td><td>185.04</td><td>280.17</td></tr></tbody></table></div>
+    <p>ResNet18의 1회차가 이후 회차보다 느립니다. 결과는 세 회차를 모두 포함했으며, 안정된 정상 상태 처리 시간을 비교하려면 다음 실험에서 워밍업을 늘려 확인하는 것이 좋습니다.</p>
+    <p>시각 모델 로딩 시간은 ResNet18 <strong>0.21초</strong>, 고정 EG2 <strong>30.58초</strong>, EG2 파인튜닝 <strong>3.76초</strong>입니다. 캐시·순서·체크포인트 로딩 경로가 달라 이 값으로 아키텍처 우열을 판단하지 않습니다.</p>
+  </details>
+</section>
+<section id="deltas" class="doc-panel">
+  <div class="eyebrow">SECTION 04 · BASELINE DELTAS</div><h2>기준선보다 얼마나 달라졌는가</h2>
+  <div class="comparison-controls"><label for="baseline-select">RunPod 비교 기준</label><select id="baseline-select"><option value="eg2_frozen_linear" selected>고정 EG2 + 분류기 · 기본 기준선</option><option value="resnet18_full_finetune">ResNet18 파인튜닝 · 속도 기준</option><option value="eg2_full_finetune">EG2 파인튜닝</option></select><button id="download-csv" type="button">현재 비교 CSV</button></div>
+  <p id="baseline-description" class="muted" aria-live="polite">기준: 고정 EG2 + 분류기 · 정확도 78.72% · 전체 평균 284.03 ms/장</p>
+  <div id="delta-table"><div class="table-wrap"><table class=""><thead><tr><th scope="col">모델</th><th scope="col">정확도</th><th scope="col">정확도 차이</th><th scope="col">Macro F1</th><th scope="col">F1 차이</th><th scope="col">전체 평균 ms</th><th scope="col">시간 차이</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>71.99%</td><td><span class="delta worse">-6.74 %p</span><small class="sub">상대 변화 -8.56%</small></td><td>0.6647</td><td><span class="delta worse">-0.1168</span><small class="sub">상대 변화 -14.95%</small></td><td>134.57</td><td><span class="delta better">-149.46 ms</span><small class="sub">상대 변화 -52.62%</small></td></tr><tr><td>고정 EG2 + 분류기<span class="mini-tag">기준</span></td><td>78.72%</td><td><span class="delta neutral">+0.00 %p</span><small class="sub">상대 변화 +0.00%</small></td><td>0.7815</td><td><span class="delta neutral">+0.0000</span><small class="sub">상대 변화 +0.00%</small></td><td>284.03</td><td><span class="delta neutral">+0.00 ms</span><small class="sub">상대 변화 +0.00%</small></td></tr><tr><td>EG2 파인튜닝</td><td>80.50%</td><td><span class="delta better">+1.77 %p</span><small class="sub">상대 변화 +2.25%</small></td><td>0.7798</td><td><span class="delta worse">-0.0017</span><small class="sub">상대 변화 -0.22%</small></td><td>284.10</td><td><span class="delta worse">+0.07 ms</span><small class="sub">상대 변화 +0.02%</small></td></tr></tbody></table></div></div>
+  <p class="metric-legend"><span class="better">● 개선</span><span class="worse">● 저하</span><span class="neutral">● 동일</span> 정확도·F1은 높을수록, 시간은 낮을수록 좋습니다. 작은 시간 차이는 반복 측정 변동을 함께 보아야 합니다.</p>
+  <div class="note"><strong>기본 기준선에서 읽는 EG2 파인튜닝 효과</strong><p>정답 <strong>222 → 227개</strong>, 오류 <strong>60 → 55개</strong>로 오류 항목이 <strong>8.33% 감소</strong>했습니다. Macro F1은 <strong>0.7815 → 0.7798</strong>로 약 <strong>0.0017 감소</strong>했습니다. 전체 평균 시간 차이는 약 <strong>+0.07 ms (+0.02%)</strong>이며 이 차이만으로 속도 우열을 판단하기 어렵습니다.</p></div>
+  <noscript><p class="note warm">JavaScript가 꺼져 있어 기본 기준선 표를 표시합니다. 모든 정적 결과·그래프는 그대로 읽을 수 있습니다.</p></noscript>
+</section>
+<section id="historical" class="doc-panel">
+  <div class="eyebrow">SECTION 05 · HISTORICAL REFERENCE</div><h2>기존 로컬 결과와 RunPod 실행의 차이</h2>
+  <div class="note warm"><strong>장비와 실행 경로가 다른 관측 비교입니다.</strong><p>이전 값은 로컬 MPS의 시각 처리 시간이며, 이번 값은 PaddleOCR와 모델을 함께 적재한 RunPod 실행에서 측정한 시각 처리 구간입니다. 측정 구현·실행 환경도 달라 순수 GPU 가속 효과로 해석할 수 없습니다. 이전 OCR 시간이 없으므로 로컬 대비 전체 처리 시간 증감률은 산출하지 않았습니다.</p></div>
+  <div class="table-wrap"><table class=""><caption>동일 체크포인트 · 로컬 MPS 시각 처리와 RunPod OCR 동시 적재 환경의 시각 처리 비교</caption><thead><tr><th scope="col">모델</th><th scope="col">로컬 정확도</th><th scope="col">RunPod 정확도</th><th scope="col">정확도 차이</th><th scope="col">로컬 모델 ms</th><th scope="col">RunPod 모델 ms</th><th scope="col">관측 시간 차이</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>71.99%</td><td>71.99%</td><td><span class="neutral">0.00 %p</span></td><td>10.42</td><td>44.61</td><td><span class="delta worse">+34.20 ms</span><small class="sub">상대 변화 +328.33%</small></td></tr><tr><td>고정 EG2 + 분류기</td><td>78.72%</td><td>78.72%</td><td><span class="neutral">0.00 %p</span></td><td>601.37</td><td>189.26</td><td><span class="delta better">-412.10 ms</span><small class="sub">상대 변화 -68.53%</small></td></tr><tr><td>EG2 파인튜닝</td><td>80.50%</td><td>80.50%</td><td><span class="neutral">0.00 %p</span></td><td>598.12</td><td>188.91</td><td><span class="delta better">-409.21 ms</span><small class="sub">상대 변화 -68.42%</small></td></tr></tbody></table></div>
+  <figure><svg role="img" aria-label="기존 MPS와 RunPod의 시각 처리 시간 관측 비교" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" viewBox="0 0 748.8 234" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Creative Checker · measured poster benchmark</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 234 
+L 748.8 234 
+L 748.8 0 
+L 0 0 
+z
+" style="fill: #fffefb"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 142.272 182.52 
+L 718.848 182.52 
+L 718.848 30.42 
+L 142.272 30.42 
+z
+" style="fill: #fffefb"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <path d="M 142.272 182.52 
+L 142.272 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_2"/>
+     <g id="text_1">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="142.272" y="201.42" transform="rotate(-0 142.272 201.42)">0</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_3">
+      <path d="M 221.255014 182.52 
+L 221.255014 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_4"/>
+     <g id="text_2">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="221.255014" y="201.42" transform="rotate(-0 221.255014 201.42)">100</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_5">
+      <path d="M 300.238027 182.52 
+L 300.238027 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_6"/>
+     <g id="text_3">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="300.238027" y="201.42" transform="rotate(-0 300.238027 201.42)">200</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_7">
+      <path d="M 379.221041 182.52 
+L 379.221041 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_8"/>
+     <g id="text_4">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="379.221041" y="201.42" transform="rotate(-0 379.221041 201.42)">300</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_9">
+      <path d="M 458.204055 182.52 
+L 458.204055 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_10"/>
+     <g id="text_5">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="458.204055" y="201.42" transform="rotate(-0 458.204055 201.42)">400</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_11">
+      <path d="M 537.187068 182.52 
+L 537.187068 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_12"/>
+     <g id="text_6">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="537.187068" y="201.42" transform="rotate(-0 537.187068 201.42)">500</text>
+     </g>
+    </g>
+    <g id="xtick_7">
+     <g id="line2d_13">
+      <path d="M 616.170082 182.52 
+L 616.170082 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_14"/>
+     <g id="text_7">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="616.170082" y="201.42" transform="rotate(-0 616.170082 201.42)">600</text>
+     </g>
+    </g>
+    <g id="xtick_8">
+     <g id="line2d_15">
+      <path d="M 695.153096 182.52 
+L 695.153096 30.42 
+" clip-path="url(#p9a23c1ce1f)" style="fill: none; stroke: #e4e6dc; stroke-width: 0.7; stroke-linecap: square"/>
+     </g>
+     <g id="line2d_16"/>
+     <g id="text_8">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="695.153096" y="201.42" transform="rotate(-0 695.153096 201.42)">700</text>
+     </g>
+    </g>
+    <g id="text_9">
+     <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: middle; fill: #69746b" x="430.56" y="224.62" transform="rotate(-0 430.56 224.62)">시각 처리 시간 (ms/장) · 장비와 실행 경로가 다른 참고 비교</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_17"/>
+     <g id="text_10">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="63.88875" transform="rotate(-0 133.272 63.88875)">ResNet18 FT</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_18"/>
+     <g id="text_11">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="111.42" transform="rotate(-0 133.272 111.42)">EG2 고정 + LR</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_19"/>
+     <g id="text_12">
+      <text style="font-size: 11px; font-family: 'Apple SD Gothic Neo'; text-anchor: end; fill: #203d34" x="133.272" y="158.95125" transform="rotate(-0 133.272 158.95125)">EG2 FT</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_3">
+    <path d="M 142.272 46.105312 
+L 150.498806 46.105312 
+L 150.498806 57.512812 
+L 142.272 57.512812 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #c4c9bd"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 142.272 93.636562 
+L 617.248773 93.636562 
+L 617.248773 105.044062 
+L 142.272 105.044062 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #c4c9bd"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 142.272 141.167813 
+L 614.686548 141.167813 
+L 614.686548 152.575313 
+L 142.272 152.575313 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #c4c9bd"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 142.272 60.364688 
+L 177.509645 60.364688 
+L 177.509645 71.772188 
+L 142.272 71.772188 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #234c40"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 142.272 107.895938 
+L 291.757947 107.895938 
+L 291.757947 119.303438 
+L 142.272 119.303438 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #234c40"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 142.272 155.427188 
+L 291.480909 155.427188 
+L 291.480909 166.834688 
+L 142.272 166.834688 
+z
+" clip-path="url(#p9a23c1ce1f)" style="fill: #234c40"/>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="155.237787" y="54.809063" transform="rotate(-0 155.237787 54.809063)">10.42</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="182.248626" y="69.068437" transform="rotate(-0 182.248626 69.068437)">44.61</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="621.987754" y="102.340313" transform="rotate(-0 621.987754 102.340313)">601.37</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="296.496927" y="116.599688" transform="rotate(-0 296.496927 116.599688)">189.26</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="619.425529" y="149.871563" transform="rotate(-0 619.425529 149.871563)">598.12</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 10px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="296.21989" y="164.130938" transform="rotate(-0 296.21989 164.130938)">188.91</text>
+   </g>
+   <g id="legend_1">
+    <g id="patch_9">
+     <path d="M 144.60624 10.116 
+L 162.60624 10.116 
+L 162.60624 3.816 
+L 144.60624 3.816 
+z
+" style="fill: #c4c9bd"/>
+    </g>
+    <g id="text_19">
+     <text style="font-size: 9px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="169.80624" y="10.116" transform="rotate(-0 169.80624 10.116)">기존 로컬 MPS · OCR 제외</text>
+    </g>
+    <g id="patch_10">
+     <path d="M 282.241553 10.116 
+L 300.241553 10.116 
+L 300.241553 3.816 
+L 282.241553 3.816 
+z
+" style="fill: #234c40"/>
+    </g>
+    <g id="text_20">
+     <text style="font-size: 9px; font-family: 'Apple SD Gothic Neo'; text-anchor: start; fill: #203d34" x="307.441553" y="10.116" transform="rotate(-0 307.441553 10.116)">RunPod · OCR 포함 실행의 모델 구간</text>
+    </g>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p9a23c1ce1f">
+   <rect x="142.272" y="30.42" width="576.576" height="152.1"/>
+  </clipPath>
+ </defs>
+</svg>
+<figcaption>EG2 파인튜닝의 모델 구간은 598.12 → 188.91 ms로 68.42% 짧게 관측됐습니다. ResNet18은 반대로 10.42 → 44.61 ms로 328.33% 길게 관측됐습니다.</figcaption></figure>
+  <p>정확도·Macro F1·이미지 완전 일치율은 세 모델 모두 이전 로컬 결과와 같습니다. 소수점 확률 차이는 있었지만 최종 판정 변경은 <strong>0건</strong>으로 기록됐습니다.</p>
+</section>
+<section id="labels" class="doc-panel">
+  <div class="eyebrow">SECTION 06 · ERROR ANALYSIS</div><h2>개선된 라벨과 남은 오탐·누락</h2>
+  <p>아래 오탐·누락은 완료 로그의 정밀도·재현율·정답 개수에서 복원하고 정확도와 대조한 집계입니다. 이미지별 원본 예측 파일을 받은 상태는 아니므로 특정 포스터의 실패 원인까지 단정하지 않습니다.</p>
+  <div class="table-wrap"><table class=""><thead><tr><th scope="col">라벨</th><th scope="col">있음 / 없음 / 모름</th><th scope="col">ResNet F1</th><th scope="col">고정 EG2 F1</th><th scope="col">EG2 FT F1</th><th scope="col">고정 대비 F1 차이</th><th scope="col">FT 오탐</th><th scope="col">FT 누락</th></tr></thead><tbody><tr><td>인물</td><td>25 / 12 / 0</td><td>0.7391</td><td>0.8148</td><td>0.8679</td><td><span class="delta better">+0.0531</span><small class="sub">상대 변화 +6.52%</small></td><td>5</td><td>2</td></tr><tr><td>음식·음료</td><td>11 / 24 / 2</td><td>0.5556</td><td>0.6667</td><td>0.6667</td><td><span class="delta neutral">+0.0000</span><small class="sub">상대 변화 +0.00%</small></td><td>7</td><td>2</td></tr><tr><td>동물</td><td>14 / 21 / 2</td><td>0.6897</td><td>0.7143</td><td>0.6897</td><td><span class="delta worse">-0.0246</span><small class="sub">상대 변화 -3.45%</small></td><td>5</td><td>4</td></tr><tr><td>식물·꽃</td><td>24 / 11 / 2</td><td>0.7755</td><td>0.8235</td><td>0.8235</td><td><span class="delta neutral">+0.0000</span><small class="sub">상대 변화 +0.00%</small></td><td>6</td><td>3</td></tr><tr><td>탈것</td><td>9 / 27 / 1</td><td>0.4828</td><td>0.6000</td><td>0.6000</td><td><span class="delta neutral">+0.0000</span><small class="sub">상대 변화 +0.00%</small></td><td>12</td><td>0</td></tr><tr><td>건물·구조물</td><td>24 / 12 / 1</td><td>0.8750</td><td>0.8095</td><td>0.8636</td><td><span class="delta better">+0.0541</span><small class="sub">상대 변화 +6.68%</small></td><td>1</td><td>5</td></tr><tr><td>악기</td><td>7 / 27 / 3</td><td>0.5333</td><td>0.8235</td><td>0.7273</td><td><span class="delta worse">-0.0963</span><small class="sub">상대 변화 -11.69%</small></td><td>0</td><td>3</td></tr><tr><td>불꽃놀이</td><td>4 / 30 / 3</td><td>0.6667</td><td>1.0000</td><td>1.0000</td><td><span class="delta neutral">+0.0000</span><small class="sub">상대 변화 +0.00%</small></td><td>0</td><td>0</td></tr></tbody></table></div>
+  <div class="grid two"><div class="card"><h3>개선: 인물·건물</h3><p>고정 EG2 대비 파인튜닝의 F1은 인물 <strong>+0.0531</strong>, 건물·구조물 <strong>+0.0541</strong>입니다. 같은 표본에서 분류 균형이 개선된 항목입니다.</p></div><div class="card"><h3>주의: 탈것·악기</h3><p>파인튜닝 EG2의 탈것은 <strong>9개 모두 검출 + 오탐 12개</strong>입니다. 악기는 오탐이 없지만 <strong>7개 중 3개 누락</strong>됐고, F1은 고정 EG2 대비 <strong>−0.0963</strong>입니다.</p></div></div>
+  <h3>라벨 정확도와 이미지 완전 일치율은 다릅니다</h3>
+  <div class="table-wrap"><table class=""><caption>이미지 완전 일치율은 모름이 없는 27장만 평가</caption><thead><tr><th scope="col">모델</th><th scope="col">라벨 정확도</th><th scope="col">정답 항목</th><th scope="col">이미지 완전 일치율</th><th scope="col">완전 일치</th><th scope="col">오류 항목</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>71.99%</td><td>203/282</td><td>7.41%</td><td>2/27</td><td>79</td></tr><tr><td>고정 EG2 + 분류기</td><td>78.72%</td><td>222/282</td><td>25.93%</td><td>7/27</td><td>60</td></tr><tr><td>EG2 파인튜닝</td><td>80.50%</td><td>227/282</td><td>22.22%</td><td>6/27</td><td>55</td></tr></tbody></table></div>
+  <p class="muted">불꽃놀이 F1 1.0은 알려진 항목 34개, 실제 있음 4개에서 나온 수치입니다. 작은 표본의 만점을 일반적인 100% 성능으로 해석하지 않습니다.</p>
+</section>
+<section id="interpretation" class="doc-panel">
+  <div class="eyebrow">SECTION 07 · DECISION &amp; NEXT STEP</div><h2>90% 목표까지 무엇이 남았는가</h2>
+  <div class="target-card"><div><span class="label">현재 EG2 파인튜닝</span><strong>227 <small>/ 282 정답</small></strong></div><span class="target-arrow">→</span><div><span class="label">정확도 90% 이상에 필요한 최소값</span><strong>254 <small>/ 282 정답</small></strong></div><div class="target-gap">정답 <b>27개</b> 추가 필요</div></div>
+  <p>현재 80.50%에서 90%까지 비율 차이는 약 <strong>9.50 %p</strong>입니다. 판정 수는 정수이므로 90% 이상에는 최소 254개 정답(90.07%)이 필요합니다.</p>
+  <div class="table-wrap"><table><thead><tr><th scope="col">선택 기준</th><th scope="col">현재 결과의 의미</th><th scope="col">다음 확인</th></tr></thead><tbody>
+    <tr><td>낮은 처리 시간</td><td>ResNet18 전체 평균 134.57 ms, 정확도 71.99%</td><td>정확도 요구를 충족하는지 먼저 판단하고 안정된 워밍업 조건으로 재측정</td></tr>
+    <tr><td>가장 높은 라벨 정확도</td><td>EG2 파인튜닝 80.50%, 전체 평균 284.10 ms</td><td>탈것·음식 오탐과 악기 누락을 개발셋에서 점검</td></tr>
+    <tr><td>라벨별 균형</td><td>고정 EG2의 Macro F1 0.7815가 가장 높음</td><td>추가 파인튜닝 비용 대비 이득을 다른 독립 표본에서 검증</td></tr>
+  </tbody></table></div>
+  <ol class="next-steps"><li><strong>개발셋에서 오류 유형부터 확인</strong><span>오탐·누락 이미지, 라벨의 모호함, 작은 객체·일러스트 여부를 확인합니다. 이 평가셋을 보고 임계값을 다시 맞추지 않습니다.</span></li><li><strong>OCR 정확도는 별도로 측정</strong><span>이번에는 실제 OCR 실행과 시간만 확인했습니다. 문자 정답·기관명·날짜 등의 정답을 준비해 CER와 필드 일치율을 측정해야 합니다.</span></li><li><strong>새 평가셋으로 최종 검증</strong><span>이번 37장은 이미 사용한 평가셋의 후속 회귀 비교입니다. 90% 달성 여부는 별도로 보존한 독립 평가셋에서 확인해야 합니다.</span></li></ol>
+  <div class="note warm"><strong>문서 검색·요구조건 추출과는 다른 평가입니다.</strong><p>이 보고서는 포스터 인물·사물 8종 존재 판별과 OCR 포함 실행 시간을 다룹니다. 문서 근거 검색의 Hit@1·Recall@5나 요구조건 JSON 정확도를 나타내지 않습니다.</p></div>
+</section>
+<section id="evidence" class="doc-panel">
+  <div class="eyebrow">SECTION 08 · EVIDENCE &amp; REPRODUCIBILITY</div><h2>완료 로그와 수치 검증</h2>
+  <div class="evidence-strip"><div><span>최종 이벤트</span><b>pipeline_complete</b></div><div><span>실행 완료</span><b>2026-10-23 16:26:54 KST</b></div><div><span>중복 제거 후 측정 표본</span><b>333 / 333</b></div><div><span>추가 학습</span><b>false</b></div></div>
+  <p class="path-label">RunPod 결과 디렉터리</p><code class="path">/workspace/SKN33-Final-1Team/experiments/poster_benchmark/runs/pipeline-20261023T072356Z-11054</code>
+  <p>사용자가 전달한 터미널 로그 2건을 결합했습니다. 두 번째 로그의 앞부분에서 빠진 ResNet18 7개 표본을 첫 번째 로그로 보완하고, 중복 표본은 모델·회차·이미지 ID로 제거했습니다. 모든 모델에서 평균·중앙값·p95를 111개 원자료로 다시 계산해 완료 로그와 일치함을 확인했습니다.</p>
+  <div class="note"><strong>검증한 것과 아직 받지 않은 것</strong><p><strong>확인:</strong> 세 모델 완료 이벤트, 최종 완료 이벤트, 측정 333개, 요약 통계 재계산, 로컬 참조 지표 일치.<br><strong>아직 미수신:</strong> RunPod의 원본 status.json·protocol.json·environment.json·예측 파일·OCR 원문 파일. 이 문서는 제공 로그에 근거하며 원격 원본 파일과 체크포인트 해시를 직접 재검증했다는 의미는 아닙니다.</p></div>
+  <details><summary>입력 자료와 무결성 식별값</summary><div class="table-wrap"><table class=""><thead><tr><th scope="col">자료</th><th scope="col">확인 내용</th><th scope="col">SHA256</th></tr></thead><tbody><tr><td>user-log-01.txt</td><td>user_supplied_terminal_log</td><td><code class="hash">930846afe9d70907bf81823f41fdb149bb4f6a1c437c0756f46aadc660fd6a91</code></td></tr><tr><td>user-log-02.txt</td><td>user_supplied_terminal_log</td><td><code class="hash">4662a14c7c37669387de00b186eb6c782ce1dc5791e8ab8224be55c8c1d4768a</code></td></tr><tr><td>references/local_results.json</td><td>historical_MPS_visual_only_reference</td><td><code class="hash">6dd1a17e28331ee76fbda64402f206d4f6f8905d0b16fcbeda49a7c87f04dde6</code></td></tr><tr><td>data/dataset_info.json</td><td>approved_bundle_dataset_metadata</td><td><code class="hash">8d3583a62bbee4f1ea30168f89924033fdec1bb75a6d900239993c0ac47ccd95</code></td></tr></tbody></table></div><p class="muted">분석 데이터는 문서 안에 포함되어 있습니다. 상단 ‘분석 데이터 JSON’으로 내려받을 수 있습니다. 원본 로그와 중복 제거 타이밍 CSV는 문서 생성 폴더의 evidence/에 보관했습니다.</p></details>
+  <details><summary>증감률 계산과 읽는 법</summary><ul><li>정확도 차이(%p) = (실행 정확도 − 기준 정확도) × 100</li><li>상대 변화(%) = (실행값 − 기준값) ÷ 기준값 × 100</li><li>시간 상대 변화가 음수면 더 짧아진 것이며, 양수면 더 길어진 것입니다.</li><li>F1 차이는 원래 0~1 척도로 표시합니다. F1 상대 변화는 별도의 %로 표시합니다.</li><li>표와 그래프의 표시값만 반올림하고, 증감치는 반올림 전 원수치로 계산했습니다.</li></ul></details>
+</section>
+</main></div>
+<footer><div class="foot-row"><span>Creative Checker · RunPod 평가 보고서</span><span>2026.10.23 · v1.0</span></div><p>그래프·스타일·비교 데이터가 포함된 단일 HTML 문서입니다. 외부 서버나 인터넷 연결 없이 열람할 수 있습니다.</p></footer>
+<script type="application/json" id="report-data">{"schema": "runpod-poster-report-v1", "title": "RunPod OCR·시각 모델 비교 결과서", "date": "2026-10-23", "baseline_id": "eg2_frozen_linear", "models": [{"id": "resnet18_full_finetune", "name": "ResNet18 파인튜닝", "short": "ResNet18 FT", "metrics": {"label_wise_accuracy": 0.7198581560283688, "macro_f1": 0.6647012484404056, "micro_f1": 0.6973180076628352, "macro_average_precision": 0.6940785866626916, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.07407407407407407, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8095238095238095, "recall": 0.68, "f1": 0.7391304347826086, "accuracy": 0.6756756756756757, "average_precision": 0.8195911843624026, "positive": 25, "negative": 12, "unknown": 0}, "food_drink": {"precision": 0.4, "recall": 0.9090909090909091, "f1": 0.5555555555555556, "accuracy": 0.5428571428571428, "average_precision": 0.6315027985482531, "positive": 11, "negative": 24, "unknown": 2}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "average_precision": 0.6947528102149951, "positive": 14, "negative": 21, "unknown": 2}, "plant_flower": {"precision": 0.76, "recall": 0.7916666666666666, "f1": 0.7755102040816326, "accuracy": 0.6857142857142857, "average_precision": 0.8811142752595086, "positive": 24, "negative": 11, "unknown": 2}, "vehicle": {"precision": 0.35, "recall": 0.7777777777777778, "f1": 0.4827586206896552, "accuracy": 0.5833333333333334, "average_precision": 0.6023714589504063, "positive": 9, "negative": 27, "unknown": 1}, "building_structure": {"precision": 0.875, "recall": 0.875, "f1": 0.875, "accuracy": 0.8333333333333334, "average_precision": 0.9544612259443914, "positive": 24, "negative": 12, "unknown": 1}, "musical_instrument": {"precision": 0.5, "recall": 0.5714285714285714, "f1": 0.5333333333333333, "accuracy": 0.7941176470588235, "average_precision": 0.45741020883878025, "positive": 7, "negative": 27, "unknown": 3}, "fireworks": {"precision": 0.6, "recall": 0.75, "f1": 0.6666666666666666, "accuracy": 0.9117647058823529, "average_precision": 0.5114247311827956, "positive": 4, "negative": 30, "unknown": 3}}}, "per_label": {"person": {"name": "인물", "precision": 0.8095238095238095, "recall": 0.68, "f1": 0.7391304347826086, "accuracy": 0.6756756756756757, "average_precision": 0.8195911843624026, "positive": 25, "negative": 12, "unknown": 0, "tp": 17, "fp": 4, "fn": 8, "tn": 8}, "food_drink": {"name": "음식·음료", "precision": 0.4, "recall": 0.9090909090909091, "f1": 0.5555555555555556, "accuracy": 0.5428571428571428, "average_precision": 0.6315027985482531, "positive": 11, "negative": 24, "unknown": 2, "tp": 10, "fp": 15, "fn": 1, "tn": 9}, "animal": {"name": "동물", "precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "average_precision": 0.6947528102149951, "positive": 14, "negative": 21, "unknown": 2, "tp": 10, "fp": 5, "fn": 4, "tn": 16}, "plant_flower": {"name": "식물·꽃", "precision": 0.76, "recall": 0.7916666666666666, "f1": 0.7755102040816326, "accuracy": 0.6857142857142857, "average_precision": 0.8811142752595086, "positive": 24, "negative": 11, "unknown": 2, "tp": 19, "fp": 6, "fn": 5, "tn": 5}, "vehicle": {"name": "탈것", "precision": 0.35, "recall": 0.7777777777777778, "f1": 0.4827586206896552, "accuracy": 0.5833333333333334, "average_precision": 0.6023714589504063, "positive": 9, "negative": 27, "unknown": 1, "tp": 7, "fp": 13, "fn": 2, "tn": 14}, "building_structure": {"name": "건물·구조물", "precision": 0.875, "recall": 0.875, "f1": 0.875, "accuracy": 0.8333333333333334, "average_precision": 0.9544612259443914, "positive": 24, "negative": 12, "unknown": 1, "tp": 21, "fp": 3, "fn": 3, "tn": 9}, "musical_instrument": {"name": "악기", "precision": 0.5, "recall": 0.5714285714285714, "f1": 0.5333333333333333, "accuracy": 0.7941176470588235, "average_precision": 0.45741020883878025, "positive": 7, "negative": 27, "unknown": 3, "tp": 4, "fp": 4, "fn": 3, "tn": 23}, "fireworks": {"name": "불꽃놀이", "precision": 0.6, "recall": 0.75, "f1": 0.6666666666666666, "accuracy": 0.9117647058823529, "average_precision": 0.5114247311827956, "positive": 4, "negative": 30, "unknown": 3, "tp": 3, "fp": 2, "fn": 1, "tn": 28}}, "correct": 203, "errors": 79, "timing": {"ocr_ms": {"n": 111, "mean_ms": 89.96046970017372, "median_ms": 76.53622701764107, "p95_ms": 171.63830599747598}, "model_ms": {"n": 111, "mean_ms": 44.61420667494085, "median_ms": 43.34294400177896, "p95_ms": 84.77160349139012}, "total_ms": {"n": 111, "mean_ms": 134.57467637511456, "median_ms": 123.77424101578072, "p95_ms": 248.3019274950493}}, "old_metrics": {"macro_f1": 0.6647012484404056, "micro_f1": 0.6973180076628352, "macro_average_precision": 0.6940785866626916, "label_wise_accuracy": 0.7198581560283688, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.07407407407407407, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8095238095238095, "recall": 0.68, "f1": 0.7391304347826086, "accuracy": 0.6756756756756757, "balanced_accuracy": 0.6733333333333333, "average_precision": 0.8195911843624026, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.4, "recall": 0.9090909090909091, "f1": 0.5555555555555556, "accuracy": 0.5428571428571428, "balanced_accuracy": 0.6420454545454546, "average_precision": 0.6315027985482531, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7380952380952381, "average_precision": 0.6947528102149951, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.76, "recall": 0.7916666666666666, "f1": 0.7755102040816326, "accuracy": 0.6857142857142857, "balanced_accuracy": 0.6231060606060606, "average_precision": 0.8811142752595086, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.35, "recall": 0.7777777777777778, "f1": 0.4827586206896552, "accuracy": 0.5833333333333334, "balanced_accuracy": 0.6481481481481481, "average_precision": 0.6023714589504063, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.875, "recall": 0.875, "f1": 0.875, "accuracy": 0.8333333333333334, "balanced_accuracy": 0.8125, "average_precision": 0.9544612259443914, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 0.5, "recall": 0.5714285714285714, "f1": 0.5333333333333333, "accuracy": 0.7941176470588235, "balanced_accuracy": 0.7116402116402116, "average_precision": 0.45741020883878025, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 0.6, "recall": 0.75, "f1": 0.6666666666666666, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.8416666666666667, "average_precision": 0.5114247311827956, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "old_visual_timing": {"n": 111, "mean_ms": 10.41591851376857, "median_ms": 9.792583005037159, "p95_ms": 16.481708000355866}, "model_load_seconds": 0.2115832599811256, "source_binary_predictions_equal": true, "source_probability_max_abs_difference": 6.258487701416016e-07}, {"id": "eg2_frozen_linear", "name": "고정 EG2 + 분류기", "short": "EG2 고정 + LR", "metrics": {"label_wise_accuracy": 0.7872340425531915, "macro_f1": 0.7815437286025522, "micro_f1": 0.7692307692307693, "macro_average_precision": 0.8358493771632689, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.25925925925925924, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.7586206896551724, "recall": 0.88, "f1": 0.8148148148148148, "accuracy": 0.7297297297297297, "average_precision": 0.9030035028817983, "positive": 25, "negative": 12, "unknown": 0}, "food_drink": {"precision": 0.5263157894736842, "recall": 0.9090909090909091, "f1": 0.6666666666666666, "accuracy": 0.7142857142857143, "average_precision": 0.8521223945136989, "positive": 11, "negative": 24, "unknown": 2}, "animal": {"precision": 0.7142857142857143, "recall": 0.7142857142857143, "f1": 0.7142857142857143, "accuracy": 0.7714285714285715, "average_precision": 0.7188959422152699, "positive": 14, "negative": 21, "unknown": 2}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "average_precision": 0.9385416298888924, "positive": 24, "negative": 11, "unknown": 2}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "average_precision": 0.5564817979291663, "positive": 9, "negative": 27, "unknown": 1}, "building_structure": {"precision": 0.9444444444444444, "recall": 0.7083333333333334, "f1": 0.8095238095238095, "accuracy": 0.7777777777777778, "average_precision": 0.9609470287888899, "positive": 24, "negative": 12, "unknown": 1}, "musical_instrument": {"precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "accuracy": 0.9117647058823529, "average_precision": 0.7568027210884354, "positive": 7, "negative": 27, "unknown": 3}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "average_precision": 1.0, "positive": 4, "negative": 30, "unknown": 3}}}, "per_label": {"person": {"name": "인물", "precision": 0.7586206896551724, "recall": 0.88, "f1": 0.8148148148148148, "accuracy": 0.7297297297297297, "average_precision": 0.9030035028817983, "positive": 25, "negative": 12, "unknown": 0, "tp": 22, "fp": 7, "fn": 3, "tn": 5}, "food_drink": {"name": "음식·음료", "precision": 0.5263157894736842, "recall": 0.9090909090909091, "f1": 0.6666666666666666, "accuracy": 0.7142857142857143, "average_precision": 0.8521223945136989, "positive": 11, "negative": 24, "unknown": 2, "tp": 10, "fp": 9, "fn": 1, "tn": 15}, "animal": {"name": "동물", "precision": 0.7142857142857143, "recall": 0.7142857142857143, "f1": 0.7142857142857143, "accuracy": 0.7714285714285715, "average_precision": 0.7188959422152699, "positive": 14, "negative": 21, "unknown": 2, "tp": 10, "fp": 4, "fn": 4, "tn": 17}, "plant_flower": {"name": "식물·꽃", "precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "average_precision": 0.9385416298888924, "positive": 24, "negative": 11, "unknown": 2, "tp": 21, "fp": 6, "fn": 3, "tn": 5}, "vehicle": {"name": "탈것", "precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "average_precision": 0.5564817979291663, "positive": 9, "negative": 27, "unknown": 1, "tp": 9, "fp": 12, "fn": 0, "tn": 15}, "building_structure": {"name": "건물·구조물", "precision": 0.9444444444444444, "recall": 0.7083333333333334, "f1": 0.8095238095238095, "accuracy": 0.7777777777777778, "average_precision": 0.9609470287888899, "positive": 24, "negative": 12, "unknown": 1, "tp": 17, "fp": 1, "fn": 7, "tn": 11}, "musical_instrument": {"name": "악기", "precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "accuracy": 0.9117647058823529, "average_precision": 0.7568027210884354, "positive": 7, "negative": 27, "unknown": 3, "tp": 7, "fp": 3, "fn": 0, "tn": 24}, "fireworks": {"name": "불꽃놀이", "precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "average_precision": 1.0, "positive": 4, "negative": 30, "unknown": 3, "tp": 4, "fp": 0, "fn": 0, "tn": 30}}, "correct": 222, "errors": 60, "timing": {"ocr_ms": {"n": 111, "mean_ms": 94.76710239903548, "median_ms": 83.39836198138073, "p95_ms": 168.86072448687628}, "model_ms": {"n": 111, "mean_ms": 189.26341187991287, "median_ms": 187.21935100620613, "p95_ms": 204.86225650529377}, "total_ms": {"n": 111, "mean_ms": 284.0305142789483, "median_ms": 270.2476790291257, "p95_ms": 366.00237849052064}}, "old_metrics": {"macro_f1": 0.7815437286025522, "micro_f1": 0.7692307692307693, "macro_average_precision": 0.8358493771632689, "label_wise_accuracy": 0.7872340425531915, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.25925925925925924, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.7586206896551724, "recall": 0.88, "f1": 0.8148148148148148, "accuracy": 0.7297297297297297, "balanced_accuracy": 0.6483333333333333, "average_precision": 0.9030035028817983, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.5263157894736842, "recall": 0.9090909090909091, "f1": 0.6666666666666666, "accuracy": 0.7142857142857143, "balanced_accuracy": 0.7670454545454546, "average_precision": 0.8521223945136989, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.7142857142857143, "recall": 0.7142857142857143, "f1": 0.7142857142857143, "accuracy": 0.7714285714285715, "balanced_accuracy": 0.7619047619047619, "average_precision": 0.7188959422152699, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.6647727272727273, "average_precision": 0.9385416298888924, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "balanced_accuracy": 0.7777777777777778, "average_precision": 0.5564817979291663, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.9444444444444444, "recall": 0.7083333333333334, "f1": 0.8095238095238095, "accuracy": 0.7777777777777778, "balanced_accuracy": 0.8125, "average_precision": 0.9609470287888899, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.9444444444444444, "average_precision": 0.7568027210884354, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "balanced_accuracy": 1.0, "average_precision": 1.0, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "old_visual_timing": {"n": 111, "mean_ms": 601.365724890645, "median_ms": 598.6332920001587, "p95_ms": 623.9334374986356}, "model_load_seconds": 30.577836258977186, "source_binary_predictions_equal": true, "source_probability_max_abs_difference": 1.317583867582739e-05}, {"id": "eg2_full_finetune", "name": "EG2 파인튜닝", "short": "EG2 FT", "metrics": {"label_wise_accuracy": 0.8049645390070922, "macro_f1": 0.779835608757018, "micro_f1": 0.782608695652174, "macro_average_precision": 0.8803214052081499, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.2222222222222222, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8214285714285714, "recall": 0.92, "f1": 0.8679245283018868, "accuracy": 0.8108108108108109, "average_precision": 0.9503961043434729, "positive": 25, "negative": 12, "unknown": 0}, "food_drink": {"precision": 0.5625, "recall": 0.8181818181818182, "f1": 0.6666666666666666, "accuracy": 0.7428571428571429, "average_precision": 0.8608520267611177, "positive": 11, "negative": 24, "unknown": 2}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "average_precision": 0.6717916206886795, "positive": 14, "negative": 21, "unknown": 2}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "average_precision": 0.9329931311167095, "positive": 24, "negative": 11, "unknown": 2}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "average_precision": 0.7517917267917269, "positive": 9, "negative": 27, "unknown": 1}, "building_structure": {"precision": 0.95, "recall": 0.7916666666666666, "f1": 0.8636363636363636, "accuracy": 0.8333333333333334, "average_precision": 0.9660164732333344, "positive": 24, "negative": 12, "unknown": 1}, "musical_instrument": {"precision": 1.0, "recall": 0.5714285714285714, "f1": 0.7272727272727273, "accuracy": 0.9117647058823529, "average_precision": 0.9087301587301586, "positive": 7, "negative": 27, "unknown": 3}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "average_precision": 1.0, "positive": 4, "negative": 30, "unknown": 3}}}, "per_label": {"person": {"name": "인물", "precision": 0.8214285714285714, "recall": 0.92, "f1": 0.8679245283018868, "accuracy": 0.8108108108108109, "average_precision": 0.9503961043434729, "positive": 25, "negative": 12, "unknown": 0, "tp": 23, "fp": 5, "fn": 2, "tn": 7}, "food_drink": {"name": "음식·음료", "precision": 0.5625, "recall": 0.8181818181818182, "f1": 0.6666666666666666, "accuracy": 0.7428571428571429, "average_precision": 0.8608520267611177, "positive": 11, "negative": 24, "unknown": 2, "tp": 9, "fp": 7, "fn": 2, "tn": 17}, "animal": {"name": "동물", "precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "average_precision": 0.6717916206886795, "positive": 14, "negative": 21, "unknown": 2, "tp": 10, "fp": 5, "fn": 4, "tn": 16}, "plant_flower": {"name": "식물·꽃", "precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "average_precision": 0.9329931311167095, "positive": 24, "negative": 11, "unknown": 2, "tp": 21, "fp": 6, "fn": 3, "tn": 5}, "vehicle": {"name": "탈것", "precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "average_precision": 0.7517917267917269, "positive": 9, "negative": 27, "unknown": 1, "tp": 9, "fp": 12, "fn": 0, "tn": 15}, "building_structure": {"name": "건물·구조물", "precision": 0.95, "recall": 0.7916666666666666, "f1": 0.8636363636363636, "accuracy": 0.8333333333333334, "average_precision": 0.9660164732333344, "positive": 24, "negative": 12, "unknown": 1, "tp": 19, "fp": 1, "fn": 5, "tn": 11}, "musical_instrument": {"name": "악기", "precision": 1.0, "recall": 0.5714285714285714, "f1": 0.7272727272727273, "accuracy": 0.9117647058823529, "average_precision": 0.9087301587301586, "positive": 7, "negative": 27, "unknown": 3, "tp": 4, "fp": 0, "fn": 3, "tn": 27}, "fireworks": {"name": "불꽃놀이", "precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "average_precision": 1.0, "positive": 4, "negative": 30, "unknown": 3, "tp": 4, "fp": 0, "fn": 0, "tn": 30}}, "correct": 227, "errors": 55, "timing": {"ocr_ms": {"n": 111, "mean_ms": 95.18662245990289, "median_ms": 84.47198499925435, "p95_ms": 165.73031598818488}, "model_ms": {"n": 111, "mean_ms": 188.9126565462599, "median_ms": 185.71437802165747, "p95_ms": 207.46688701910898}, "total_ms": {"n": 111, "mean_ms": 284.0992790061628, "median_ms": 269.4400729960762, "p95_ms": 367.98056651605293}}, "old_metrics": {"macro_f1": 0.779835608757018, "micro_f1": 0.782608695652174, "macro_average_precision": 0.8803214052081499, "label_wise_accuracy": 0.8049645390070922, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.2222222222222222, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8214285714285714, "recall": 0.92, "f1": 0.8679245283018868, "accuracy": 0.8108108108108109, "balanced_accuracy": 0.7516666666666667, "average_precision": 0.9503961043434729, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.5625, "recall": 0.8181818181818182, "f1": 0.6666666666666666, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7632575757575758, "average_precision": 0.8608520267611177, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7380952380952381, "average_precision": 0.6717916206886795, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.6647727272727273, "average_precision": 0.9329931311167095, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "balanced_accuracy": 0.7777777777777778, "average_precision": 0.7517917267917269, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.95, "recall": 0.7916666666666666, "f1": 0.8636363636363636, "accuracy": 0.8333333333333334, "balanced_accuracy": 0.8541666666666666, "average_precision": 0.9660164732333344, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 1.0, "recall": 0.5714285714285714, "f1": 0.7272727272727273, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.7857142857142857, "average_precision": 0.9087301587301586, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "balanced_accuracy": 1.0, "average_precision": 1.0, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "old_visual_timing": {"n": 111, "mean_ms": 598.1217045946569, "median_ms": 596.9776250130963, "p95_ms": 611.5787085000193}, "model_load_seconds": 3.763066293031443, "source_binary_predictions_equal": true, "source_probability_max_abs_difference": 2.3186206817626953e-05}], "label_ids": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"], "label_names": ["인물", "음식·음료", "동물", "식물·꽃", "탈것", "건물·구조물", "악기", "불꽃놀이"], "dataset": {"schema": "approved-poster-visual-v1", "labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"], "approved_images": 187, "split_counts": {"train": 113, "dev": 37, "test": 37}, "known_cells": {"train": 861, "dev": 283, "test": 282}, "unknown_cells": {"train": 43, "dev": 13, "test": 14}, "approval_method": "explicit_user_chat_approval", "approval_export_sha256": "d69b23d65f8e9b4d6a8d5d93bffa62d7f0e7ac89836d2130399351d437be319b", "approved_rows_sha256": "32edcf03fe960d7002ca59f43e8237071f4ee2c9856c792316657a5ee4a477e3", "approval_qualification": "User approved the existing AI-assisted draft as-is in chat; no claim of independent per-image human reannotation.", "original_split_sha256": "34f3f726a698094fac29369a5da2c3f7602c89920ba4d59eebe4f7567f7557c8", "previously_exposed_test": true, "evaluation_type": "Follow-up/regression on the same previously exposed37 test posters", "PaddleOCR_modified": false, "OCR_in_timing": false}, "complete_event": {"event": "pipeline_complete", "at_utc": "2026-10-23T07:26:54.527464+00:00", "run": "/workspace/SKN33-Final-1Team/experiments/poster_benchmark/runs/pipeline-20261023T072356Z-11054", "training_executed": false}, "completed_kst": "2026-10-23 16:26:54 KST", "evidence_kind": "user_supplied_logs_cross_checked_with_bundled_local_reference", "remote_original_artifacts_received": false, "gpu_model": null, "training_executed": false, "OCR_accuracy_measured": false, "OCR_text_used_for_visual_classification": false, "previous_test_exposure": true, "repeat_means": [{"model": "resnet18_full_finetune", "repeat": 1, "n": 37, "ocr_ms": 104.07299653947908, "model_ms": 53.473302075085606, "total_ms": 157.54629861456468}, {"model": "resnet18_full_finetune", "repeat": 2, "n": 37, "ocr_ms": 82.42119559105737, "model_ms": 41.45231975771084, "total_ms": 123.87351534876821}, {"model": "resnet18_full_finetune", "repeat": 3, "n": 37, "ocr_ms": 83.3872169699847, "model_ms": 38.91699819202611, "total_ms": 122.30421516201082}, {"model": "eg2_frozen_linear", "repeat": 1, "n": 37, "ocr_ms": 96.28055873484276, "model_ms": 195.1121175913392, "total_ms": 291.3926763261819}, {"model": "eg2_frozen_linear", "repeat": 2, "n": 37, "ocr_ms": 93.14189997747087, "model_ms": 185.93085645792402, "total_ms": 279.07275643539487}, {"model": "eg2_frozen_linear", "repeat": 3, "n": 37, "ocr_ms": 94.87884848479283, "model_ms": 186.74726159047538, "total_ms": 281.6261100752682}, {"model": "eg2_full_finetune", "repeat": 1, "n": 37, "ocr_ms": 94.19377861903175, "model_ms": 194.68258121334065, "total_ms": 288.87635983237243}, {"model": "eg2_full_finetune", "repeat": 2, "n": 37, "ocr_ms": 96.2368393036839, "model_ms": 187.0111846160521, "total_ms": 283.248023919736}, {"model": "eg2_full_finetune", "repeat": 3, "n": 37, "ocr_ms": 95.12924945699302, "model_ms": 185.04420380938697, "total_ms": 280.17345326638}], "provenance": [{"name": "user-log-01.txt", "kind": "user_supplied_terminal_log", "sha256": "930846afe9d70907bf81823f41fdb149bb4f6a1c437c0756f46aadc660fd6a91", "bytes": 42536, "parsed_events": {"pipeline_sample": 111, "pipeline_arm_complete": 1}}, {"name": "user-log-02.txt", "kind": "user_supplied_terminal_log", "sha256": "4662a14c7c37669387de00b186eb6c782ce1dc5791e8ab8224be55c8c1d4768a", "bytes": 121799, "parsed_events": {"pipeline_sample": 326, "pipeline_arm_complete": 3, "pipeline_complete": 1}}, {"name": "references/local_results.json", "kind": "historical_MPS_visual_only_reference", "sha256": "6dd1a17e28331ee76fbda64402f206d4f6f8905d0b16fcbeda49a7c87f04dde6"}, {"name": "data/dataset_info.json", "kind": "approved_bundle_dataset_metadata", "sha256": "8d3583a62bbee4f1ea30168f89924033fdec1bb75a6d900239993c0ac47ccd95"}], "coverage": {"unique_timed_samples": 333, "expected_timed_samples": 333, "parsed_sample_records": 437, "overlapping_records_removed": 104}, "exclusions": ["다운로드", "모델 로딩", "워밍업", "결과 파일 저장", "학습"], "formulas": {"percentage_point": "(실행 비율 - 기준 비율) × 100", "relative_percent": "(실행값 - 기준값) / 기준값 × 100", "latency_reduction_percent": "(기준 시간 - 실행 시간) / 기준 시간 × 100"}, "validation": [{"model": "resnet18_full_finetune", "unique_samples": 111, "repeats": 3, "test_ids_equal": true, "summary_recalculation_equal": true, "known_cells": 282, "unknown_excluded": 14}, {"model": "eg2_frozen_linear", "unique_samples": 111, "repeats": 3, "test_ids_equal": true, "summary_recalculation_equal": true, "known_cells": 282, "unknown_excluded": 14}, {"model": "eg2_full_finetune", "unique_samples": 111, "repeats": 3, "test_ids_equal": true, "summary_recalculation_equal": true, "known_cells": 282, "unknown_excluded": 14}]}</script>
+<script>'use strict';
+const report=JSON.parse(document.getElementById('report-data').textContent);
+const select=document.getElementById('baseline-select');
+const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fixed=(x,n=2)=>x.toFixed(n);
+const signed=(x,n=2)=>(Math.abs(x)<.5*Math.pow(10,-n)?'':x>0?'+':'')+x.toFixed(n);
+function difference(value,base,kind){
+  const d=value-base,relative=base===0?null:d/base*100;
+  const css=Math.abs(d)<1e-12?'neutral':((kind==='ms'?d<0:d>0)?'better':'worse');
+  const text=kind==='pp'?signed(d*100)+' %p':kind==='f1'?signed(d,4):signed(d)+' ms';
+  return '<span class="delta '+css+'">'+text+'</span><small class="sub">상대 변화 '+(relative===null?'산출 불가':signed(relative)+'%')+'</small>';
+}
+function renderComparison(){
+  const base=report.models.find(m=>m.id===select.value);
+  if(!base)return;
+  const headings=['모델','정확도','정확도 차이','Macro F1','F1 차이','전체 평균 ms','시간 차이'];
+  const rows=report.models.map(m=>{
+    const values=[escapeHTML(m.name)+(m.id===base.id?'<span class="mini-tag">기준</span>':''),
+      fixed(m.metrics.label_wise_accuracy*100)+'%',difference(m.metrics.label_wise_accuracy,base.metrics.label_wise_accuracy,'pp'),
+      fixed(m.metrics.macro_f1,4),difference(m.metrics.macro_f1,base.metrics.macro_f1,'f1'),
+      fixed(m.timing.total_ms.mean_ms),difference(m.timing.total_ms.mean_ms,base.timing.total_ms.mean_ms,'ms')];
+    return '<tr data-model="'+m.id+'">'+values.map(v=>'<td>'+v+'</td>').join('')+'</tr>';
+  });
+  document.getElementById('delta-table').innerHTML='<div class="table-wrap"><table><thead><tr>'+headings.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+  document.getElementById('baseline-description').textContent='기준: '+base.name+' · 정확도 '+fixed(base.metrics.label_wise_accuracy*100)+'% · 전체 평균 '+fixed(base.timing.total_ms.mean_ms)+' ms/장';
+}
+select.addEventListener('change',renderComparison);
+renderComparison();
+function download(name,text,type){
+  const url=URL.createObjectURL(new Blob([text],{type}));
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+document.getElementById('download-data').addEventListener('click',()=>download('runpod-poster-report-data.json',JSON.stringify(report,null,2),'application/json;charset=utf-8'));
+document.getElementById('download-csv').addEventListener('click',()=>{
+  const base=report.models.find(m=>m.id===select.value);
+  const header=['baseline','model','accuracy_pct','accuracy_delta_pp','accuracy_relative_change_pct','macro_f1','macro_f1_delta','total_mean_ms','total_delta_ms','total_relative_change_pct'];
+  const rows=report.models.map(m=>[base.id,m.id,m.metrics.label_wise_accuracy*100,(m.metrics.label_wise_accuracy-base.metrics.label_wise_accuracy)*100,
+    (m.metrics.label_wise_accuracy/base.metrics.label_wise_accuracy-1)*100,m.metrics.macro_f1,m.metrics.macro_f1-base.metrics.macro_f1,
+    m.timing.total_ms.mean_ms,m.timing.total_ms.mean_ms-base.timing.total_ms.mean_ms,(m.timing.total_ms.mean_ms/base.timing.total_ms.mean_ms-1)*100]);
+  const encode=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  download('runpod-comparison-vs-'+base.id+'.csv','\uFEFF'+[header,...rows].map(r=>r.map(encode).join(',')).join('\r\n'),'text/csv;charset=utf-8');
+});
+document.getElementById('print-document').addEventListener('click',()=>window.print());
+let priorDetails=[];
+window.addEventListener('beforeprint',()=>{priorDetails=[...document.querySelectorAll('details')].map(d=>[d,d.open]);priorDetails.forEach(([d])=>d.open=true)});
+window.addEventListener('afterprint',()=>priorDetails.forEach(([d,open])=>d.open=open));
+if('IntersectionObserver' in window){
+  const observer=new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting){
+      document.querySelectorAll('.toc a').forEach(a=>{const active=a.hash==='#'+entry.target.id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current')});
+    }
+  },{rootMargin:'-8% 0px -65% 0px',threshold:0});
+  document.querySelectorAll('main section[id]').forEach(s=>observer.observe(s));
+}
+</script>
+</body></html>
