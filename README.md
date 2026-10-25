@@ -9,6 +9,7 @@
 ## 목차
 
 - [RunPod 포스터 모델 학습·평가](experiments/poster_benchmark/README.md)
+- [시각 라벨 검토·승인 데이터 보강·SigLIP2 부분 파인튜닝](experiments/visual_classifier_benchmark/PARTIAL_FINETUNE.md)
 - [최종 OCR 비교 결과](#최종-ocr-비교-결과)
 - [기획 배경과 대상 사용자](#기획-배경과-대상-사용자)
 - [전체 업무 흐름](#전체-업무-흐름)

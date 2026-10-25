@@ -4,3 +4,5 @@ runs/
 *.log
 package_manifest.json
 verification_report.json
+reviews/
+training_packets/
