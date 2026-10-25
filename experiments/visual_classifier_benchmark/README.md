@@ -2,6 +2,8 @@
 
 **DINOv2-S/B와 기존 SigLIP2 전체 파인튜닝 모델 비교는 [DINOV2_COMPARE.md](DINOV2_COMPARE.md)를 따릅니다. 기존 환경을 사용합니다.**
 
+**DINOv2-S/B 본체 전체 파인튜닝과 고정 본체·SigLIP2의 5종 비교는 [FINETUNE_DINOV2.md](FINETUNE_DINOV2.md)를 따릅니다. 추가 설치는 없습니다.**
+
 이미 내려받은 SigLIP 2 Base/384와 ConvNeXt V2 Tiny/384를 같은 CUDA GPU에서 비교합니다.
 **본체는 고정하고, 이미지 특징 위의 라벨별 Logistic Regression 8개만 학습합니다.**
 본체 파인튜닝·DINOv3·OCR·TensorRT는 이번 실행기에 포함하지 않습니다.
