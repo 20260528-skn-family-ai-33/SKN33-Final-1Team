@@ -17,7 +17,8 @@ from evaluate_qwen_zero_shot import environment
 from benchlib import log
 from resultlib import digest, inside, percentile, read, require, save, sha, write_csv
 from requirements_json_contract import aggregate, evaluate, load_cases, parse, prompt
-from requirements_compact import PROFILE as COMPACT_PROFILE, input_message, interpret as compact_interpret, prompt as compact_prompt
+from requirements_compact import (PROFILES as COMPACT_PROFILES, input_message,
+    interpret as compact_interpret, prompt as compact_prompt, output_mode as compact_output_mode)
 
 SPECS = {
     '2b': dict(repo='Qwen/Qwen3.5-2B', estimate=4_600_000_000, gpu=8 * 1024**3, ram=8 * 1024**3),
@@ -198,8 +199,8 @@ def sources():
 
 
 def interpret_response(raw, text, profile):
-    if profile == COMPACT_PROFILE:
-        return compact_interpret(raw, text)
+    if profile in COMPACT_PROFILES:
+        return compact_interpret(raw, text, profile)
     return dict(parsed=parse(raw, text), output_mode='full_json')
 
 
@@ -207,7 +208,7 @@ def infer(text, instruction, processor, model, args):
     import torch
     torch.cuda.synchronize()
     start = time.perf_counter()
-    message = input_message(text) if args.prompt_profile == COMPACT_PROFILE else text
+    message = input_message(text) if args.prompt_profile in COMPACT_PROFILES else text
     messages = [dict(role='system', content=instruction), dict(role='user', content=message)]
     rendered = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
     require(rendered.endswith('<think>\n\n</think>\n\n'), 'Non-thinking template was not applied')
@@ -283,7 +284,7 @@ def one_model(args, name, cases, instruction):
                 output_mode=first['output_mode'],
                 repeat_disagreement=any(r['parsed']['value'] != first['parsed']['value'] for r in repeats[1:])
                 if args.repeats > 1 else None))
-            if args.prompt_profile == COMPACT_PROFILE:
+            if args.prompt_profile in COMPACT_PROFILES:
                 details[-1].update({k: first[k] for k in ('assembled', 'compact', 'source_segments', 'assembly_trace')})
             valid = first['parsed']['schema_valid'] and first['parsed']['source_valid']
             items = first['parsed']['value']['items'] if valid else []
@@ -298,13 +299,13 @@ def one_model(args, name, cases, instruction):
             mean_ms=sum(t['total_ms'] for t in timings) / len(timings),
             median_ms=percentile([t['total_ms'] for t in timings], .5),
             p95_ms=percentile([t['total_ms'] for t in timings], .95), timing_n=len(timings),
-            output_mode='compact_assembled' if args.prompt_profile == COMPACT_PROFILE else 'full_json',
+            output_mode=compact_output_mode(args.prompt_profile) if args.prompt_profile in COMPACT_PROFILES else 'full_json',
             mean_input_tokens=sum(t['input_tokens'] for t in timings) / len(timings),
             mean_generated_tokens=sum(t['generated_tokens'] for t in timings) / len(timings),
             reached_token_limit_requests=sum(t['reached_token_limit'] for t in timings),
             repeat_disagreement_cases=sum(d['repeat_disagreement'] for d in details) if args.repeats > 1 else None,
             synthetic=True, human_verified=False, training_executed=False)
-        if args.prompt_profile == COMPACT_PROFILE:
+        if args.prompt_profile in COMPACT_PROFILES:
             summary.update(compact_json_valid_rate=sum(d['compact']['json_valid'] for d in details) / len(details),
                 compact_schema_valid_rate=sum(d['compact']['schema_valid'] for d in details) / len(details),
                 assembly_completed_rate=sum(d['assembled'] is not None for d in details) / len(details),
@@ -336,7 +337,7 @@ def run(args):
     packet_data = load_cases(args.dataset)
     require(args.prompt_profile == 'baseline' or args.models == ['4b'],
             'Non-baseline prompt profiles require --models 4b')
-    instruction = compact_prompt() if args.prompt_profile == COMPACT_PROFILE else prompt(read(SCHEMA), args.prompt_profile)
+    instruction = compact_prompt(args.prompt_profile) if args.prompt_profile in COMPACT_PROFILES else prompt(read(SCHEMA), args.prompt_profile)
     src = sources()
     downloads = {m: packet(args, m) for m in args.models}
     initial_stats = {m: {n: (inside(folder(args, m), n).stat().st_size,
@@ -345,7 +346,7 @@ def run(args):
     config = dict(schema='qwen-requirements-json-pilot-v1', environment=env, models=args.models,
         model_packets=downloads, dataset_sha256=sha(args.dataset), source_hashes=src,
         prompt=instruction, prompt_profile=args.prompt_profile,
-        output_mode='compact_assembled' if args.prompt_profile == COMPACT_PROFILE else 'full_json',
+        output_mode=compact_output_mode(args.prompt_profile) if args.prompt_profile in COMPACT_PROFILES else 'full_json',
         rule_extraction_executed=False,
         precision='bf16', attn_implementation='sdpa', thinking=False, do_sample=False,
         max_new_tokens=args.max_new_tokens, max_input_tokens=args.max_input_tokens,
@@ -398,7 +399,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('command', choices=('check-env', 'download', 'run', 'show-results'))
     p.add_argument('--models', nargs='+', choices=tuple(SPECS), default=['2b', '4b'])
-    p.add_argument('--prompt-profile', choices=('baseline', '4b-v2', '4b-v3', COMPACT_PROFILE), default='baseline')
+    p.add_argument('--prompt-profile', choices=('baseline', '4b-v2', '4b-v3', *COMPACT_PROFILES), default='baseline')
     p.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file',
         help='RAM capacity estimate; clean-unmapped-file also credits eligible active file cache, without clearing it')
     p.add_argument('--models-root', type=Path, default=Path('/workspace/models'))

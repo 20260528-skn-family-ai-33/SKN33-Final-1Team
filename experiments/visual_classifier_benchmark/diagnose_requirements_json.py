@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from requirements_json_contract import COUNTS, aggregate, evaluate, normalize, parse
-from requirements_compact import interpret as compact_interpret
+from requirements_compact import PROFILE, FIXED_PROFILE, interpret as compact_interpret
 from resultlib import digest, inside, read, require, save, sha, write_csv
 
 
@@ -45,9 +45,10 @@ def align(expected, actual, text):
 def diagnose(row):
     text, gold = row['text'], row['expected_draft']
     mode = row.get('output_mode', 'full_json')
-    require(mode in ('full_json', 'compact_assembled'), 'Unknown output mode')
-    if mode == 'compact_assembled':
-        assembled = compact_interpret(row['raw'], text)
+    require(mode in ('full_json', 'compact_assembled', 'compact_fixed_assembled'), 'Unknown output mode')
+    if mode in ('compact_assembled', 'compact_fixed_assembled'):
+        profile = FIXED_PROFILE if mode == 'compact_fixed_assembled' else PROFILE
+        assembled = compact_interpret(row['raw'], text, profile)
         require(all(row.get(k) == v for k, v in assembled.items()),
                 'Compact assembly differs from saved evidence: ' + row['case_id'])
         parsed = assembled['parsed']

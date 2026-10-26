@@ -1,5 +1,53 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B-2: 항목 키 5개 고정
+
+`--prompt-profile 4b-compact-v2`는 B-1의 조건별 키 생략을 없애는 비교 실험이다.
+B-1의 엄격 전체 일치율은 26/40(65%), 조립 완료율은 29/40(72.5%)였고,
+항목 키 오류 10문장 모두 시각 대상 target이 빠졌다. 이 중 R015에는 필드 오류도
+함께 있었다. 키 누락을 고쳐도 의미 오류가 자동 해결되는 것은 아니다.
+
+모든 items 항목에 `source_id`, `field`, `operator`, `target`, `value`를 출력한다.
+정보 항목의 target은 null, 존재 연산자의 value는 null이며 해당 키도 생략하지 않는다.
+시각 대상, 문자 값, 수량은 모델이 원문에 근거해 채운다. type/source는 이전처럼
+코드가 결정·복사한다. 누락된 target을 사전이나 정답에서 추정해 넣지 않는다.
+
+```json
+{"items":[{"source_id":"S1","field":"musical_instrument","operator":"forbidden","target":"바이올린","value":null}],"needs_review":[]}
+```
+
+B-1의 의미 판단 규칙과 네 예시의 입력·판단은 유지하고 예시의 null 키만 명시한다.
+기존 profile은 보존하며 새 output_mode는 `compact_fixed_assembled`다.
+고정 키·null 규약을 위반하면 조립 실패로 기록하고 기존 엄격 채점을 적용한다.
+생성 설정, 원문 구간 처리, RAM 정책, 모델 가중치와 합성 정답은 변경하지 않는다.
+
+기존 환경과 다운로드한 모델로 새 run-dir에 평가한다. 이전 결과 디렉터리를 재사용하지 않는다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_json.sh run \
+  --models 4b --prompt-profile 4b-compact-v2 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --run-dir runs/qwen4b-requirements-compact-v2 \
+  --allow-draft-labels --resume &&
+bash run_requirements_json.sh show-results \
+  --run-dir runs/qwen4b-requirements-compact-v2
+```
+
+완료 후 저장 응답으로 B-1/B-2를 비교한다. 아래 명령은 재추론하지 않는다.
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen4b-requirements-compact-v1 \
+            runs/qwen4b-requirements-compact-v2 \
+  --model 4b --out reviews/qwen4b-compact-comparison-v2
+```
+
+키 누락 10문장의 회복·새 회귀, 엄격 전체 일치율, 조립 완료율, 금지·수량 재현율,
+p95와 생성 토큰 수를 함께 확인한다. 같은 공개 합성 40문장의 개발 비교이며
+사람이 검토한 독립 평가셋에서 90%를 달성했다는 의미는 아니다.
+사용자 요청에 따라 로컬 검증·모델 실행과 RunPod 직접 실행은 하지 않았다.
+
 ## B안: 축소 출력과 코드 조립
 
 `--prompt-profile 4b-compact-v1`은 같은 4B로 의미 필드만 생성하는 별도 실험이다.
