@@ -37,6 +37,13 @@
 [4B 파일](https://huggingface.co/Qwen/Qwen3.5-4B/tree/main)은 약9.34GB로 합계 약14GB다.
 두 모델을 동시에 GPU에 올리지 않는다. BF16·SDPA·단일 GPU, 기존 benchmark `.venv/bin/python`을 사용한다.
 2B는 여유 VRAM/RAM 각각8GiB,4B는 각각14GiB를 보수적인 사전 조건으로 확인한다. 이는 실제 peak 사용량 보장이 아니다.
+RAM 검사는 host `MemAvailable`와 컨테이너 hard limit를 함께 적용한다. `limit-current`만 사용하면 파일 캐시 때문에 가용량을 과소평가할 수 있다.
+수정된 검사는 비활성 파일 캐시 중 file/shmem/dirty/writeback 계수로 보수적으로 제한한 부분만 회수 가능 추정치로 더한다.
+active cache·공유메모리·dirty/writeback·kernel slab은 가용량으로 추가하지 않는다. 통계가 없으면 캐시를 더하지 않는다.
+`RAM_available_bytes`는 캐시 회수 후 추정치이며, `RAM_headroom_without_cache_bytes`와 `RAM_memory_details`에 원시 여유량·한도·계수도 표시한다.
+호스트의 수백GB RAM을 컨테이너 가용량으로 간주하지 않고 각 확인 가능한 hard limit 아래로 계속 제한한다.8/14GiB 기준도 그대로 유지한다.
+캐시 회수는 실제 메모리 압박 때의 커널 동작에 의존하므로 즉시 회수/성공을 보장하지 않는다. 코드가 `drop_caches`, 프로세스 종료, cgroup 한도 변경을 실행하지 않는다.
+계수 의미는 [Linux cgroup 문서](https://docs.kernel.org/admin-guide/cgroup-v2.html#memory), inactive-file을 사용량에서 구분하는 관행은 [Docker stats 문서](https://docs.docker.com/reference/cli/docker/container/stats/)를 참고한다.
 처음 다운로드할 때 모델 볼륨에는 두 모델의 남은 예상 크기와 추가2GiB 여유가 필요하다.
 설치·업그레이드·양자화·CPU offload·최적화 커널 설치는 하지 않는다. 자원이 부족하면 중단한다.
 

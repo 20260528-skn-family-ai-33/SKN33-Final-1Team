@@ -31,22 +31,68 @@ def folder(args, model):
     return args.models_root / ('qwen3.5-' + model)
 
 
-def ram_available():
+def ram_status():
+    """Estimate capacity after clean inactive-file reclaim, retaining every visible hard limit."""
     values = dict(line.split(':', 1) for line in Path('/proc/meminfo').read_text().splitlines())
-    available = int(values['MemAvailable'].split()[0]) * 1024
-    for limit, used in (('/sys/fs/cgroup/memory.max', '/sys/fs/cgroup/memory.current'),
-                        ('/sys/fs/cgroup/memory/memory.limit_in_bytes', '/sys/fs/cgroup/memory/memory.usage_in_bytes')):
-        if Path(limit).is_file() and Path(used).is_file():
-            cap = Path(limit).read_text().strip()
-            if cap != 'max':
-                available = min(available, max(0, int(cap) - int(Path(used).read_text().strip())))
-    return available
+    host_available = int(values['MemAvailable'].split()[0]) * 1024
+    available, raw_available, controllers = host_available, host_available, []
+    for root, cap_name, used_name, hierarchical in (
+        (Path('/sys/fs/cgroup'), 'memory.max', 'memory.current', False),
+        (Path('/sys/fs/cgroup/memory'), 'memory.limit_in_bytes', 'memory.usage_in_bytes', True),
+    ):
+        if not (root / cap_name).is_file() or not (root / used_name).is_file():
+            continue
+        cap_text = (root / cap_name).read_text().strip()
+        if cap_text == 'max':
+            controllers.append(dict(path=str(root), limit_bytes=None))
+            continue
+        cap = int(cap_text)
+        used = max(0, int((root / used_name).read_text().strip()))
+        stats_path = root / 'memory.stat'
+        stats = dict(line.split() for line in stats_path.read_text().splitlines()) if stats_path.is_file() else {}
+
+        def counter_key(name):
+            return 'total_' + name if hierarchical and 'total_' + name in stats else name
+
+        def counter(name):
+            return max(0, int(stats.get(counter_key(name), '0')))
+
+        inactive = counter('inactive_file')
+        file_cache = counter('cache' if hierarchical else 'file')
+        shmem = counter('shmem')
+        dirty = counter('dirty' if hierarchical else 'file_dirty')
+        writeback = counter('writeback' if hierarchical else 'file_writeback')
+        # Do not credit active cache, tmpfs/shared memory, dirty/writeback pages, or kernel slabs.
+        # The counters may overlap; subtracting dirty+writeback is intentionally conservative.
+        needed = ('inactive_file', 'cache', 'shmem', 'dirty', 'writeback') if hierarchical else (
+            'inactive_file', 'file', 'shmem', 'file_dirty', 'file_writeback')
+        complete_stats = all(counter_key(name) in stats for name in needed)
+        reclaim = max(0, min(inactive, max(0, file_cache - shmem), used) - dirty - writeback) if complete_stats else 0
+        raw_headroom = max(0, cap - used)
+        estimated_headroom = min(cap, max(0, cap - used + reclaim))
+        raw_available = min(raw_available, raw_headroom)
+        available = min(available, estimated_headroom)
+        controllers.append(dict(path=str(root), limit_bytes=cap, used_bytes=used,
+            headroom_without_cache_bytes=raw_headroom, file_cache_bytes=file_cache,
+            inactive_file_bytes=inactive, shmem_bytes=shmem, dirty_bytes=dirty,
+            writeback_bytes=writeback, cache_credit_counters_complete=complete_stats,
+            credited_clean_inactive_file_bytes=reclaim,
+            headroom_after_reclaim_estimate_bytes=estimated_headroom))
+    return dict(host_available_bytes=host_available, available_estimate_bytes=available,
+        headroom_without_cache_bytes=raw_available, controllers=controllers,
+        policy='min(host MemAvailable, each visible cgroup hard-limit headroom plus clean inactive-file estimate); '
+               'no forced cache clearing, no limit changes, no guarantee that all credited cache is immediately reclaimable')
+
+
+def ram_available():
+    return ram_status()['available_estimate_bytes']
 
 
 def resources(args, models):
     import torch
     free_gpu, total_gpu = torch.cuda.mem_get_info(0)
-    available_ram = ram_available()
+    memory = ram_status()
+    available_ram = memory['available_estimate_bytes']
     parent = args.models_root
     while not parent.exists():
         parent = parent.parent
@@ -65,7 +111,9 @@ def resources(args, models):
     if free_disk < remaining + 2 * 1024**3:
         issues.append('Insufficient model-volume disk space. No files are automatically deleted.')
     report = dict(ready=not issues, GPU_free_bytes=free_gpu, GPU_total_bytes=total_gpu,
-        RAM_available_bytes=available_ram, disk_free_bytes=free_disk,
+        RAM_available_bytes=available_ram, RAM_available_is_estimate=True,
+        RAM_headroom_without_cache_bytes=memory['headroom_without_cache_bytes'],
+        RAM_memory_details=memory, disk_free_bytes=free_disk,
         estimated_remaining_download_bytes=remaining, required_disk_free_bytes=remaining + 2 * 1024**3,
         capacity_policy='Conservative estimates, not measured peaks/cache guarantees', issues=issues)
     print(json.dumps(dict(resource_check=report), ensure_ascii=False, indent=2), flush=True)
