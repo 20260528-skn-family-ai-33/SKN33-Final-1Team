@@ -295,7 +295,9 @@ def run(args):
     require(args.allow_draft_labels, 'Pilot expectations are AI-authored and unreviewed; explicitly pass --allow-draft-labels')
     env = environment()
     packet_data = load_cases(args.dataset)
-    instruction = prompt(read(SCHEMA))
+    require(args.prompt_profile == 'baseline' or args.models == ['4b'],
+            'The 4b-v2 prompt profile requires --models 4b')
+    instruction = prompt(read(SCHEMA), args.prompt_profile)
     src = sources()
     downloads = {m: packet(args, m) for m in args.models}
     initial_stats = {m: {n: (inside(folder(args, m), n).stat().st_size,
@@ -353,6 +355,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('command', choices=('check-env', 'download', 'run', 'show-results'))
     p.add_argument('--models', nargs='+', choices=tuple(SPECS), default=['2b', '4b'])
+    p.add_argument('--prompt-profile', choices=('baseline', '4b-v2'), default='baseline')
     p.add_argument('--models-root', type=Path, default=Path('/workspace/models'))
     p.add_argument('--revision', default='main')
     p.add_argument('--dataset', type=Path, default=DATA)
