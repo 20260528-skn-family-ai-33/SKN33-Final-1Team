@@ -65,6 +65,12 @@ git pull --ff-only origin dev/12_runpod
 [QWEN_ZERO_SHOT.md](QWEN_ZERO_SHOT.md)를 따른다. 기존 데이터·학습 결과를 보존하며 재설치·재학습은 하지 않는다.
 미판정/JSON 실패는 정확도에서 오답으로 계산하고, SigLIP의 과거 p95와 Qwen의 새 측정값을 구분한다.
 
+## 요구조건 JSON 추출 초기 비교
+
+요구조건 원문을 JSON으로 구조화하는2B·4B 비교는 [REQUIREMENTS_JSON_PILOT.md](REQUIREMENTS_JSON_PILOT.md)를 따른다.
+이미지 분류와 다른 텍스트 실험이며, 사람 검수 전 합성40건의 초안 일치도를 표시한다. 환경 재설치·학습·운영 API 변경은 없다.
+같은 안내에84.40% 원본·현재 비교 run·Qwen을 보존하는 과거 실험 가중치 정리 명령도 포함한다.
+
 ## 최초 수동 배치 참고
 
 제공된 `visual-classifier-benchmark-2026-10-23.tar.gz`를 Jupyter에서 `/workspace`에 업로드합니다.
