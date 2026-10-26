@@ -59,6 +59,7 @@ git restore --source=origin/dev/12_runpod --worktree -- \
 
 디스크가 여전히 가득 찬 경우에 진행한다. 삭제 대상은 **완료된 다른 SigLIP/DINOv2 실험 run의 `.safetensors`**와
 명시한 미사용 다운로드 폴더4개 안의 safetensors/pytorch_model.bin 파일뿐이다.
+이미 정리가 끝나 필요한 여유 공간이 확보됐다면 이 단계를 건너뛰고3번으로 진행한다. plan/apply를 반복할 필요가 없다.
 
 아래 두 run은 전체를 보존한다.
 
@@ -68,6 +69,8 @@ git restore --source=origin/dev/12_runpod --worktree -- \
 `/workspace/models/siglip2-base-384`와`qwen3.5-9b`, 기존 Qwen run도 보존한다.
 기존 환경·데이터·JSON·CSV·로그·npy/npz·작은 분류기 등의 비대상 파일은 삭제하지 않는다.
 진행 중인 run의 잠금이 있으면 중단한다. 코드가 자동으로 학습을 종료하지 않는다.
+Linux NFS에서 배타 잠금을 얻으려면 기존 `.lock`을 쓰기 가능한 `r+`로 열어야 한다. 읽기 전용 `r`는 EBADF가 날 수 있다.
+기존 잠금 파일은 생성·초기화·내용 쓰기 없이 사용하며, 잠금을 생략하거나 무시하지 않는다.
 
 먼저 목록·확보 예상량만 기록한다. 이 단계는 삭제하지 않는다.
 

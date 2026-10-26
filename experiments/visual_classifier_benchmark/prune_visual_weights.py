@@ -22,7 +22,9 @@ def locks():
         for root in sorted(RUNS.iterdir()):
             path = root / '.lock'
             if path.is_file():
-                stream = stack.enter_context(path.open('r'))
+                # Linux NFS implements LOCK_EX using a write lock: a read-only fd gets EBADF.
+                # r+ keeps the existing lock file intact and never creates/truncates it.
+                stream = stack.enter_context(path.open('r+'))
                 fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
         yield
 
