@@ -36,19 +36,10 @@
 - LoRA를 원래 projection 가중치로 병합한 뒤 병합 전후 개발 점수 일치와 변경 허용 파라미터를 확인한다.
   p95는 실제 런팟 측정값으로 판단한다. 새 독립 일반화 정확도 또는90% 달성을 보장하지 않는다.
 
-## 작업 PC에서 Git 반영
+## 코드 반영 상태
 
-신규 파일3개를 기존 `dev/12_runpod` 흐름으로 반영한다. 아래는 사용자가 실행하는 명령이다.
-
-```bash
-cd /Users/choejiheum/SK_AI/SKN33-Final-1Team &&
-git add \
-  experiments/visual_classifier_benchmark/finetune_siglip_openimages_lora.py \
-  experiments/visual_classifier_benchmark/run_openimages_lora.sh \
-  experiments/visual_classifier_benchmark/OPENIMAGES_LORA.md &&
-git commit -m "feat(infra): Open Images 보강 SigLIP2 본체 LoRA 비교 추가" &&
-git push origin dev/12_runpod
-```
+학습 실행기3개는 커밋 `9eb820a`로 `dev/12_runpod`에 push했고 원격 참조도 확인했다.
+작업 PC에서 다시 커밋하거나 push할 필요 없이 아래 RunPod 코드 반영부터 진행한다.
 
 ## RunPod 코드 반영
 
