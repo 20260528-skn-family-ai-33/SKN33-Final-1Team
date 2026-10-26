@@ -1,0 +1,114 @@
+﻿image_id,group_id,image,original_person,original_food_drink,original_animal,original_plant_flower,original_vehicle,original_building_structure,original_musical_instrument,original_fireworks,new_person,new_food_drink,new_animal,new_plant_flower,new_vehicle,new_building_structure,new_musical_instrument,new_fireworks,approval,reviewer,reason
+P002,G002,data/images/P002.jpg,0,1,1,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P003,G003,data/images/P003.png,1,0,0,1,1,1,0,0,,1,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 상단 오른쪽에 촛불·층·크림 형태가 식별되는 독립 케이크 그림이 있습니다.
+P004,G004,data/images/P004.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P007,G007,data/images/P007.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P008,G008,data/images/P008.jpg,1,1,0,0,0,0,1,0,,,,,,,,,UNREVIEWED,,
+P010,G010,data/images/P010.jpg,1,?,1,0,1,1,0,0,,,,,,,,,UNREVIEWED,,
+P014,G014,data/images/P014.jpg,1,0,1,?,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P017,G017,data/images/P017.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P019,G019,data/images/P019.jpg,0,1,0,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P020,G020,data/images/P020.jpg,0,?,1,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P021,G021,data/images/P021.png,0,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P022,G022,data/images/P022.jpg,1,1,0,1,0,1,0,?,,,,,,,1,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 상단 오른쪽 공연 사진의 오케스트라에서 갈색 현악기 몸통과 활이 보입니다. 사진이 작아 사람 최종 확인이 필요합니다.
+P023,G023,data/images/P023.jpg,1,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P026,G026,data/images/P026.jpg,1,1,0,?,1,?,1,0,,,,,,,,,UNREVIEWED,,
+P027,G027,data/images/P027.jpg,1,1,1,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P028,G028,data/images/P028.png,1,0,0,1,0,1,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 오른쪽 중간 산책 인물 옆에 네 다리·귀·꼬리가 있는 작은 개 그림이 있습니다.
+P029,G029,data/images/P029.jpg,1,0,1,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P031,G031,data/images/P031.png,1,1,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P033,G033,data/images/P033.png,0,0,1,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P034,G034,data/images/P034.png,1,1,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P035,G035,data/images/P035.jpg,1,1,1,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P036,G036,data/images/P036.jpg,0,0,0,0,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P037,G037,data/images/P037.png,0,0,0,1,0,1,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 성문 아래 성벽 투사 그림에 사슴 몸통·뿔과 날개를 편 새가 식별됩니다.
+P040,G040,data/images/P040.jpg,1,1,0,1,0,1,?,0,,,,,,,0,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 주요 무대·거리 그림에는 음표와 스피커가 있지만 식별 가능한 악기 몸통·현·건반·북면은 없습니다.
+P041,G041,data/images/P041.jpg,1,1,0,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P045,G045,data/images/P045.png,1,0,0,1,0,1,0,1,,,,,,,,,UNREVIEWED,,
+P048,G048,data/images/P048.jpg,1,0,0,1,?,1,0,0,,,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: vehicle: 강 위 왼쪽에 네 로터와 기체가 구분되는 드론이 그려져 있습니다.
+P049,G049,data/images/P049.jpg,1,0,1,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P051,G051,data/images/P051.png,?,0,0,1,0,1,0,0,1,,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: person: 하단 중앙 계단 앞에 머리와 몸통이 구분되는 서 있는 사람 실루엣이 있습니다. 크기가 작아 최종 확인이 필요합니다.
+P053,G053,data/images/P053.png,0,0,0,1,0,0,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 상단 중앙과 하단 오른쪽 꽃 사이에 날개·몸통·더듬이가 있는 노란 나비가 있습니다.
+P054,G054,data/images/P054.jpg,1,0,0,1,0,0,0,1,,,,,,,,,UNREVIEWED,,
+P055,G055,data/images/P055.jpg,1,0,0,0,0,1,0,1,,,,,,,,,UNREVIEWED,,
+P056,G056,data/images/P056.jpg,1,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P059,G059,data/images/P059.jpg,0,0,1,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P061,G061,data/images/P061.jpg,?,0,1,0,1,1,0,0,0,,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: person: 주요 시각 콘텐츠는 동물형·외계형 마스코트와 탑·드론이며 식별 가능한 사람 사진·사람 그림·사람 실루엣은 없습니다.
+P063,G063,data/images/P063.jpg,0,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P065,G065,data/images/P065.png,1,1,1,1,?,1,?,0,,,,,,,1,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 가운데 마을 거리의 악대가 황금색 관과 벨을 가진 관악기를 들고 연주합니다. 작은 그림이므로 최종 확인이 필요합니다.
+P067,G067,data/images/P067.png,?,0,?,0,?,1,0,0,,,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: vehicle: 독립 네온 선화에 날개·동체·꼬리가 있는 비행기 모양이 반복됩니다.
+P071,G071,data/images/P071.jpg,0,1,1,1,0,0,0,0,,,,,,,1,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 왼쪽 아래 갈색 동물 캐릭터가 둥근 몸통과 오른쪽으로 뻗은 긴 목이 있는 기타류 악기를 들고 있습니다.
+P073,G073,data/images/P073.jpg,1,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P078,G078,data/images/P078.jpg,1,1,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P079,G079,data/images/P079.jpg,1,0,0,0,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P082,G082,data/images/P082.jpg,1,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P083,G083,data/images/P083.png,1,1,1,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P084,G084,data/images/P084.png,0,1,1,1,1,1,?,?,,,,,,,,,UNREVIEWED,,
+P087,G087,data/images/P087.jpg,1,0,1,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P088,G088,data/images/P088.png,0,0,1,1,0,1,0,1,,,,0,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: plant_flower: 주요 그림은 불꽃·교량·도시·가로등·새입니다. 식별되는 꽃·잎·나무·풀 형상은 없습니다.
+P089,G089,data/images/P089.jpg,1,1,0,0,0,1,1,1,,,,,,,,,UNREVIEWED,,
+P091,G091,data/images/P091.jpg,0,1,0,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P092,G092,data/images/P092.jpg,0,1,0,0,0,0,0,0,,,,1,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: plant_flower: 위쪽 접시의 생배추에서 잎맥과 잎이 뭉친 식물 형태가 독립적으로 식별됩니다. 식재료와 식물의 중복 표기 기준 확인이 필요합니다.
+P094,G094,data/images/P094.jpg,1,0,0,1,1,1,0,1,,,,,,,,,UNREVIEWED,,
+P096,G096,data/images/P096.png,1,0,0,1,0,1,1,0,,,,,,,,,UNREVIEWED,,
+P097,G097,data/images/P097.png,1,1,0,1,1,1,?,0,,,,,,,,,UNREVIEWED,,
+P098,G098,data/images/P098.jpg,1,0,0,1,0,1,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 오른쪽 중간 큰 마스코트에 새의 부리·얼굴·날개가 식별됩니다.
+P099,G099,data/images/P099.jpg,1,0,1,0,0,0,?,0,,,,,,,1,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 지구 왼쪽 아래 인물이 관과 벌어진 벨이 있는 황금색 관악기를 입에 대고 연주합니다.
+P100,G100,data/images/P100.jpg,1,0,1,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P101,G101,data/images/P101.jpg,1,?,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P102,G102,data/images/P102.png,1,0,0,0,0,0,1,0,,,,,,,0,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 하단 기하학 인물 주변 물체는 독서/책 도형이며 식별 가능한 기타·북·관악기·건반의 구조는 없습니다.
+P103,G103,data/images/P103.png,1,1,0,1,0,1,0,1,,,,,,,,,UNREVIEWED,,
+P104,G104,data/images/P104.jpg,1,0,0,1,1,1,0,0,,,,,,,,,UNREVIEWED,,
+P105,G105,data/images/P105.jpg,0,0,0,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P112,G112,data/images/P112.png,1,0,0,1,0,1,1,?,,,,,,,,,UNREVIEWED,,
+P113,G113,data/images/P113.jpg,1,1,0,?,0,1,1,1,,,,1,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: plant_flower: 하단 전경과 마을 주변에 줄지어 있는 수풀과 수목의 수관이 식별됩니다.
+P115,G115,data/images/P115.jpg,1,0,1,1,0,?,1,0,,,,,,,,,UNREVIEWED,,
+P122,G122,data/images/P122.jpg,0,0,0,0,0,0,0,1,,,,,,,,,UNREVIEWED,,
+P123,G123,data/images/P123.jpg,0,?,0,1,1,1,0,0,,1,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 전경에 익은 곡식 이삭과 낟알이 크게 그려져 있어 식별되는 곡물 식재료로 보는 제안입니다. 재배 중 곡식의 포함 기준 최종 확인이 필요합니다.
+P124,G124,data/images/P124.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P125,G125,data/images/P125.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P126,G126,data/images/P126.jpg,1,1,1,1,0,1,1,0,,,,,,,,,UNREVIEWED,,
+P127,G127,data/images/P127.jpg,0,1,0,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P129,G129,data/images/P129.png,1,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P132,G132,data/images/P132.png,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P133,G133,data/images/P133.png,1,0,0,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P134,G134,data/images/P134.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P135,G135,data/images/P135.jpg,1,0,1,1,1,1,?,0,,1,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 오른쪽 아래 새 마스코트가 거품과 노란 액체가 담긴 투명 맥주잔을 들고 있습니다.
+P136,G136,data/images/P136.jpg,1,1,1,1,0,1,0,?,,,,,,,,1,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: fireworks: 케이크 위쪽 배경에 중심에서 여러 방향으로 퍼지는 방사형 불꽃 궤적들이 있습니다. 옅은 장식이므로 최종 확인이 필요합니다.
+P137,G137,data/images/P137.png,0,1,1,1,1,1,0,0,,,,,,,,,UNREVIEWED,,
+P138,G138,data/images/P138.jpg,1,?,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P139,G139,data/images/P139.jpg,1,0,0,1,0,1,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 오른쪽 위 단풍나무 가지 사이에 날개와 꼬리가 구분되는 여러 새의 검은 실루엣이 있습니다.
+P141,G141,data/images/P141.jpg,0,0,1,0,1,0,0,0,,,,,,,,,UNREVIEWED,,
+P142,G142,data/images/P142.jpg,1,0,?,1,0,1,?,0,,,,,,,,,UNREVIEWED,,
+P143,G143,data/images/P143.png,1,0,0,0,1,1,?,0,,,,,,,1,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: musical_instrument: 하단 오른쪽 무대 위에 북·심벌·스탠드가 있는 드럼 세트와 연주자 실루엣이 식별됩니다. 작은 그림이므로 최종 확인이 필요합니다.
+P144,G144,data/images/P144.jpg,0,0,0,0,0,1,1,0,,,,,,,,,UNREVIEWED,,
+P145,G145,data/images/P145.jpg,1,1,1,1,1,1,0,0,,,,,,,,,UNREVIEWED,,
+P149,G149,data/images/P149.jpg,1,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P150,G150,data/images/P150.jpg,1,?,1,1,1,0,?,0,,1,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 왼쪽의 큰 곡식 낟알/이삭 그림과 상단 오른쪽의 꼭지·잎이 달린 과일형 마스코트를 식재료 묘사로 보는 제안입니다.
+P151,G151,data/images/P151.jpg,1,0,1,1,1,1,0,1,,,,,,,,,UNREVIEWED,,
+P152,G152,data/images/P152.jpg,1,1,1,1,1,1,0,0,,,,,,,,,UNREVIEWED,,
+P154,G154,data/images/P154.jpg,0,1,1,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P155,G155,data/images/P155.jpg,1,0,0,0,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P156,G156,data/images/P156.jpg,1,0,1,1,0,1,1,?,,1,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 오른쪽 중간에 꼭지·잎과 비늘무늬 표면이 있는 파란 파인애플형 과일 그림이 있습니다. 스타일화되어 있어 최종 확인이 필요합니다. / vehicle: 왼쪽 중간에 선체와 높은 삼각 돛이 있는 흰 범선/요트가 명확합니다.
+P158,G158,data/images/P158.png,1,1,0,1,1,1,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 왼쪽 아래 나뭇가지에 앉은 작은 흰 새의 몸통·부리·꼬리 형태가 보입니다. 원본 해상도가 낮아 최종 확인이 필요합니다.
+P159,G159,data/images/P159.jpg,1,0,0,0,0,1,0,1,,,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: vehicle: 전경 물 위에 선체·뱃머리가 구분되는 배 두 척이 떠 있습니다.
+P162,G162,data/images/P162.jpg,1,1,0,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P163,G163,data/images/P163.jpg,0,0,0,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P164,G164,data/images/P164.jpg,1,0,1,1,?,1,?,1,,,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: vehicle: 원형 주요 그림 위쪽에 줄과 바구니가 달린 열기구가 있습니다.
+P165,G165,data/images/P165.jpg,1,0,1,1,0,1,1,1,,,,,1,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: vehicle: 오른쪽 하늘에 바구니가 매달린 여러 열기구가 있습니다.
+P166,G166,data/images/P166.png,1,0,0,0,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P168,G168,data/images/P168.jpg,1,?,1,1,0,0,0,0,,1,,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: food_drink: 왼쪽 휴대폰 화면에 접시에 담긴 나물이 있고 오른쪽 인물 앞에 나물 다발이 그려져 있습니다.
+P170,G170,data/images/P170.jpg,1,0,?,0,0,0,0,0,,,1,,,,,,APPROVED,사용자 학습 반영 지시 / Codex AI 교차검토,사용자가 AI 수정안 데이터로 재학습을 요청함. 독립적인 사람 재라벨링은 아님. AI 수정제안: animal: 책 바깥 상단의 큰 녹색 오려붙인 그림에 부리·몸통·날개·꼬리가 있는 새 형태가 있습니다.
+P172,G172,data/images/P172.jpg,1,?,1,1,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P173,G173,data/images/P173.png,1,0,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P174,G174,data/images/P174.jpg,0,0,1,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P175,G175,data/images/P175.jpg,1,?,0,0,1,1,1,0,,,,,,,,,UNREVIEWED,,
+P176,G176,data/images/P176.jpg,?,0,0,?,0,1,0,?,,,,,,,,,UNREVIEWED,,
+P179,G179,data/images/P179.jpg,1,1,0,1,0,1,0,0,,,,,,,,,UNREVIEWED,,
+P180,G180,data/images/P180.jpg,1,1,1,0,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P181,G181,data/images/P181.png,1,0,1,0,0,1,1,0,,,,,,,,,UNREVIEWED,,
+P182,G182,data/images/P182.png,?,0,1,1,0,1,1,0,,,,,,,,,UNREVIEWED,,
+P183,G183,data/images/P183.png,1,0,0,1,0,0,0,0,,,,,,,,,UNREVIEWED,,
+P184,G184,data/images/P184.jpg,0,0,1,1,1,1,0,1,,,,,,,,,UNREVIEWED,,
+P186,G186,data/images/P186.jpg,1,0,0,0,0,0,1,0,,,,,,,,,UNREVIEWED,,
+P187,G187,data/images/P187.jpg,1,0,0,0,1,1,0,0,,,,,,,,,UNREVIEWED,,

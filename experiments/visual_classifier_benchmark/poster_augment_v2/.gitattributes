@@ -1,0 +1,9 @@
+# Approval and label CSVs are hashed byte-for-byte, including their BOM and line endings.
+*.csv -text
+*.json text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+images/* -text
+inputs384/* -text
+.gitattributes text eol=lf
+.gitignore text eol=lf

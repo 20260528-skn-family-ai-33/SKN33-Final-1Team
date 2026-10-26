@@ -1,5 +1,7 @@
 # RunPod 시각 분류 후보 비교
 
+**검토 포스터22장 보강·기존32셀/추가327장 상속·출처 균형 학습은 [POSTER_AUGMENT_V2.md](POSTER_AUGMENT_V2.md)를 따릅니다. 이미지와 CSV도 Git에 포함하며 재설치하지 않습니다.**
+
 **DINOv2-S/B와 기존 SigLIP2 전체 파인튜닝 모델 비교는 [DINOV2_COMPARE.md](DINOV2_COMPARE.md)를 따릅니다. 기존 환경을 사용합니다.**
 
 **DINOv2-S/B 본체 전체 파인튜닝과 고정 본체·SigLIP2의 5종 비교는 [FINETUNE_DINOV2.md](FINETUNE_DINOV2.md)를 따릅니다. 추가 설치는 없습니다.**

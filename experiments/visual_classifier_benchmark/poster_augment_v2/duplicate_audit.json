@@ -1,0 +1,481 @@
+{
+  "existing_base_posters": 187,
+  "existing_added_posters": 12,
+  "existing_openimages": 315,
+  "new_images": 22,
+  "records": [
+    {
+      "id": "B01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 108.80859375,
+          "image_id": "P067"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 43.712239583333336,
+          "image_id": "P125"
+        },
+        {
+          "dhash_distance": 24,
+          "thumbnail_MAE": 95.79947916666667,
+          "image_id": "P031"
+        }
+      ]
+    },
+    {
+      "id": "I01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 74.91145833333333,
+          "image_id": "P064"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 93.29557291666667,
+          "image_id": "P186"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 87.13151041666667,
+          "image_id": "P131"
+        }
+      ]
+    },
+    {
+      "id": "I02-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 18,
+          "thumbnail_MAE": 37.9140625,
+          "image_id": "poster-v2:I01-1"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 99.00651041666667,
+          "image_id": "P085"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 50.623697916666664,
+          "image_id": "P154"
+        }
+      ]
+    },
+    {
+      "id": "I03-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 50.227864583333336,
+          "image_id": "P023"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 56.860677083333336,
+          "image_id": "P075"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 69.60677083333333,
+          "image_id": "KTO:1718491:6caa3b9eb386"
+        }
+      ]
+    },
+    {
+      "id": "I04-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 49.606770833333336,
+          "image_id": "P050"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 66.75390625,
+          "image_id": "P082"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 41.438802083333336,
+          "image_id": "poster-v2:I03-1"
+        }
+      ]
+    },
+    {
+      "id": "I05-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 19,
+          "thumbnail_MAE": 75.40625,
+          "image_id": "P016"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 45.67578125,
+          "image_id": "P043"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 53.092447916666664,
+          "image_id": "P104"
+        }
+      ]
+    },
+    {
+      "id": "I06-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 61.479166666666664,
+          "image_id": "P045"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 41.825520833333336,
+          "image_id": "P035"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 79.39973958333333,
+          "image_id": "P011"
+        }
+      ]
+    },
+    {
+      "id": "G01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 63.58984375,
+          "image_id": "P016"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 40.696614583333336,
+          "image_id": "poster-v2:I05-1"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 48.466145833333336,
+          "image_id": "P169"
+        }
+      ]
+    },
+    {
+      "id": "G02-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 17,
+          "thumbnail_MAE": 44.510416666666664,
+          "image_id": "P095"
+        },
+        {
+          "dhash_distance": 19,
+          "thumbnail_MAE": 42.484375,
+          "image_id": "P048"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 41.74609375,
+          "image_id": "P056"
+        }
+      ]
+    },
+    {
+      "id": "J01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 52.122395833333336,
+          "image_id": "P088"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 86.26692708333333,
+          "image_id": "poster-v2:I04-1"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 57.368489583333336,
+          "image_id": "P037"
+        }
+      ]
+    },
+    {
+      "id": "Y01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 53.518229166666664,
+          "image_id": "P183"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 40.92578125,
+          "image_id": "P020"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 58.096354166666664,
+          "image_id": "P064"
+        }
+      ]
+    },
+    {
+      "id": "E01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 99.734375,
+          "image_id": "poster-v2:J01-1"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 58.856770833333336,
+          "image_id": "P106"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 43.87890625,
+          "image_id": "P124"
+        }
+      ]
+    },
+    {
+      "id": "E01-2",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 24.515625,
+          "image_id": "P181"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 26.014322916666668,
+          "image_id": "P099"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 34.654947916666664,
+          "image_id": "P056"
+        }
+      ]
+    },
+    {
+      "id": "S01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 18,
+          "thumbnail_MAE": 58.819010416666664,
+          "image_id": "P182"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 55.51171875,
+          "image_id": "P083"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 59.115885416666664,
+          "image_id": "P142"
+        }
+      ]
+    },
+    {
+      "id": "A01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 57.94140625,
+          "image_id": "P074"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 59.001302083333336,
+          "image_id": "P143"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 63.766927083333336,
+          "image_id": "P129"
+        }
+      ]
+    },
+    {
+      "id": "D01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 38.34765625,
+          "image_id": "KTO:1122739:0fbaf839737b"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 44.744791666666664,
+          "image_id": "P007"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 93.71744791666667,
+          "image_id": "P092"
+        }
+      ]
+    },
+    {
+      "id": "D02-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 158.953125,
+          "image_id": "poster-v2:I04-1"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 89.90625,
+          "image_id": "P118"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 103.921875,
+          "image_id": "KTO:3016659:f1c04ab3b4d0"
+        }
+      ]
+    },
+    {
+      "id": "I09-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 89.33333333333333,
+          "image_id": "P170"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 50.919270833333336,
+          "image_id": "P132"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 87.43880208333333,
+          "image_id": "KTO:3554702:443b09ea2d16"
+        }
+      ]
+    },
+    {
+      "id": "M03-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 50.975260416666664,
+          "image_id": "poster-v2:G01-1"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 71.15494791666667,
+          "image_id": "P169"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 42.680989583333336,
+          "image_id": "P179"
+        }
+      ]
+    },
+    {
+      "id": "M04-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 33.615885416666664,
+          "image_id": "P074"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 57.200520833333336,
+          "image_id": "P118"
+        },
+        {
+          "dhash_distance": 23,
+          "thumbnail_MAE": 45.358072916666664,
+          "image_id": "P068"
+        }
+      ]
+    },
+    {
+      "id": "M04-2",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 78.85677083333333,
+          "image_id": "P127"
+        },
+        {
+          "dhash_distance": 21,
+          "thumbnail_MAE": 53.649739583333336,
+          "image_id": "P176"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 57.819010416666664,
+          "image_id": "P051"
+        }
+      ]
+    },
+    {
+      "id": "P01-1",
+      "exact_or_near_duplicates": [],
+      "nearest_posters": [
+        {
+          "dhash_distance": 19,
+          "thumbnail_MAE": 30.114583333333332,
+          "image_id": "P099"
+        },
+        {
+          "dhash_distance": 20,
+          "thumbnail_MAE": 37.208333333333336,
+          "image_id": "poster-v2:I05-1"
+        },
+        {
+          "dhash_distance": 22,
+          "thumbnail_MAE": 33.678385416666664,
+          "image_id": "P019"
+        }
+      ]
+    }
+  ],
+  "visual_review": {
+    "existing_images_screened": 514,
+    "exact_or_near_duplicates_detected": 0,
+    "new_poster_nearest_pairs_visually_reviewed": 22,
+    "same_series_train_groups": [
+      "POSTER_INCHEON_COFFEE_CONCERT",
+      "POSTER_NOJIN_ORCHESTRA_2022",
+      "POSTER_GUMI_NIGHT_MARKET_2026"
+    ],
+    "qualification": "File/pixel hashes and conservative dHash/thumbnail checks plus nearest-pair review; not proof against every related design."
+  }
+}

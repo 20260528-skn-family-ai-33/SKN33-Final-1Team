@@ -1,0 +1,855 @@
+{
+  "labels": [
+    "person",
+    "food_drink",
+    "animal",
+    "plant_flower",
+    "vehicle",
+    "building_structure",
+    "musical_instrument",
+    "fireworks"
+  ],
+  "records": [
+    {
+      "id": "B01-1",
+      "group": "POSTER_BUSAN40STEP_2025",
+      "labels": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "상단 은행나무 가지·잎, 하단 나무·풀과 여러 사람 삽화가 보인다. 중앙의 세 잠자리 그림은 동물이다. 좌하단 작은 형체는 원본 확대에서 사람을 업은 장면으로 확인되어 악기 양성으로 추정하지 않았다. 중앙 사람의 마이크는 악기에서 제외했다.",
+      "file": "images/B01-1.jpg",
+      "file_sha256": "9d3087d4212386b72219aa976d1dde8d653690592cb862e505ac1f3c14c5045b",
+      "original_size": [
+        1284,
+        1749
+      ],
+      "source_page": "https://www.bsjunggu.go.kr/chi/board/view.junggu?boardId=BBS_0000112&dataSid=250411&menuCd=DOM_000001111004001000&paging=ok&startPage=21",
+      "image_url": "https://www.bsjunggu.go.kr/upload_data/board_data/BBS_0000112/176293616076251.jpg",
+      "publisher": "www.bsjunggu.go.kr",
+      "source_id": "poster-v2:B01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 저작물은 \"공공누리\"",
+        "제1유형:출처표시",
+        "제1유형 - 공공누리 공공저작물 자유이용허락, 출처표시"
+      ],
+      "source_page_snapshot_sha256": "64b9f381c9d6a08bf38ce3ca6a616193857024adcca5e3ba7e57dba330c47220"
+    },
+    {
+      "id": "I01-1",
+      "group": "POSTER_INCHEON_COFFEE_CONCERT",
+      "labels": [
+        1,
+        "?",
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "작은 공연 사진에 여러 연주자와 좌측 흰색 그랜드피아노·중앙 드럼 등이 보인다. 상단의 머그컵 형태 표식은 내용물을 시각적으로 확정하지 못해 food_drink=?로 뒀다. 제목의 음악 문구가 아니라 실제 사진의 악기를 근거로 했다. 제공 원본 287×297의 품질 한계를 기록했다.",
+      "file": "images/I01-1.png",
+      "file_sha256": "462d27b2529c9f5c66da10e070952c46ddb012185f87fb465b40b65e6fcc23f4",
+      "original_size": [
+        287,
+        297
+      ],
+      "source_page": "https://www.incheon.go.kr/mayor_8/MA040101/view?beginDt=&curPage=505&endDt=&repSeq=DOM_0000000010436707&srchMainManagerDeptNm=&srchRepContents=&srchRepTitle=",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000001285503&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "a4122b0d75e607d11dcc6f948a6860d9a81d7bc894f04115aa31759120cb4f6c"
+    },
+    {
+      "id": "I02-1",
+      "group": "POSTER_INCHEON_COFFEE_CONCERT",
+      "labels": [
+        1,
+        "?",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "다섯 사람의 사진이 보인다. 상단의 머그컵 형태 표식은 내용물이 식별되지 않아 food_drink=?로 뒀다. 음악 공연 제목과 달리 사진 안에는 식별되는 악기가 없어 악기 음성이다. 제공 원본은 250×364이다.",
+      "file": "images/I02-1.jpg",
+      "file_sha256": "8b9c84fea5ecc0823af4d239a69d2e32a1c6b7f9985c93c197837172023931a2",
+      "original_size": [
+        250,
+        364
+      ],
+      "source_page": "https://www.incheon.go.kr/IC010205/view?curPage=1&repSeq=DOM_0000000015013538",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000001633496&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I02-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "271bfb942d5b98c21539c0c3ff4016cb90a8f509434854ff32892a659c659344"
+    },
+    {
+      "id": "I03-1",
+      "group": "POSTER_HEALING_EMPATHY_2022",
+      "labels": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "회색 바탕의 둥근 꽃·꽃잎과 중앙 꽃·잎·줄기 세밀화가 식별된다. 단순 회색 무늬만이 아니라 독립적인 식물 형태를 근거로 했다. 인물·음식·동물·악기 등은 보이지 않는다.",
+      "file": "images/I03-1.png",
+      "file_sha256": "13cce009b01287d1a338c473e6eb41b15ea50d08f772c1e3da76d499ca68f8cf",
+      "original_size": [
+        567,
+        799
+      ],
+      "source_page": "https://www.incheon.go.kr/IC010205/view?curPage=1120&repSeq=DOM_0000000005652014",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000000822602&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I03-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "163cd32ff06deb89c870be3f3ecffe8026ca38109b06ed9a99491a9f9b9cf9b6"
+    },
+    {
+      "id": "I04-1",
+      "group": "POSTER_DOG_REGISTRATION_2023",
+      "labels": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "좌하단에 강아지의 실제 사진이 있다. 문자와 도식적인 배경 외에 식별되는 음식·식물·사람·악기는 없다. 작은 하단 기관 표식은 판정에서 제외했다.",
+      "file": "images/I04-1.png",
+      "file_sha256": "8085832c8c96b243e82510086a8699cdadaa4c167b84cb6fd84def64faecc93f",
+      "original_size": [
+        1184,
+        1503
+      ],
+      "source_page": "https://www.incheon.go.kr/mayor_8/MA040101/view?repSeq=DOM_0000000008151284",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000001063959&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I04-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "4fc06301df4444e7026e743d32e47f62149a7ba54f5bf5e3f23cdb243cbf7853"
+    },
+    {
+      "id": "I05-1",
+      "group": "POSTER_DONGDONG_BOM_2023",
+      "labels": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "중앙 사진에 사람과 고양이·강아지가 보이고 하단에도 동물 캐릭터가 있다. 상단 가장자리에는 노란 꽃과 잎 형태가 있다. 이름이나 동호회 명칭으로 동물을 추정하지 않았다.",
+      "file": "images/I05-1.png",
+      "file_sha256": "00bb7ffcdb814883bfa1c7302f4c754f4b150824d0508a9a38ee91cf9d080fb5",
+      "original_size": [
+        590,
+        835
+      ],
+      "source_page": "https://www.incheon.go.kr/IC010205/view?curPage=916&repSeq=DOM_0000000007201800",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000000965557&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I05-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "117ddcbda6d03b437a95524c7c0926b9083df1687e03d70827e02194ea1038f7"
+    },
+    {
+      "id": "I06-1",
+      "group": "POSTER_WEEKEND_PREHISTORY_2023",
+      "labels": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        "?",
+        0,
+        0
+      ],
+      "reason": "선사시대 장면에 여러 사람·매머드·사슴 같은 동물, 나무·풀이 그려져 있다. 가운데 움막과 바위 동굴을 구조물로 판정할 기준은 이 그림에서 확정하지 않아 building_structure=?로 뒀다. 뼈와 생활 도구를 악기로 추정하지 않았다.",
+      "file": "images/I06-1.png",
+      "file_sha256": "8915004ec69bbeeae1bdbe49afde79b6f5a9eecc54702cadba8993416fe67389",
+      "original_size": [
+        1928,
+        2683
+      ],
+      "source_page": "https://www.incheon.go.kr/IC010205/view?curPage=980&repSeq=DOM_0000000006874819",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000000933814&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I06-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "f2038dfab88959aec2a22b98203c9f54592741c67406aa8579b063c24f477c76"
+    },
+    {
+      "id": "G01-1",
+      "group": "POSTER_GG_PET_ADOPTION_2024",
+      "labels": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "앞발을 든 강아지가 크게 보인다. 강아지 발은 사람 손으로 표기하지 않았다. 다른 시각 라벨의 대상은 없다.",
+      "file": "images/G01-1.jpg",
+      "file_sha256": "df2c241645cf130d7f5bc3f0064da0190f6422efa3e5a299621341c35ccaed4e",
+      "original_size": [
+        700,
+        700
+      ],
+      "source_page": "https://gnews.gg.go.kr/news/news_detail.do?number=202405091420327807C083&s_code=C083",
+      "image_url": "http://gnews.gg.go.kr/OP_UPDATA/UP_DATA/_FILEZ/202405/20240509022032913606317.jpg",
+      "publisher": "gnews.gg.go.kr",
+      "source_id": "poster-v2:G01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "위 기사는 \"공공누리\"",
+        "제1유형:출처표시 조건",
+        "공공누리 공공저작물 자유이용허락(출처표시)"
+      ],
+      "source_page_snapshot_sha256": "2f2c3d12a4a5f0c598074846eaf8b320004b7b75356ae2e5d5663c7b55e127ba"
+    },
+    {
+      "id": "G02-1",
+      "group": "POSTER_BUCHEON_SPRING_2026",
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "reason": "하단에 기타·첼로·북을 연주하는 사람 그림, 상단과 하단에 아이스크림·음료 컵, 우하단 푸드트럭 안의 작은 고양이 형태 캐릭터가 보인다. 벚꽃·나무, 스타디움 건물, 버스·푸드트럭도 식별된다. 풍선과 반짝임을 불꽃놀이로 표기하지 않았다.",
+      "file": "images/G02-1.jpg",
+      "file_sha256": "11a628a6176c9ca4b26c7cf1bab2719a91c88f84d45b019b6cd060a5507df75a",
+      "original_size": [
+        589,
+        828
+      ],
+      "source_page": "https://gnews.gg.go.kr/news/news_view.do?N=&b_code=&c_code=C094&lastidx=10&number=202604011206097464C094&s_code=C501&scrollidx=&type_m=sub",
+      "image_url": "http://gnews.gg.go.kr/OP_UPDATA/UP_DATA/_NAMO_FILE/images/000052/사진2.jpg",
+      "publisher": "gnews.gg.go.kr",
+      "source_id": "poster-v2:G02-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "위 기사는 \"공공누리\"",
+        "제1유형:출처표시 조건",
+        "공공누리 공공저작물 자유이용허락(출처표시)"
+      ],
+      "source_page_snapshot_sha256": "15b4f69f905763cb9711c0587c74875ea47029a64234e9bec2b370e9aee26703"
+    },
+    {
+      "id": "J01-1",
+      "group": "POSTER_JINDO_PLANT_MARKET_2025",
+      "labels": [
+        1,
+        "?",
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "reason": "양쪽에 독립적인 야자 잎·줄기 그림이 있고 좌하단에는 작은 장터 지붕·기둥과 사람 그림이 있다. 장터 진열물의 음식 여부는 작아서 확정하지 못해 food_drink=?로 뒀다. 시장 문구만으로 음식 양성을 지정하지 않았다.",
+      "file": "images/J01-1.png",
+      "file_sha256": "bc308d32fff29fdd3dd3ee7d6088e1e125e3f582c07761c9d0fb2c82f88a8249",
+      "original_size": [
+        891,
+        1260
+      ],
+      "source_page": "https://www.jindo.go.kr/home/gosi/general.cs?act=view&notAncmtMgtNo=23854&pageIndex=100&searchCondition=&searchKeyword=",
+      "image_url": "https://www.jindo.go.kr/doc/dataDown.jsp?fileNo=3&fileMgtNo=23854&stype=png",
+      "publisher": "www.jindo.go.kr",
+      "source_id": "poster-v2:J01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "진도군청에서 창작한 본 저작물은 “공공누리” [출처표시] 조건에 따라 이용할 수 있습니다.",
+        "공공누리마크 제 1유형 (출처표시)"
+      ],
+      "source_page_snapshot_sha256": "aad812d44a4e93a36d26838232f093208119c1f5081551746065606a2926639d"
+    },
+    {
+      "id": "Y01-1",
+      "group": "POSTER_YDP_ORCHESTRA_2025",
+      "labels": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "중앙의 인물 사진에 여러 호른의 관과 나팔 입구가 뚜렷하게 보이며 하단에는 작은 오케스트라 공연 사진이 있다. 초상과 연주 사진은 인물 양성이다. 배경 도형·글자는 구조물로 추정하지 않았다.",
+      "file": "images/Y01-1.jpg",
+      "file_sha256": "12c81670280323fc65782cdef739572388f75803e7724860c82fce09853ba7f4",
+      "original_size": [
+        4961,
+        7016
+      ],
+      "source_page": "https://www.ydp.go.kr/www/selectBbsNttView.do?bbsNo=40&key=2848&nttNo=400492&pageIndex=2&pageUnit=10",
+      "image_url": "https://www.ydp.go.kr/DATA/bbs/40/2025/06/10/20250610125053512G18D29101309BE8D.jpg",
+      "publisher": "www.ydp.go.kr",
+      "source_id": "poster-v2:Y01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "우리구소식 상세보기 - , 제목, 내용, 부서, 연락처, 파일, 작성일, 공공누리의 정보를 제공합니다.",
+        "공공누리",
+        "공공누리의 제1유형 : 출처표시"
+      ],
+      "source_page_snapshot_sha256": "e352a198389b8fd9fea387bdcec81fab6a6a8cca8ef98cfbf56da8f516e6b835"
+    },
+    {
+      "id": "E01-1",
+      "group": "POSTER_NOJIN_ORCHESTRA_2022",
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "상단 주요 그림이 흰 건반과 검은 건반이 교대로 놓인 피아노 건반의 묘사다. 제목 글자나 로고 속 기호가 아닌 독립된 건반 그림으로 악기를 판정했다. 하단의 작은 기관 로고는 동물 판정에서 제외했다.",
+      "file": "images/E01-1.jpg",
+      "file_sha256": "91eb7d7c85aa885080e63f6013b15dd1d3acb00e30b7ed85522d166aaec8cecf",
+      "original_size": [
+        564,
+        854
+      ],
+      "source_page": "https://www.goe.go.kr/goe/na/ntt/selectNttInfo.do?mi=10102&nttSn=1024714&searchAt1=&searchValue1=",
+      "image_url": "https://www.goe.go.kr/resource/old/BBSMSTR_000000000163/BBS_202206280524230235.jpg",
+      "publisher": "www.goe.go.kr",
+      "source_id": "poster-v2:E01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 저작물은 \"공공누리\""
+      ],
+      "source_page_snapshot_sha256": "d251ca562d3bdc60ef3ca81120ddc4a84ae6c24e27246276edad0430bdb0e88c"
+    },
+    {
+      "id": "E01-2",
+      "group": "POSTER_NOJIN_ORCHESTRA_2022",
+      "labels": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "하단에 줄기·잎이 있는 여러 꽃 그림이 보인다. 오케스트라 초청이라는 문구만 있고 악기는 그려져 있지 않아 악기 음성이다. E01-1과 같은 행사 계열이므로 같은 TRAIN 그룹에 묶었다.",
+      "file": "images/E01-2.jpg",
+      "file_sha256": "69870cd1c61e6a182a813ee5ccd458097c22e6d6f2358bf85e0e59af9fdc2e93",
+      "original_size": [
+        571,
+        807
+      ],
+      "source_page": "https://www.goe.go.kr/goe/na/ntt/selectNttInfo.do?mi=10102&nttSn=1024714&searchAt1=&searchValue1=",
+      "image_url": "https://www.goe.go.kr/resource/old/BBSMSTR_000000000163/BBS_202206280524229914.jpg",
+      "publisher": "www.goe.go.kr",
+      "source_id": "poster-v2:E01-2",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 저작물은 \"공공누리\""
+      ],
+      "source_page_snapshot_sha256": "d251ca562d3bdc60ef3ca81120ddc4a84ae6c24e27246276edad0430bdb0e88c"
+    },
+    {
+      "id": "S01-1",
+      "group": "POSTER_INCHEON_SEOGU_LIFE_2025",
+      "labels": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "하단 두 사람의 사진과 우하단에 넥·몸통이 있는 작은 기타 그림이 보인다. 좌상단은 붓이며 악기로 보지 않았다. 꽃 모양은 제목 글자 안에 삽입된 장식이므로 기존 taxonomy의 문자 속 픽토그램 제외 규칙에 따라 plant_flower=0으로 기록했다.",
+      "file": "images/S01-1.png",
+      "file_sha256": "3b73b0ae60c44f2001e27fdac09d1d564de4954ade0767c66fc09a0a328a89c2",
+      "original_size": [
+        1209,
+        1702
+      ],
+      "source_page": "https://www.seohae.go.kr/open_content/dong/bbs/bbsMsgDetail.do?bcd=dongnotice&cate1=yoenhi&dong=yoenhi&msg_seq=111158&pgno=8",
+      "image_url": "https://www.seohae.go.kr/images/bbs/dongnotice/2025/2025_je7hoe_seogu_saenghwalmunhwachukje_hongbomul(poseuteo)(2).png",
+      "publisher": "www.seohae.go.kr",
+      "source_id": "poster-v2:S01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리 공공저작물 자유이용 허락 - 출처표시",
+        "OPEN 공공누리 공공저작물 자유이용허락 | 이용조건 : 출처표시"
+      ],
+      "source_page_snapshot_sha256": "61c69b14ec49e948c36996a45db3ea6095cb6d85c7613f7455071714e3d2c8c4"
+    },
+    {
+      "id": "A01-1",
+      "group": "POSTER_MIDNIGHT_READERS_2024",
+      "labels": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "여덟 사람의 사진과 책·필기·영상·마이크 그림이 보인다. 마이크·음표와 티셔츠의 작은 문자 장식은 악기나 동물의 근거로 사용하지 않았다. 책은 음식이 아니다.",
+      "file": "images/A01-1.jpg",
+      "file_sha256": "2f32c9ab983ff68d982bb22809b67e879579c795ad16c8ad197308474a7cf3eb",
+      "original_size": [
+        688,
+        688
+      ],
+      "source_page": "https://www.arko.or.kr/board/view/4057?cid=1807583",
+      "image_url": "https://www.arko.or.kr/home2005/etc/gongzisahang/2024img/240110_arko_img1-1.jpg",
+      "publisher": "www.arko.or.kr",
+      "source_id": "poster-v2:A01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "\"공공누리 1유형(출처표시) 공공저작물 자유이용허락\"",
+        "공공누리의 제 1유형",
+        "공공누리 마크"
+      ],
+      "source_page_snapshot_sha256": "a8de2ccd555df3df9fa873f35bae553e7fbc498f62f1f4b8ca0645bb511063f6"
+    },
+    {
+      "id": "D01-1",
+      "group": "POSTER_DDM_BUSKING_2025",
+      "labels": [
+        1,
+        0,
+        0,
+        "?",
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "배경의 큰 피아노 건반과 좌하단 사람이 든 기타, 우측의 작은 건반 연주자가 보인다. 여러 사람 삽화가 있다. 우상단 사람이 든 작은 소품의 식물 여부는 불분명해 plant_flower=?로 남겼다.",
+      "file": "images/D01-1.png",
+      "file_sha256": "5cb7cd8d2c8dc5379dcb3b8298d3b9957eaa558b58d352d65708ad444cdcd8b9",
+      "original_size": [
+        742,
+        1050
+      ],
+      "source_page": "https://www.ddm.go.kr/www/selectBbsNttView.do?bbsNo=38&integrDeptCode=&key=198&nttNo=161595&pageIndex=1&searchCnd=all&searchCtgry=&searchKrwd=",
+      "image_url": "https://www.ddm.go.kr/DATA/bbs/38/20250217091339219_DlFWuWQHXpLHqGskCIqD.png",
+      "publisher": "www.ddm.go.kr",
+      "source_id": "poster-v2:D01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "OPEN 출처표시 - 공공누리 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "7f8e9a56e7a5d429d8ed6a7380ba93ea61486085c2280b5280d38472e163737e"
+    },
+    {
+      "id": "D02-1",
+      "group": "POSTER_CHANGWON_HIBUSKING_2025",
+      "labels": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "상단 피아노 건반, 좌하단 일렉트릭 기타, 우하단 관악기과 드럼 윤곽이 독립된 그림으로 보인다. 가운데 큰 마이크는 악기 양성의 근거가 아니다. 인물은 보이지 않는다.",
+      "file": "images/D02-1.png",
+      "file_sha256": "84732df202b836c0bf5b684f97448d13ff1c2a23d86214d148497c63d4a07354",
+      "original_size": [
+        1587,
+        2245
+      ],
+      "source_page": "https://www.gne.go.kr/user/bbs/BD_selectBbs.do?q_bbsDocNo=20251114100950936&q_bbsSn=1509",
+      "image_url": "https://www.gne.go.kr/component/file/ND_loadImage.do?q_fileSn=181559325&q_fileId=bcd5f0a7-e29f-42dc-b84e-505b0d4fd6bb&q_division=org",
+      "publisher": "www.gne.go.kr",
+      "source_id": "poster-v2:D02-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "저작물은 공공누리",
+        "\"출처표시\"",
+        "\"출처표시\""
+      ],
+      "source_page_snapshot_sha256": "28ee4049495927ecb7ca0255ba049716b251ec28d160661260084715ca798a85"
+    },
+    {
+      "id": "I09-1",
+      "group": "POSTER_LOVECHIPS_2025",
+      "labels": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "reason": "좌측 테두리의 일렉트릭 기타·북, 우측 관악기 등 다양한 작은 악기 그림이 있다. 하단 사람 캐릭터 군중, 상단 흰 새, 테두리 꽃·잎, 우중단 피자와 우하단 맥주잔 형태가 식별된다. 반짝임·번개·음표는 불꽃놀이로 표기하지 않았다.",
+      "file": "images/I09-1.jpg",
+      "file_sha256": "c25f5aad8e5e7feedf4bccd72604ac95f58f534227fe48fb717a9803cbb27dc4",
+      "original_size": [
+        1019,
+        1440
+      ],
+      "source_page": "https://www.incheon.go.kr/IC010205/view?beginDt=2025-08-12&curPage=221&endDt=&repSeq=DOM_0000000013041665&srchMainManagerDeptNm=&srchRepContents=&srchRepTitle=",
+      "image_url": "https://www.incheon.go.kr/comm/dmsFileDownload?attachFileSeq=FILE_000000001484119&attachFileDetailSeq=0",
+      "publisher": "www.incheon.go.kr",
+      "source_id": "poster-v2:I09-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "공공누리",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락",
+        "\"공공누리\"",
+        "OPEN 공공누리 출처표시 공공저작물 자유이용허락"
+      ],
+      "source_page_snapshot_sha256": "1e57649099a52330298ba526948b0198caaf0973fdc2db49564eda96f30d1001"
+    },
+    {
+      "id": "M03-1",
+      "group": "POSTER_GUMI_NIGHT_MARKET_2026",
+      "labels": [
+        1,
+        0,
+        "?",
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "reason": "하단 야시장 사진에 사람과 지붕이 있는 점포가 보인다. 음식 판매 문구만으로 음식 양성을 지정하지 않았다. 금색 구름·장식 선은 식물로 추정하지 않았다. 상단 시장 로고의 새 형상을 주요 동물 묘사로 포함할지는 경계여서 animal=?로 뒀다.",
+      "file": "images/M03-1.png",
+      "file_sha256": "0a4dd21310a9bb6d3bea48a311135a287c112bd6e7e515b2e8901f62bdd28380",
+      "original_size": [
+        687,
+        861
+      ],
+      "source_page": "https://www.gumi.go.kr/portal/board/post/view.do?bcIdx=211&idx=841302&mid=0504020000",
+      "image_url": "https://www.gumi.go.kr/common/file/img/view.do?atchFileId=7DF545A978626C2332FC969B826EEBA59C6492E6E56C62BD9E044E87BFBB270D&fileSn=125EB0AE64ED2AE7001CFD6CFA9E31E8&width=&height=",
+      "publisher": "www.gumi.go.kr",
+      "source_id": "poster-v2:M03-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 공공저작물은 \"공공누리\" 제1유형:출처 표시 조건에 따라 이용할 수 있습니다.",
+        "공공누리 제1유형: 출처표시(상업적 이용 및 변경 가능)"
+      ],
+      "source_page_snapshot_sha256": "f16198a01b265724940af528fba7ca42832a6ce02487f3b87f7463d8b963d9e1"
+    },
+    {
+      "id": "M04-1",
+      "group": "POSTER_GUMI_NIGHT_MARKET_2026",
+      "labels": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "reason": "인물 사진과 작은 장터 손님 그림, 테이블 음식·맥주와 음료, 여우 모양의 귀와 여러 꼬리를 가진 마스코트가 보인다. 장터 좌판의 지붕·기둥은 구조물로 기록했다. 좌판을 바퀴 없는 푸드트럭으로 추정하지 않았다. 음표·마이크·전구는 악기·불꽃놀이에서 제외했다.",
+      "file": "images/M04-1.jpg",
+      "file_sha256": "e3e481c5db7ecaa9ffa59011b0aaba32b7978f8837a64189fbbf21980e08a4a7",
+      "original_size": [
+        760,
+        1033
+      ],
+      "source_page": "https://www.gumi.go.kr/portal/board/post/view.do?bcIdx=1&idx=835579&mid=0401020000",
+      "image_url": "https://www.gumi.go.kr/common/file/img/view.do?atchFileId=9B144B7C0580E37C222DD18CCD6A6D2D28A0CBB5C4C5F8B6AD6F9C802AAE7BA6&fileSn=125EB0AE64ED2AE7001CFD6CFA9E31E8&width=&height=",
+      "publisher": "www.gumi.go.kr",
+      "source_id": "poster-v2:M04-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 공공저작물은 \"공공누리\" 제1유형:출처 표시 조건에 따라 이용할 수 있습니다.",
+        "공공누리 제1유형: 출처표시(상업적 이용 및 변경 가능)"
+      ],
+      "source_page_snapshot_sha256": "d5b8eabac513887c5247717af20ce5dcbccdd8097ae1bcfddd655239f2b50273"
+    },
+    {
+      "id": "M04-2",
+      "group": "POSTER_GUMI_NIGHT_MARKET_2026",
+      "labels": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "reason": "좌하단 작은 무대에서 건반·북·기타를 연주하는 사람 그림이 보인다. 여러 사람, 테이블 음식·음료, 여우 형태 마스코트와 지붕·기둥이 있는 무대·점포도 보인다. 전구·음표·폭죽 모양 색종이 장식은 불꽃놀이로 표기하지 않았다. 같은 야시장 홍보 계열은 한 TRAIN 그룹에 묶었다.",
+      "file": "images/M04-2.png",
+      "file_sha256": "1d2440d39b2485476d740dd1e118fafb05a4775943144041afbc2db69bfc3983",
+      "original_size": [
+        674,
+        987
+      ],
+      "source_page": "https://www.gumi.go.kr/portal/board/post/view.do?bcIdx=1&idx=835579&mid=0401020000",
+      "image_url": "https://www.gumi.go.kr/common/file/img/view.do?atchFileId=9B144B7C0580E37C222DD18CCD6A6D2D28A0CBB5C4C5F8B6AD6F9C802AAE7BA6&fileSn=CDA815D2C764BAF699DAF894ED392877&width=&height=",
+      "publisher": "www.gumi.go.kr",
+      "source_id": "poster-v2:M04-2",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 공공저작물은 \"공공누리\" 제1유형:출처 표시 조건에 따라 이용할 수 있습니다.",
+        "공공누리 제1유형: 출처표시(상업적 이용 및 변경 가능)"
+      ],
+      "source_page_snapshot_sha256": "d5b8eabac513887c5247717af20ce5dcbccdd8097ae1bcfddd655239f2b50273"
+    },
+    {
+      "id": "P01-1",
+      "group": "POSTER_GWANGJU_WILD_FLOWERS_2026",
+      "labels": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "reason": "중앙에 꽃·잎·줄기가 있는 야생화 화분·정원 작품과 왼쪽 노란 나비가 보인다. 나무 뿌리와 돌은 건물로 표기하지 않았다. 화분의 녹색 식물을 음식으로 추정하지 않았다.",
+      "file": "images/P01-1.jpg",
+      "file_sha256": "2ff1bcadd366cf734ad65c555d2c40a9ef8c9a6a46dcd3606b2722063162f96f",
+      "original_size": [
+        2000,
+        2828
+      ],
+      "source_page": "https://www.gjcity.go.kr/portal/bbs/view.do?bIdx=343176&mId=0201030100&ptIdx=24",
+      "image_url": "https://www.gjcity.go.kr/common/file/img/view.do?atchFileId=7cb33757806545ceaaca239dfcb42e8086c2b4224a84ec8ffac238e1935aa8c3&fileSn=f9a1967c526603d17ab488b9d2747cda&width=&height=",
+      "publisher": "www.gjcity.go.kr",
+      "source_id": "poster-v2:P01-1",
+      "split": "train",
+      "approval": "APPROVED",
+      "reviewer": "Codex-AI-visual-review / user-requested",
+      "human_verified": false,
+      "review_method": "AI visual review of downloaded poster and reconstructed 384px; not model inference",
+      "license_record": "Publisher page displays KOGL attribution-only (type 1); attribution retained. No additional legal certification claimed.",
+      "license_evidence": [
+        "본 공공저작물은 공공누리 \"출처표시\" 조건에 따라 이용할 수 있습니다.",
+        "공공누리 제4유형: 출처표시 + 상업적 이용 및 변경 금지"
+      ],
+      "source_page_snapshot_sha256": "94f5553a7dd4a74057a5bc696d744050b00a383c4e08a6ba3fbfecc446a12182"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "C01-1",
+      "reason": "서울시 원문 C02에서 공공누리 제4유형을 확인했다. 이번 배포·보강 묶음에서는 제외하고 로컬 후보 다운로드만 보존한다."
+    },
+    {
+      "id": "M01-1",
+      "reason": "기존 보호 개발 자료의 구미푸드페스티벌과 행사·홍보 계열 관계가 불명확하다. 다른 연도·장소라고 독립성을 가정하지 않고 이번 TRAIN 추가에서 제외했다."
+    },
+    {
+      "id": "I07-1",
+      "reason": "공식 원본 파일 다운로드가 제한 시간 내 완료되지 않아 검토·학습 추가에서 제외했다."
+    }
+  ],
+  "approval_qualification": "APPROVED records user-requested AI label review, not independent human verification.",
+  "preprocessing": {
+    "encoders_sha256": "c6a52b63b6d765dd95e709a37fbdc434b8813ff21d9087f9717d9fd9fbf2872b",
+    "image_size": 384,
+    "tensor_captured": false,
+    "model_inference_executed": false
+  },
+  "duplicate_review": {
+    "existing_images_screened": 514,
+    "exact_or_near_duplicates_detected": 0,
+    "new_poster_nearest_pairs_visually_reviewed": 22,
+    "same_series_train_groups": [
+      "POSTER_INCHEON_COFFEE_CONCERT",
+      "POSTER_NOJIN_ORCHESTRA_2022",
+      "POSTER_GUMI_NIGHT_MARKET_2026"
+    ],
+    "qualification": "File/pixel hashes and conservative dHash/thumbnail checks plus nearest-pair review; not proof against every related design."
+  }
+}
