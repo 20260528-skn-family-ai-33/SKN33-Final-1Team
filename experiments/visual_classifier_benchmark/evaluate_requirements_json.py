@@ -313,7 +313,7 @@ def run(args):
     env = environment()
     packet_data = load_cases(args.dataset)
     require(args.prompt_profile == 'baseline' or args.models == ['4b'],
-            'The 4b-v2 prompt profile requires --models 4b')
+            'The 4b-v2/4b-v3 prompt profiles require --models 4b')
     instruction = prompt(read(SCHEMA), args.prompt_profile)
     src = sources()
     downloads = {m: packet(args, m) for m in args.models}
@@ -322,7 +322,8 @@ def run(args):
                      for m, p in downloads.items()}
     config = dict(schema='qwen-requirements-json-pilot-v1', environment=env, models=args.models,
         model_packets=downloads, dataset_sha256=sha(args.dataset), source_hashes=src,
-        prompt=instruction, precision='bf16', attn_implementation='sdpa', thinking=False, do_sample=False,
+        prompt=instruction, prompt_profile=args.prompt_profile,
+        precision='bf16', attn_implementation='sdpa', thinking=False, do_sample=False,
         max_new_tokens=args.max_new_tokens, max_input_tokens=args.max_input_tokens,
         ram_policy=args.ram_policy,
         warmups=args.warmups, repeats=args.repeats, synthetic=True, human_verified=False,
@@ -373,7 +374,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('command', choices=('check-env', 'download', 'run', 'show-results'))
     p.add_argument('--models', nargs='+', choices=tuple(SPECS), default=['2b', '4b'])
-    p.add_argument('--prompt-profile', choices=('baseline', '4b-v2'), default='baseline')
+    p.add_argument('--prompt-profile', choices=('baseline', '4b-v2', '4b-v3'), default='baseline')
     p.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file',
         help='RAM capacity estimate; clean-unmapped-file also credits eligible active file cache, without clearing it')
     p.add_argument('--models-root', type=Path, default=Path('/workspace/models'))

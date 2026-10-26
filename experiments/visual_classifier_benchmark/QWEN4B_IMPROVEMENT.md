@@ -1,5 +1,47 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## v3: 명시 값 추출과 원문 인용 회귀 수정
+
+`--prompt-profile 4b-v3`는 baseline/v2 규칙 뒤에 내용을 추가하지 않는 독립 프롬프트다.
+v2의 기존 정답 회귀 9건은 명시 값의 missing_value 오판 6건, 위치 필드 오류 1건,
+원문 공백/이스케이프 변경 2건이었다. 이를 다음 규칙과 별도 문장 예시로 다룬다.
+
+- 비어 있지 않은 `항목명: 값`은 완전한 조건으로 추출한다.
+- information target:null과 존재 조건 value:null은 정상 형식이며 값 누락이 아니다.
+- 일부 값만 없으면 그 부분만 needs_review로 보내고 완전한 항목은 추출한다.
+- 로고 존재는 logo, 로고 위치는 layout으로 검사 속성에 따라 필드를 정한다.
+- source의 단위 붙임/공백/따옴표를 유지한다. 예시 JSON은 json.dumps로 직렬화한다.
+
+v2의 인용문 시연에는 raw 문자열 안의 중복 역슬래시 작성 오류가 있었다.
+이 오류가 실제 회귀를 얼마나 유발했는지는 별도 측정하지 않았다.
+과거 prompt 재현을 위해 v2 문자열은 보존하고 v3에서는 수동 이스케이프를 사용하지 않는다.
+정답·엄격 채점·모델 가중치·생성 설정과 RAM 정책은 유지한다.
+protocol에는 선택한 prompt_profile도 기록한다. 코드/protocol 변경 후에는 새 run-dir를 쓴다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_json.sh run \
+  --models 4b --prompt-profile 4b-v3 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --run-dir runs/qwen4b-requirements-prompt-v3 \
+  --allow-draft-labels --resume &&
+bash run_requirements_json.sh show-results \
+  --run-dir runs/qwen4b-requirements-prompt-v3
+```
+
+완료 후 저장 결과만 비교하는 명령:
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen-requirements-json-pilot-v1 \
+            runs/qwen4b-requirements-prompt-v2-ramfix \
+            runs/qwen4b-requirements-prompt-v3 \
+  --model 4b --out reviews/qwen4b-prompt-comparison-v3
+```
+
+v3는 로컬 검증/모델 실행을 하지 않은 코드다. 동일한 공개 합성 문장으로 개선 중이며
+정확도 향상은 미확인이다. 새 사람이 검토한 평가셋의 일반화 성능으로 해석하지 않는다.
+
 ## 오류 18건 분류
 
 서로 겹치지 않는 주 분류이며, 한 사례에 부가 오류가 있을 수 있다.
