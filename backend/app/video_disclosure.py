@@ -106,9 +106,16 @@ def judge_disclosure(info: dict, frames: list[dict], lines: list[dict], duration
 
     head_tail_ok = rules["R3a"].get("ocr_ok") and rules["R3b"].get("ocr_ok")
     no_trace = not allowed and not any(p.search(title) for p in ALLOWED) and not caption_allowed
-    violation = (not capped and (info["title"] or info["caption"]) and head_tail_ok and no_trace)
+    # 허용 밖의 '모호한' 표시(예: '광고'·'협찬받았습니다')가 화면에 있으면 자동 위반으로 확정하지 않는다.
+    # 지침 예시 밖 표현이라 위반인지 단정할 수 없으므로 사람 확인 대상('확인 필요')으로 남긴다.
+    ambiguous_present = any(h["class"] == "ambiguous" for h in hits)
+    violation = (not capped and (info["title"] or info["caption"]) and head_tail_ok and no_trace
+                 and not ambiguous_present)
     if violation:
         status, reason = "fail", "적용 대상 영상인데 제목·캡션·화면 어디에도 허용 표시 문구가 없습니다."
+    elif ambiguous_present and no_trace and not capped and (info["title"] or info["caption"]) and head_tail_ok:
+        status = "review"
+        reason = "허용 표시 문구는 없지만 모호한 표시(예: '광고'·'협찬')가 있어 자동 위반으로 확정하지 않고 확인 필요로 둡니다."
     else:
         status = "review"
         reason = ("표본에서 표시 문구·시간은 확인했지만, 시인성(R5)·가상인물(R6)이 남아 전체 광고 적합은 확인 필요입니다."

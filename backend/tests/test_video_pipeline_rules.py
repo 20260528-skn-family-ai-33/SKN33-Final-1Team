@@ -154,6 +154,17 @@ def test_disclosure_table():
     assert judge_disclosure(validate_input({"kind": "self"}), fr, [], d)["status"] == "not_applicable"
 
 
+def test_ambiguous_disclosure_is_not_auto_violation():
+    """허용 문구는 없지만 '광고'·'협찬' 같은 모호한 표시가 화면에 있으면 자동 위반이 아니라 확인 필요."""
+    d = 30000
+    fr = _frames(d)
+    endorsement = validate_input({"kind": "endorsement", "title": "신상 리뷰"})
+    ambiguous = judge_disclosure(endorsement, fr, _lines(fr, "광고 문의"), d)
+    assert ambiguous["status"] == "review" and ambiguous["severity"] == "warn"
+    assert ambiguous["rules"]["R1"]["counts"]["ambiguous"] >= 1
+    assert judge_disclosure(endorsement, fr, [], d)["status"] == "fail"  # 아무 표시도 없으면 종전대로 위반(회귀 방지)
+
+
 @pytest.mark.parametrize("duration", [5000, 6000])
 def test_short_video_merges_edge_windows(duration):
     fr = _frames(duration)

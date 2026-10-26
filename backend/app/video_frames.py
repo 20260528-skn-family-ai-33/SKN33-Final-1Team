@@ -80,14 +80,23 @@ def probe(ffmpeg: str, demuxer: str, path: Path) -> dict:
         width, height = height, width  # 화면에 보이는 방향 기준
     copied = subprocess.run(_input_args(ffmpeg, demuxer, path) + ["-map", "0:v:0", "-c", "copy", "-f", "null", "-"],
                             capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
-    times = re.findall(r"time=(\d+):(\d{2}):(\d{2}(?:\.\d+)?)", copied.stderr.decode("utf-8", errors="replace"))
+    copied_log = copied.stderr.decode("utf-8", errors="replace")
+    times = re.findall(r"time=(\d+):(\d{2}):(\d{2}(?:\.\d+)?)", copied_log)
+    frame_counts = re.findall(r"frame=\s*(\d+)", copied_log)
     container_ms = _clock_ms(*container.groups()) if container else None
     duration_ms = container_ms or 0
-    if times:  # 마지막 패킷의 시작 시각이므로 한 프레임 길이를 더하고 컨테이너 길이를 넘지 않게 한다
-        frame_ms = 1000 / float(fps.group(1)) if fps else 0
-        duration_ms = int(round(_clock_ms(*times[-1]) + frame_ms))
-        if container_ms:
-            duration_ms = min(duration_ms, container_ms)
+    frame_count = int(frame_counts[-1]) if frame_counts else None
+    if frame_count and fps:
+        # 영상 길이 = 영상 프레임 수 / fps. ffmpeg stats의 time= 은 소스·실행 타이밍에 따라 마지막
+        # 프레임의 pts(시작)나 끝 어느 쪽으로도 찍혀(mp4 5.8~5.9s, webm 6.0s 등) 불안정하지만,
+        # 영상 스트림만 copy로 세는 frame= 총수는 결정적이다. 이렇게 하면 영상보다 오디오가 긴
+        # WebM에서도 컨테이너(오디오 포함) 길이가 아니라 영상 길이만 잡아, plan_times가 영상 끝
+        # 이후 프레임을 요청해 extract_frames 장수 검사가 정상 파일을 실패시키는 일을 막는다.
+        duration_ms = int(round(frame_count * 1000 / float(fps.group(1))))
+    elif times:  # frame= 또는 fps 를 못 얻을 때만 마지막 time= 로 떨어진다
+        duration_ms = int(round(_clock_ms(*times[-1])))
+    if container_ms:  # 컨테이너(오디오 포함) 길이를 넘지는 않게 둔다
+        duration_ms = min(duration_ms, container_ms)
     return {
         "codec": stream.group(1), "width": width, "height": height,
         "fps": float(fps.group(1)) if fps else None, "rotation": degrees,
@@ -181,3 +190,23 @@ def detect_scenes(path: Path, base_times: list[int]) -> dict:
         if after is not None and (not grid or after - grid[-1] >= BASE_MS):
             grid.append(after)
     return {"status": "completed", "cut_ms": cuts, "grid_ms": grid}
+
+
+# ---------------------------------------------------------------------------
+# 재생 호환 — 브라우저가 재생하기 어려운 컨테이너(AVI 등)를 재생용 MP4로 따로 만든다
+# ---------------------------------------------------------------------------
+def make_playback_mp4(ffmpeg: str, demuxer: str, src: Path, dst: Path, timeout: int = 1800) -> bool:
+    """원본은 그대로 두고 재생용 H.264/AAC MP4를 만든다(얼굴 없는 AVI 등도 처리).
+
+    데모 재생을 위한 변환이라 실패해도 예외를 올리지 않는다. 실패하면 부분 파일을 지우고 False를
+    돌려주며, 호출자는 원본 다운로드로 대체한다. demuxer를 명시해(업로드 때 판별한 것) 재생목록 위장
+    파일이 다른 경로를 읽는 것을 막는다(extract_frames와 같은 원칙)."""
+    command = _input_args(ffmpeg, demuxer, src) + [
+        "-map", "0:v:0", "-map", "0:a:0?", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+        "-pix_fmt", "yuv420p", "-c:a", "aac", "-movflags", "+faststart", "-loglevel", "error", "-y", str(dst)]
+    try:
+        subprocess.run(command, check=True, capture_output=True, timeout=timeout, stdin=subprocess.DEVNULL)
+    except (subprocess.SubprocessError, OSError):
+        dst.unlink(missing_ok=True)
+        return False
+    return dst.is_file() and dst.stat().st_size > 0

@@ -22,6 +22,20 @@ def make_video(path: Path, seconds=6, size="640x360") -> bytes:
     return path.read_bytes()
 
 
+def make_webm_video_shorter_than_audio(path: Path, *, video_s=6, audio_s=7, size="640x360") -> bytes:
+    """영상이 오디오보다 짧은 WebM(영상 video_s초·오디오 audio_s초). 인코더가 없으면 테스트를 건너뛴다."""
+    result = subprocess.run(
+        [FFMPEG, "-nostdin", "-loglevel", "error", "-y",
+         "-f", "lavfi", "-i", f"testsrc=rate=10:size={size}",
+         "-f", "lavfi", "-i", f"sine=frequency=440:duration={audio_s}",
+         "-filter_complex", f"[0:v]trim=0:{video_s},setpts=PTS-STARTPTS[v]",
+         "-map", "[v]", "-map", "1:a", "-c:v", "libvpx-vp9", "-b:v", "200k", "-c:a", "libopus", str(path)],
+        capture_output=True)
+    if result.returncode != 0:
+        pytest.skip("WebM(VP9/Opus) 인코더가 없어 건너뜁니다")
+    return path.read_bytes()
+
+
 def fake_ocr(calls, *, fail=(), ad_text="#광고"):
     """하단 중앙 고정 자막(한 프레임은 '할언'으로 오인식) + 움직이는 저신뢰 간판 + 상단 광고 표시."""
     def recognize(frames, directory, progress):
@@ -156,6 +170,21 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     assert job["double_check"]["status"] == "skipped"
 
 
+def test_webm_audio_longer_than_video_extracts(tmp_path):
+    """영상 6초·오디오 7초 WebM: 길이를 영상 끝(약 6초)으로 보고 프레임 추출까지 정상 완료한다.
+
+    과다계산(이전 버그)이면 길이를 약 7초로 보고 plan_times가 영상 끝 이후 프레임을 요청해
+    extracting 단계에서 실패했다.
+    """
+    data = make_webm_video_shorter_than_audio(tmp_path / "clip.webm")
+    with make_client(tmp_path) as client:
+        job = client.get(f"/api/video-reviews/{upload(client, data, name='clip.webm').json()['id']}").json()
+    assert job["status"] == "completed", job.get("failed_stage") or job.get("error")
+    assert job["media"]["container"] == "matroska"
+    assert 5500 <= job["media"]["duration_ms"] <= 6200   # 영상 끝 기준(과다계산이면 약 7000)
+    assert job["media"]["container_duration_ms"] >= 6800  # 컨테이너는 오디오 기준이라 더 길다
+
+
 def test_self_ad_skips_edge_frames(tmp_path):
     calls = []
     with make_client(tmp_path, ocr=fake_ocr(calls)) as client:
@@ -173,6 +202,32 @@ def test_ocr_frame_failures(tmp_path):
     with make_client(tmp_path, ocr=fake_ocr([], fail=many)) as client:
         job = client.get(f"/api/video-reviews/{upload(client, data).json()['id']}").json()
     assert job["status"] == "failed" and job["failed_stage"] == "ocr"
+
+
+def test_avi_gets_playback_mp4(tmp_path):
+    """AVI는 원본을 보존하고 재생용 MP4를 따로 만들어 /video로 내보낸다(브라우저 재생 호환)."""
+    data = make_video(tmp_path / "clip.avi")
+    assert data[:4] == b"RIFF" and data[8:12] == b"AVI "
+    with make_client(tmp_path) as client:
+        job_id = upload(client, data, name="clip.avi").json()["id"]
+        job = client.get(f"/api/video-reviews/{job_id}").json()
+        assert job["status"] == "completed" and job["media"]["container"] == "avi"
+        assert job["playback"]["available"] is True
+        stored = tmp_path / "videos" / job_id
+        assert (stored / "original.bin").read_bytes() == data   # 원본은 그대로 보존
+        assert (stored / "playback.mp4").is_file()
+        video = client.get(f"/api/video-reviews/{job_id}/video")
+        assert video.status_code == 200 and video.headers["content-type"] == "video/mp4"
+
+
+def test_mp4_keeps_original_without_transcode(tmp_path):
+    """브라우저 재생이 되는 MP4는 변환하지 않고 원본을 그대로 제공한다."""
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path) as client:
+        job_id = upload(client, data).json()["id"]
+        job = client.get(f"/api/video-reviews/{job_id}").json()
+    assert job["playback"]["available"] is False
+    assert not (tmp_path / "videos" / job_id / "playback.mp4").exists()
 
 
 def test_video_range_and_frame_routes(tmp_path):

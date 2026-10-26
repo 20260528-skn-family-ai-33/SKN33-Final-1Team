@@ -28,7 +28,8 @@ from starlette.concurrency import run_in_threadpool
 
 from . import video_subtitle_roles as roles
 from .video_disclosure import judge_disclosure, validate_input
-from .video_frames import coverage, detect_scenes, extract_frames, plan_times, probe, resolve_ffmpeg, sniff_container
+from .video_frames import (coverage, detect_scenes, extract_frames, make_playback_mp4, plan_times, probe,
+                           resolve_ffmpeg, sniff_container)
 from .video_judge import judge
 from .video_tracks import build_segments, build_tracks, choose_representatives, text_groups
 
@@ -37,7 +38,7 @@ CHUNK = 1024 * 1024
 MIN_OCR_SUCCESS = 0.9
 # 문서 '실행 구조' 표의 stage와 progress
 PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "classifying": 88,
-            "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "completed": 100}
+            "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "transcode": 99, "completed": 100}
 LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
@@ -368,6 +369,18 @@ class Pipeline:
         self.update(target, stage="double_check", progress=PROGRESS["double_check"])
         double_check = {"status": "skipped", "reason": "이중 검수(6-1)는 기본 꺼짐입니다."}
 
+        # 재생 호환 — 브라우저가 재생하기 어려운 AVI는 원본을 보존하고 재생용 MP4를 따로 만든다.
+        # 변환 실패는 경고만 — 검수는 완료하고, 결과 화면은 원본 다운로드로 대체한다.
+        playback = {"available": False, "reason": "원본이 브라우저에서 바로 재생됩니다."}
+        if media.get("container") == "avi":
+            self.stage = "transcode"
+            self.update(target, stage="transcode", progress=PROGRESS["transcode"], stage_detail="재생용 MP4 변환")
+            if make_playback_mp4(ffmpeg, demuxer, target / "original.bin", target / "playback.mp4"):
+                playback = {"available": True, "format": "mp4"}
+            else:
+                playback = {"available": False, "reason": "재생용 변환에 실패했습니다. 원본을 내려받아 확인해 주세요."}
+                self.warnings.append("재생용 MP4 변환에 실패해 원본 영상만 제공합니다.")
+
         public_frames = [{
             "frame_id": f["frame_id"], "time_ms": f["time_ms"], "sampling": f["sampling"], "width": f["width"],
             "height": f["height"], "ocr_status": f["ocr_status"], "same_as": f["same_as"],
@@ -380,7 +393,7 @@ class Pipeline:
             "scenes": {"status": scenes["status"], "cut_ms": scenes["cut_ms"]},
             "tracks": tracks, "text_groups": groups, "segments": segments,
             "review": {"results": review["results"], "mismatch": review["mismatch"], "calls": review["calls"]},
-            "disclosure": disclosure_result, "logo_match": logo_match,
+            "disclosure": disclosure_result, "logo_match": logo_match, "playback": playback,
             "double_check": double_check, "warnings": self.warnings,
             "counts": {"frames": len(frames), "ocr_frames": total, "lines": len(lines), "kept": kept,
                        "excluded": len(lines) - kept, "tracks": len(tracks), "segments": len(segments),
@@ -610,9 +623,12 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
 
     @router.get("/{job_id}/video")
     def video_file(job_id: str):
-        """구간 이동을 위해 Range 요청에 206으로 답한다."""
+        """구간 이동을 위해 Range 요청에 206으로 답한다. AVI 등은 재생용 MP4를 만들어 두면 그걸 내보낸다."""
         target = directory(job_id)
         media = _read_json(target / "media.json")
+        playback = target / "playback.mp4"
+        if playback.is_file():
+            return FileResponse(playback, media_type="video/mp4")
         return FileResponse(target / "original.bin", media_type=CONTAINER_MIME.get(media["container"], "application/octet-stream"))
 
     @router.get("/{job_id}/frames/{frame_id}")
