@@ -59,6 +59,12 @@ git pull --ff-only origin dev/12_runpod
 
 **SigLIP2 본체 파인튜닝은 [FINETUNE_SIGLIP.md](FINETUNE_SIGLIP.md)를 따릅니다.**
 
+## Qwen3.5-9B 무학습 8라벨 비교
+
+기존 환경에서 Qwen 모델만 다운로드하고, 개발셋에서 선택된 SigLIP2의 저장 결과와 비교하는 절차는
+[QWEN_ZERO_SHOT.md](QWEN_ZERO_SHOT.md)를 따른다. 기존 데이터·학습 결과를 보존하며 재설치·재학습은 하지 않는다.
+미판정/JSON 실패는 정확도에서 오답으로 계산하고, SigLIP의 과거 p95와 Qwen의 새 측정값을 구분한다.
+
 ## 최초 수동 배치 참고
 
 제공된 `visual-classifier-benchmark-2026-10-23.tar.gz`를 Jupyter에서 `/workspace`에 업로드합니다.
