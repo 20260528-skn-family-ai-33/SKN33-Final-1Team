@@ -37,7 +37,8 @@ CHUNK = 1024 * 1024
 MIN_OCR_SUCCESS = 0.9
 # 문서 '실행 구조' 표의 stage와 progress
 PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "classifying": 88,
-            "segmenting": 90, "review": 93, "double_check": 97, "completed": 100}
+            "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "completed": 100}
+LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
     "ocr": "프레임 OCR 실행에 실패했습니다. Paddle 전용 환경과 모델 준비 상태를 확인한 뒤 다시 실행해 주세요.",
@@ -94,6 +95,62 @@ def _read_json(path: Path):
 def ocr_readiness() -> tuple[bool, str]:
     from .paddle_ocr import paddle_readiness
     return paddle_readiness()
+
+
+# ---------------------------------------------------------------------------
+# 로고 검수 연동 — 기존 OCR 검수와 별개 축(OWLv2+CLIP+LightGlue, GPU/RunPod).
+# 지정 로고(쿼리)를 올렸을 때만 돌고, 미준비·실패여도 OCR 검수 결과는 유지한다.
+# ---------------------------------------------------------------------------
+def logo_readiness_default() -> tuple[bool, str]:
+    """로고 검수 런타임 준비 상태(추론·다운로드 없음). RUN_TARGET에 따라 로컬/RunPod 구성을 본다."""
+    try:
+        from .logo_runtime import get_runtime_status
+        status = get_runtime_status()
+        return bool(status.get("ready")), status.get("detail", "")
+    except Exception:
+        return False, "로고 검수 런타임을 확인하지 못했습니다."
+
+
+def logo_review_frames(frame_items: list[dict], query_path: Path) -> dict:
+    """base 표본 프레임들을 지정 로고와 guided 대조한다. 준비 안 됐으면 건너뛴 블록을 돌려준다(예외 없이).
+
+    frame_items: [{"frame_id", "time_ms", "path"}]. 반환: logo_match 블록(status/verdict/summary/per_frame).
+    """
+    from .logo_runtime import get_runtime_status, review_frames
+    from .logo_review import summarize
+
+    status = get_runtime_status()
+    if not status.get("ready"):
+        return {"status": "skipped", "reason": f"로고 검수 런타임 미준비: {status.get('detail', '')}"}
+    reviews = review_frames([item["path"] for item in frame_items], query_path)
+    per_frame = [{"frame_id": item["frame_id"], "time_ms": item["time_ms"],
+                  "verdict": review.get("verdict", "absent"),
+                  "top_cosine": review.get("top_cosine", 0.0), "boxes": review.get("boxes", [])}
+                 for item, review in zip(frame_items, reviews)]
+    summary = summarize([{"verdict": row["verdict"], "top_cosine": row["top_cosine"],
+                          "time_s": round(row["time_ms"] / 1000, 2)} for row in per_frame])
+    return {"status": "completed", "verdict": summary["verdict"], "verdict_label": summary["verdict_label"],
+            "summary": summary, "per_frame": per_frame}
+
+
+async def save_logo_query(logo, target: Path) -> bool:
+    """업로드된 지정 로고를 검증(이미지 여부·크기)해 target/logo_query.bin 으로 저장한다."""
+    if logo is None or not getattr(logo, "filename", None):
+        return False
+    data = await logo.read(LOGO_QUERY_MAX_BYTES + 1)
+    if len(data) > LOGO_QUERY_MAX_BYTES:
+        raise HTTPException(413, f"로고 이미지는 {LOGO_QUERY_MAX_BYTES // (1024 * 1024)}MB 이하로 올려 주세요.")
+    if not data:
+        return False
+    import io
+    from PIL import Image
+    try:
+        with Image.open(io.BytesIO(data)) as image:
+            image.verify()  # 바이트가 실제 이미지인지만 확인(픽셀은 검수 단계에서 다시 연다)
+    except Exception:
+        raise HTTPException(415, "로고는 이미지 파일(PNG·JPG 등)이어야 합니다.") from None
+    (target / "logo_query.bin").write_bytes(data)
+    return True
 
 
 def paddle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
@@ -188,8 +245,9 @@ def _mean(values) -> float | None:
 # 1~7단계 실행
 # ---------------------------------------------------------------------------
 class Pipeline:
-    def __init__(self, target: Path, recognize, update):
+    def __init__(self, target: Path, recognize, update, logo_review=None):
         self.target, self.recognize, self.update = target, recognize, update
+        self.logo_review = logo_review
         self.warnings: list[str] = []
 
     def run(self, ffmpeg: str, demuxer: str) -> dict:
@@ -289,6 +347,24 @@ class Pipeline:
         disclosure_result = judge_disclosure(disclosure, frames, lines, duration)
         _write_json(target / "review.json", {**review, "disclosure": disclosure_result})
 
+        # 6-B 로고 검수(선택) — 지정 로고를 올렸을 때만. 미준비·실패여도 OCR 검수 결과는 그대로 둔다.
+        logo_match = {"status": "skipped", "reason": "검사할 지정 로고를 올리지 않았습니다."}
+        query_path = target / "logo_query.bin"
+        if self.logo_review is not None and query_path.is_file():
+            self.stage = "logo"
+            logo_items = [{"frame_id": f["frame_id"], "time_ms": f["time_ms"],
+                           "path": target / "frames" / f"{f['frame_id']}.jpg"}
+                          for f in frames if f["sampling"] == "base" and not f["same_as"]]
+            self.update(target, stage="logo", progress=PROGRESS["logo"],
+                        stage_detail=f"지정 로고 대조 {len(logo_items)}프레임")
+            try:
+                logo_match = self.logo_review(logo_items, query_path)
+            except Exception:  # 로고 검수 실패는 경고만 — OCR 검수 결과는 유지한다
+                logo_match = {"status": "failed",
+                              "reason": "로고 검수를 완료하지 못했습니다. 로고 런타임·엔드포인트를 확인해 주세요."}
+                self.warnings.append("로고 검수를 완료하지 못해 OCR 검수 결과만 제공합니다.")
+        _write_json(target / "logo.json", logo_match)
+
         self.update(target, stage="double_check", progress=PROGRESS["double_check"])
         double_check = {"status": "skipped", "reason": "이중 검수(6-1)는 기본 꺼짐입니다."}
 
@@ -304,7 +380,8 @@ class Pipeline:
             "scenes": {"status": scenes["status"], "cut_ms": scenes["cut_ms"]},
             "tracks": tracks, "text_groups": groups, "segments": segments,
             "review": {"results": review["results"], "mismatch": review["mismatch"], "calls": review["calls"]},
-            "disclosure": disclosure_result, "double_check": double_check, "warnings": self.warnings,
+            "disclosure": disclosure_result, "logo_match": logo_match,
+            "double_check": double_check, "warnings": self.warnings,
             "counts": {"frames": len(frames), "ocr_frames": total, "lines": len(lines), "kept": kept,
                        "excluded": len(lines) - kept, "tracks": len(tracks), "segments": len(segments),
                        "results": {s: statuses.count(s) for s in ("pass", "fail", "review")},
@@ -318,8 +395,10 @@ class Pipeline:
 def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly: bool = False,
                         ocr: Callable[[list[Path], Path, Callable[[int], None]], dict] | None = None,
                         readiness: Callable[[], tuple[bool, str]] | None = None,
+                        logo_review: Callable[[list[dict], Path], dict] | None = None,
+                        logo_readiness: Callable[[], tuple[bool, str]] | None = None,
                         authenticate: Callable[[Request], object] | None = None) -> APIRouter:
-    """ocr·readiness는 테스트에서 실제 모델 대신 주입한다. authenticate는 로컬 로그인 세션 확인 함수다."""
+    """ocr·readiness·logo_*는 테스트에서 실제 모델 대신 주입한다. authenticate는 로컬 로그인 세션 확인 함수다."""
 
     def guard(request: Request) -> None:
         """로그인 경로(local_auth)와 같은 경계: localhost 접속만 받고, 로그인 기능이 켜져 있으면 세션도 확인한다.
@@ -336,6 +415,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
     router = APIRouter(prefix="/api/video-reviews", dependencies=[Depends(guard)])
     recognize = ocr or paddle_frames
     check_ocr = readiness or ocr_readiness
+    do_logo = logo_review or logo_review_frames
+    check_logo = logo_readiness or logo_readiness_default
     lock = threading.RLock()
     admission, reserved = threading.Lock(), [0]  # 동시 제출이 한도 검사를 함께 통과하지 않게 자리를 예약한다
     policy = limits()
@@ -363,11 +444,16 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             ocr_ready, ocr_detail = check_ocr()
         except Exception:
             ocr_ready, ocr_detail = False, "OCR 준비 상태를 확인하지 못했습니다."
+        try:  # 로고 검수는 선택이라 전체 ready를 막지 않는다(정보만 제공)
+            logo_ready, logo_detail = check_logo()
+        except Exception:
+            logo_ready, logo_detail = False, "로고 검수 준비 상태를 확인하지 못했습니다."
         detail = ocr_detail if ffmpeg else "ffmpeg를 찾을 수 없습니다. `pip install imageio-ffmpeg` 하거나 FFMPEG_BIN을 지정하세요."
         if readonly:
             detail = "읽기 전용 모드라 새 동영상 검수를 받지 않습니다. 기존 결과만 볼 수 있습니다."
         return {"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
-                "readonly": readonly, "pipeline": PIPELINE, "limits": policy,
+                "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
+                "pipeline": PIPELINE, "limits": policy,
                 "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
 
     def active_jobs() -> int:
@@ -391,7 +477,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             reserved[0] -= 1
 
     def run(target: Path, demuxer: str) -> None:
-        pipeline = Pipeline(target, recognize, update)
+        pipeline = Pipeline(target, recognize, update, do_logo)
         pipeline.stage = "extracting"
         try:
             with inference_lock:  # 시연 환경: 포스터 검수와 같은 잠금으로 CPU 추론을 하나씩
@@ -429,7 +515,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
                          project_name: str = Form("동영상 검수", min_length=1, max_length=120),
-                         disclosure: str = Form("{}")):
+                         disclosure: str = Form("{}"), logo: UploadFile = File(None)):
             try:
                 if "content-length" not in request.headers:
                     raise HTTPException(411, "Content-Length가 필요합니다.")
@@ -451,18 +537,21 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     raise HTTPException(429, f"동영상 검수는 실행·대기 합쳐 {policy['active_jobs']}건까지 받습니다. 잠시 후 다시 시도해 주세요.")
             except BaseException:
                 await video.close()
+                if logo is not None:
+                    await logo.close()
                 raise
             try:  # 예약한 자리는 queued 결과를 쓴 뒤(그때부터 active_jobs가 센다) 또는 거부 뒤 돌려준다
-                return await accept(background_tasks, video, frozen, criteria_version, project_name, ad)
+                return await accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo)
             finally:
                 await run_in_threadpool(release)
 
-        async def accept(background_tasks, video, frozen, criteria_version, project_name, ad):
+        async def accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo):
             job_id = str(uuid4())
             target = root / job_id
             target.mkdir(parents=True)
             source = target / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
+            has_logo = False
             try:
                 with source.open("wb") as output:  # 1MiB씩 디스크에 흘려 쓰면서 SHA-256 계산
                     while chunk := await video.read(CHUNK):
@@ -489,22 +578,27 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     raise HTTPException(422, "해상도는 짧은 변 360픽셀 이상, 긴 변 3840픽셀 이하여야 합니다.")
                 if info["fps"] and info["fps"] > policy["fps_max"]:
                     raise HTTPException(422, "120fps 이하 동영상만 지원합니다.")
+                has_logo = await save_logo_query(logo, target)  # 선택: 지정 로고 저장(검증 포함)
             except BaseException:  # 어떤 거부 뒤에도 저장 폴더에 남는 파일이 0개
                 shutil.rmtree(target, ignore_errors=True)
                 raise
             finally:
                 await video.close()
+                if logo is not None:
+                    await logo.close()
             created = _now()
             media = {**info, "bytes": size, "sha256": digest.hexdigest()}
             _write_json(target / "media.json", media)
             _write_json(target / "snapshot.json", {"project_name": project_name, "criteria_version": criteria_version,
-                                                   "criteria": frozen, "disclosure": ad, "created_at": created})
+                                                   "criteria": frozen, "disclosure": ad, "logo_query": has_logo,
+                                                   "created_at": created})
             warnings = ["HDR 영상입니다. 톤매핑 없이 처리해 색이 다르게 보일 수 있습니다."] if info["hdr"] else []
             _write_json(target / "result.json", {
                 "id": job_id, "status": "queued", "stage": "queued", "progress": PROGRESS["queued"],
                 "stage_detail": f"대기 {await run_in_threadpool(active_jobs)}건", "project_name": project_name,
                 "criteria_version": criteria_version, "criteria": frozen, "disclosure_input": ad, "media": media,
-                "runtime": None, "warnings": warnings, "error": None, "created_at": created, "updated_at": created,
+                "logo_query": has_logo, "runtime": None, "warnings": warnings, "error": None,
+                "created_at": created, "updated_at": created,
             })
             background_tasks.add_task(run, target, demuxer)
             return {"id": job_id, "status": "queued"}

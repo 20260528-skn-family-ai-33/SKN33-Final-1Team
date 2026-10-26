@@ -42,11 +42,12 @@ def fake_ocr(calls, *, fail=(), ad_text="#광고"):
     return recognize
 
 
-def make_app(tmp_path, *, ready=True, ocr=None):
+def make_app(tmp_path, *, ready=True, ocr=None, logo_review=None, logo_readiness=None):
     return backend.create_app(
         review_root=tmp_path / "reviews", video_root=tmp_path / "videos",
         recognizer=lambda path: {}, runtime_status=lambda: {"ready": True},
         video_ocr=ocr or fake_ocr([]), video_readiness=lambda: (ready, "준비됨" if ready else "Paddle 모델 없음"),
+        video_logo_review=logo_review, video_logo_readiness=logo_readiness,
     )
 
 
@@ -60,14 +61,45 @@ class LoggedIn(TestClient):
         return self
 
 
-def make_client(tmp_path, *, ready=True, ocr=None):
-    return LoggedIn(make_app(tmp_path, ready=ready, ocr=ocr), base_url="http://127.0.0.1", client=("127.0.0.1", 12345))
+def make_client(tmp_path, *, ready=True, ocr=None, logo_review=None, logo_readiness=None):
+    return LoggedIn(make_app(tmp_path, ready=ready, ocr=ocr, logo_review=logo_review, logo_readiness=logo_readiness),
+                    base_url="http://127.0.0.1", client=("127.0.0.1", 12345))
 
 
-def upload(client, data, *, name="clip.mp4", criteria=None, disclosure=None):
+def upload(client, data, *, name="clip.mp4", criteria=None, disclosure=None, logo=None):
     form = {"criteria": json.dumps(criteria or []), "criteria_version": "1", "project_name": "숏폼 시험",
             "disclosure": json.dumps(disclosure or {})}
-    return client.post("/api/video-reviews", data=form, files={"video": (name, data, "video/mp4")})
+    files = {"video": (name, data, "video/mp4")}
+    if logo is not None:
+        files["logo"] = ("logo.png", logo, "image/png")
+    return client.post("/api/video-reviews", data=form, files=files)
+
+
+def png_bytes(color=(200, 30, 30)) -> bytes:
+    import io
+
+    from PIL import Image
+    buffer = io.BytesIO()
+    Image.new("RGB", (16, 16), color).save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def fake_logo(verdict="detected"):
+    """주입용 가짜 로고 검수. 파이프라인이 넘긴 base 프레임·저장한 쿼리 로고가 실재하는지 확인한다."""
+    labels = {"detected": "확실", "review": "확인 필요", "absent": "미검출"}
+
+    def review(frame_items, query_path):
+        assert query_path.is_file()
+        assert frame_items and all(item["path"].is_file() for item in frame_items)
+        per_frame = [{"frame_id": item["frame_id"], "time_ms": item["time_ms"], "verdict": verdict,
+                      "top_cosine": 0.95, "boxes": []} for item in frame_items]
+        return {"status": "completed", "verdict": verdict, "verdict_label": labels[verdict],
+                "summary": {"verdict": verdict, "verdict_label": labels[verdict], "frames": len(per_frame),
+                            "detected_frames": len(per_frame) if verdict == "detected" else 0,
+                            "review_frames": len(per_frame) if verdict == "review" else 0,
+                            "detected_times": [], "review_times": [], "best_cosine": 0.95},
+                "per_frame": per_frame}
+    return review
 
 
 def criterion(text, item_id="c1", kind="information"):
@@ -264,6 +296,51 @@ def test_concurrent_submissions_cannot_exceed_limit(tmp_path, monkeypatch):
         for worker in workers:
             worker.join(30)
     assert sorted(codes) == [202, 429]
+
+
+def test_logo_match_skipped_without_logo(tmp_path):
+    """지정 로고를 올리지 않으면 로고 블록은 skipped이고 OCR 검수는 그대로 완료된다."""
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path) as client:
+        status = client.get("/api/video-reviews/status").json()
+        assert "logo" in status and "ready" in status["logo"]  # 로고 준비상태는 정보용(전체 ready 비게이팅)
+        job = client.get(f"/api/video-reviews/{upload(client, data).json()['id']}").json()
+    assert job["status"] == "completed" and job["logo_query"] is False
+    assert job["logo_match"]["status"] == "skipped"
+
+
+def test_logo_match_runs_when_logo_uploaded(tmp_path):
+    """지정 로고를 올리면 base 프레임을 대조해 logo_match가 채워지고, OCR 결과는 그대로 유지된다."""
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path, logo_review=fake_logo("detected")) as client:
+        job_id = upload(client, data, logo=png_bytes()).json()["id"]
+        job = client.get(f"/api/video-reviews/{job_id}").json()
+    assert job["status"] == "completed" and job["logo_query"] is True
+    block = job["logo_match"]
+    assert block["status"] == "completed" and block["verdict"] == "detected"
+    assert block["per_frame"] and all(frame["verdict"] == "detected" for frame in block["per_frame"])
+    assert job["counts"]["frames"] > 0 and "results" in job["review"]  # OCR 검수는 로고와 무관하게 수행됨
+    stored = tmp_path / "videos" / job_id
+    assert (stored / "logo_query.bin").is_file() and (stored / "logo.json").is_file()
+
+
+def test_logo_failure_keeps_ocr_review(tmp_path):
+    """로고 검수가 예외로 실패해도 OCR 검수는 완료되고 경고만 남는다."""
+    def broken_logo(frame_items, query_path):
+        raise RuntimeError("endpoint down")
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path, logo_review=broken_logo) as client:
+        job = client.get(f"/api/video-reviews/{upload(client, data, logo=png_bytes()).json()['id']}").json()
+    assert job["status"] == "completed" and job["logo_match"]["status"] == "failed"
+    assert any("로고 검수" in w for w in job["warnings"])
+
+
+def test_logo_rejects_non_image(tmp_path):
+    """이미지가 아닌 로고 업로드는 415로 거절하고 저장 폴더를 남기지 않는다."""
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path) as client:
+        assert upload(client, data, logo=b"not an image at all").status_code == 415
+    assert list((tmp_path / "videos").iterdir()) == []
 
 
 def test_read_only_mode_reports_not_ready(tmp_path, monkeypatch):

@@ -464,6 +464,8 @@ def create_app(
     video_root: Path | None = None,
     video_ocr: Callable | None = None,
     video_readiness: Callable[[], tuple[bool, str]] | None = None,
+    video_logo_review: Callable | None = None,
+    video_logo_readiness: Callable[[], tuple[bool, str]] | None = None,
 ) -> FastAPI:
     # Retirement is explicit. The original development launcher keeps its default.
     readonly = os.getenv('LEGACY_READ_ONLY', '0')
@@ -772,6 +774,7 @@ def create_app(
     application.include_router(video_review_router(
         root=video_storage, inference_lock=inference_lock, readonly=readonly,
         ocr=video_ocr, readiness=video_readiness,
+        logo_review=video_logo_review, logo_readiness=video_logo_readiness,
         authenticate=auth_router.session_user if auth_router else None,
     ))
 
