@@ -9,12 +9,14 @@ from resultlib import require
 
 PROFILE = '4b-compact-v1'
 FIXED_PROFILE = '4b-compact-v2'
-PROFILES = (PROFILE, FIXED_PROFILE)
+TARGET_PROFILE = '4b-compact-v3'
+PROFILES = (PROFILE, FIXED_PROFILE, TARGET_PROFILE)
 
 
 def output_mode(profile):
     require(profile in PROFILES, 'Unknown compact profile')
-    return 'compact_fixed_assembled' if profile == FIXED_PROFILE else 'compact_assembled'
+    return {PROFILE: 'compact_assembled', FIXED_PROFILE: 'compact_fixed_assembled',
+            TARGET_PROFILE: 'compact_target_assembled'}[profile]
 
 
 def source_segments(text):
@@ -49,7 +51,7 @@ def input_message(text):
 
 def interpret(raw, text, profile=PROFILE):
     mode = output_mode(profile)
-    fixed = profile == FIXED_PROFILE
+    fixed = profile in (FIXED_PROFILE, TARGET_PROFILE)
     segments = source_segments(text)
     sources = {s['id']: s for s in segments}
     compact = dict(json_valid=False, schema_valid=False, value=None, error=None)
@@ -170,7 +172,7 @@ Use needs_review only for an unresolved condition: missing_value for absent nece
 ambiguous for unclear preference, conflicting for incompatible constraints, non_requirement for greetings.
 Extract complete conditions even if another condition is unresolved. An explicit value is not missing.
 '''
-    if profile == FIXED_PROFILE:
+    if profile in (FIXED_PROFILE, TARGET_PROFILE):
         # Only the output contract changes. Preserve meaning rules and example
         # inputs/decisions so this experiment isolates fixed vs conditional keys.
         before, rest = rules.split('Compact output contract:\n', 1)
@@ -186,6 +188,19 @@ Extract complete conditions even if another condition is unresolved. An explicit
 - Never output type or source; code supplies both from field and source_id.
 - Review entries have only source_id and reason. Empty arrays are still required.
 Do not invent IDs.''' + after
+    if profile == TARGET_PROFILE:
+        rules += '''
+Visual target checklist:
+- For every visual item, copy its specific target noun phrase from that item's source.
+  A visual target must be a nonempty string; never write null or omit the target.
+- For color/layout, the target is the actual object being colored or positioned,
+  not the color, position, field name, or null.
+- A count belongs in value; keep the counted object's name in target as well.
+- For multiple visual conditions, choose a separate source-grounded target for each.
+- For information fields only, target must be null.
+- If a necessary target or location cannot be resolved from the text, use needs_review
+  with the appropriate reason instead of guessing an object or a location.
+'''
     meanings = dict(event_title='행사명', event_date='기간/날짜', event_location='장소',
         host='주최', organizer='주관', contact='문의', fee='비용', other_text='표시할 문구',
         person='인물', food_drink='음식/음료', animal='동물', plant_flower='식물/꽃',
@@ -203,9 +218,22 @@ Do not invent IDs.''' + after
             field='host', operator='equals', value='바다독서회')],
             needs_review=[dict(source_id='S2', reason='missing_value')])),
     ]
+    if profile == TARGET_PROFILE:
+        examples += [
+            (['풍선 사진을 제외해 주세요.'], dict(items=[dict(source_id='S1', field='other_visual',
+                operator='forbidden', target='풍선')], needs_review=[])),
+            (['무대 색상: 빨간색'], dict(items=[dict(source_id='S1', field='color',
+                operator='equals', target='무대', value='빨간색')], needs_review=[])),
+            (['제목 위치: 왼쪽 하단'], dict(items=[dict(source_id='S1', field='layout',
+                operator='equals', target='제목', value='왼쪽 하단')], needs_review=[])),
+            (['나무를 최소 4그루 넣어 주세요.'], dict(items=[dict(source_id='S1', field='plant_flower',
+                operator='at_least', target='나무', value=4)], needs_review=[])),
+            (['표시를 원하는 위치로 옮겨 주세요.'], dict(items=[],
+                needs_review=[dict(source_id='S1', reason='missing_value')])),
+        ]
     rendered = []
     for lines, answer in examples:
-        if profile == FIXED_PROFILE:
+        if profile in (FIXED_PROFILE, TARGET_PROFILE):
             answer['items'] = [dict(source_id=i['source_id'], field=i['field'],
                 operator=i['operator'], target=i.get('target'), value=i.get('value')) for i in answer['items']]
         payload = dict(sources=[dict(id='S' + str(i), text=line) for i, line in enumerate(lines, 1)])

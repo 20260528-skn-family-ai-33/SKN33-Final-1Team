@@ -1,5 +1,46 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B-3: 시각 대상 지정 보강
+
+`--prompt-profile 4b-compact-v3`는 B-2의 고정 키와 기존 엄격 채점을 유지하면서
+시각 항목의 대상 지정 지침과 별도 예시를 추가하는 실험이다. B-2 조립 실패 8건 중
+7건에서 시각 target이 null이었으며, 나머지 1건은 정의되지 않은 연산자였다.
+
+- 시각 target은 해당 source에서 고른 비어 있지 않은 대상 문자열이어야 한다.
+- 위치·색상은 영향을 받는 객체, 수량은 개수를 세는 객체를 target으로 사용한다.
+- 여러 시각 조건은 각 조건의 대상을 따로 고른다. 정보 항목의 target은 null이다.
+- 필수 대상이나 위치가 모호하면 추측하지 않고 needs_review에 남긴다.
+- 금지 대상, 색상, 배치, 수량, 모호한 위치를 보여주는 별도 예시를 추가했다.
+
+모델 응답의 null을 코드에서 보정하거나 대상 사전으로 추정하지 않는다. 새 profile의
+output_mode는 `compact_target_assembled`이며 B-1/B-2의 출력과 저장 결과는 보존한다.
+생성·채점 설정, 모델 가중치, 데이터와 RAM 정책은 유지한다. 이번 실험은 프롬프트와
+예시를 함께 변경하므로 각각의 독립적인 기여도를 분리하지 않는다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_json.sh run \
+  --models 4b --prompt-profile 4b-compact-v3 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --run-dir runs/qwen4b-requirements-compact-v3 \
+  --allow-draft-labels --resume &&
+bash run_requirements_json.sh show-results \
+  --run-dir runs/qwen4b-requirements-compact-v3
+```
+
+완료 후 기존 B-2와 저장된 응답만 비교한다.
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen4b-requirements-compact-v2 \
+            runs/qwen4b-requirements-compact-v3 \
+  --model 4b --out reviews/qwen4b-compact-comparison-v3
+```
+
+target null·기타 조립 실패와 새 회귀를 확인한다. 40문장은 사람 미검토 합성 초안이며
+이미 여러 차례 사용한 개발 자료다. 90%의 실제 일반화 성능은 미측정이다.
+사용자 요청에 따라 로컬 검증·모델 실행과 RunPod 직접 실행은 하지 않았다.
+
 ## B-2: 항목 키 5개 고정
 
 `--prompt-profile 4b-compact-v2`는 B-1의 조건별 키 생략을 없애는 비교 실험이다.
