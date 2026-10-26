@@ -36,11 +36,12 @@ R025는 필드와 연산자도 틀렸고 R008/R037은 원문 인용에도 문제
 cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
 bash run_requirements_json.sh run \
   --models 4b --prompt-profile 4b-v2 \
+  --ram-policy clean-unmapped-file \
   --max-input-tokens 4096 \
-  --run-dir runs/qwen4b-requirements-prompt-v2 \
+  --run-dir runs/qwen4b-requirements-prompt-v2-ramfix \
   --allow-draft-labels --resume &&
 bash run_requirements_json.sh show-results \
-  --run-dir runs/qwen4b-requirements-prompt-v2
+  --run-dir runs/qwen4b-requirements-prompt-v2-ramfix
 ```
 
 코드 변경 후 기존 run-dir로 resume하지 않는다. 기존 결과는 그대로 보존한다.
@@ -69,7 +70,7 @@ cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
 
 ```bash
 .venv/bin/python -B diagnose_requirements_json.py \
-  --run-dir runs/qwen-requirements-json-pilot-v1 runs/qwen4b-requirements-prompt-v2 \
+  --run-dir runs/qwen-requirements-json-pilot-v1 runs/qwen4b-requirements-prompt-v2-ramfix \
   --model 4b --out reviews/qwen4b-prompt-comparison-v1
 ```
 
@@ -96,3 +97,20 @@ cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
 - `historical_p95_ms`는 저장된 값이며 진단 중 다시 측정하지 않는다.
 
 사용자 요청에 따라 이 진단 코드는 로컬 실행/검증하지 않았다.
+
+## 파일 캐시로 인한 RAM 검사 차단
+
+`--ram-policy clean-unmapped-file`은 기본 inactive-file 방식과 달리 active 목록의
+파일 캐시도 잠재 회수량 추정에 포함한다. 총 파일 캐시에서 shared memory,
+mapped file, dirty/writeback, unevictable 양을 뺀다. 겹치는 카운터를 중복해서
+빼므로 보수적인 추정이며, 필요한 카운터가 없으면 캐시를 여유량에 포함하지 않는다.
+커널 slab이나 익명 메모리는 여유량에 더하지 않는다.
+
+호스트 MemAvailable과 조회 가능한 컨테이너 hard limit을 계속 적용한다.
+4B 14GiB RAM/VRAM 사전 기준은 동일하다. 추정치이므로 실제 모델 로딩 성공이나
+일정한 peak RAM을 보장하지 않는다. 캐시 강제 삭제, 프로세스 종료, 제한값 변경은 없다.
+로그에 두 방식의 캐시 추정량, 선택 정책, 실제 빈 공간, 요구 RAM을 함께 출력한다.
+
+RAM 정책은 실행 protocol에 기록한다. 코드와 protocol이 변경되므로 앞서 검사에
+실패한 `qwen4b-requirements-prompt-v2` 폴더를 재사용하지 않고 위 `-ramfix` 폴더를 쓴다.
+기존 완료 결과와 실패 기록은 보존한다. 이 수정은 로컬에서 실행/검증하지 않았다.

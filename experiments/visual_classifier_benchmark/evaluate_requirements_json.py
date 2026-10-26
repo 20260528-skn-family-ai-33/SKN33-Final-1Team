@@ -31,8 +31,9 @@ def folder(args, model):
     return args.models_root / ('qwen3.5-' + model)
 
 
-def ram_status():
-    """Estimate capacity after clean inactive-file reclaim, retaining every visible hard limit."""
+def ram_status(policy='inactive-file'):
+    """Estimate cache reclaim potential; never clear cache or alter memory limits."""
+    require(policy in ('inactive-file', 'clean-unmapped-file'), 'Unknown RAM policy')
     values = dict(line.split(':', 1) for line in Path('/proc/meminfo').read_text().splitlines())
     host_available = int(values['MemAvailable'].split()[0]) * 1024
     available, raw_available, controllers = host_available, host_available, []
@@ -62,25 +63,40 @@ def ram_status():
         shmem = counter('shmem')
         dirty = counter('dirty' if hierarchical else 'file_dirty')
         writeback = counter('writeback' if hierarchical else 'file_writeback')
-        # Do not credit active cache, tmpfs/shared memory, dirty/writeback pages, or kernel slabs.
-        # The counters may overlap; subtracting dirty+writeback is intentionally conservative.
+        mapped_name = 'mapped_file' if hierarchical else 'file_mapped'
+        mapped = counter(mapped_name)
+        unevictable = counter('unevictable')
+        active = counter('active_file')
+        # Counters may overlap: subtraction intentionally under-credits cache.
         needed = ('inactive_file', 'cache', 'shmem', 'dirty', 'writeback') if hierarchical else (
             'inactive_file', 'file', 'shmem', 'file_dirty', 'file_writeback')
         complete_stats = all(counter_key(name) in stats for name in needed)
-        reclaim = max(0, min(inactive, max(0, file_cache - shmem), used) - dirty - writeback) if complete_stats else 0
+        inactive_credit = max(0, min(inactive, max(0, file_cache - shmem), used) - dirty - writeback) if complete_stats else 0
+        unmapped_complete = complete_stats and all(counter_key(name) in stats for name in (mapped_name, 'unevictable'))
+        # Active list membership does not make clean, unmapped file pages
+        # permanently unreclaimable. This is potential capacity, NOT guaranteed
+        # immediately available RAM. Do not count anon, shared, mapped, dirty,
+        # writeback, unevictable pages, or slab as additional capacity.
+        unmapped_credit = max(0, min(file_cache, used) - shmem - mapped - dirty - writeback - unevictable) if unmapped_complete else 0
+        reclaim = inactive_credit if policy == 'inactive-file' else unmapped_credit
+        selected_complete = complete_stats if policy == 'inactive-file' else unmapped_complete
         raw_headroom = max(0, cap - used)
         estimated_headroom = min(cap, max(0, cap - used + reclaim))
         raw_available = min(raw_available, raw_headroom)
         available = min(available, estimated_headroom)
         controllers.append(dict(path=str(root), limit_bytes=cap, used_bytes=used,
             headroom_without_cache_bytes=raw_headroom, file_cache_bytes=file_cache,
-            inactive_file_bytes=inactive, shmem_bytes=shmem, dirty_bytes=dirty,
-            writeback_bytes=writeback, cache_credit_counters_complete=complete_stats,
-            credited_clean_inactive_file_bytes=reclaim,
+            inactive_file_bytes=inactive, active_file_bytes=active,
+            shmem_bytes=shmem, dirty_bytes=dirty, file_mapped_bytes=mapped,
+            unevictable_bytes=unevictable, writeback_bytes=writeback,
+            cache_credit_counters_complete=selected_complete,
+            inactive_file_credit_estimate_bytes=inactive_credit,
+            clean_unmapped_file_credit_estimate_bytes=unmapped_credit,
+            credited_file_cache_bytes=reclaim,
             headroom_after_reclaim_estimate_bytes=estimated_headroom))
     return dict(host_available_bytes=host_available, available_estimate_bytes=available,
-        headroom_without_cache_bytes=raw_available, controllers=controllers,
-        policy='min(host MemAvailable, each visible cgroup hard-limit headroom plus clean inactive-file estimate); '
+        headroom_without_cache_bytes=raw_available, controllers=controllers, cache_policy=policy,
+        policy='min(host MemAvailable, each visible cgroup hard-limit headroom plus selected file-cache estimate); '
                'no forced cache clearing, no limit changes, no guarantee that all credited cache is immediately reclaimable')
 
 
@@ -91,7 +107,7 @@ def ram_available():
 def resources(args, models):
     import torch
     free_gpu, total_gpu = torch.cuda.mem_get_info(0)
-    memory = ram_status()
+    memory = ram_status(args.ram_policy)
     available_ram = memory['available_estimate_bytes']
     parent = args.models_root
     while not parent.exists():
@@ -112,10 +128,11 @@ def resources(args, models):
         issues.append('Insufficient model-volume disk space. No files are automatically deleted.')
     report = dict(ready=not issues, GPU_free_bytes=free_gpu, GPU_total_bytes=total_gpu,
         RAM_available_bytes=available_ram, RAM_available_is_estimate=True,
+        RAM_required_bytes=max(SPECS[m]['ram'] for m in models), RAM_policy=args.ram_policy,
         RAM_headroom_without_cache_bytes=memory['headroom_without_cache_bytes'],
         RAM_memory_details=memory, disk_free_bytes=free_disk,
         estimated_remaining_download_bytes=remaining, required_disk_free_bytes=remaining + 2 * 1024**3,
-        capacity_policy='Conservative estimates, not measured peaks/cache guarantees', issues=issues)
+        capacity_policy='Capacity estimates, not measured peaks or a guarantee of reclaim/load success', issues=issues)
     print(json.dumps(dict(resource_check=report), ensure_ascii=False, indent=2), flush=True)
     require(report['ready'], 'Resource check failed; no packages changed or files deleted')
     return report
@@ -307,6 +324,7 @@ def run(args):
         model_packets=downloads, dataset_sha256=sha(args.dataset), source_hashes=src,
         prompt=instruction, precision='bf16', attn_implementation='sdpa', thinking=False, do_sample=False,
         max_new_tokens=args.max_new_tokens, max_input_tokens=args.max_input_tokens,
+        ram_policy=args.ram_policy,
         warmups=args.warmups, repeats=args.repeats, synthetic=True, human_verified=False,
         labels_passed_to_model=False, training_executed=False, model_deployed=False,
         metric='Agreement with unreviewed AI-authored expectations, not independent real-user accuracy',
@@ -356,6 +374,8 @@ def main():
     p.add_argument('command', choices=('check-env', 'download', 'run', 'show-results'))
     p.add_argument('--models', nargs='+', choices=tuple(SPECS), default=['2b', '4b'])
     p.add_argument('--prompt-profile', choices=('baseline', '4b-v2'), default='baseline')
+    p.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file',
+        help='RAM capacity estimate; clean-unmapped-file also credits eligible active file cache, without clearing it')
     p.add_argument('--models-root', type=Path, default=Path('/workspace/models'))
     p.add_argument('--revision', default='main')
     p.add_argument('--dataset', type=Path, default=DATA)
