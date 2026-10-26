@@ -45,4 +45,54 @@ bash run_requirements_json.sh show-results \
 
 코드 변경 후 기존 run-dir로 resume하지 않는다. 기존 결과는 그대로 보존한다.
 작업 브랜치는 `feat/qwen4b-requirements-improvement`다.
-추가 진단 지표는 이번 변경에 포함하지 않으며 다음 단계에서 진행한다.
+## 저장된 응답 진단
+
+`diagnose_requirements_json.py`는 표준 라이브러리와 기존 채점 모듈만 사용한다.
+모델 로딩, 추론, 학습, 다운로드 없이 완료된 run의 저장 응답을 읽는다.
+기존 runner 및 run 산출물에는 변경을 가하지 않는다. 진단 코드는 기존 추론
+protocol의 source 목록에 추가하지 않아 진단 도구 추가만으로 resume를 막지 않는다.
+
+진단 입력인 protocol/predictions/metrics 파일만 완료 기록의 SHA-256과 대조하고,
+저장된 strict 판정과 현재 판정 및 합계가 같은지 확인한다. 모델 가중치나
+전체 run의 무결성 검사를 대신하지 않는다. 출력은 원본 run 밖의 새 폴더만 허용한다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen-requirements-json-pilot-v1 \
+  --model 4b --out reviews/qwen4b-diagnostics-v1
+```
+
+개선 프롬프트 평가가 끝난 뒤에는 두 run을 함께 지정할 수 있다.
+문장 ID·원문·정답 초안이 모두 일치해야 비교한다. 첫 run이 기준이며
+엄격 전체 일치율 차이는 퍼센트포인트로 표시한다.
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen-requirements-json-pilot-v1 runs/qwen4b-requirements-prompt-v2 \
+  --model 4b --out reviews/qwen4b-prompt-comparison-v1
+```
+
+출력:
+
+- `comparison.csv` / `summary.json`: 엄격 점수, 과거 p95, 진단 지표, 입력 해시와 정책.
+- `01-cases.csv` / `01-cases.json`: 첫 run의 사례별 결과와 실제 항목·차이·원문.
+- `02-cases.*`: 두 번째 run을 지정했을 때의 결과.
+
+### 지표 해석
+
+- 동일 항목과 동일 source를 먼저 대응시킨다. 이후 같은 원문 인용에 남은
+  정답/응답이 각각 하나일 때만 짝을 정한다. 배열 순서나 의미 추정으로 연결하지 않는다.
+- source를 바꾸거나 동일 source에 여러 항목이 남으면 미대응으로 표시한다.
+  `alignment_coverage`와 `unpaired_gold_items`를 반드시 함께 확인한다.
+- `field/operator/value/target_agreement_on_aligned`는 **대응된 항목만** 분모로 삼는다.
+- `target_only_mismatches`는 다른 필드가 모두 같고 대상 문자열만 다른 수다.
+  동의어로 승인하거나 의미상 정답으로 인정한 수가 아니다.
+- 금지·수량 diagnostic recall은 **전체 정답 금지·수량 항목**을 분모로 삼는다.
+  대상 문자열은 제외하지만 필드 포함/미포함 결과를 각각 표시한다.
+- 스키마가 틀린 문서도 원시 항목 진단에는 포함한다. 해당 문서의 엄격 점수는
+  원래대로 실패이며, 개별 항목 유효성을 JSON에 표시한다. 진단 점수를 운영 정확도로 쓰지 않는다.
+- `needs_review`는 원래 엄격 TP/FP/FN과 실제/기대 검토 사유를 보존한다.
+- `historical_p95_ms`는 저장된 값이며 진단 중 다시 측정하지 않는다.
+
+사용자 요청에 따라 이 진단 코드는 로컬 실행/검증하지 않았다.
