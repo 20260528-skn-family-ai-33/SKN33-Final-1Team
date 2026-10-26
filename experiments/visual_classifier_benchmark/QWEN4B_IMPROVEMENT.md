@@ -1,5 +1,75 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B안: 축소 출력과 코드 조립
+
+`--prompt-profile 4b-compact-v1`은 같은 4B로 의미 필드만 생성하는 별도 실험이다.
+가중치 학습, 설치, 규칙 기반 정보 추출(C안), 정답별 예외 처리는 포함하지 않는다.
+모델은 모든 조건의 field/operator/target/value와 source_id를 선택한다.
+코드는 field에서 type을 결정하고, 정보 target과 존재 연산자 value를 null로 채운다.
+source는 선택한 ID의 원문을 그대로 복사하며 json.dumps로 최종 JSON을 직렬화한다.
+
+원문은 공백을 제외한 각 물리적 행에 ID를 부여한다. 원문 오프셋을 보존하며 날짜,
+따옴표, 문장부호를 기준으로 절을 임의 분할하지 않는다. 한 구간에 여러 조건이 있으면
+복수 항목이 같은 ID를 사용할 수 있다. 500자를 넘는 행은 100자씩 겹치는 500자
+창을 제공한다. 창 경계로 조건이 나뉠 수 있으며, 이는 여전히 평가 대상 한계다.
+전체 구간을 순서대로 한 번의 모델 호출에 전달한다. 입력 한도 초과 시 잘라내지 않고 중단한다.
+
+축소 출력 예시:
+
+```json
+{"items":[{"source_id":"S1","field":"musical_instrument","operator":"forbidden","target":"바이올린"}],"needs_review":[]}
+```
+
+정보 항목에는 target, 존재 연산자에는 value를 출력하지 않는다. type/source도 출력하지 않는다.
+수량은 정수여야 하며 유효 source_id가 필요하다. 불필요한 키/중복 키/잘못된 타입을
+자동 복구하거나 문장 의미를 규칙으로 수정하지 않는다. 최종 출력은 기존 parse/evaluate로
+동일하게 채점하며 실패 문장도 전체 분모에 포함한다. source ID가 올바른 조건을
+가리키는지는 의미적으로 보장되지 않으므로, source-valid를 의미 정확도로 해석하지 않는다.
+
+이 실험은 모델 단독 완성 JSON 성능이 아닌 **4B + 코드 조립 파이프라인** 성능이다.
+출력 인터페이스에 맞게 프롬프트도 바뀌므로 코드 조립만의 독립 인과 효과로 해석하지 않는다.
+v2의 저장 결과를 A 기준으로 사용하고, B의 정답 증가와 회귀를 함께 확인한다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_json.sh run \
+  --models 4b --prompt-profile 4b-compact-v1 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --run-dir runs/qwen4b-requirements-compact-v1 \
+  --allow-draft-labels --resume &&
+bash run_requirements_json.sh show-results \
+  --run-dir runs/qwen4b-requirements-compact-v1
+```
+
+완료 후 재추론 없이 A/B 비교:
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen4b-requirements-prompt-v2-ramfix \
+            runs/qwen4b-requirements-compact-v1 \
+  --model 4b --out reviews/qwen4b-compact-comparison-v1
+```
+
+저장 증거와 지표:
+
+- 요청 캐시와 predictions.json의 raw는 모델이 출력한 축소 JSON 문자열이다.
+- compact는 원시 축소 출력 검증, assembled는 코드가 조립한 최종 객체다.
+- source_segments와 assembly_trace는 원문 ID/오프셋/코드가 채운 필드를 기록한다.
+- parsed/result는 최종 객체에 대한 기존 검증·엄격 채점이다. 원시 축소 JSON을
+  완성 JSON 계약으로 직접 채점해 0점으로 표시하지 않는다.
+- comparison.csv의 output_mode=compact_assembled로 파이프라인 점수임을 명시한다.
+- compact_json_valid_rate, compact_schema_valid_rate는 원시 출력의 형식 준수율이다.
+  assembly_completed_rate와 accepted_output_rate는 조립/최종 형식·원문 검증 통과율로,
+  정답률이 아니다. 규칙 추출은 rule_extraction_executed=false다.
+- 전체 p95에는 구간 생성/입력 직렬화/토큰화/추론/출력 조립/검증을 포함한다.
+  모델 로딩·warmup·정답 채점·파일 저장은 이전과 같이 제외한다.
+- mean_input_tokens, mean_generated_tokens, reached_token_limit_requests도 기록한다.
+  기존 저장 run에 없는 토큰 지표는 timing_raw.csv에서 조회할 수 있다.
+
+기존 완료 결과는 보존하고 새 run-dir를 사용한다. 스크립트 의존성에
+requirements_compact.py가 추가되었으므로 runner 및 진단 파일과 함께 반영해야 한다.
+로컬 검증/모델 실행은 하지 않았다. 개발셋 밖의 90% 달성 여부는 미확인이다.
+
 ## v3: 명시 값 추출과 원문 인용 회귀 수정
 
 `--prompt-profile 4b-v3`는 baseline/v2 규칙 뒤에 내용을 추가하지 않는 독립 프롬프트다.

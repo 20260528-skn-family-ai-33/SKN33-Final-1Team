@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from requirements_json_contract import COUNTS, aggregate, evaluate, normalize, parse
+from requirements_compact import interpret as compact_interpret
 from resultlib import digest, inside, read, require, save, sha, write_csv
 
 
@@ -43,7 +44,15 @@ def align(expected, actual, text):
 
 def diagnose(row):
     text, gold = row['text'], row['expected_draft']
-    parsed = parse(row['raw'], text)
+    mode = row.get('output_mode', 'full_json')
+    require(mode in ('full_json', 'compact_assembled'), 'Unknown output mode')
+    if mode == 'compact_assembled':
+        assembled = compact_interpret(row['raw'], text)
+        require(all(row.get(k) == v for k, v in assembled.items()),
+                'Compact assembly differs from saved evidence: ' + row['case_id'])
+        parsed = assembled['parsed']
+    else:
+        parsed = parse(row['raw'], text)
     require(parsed == row['parsed'], 'Parser behavior differs from saved evidence: ' + row['case_id'])
     strict = evaluate(dict(expected=gold), parsed)
     require(strict == row['result'], 'Strict scoring differs from saved evidence: ' + row['case_id'])
@@ -97,13 +106,14 @@ def diagnose(row):
         p = parse(json.dumps(dict(items=[item], needs_review=[]), ensure_ascii=False), text)
         validations.append(dict(actual_dict_index=ai, item=item, schema_valid=p['schema_valid'],
             source_valid=p['source_valid'], error=p['error'], source_errors=p['source_errors']))
-    return dict(case_id=row['case_id'], text=text, strict=strict, counts=dict(counts),
+    return dict(case_id=row['case_id'], text=text, output_mode=mode, strict=strict, counts=dict(counts),
         document_error=parsed['error'], document_source_errors=parsed['source_errors'],
         aligned_items=item_details, raw_item_validation=validations,
         unpaired_expected=[gold['items'][i] for i in unmatched_gold],
         unpaired_actual=[actual[i] for i in unmatched_actual],
         expected_review=gold['needs_review'], actual_review=obj.get('needs_review'),
-        raw=row['raw'])
+        raw=row['raw'], compact=row.get('compact'), assembled=row.get('assembled'),
+        source_segments=row.get('source_segments'), assembly_trace=row.get('assembly_trace'))
 
 
 def ratio(numerator, denominator):
@@ -181,7 +191,7 @@ def main():
         require(all(metrics.get(k) == v for k, v in strict.items()), 'Saved strict aggregate differs')
         if reference_strict is None:
             reference_strict = strict
-        summaries.append(dict(run=str(run), model=args.model,
+        summaries.append(dict(run=str(run), model=args.model, output_mode=metrics.get('output_mode', 'full_json'),
             strict_exact_match_rate=strict['draft_exact_match_rate'],
             strict_item_f1=strict['draft_item_f1'],
             strict_schema_valid_rate=strict['schema_valid_rate'],
@@ -209,12 +219,14 @@ def main():
         training_executed=False, inference_executed=False, latency_remeasured=False,
         source_hashes=evidence,
         diagnostic_source_hashes={name: sha(Path(__file__).with_name(name)) for name in
-            ('diagnose_requirements_json.py', 'requirements_json_contract.py', 'resultlib.py')},
+            ('diagnose_requirements_json.py', 'requirements_json_contract.py', 'requirements_compact.py', 'resultlib.py')},
         policy='Strict saved scores preserved. Supplemental raw-item diagnostics include schema-invalid '
                'documents. Align exact item+source first, then unique identical verbatim source. '
                'Ambiguous or changed quotes remain unpaired. Field rates use aligned items only; '
                'forbidden/count recalls use all gold constraints. Target ignored only in explicitly '
-               'named diagnostic recalls; these are not semantic accuracy or accepted outputs.'))
+               'named diagnostic recalls; these are not semantic accuracy or accepted outputs. '
+               'For compact mode, item-level diagnostics describe assembled items, with raw compact '
+               'responses and assembly traces retained separately.'))
     print(json.dumps(dict(out=str(out), results=summaries, inference_executed=False), ensure_ascii=False, indent=2))
 
 
