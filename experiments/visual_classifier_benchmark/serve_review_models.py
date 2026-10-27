@@ -78,7 +78,8 @@ def infer(payload):
         scores = {label: {'score': float(value), 'threshold': float(threshold),
                           'prediction': int(value >= threshold)}
                   for label, value, threshold in zip(LABELS, p, identity['thresholds'])}
-        args = SimpleNamespace(max_input_tokens=2048, max_new_tokens=768, prompt_profile=STRUCTURE_PROFILE)
+        # Match the structure-profile evaluation's complete prompt budget.
+        args = SimpleNamespace(max_input_tokens=4096, max_new_tokens=768, prompt_profile=STRUCTURE_PROFILE)
         instruction = prompt(STRUCTURE_PROFILE)
         extracts = []
         for criterion in criteria:
