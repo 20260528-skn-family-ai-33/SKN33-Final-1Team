@@ -219,7 +219,10 @@ def run(args):
                         records.extend(r)
             write_csv(args.run_dir / 'comparison.csv', summary)
             write_csv(args.run_dir / 'per_label.csv', labels)
-            write_csv(args.run_dir / 'per_case_label.csv', cells)
+            # Different datasets carry different review metadata. Preserve every
+            # column instead of deriving the header from only the first row.
+            fields = list(dict.fromkeys(key for row in cells for key in row))
+            write_csv(args.run_dir / 'per_case_label.csv', cells, fields=fields)
             save(args.run_dir / 'predictions.json', records)
             save(args.run_dir / 'summary.json', dict(results=summary, **metadata,
                 training_executed=False, installation_executed=False, synthetic=True, human_verified=False,
@@ -259,7 +262,7 @@ def main():
     p.add_argument('--resume', action='store_true')
     args = p.parse_args()
     if args.run_dir is None:
-        args.run_dir = HERE / ('runs/qwen4b-all-requirements-' + args.profile + '-v1')
+        args.run_dir = HERE / ('runs/qwen4b-all-requirements-' + args.profile + '-v2')
     for name in ('review_file', 'models_root', 'run_dir'):
         setattr(args, name, getattr(args, name).expanduser().resolve())
     require(256 <= args.max_new_tokens <= 2048 and 512 <= args.max_input_tokens <= 4096, 'Invalid token budget')
