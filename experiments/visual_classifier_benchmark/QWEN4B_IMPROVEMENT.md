@@ -1,5 +1,44 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## 저장된 Qwen 결과의 8개 라벨 판정 진단
+
+`evaluate_qwen_label_accuracy.py`는 기존 저장 응답과 정답 초안만 읽고 재추론하지 않는다.
+시각 분류와 같은 순서의 person, food_drink, animal, plant_flower, vehicle,
+building_structure, musical_instrument, fireworks 8개 필드의 문장별 이진 판정을 계산한다.
+여기서 양성은 **문장에 해당 라벨의 요구가 존재한다**는 뜻이다. required·forbidden·optional·
+수량 조건을 모두 해당 라벨의 요구 존재로 센다. 이미지를 판정한 결과가 아니다.
+연산자의 정확성, 대상명·수량·값·중복·검토 사유는 이 라벨 지표로 확인할 수 없으며,
+기존 전체 일치율과 항목 F1을 보조 지표로 함께 확인해야 한다.
+
+- 예측 JSON·스키마·원문 검증 중 하나라도 실패하면 8개 라벨 모두 미판정이다.
+- 명시된 해당 필드는 양성으로 본다. 나머지는 해결되지 않은 검토 요청이 있으면 미판정,
+  없으면 음성이다. 인사처럼 non_requirement로 판정된 것만으로 미판정 처리하지 않는다.
+- 정답 초안에 불명확·미완성·충돌 검토가 있으면 명시된 양성 이외의 라벨을 unknown으로
+  제외한다. `non_requirement`만 있는 경우에는 정답 라벨을 음성으로 본다.
+- `label_accuracy=(TP+TN)/known`: 정답이 알려진 셀의 예측 미판정은 모두 오답이다.
+  coverage와 응답한 셀만의 covered_accuracy도 표시한다.
+- `macro_f1_all_8`은 8개 라벨 F1의 평균이며 F1 분모가 0인 라벨은 0으로 계산한다.
+  `macro_f1_supported_labels`는 양성 정답이 한 건 이상인 라벨만 평균하고 제외 명단을
+  표시한다. 양성 미판정은 FN으로 계산한다. 미판정 음성은 F1의 FP로 계산하지 않으므로
+  반드시 coverage와 함께 봐야 한다. 양성 사례가 없는 라벨은 성능을 판단할 수 없다.
+- 라벨별 양성·음성 수, TP/FP/FN/TN, 미판정 및 제외 수를 함께 확인한다. 불균형이 심하면
+  음성이 많은 것만으로 정확도가 높아질 수 있다. 낮은 표본수 라벨의 결과는 불안정하다.
+
+원본 완료 기록·프로토콜 및 사용 산출물의 해시를 확인하고, 저장된 raw를 기존 파서로 다시
+해석하여 저장 판정과 일치하는지 확인한다. 이전 실험 결과나 지표를 바꾸지 않고 새 출력에
+comparison.csv, per_label.csv, per_case_label.csv와 summary.json을 만든다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+.venv/bin/python -B evaluate_qwen_label_accuracy.py \
+  --run-dir runs/qwen4b-requirements-compact-v4 runs/qwen4b-requirements-retry-v1 \
+  --out reviews/qwen4b-label-accuracy-v1
+```
+
+기존 합성 40문장과 AI 작성 정답 초안은 반복 노출되었고 사람 검토를 거치지 않았다.
+이 수치는 이미지 분류 성능이나 독립적인 실제 사용자 데이터 성능이 아니다.
+기존 환경을 사용하며 로컬 검증, 추론, 학습, 설치는 하지 않았다.
+
 ## B-5: 정성적 조건과 수량 조건의 의미 구분
 
 `--prompt-profile 4b-compact-v5`는 기존 B-4와 별개인 후보 프롬프트다. 명시된
