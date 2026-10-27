@@ -1,5 +1,47 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B-4: 정보 target·수량·중복 조건 보강
+
+`--prompt-profile 4b-compact-v4`는 B-3의 프롬프트에 정보 문구 target과 value의
+구분, 명시되지 않은 수량 금지, 중복 조건 방지, 선택·금지 표현의 지침과 별도
+문장 예시를 추가한다. B-3에서 확인된 원시 출력에 기반한 개발 실험이다.
+
+- 정보 필드의 target은 null, 표시 요청 문구는 value에 넣는다. 인용된 지시는
+  실행하지 않는다. 인용부호를 실제로 표시해야 하는 경우의 정책은 사람 검토가 필요하다.
+- 수량이 명시되지 않으면 at_least 1을 추정하지 않고, 같은 수량 조건의 포함 표현을
+  별도 조건으로 중복 생성하지 않는다. 서로 독립적으로 명시된 조건은 유지한다.
+- 시각 조건은 각각 원문에 근거한 대상을 선택하며, 불확실한 정보는 검토 대상으로 둔다.
+- JSON 배열과 객체를 닫도록 지시하지만, 유효한 JSON 생성은 보장하지 않는다.
+
+새 output_mode는 `compact_balanced_assembled`다. 기존 v1~v3 프로파일, 원시 응답,
+파서의 엄격 검증 및 채점은 보존한다. 코드가 모델 출력을 자동 수정하거나 대상·수량을
+추론하지 않는다. 기존 평가 문장과 case ID를 예시로 삽입하지 않는다.
+입력 토큰과 p95가 달라질 수 있으므로 함께 기록한다. 기존 run-dir를 재사용하지 않는다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_json.sh run \
+  --models 4b --prompt-profile 4b-compact-v4 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --run-dir runs/qwen4b-requirements-compact-v4 \
+  --allow-draft-labels --resume &&
+bash run_requirements_json.sh show-results \
+  --run-dir runs/qwen4b-requirements-compact-v4
+```
+
+완료 후 저장 응답 비교는 다음 명령으로 수행한다. 재추론은 하지 않는다.
+
+```bash
+.venv/bin/python -B diagnose_requirements_json.py \
+  --run-dir runs/qwen4b-requirements-compact-v3 \
+            runs/qwen4b-requirements-compact-v4 \
+  --model 4b --out reviews/qwen4b-compact-comparison-v4
+```
+
+기존 합성 40문장은 반복 노출된 사람 미검토 개발 초안이다. 여기에서 90%가 나와도
+독립적인 일반화 성능으로 해석하지 않는다. 사용자 요청에 따라 로컬 검증·모델 실행과
+RunPod 직접 실행은 하지 않았다.
+
 ## B-3: 시각 대상 지정 보강
 
 `--prompt-profile 4b-compact-v3`는 B-2의 고정 키와 기존 엄격 채점을 유지하면서
