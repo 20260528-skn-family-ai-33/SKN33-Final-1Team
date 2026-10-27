@@ -1,5 +1,38 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B-4 검증 실패 최대 1회 재요청
+
+`run_requirements_retry.sh`는 기존 B-4 프롬프트, 모델과 엄격 채점을 유지한다.
+새 실행에서 전체 문장의 첫 응답을 생성하고 JSON·스키마·원문 근거 검증 중 하나라도
+실패한 경우에만 같은 모델에 최대 한 번 다시 요청한다. 정답과 사례 ID는 모델에 주지 않는다.
+검증을 통과한 첫 응답은 그대로 유지한다. 재응답이 검증을 통과하면 사용하고,
+재응답도 실패하거나 입력 한도를 넘으면 최초 응답을 유지한다. 문법이나 값을 자동 보정하지 않는다.
+
+최초·재응답, 검증 오류, 선택 결과, 문장별 처리 시간을 새 run에 저장한다.
+`comparison.csv`에는 기존 저장된 B-4, 새 실행의 첫 응답, 새 실행의 재요청 포함 결과가
+순서대로 표시된다. 기존 B-4 지연은 과거 저장값이다. 새 실행의 p95는 요청별 최초 추론,
+검증, 필요한 재요청과 그 검증을 포함한다. 모델 로딩·warmup·정답 채점·파일 저장은 제외한다.
+첫 응답 지연도 함께 측정해 같은 새 실행 내에서 비교한다. 재요청 입력이 4096 토큰을 넘으면
+잘라내지 않고 재요청을 건너뛴다. 결과에는 대상·실행·건너뛰기·회복 건수를 기록한다.
+
+모델·프롬프트·데이터·생성 한도를 기존 B-4 결과와 대조한다. 출력 폴더와 기존 B-4 폴더는
+분리하며 중단 후 `--resume`은 완료된 문장별 기록을 재사용한다. 작업 중 중단된 문장은
+다시 처리될 수 있다. 40문장은 반복 노출된 미검토 합성 초안이다. 새 실험의 90% 달성이나
+실제 데이터 일반화 성능, 실서비스 지연은 미확인이다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_retry.sh run \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --baseline-run runs/qwen4b-requirements-compact-v4 \
+  --run-dir runs/qwen4b-requirements-retry-v1 \
+  --allow-draft-labels --resume &&
+bash run_requirements_retry.sh show-results \
+  --run-dir runs/qwen4b-requirements-retry-v1
+```
+
+사용자 요청에 따라 로컬 검증·모델 실행과 RunPod 직접 실행은 하지 않았다.
+
 ## B-4: 정보 target·수량·중복 조건 보강
 
 `--prompt-profile 4b-compact-v4`는 B-3의 프롬프트에 정보 문구 target과 value의
