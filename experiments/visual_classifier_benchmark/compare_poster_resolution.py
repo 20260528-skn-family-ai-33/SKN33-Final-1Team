@@ -145,15 +145,22 @@ def main():
                 raw=(first_ocr['raw'].get('res') or first_ocr['raw'])
                 detected=' '.join(raw['rec_texts'])
                 detected_norm=norm(detected)
-                found=0
+                found=0; tp=fp=tn=fn=0
                 for field in pair['ocr_fields']:
                     expected=norm(field['text'])
                     present=bool(expected and expected in detected_norm)
-                    found+=present
-                    field_rows.append(dict(image_id=pair['id'],variant=variant,field=field['id'],expected=field['text'],found_exact_normalized=present))
-                # Known-field recall only; unannotated OCR boxes cannot be counted as false positives.
+                    truth=field.get('expected_present')
+                    if type(truth) is not bool: raise ValueError('OCR query truth must be explicitly annotated')
+                    found+=present and truth
+                    tp+=present and truth; fp+=present and not truth
+                    tn+=not present and not truth; fn+=not present and truth
+                    field_rows.append(dict(image_id=pair['id'],variant=variant,field=field['id'],expected=field['text'],
+                        expected_present=truth,found_exact_normalized=present))
+                total=tp+fp+tn+fn
                 ocr_rows.append(dict(image_id=pair['id'],variant=variant,anchors=len(pair['ocr_fields']),
-                    anchors_found=found,anchor_recall=found/len(pair['ocr_fields']),**timing(times)))
+                    positive_found=found,tp=tp,fp=fp,tn=tn,fn=fn,query_accuracy=(tp+tn)/total if total else None,
+                    query_precision=tp/(tp+fp) if tp+fp else None,query_recall=tp/(tp+fn) if tp+fn else None,
+                    query_f1=2*tp/(2*tp+fp+fn) if 2*tp+fp+fn else None,**timing(times)))
                 correct=0
                 for label,pred,prob in zip(LABELS,first_pred,first_probability):
                     truth=pair['visual_labels'][label]
@@ -184,8 +191,8 @@ def main():
             'visual_aggregate':aggregates,
             'visual_input':'both input images letterboxed to 384x384; source resolution is not native model resolution',
             'ocr_input':'original source size; worker preprocessing also has a detection-side limit',
-            'ocr_accuracy_and_f1':'not computed: partial anchors do not annotate all OCR regions or negatives; '
-                                  'joined OCR text can match across unrelated regions',
+            'ocr_query_metrics':'presence-query accuracy/F1 on explicitly annotated positive/negative strings only; '
+                                'artificial negatives and joined OCR text can overstate performance; not full OCR accuracy/F1',
             'visual_macro_f1':'not computed: one image has no positive examples for most labels',
             'timing':'warmups excluded; OCR wall includes process IPC; visual includes decode, preprocessing and CUDA sync; model loading excluded',
             'limitations':data['notes'],'independent_test':False}
