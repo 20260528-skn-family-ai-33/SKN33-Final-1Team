@@ -193,7 +193,7 @@ def run(args):
                         rec['record_sha256']=digest(rec);save(path,rec)
                     require(rec['labels']==row['labels'],'Cached labels differ')
                     results.append(rec)
-                print(json.dumps(dict(event='cascade_progress',completed=i,total=len(rows)),flush=True))
+                print(json.dumps(dict(event='cascade_progress',completed=i,total=len(rows))),flush=True)
             require(sha(frozen)==frozen_sha and evidence.source_evidence(args.source_run)[1]==source_info,
                     'Frozen selection or source changed during inference')
             summaries=[]; labels=[]; predictions=[]; timings=[]
@@ -245,7 +245,7 @@ def run(args):
             save(status,dict(status='complete',protocol_signature=signature,artifact_hashes=artifacts,
                              CUDA_executed=True,training_executed=False,installation_executed=False,
                              image_inference_executed=True,model_deployed=False))
-            print(json.dumps(dict(event='image_cascade_complete',run=str(args.run_dir)),flush=True))
+            print(json.dumps(dict(event='image_cascade_complete',run=str(args.run_dir))),flush=True)
         except Exception as exc:
             save(args.run_dir/'failure.json',dict(reason=repr(exc),traceback=traceback.format_exc()))
             save(status,dict(status='failed',protocol_signature=signature,training_executed=False));raise
