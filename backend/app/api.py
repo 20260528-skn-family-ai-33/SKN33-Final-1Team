@@ -589,12 +589,21 @@ def create_app(
             results = review_criteria(
                 snapshot["criteria"], records, multiline=multiline
             )
+            from . import review_models
+            model_runtime = {"status": "not_configured"}
+            if review_models.configured():
+                stage = "review_models"
+                update(target, stage="review", progress=90)
+                model_output = review_models.infer(target / "normalized.png", snapshot["criteria"])
+                results = review_models.enrich(results, model_output)
+                model_runtime = {"status": "success", **model_output["model"]}
             update(
                 target,
                 status="completed",
                 stage="completed",
                 progress=100,
                 results=results,
+                model_runtime=model_runtime,
                 error=None,
             )
         except Exception as error:
@@ -602,6 +611,7 @@ def create_app(
                 "preprocessing": "이미지 전처리에 실패했습니다. 이미지 크기와 서버 저장 공간을 확인해 주세요.",
                 "ocr": "OCR 실행에 실패했습니다. 모델 설치·다운로드 설정과 CUDA/MPS/CPU 또는 RunPod 연결 설정을 확인한 뒤 다시 실행해 주세요.",
                 "review": "OCR 결과를 검수 기준과 비교하지 못했습니다. 기준 형식과 OCR 출력을 확인해 주세요.",
+                "review_models": "런팟 모델 연결이나 추론에 실패했습니다. SSH 터널과 모델 서버 상태를 확인한 뒤 다시 실행해 주세요.",
             }
             if (
                 stage == "ocr"
