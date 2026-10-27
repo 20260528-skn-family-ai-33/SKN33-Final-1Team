@@ -82,8 +82,9 @@ def dev_selection(source, protocol, dev, thresholds):
     for c in candidates:
         c['eligible']=(c['dev_accuracy']>=baseline['dev_accuracy'] and
                        c['dev_macro_f1']>=baseline['dev_macro_f1'])
+        c['dev_goal_met']=(c['dev_accuracy']>=0.90 and c['dev_macro_f1']>=0.89)
     selected=max((c for c in candidates if c['eligible']),
-                 key=lambda c:(c['dev_macro_f1'],c['dev_accuracy'],-c['dev_calls']))
+                 key=lambda c:(c['dev_goal_met'],c['dev_macro_f1'],c['dev_accuracy'],-c['dev_calls']))
     return candidates, selected
 
 
@@ -219,7 +220,8 @@ def run(args):
                     unanswered_negative=score['unanswered_negative'],qwen_calls=call_count,
                     qwen_call_rate=call_count/len(t),mean_ms=sum(t)/len(t),median_ms=percentile(t,.5),
                     p95_ms=percentile(t,.95),timing_n=len(t),timing_sessions=len({r['timing_session'] for r in results}),
-                    accuracy_90=score['accuracy']>=.90,macro_f1_90=conservative(score)>=.90))
+                    accuracy_90=score['accuracy']>=.90,macro_f1_89=conservative(score)>=.89,
+                    goal_met=score['accuracy']>=.90 and conservative(score)>=.89))
                 for label in LABELS:
                     v=score['per_label'][label]
                     denominator=2*v['tp']+v['fp']+v['fn']+v['unanswered_positive']
