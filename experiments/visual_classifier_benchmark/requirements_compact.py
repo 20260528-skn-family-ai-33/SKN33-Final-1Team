@@ -12,7 +12,8 @@ FIXED_PROFILE = '4b-compact-v2'
 TARGET_PROFILE = '4b-compact-v3'
 BALANCED_PROFILE = '4b-compact-v4'
 SEMANTIC_PROFILE = '4b-compact-v5'
-PROFILES = (PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE)
+STRUCTURE_PROFILE = '4b-compact-structure-v1'
+PROFILES = (PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE)
 
 
 def output_mode(profile):
@@ -20,7 +21,8 @@ def output_mode(profile):
     return {PROFILE: 'compact_assembled', FIXED_PROFILE: 'compact_fixed_assembled',
             TARGET_PROFILE: 'compact_target_assembled',
             BALANCED_PROFILE: 'compact_balanced_assembled',
-            SEMANTIC_PROFILE: 'compact_semantic_assembled'}[profile]
+            SEMANTIC_PROFILE: 'compact_semantic_assembled',
+            STRUCTURE_PROFILE: 'compact_structure_assembled'}[profile]
 
 
 def source_segments(text):
@@ -55,7 +57,7 @@ def input_message(text):
 
 def interpret(raw, text, profile=PROFILE):
     mode = output_mode(profile)
-    fixed = profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE)
+    fixed = profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE)
     segments = source_segments(text)
     sources = {s['id']: s for s in segments}
     compact = dict(json_valid=False, schema_valid=False, value=None, error=None)
@@ -176,7 +178,7 @@ Use needs_review only for an unresolved condition: missing_value for absent nece
 ambiguous for unclear preference, conflicting for incompatible constraints, non_requirement for greetings.
 Extract complete conditions even if another condition is unresolved. An explicit value is not missing.
 '''
-    if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
+    if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
         # Only the output contract changes. Preserve meaning rules and example
         # inputs/decisions so this experiment isolates fixed vs conditional keys.
         before, rest = rules.split('Compact output contract:\n', 1)
@@ -192,7 +194,7 @@ Extract complete conditions even if another condition is unresolved. An explicit
 - Never output type or source; code supplies both from field and source_id.
 - Review entries have only source_id and reason. Empty arrays are still required.
 Do not invent IDs.''' + after
-    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
+    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
         rules += '''
 Visual target checklist:
 - For every visual item, copy its specific target noun phrase from that item's source.
@@ -205,7 +207,7 @@ Visual target checklist:
 - If a necessary target or location cannot be resolved from the text, use needs_review
   with the appropriate reason instead of guessing an object or a location.
 '''
-    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE):
+    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
         rules += '''
 Consistency checklist:
 - Information fields, including other_text, always use target:null. For quoted text
@@ -234,6 +236,19 @@ already expresses inclusion; do not add a separate required item for that wordin
 An at_most count alone does not require inclusion. Preserve genuinely independent
 conditions for the same object, including an explicit color or placement.
 '''
+    if profile == STRUCTURE_PROFILE:
+        rules += '''
+Object classification and compound conditions:
+- Classify each distinct requested object separately before using other_visual. Physical
+  structures include 등대, 성곽, 풍차, 방파제, 수문, 교량, 정자, 댐 and 터널;
+  vehicles include 여객선, 전차, 열기구, 기차 and 자동차. An object depicted in a
+  drawing or photo retains its category. Use the actual context, not a keyword alone.
+- The word 다리 may mean a body part or a bridge: if its meaning is unresolved, use
+  needs_review/ambiguous for that condition instead of guessing. Keep other clear items.
+- Preserve each object's own required, forbidden, optional or explicit count operator.
+  A medium such as 포스터 or 전단 does not by itself specify position or layout.
+  Do not invent a layout condition or duplicate one condition as another item.
+'''
     meanings = dict(event_title='행사명', event_date='기간/날짜', event_location='장소',
         host='주최', organizer='주관', contact='문의', fee='비용', other_text='표시할 문구',
         person='인물', food_drink='음식/음료', animal='동물', plant_flower='식물/꽃',
@@ -251,7 +266,7 @@ conditions for the same object, including an explicit color or placement.
             field='host', operator='equals', value='바다독서회')],
             needs_review=[dict(source_id='S2', reason='missing_value')])),
     ]
-    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
+    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
         examples += [
             (['풍선 사진을 제외해 주세요.'], dict(items=[dict(source_id='S1', field='other_visual',
                 operator='forbidden', target='풍선')], needs_review=[])),
@@ -264,7 +279,7 @@ conditions for the same object, including an explicit color or placement.
             (['표시를 원하는 위치로 옮겨 주세요.'], dict(items=[],
                 needs_review=[dict(source_id='S1', reason='missing_value')])),
         ]
-    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE):
+    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
         examples += [
             (['"입장 환영" 문구를 표시해 주세요.'], dict(items=[dict(source_id='S1',
                 field='other_text', operator='contains', value='입장 환영')], needs_review=[])),
@@ -294,9 +309,20 @@ conditions for the same object, including an explicit color or placement.
             (['행사 장소를 새 장소로 바꿔 주세요.'], dict(items=[],
                 needs_review=[dict(source_id='S1', reason='missing_value')])),
         ]
+    if profile == STRUCTURE_PROFILE:
+        examples += [
+            (['방파제 그림과 여객선 이미지를 넣어 주세요.'], dict(items=[
+                dict(source_id='S1', field='building_structure', operator='required', target='방파제'),
+                dict(source_id='S1', field='vehicle', operator='required', target='여객선')], needs_review=[])),
+            (['수문은 넣지 말고 전차를 포함해 주세요.'], dict(items=[
+                dict(source_id='S1', field='building_structure', operator='forbidden', target='수문'),
+                dict(source_id='S1', field='vehicle', operator='required', target='전차')], needs_review=[])),
+            (['다리를 그려 주세요.'], dict(items=[],
+                needs_review=[dict(source_id='S1', reason='ambiguous')])),
+        ]
     rendered = []
     for lines, answer in examples:
-        if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
+        if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE):
             answer['items'] = [dict(source_id=i['source_id'], field=i['field'],
                 operator=i['operator'], target=i.get('target'), value=i.get('value')) for i in answer['items']]
         payload = dict(sources=[dict(id='S' + str(i), text=line) for i, line in enumerate(lines, 1)])

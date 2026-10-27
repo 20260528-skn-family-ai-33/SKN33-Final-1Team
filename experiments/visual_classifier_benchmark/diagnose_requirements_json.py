@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from requirements_json_contract import COUNTS, aggregate, evaluate, normalize, parse
-from requirements_compact import PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, interpret as compact_interpret
+from requirements_compact import PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE, STRUCTURE_PROFILE, interpret as compact_interpret
 from resultlib import digest, inside, read, require, save, sha, write_csv
 
 
@@ -48,7 +48,8 @@ def diagnose(row):
     compact_modes = {'compact_assembled': PROFILE, 'compact_fixed_assembled': FIXED_PROFILE,
                      'compact_target_assembled': TARGET_PROFILE,
                      'compact_balanced_assembled': BALANCED_PROFILE,
-                     'compact_semantic_assembled': SEMANTIC_PROFILE}
+                     'compact_semantic_assembled': SEMANTIC_PROFILE,
+                     'compact_structure_assembled': STRUCTURE_PROFILE}
     require(mode == 'full_json' or mode in compact_modes, 'Unknown output mode')
     if mode in compact_modes:
         profile = compact_modes[mode]
