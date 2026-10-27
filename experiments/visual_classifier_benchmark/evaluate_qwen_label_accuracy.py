@@ -4,13 +4,14 @@ import json
 from pathlib import Path
 
 from requirements_compact import (PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE,
-                                  SEMANTIC_PROFILE, STRUCTURE_PROFILE, interpret)
+                                  SEMANTIC_PROFILE, STRUCTURE_PROFILE, CONDITION_PROFILE, interpret)
 from requirements_json_contract import evaluate, parse
 from resultlib import LABELS, digest, inside, read, require, save, sha, write_csv
 
 MODES = {'compact_assembled': PROFILE, 'compact_fixed_assembled': FIXED_PROFILE,
          'compact_target_assembled': TARGET_PROFILE, 'compact_balanced_assembled': BALANCED_PROFILE,
-         'compact_semantic_assembled': SEMANTIC_PROFILE, 'compact_structure_assembled': STRUCTURE_PROFILE}
+         'compact_semantic_assembled': SEMANTIC_PROFILE, 'compact_structure_assembled': STRUCTURE_PROFILE,
+         'compact_conditions_assembled': CONDITION_PROFILE}
 
 
 def safe_ratio(n, d):

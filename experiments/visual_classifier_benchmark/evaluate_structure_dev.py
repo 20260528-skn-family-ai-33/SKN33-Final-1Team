@@ -3,6 +3,7 @@ import argparse
 import fcntl
 import gc
 import json
+import math
 import time
 import traceback
 from pathlib import Path
@@ -11,14 +12,18 @@ import evaluate_requirements_json as base
 import evaluate_requirements_retry as retry
 from evaluate_qwen_label_accuracy import project_case, score
 from evaluate_qwen_reviewed_eval import frozen_reference, normalized, text_sha
-from requirements_compact import BALANCED_PROFILE, STRUCTURE_PROFILE, prompt
+from requirements_compact import BALANCED_PROFILE, STRUCTURE_PROFILE, CONDITION_PROFILE, input_message, prompt
+from requirements_condition_policy import audit_response, normalize_exact_duplicates
 from requirements_json_contract import FIELD_TYPES, aggregate, evaluate, parse
 from resultlib import digest, inside, read, require, save, sha, write_csv
 
 HERE = Path(__file__).resolve().parent
 DATA = HERE / 'requirements_structure_dev_v1.json'
 MANIFEST = HERE / 'qwen_reviewed_72_manifest.json'
-PROFILES = {'b4': BALANCED_PROFILE, 'structure': STRUCTURE_PROFILE}
+EXPERIMENTS = {
+    'structure-v1': {'b4': BALANCED_PROFILE, 'structure': STRUCTURE_PROFILE},
+    'conditions-v1': {'structure': STRUCTURE_PROFILE, 'conditions': CONDITION_PROFILE},
+}
 
 
 def dataset():
@@ -54,6 +59,7 @@ def dataset():
 def hashes():
     return dict(base.sources(), **{name: sha(HERE / name) for name in (
         'evaluate_structure_dev.py', 'run_structure_dev.sh', 'requirements_structure_dev_v1.json',
+        'requirements_condition_policy.py', 'run_condition_dev.sh',
         'evaluate_requirements_retry.py', 'evaluate_qwen_label_accuracy.py',
         'evaluate_qwen_reviewed_eval.py', 'qwen_reviewed_72_manifest.json')})
 
@@ -81,12 +87,15 @@ def run(args):
     from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
     env = base.environment()
     model_packet = base.packet(args, '4b')
-    instructions = {name: prompt(profile) for name, profile in PROFILES.items()}
-    ref = frozen_reference(args.reference_retry_run, model_packet, instructions['b4'], args)
+    profiles = EXPERIMENTS[args.experiment]
+    instructions = {name: prompt(profile) for name, profile in profiles.items()}
+    baseline_prompt = prompt(BALANCED_PROFILE)
+    ref = frozen_reference(args.reference_retry_run, model_packet, baseline_prompt, args)
     code_hashes = hashes()
     config = dict(schema='qwen-structure-dev-v1', dataset_sha256=sha(DATA), sources=code_hashes,
         reference=ref, model_packet=model_packet, environment=env, prompts=instructions,
-        retry_instruction=retry.RETRY_INSTRUCTION, profiles=PROFILES,
+        retry_instruction=retry.RETRY_INSTRUCTION, profiles=profiles, experiment=args.experiment,
+        normalization='same source offsets and identical typed fields only; raw response preserved',
         retry_policy='only json/schema/source validation failure; at most one; use valid retry else first',
         labels_passed_to_model=False, precision='bf16', attn_implementation='sdpa', do_sample=False,
         max_input_tokens=args.max_input_tokens, max_new_tokens=args.max_new_tokens, ram_policy=args.ram_policy,
@@ -116,23 +125,53 @@ def run(args):
             processor = AutoProcessor.from_pretrained(str(base.folder(args, '4b')), local_files_only=True,
                                                       trust_remote_code=False)
             processor.tokenizer.padding_side = 'left'
+            # RunPod-side input sizing before loading weights; never truncate text.
+            input_sizes = {}
+            for name, instruction in instructions.items():
+                sizes = []
+                for case in cases:
+                    messages = [dict(role='system', content=instruction),
+                                dict(role='user', content=input_message(case['text']))]
+                    rendered = processor.apply_chat_template(messages, tokenize=False,
+                        add_generation_prompt=True, enable_thinking=False)
+                    size = int(processor(text=[rendered], return_tensors='pt')['input_ids'].shape[1])
+                    require(size <= args.max_input_tokens,
+                            'Input token budget exceeded for ' + name + '/' + case['id'] +
+                            '; no model inference started and no text truncated')
+                    sizes.append(size)
+                input_sizes[name] = dict(min_tokens=min(sizes), max_tokens=max(sizes))
+            save(args.run_dir / 'input_budget.json', dict(profiles=input_sizes,
+                limit=args.max_input_tokens, retry_budget_checked_per_request=True))
             model = Qwen3_5ForConditionalGeneration.from_pretrained(str(base.folder(args, '4b')),
                 local_files_only=True, trust_remote_code=False, use_safetensors=True, dtype=torch.bfloat16,
                 attn_implementation='sdpa').to('cuda:0').eval().requires_grad_(False)
-            for name, profile in PROFILES.items():
+            for name, profile in profiles.items():
                 args.prompt_profile = profile
                 base.infer('행사명: 준비 예시', instructions[name], processor, model, args)
             requests = args.run_dir / 'requests'
             requests.mkdir(exist_ok=True)
-            results = {name: [] for name in PROFILES}
+            results = {name: [] for name in profiles}
             for index, case in enumerate(cases, 1):
-                for name, profile in PROFILES.items():
+                # Alternate ordering to reduce a fixed first/second timing bias.
+                ordered = list(profiles.items())
+                if args.experiment == 'conditions-v1' and index % 2 == 0:
+                    ordered.reverse()
+                for name, profile in ordered:
                     args.prompt_profile = profile
                     path = requests / (name + '-' + case['id'] + '.json')
                     if path.exists():
                         require(args.resume, 'Cached request requires --resume')
                         row = read(path)
                         retry.validate_cached(row, case, signature, profile)
+                        if args.experiment == 'conditions-v1':
+                            chosen = row['retry'] if row['selected'] == 'retry' else row['first']
+                            replay = normalize_exact_duplicates(chosen, case['text'])
+                            saved = row['postprocessed']
+                            require({k: v for k, v in saved.items() if k != 'postprocess_ms'} ==
+                                    {k: v for k, v in replay.items() if k != 'postprocess_ms'} and
+                                    type(saved['postprocess_ms']) in (int, float) and
+                                    math.isfinite(saved['postprocess_ms']) and saved['postprocess_ms'] >= 0,
+                                    'Cached postprocessing differs')
                     else:
                         started = time.perf_counter()
                         first = base.infer(case['text'], instructions[name], processor, model, args)
@@ -143,33 +182,59 @@ def run(args):
                         row = dict(protocol_signature=signature, case_id=case['id'], text_sha256=digest(case['text']),
                             first=first, retry_eligible=eligible, retry_feedback=retry.feedback(first) if eligible else None,
                             retry=again, selected=selected, first_ms=first['total_ms'], end_to_end_ms=elapsed)
+                        if args.experiment == 'conditions-v1':
+                            chosen = again if selected == 'retry' else first
+                            row['postprocessed'] = normalize_exact_duplicates(chosen, case['text'])
                         save(path, row)
                     results[name].append(row)
                 print(json.dumps(dict(event='structure_dev_progress', completed=index, total=len(cases))), flush=True)
             require(hashes() == code_hashes and base.packet(args, '4b') == model_packet and
-                    frozen_reference(args.reference_retry_run, model_packet, instructions['b4'], args) == ref,
+                    frozen_reference(args.reference_retry_run, model_packet, baseline_prompt, args) == ref,
                     'Code, dataset, model or B-4 reference changed during evaluation')
-            comparisons, labels, cells, records = [], [], [], []
-            for name in PROFILES:
-                for variant in ('first', 'final'):
-                    outcomes, projected = [], []
+            comparisons, labels, cells, records, audits = [], [], [], [], []
+            variants = ('first', 'final', 'normalized') if args.experiment == 'conditions-v1' else ('first', 'final')
+            for name in profiles:
+                for variant in variants:
+                    outcomes, projected, variant_audits = [], [], []
                     for case, row in zip(cases, results[name]):
-                        chosen = row['retry'] if variant == 'final' and row['selected'] == 'retry' else row['first']
-                        outcomes.append(evaluate(case, chosen['parsed']))
-                        projected.extend(project_case(dict(case_id=case['id'], expected_draft=case['expected']), chosen['parsed']))
+                        chosen = row['retry'] if variant != 'first' and row['selected'] == 'retry' else row['first']
+                        parsed = row['postprocessed']['parsed'] if variant == 'normalized' else chosen['parsed']
+                        audit = row['postprocessed']['audit_after'] if variant == 'normalized' else audit_response(chosen)
+                        outcome = evaluate(case, parsed)
+                        outcomes.append(outcome)
+                        case_cells = project_case(dict(case_id=case['id'], expected_draft=case['expected']), parsed)
+                        projected.extend(case_cells)
+                        variant_audits.append(audit)
+                        audits.append(dict(profile=name, variant=variant, case_id=case['id'], text=case['text'],
+                            exact=outcome['exact'], exact_duplicate_count=audit['exact_duplicate_count'],
+                            redundant_inclusion_pairs=len(audit['redundant_inclusion_pairs']),
+                            conflicting_object_fields=len(audit['conflicting_object_fields']),
+                            review_tp=outcome['review_tp'], review_fp=outcome['review_fp'], review_fn=outcome['review_fn'],
+                            unknown_gold_positive_predictions=sum(c['truth'] is None and c['prediction'] == 1 for c in case_cells),
+                            missing=json.dumps(outcome['missing'], ensure_ascii=False),
+                            spurious=json.dumps(outcome['spurious'], ensure_ascii=False),
+                            missing_review=json.dumps(outcome['missing_review'], ensure_ascii=False)))
                     total, per_label = score(projected)
                     condition = aggregate(outcomes)
-                    times = retry.timing([r['first_ms'] if variant == 'first' else r['end_to_end_ms'] for r in results[name]])
+                    times = retry.timing([r['first_ms'] if variant == 'first' else r['end_to_end_ms'] +
+                        (r['postprocessed']['postprocess_ms'] if variant == 'normalized' else 0) for r in results[name]])
                     building = next(r for r in per_label if r['label'] == 'building_structure')
                     comparisons.append(dict(profile=name, variant=variant, cases=len(cases),
                         label_accuracy=total['label_accuracy'], macro_f1_all_8=total['macro_f1_all_8'],
                         coverage=total['coverage'], known_cells=total['known_cells'],
+                        gold_unknown_cells=total['gold_unknown_cells'],
                         unanswered_positive=total['unanswered_positive'], unanswered_negative=total['unanswered_negative'],
                         building_tp=building['tp'], building_fp=building['fp'], building_fn=building['fn'],
                         building_unanswered_positive=building['unanswered_positive'], building_f1=building['f1'],
                         condition_exact=condition['draft_exact_match_rate'], condition_item_f1=condition['draft_item_f1'],
                         forbidden_recall=condition['draft_forbidden_recall'], count_recall=condition['draft_count_recall'],
-                        retry_attempted=sum(r['retry'] is not None and not r['retry']['skipped'] for r in results[name]),
+                        review_tp=condition['review_tp'], review_fp=condition['review_fp'], review_fn=condition['review_fn'],
+                        exact_duplicate_count=sum(a['exact_duplicate_count'] for a in variant_audits),
+                        potential_redundant_inclusion_pairs=sum(len(a['redundant_inclusion_pairs']) for a in variant_audits),
+                        conflicting_object_fields=sum(len(a['conflicting_object_fields']) for a in variant_audits),
+                        unknown_gold_positive_predictions=sum(c['truth'] is None and c['prediction'] == 1 for c in projected),
+                        retry_attempted=0 if variant == 'first' else sum(r['retry'] is not None and not r['retry']['skipped'] for r in results[name]),
+                        retry_skipped=0 if variant == 'first' else sum(r['retry'] is not None and r['retry']['skipped'] for r in results[name]),
                         **times))
                     labels.extend(dict(profile=name, variant=variant, **r) for r in per_label)
                     cells.extend(dict(profile=name, variant=variant, **r) for r in projected)
@@ -179,10 +244,17 @@ def run(args):
             write_csv(args.run_dir / 'comparison.csv', comparisons)
             write_csv(args.run_dir / 'per_label.csv', labels)
             write_csv(args.run_dir / 'per_case_label.csv', cells)
+            write_csv(args.run_dir / 'condition_audit.csv', audits)
+            write_csv(args.run_dir / 'unknown_label_predictions.csv',
+                [c for c in cells if c['truth'] is None and c['prediction'] == 1], fields=list(cells[0]))
             save(args.run_dir / 'predictions.json', records)
             save(args.run_dir / 'summary.json', dict(comparison=comparisons, synthetic=True, human_verified=False,
-                timing='First inference and validation plus conditional retry; excludes loading, warmup and file writes.',
+                timing='First inference and validation plus conditional retry; normalized includes measured postprocessing. '
+                       'Excludes loading, warmup, reporting and file writes.',
                 task='Requirement label presence; forbidden and optional count as label present, not image presence.',
+                unknown_output_policy='Positive predictions on unknown gold cells are audit signals, not measured false positives.',
+                normalization_policy='Only exact duplicates on identical source offsets; no count implication removal, '
+                                     'target shortening, field repair or ambiguity keyword override.',
                 limitations='Provisional development cases informed by exposed errors. Exact text overlap checks do not prove independence.'))
             excluded = {'.lock', 'status.json', 'failure.json'}
             artifacts = {p.relative_to(args.run_dir).as_posix(): sha(p) for p in args.run_dir.rglob('*')
@@ -202,16 +274,20 @@ def run(args):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('command', choices=('preflight', 'run', 'show-results'))
+    p.add_argument('command', choices=('preflight', 'run', 'show-results', 'show-errors'))
+    p.add_argument('--experiment', choices=tuple(EXPERIMENTS), default='structure-v1')
     p.add_argument('--models-root', type=Path, default=Path('/workspace/models'))
     p.add_argument('--reference-retry-run', type=Path, default=HERE / 'runs/qwen4b-requirements-retry-v1')
-    p.add_argument('--run-dir', type=Path, default=HERE / 'runs/qwen4b-structure-dev-v1')
+    p.add_argument('--run-dir', type=Path)
     p.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file')
     p.add_argument('--max-new-tokens', type=int, default=768)
     p.add_argument('--max-input-tokens', type=int, default=4096)
     p.add_argument('--confirm-draft', action='store_true')
     p.add_argument('--resume', action='store_true')
     args = p.parse_args()
+    if args.run_dir is None:
+        args.run_dir = HERE / ('runs/qwen4b-condition-dev-v1' if args.experiment == 'conditions-v1'
+                               else 'runs/qwen4b-structure-dev-v1')
     require(256 <= args.max_new_tokens <= 2048 and 512 <= args.max_input_tokens <= 4096, 'Invalid token budgets')
     for name in ('models_root', 'reference_retry_run', 'run_dir'):
         setattr(args, name, getattr(args, name).expanduser().resolve())
@@ -227,8 +303,23 @@ def main():
                 all(sha(inside(args.run_dir, n)) == h for n, h in status['artifact_hashes'].items()),
                 'Results incomplete or changed')
         print(json.dumps({k: v for k, v in status.items() if k != 'artifact_hashes'}, indent=2))
-        print((args.run_dir / 'comparison.csv').read_text(encoding='utf-8-sig'))
-        print((args.run_dir / 'per_label.csv').read_text(encoding='utf-8-sig'))
+        if args.command == 'show-errors':
+            for row in read(args.run_dir / 'predictions.json'):
+                chosen = row['retry'] if row['selected'] == 'retry' else row['first']
+                postprocessed = row.get('postprocessed')
+                parsed = postprocessed['parsed'] if postprocessed else chosen['parsed']
+                outcome = evaluate(dict(expected=row['expected_draft']), parsed)
+                cell_rows = project_case(row, parsed)
+                unknown = [c['label'] for c in cell_rows if c['truth'] is None and c['prediction'] == 1]
+                if outcome['exact'] and not unknown and not (postprocessed and postprocessed['removed']):
+                    continue
+                print(json.dumps(dict(profile=row['profile'], case_id=row['case_id'], text=row['text'],
+                    expected=row['expected_draft'], selected_raw=chosen['raw'], parsed=parsed,
+                    score=outcome, unknown_positive_labels=unknown,
+                    removed=postprocessed['removed'] if postprocessed else []), ensure_ascii=False, indent=2))
+        else:
+            print((args.run_dir / 'comparison.csv').read_text(encoding='utf-8-sig'))
+            print((args.run_dir / 'per_label.csv').read_text(encoding='utf-8-sig'))
 
 
 if __name__ == '__main__':
