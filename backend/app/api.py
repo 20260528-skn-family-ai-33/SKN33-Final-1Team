@@ -461,6 +461,11 @@ def create_app(
     recognizer: Callable[[Path], dict] | None = None,
     runtime_status: Callable[[], dict] | None = None,
     review_root: Path | None = None,
+    video_root: Path | None = None,
+    video_ocr: Callable | None = None,
+    video_readiness: Callable[[], tuple[bool, str]] | None = None,
+    video_logo_review: Callable | None = None,
+    video_logo_readiness: Callable[[], tuple[bool, str]] | None = None,
 ) -> FastAPI:
     # Retirement is explicit. The original development launcher keeps its default.
     readonly = os.getenv('LEGACY_READ_ONLY', '0')
@@ -473,6 +478,10 @@ def create_app(
     if readonly:
         if not storage.is_dir():raise ValueError('Legacy read-only mode requires existing history.')
     else:storage.mkdir(parents=True, exist_ok=True)
+    # 동영상 검수 시연 결과는 포스터 검수 기록과 섞이지 않게 별도 폴더에 둔다.
+    video_storage = video_root or PROJECT_ROOT / ".runtime" / "video-reviews"
+    if not readonly:
+        video_storage.mkdir(parents=True, exist_ok=True)
     lock = threading.RLock()
     inference_lock = threading.Lock()
 
@@ -493,6 +502,10 @@ def create_app(
                     _write_json(path, value)
             except (OSError, ValueError):
                 continue
+        if not readonly:
+            from .video_review import recover_jobs
+
+            recover_jobs(video_storage)
         yield
 
     application = FastAPI(
@@ -511,8 +524,10 @@ def create_app(
             response.headers['Cache-Control'] = 'no-store'
             return response
     # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
+    auth_router = None
     if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
-        application.include_router(local_auth_router())
+        auth_router = local_auth_router()
+        application.include_router(auth_router)
     allowed_origins = [
         value.strip()
         for value in os.getenv(
@@ -752,6 +767,16 @@ def create_app(
         return FileResponse(
             directory(review_id) / "normalized.png", media_type="image/png"
         )
+
+    # 동영상 검수 시연: 포스터 검수와 같은 추론 잠금으로 CPU 작업을 하나씩 실행한다.
+    from .video_review import video_review_router
+
+    application.include_router(video_review_router(
+        root=video_storage, inference_lock=inference_lock, readonly=readonly,
+        ocr=video_ocr, readiness=video_readiness,
+        logo_review=video_logo_review, logo_readiness=video_logo_readiness,
+        authenticate=auth_router.session_user if auth_router else None,
+    ))
 
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"

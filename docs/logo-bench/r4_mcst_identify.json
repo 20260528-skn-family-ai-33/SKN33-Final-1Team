@@ -1,0 +1,137 @@
+{
+  "run_id": "20261023-151037",
+  "created_at": "2026-10-23T15:12:00",
+  "inputs": {
+    "videos": [],
+    "images": [],
+    "query_logo": "/workspace/query_logos/문화체육관광부로고.jpg",
+    "expect_brand": null
+  },
+  "params": {
+    "fps": 1.0,
+    "det_threshold": 0.1,
+    "min_cosine": 0.6,
+    "max_boxes": 10,
+    "max_frames": 0
+  },
+  "detector": {
+    "detector": "owlv2",
+    "repo_id": "google/owlv2-base-patch16-ensemble"
+  },
+  "results": [
+    {
+      "matcher": "dinov2",
+      "repo_id": "facebook/dinov2-base",
+      "note": "로고 인스턴스(모양) 매칭 기본값. 142개 임베딩 선계산",
+      "resolved_commit": "f9e44c814b77203eaa57a6bdbbd535f21ede1415",
+      "device": "cuda",
+      "load_s": 3.66,
+      "identify": {
+        "top5": [
+          {
+            "brand": "org__성남시청소년청년재단",
+            "cosine": 0.6196
+          },
+          {
+            "brand": "lg__경기도__안산시",
+            "cosine": 0.5569
+          },
+          {
+            "brand": "lg__전남광주통합특별시__장흥군",
+            "cosine": 0.5375
+          },
+          {
+            "brand": "lg__서울특별시__구로구",
+            "cosine": 0.5171
+          },
+          {
+            "brand": "lg__강원특별자치도__태백시",
+            "cosine": 0.5159
+          }
+        ],
+        "top1_brand": "org__성남시청소년청년재단",
+        "margin_top1_top2": 0.0627
+      },
+      "calib_threshold": 0.6196,
+      "gpu_peak_mb": 350.8
+    },
+    {
+      "matcher": "siglip2",
+      "repo_id": "google/siglip2-so400m-patch14-384",
+      "note": "의미 매칭 비교군(위조에 후함)",
+      "resolved_commit": "e8e487298228002f3d8a82e0cd5c8ea9c567f57f",
+      "device": "cuda",
+      "load_s": 1.36,
+      "identify": {
+        "top5": [
+          {
+            "brand": "lg__경상남도__하동군",
+            "cosine": 0.7891
+          },
+          {
+            "brand": "org__백제문화재단",
+            "cosine": 0.7783
+          },
+          {
+            "brand": "lg__서울특별시__도봉구",
+            "cosine": 0.7747
+          },
+          {
+            "brand": "lg__서울특별시__은평구",
+            "cosine": 0.7715
+          },
+          {
+            "brand": "org__홍주문화관광재단",
+            "cosine": 0.761
+          }
+        ],
+        "top1_brand": "lg__경상남도__하동군",
+        "margin_top1_top2": 0.0108
+      },
+      "calib_threshold": 0.7891,
+      "gpu_peak_mb": 4964.5
+    },
+    {
+      "matcher": "clip",
+      "repo_id": "openai/clip-vit-large-patch14",
+      "note": "성숙한 비교군, 빠른 프로토타입",
+      "resolved_commit": "32bd64288804d66eefd0ccbe215aa642df71cc41",
+      "device": "cuda",
+      "load_s": 0.6,
+      "identify": {
+        "top5": [
+          {
+            "brand": "org__서초문화재단",
+            "cosine": 0.8228
+          },
+          {
+            "brand": "org__평택시문화재단",
+            "cosine": 0.8152
+          },
+          {
+            "brand": "org__예천문화관광재단",
+            "cosine": 0.8095
+          },
+          {
+            "brand": "org__공주문화관광재단",
+            "cosine": 0.8076
+          },
+          {
+            "brand": "lg__강원특별자치도__횡성군",
+            "cosine": 0.8052
+          }
+        ],
+        "top1_brand": "org__서초문화재단",
+        "margin_top1_top2": 0.0076
+      },
+      "calib_threshold": 0.8228,
+      "gpu_peak_mb": 1906.4
+    },
+    {
+      "matcher": "dinov3",
+      "repo_id": "facebook/dinov3-vitb16-pretrain-lvd1689m",
+      "note": "게이트 모델: HF_TOKEN 필요 + transformers 최신. 없으면 dinov2 사용",
+      "skipped": "모델 미준비(게이트 모델: HF_TOKEN 필요). python scripts/prepare_logo_models.py --models dinov3"
+    }
+  ]
+}

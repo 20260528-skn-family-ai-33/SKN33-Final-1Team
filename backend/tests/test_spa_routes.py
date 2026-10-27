@@ -38,7 +38,7 @@ def spa_client(tmp_path, monkeypatch, request):
         yield client
 
 
-@pytest.mark.parametrize("path", ["/", "/login", "/login/", "/review/new", "/review/new/"])
+@pytest.mark.parametrize("path", ["/", "/login", "/login/", "/review/new", "/review/new/", "/video", "/video/"])
 @pytest.mark.parametrize("method", ["GET", "HEAD"])
 def test_browser_navigation_and_refresh_return_react_html(spa_client, path, method):
     # 브라우저의 문서 탐색과 HEAD 확인 요청에만 React 진입점을 제공한다.

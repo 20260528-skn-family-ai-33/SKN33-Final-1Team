@@ -1,0 +1,693 @@
+{
+  "video": "/workspace/videos/seoul1_hangang.mp4",
+  "mode": "guided",
+  "query_logo": "data/logos/regions_logos/lg__서울특별시/logo.png",
+  "fps": 0.5,
+  "frames": 30,
+  "device": "cuda",
+  "min_cosine": 0.7,
+  "found_frames": 0,
+  "found_times": [],
+  "best_cosine": 0.0,
+  "per_frame": [
+    {
+      "time_s": 0.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 2.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 4.0,
+      "top_cosine": 0.2133,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            618.5,
+            1587.9,
+            735.1,
+            1679.7
+          ],
+          "detect_score": 0.2415,
+          "cosine": 0.2133
+        },
+        {
+          "xyxy": [
+            3009.0,
+            1000.6,
+            3135.5,
+            1135.7
+          ],
+          "detect_score": 0.2146,
+          "cosine": 0.165
+        },
+        {
+          "xyxy": [
+            623.9,
+            1011.8,
+            733.1,
+            1124.4
+          ],
+          "detect_score": 0.2863,
+          "cosine": 0.1606
+        }
+      ]
+    },
+    {
+      "time_s": 6.0,
+      "top_cosine": 0.2644,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            618.4,
+            1587.1,
+            735.4,
+            1679.2
+          ],
+          "detect_score": 0.2237,
+          "cosine": 0.2644
+        },
+        {
+          "xyxy": [
+            625.4,
+            1012.0,
+            732.6,
+            1124.1
+          ],
+          "detect_score": 0.2319,
+          "cosine": 0.2175
+        },
+        {
+          "xyxy": [
+            619.4,
+            432.1,
+            725.3,
+            540.8
+          ],
+          "detect_score": 0.1504,
+          "cosine": 0.2078
+        }
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 10.0,
+      "top_cosine": 0.2986,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            441.3,
+            1677.5,
+            1964.0,
+            1933.3
+          ],
+          "detect_score": 0.1684,
+          "cosine": 0.2986
+        },
+        {
+          "xyxy": [
+            475.9,
+            1683.1,
+            1431.0,
+            1928.4
+          ],
+          "detect_score": 0.1001,
+          "cosine": 0.1707
+        },
+        {
+          "xyxy": [
+            920.4,
+            1403.9,
+            1942.9,
+            1528.9
+          ],
+          "detect_score": 0.1409,
+          "cosine": 0.1666
+        }
+      ]
+    },
+    {
+      "time_s": 12.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 14.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 16.0,
+      "top_cosine": 0.1799,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1564.6,
+            307.5,
+            1684.7,
+            406.7
+          ],
+          "detect_score": 0.1188,
+          "cosine": 0.1799
+        },
+        {
+          "xyxy": [
+            1494.2,
+            472.7,
+            1642.2,
+            533.6
+          ],
+          "detect_score": 0.1252,
+          "cosine": 0.0933
+        }
+      ]
+    },
+    {
+      "time_s": 18.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 20.0,
+      "top_cosine": 0.2403,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            452.1,
+            1732.4,
+            1980.5,
+            1971.1
+          ],
+          "detect_score": 0.1429,
+          "cosine": 0.2403
+        },
+        {
+          "xyxy": [
+            250.8,
+            1571.1,
+            1643.3,
+            1703.5
+          ],
+          "detect_score": 0.1307,
+          "cosine": 0.2396
+        },
+        {
+          "xyxy": [
+            3269.4,
+            1487.5,
+            3827.3,
+            1866.8
+          ],
+          "detect_score": 0.1041,
+          "cosine": 0.1653
+        }
+      ]
+    },
+    {
+      "time_s": 22.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 24.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 26.0,
+      "top_cosine": 0.0546,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1578.6,
+            1569.7,
+            1756.3,
+            1984.7
+          ],
+          "detect_score": 0.122,
+          "cosine": 0.0546
+        }
+      ]
+    },
+    {
+      "time_s": 28.0,
+      "top_cosine": 0.0238,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1847.1,
+            1598.8,
+            2036.8,
+            1784.0
+          ],
+          "detect_score": 0.101,
+          "cosine": 0.0238
+        }
+      ]
+    },
+    {
+      "time_s": 30.0,
+      "top_cosine": 0.2075,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            2075.0,
+            1677.6,
+            3620.4,
+            1932.3
+          ],
+          "detect_score": 0.1662,
+          "cosine": 0.2075
+        },
+        {
+          "xyxy": [
+            2036.2,
+            1416.6,
+            3681.7,
+            2026.9
+          ],
+          "detect_score": 0.1721,
+          "cosine": 0.1388
+        },
+        {
+          "xyxy": [
+            51.0,
+            436.9,
+            521.2,
+            882.4
+          ],
+          "detect_score": 0.1786,
+          "cosine": 0.0995
+        }
+      ]
+    },
+    {
+      "time_s": 32.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 34.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 36.0,
+      "top_cosine": 0.1375,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1333.5,
+            1128.7,
+            1510.2,
+            1405.4
+          ],
+          "detect_score": 0.1119,
+          "cosine": 0.1375
+        },
+        {
+          "xyxy": [
+            1625.9,
+            730.1,
+            1992.9,
+            1155.2
+          ],
+          "detect_score": 0.1181,
+          "cosine": 0.096
+        },
+        {
+          "xyxy": [
+            1332.9,
+            116.2,
+            3348.6,
+            2190.1
+          ],
+          "detect_score": 0.1202,
+          "cosine": 0.0757
+        }
+      ]
+    },
+    {
+      "time_s": 38.0,
+      "top_cosine": 0.2286,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            360.0,
+            1727.5,
+            1979.1,
+            1894.8
+          ],
+          "detect_score": 0.1602,
+          "cosine": 0.2286
+        },
+        {
+          "xyxy": [
+            2163.5,
+            166.7,
+            2468.4,
+            410.0
+          ],
+          "detect_score": 0.1189,
+          "cosine": 0.1587
+        },
+        {
+          "xyxy": [
+            1164.8,
+            940.8,
+            1215.2,
+            1019.0
+          ],
+          "detect_score": 0.1276,
+          "cosine": 0.1367
+        }
+      ]
+    },
+    {
+      "time_s": 40.0,
+      "top_cosine": 0.2753,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1710.4,
+            884.3,
+            1807.2,
+            1021.7
+          ],
+          "detect_score": 0.1472,
+          "cosine": 0.2753
+        },
+        {
+          "xyxy": [
+            1955.1,
+            868.4,
+            2240.6,
+            1020.8
+          ],
+          "detect_score": 0.1374,
+          "cosine": 0.13
+        },
+        {
+          "xyxy": [
+            1968.3,
+            815.4,
+            2744.9,
+            1063.4
+          ],
+          "detect_score": 0.2009,
+          "cosine": 0.0845
+        }
+      ]
+    },
+    {
+      "time_s": 42.0,
+      "top_cosine": 0.0811,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1463.6,
+            792.8,
+            2743.4,
+            950.0
+          ],
+          "detect_score": 0.1021,
+          "cosine": 0.0811
+        }
+      ]
+    },
+    {
+      "time_s": 44.0,
+      "top_cosine": 0.103,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1240.0,
+            1129.2,
+            1843.8,
+            1312.1
+          ],
+          "detect_score": 0.2466,
+          "cosine": 0.103
+        },
+        {
+          "xyxy": [
+            -1.7,
+            0.5,
+            1154.9,
+            346.0
+          ],
+          "detect_score": 0.14,
+          "cosine": 0.0867
+        },
+        {
+          "xyxy": [
+            1970.0,
+            1132.3,
+            2427.4,
+            1310.8
+          ],
+          "detect_score": 0.194,
+          "cosine": 0.0849
+        }
+      ]
+    },
+    {
+      "time_s": 46.0,
+      "top_cosine": 0.1324,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            2111.3,
+            1130.8,
+            2687.2,
+            1310.5
+          ],
+          "detect_score": 0.1439,
+          "cosine": 0.1324
+        },
+        {
+          "xyxy": [
+            1193.6,
+            1138.7,
+            1786.4,
+            1320.5
+          ],
+          "detect_score": 0.135,
+          "cosine": 0.0795
+        },
+        {
+          "xyxy": [
+            1213.3,
+            827.1,
+            1808.6,
+            1086.0
+          ],
+          "detect_score": 0.1969,
+          "cosine": 0.075
+        }
+      ]
+    },
+    {
+      "time_s": 48.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 50.0,
+      "top_cosine": 0.055,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            313.6,
+            1277.6,
+            1432.0,
+            1495.9
+          ],
+          "detect_score": 0.4132,
+          "cosine": 0.055
+        },
+        {
+          "xyxy": [
+            1456.2,
+            1422.6,
+            1549.4,
+            1534.7
+          ],
+          "detect_score": 0.1197,
+          "cosine": 0.0407
+        }
+      ]
+    },
+    {
+      "time_s": 52.0,
+      "top_cosine": 0.0582,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            299.7,
+            1294.2,
+            1629.8,
+            1479.6
+          ],
+          "detect_score": 0.1631,
+          "cosine": 0.0582
+        },
+        {
+          "xyxy": [
+            209.5,
+            1287.6,
+            1682.9,
+            1911.2
+          ],
+          "detect_score": 0.1492,
+          "cosine": 0.0456
+        },
+        {
+          "xyxy": [
+            230.6,
+            1446.2,
+            1683.5,
+            1869.6
+          ],
+          "detect_score": 0.1283,
+          "cosine": 0.0144
+        }
+      ]
+    },
+    {
+      "time_s": 54.0,
+      "top_cosine": 0.0657,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            299.2,
+            1268.4,
+            1617.2,
+            1495.9
+          ],
+          "detect_score": 0.1332,
+          "cosine": 0.0657
+        },
+        {
+          "xyxy": [
+            211.1,
+            1250.3,
+            1689.4,
+            1929.0
+          ],
+          "detect_score": 0.141,
+          "cosine": 0.0523
+        }
+      ]
+    },
+    {
+      "time_s": 56.0,
+      "top_cosine": 0.2861,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            915.1,
+            1428.3,
+            1173.3,
+            1834.1
+          ],
+          "detect_score": 0.1025,
+          "cosine": 0.2861
+        },
+        {
+          "xyxy": [
+            68.8,
+            1820.4,
+            268.3,
+            2017.7
+          ],
+          "detect_score": 0.2675,
+          "cosine": 0.2206
+        },
+        {
+          "xyxy": [
+            64.1,
+            1813.7,
+            285.3,
+            2034.7
+          ],
+          "detect_score": 0.2769,
+          "cosine": 0.2129
+        }
+      ]
+    },
+    {
+      "time_s": 58.0,
+      "top_cosine": 0.2209,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            910.0,
+            1424.8,
+            1171.8,
+            1838.2
+          ],
+          "detect_score": 0.1042,
+          "cosine": 0.2209
+        },
+        {
+          "xyxy": [
+            61.9,
+            1820.5,
+            258.6,
+            2020.7
+          ],
+          "detect_score": 0.2919,
+          "cosine": 0.2107
+        },
+        {
+          "xyxy": [
+            55.6,
+            1840.6,
+            268.0,
+            2066.6
+          ],
+          "detect_score": 0.2499,
+          "cosine": 0.1895
+        }
+      ]
+    }
+  ]
+}

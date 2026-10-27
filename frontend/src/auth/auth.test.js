@@ -19,6 +19,7 @@ function mockRequests(context, responses) {
 
 test('외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용하지 않는다', () => {
   assert.equal(loginDestination({ pathname: '/review/new', search: '?sample=1', hash: '#result' }), '/review/new?sample=1#result');
+  assert.equal(loginDestination({ pathname: '/video', search: '?id=abc' }), '/video?id=abc');
   for (const from of ['https://example.com', { pathname: '//example.com' }, { pathname: '/login' }, null]) {
     assert.equal(loginDestination(from), '/review/new');
   }

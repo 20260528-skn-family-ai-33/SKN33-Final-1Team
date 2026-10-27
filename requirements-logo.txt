@@ -1,0 +1,21 @@
+# 로고 딥러닝 검수(조합 A: OWLv2 + DINO) 전용 의존성.
+# RunPod GPU Pod에서만 설치·실행한다. 상현님 로컬 PC는 GPU가 없어 추론을 돌리지 않는다.
+#
+# torch / torchvision 은 RunPod CUDA 이미지에 보통 이미 설치돼 있다.
+#   - 이미 있으면 재설치하지 말 것(CUDA 버전이 어긋나면 GPU를 못 쓴다).
+#   - 없을 때만 Pod의 CUDA 버전에 맞춰 설치한다. 예(CUDA 12.4):
+#       pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+#
+# 설치:  pip install -r requirements-logo.txt
+transformers==4.49.0
+huggingface_hub==0.28.1
+safetensors==0.5.2
+pillow==11.1.0
+numpy==2.1.3
+scipy==1.15.1          # OWLv2 이미지 프로세서(resize)가 요구
+kornia==0.7.3          # 조합 B 이중검수: DISK 지역특징 + LightGlue 기하 매칭(가중치는 실행 시 자동 다운로드)
+
+# 서버리스 워커(backend/app/logo_runpod_worker.py)를 Pod에서 handler로 띄울 때만 필요.
+# Pod 터미널 스크립트나 로컬에선 설치하지 않아도 된다.
+runpod>=1.6.0
+
