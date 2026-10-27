@@ -1,5 +1,41 @@
 # Qwen3.5-4B 요구사항 추출 개선
 
+## B-5: 정성적 조건과 수량 조건의 의미 구분
+
+`--prompt-profile 4b-compact-v5`는 기존 B-4와 별개인 후보 프롬프트다. 명시된
+정성적 금지의 추출과 실제 판정 기준 설정을 구분하고, 양수 최소·정확 수량에 포함된
+존재 요구의 중복을 줄이도록 지침과 별도 대조 예시를 추가한다. 최대 수량만으로는
+존재를 추론하지 않으며, 같은 대상의 위치·색상 등 독립 조건은 유지한다. 필수 정보가
+빠진 경우의 needs_review도 유지한다. 기존 B-4 프롬프트·가중치·엄격 채점은 바꾸지 않는다.
+
+실행은 기존처럼 JSON·스키마·원문 근거 검증 실패 시에만 최대 한 번 재요청한다.
+정답, case ID로 분기하거나 결과를 자동 삭제·보정하지 않는다. `needs_review`와
+같은 원문·대상에 양수 최소/정확 수량 및 required가 함께 나온 사례를 의심 신호로만
+기록한다. 이는 오류 확증이 아니며 재요청·출력 선택·점수에 영향을 주지 않는다.
+
+새 실행의 첫 응답과 재요청 포함 지표를 함께 측정하고, 이전 B-4의 단일 응답과
+B-4 재요청 결과는 저장된 과거 수치로 함께 표시한다. 과거 재요청 run의 상태·해시,
+프롬프트·모델·데이터·예산을 확인하고 사례별 회복/회귀도 보여준다. 과거 p95와
+새 p95는 서로 다른 실행의 측정값이다. 기존 95% run은 수정하지 않으며, 코드가 바뀐
+기존 run-dir에서 `run --resume`하지 않는다. 완료된 결과는 `show-results`로 읽을 수 있다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark &&
+bash run_requirements_retry.sh run \
+  --prompt-profile 4b-compact-v5 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 \
+  --baseline-run runs/qwen4b-requirements-compact-v4 \
+  --reference-retry-run runs/qwen4b-requirements-retry-v1 \
+  --run-dir runs/qwen4b-requirements-semantic-v1 \
+  --allow-draft-labels --resume &&
+bash run_requirements_retry.sh show-results \
+  --run-dir runs/qwen4b-requirements-semantic-v1
+```
+
+원시 출력과 채점 결과는 predictions.json, 검토 신호와 문장별 비교는 per_case.csv에
+남긴다. 합성 40문장은 반복 노출된 사람 미검토 개발 초안이며, 새 실험의 효과와 독립
+평가 성능은 미측정이다. 사용자 요청에 따라 로컬 검증·모델 실행과 RunPod 직접 실행은 하지 않았다.
+
 ## B-4 검증 실패 최대 1회 재요청
 
 `run_requirements_retry.sh`는 기존 B-4 프롬프트, 모델과 엄격 채점을 유지한다.

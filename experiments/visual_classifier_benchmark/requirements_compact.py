@@ -11,14 +11,16 @@ PROFILE = '4b-compact-v1'
 FIXED_PROFILE = '4b-compact-v2'
 TARGET_PROFILE = '4b-compact-v3'
 BALANCED_PROFILE = '4b-compact-v4'
-PROFILES = (PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE)
+SEMANTIC_PROFILE = '4b-compact-v5'
+PROFILES = (PROFILE, FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE)
 
 
 def output_mode(profile):
     require(profile in PROFILES, 'Unknown compact profile')
     return {PROFILE: 'compact_assembled', FIXED_PROFILE: 'compact_fixed_assembled',
             TARGET_PROFILE: 'compact_target_assembled',
-            BALANCED_PROFILE: 'compact_balanced_assembled'}[profile]
+            BALANCED_PROFILE: 'compact_balanced_assembled',
+            SEMANTIC_PROFILE: 'compact_semantic_assembled'}[profile]
 
 
 def source_segments(text):
@@ -53,7 +55,7 @@ def input_message(text):
 
 def interpret(raw, text, profile=PROFILE):
     mode = output_mode(profile)
-    fixed = profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE)
+    fixed = profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE)
     segments = source_segments(text)
     sources = {s['id']: s for s in segments}
     compact = dict(json_valid=False, schema_valid=False, value=None, error=None)
@@ -174,7 +176,7 @@ Use needs_review only for an unresolved condition: missing_value for absent nece
 ambiguous for unclear preference, conflicting for incompatible constraints, non_requirement for greetings.
 Extract complete conditions even if another condition is unresolved. An explicit value is not missing.
 '''
-    if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE):
+    if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
         # Only the output contract changes. Preserve meaning rules and example
         # inputs/decisions so this experiment isolates fixed vs conditional keys.
         before, rest = rules.split('Compact output contract:\n', 1)
@@ -190,7 +192,7 @@ Extract complete conditions even if another condition is unresolved. An explicit
 - Never output type or source; code supplies both from field and source_id.
 - Review entries have only source_id and reason. Empty arrays are still required.
 Do not invent IDs.''' + after
-    if profile in (TARGET_PROFILE, BALANCED_PROFILE):
+    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
         rules += '''
 Visual target checklist:
 - For every visual item, copy its specific target noun phrase from that item's source.
@@ -203,7 +205,7 @@ Visual target checklist:
 - If a necessary target or location cannot be resolved from the text, use needs_review
   with the appropriate reason instead of guessing an object or a location.
 '''
-    if profile == BALANCED_PROFILE:
+    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE):
         rules += '''
 Consistency checklist:
 - Information fields, including other_text, always use target:null. For quoted text
@@ -218,6 +220,19 @@ Consistency checklist:
   object is optional; it is not a greeting or a missing value.
 - Use needs_review for genuinely unclear or missing necessary details; do not invent them.
 - Close each array and object in the JSON. Emit items and needs_review as sibling keys.
+'''
+    if profile == SEMANTIC_PROFILE:
+        rules += '''
+Distinguish extracting a requirement from deciding how to measure compliance.
+An explicit prohibition of a qualitative image property is an extractable visual
+condition even when a numeric measurement threshold is not given. Preserve the
+property phrase in target; do not treat a missing numeric threshold as a missing
+value for the prohibition. Do not invent a threshold. Actual missing replacement
+values, targets, or destinations still require needs_review.
+For the same object and same requirement, a positive at_least or exactly count
+already expresses inclusion; do not add a separate required item for that wording.
+An at_most count alone does not require inclusion. Preserve genuinely independent
+conditions for the same object, including an explicit color or placement.
 '''
     meanings = dict(event_title='행사명', event_date='기간/날짜', event_location='장소',
         host='주최', organizer='주관', contact='문의', fee='비용', other_text='표시할 문구',
@@ -236,7 +251,7 @@ Consistency checklist:
             field='host', operator='equals', value='바다독서회')],
             needs_review=[dict(source_id='S2', reason='missing_value')])),
     ]
-    if profile in (TARGET_PROFILE, BALANCED_PROFILE):
+    if profile in (TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
         examples += [
             (['풍선 사진을 제외해 주세요.'], dict(items=[dict(source_id='S1', field='other_visual',
                 operator='forbidden', target='풍선')], needs_review=[])),
@@ -249,7 +264,7 @@ Consistency checklist:
             (['표시를 원하는 위치로 옮겨 주세요.'], dict(items=[],
                 needs_review=[dict(source_id='S1', reason='missing_value')])),
         ]
-    if profile == BALANCED_PROFILE:
+    if profile in (BALANCED_PROFILE, SEMANTIC_PROFILE):
         examples += [
             (['"입장 환영" 문구를 표시해 주세요.'], dict(items=[dict(source_id='S1',
                 field='other_text', operator='contains', value='입장 환영')], needs_review=[])),
@@ -264,9 +279,24 @@ Consistency checklist:
                 dict(source_id='S1', field='other_visual', operator='forbidden', target='풍선')],
                 needs_review=[])),
         ]
+    if profile == SEMANTIC_PROFILE:
+        examples += [
+            (['해상도가 낮은 사진은 넣지 말아 주세요.'], dict(items=[dict(source_id='S1',
+                field='image_quality', operator='forbidden', target='해상도가 낮은 사진')], needs_review=[])),
+            (['풍선을 한 개 이상 넣어 주세요.'], dict(items=[dict(source_id='S1',
+                field='other_visual', operator='at_least', target='풍선', value=1)], needs_review=[])),
+            (['우산은 최대 세 개 넣어 주세요.'], dict(items=[dict(source_id='S1',
+                field='other_visual', operator='at_most', target='우산', value=3)], needs_review=[])),
+            (['풍선을 두 개 이상 넣고 풍선 위치는 왼쪽으로 해 주세요.'], dict(items=[
+                dict(source_id='S1', field='other_visual', operator='at_least', target='풍선', value=2),
+                dict(source_id='S1', field='layout', operator='equals', target='풍선', value='왼쪽')],
+                needs_review=[])),
+            (['행사 장소를 새 장소로 바꿔 주세요.'], dict(items=[],
+                needs_review=[dict(source_id='S1', reason='missing_value')])),
+        ]
     rendered = []
     for lines, answer in examples:
-        if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE):
+        if profile in (FIXED_PROFILE, TARGET_PROFILE, BALANCED_PROFILE, SEMANTIC_PROFILE):
             answer['items'] = [dict(source_id=i['source_id'], field=i['field'],
                 operator=i['operator'], target=i.get('target'), value=i.get('value')) for i in answer['items']]
         payload = dict(sources=[dict(id='S' + str(i), text=line) for i, line in enumerate(lines, 1)])

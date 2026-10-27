@@ -9,7 +9,7 @@ import traceback
 from pathlib import Path
 
 import evaluate_requirements_json as base
-from requirements_compact import BALANCED_PROFILE, input_message, interpret, prompt
+from requirements_compact import BALANCED_PROFILE, SEMANTIC_PROFILE, input_message, interpret, prompt
 from requirements_json_contract import aggregate, evaluate, load_cases
 from resultlib import digest, inside, percentile, read, require, save, sha, write_csv
 
@@ -30,6 +30,21 @@ def valid(parsed):
 def feedback(result):
     parsed = result['parsed']
     return dict(error=parsed.get('error'), source_errors=parsed.get('source_errors', []))
+
+
+def semantic_flags(parsed):
+    # Audit signals only: never alter outputs, scores or retry eligibility.
+    if not valid(parsed):
+        return dict(needs_review=False, potential_redundant_inclusion=False)
+    obj = parsed['value']
+    items = obj['items']
+    redundant = any(
+        a['type'] == 'visual' and a['operator'] in ('at_least', 'exactly') and
+        type(a['value']) is int and a['value'] > 0 and
+        b['type'] == 'visual' and b['operator'] == 'required' and
+        a['source'] == b['source'] and a['target'] == b['target']
+        for a in items for b in items)
+    return dict(needs_review=bool(obj['needs_review']), potential_redundant_inclusion=redundant)
 
 
 def retry_infer(text, first, instruction, processor, model, args):
@@ -53,24 +68,24 @@ def retry_infer(text, first, instruction, processor, model, args):
     torch.cuda.synchronize()
     generated = output[0, tokens_in:]
     raw = processor.decode(generated, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-    interpreted = interpret(raw, text, BALANCED_PROFILE)
+    interpreted = interpret(raw, text, args.prompt_profile)
     elapsed = (time.perf_counter() - started) * 1000
     return dict(skipped=False, raw=raw, **interpreted, input_tokens=tokens_in,
                 generated_tokens=int(generated.numel()),
                 reached_token_limit=int(generated.numel()) >= args.max_new_tokens, total_ms=elapsed)
 
 
-def validate_cached(row, case, signature):
+def validate_cached(row, case, signature, profile):
     require(row['protocol_signature'] == signature and row['case_id'] == case['id'] and
             row['text_sha256'] == digest(case['text']), 'Cached request identity differs')
     first = row['first']
-    require(all(first.get(k) == v for k, v in interpret(first['raw'], case['text'], BALANCED_PROFILE).items()),
+    require(all(first.get(k) == v for k, v in interpret(first['raw'], case['text'], profile).items()),
             'Cached first response differs from parser')
     retry = row['retry']
     require(row['retry_eligible'] == (not valid(first['parsed'])), 'Cached retry eligibility differs')
     require((retry is not None) == row['retry_eligible'], 'Cached retry record differs')
     if retry is not None and not retry['skipped']:
-        require(all(retry.get(k) == v for k, v in interpret(retry['raw'], case['text'], BALANCED_PROFILE).items()),
+        require(all(retry.get(k) == v for k, v in interpret(retry['raw'], case['text'], profile).items()),
                 'Cached retry response differs from parser')
     use_retry = retry is not None and not retry['skipped'] and valid(retry['parsed'])
     require(row['selected'] == ('retry' if use_retry else 'first'), 'Cached selection differs')
@@ -84,7 +99,7 @@ def timing(values):
                 p95_ms=percentile(values, .95), timing_n=len(values))
 
 
-def history(args, cases, model_packet, instruction):
+def history(args, cases, model_packet):
     root = args.baseline_run
     status = read(root / 'status.json')
     require(status['status'] == 'complete' and
@@ -92,7 +107,7 @@ def history(args, cases, model_packet, instruction):
             'Historical B-4 result is incomplete or changed')
     protocol = read(root / 'protocol.json')
     cfg = protocol['config']
-    require(cfg['prompt_profile'] == BALANCED_PROFILE and cfg['prompt'] == instruction and
+    require(cfg['prompt_profile'] == BALANCED_PROFILE and cfg['prompt'] == prompt(BALANCED_PROFILE) and
             cfg['dataset_sha256'] == sha(args.dataset) and cfg['models'] == ['4b'] and
             cfg['model_packets']['4b'] == model_packet and cfg['do_sample'] is False and
             cfg['max_new_tokens'] == args.max_new_tokens and cfg['max_input_tokens'] == args.max_input_tokens,
@@ -105,6 +120,28 @@ def history(args, cases, model_packet, instruction):
                 protocol_sha256=sha(root / 'protocol.json'), status_sha256=sha(root / 'status.json'))
 
 
+def retry_history(args, cases, model_packet):
+    root = args.reference_retry_run
+    status = read(root / 'status.json')
+    require(status['status'] == 'complete' and
+            all(sha(inside(root, n)) == h for n, h in status['artifact_hashes'].items()),
+            'Historical retry result is incomplete or changed')
+    protocol = read(root / 'protocol.json')
+    cfg = protocol['config']
+    require(cfg['prompt_profile'] == BALANCED_PROFILE and cfg['first_prompt'] == prompt(BALANCED_PROFILE) and
+            cfg['retry_instruction'] == RETRY_INSTRUCTION and cfg['dataset_sha256'] == sha(args.dataset) and
+            cfg['model_packet'] == model_packet and cfg['do_sample'] is False and
+            cfg['max_new_tokens'] == args.max_new_tokens and cfg['max_input_tokens'] == args.max_input_tokens,
+            'Historical retry model, data, prompt or budgets differ')
+    predictions = read(root / 'predictions.json')
+    require(len(predictions) == len(cases) and all(
+        r['case_id'] == c['id'] and r['text'] == c['text'] and r['expected_draft'] == c['expected']
+        for r, c in zip(predictions, cases)), 'Historical retry cases differ')
+    return dict(metrics=read(root / 'comparison_summary.json')['validation_retry'],
+                predictions=predictions, protocol_signature=protocol['signature'],
+                protocol_sha256=sha(root / 'protocol.json'), status_sha256=sha(root / 'status.json'))
+
+
 def run(args):
     import torch
     from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
@@ -113,13 +150,17 @@ def run(args):
     cases = load_cases(args.dataset)['cases']
     environment = base.environment()
     model_packet = base.packet(args, '4b')
-    instruction = prompt(BALANCED_PROFILE)
-    previous = history(args, cases, model_packet, instruction)
+    instruction = prompt(args.prompt_profile)
+    previous = history(args, cases, model_packet)
+    reference = retry_history(args, cases, model_packet) if args.reference_retry_run else None
     sources = dict(base.sources(), **{'evaluate_requirements_retry.py': sha(Path(__file__))})
     config = dict(schema='requirements-validation-retry-v1', environment=environment,
         dataset_sha256=sha(args.dataset), model_packet=model_packet, sources=sources,
         historical_protocol=previous['protocol_signature'], historical_protocol_sha256=previous['protocol_sha256'],
-        historical_status_sha256=previous['status_sha256'], prompt_profile=BALANCED_PROFILE,
+        historical_status_sha256=previous['status_sha256'], prompt_profile=args.prompt_profile,
+        reference_retry_protocol=reference['protocol_signature'] if reference else None,
+        reference_retry_protocol_sha256=reference['protocol_sha256'] if reference else None,
+        reference_retry_status_sha256=reference['status_sha256'] if reference else None,
         first_prompt=instruction, retry_instruction=RETRY_INSTRUCTION,
         retry_policy='only json/schema/source validation failure; at most one; use valid retry else first',
         labels_passed_to_model=False, precision='bf16', attn_implementation='sdpa', thinking=False,
@@ -153,7 +194,6 @@ def run(args):
                 local_files_only=True, trust_remote_code=False, use_safetensors=True, dtype=torch.bfloat16,
                 attn_implementation='sdpa').to('cuda:0').eval().requires_grad_(False)
             processor.tokenizer.padding_side = 'left'
-            args.prompt_profile = BALANCED_PROFILE
             for _ in range(2):
                 base.infer(cases[0]['text'], instruction, processor, model, args)
             requests = args.run_dir / 'requests'
@@ -164,7 +204,7 @@ def run(args):
                 if path.exists():
                     require(args.resume, 'Cached requests require --resume')
                     row = read(path)
-                    validate_cached(row, case, signature)
+                    validate_cached(row, case, signature, args.prompt_profile)
                 else:
                     started = time.perf_counter()
                     first = base.infer(case['text'], instruction, processor, model, args)
@@ -184,6 +224,7 @@ def run(args):
                 records.append(dict(case_id=case['id'], text=case['text'], expected_draft=case['expected'],
                     first=row['first'], retry_eligible=row['retry_eligible'], retry_feedback=row['retry_feedback'],
                     retry=row['retry'], selected=row['selected'], first_score=first_score, final_score=final_score,
+                    final_semantic_flags=semantic_flags(chosen['parsed']),
                     first_ms=row['first_ms'], end_to_end_ms=row['end_to_end_ms']))
                 print(json.dumps(dict(event='retry_pilot_progress', completed=index, total=len(cases),
                     retried=row['retry'] is not None and not row['retry']['skipped'],
@@ -201,16 +242,30 @@ def run(args):
                     'retry_eligible': sum(r['retry_eligible'] for r in records),
                     'retry_attempted': attempted, 'retry_skipped': skipped,
                     'retry_valid': sum(r['selected'] == 'retry' for r in records),
+                    'needs_review_cases': sum(r['final_semantic_flags']['needs_review'] for r in records),
+                    'potential_redundant_inclusion_cases': sum(r['final_semantic_flags']['potential_redundant_inclusion'] for r in records),
                     'recovered_exact': recovered, 'regressed_exact': regressed},
                 historical_b4=previous['metrics'], historical_latency='saved earlier run; not remeasured',
                 timing_scope='first vs full request including validation and retry; excludes model load, warmup, scoring and file writes',
                 synthetic=True, human_verified=False, training_executed=False, model_deployed=False)
+            if reference:
+                changes = [dict(case_id=r['case_id'], reference_exact=old['final_score']['exact'],
+                    candidate_exact=r['final_score']['exact']) for r, old in zip(records, reference['predictions'])]
+                summary['historical_b4_retry'] = reference['metrics']
+                summary['reference_comparison'] = dict(
+                    recovered_exact=sum(not c['reference_exact'] and c['candidate_exact'] for c in changes),
+                    regressed_exact=sum(c['reference_exact'] and not c['candidate_exact'] for c in changes),
+                    changed_cases=[c for c in changes if c['reference_exact'] != c['candidate_exact']],
+                    note='Historical reference is a previous run, not paired timing')
             fields = ('cases', 'json_valid_rate', 'schema_valid_rate', 'source_valid_rate', 'draft_exact_match_rate',
                       'draft_item_precision', 'draft_item_recall', 'draft_item_f1', 'draft_forbidden_recall',
                       'draft_count_recall', 'tp', 'fp', 'fn', 'mean_ms', 'median_ms', 'p95_ms', 'timing_n')
-            comparison = [dict(version=label, **{k: values[k] for k in fields}) for label, values in (
-                ('historical_b4', previous['metrics']), ('current_first_pass', summary['first_pass']),
-                ('current_validation_retry', summary['validation_retry']))]
+            versions = [('historical_b4', previous['metrics'])]
+            if reference:
+                versions.append(('historical_b4_validation_retry', reference['metrics']))
+            versions += [('current_first_pass', summary['first_pass']),
+                         ('current_validation_retry', summary['validation_retry'])]
+            comparison = [dict(version=label, **{k: values[k] for k in fields}) for label, values in versions]
             save(args.run_dir / 'comparison_summary.json', summary)
             write_csv(args.run_dir / 'comparison.csv', comparison)
             save(args.run_dir / 'predictions.json', records)
@@ -218,6 +273,8 @@ def run(args):
                 first_exact=r['first_score']['exact'], final_exact=r['final_score']['exact'],
                 retry_eligible=r['retry_eligible'], retried=r['retry'] is not None and not r['retry']['skipped'],
                 selected=r['selected'], first_error=r['first']['parsed']['error'],
+                needs_review=r['final_semantic_flags']['needs_review'],
+                potential_redundant_inclusion=r['final_semantic_flags']['potential_redundant_inclusion'],
                 retry_error=(r['retry'].get('parsed', {}).get('error') if r['retry'] else None),
                 first_ms=r['first_ms'], end_to_end_ms=r['end_to_end_ms']) for r in records])
             excluded = {'.lock', 'status.json', 'failure.json'}
@@ -244,6 +301,9 @@ def main():
     parser.add_argument('--models-root', type=Path, default=Path('/workspace/models'))
     parser.add_argument('--dataset', type=Path, default=base.DATA)
     parser.add_argument('--baseline-run', type=Path, default=HERE / 'runs/qwen4b-requirements-compact-v4')
+    parser.add_argument('--reference-retry-run', type=Path,
+                        help='Optional completed B-4 validation-retry run for historical comparison')
+    parser.add_argument('--prompt-profile', choices=(BALANCED_PROFILE, SEMANTIC_PROFILE), default=BALANCED_PROFILE)
     parser.add_argument('--run-dir', type=Path, default=HERE / 'runs/qwen4b-requirements-retry-v1')
     parser.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file')
     parser.add_argument('--max-new-tokens', type=int, default=768)
@@ -254,9 +314,15 @@ def main():
     require(256 <= args.max_new_tokens <= 2048 and 512 <= args.max_input_tokens <= 4096, 'Invalid token budgets')
     for name in ('models_root', 'dataset', 'baseline_run', 'run_dir'):
         setattr(args, name, getattr(args, name).expanduser().resolve())
+    if args.reference_retry_run is not None:
+        args.reference_retry_run = args.reference_retry_run.expanduser().resolve()
     require(not args.run_dir.is_relative_to(args.models_root) and not args.models_root.is_relative_to(args.run_dir) and
             not args.run_dir.is_relative_to(args.baseline_run) and not args.baseline_run.is_relative_to(args.run_dir) and
             not args.dataset.is_relative_to(args.run_dir), 'Output must be separate from models, dataset and baseline')
+    if args.reference_retry_run is not None:
+        require(not args.run_dir.is_relative_to(args.reference_retry_run) and
+                not args.reference_retry_run.is_relative_to(args.run_dir),
+                'Output and historical retry must be separate')
     if args.command == 'run':
         run(args)
     else:
@@ -267,9 +333,12 @@ def main():
         print(json.dumps({k: v for k, v in status.items() if k != 'artifact_hashes'}, ensure_ascii=False, indent=2))
         print((args.run_dir / 'comparison.csv').read_text(encoding='utf-8-sig'))
         summary = read(args.run_dir / 'comparison_summary.json')
-        print(json.dumps({k: summary['validation_retry'][k] for k in
-            ('retry_eligible', 'retry_attempted', 'retry_skipped', 'retry_valid', 'recovered_exact', 'regressed_exact')},
+        print(json.dumps({k: summary['validation_retry'].get(k) for k in
+            ('retry_eligible', 'retry_attempted', 'retry_skipped', 'retry_valid', 'recovered_exact', 'regressed_exact',
+             'needs_review_cases', 'potential_redundant_inclusion_cases')},
             ensure_ascii=False, indent=2))
+        if 'reference_comparison' in summary:
+            print(json.dumps(dict(reference_comparison=summary['reference_comparison']), ensure_ascii=False, indent=2))
 
 
 if __name__ == '__main__':
