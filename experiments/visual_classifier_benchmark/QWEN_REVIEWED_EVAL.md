@@ -1,8 +1,45 @@
-# 사람이 검토한 72건 요구사항 평가
+# 72건 요구사항 평가: 사용자 승인 또는 AI 사전 승인 초안
 
-이 실행은 사람이 72건을 모두 검토한 JSON을 명시적으로 제출한 뒤에만 시작할 수 있다.
+기본 실행은 사람이 72건을 모두 검토한 JSON을 명시적으로 제출한 뒤에만 시작할 수 있다.
 기존 합성 40건의 결과나 가중치는 변경하지 않고, 고정된 B-4 + 검증 실패 최대 1회
 재요청 방식으로 별도 결과를 저장한다. 학습·설치·다운로드·배포는 하지 않는다.
+
+## AI 사전 승인 70건 + 미확인 2건 실험
+
+사용자가 명시적으로 요청한 `agent-partial` 모드는 `human_verified=false`인 72건을 다룬다.
+AI 사전 승인(AGENT_APPROVED) 기록을 확인하고, 미확인(UNREVIEWED)은 최대 2건까지 허용한다.
+사용자가 직접 승인한 항목이 섞이면 사용자와 승인 시각을 확인한다. AI 사전 승인은
+사람의 확인으로 표시하지 않으며, 결과를 사람 검증 평가셋의 성능으로 부르지 않는다.
+
+- 미확인 두 문장도 모델 추론과 형식·속도 집계에 포함하고 원시 응답을 저장한다.
+- 그 두 문장의 **8개 라벨 전체**를 정답 미확인으로 취급해 정확도·F1 분모에서 제외한다.
+  다른 70건에도 `?`인 라벨은 제외한다. 초안의 `0`을 사람 확인된 음성으로 바꾸지 않는다.
+- 조건 전체 일치율·조건 F1은 미확인 문장과 `?` 라벨이 하나라도 있는 문장 전체를 제외하며,
+  조건 점수가 계산된 건수와 제외 건수를 기록한다. JSON·스키마·source 통과율은 전체 72건 기준이다.
+- 남은 유효 정답도 AI 사전 승인에 불과하다. 라벨별 support·unknown·coverage를 확인하고,
+  결과가 90%/0.9를 넘더라도 독립적인 사람 검토 실측이나 실제 서비스 성능으로 해석하지 않는다.
+
+```bash
+cd /workspace/SKN33-Final-1Team/experiments/visual_classifier_benchmark
+bash run_qwen_reviewed_eval.sh preflight \
+  --review-file /workspace/qwen-eval-agent-70-pending-2.json \
+  --review-policy agent-partial
+```
+
+`review_record_ready` 확인 뒤에만 별도 실행 폴더를 사용한다.
+
+```bash
+bash run_qwen_reviewed_eval.sh run \
+  --review-file /workspace/qwen-eval-agent-70-pending-2.json \
+  --review-policy agent-partial --confirm-agent-partial \
+  --reference-retry-run runs/qwen4b-requirements-retry-v1 \
+  --run-dir runs/qwen4b-agent70-pending2-v1 \
+  --ram-policy clean-unmapped-file --max-input-tokens 4096 --resume &&
+bash run_qwen_reviewed_eval.sh show-results --run-dir runs/qwen4b-agent70-pending2-v1
+```
+
+기본 `human` 모드의 사람 승인 검사는 그대로 유지한다. 두 모드의 결과 폴더와 프로토콜은
+분리되며, 재추론·재요청 시간은 새 실행에서 직접 측정한다.
 
 ## 검토 데이터 조건
 

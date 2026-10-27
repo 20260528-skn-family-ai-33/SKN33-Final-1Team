@@ -1,6 +1,6 @@
-"""Evaluate explicitly reviewed synthetic requirements with frozen B-4 + validation retry."""
+"""Evaluate approved or explicitly opted-in agent draft requirements with frozen B-4."""
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 import fcntl
 import gc
 import hashlib
@@ -31,22 +31,28 @@ def text_sha(text):
 
 
 def approval_timestamp(value):
-    require(isinstance(value, str) and value.endswith('Z'), 'Missing UTC review timestamp')
+    require(isinstance(value, str) and bool(value), 'Missing UTC review timestamp')
     try:
-        datetime.fromisoformat(value[:-1] + '+00:00')
+        stamp = datetime.fromisoformat(value[:-1] + '+00:00' if value.endswith('Z') else value)
     except ValueError as exc:
         raise ValueError('Invalid UTC review timestamp') from exc
+    require(stamp.utcoffset() == timedelta(0), 'Review timestamp must be UTC')
 
 
-def validate_review(path):
+def validate_review(path, policy='human'):
     packet = read(path)
     manifest = read(MANIFEST)
+    require(policy in ('human', 'agent-partial'), 'Unknown review policy')
     require(packet.get('schema') == 'qwen-requirements-human-review-draft-v1' and
-            packet.get('synthetic') is True and packet.get('human_verified') is True and
-            packet.get('approval_state') == 'HUMAN_REVIEW_COMPLETE' and
-            packet.get('use_for_training') is False and packet.get('use_for_evaluation') is False and
-            isinstance(packet.get('reviewer'), str) and bool(packet['reviewer'].strip()),
-            'Need the fully approved review export, with a reviewer; draft/progress files are not accepted')
+            packet.get('synthetic') is True and packet.get('use_for_training') is False and
+            packet.get('use_for_evaluation') is False, 'Unexpected synthetic review packet')
+    if policy == 'human':
+        require(packet.get('human_verified') is True and packet.get('approval_state') == 'HUMAN_REVIEW_COMPLETE' and
+                isinstance(packet.get('reviewer'), str) and bool(packet['reviewer'].strip()),
+                'Need the fully approved review export, with a reviewer')
+    else:
+        require(packet.get('human_verified') is False and packet.get('approval_state') == 'PARTIALLY_REVIEWED',
+                'Agent-partial mode requires an explicitly non-human-reviewed progress packet')
     approval_timestamp(packet.get('exported_at_utc'))
     require(manifest['schema'] == 'qwen-reviewed-72-input-manifest-v1' and
             packet.get('old_dev_text_sha256') == manifest['previous_dev_file_sha256'] == sha(base.DATA) and
@@ -56,13 +62,27 @@ def validate_review(path):
             len({r['id'] for r in rows}) == 72, 'Expected exactly 72 unique reviewed cases')
     reference = {r['id']: r for r in manifest['cases']}
     require({r['id'] for r in rows} == set(reference), 'Reviewed case IDs differ from the frozen manifest')
+    states = {state: sum(r.get('review_status') == state for r in rows)
+              for state in ('APPROVED', 'AGENT_APPROVED', 'UNREVIEWED')}
+    if policy == 'human':
+        require(states['APPROVED'] == 72, 'All 72 cases must be approved by the user')
+    else:
+        require(sum(states.values()) == 72 and states['AGENT_APPROVED'] > 0 and states['UNREVIEWED'] <= 2,
+                'Agent-partial mode requires agent approval and at most two unreviewed cases')
+        if states['APPROVED']:
+            require(isinstance(packet.get('reviewer'), str) and bool(packet['reviewer'].strip()),
+                    'Human-approved cases require an identified reviewer')
     old = read(base.DATA)
     old_texts = {normalized(r['text']) for r in old['cases']}
     texts = []
     for r in rows:
         original = reference[r['id']]
-        require(r.get('review_status') == 'APPROVED', 'Unapproved case: ' + r['id'])
-        approval_timestamp(r.get('reviewed_at_utc'))
+        if r['review_status'] == 'APPROVED':
+            approval_timestamp(r.get('reviewed_at_utc'))
+        elif r['review_status'] == 'AGENT_APPROVED':
+            require(policy == 'agent-partial' and r.get('agent_approval_origin') ==
+                    'user_requested_provisional_agent_approval', 'Unexpected agent approval: ' + r['id'])
+            approval_timestamp(r.get('agent_approved_at_utc'))
         require(isinstance(r.get('text'), str) and 0 < len(r['text']) <= 6000 and
                 r.get('group_id') == original['group_id'] and text_sha(r['text']) == original['text_sha256'] and
                 text_sha(normalized(r['text'])) == original['normalized_text_sha256'],
@@ -79,10 +99,11 @@ def validate_review(path):
         texts.append(normalized(r['text']))
     require(len(set(texts)) == len(texts) and not old_texts.intersection(texts),
             'Duplicate normalized case or exact overlap with the 40-case development set')
-    counts = {label: dict(positive=sum(r['labels'][label] == 1 for r in rows),
-                          negative=sum(r['labels'][label] == 0 for r in rows),
-                          unknown=sum(r['labels'][label] is None for r in rows)) for label in LABELS}
-    return packet, counts
+    counts = {label: dict(positive=sum(r['review_status'] != 'UNREVIEWED' and r['labels'][label] == 1 for r in rows),
+                          negative=sum(r['review_status'] != 'UNREVIEWED' and r['labels'][label] == 0 for r in rows),
+                          unknown=sum(r['review_status'] == 'UNREVIEWED' or r['labels'][label] is None for r in rows))
+              for label in LABELS}
+    return packet, counts, states
 
 
 def frozen_reference(root, model_packet, instruction, args):
@@ -115,8 +136,15 @@ def predicted_labels(parsed):
 
 def label_cells(case, parsed):
     predicted = predicted_labels(parsed)
-    return [dict(case_id=case['id'], label=label, truth=case['labels'][label], prediction=predicted[label],
+    return [dict(case_id=case['id'], label=label,
+                 truth=case['labels'][label] if case['review_status'] != 'UNREVIEWED' else None,
+                 prediction=predicted[label], review_status=case['review_status'],
                  parsed_valid=retry_lib.valid(parsed)) for label in LABELS]
+
+
+def condition_scorable(case):
+    # Do not score any complete-condition F1 against a case containing unknown gold labels.
+    return case['review_status'] != 'UNREVIEWED' and all(v is not None for v in case['labels'].values())
 
 
 def timing(values):
@@ -131,20 +159,25 @@ def source_hashes():
 
 
 def preflight(args):
-    packet, counts = validate_review(args.review_file)
+    packet, counts, states = validate_review(args.review_file, args.review_policy)
     print(json.dumps(dict(status='review_record_ready', cases=len(packet['cases']),
-        reviewer=packet['reviewer'], approval_state=packet['approval_state'],
+        reviewer=packet.get('reviewer'), approval_state=packet['approval_state'], review_policy=args.review_policy,
+        status_counts=states, unreviewed_ids=[r['id'] for r in packet['cases'] if r['review_status'] == 'UNREVIEWED'],
         review_file_sha256=sha(args.review_file), label_counts=counts,
-        approved_unknown_cells=sum(c['unknown'] for c in counts.values()),
-        exact_overlap_with_original_40=0, synthetic=True, human_verified_self_attested=True,
+        scoring_excluded_unknown_cells=sum(c['unknown'] for c in counts.values()),
+        exact_overlap_with_original_40=0, synthetic=True,
+        human_verified_self_attested=args.review_policy == 'human',
         instruction='This only checks submitted review records and structure, not independent annotation quality.',
         installation_executed=False, inference_executed=False, training_executed=False),
         ensure_ascii=False, indent=2))
 
 
 def run(args):
-    require(args.confirm_reviewed, 'Pass --confirm-reviewed after checking the fully approved review file')
-    packet, counts = validate_review(args.review_file)
+    if args.review_policy == 'human':
+        require(args.confirm_reviewed, 'Pass --confirm-reviewed after checking the fully approved review file')
+    else:
+        require(args.confirm_agent_partial, 'Pass --confirm-agent-partial to evaluate provisional agent labels')
+    packet, counts, states = validate_review(args.review_file, args.review_policy)
     import torch
     from transformers import AutoProcessor, Qwen3_5ForConditionalGeneration
     environment = base.environment()
@@ -160,9 +193,12 @@ def run(args):
         retry_policy='only json/schema/source validation failure; at most one; use valid retry else first',
         labels_passed_to_model=False, precision='bf16', attn_implementation='sdpa', thinking=False,
         do_sample=False, max_new_tokens=args.max_new_tokens, max_input_tokens=args.max_input_tokens,
-        ram_policy=args.ram_policy, warmups=2, synthetic=True, human_review_attested=True,
-        reviewer=packet['reviewer'], training_executed=False, model_deployed=False,
-        metric='Reviewed synthetic requirements; exact text non-overlap does not establish real-world generalization')
+        ram_policy=args.ram_policy, warmups=2, synthetic=True,
+        review_policy=args.review_policy, review_status_counts=states,
+        human_review_attested=args.review_policy == 'human',
+        reviewer=packet.get('reviewer'), training_executed=False, model_deployed=False,
+        metric='Synthetic requirements; agent-partial labels are provisional, not human-verified; '
+               'exact text non-overlap does not establish real-world generalization')
     signature = digest(config)
     args.run_dir.mkdir(parents=True, exist_ok=True)
     with (args.run_dir / '.lock').open('a') as lock:
@@ -224,40 +260,52 @@ def run(args):
             # Score only after all requested predictions have been collected.
             records, all_cells, comparisons, label_reports = [], [], [], []
             for variant in ('first_pass', 'final'):
-                scores, cells = [], []
+                scores, cells, parsed_values = [], [], []
                 for case, row in zip(packet['cases'], attempts):
                     chosen = row['retry'] if variant == 'final' and row['selected'] == 'retry' else row['first']
-                    scores.append(evaluate(dict(expected=case['expected']), chosen['parsed']))
+                    parsed_values.append(chosen['parsed'])
+                    if condition_scorable(case):
+                        scores.append(evaluate(dict(expected=case['expected']), chosen['parsed']))
                     cells.extend(label_cells(case, chosen['parsed']))
                 label_totals, per_label = score_labels(cells)
-                condition = aggregate(scores)
+                condition = aggregate(scores) if scores else None
                 times = timing([r['first_ms'] if variant == 'first_pass' else r['end_to_end_ms'] for r in attempts])
                 comparisons.append(dict(variant=variant, **label_totals, **times,
-                    condition_exact_match_rate=condition['draft_exact_match_rate'],
-                    condition_item_f1=condition['draft_item_f1'],
-                    json_valid_rate=condition['json_valid_rate'], schema_valid_rate=condition['schema_valid_rate'],
-                    source_valid_rate=condition['source_valid_rate'],
+                    condition_cases_scored=len(scores), condition_cases_excluded=len(packet['cases'])-len(scores),
+                    condition_exact_match_rate=condition['draft_exact_match_rate'] if condition else None,
+                    condition_item_f1=condition['draft_item_f1'] if condition else None,
+                    json_valid_rate=sum(p['json_valid'] for p in parsed_values)/len(parsed_values),
+                    schema_valid_rate=sum(p['schema_valid'] for p in parsed_values)/len(parsed_values),
+                    source_valid_rate=sum(p['source_valid'] for p in parsed_values)/len(parsed_values),
                     goal_accuracy_90=label_totals['label_accuracy'] is not None and label_totals['label_accuracy'] >= .90,
                     goal_macro_f1_90=label_totals['macro_f1_all_8'] >= .90))
                 label_reports.extend(dict(variant=variant, **value) for value in per_label)
                 all_cells.extend(dict(variant=variant, **value) for value in cells)
             for case, row in zip(packet['cases'], attempts):
                 first, chosen = row['first'], row['retry'] if row['selected'] == 'retry' else row['first']
-                records.append(dict(case_id=case['id'], text=case['text'], reviewed_labels=case['labels'],
+                scorable = condition_scorable(case)
+                records.append(dict(case_id=case['id'], text=case['text'], review_status=case['review_status'],
+                    provisional_labels=case['labels'],
+                    scoring_labels={label: case['labels'][label] if case['review_status'] != 'UNREVIEWED' else None
+                                    for label in LABELS}, condition_scorable=scorable,
                     expected=case['expected'], first=first, retry=row['retry'], selected=row['selected'],
-                    first_score=evaluate(dict(expected=case['expected']), first['parsed']),
-                    final_score=evaluate(dict(expected=case['expected']), chosen['parsed']),
+                    first_score=evaluate(dict(expected=case['expected']), first['parsed']) if scorable else None,
+                    final_score=evaluate(dict(expected=case['expected']), chosen['parsed']) if scorable else None,
                     first_ms=row['first_ms'], end_to_end_ms=row['end_to_end_ms']))
             attempted = sum(r['retry'] is not None and not r['retry']['skipped'] for r in attempts)
             save(args.run_dir / 'predictions.json', records)
-            save(args.run_dir / 'summary.json', dict(results=comparisons, reviewed_label_counts=counts,
+            save(args.run_dir / 'summary.json', dict(results=comparisons, scoring_label_counts=counts,
+                review_policy=args.review_policy, review_status_counts=states,
+                unreviewed_ids=[r['id'] for r in packet['cases'] if r['review_status']=='UNREVIEWED'],
                 retry_attempted=attempted, retry_eligible=sum(r['retry_eligible'] for r in attempts),
                 retry_skipped=sum(r['retry'] is not None and r['retry']['skipped'] for r in attempts),
                 timing_scope='includes initial inference, validation and conditional retry; excludes loading, warmup, scoring and file writes',
                 label_definition='Mentioned requirement in eight fields, including forbidden and optional; not image presence',
-                condition_scope='Supplementary full condition matching, not label accuracy',
-                synthetic=True, human_review_attested=True, training_executed=False,
-                caveat='Human-reviewed synthetic draft; exact non-overlap is not proof of semantic independence or real-user generalization'))
+                condition_scope='Supplementary full condition matching on non-unreviewed cases with no unknown labels; not label accuracy',
+                synthetic=True, human_review_attested=args.review_policy == 'human', training_executed=False,
+                caveat='Agent-partial labels are provisional, not human-reviewed; exact non-overlap does not establish '
+                       'semantic independence or real-user generalization' if args.review_policy == 'agent-partial' else
+                       'Human-reviewed synthetic draft; exact non-overlap does not establish real-user generalization'))
             write_csv(args.run_dir / 'comparison.csv', [dict(r,
                 macro_f1_excluded_labels=json.dumps(r['macro_f1_excluded_labels'])) for r in comparisons])
             write_csv(args.run_dir / 'per_label.csv', label_reports)
@@ -267,7 +315,8 @@ def run(args):
                       if p.is_file() and p.name not in excluded and not p.name.endswith('.tmp')}
             save(status_path, dict(status='complete', protocol_signature=signature, CUDA_executed=True,
                 training_executed=False, OCR_executed=False, model_deployed=False, synthetic=True,
-                human_review_attested=True, artifact_hashes=hashes))
+                review_policy=args.review_policy, review_status_counts=states,
+                human_review_attested=args.review_policy == 'human', artifact_hashes=hashes))
             print(json.dumps(dict(event='reviewed_eval_complete', run=str(args.run_dir),
                                   retry_attempted=attempted), ensure_ascii=False), flush=True)
         except Exception as exc:
@@ -290,7 +339,10 @@ def main():
     p.add_argument('--ram-policy', choices=('inactive-file', 'clean-unmapped-file'), default='inactive-file')
     p.add_argument('--max-new-tokens', type=int, default=768)
     p.add_argument('--max-input-tokens', type=int, default=4096)
+    p.add_argument('--review-policy', choices=('human', 'agent-partial'), default='human',
+                   help='agent-partial uses provisional AI labels; unreviewed cases are predicted but not scored')
     p.add_argument('--confirm-reviewed', action='store_true')
+    p.add_argument('--confirm-agent-partial', action='store_true')
     p.add_argument('--resume', action='store_true')
     args = p.parse_args()
     require(256 <= args.max_new_tokens <= 2048 and 512 <= args.max_input_tokens <= 4096, 'Invalid token budgets')
