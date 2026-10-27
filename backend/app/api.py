@@ -134,6 +134,7 @@ def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
                 ).convert("RGB")
                 metadata = {
                     "actual_format": actual_format,
+                    "original_mode": decoded.mode,
                     "original_dimensions": [width, height],
                     "original_sha256": hashlib.sha256(data).hexdigest(),
                     "original_bytes": len(data),
@@ -597,6 +598,8 @@ def create_app(
                 model_output = review_models.infer(target / "normalized.png", snapshot["criteria"])
                 results = review_models.enrich(results, model_output)
                 model_runtime = {"status": "success", **model_output["model"]}
+            from .structured_review import compare
+            results = compare(snapshot["criteria"], results, records, snapshot["image_source"])
             update(
                 target,
                 status="completed",
