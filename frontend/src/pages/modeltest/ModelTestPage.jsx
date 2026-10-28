@@ -423,6 +423,7 @@ export default function ModelTestPage() {
 
           {!state.agentWorkflow.enabled && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
             <div className="mt-panel-heading"><h2 id="mt-pipeline-title">검수 파이프라인</h2><span>{stages.length + (flow === 'video' ? 1 : 0)}단계</span></div>
+            <div className="mt-pipeline-scroll" role="region" aria-label="검수 단계 설정 목록" tabIndex={0}>
             <p className="mt-pipeline-hint">필요한 단계를 선택하고 모델을 지정하세요.<br />소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p>
             {stages.map((stage, index) => <React.Fragment key={stage.id}>
               {flow === 'video' && index === 1 && <div id="mt-stage-frames" className="mt-stage mt-sampling"><span className="mt-stage-number">02</span><div className="mt-stage-content">
@@ -441,6 +442,7 @@ export default function ModelTestPage() {
                   ...(value.model !== state.stages[stage.id].model && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
                   ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />
             </React.Fragment>)}
+            </div>
           </section>}
 
           <aside className="mt-monitor" aria-label="실행 모니터">
