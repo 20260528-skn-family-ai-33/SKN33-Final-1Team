@@ -69,12 +69,12 @@ def test_parallel_agents_wait_for_both_inputs_and_keep_distinct_model_instances(
         def load(self, stage): pass
     monkeypatch.setattr(remote, 'Models', Models)
     monkeypatch.setattr(remote, 'frames_of', lambda *args: [{'index': 0, 'path': paths['media']}])
-    def generate(models, stage, prompt, **kwargs):
+    def generate(models, stage, evidence, **kwargs):
         if stage['id'] in ('step-a', 'step-b'):
             owners[stage['id']] = id(models); barrier.wait(timeout=5); finished.append(stage['id'])
         else:
             assert sorted(finished) == ['step-a', 'step-b']
-            assert 'step-a result' in prompt and 'step-b result' in prompt
+            assert 'step-a result' in evidence and 'step-b result' in evidence
         return {'text': stage['id'] + ' result'}
     monkeypatch.setitem(remote.MODEL_HANDLERS, remote.QWEN, generate)
     config['stages'] = [{'id': f'step-{name}', 'kind': 'text_generate', 'name': name, 'agent_id': 'agent-test', 'model_id': remote.QWEN} for name in ('a', 'b', 'c')]
@@ -121,5 +121,5 @@ def test_invalid_optional_graph_values_fail_validation_before_execution(tmp_path
 def test_generated_logo_stage_passes_custom_instruction_to_detector():
     seen = []
     models = SimpleNamespace(logos=lambda path, instruction: seen.append((path, instruction)) or [])
-    result = remote.run_generated(models, {'id': 'custom-logo', 'kind': 'logo_extract', 'prompt': '행사 후원 로고를 찾아주세요.'}, images=['frame.png'])
+    result = remote.run_generated(models, {'id': 'custom-logo', 'kind': 'logo_extract', 'model_id': remote.QWEN, 'prompt_override': '행사 후원 로고를 찾아주세요.'}, images=['frame.png'])
     assert result == {'logos': []} and seen == [('frame.png', '행사 후원 로고를 찾아주세요.')]

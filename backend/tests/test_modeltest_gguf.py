@@ -24,12 +24,14 @@ def test_paddle_gguf_sends_official_ocr_prompt_with_image_and_handles_truncation
     def request(path, payload):
         requests.append((path, payload)); return {'choices': [{'message': {'content': [{'type': 'text', 'text': '인식 문구'}]}, 'finish_reason': 'length'}]}
     server.request = request
-    result = remote.run_paddle_gguf(SimpleNamespace(gguf=server), {'id': 'text_extract'}, images=[image])
+    result = remote.run_paddle_gguf(SimpleNamespace(gguf=server), {'id': 'text_extract', 'model_id': remote.PADDLE_GGUF}, images=[image])
     assert result['text'] == '인식 문구' and '길이 제한' in result['note']
     path, payload = requests[0]
     assert path == '/v1/chat/completions' and payload['temperature'] == 0
     assert payload['messages'][0]['content'][1]['text'] == 'OCR:'
     assert payload['messages'][0]['content'][0]['image_url']['url'].startswith('data:image/jpeg;base64,')
+    remote.run_paddle_gguf(SimpleNamespace(gguf=server), {'id': 'text_extract', 'model_id': remote.PADDLE_GGUF, 'prompt_override': 'Read the headline only'}, images=[image])
+    assert requests[-1][1]['messages'][0]['content'][1]['text'] == 'Read the headline only'
     remote.validate_model_stage({'id': 'ocr-step', 'kind': 'text_extract', 'model_id': remote.PADDLE_GGUF})
     with pytest.raises(ValueError): remote.validate_model_stage({'id': 'conditions', 'model_id': remote.PADDLE_GGUF})
     server.request = lambda *_: {'choices': []}

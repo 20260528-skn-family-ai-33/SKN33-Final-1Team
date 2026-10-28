@@ -90,14 +90,15 @@ class Batch(dict):
         return self
 
 
-def test_owlv2_uses_image_dimensions_and_returns_pixel_boxes(tmp_path):
+@pytest.mark.parametrize('custom', [None, 'sponsor logo\nbrand mark'])
+def test_owlv2_uses_image_dimensions_and_returns_pixel_boxes(tmp_path, custom):
     torch = pytest.importorskip('torch')
     path = tmp_path / 'frame.png'; Image.new('RGB', (80, 40)).save(path)
     model = lambda **inputs: 'detector output'
     model.device = 'cpu'
     class Processor:
         def __call__(self, **kwargs):
-            assert kwargs['text'] == [['a brand logo']]
+            assert kwargs['text'] == [custom.splitlines() if custom else ['a brand logo']]
             assert kwargs['images'].size == (80, 40)
             return Batch()
         def post_process_grounded_object_detection(self, output, **kwargs):
@@ -105,7 +106,7 @@ def test_owlv2_uses_image_dimensions_and_returns_pixel_boxes(tmp_path):
             assert kwargs['target_sizes'] == [(40, 80)] and kwargs['threshold'] == 0.2
             return [{'boxes': torch.tensor([[2., 3., 12., 13.]]), 'scores': torch.tensor([0.75])}]
     output = remote.run_model(SimpleNamespace(model=model, processor=Processor()),
-        {'id': 'logo_extract', 'model_id': remote.OWLV2}, images=[path])
+        {'id': 'logo_extract', 'model_id': remote.OWLV2, **({'prompt_override': custom} if custom else {})}, images=[path])
     assert output == {'logos': [{'bbox': [2, 3, 12, 13], 'score': 0.75}]}
 
 

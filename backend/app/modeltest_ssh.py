@@ -25,7 +25,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 
 from . import modeltest_remote as remote
-from . import modeltest_catalog, modeltest_adapters
+from . import modeltest_catalog, modeltest_adapters, modeltest_prompts
 from .modeltest_registry import Registry, registry_router
 from .video_frames import sniff_container
 
@@ -99,9 +99,10 @@ def ssh_failure(text):
 def runner_source():
     # Only reviewed local modules are bundled; HF repositories never provide executable source.
     lines = ['import sys, types']
-    for module in (modeltest_catalog, modeltest_adapters):
+    for module in (modeltest_prompts, modeltest_catalog, modeltest_adapters):
         name = module.__name__.rsplit('.', 1)[1]
         lines.append(f'module = types.ModuleType({name!r}); sys.modules[{name!r}] = module')
+        if module is modeltest_prompts: lines.append(f'module.DEFAULTS = {modeltest_prompts.DEFAULTS!r}')
         lines.append(f'exec(compile({Path(module.__file__).read_text(encoding="utf-8")!r}, {name!r}, "exec"), module.__dict__)')
     lines.append(Path(remote.__file__).read_text(encoding='utf-8').replace('from __future__ import annotations', ''))
     return '\n'.join(lines)

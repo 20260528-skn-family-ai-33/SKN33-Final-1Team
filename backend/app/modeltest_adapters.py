@@ -220,21 +220,21 @@ class Adapter:
     def generate(self, prompt, images=(), require_vision=False):
         import torch
         if self.family == 'qwen_text' and (images or require_vision): raise ValueError('텍스트 전용 모델에 이미지 입력을 전달할 수 없습니다.')
-        content = [{'type': 'image', 'image': self.remote.image_of(path)} for path in images] + [{'type': 'text', 'text': 'OCR:' if self.family == 'paddle_vl' else prompt}]
+        content = [{'type': 'image', 'image': self.remote.image_of(path)} for path in images] + [{'type': 'text', 'text': prompt}]
         messages = [{'role': 'user', 'content': prompt if self.family == 'qwen_text' else content}]
         kwargs = {'enable_thinking': self.options.get('thinking', False)} if self.family.startswith('qwen_') else {}
         inputs = self.processor.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_dict=True, return_tensors='pt', **kwargs).to('cuda')
         with torch.inference_mode(): output = self.model.generate(**inputs, max_new_tokens=self.options.get('max_tokens', 1536), do_sample=False)
         return self.processor.batch_decode(output[:, inputs['input_ids'].shape[1]:], skip_special_tokens=True)[0]
 
-    def detect(self, image):
+    def detect(self, image, labels=None):
         import torch
         image = self.remote.image_of(image); options = self.options
         if self.family == 'yolo':
             result = self.model.predict(image, conf=options['detection_threshold'], imgsz=options['image_size'], verbose=False)[0]
             selected = set(options['labels'])
             return [{'bbox': box.tolist(), 'score': float(score), 'label': result.names[int(label)]} for box, score, label in zip(result.boxes.xyxy.cpu(), result.boxes.conf.cpu(), result.boxes.cls.cpu()) if not selected or result.names[int(label)] in selected]
-        labels = options['labels']; text = '. '.join(labels) + '.' if self.family == 'grounding_dino' else [labels]
+        labels = options['labels'] if labels is None else labels; text = '. '.join(labels) + '.' if self.family == 'grounding_dino' else [labels]
         inputs = self.processor(text=text, images=image, return_tensors='pt').to('cuda')
         with torch.inference_mode(): output = self.model(**inputs)
         kwargs = {'threshold': options['detection_threshold'], 'target_sizes': [(image.height, image.width)]}
@@ -243,9 +243,9 @@ class Adapter:
         found_labels = result['text_labels'] if 'text_labels' in result else result['labels']
         return [{'bbox': box.tolist(), 'score': float(score), 'label': str(label) if self.family == 'grounding_dino' else labels[int(label)]} for box, score, label in zip(result['boxes'].cpu(), result['scores'].cpu(), found_labels)]
 
-    def ocr(self, image):
-        if self.family == 'paddle_gguf': return self.model.ocr(image)
-        if self.family == 'paddle_vl': return {'text': self.generate('OCR:', [image], True), 'ocr_mode': 'recognition', 'note': '좌표·페이지 레이아웃 분석은 포함하지 않습니다.'}
+    def ocr(self, image, prompt=None):
+        if self.family == 'paddle_gguf': return self.model.ocr(image, prompt)
+        if self.family == 'paddle_vl': return {'text': self.generate(self.remote.prompts.DEFAULTS['ocr'] if prompt is None else prompt, [image], True), 'ocr_mode': 'recognition', 'note': '좌표·페이지 레이아웃 분석은 포함하지 않습니다.'}
         import numpy as np
         pixels = np.asarray(self.remote.image_of(image))
         if self.family == 'easyocr':
