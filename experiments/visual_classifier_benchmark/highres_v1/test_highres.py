@@ -5,6 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import sys
+import types
 import unittest
 from unittest.mock import patch
 import torch
@@ -57,6 +59,27 @@ class ContractTests(unittest.TestCase):
             run.check_cache(args,[row])
             (root/'cache/384/X.png').write_bytes(b'changed')
             with self.assertRaises(ValueError):run.check_cache(args,[row])
+
+    def test_model_head_uses_resolved_vision_config(self):
+        # Regression: serialized JSON may omit hidden_size when it equals a default.
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); (root/'config.json').write_text('{"vision_config": {"image_size": 384}}')
+            backbone=torch.nn.Sequential(torch.nn.Linear(4,4))
+            original_head=torch.nn.Linear(4,8)
+            checkpoint={**{'backbone.'+k:v.clone() for k,v in backbone.state_dict().items()},
+                        **{'classifier.'+k:v.clone() for k,v in original_head.state_dict().items()}}
+            fake_full=types.SimpleNamespace(vision_model=backbone,
+                config=types.SimpleNamespace(vision_config=types.SimpleNamespace(hidden_size=4)))
+            fake_transformers=types.ModuleType('transformers')
+            fake_transformers.AutoModel=types.SimpleNamespace(from_pretrained=lambda *a,**k:(fake_full,{}))
+            fake_safetensors=types.ModuleType('safetensors');fake_safetensors.__path__=[]
+            fake_torch=types.ModuleType('safetensors.torch');fake_torch.load_file=lambda *a,**k:checkpoint
+            args=types.SimpleNamespace(model_dir=root)
+            with patch.dict(sys.modules,{'transformers':fake_transformers,'safetensors':fake_safetensors,'safetensors.torch':fake_torch}):
+                body,head=run.load_models(args,root/'unused.safetensors',device='cpu')
+            self.assertEqual(head.in_features,4)
+            self.assertTrue(torch.equal(head.weight,original_head.weight))
+            self.assertTrue(torch.equal(body[0].weight,backbone[0].weight))
 
     def test_reference_identity_rejects_modified_checkpoint(self):
         with tempfile.TemporaryDirectory() as d:

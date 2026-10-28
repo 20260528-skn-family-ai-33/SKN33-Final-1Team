@@ -1,6 +1,6 @@
 # 고해상도 포스터 학습: 업로드부터 결과 확인까지
 
-작성 시점: 2026-10-28. 이 문서는 사용자가 직접 실행하는 절차다. 준비 단계에서 RunPod 접속, 패키지 재설치, 학습, 모델 추론은 수행하지 않았다. 아래 경로와 기존 체크포인트는 이전 작업 기록을 바탕으로 했으며 현재 Pod에 남아 있는지는 사전 점검으로 확인한다.
+수정 시점: 2026-10-28. 최초 압축파일의 `run.py`는 호환성 문제가 있어 아래의 `run_v3.py`를 별도로 업로드해 사용한다. 이 문서는 사용자가 직접 실행하는 절차다. 준비 단계에서 RunPod 접속, 패키지 재설치, 학습, 모델 추론은 수행하지 않았다. 아래 경로와 기존 체크포인트는 이전 작업 기록을 바탕으로 했으며 현재 Pod에 남아 있는지는 사전 점검으로 확인한다.
 
 ## 0. 어떤 실험인지
 
@@ -51,11 +51,21 @@ export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 TRANSFORMER
 
 `sha256sum`이 실패하면 압축을 풀거나 실행하지 말고 업로드를 다시 확인한다. 압축 해제는 방금 만든 빈 폴더에서만 한다.
 
+## 2-1. 수정된 실행 코드 업로드
+
+압축 해제 후 Mac의 새 터미널에서 다음 명령을 실행한다. 1단계의 `RP_PORT`, `RP_USER`, `RP_HOST`, `RUN_TAG`를 해당 터미널에 다시 설정해야 할 수 있다. 업로드는 기존 `run.py`를 덮어쓰지 않는다.
+
+```bash
+scp -P "$RP_PORT" '/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/highres-poster-training-2026-10-27-v1/run_v3.py' "$RP_USER@$RP_HOST:/workspace/$RUN_TAG/packet/code/run_v3.py"
+```
+
+RunPod 웹 터미널로 돌아와 이어서 실행한다.
+
 ## 3. 기존 환경과 입력 검증
 
 ```bash
-"$PY" -B "$P/code/run.py" verify --packet "$P"
-"$PY" -B "$P/code/run.py" preflight --packet "$P" --model-dir "$MODEL" --reference "$REF"
+"$PY" -B "$P/code/run_v3.py" verify --packet "$P"
+"$PY" -B "$P/code/run_v3.py" preflight --packet "$P" --model-dir "$MODEL" --reference "$REF"
 ```
 
 첫 명령은 원본 187장의 SHA-256, 그룹 분리, 분할과 중복 제외를 확인한다. 두 번째는 기존 가상환경의 라이브러리·CUDA, 선택 확정 메타데이터, 기존 체크포인트와 기본 모델 파일의 SHA-256, 768 입력을 위한 보간 지원 여부를 확인한다. 어느 하나라도 실패하면 여기서 멈춰 출력 내용을 확인한다. 코드는 모델이나 라이브러리를 내려받거나 설치하지 않는다.
@@ -65,15 +75,23 @@ export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 TRANSFORMER
 ## 4. 모델 입력용 캐시 생성
 
 ```bash
-"$PY" -B "$P/code/run.py" cache --packet "$P" --cache "$CACHE"
+"$PY" -B "$P/code/run_v3.py" cache --packet "$P" --cache "$CACHE"
 ```
 
 원본은 유지하고 별도 폴더에 384·768 PNG를 생성한다. 최대 1억 2천만 픽셀 이상인 원본도 있어 디코딩에 CPU 메모리·시간과 추가 디스크 공간이 필요하다. 중단된 캐시 폴더는 재사용하지 말고 `CACHE="$ROOT/cache-v2"`처럼 새 이름을 지정해 다시 실행한다.
 
+## 4-1. 학습 전 모델 로딩 및 메모리 점검
+
+```bash
+"$PY" -B "$P/code/run_v3.py" smoke --packet "$P" --cache "$CACHE" --model-dir "$MODEL" --reference "$REF"
+```
+
+크기별 한 장을 순전파·역전파하지만 옵티마이저로 가중치를 갱신하지 않고 파일도 쓰지 않는다. 성공 시 `SMOKE OK`가 표시된다. 실제 학습의 옵티마이저 메모리는 추가로 필요하므로 이 점검이 학습 중 OOM이 없음을 보증하지는 않는다.
+
 ## 5. 학습과 개발셋 선택
 
 ```bash
-"$PY" -B "$P/code/run.py" train --packet "$P" --cache "$CACHE" --model-dir "$MODEL" --reference "$REF" --output "$OUT"
+"$PY" -B "$P/code/run_v3.py" train --packet "$P" --cache "$CACHE" --model-dir "$MODEL" --reference "$REF" --output "$OUT"
 ```
 
 각 epoch의 개발 손실이 출력된다. 완료되면 `$OUT/selection.json`, `selection_commit.json`, `selected.safetensors`, 크기별 학습 이력이 생성된다. 원본 체크포인트는 읽기만 한다. 768 학습은 384보다 GPU 메모리를 많이 사용하며 microbatch 1에서도 GPU에 따라 OOM이 날 수 있다. 이 경우 기존 `run-001`을 지우지 말고 `OUT="$ROOT/run-384-only"`로 바꾸어 명령 끝에 `--sizes 384`를 붙여 다시 실행할 수 있다.
@@ -81,7 +99,7 @@ export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 TRANSFORMER
 ## 6. 확정된 모델의 시험 결과 확인
 
 ```bash
-"$PY" -B "$P/code/run.py" evaluate --packet "$P" --cache "$CACHE" --model-dir "$MODEL" --reference "$REF" --output "$OUT"
+"$PY" -B "$P/code/run_v3.py" evaluate --packet "$P" --cache "$CACHE" --model-dir "$MODEL" --reference "$REF" --output "$OUT"
 cat "$OUT/status.json"
 cat "$OUT/evaluation.json"
 ```

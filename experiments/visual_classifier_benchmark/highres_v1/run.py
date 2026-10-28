@@ -142,18 +142,21 @@ def score(rows,probs,thresholds):
     return dict(known_cells=known,accuracy=correct/known if known else None,macro_f1=sum(valid)/len(valid) if valid else None,per_label=per,
                 note='AI-reviewed provisional labels; per-label support is small; None means undefined')
 
-def load_models(args,weights):
+def load_models(args,weights,device='cuda'):
     import torch
     from torch import nn
     from transformers import AutoModel
     from safetensors.torch import load_file
-    cfg=read(args.model_dir/'config.json'); dimension=cfg['vision_config']['hidden_size']
     full,loading=AutoModel.from_pretrained(str(args.model_dir),local_files_only=True,trust_remote_code=False,use_safetensors=True,
                                           dtype=torch.float32,attn_implementation='sdpa',output_loading_info=True)
     for k in ('missing_keys','unexpected_keys','mismatched_keys'):
         require(not loading.get(k),'Model load mismatch: '+k+' '+str(loading.get(k)))
-    backbone=full.vision_model.to('cuda'); del full
-    head=nn.Linear(dimension,8).to('cuda'); state=load_file(str(weights),device='cpu')
+    # Config files may omit default hidden_size. Use the resolved model config,
+    # matching the existing benchmark's load_encoder implementation.
+    dimension=full.config.vision_config.hidden_size
+    require(type(dimension) is int and dimension>0,'Invalid resolved vision dimension')
+    backbone=full.vision_model.to(device); del full
+    head=nn.Linear(dimension,8).to(device); state=load_file(str(weights),device='cpu')
     backbone.load_state_dict({k[9:]:v for k,v in state.items() if k.startswith('backbone.')},strict=True)
     head.load_state_dict({k[11:]:v for k,v in state.items() if k.startswith('classifier.')},strict=True)
     return backbone,head
@@ -225,6 +228,34 @@ def train_epoch(args,backbone,head,rows,size,optimizer,epoch):
         require(all(p.grad is None for p in backbone.parameters() if not p.requires_grad),'Frozen parameter received gradient')
         torch.nn.utils.clip_grad_norm_(params,1.0,error_if_nonfinite=True);optimizer.step()
     return total/count
+
+def smoke(args):
+    """One forward/backward per size, without optimizer steps or file writes."""
+    import torch
+    env=preflight(args);_,rows,_=check_packet(args.packet);check_cache(args,rows)
+    row=next(r for r in rows if r['split']=='train' and r['use']=='active')
+    backbone,head=load_models(args,Path(env['model']['checkpoint']));freeze_tail(backbone,head)
+    try:
+        for size in args.sizes:
+            backbone.eval();head.train()
+            for layer in list(backbone.encoder.layers)[-4:]:layer.train()
+            backbone.post_layernorm.train();backbone.head.train()
+            backbone.zero_grad(set_to_none=True);head.zero_grad(set_to_none=True)
+            torch.cuda.reset_peak_memory_stats()
+            x=images(args,[row],size,'cuda')
+            y=torch.tensor([[float('nan') if row['labels'][k] is None else row['labels'][k] for k in LABELS]],device='cuda')
+            z=logits(backbone,head,x,size)
+            require(z.shape==(1,8) and bool(torch.isfinite(z).all()),'Invalid smoke logits')
+            loss,n=masked_loss(z,y);(loss/n).backward();torch.cuda.synchronize()
+            params=[p for p in list(backbone.parameters())+list(head.parameters()) if p.requires_grad]
+            require(any(p.grad is not None for p in params) and all(p.grad is None or bool(torch.isfinite(p.grad).all()) for p in params),'Invalid smoke gradients')
+            require(all(p.grad is None for p in backbone.parameters() if not p.requires_grad),'Frozen parameter received gradient')
+            print(json.dumps(dict(size=size,known_cells=n,loss=float(loss.item()/n),peak_cuda_bytes=torch.cuda.max_memory_allocated(),optimizer_steps=0)),flush=True)
+            del x,y,z,loss;torch.cuda.empty_cache()
+        print('SMOKE OK: no weights updated')
+    finally:
+        del backbone,head;torch.cuda.empty_cache()
+
 
 def train(args):
     import torch
@@ -304,7 +335,7 @@ def evaluate(args):
     print('Evaluation saved:',result_path)
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('command',choices=['verify','preflight','cache','train','evaluate'])
+    p=argparse.ArgumentParser();p.add_argument('command',choices=['verify','preflight','cache','smoke','train','evaluate'])
     p.add_argument('--packet',required=True,type=Path);p.add_argument('--cache',type=Path)
     p.add_argument('--model-dir',type=Path);p.add_argument('--reference',type=Path);p.add_argument('--output',type=Path)
     p.add_argument('--epochs',type=int,default=8);p.add_argument('--patience',type=int,default=3)
@@ -316,6 +347,8 @@ def main():
     if args.command=='cache': require(args.cache is not None,'--cache required');make_cache(args);return
     require(args.model_dir is not None and args.reference is not None,'--model-dir and --reference required')
     if args.command=='preflight':print(json.dumps(preflight(args),ensure_ascii=False,indent=2));return
+    if args.command=='smoke':
+        require(args.cache is not None,'--cache required');smoke(args);return
     require(args.cache is not None and args.output is not None,'--cache and --output required')
     if args.command=='train':train(args)
     else:evaluate(args)
