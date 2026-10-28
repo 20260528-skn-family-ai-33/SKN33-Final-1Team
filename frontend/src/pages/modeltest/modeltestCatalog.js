@@ -15,7 +15,7 @@ export const INPUTS = {
 };
 export function acceptsInput(kind, role, sourceKind) { return INPUTS[kind] ? (INPUTS[kind][role] || []).includes(OUTPUTS[sourceKind]) : sourceKind === role; }
 export function registration(value, health) { return health?.registered?.find(model => `registered:${model.id}` === value); }
-export function modelChoice(value, health) { const model = registration(value, health); return { model: value, modelFingerprint: model?.fingerprint || '', imageSimilarity: false }; }
+export function modelChoice(value, health) { const model = registration(value, health); return { model: value, modelFingerprint: model?.fingerprint || '', imageSimilarity: false, promptOverride: null, prompt: '' }; }
 export function paramsFor(node) {
   if (!node.paramsText?.trim()) return {};
   let params; try { params = JSON.parse(node.paramsText); } catch { throw new Error('입력 설정 JSON을 확인해 주세요.'); }

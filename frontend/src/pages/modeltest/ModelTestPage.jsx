@@ -15,6 +15,7 @@ import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
 import ModeltestWorkflow from './ModeltestWorkflow.jsx';
 import ModeltestAgents from './ModeltestAgents.jsx';
 import ModeltestLibrary from './ModeltestLibrary.jsx';
+import ModeltestPrompt from './ModeltestPrompt.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
@@ -65,6 +66,7 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
   let parsed; let invalid = '';
   if (stage.id !== 'candidate_filter' && value.model.trim()) { try { parsed = parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
   const registered = registration(value.model, health);
+  let promptModel = registered?.model_id; try { if (!promptModel) promptModel = parseModel(value.model).model_id; } catch { /* Unfinished model IDs have no prompt editor. */ }
   const unsupported = health && !health.stages.includes(stage.id);
   const models = modelOptions(health).filter(model => model.stages.includes(stage.id));
   const profile = models.find(model => model.id === (registered ? value.model : parsed?.model_id));
@@ -104,6 +106,8 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
           aria-describedby={`${id}-labels-hint`} onChange={event => update({ ...value, labels: event.target.value })} />
         <small id={`${id}-labels-hint`}>최대 32개, 문구당 200자. 각 문구의 유사도는 검수 통과 확률이 아닙니다.</small>
       </div>}
+      <ModeltestPrompt key={value.model} kind={stage.id} modelId={promptModel} profile={registered} value={value} disabled={disabled || !value.enabled}
+        label={`${stage.title} 프롬프트`} onChange={patch => update({ ...value, ...patch })} />
       </>}
     </div>
   </div>;

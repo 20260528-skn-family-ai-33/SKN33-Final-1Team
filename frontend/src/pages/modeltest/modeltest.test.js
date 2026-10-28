@@ -8,6 +8,27 @@ import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltes
 import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
 import { readSSH, writeSSH } from './modeltestConnection.js';
+import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
+
+test('review prompt defaults, replacements and legacy instructions follow the selected model', () => {
+  const qwen = 'Qwen/Qwen3.5-4B'; const spec = promptSpec('text_extract', qwen);
+  assert.match(promptText({}, spec), /Transcribe all visible text/);
+  assert.equal(promptSpec('logo_compare', 'vismatch/xfeat'), null);
+  assert.equal(promptSpec('text_extract', 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF').default, 'OCR:');
+  assert.equal(promptSpec('logo_extract', 'registered-id', { family: 'owlv2', options: { labels: ['custom logo'] } }).default, 'custom logo');
+  assert.deepEqual(promptFields('text_extract', { promptOverride: 'custom' }, qwen), { prompt_override: 'custom' });
+  assert.deepEqual(promptFields('text_extract', { prompt: 'legacy' }, qwen), { prompt: 'legacy' });
+  assert.equal(promptText({ promptOverride: '', prompt: 'legacy' }, spec), '');
+  assert.throws(() => promptFields('text_extract', { promptOverride: 'x'.repeat(8001) }, qwen), /8,000/);
+  assert.throws(() => promptFields('logo_extract', { promptOverride: 'logo\nlogo' }, 'google/owlv2-base-patch16'), /중복/);
+  assert.throws(() => parseStageModel('text_extract', { model: qwen, promptOverride: 'custom' }, { ready: true }), /프롬프트 교체/);
+  assert.equal(parseStageModel('text_extract', { model: qwen, promptOverride: 'custom' }, { ready: true, prompt_overrides: 1 }).prompt_override, 'custom');
+  const state = initialFlow('image'); state.media = { name: 'image.png' };
+  for (const value of Object.values(state.stages)) value.enabled = false;
+  state.stages.text_extract = { enabled: true, model: qwen, promptOverride: 'replacement' };
+  assert.equal(makeManifest('image', state).stages[0].prompt_override, 'replacement');
+  assert.equal(modelChoice('vismatch/xfeat').promptOverride, null);
+});
 
 test('SSH preferences retain only the command and a local session endpoint', () => {
   let value; const storage = { getItem: () => value, setItem: (_, next) => { value = next; } };

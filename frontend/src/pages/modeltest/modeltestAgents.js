@@ -34,7 +34,7 @@ export function newAgent(name = '새 에이전트') {
 export function newAgentStep(kind = 'text_generate') {
   const model = EXTRA_STAGES.some(stage => stage.id === kind) ? '' : ({ logo_extract: 'google/owlv2-base-patch16', logo_similarity: 'google/siglip2-base-patch16-224', logo_compare: 'vismatch/xfeat', candidate_filter: '' })[kind] ?? 'Qwen/Qwen3.5-4B';
   return { id: `step-${crypto.randomUUID()}`, kind, name: STAGES.find(stage => stage.id === kind)?.title || kind, model,
-    labels: '', prompt: '', threshold: '', topK: '2', imageSimilarity: false, bindings: {}, paramsText: '' };
+    labels: '', prompt: '', promptOverride: null, threshold: '', topK: '2', imageSimilarity: false, bindings: {}, paramsText: '' };
 }
 
 export function agentTemplate(flow) {
@@ -95,7 +95,7 @@ export function compileAgents(flow, state, health) {
       if (health && !health.stages.includes(node.kind)) throw new Error(`${agent.name}: 연결된 Pod가 ${kind.title} 단계를 지원하지 않습니다.`);
       if (!node.name.trim() || node.name.length > 100 || (node.prompt || '').length > 8000) throw new Error(`${agent.name}: 단계 이름은 1~100자, 모델 지시는 8,000자 이하여야 합니다.`);
       stages.push({ id: node.id, kind: node.kind, name: node.name.trim(), agent_id: agent.id, inputs: {},
-        ...parseStageModel(node.kind, node, health), ...(node.paramsText?.trim() ? { params: paramsFor(node) } : {}), ...(node.kind !== 'candidate_filter' && !GENERAL.includes(node.kind) && node.prompt?.trim() ? { prompt: node.prompt.trim() } : {}) });
+        ...parseStageModel(node.kind, node, health), ...(node.paramsText?.trim() ? { params: paramsFor(node) } : {}) });
     }
   }
   if (stages.length > 64) throw new Error('한 번에 실행할 내부 단계는 최대 64개입니다.');

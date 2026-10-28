@@ -1,5 +1,6 @@
 import { compileAgents } from './modeltestAgents.js';
 import { EXTRA_STAGES, GENERAL, registration, MODEL_STATUS } from './modeltestCatalog.js';
+import { promptFields } from './modeltestPrompts.js';
 
 export const CONTRACT = 'modeltest.v1';
 export const FILE_TYPES = {
@@ -49,7 +50,7 @@ export function initialFlow(flow) {
     workflow: { enabled: false, edges: [], maxParallel: 1, positions: {} },
     agentWorkflow: { enabled: false, agents: [], edges: [], positions: {}, maxParallel: 1 },
     stages: Object.fromEntries(stagesFor(flow).map(stage => [stage.id, {
-      enabled: flow === 'image' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, threshold: '', topK: '2',
+      enabled: flow === 'image' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, threshold: '', topK: '2', promptOverride: null,
     }])),
   };
 }
@@ -139,6 +140,11 @@ export function parseModel(value) {
 }
 
 export function parseStageModel(stageId, value, health) {
+  const prompt = (modelId, profile) => {
+    const fields = promptFields(stageId, value, modelId, profile);
+    if (fields.prompt_override !== undefined && health?.ready && health.prompt_overrides !== 1) throw new Error('현재 연결은 프롬프트 교체를 지원하지 않습니다. 백엔드 재시작 후 연결을 다시 확인해 주세요.');
+    return fields;
+  };
   if (GENERAL.includes(stageId)) return {};
   if (stageId === 'candidate_filter') {
     const threshold = value.threshold?.trim() ? Number(value.threshold) : null;
@@ -155,7 +161,7 @@ export function parseStageModel(stageId, value, health) {
     if (!model.tasks.includes(stageId)) throw new Error('등록 모델이 지원하지 않는 작업 유형입니다.');
     if (value.modelFingerprint && value.modelFingerprint !== model.fingerprint) throw new Error('등록 모델 설정이 바뀌었습니다. 모델을 다시 선택하고 임계값을 확인해 주세요.');
     if (health.ready && health.registry_version !== 1) throw new Error('등록 모델 실행을 지원하는 SSH 실행기에 다시 연결해 주세요.');
-    return { model_id: model.model_id, revision: model.resolved_revision, registered_model: model.id, model_fingerprint: model.fingerprint };
+    return { model_id: model.model_id, revision: model.resolved_revision, registered_model: model.id, model_fingerprint: model.fingerprint, ...prompt(model.model_id, model) };
   }
   const parsed = parseModel(value.model);
   if (stageId === 'logo_similarity' && parsed.model_id !== SIGLIP2) throw new Error('로고 이미지 유사도에는 SigLIP2를 선택해 주세요.');
@@ -171,7 +177,7 @@ export function parseStageModel(stageId, value, health) {
     if (new Set(labels).size !== labels.length) throw new Error('후보 문구가 중복됐습니다.');
     return { ...parsed, labels };
   }
-  return { ...parsed, ...(stageId === 'logo_compare' && parsed.model_id === 'vismatch/xfeat' && value.imageSimilarity ? { image_similarity: true } : {}) };
+  return { ...parsed, ...prompt(parsed.model_id), ...(stageId === 'logo_compare' && parsed.model_id === 'vismatch/xfeat' && value.imageSimilarity ? { image_similarity: true } : {}) };
 }
 
 export function parseEndpoint(value) {

@@ -211,7 +211,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
   const errors = []; const unexpected = []; const previews = []; let manifest; let jpeg;
   page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => dialog.accept());
-  const health = { contract: CONTRACT, ready: true, workflow: { version: 1, max_parallel: 2, agents: true }, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
+  const health = { contract: CONTRACT, ready: true, prompt_overrides: 1, workflow: { version: 1, max_parallel: 2, agents: true }, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
   await page.route('**/*', async route => {
     const request = route.request(); const url = new URL(request.url());
@@ -250,6 +250,19 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   });
   await page.getByRole('button', { name: '영상 검수', exact: true }).click();
   await page.getByRole('checkbox', { name: '편집 사용', exact: true }).check();
+  const fixedPrompt = page.locator('#mt-stage-logo_extract .mt-prompt');
+  await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16');
+  assert.equal(await fixedPrompt.getAttribute('open'), null); await fixedPrompt.locator('summary').click();
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo');
+  await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('sponsor logo');
+  await fixedPrompt.locator('summary').click(); await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
+  assert.equal(await fixedPrompt.getAttribute('open'), null); await fixedPrompt.locator('summary').click();
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'sponsor logo');
+  await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo');
+  await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('logo\nlogo');
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).isVisible(), true);
+  await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();
   await page.getByRole('button', { name: 'SigLIP2 → 필터 → XFeat', exact: true }).click();
   const node = page.getByRole('button', { name: '로고 추출 노드 이동', exact: true });
   const before = await node.locator('..').evaluate(element => element.style.left);
@@ -264,13 +277,17 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await page.getByRole('button', { name: '에이전트 추가', exact: true }).click();
   await page.getByLabel('에이전트 이름', { exact: true }).fill('임시 에이전트');
   await page.getByRole('button', { name: '내부 단계 추가', exact: true }).click();
-  await page.getByLabel('내부 단계 모델 지시', { exact: true }).fill('근거를 요약하세요.');
+  await page.locator('.mt-agent-settings .mt-prompt>summary').click();
+  await page.getByLabel('내부 단계 프롬프트', { exact: true }).fill('근거를 요약하세요.');
   await page.getByRole('button', { name: '에이전트 삭제', exact: true }).click();
   const agents = page.locator('[aria-label="편집할 에이전트"]');
   await agents.getByRole('button', { name: 'A04 문구 검수', exact: true }).click();
   await page.getByLabel('에이전트 이름', { exact: true }).fill('A04 OCR 비교');
   await page.getByLabel('내부 단계 이름', { exact: true }).fill('브랜드 문구 OCR');
   await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
+  await page.locator('.mt-agent-settings .mt-prompt>summary').click();
+  assert.equal(await page.getByLabel('내부 단계 프롬프트', { exact: true }).inputValue(), 'OCR:');
+  await page.getByLabel('내부 단계 프롬프트', { exact: true }).fill('OCR: Read the headline only.');
   await page.getByRole('button', { name: '내부 단계 추가', exact: true }).click();
   await page.getByRole('button', { name: '내부 단계 삭제', exact: true }).click();
   await agents.getByRole('button', { name: 'A05 시각 요소 검수', exact: true }).click();
@@ -285,6 +302,8 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await agents.getByRole('button', { name: 'A04 OCR 비교', exact: true }).click();
   assert.equal(await page.getByLabel('내부 단계 모델', { exact: true }).inputValue(), 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
   assert.equal(await page.getByLabel('내부 단계 이름', { exact: true }).inputValue(), '브랜드 문구 OCR');
+  await page.locator('.mt-agent-settings .mt-prompt>summary').click();
+  assert.equal(await page.getByLabel('내부 단계 프롬프트', { exact: true }).inputValue(), 'OCR: Read the headline only.');
   await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10');
   await page.getByRole('button', { name: '연결 확인', exact: true }).click(); await page.getByText('Pod 연결됨', { exact: true }).waitFor();
   await page.locator('.mt-agent-board').screenshot({ path: '../work/modeltest-agent-board.png' });
@@ -293,6 +312,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   assert.equal(manifest.workflow.agents.length, 6); assert.equal(manifest.workflow.max_parallel, 2);
   const ocr = manifest.stages.find(stage => stage.name === '브랜드 문구 OCR');
   assert.equal(ocr.kind, 'text_extract'); assert.equal(ocr.model_id, 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
+  assert.equal(ocr.prompt_override, 'OCR: Read the headline only.');
   assert.equal(manifest.stages.find(stage => stage.kind === 'text_compare').inputs.text_extract, ocr.id);
   const filter = manifest.stages.find(stage => stage.kind === 'candidate_filter'); assert.equal(filter.threshold, 0.85); assert.equal(filter.top_k, 1);
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: /원본 로고와 대조/ }).click();

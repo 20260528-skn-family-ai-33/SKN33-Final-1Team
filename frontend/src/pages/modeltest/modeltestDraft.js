@@ -56,7 +56,7 @@ function restoredFlow(flow, data) {
         const stage = value[id];
         if (stage && typeof stage.enabled === 'boolean' && typeof stage.model === 'string') {
           state.stages[id] = { ...state.stages[id], enabled: stage.enabled, model: stage.model, modelFingerprint: typeof stage.modelFingerprint === 'string' ? stage.modelFingerprint : '', labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true,
-            threshold: typeof stage.threshold === 'string' ? stage.threshold : '', topK: typeof stage.topK === 'string' ? stage.topK : '2' };
+            threshold: typeof stage.threshold === 'string' ? stage.threshold : '', topK: typeof stage.topK === 'string' ? stage.topK : '2', promptOverride: typeof stage.promptOverride === 'string' ? stage.promptOverride : null };
         }
       }
     }

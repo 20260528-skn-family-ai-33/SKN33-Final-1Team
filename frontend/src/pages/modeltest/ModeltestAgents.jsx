@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { STAGES, modelOptions, parseModel } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep, cleanAgentBindings, removeAgentNode, duplicateAgentStep } from './modeltestAgents.js';
 import { nodePosition } from './modeltestBoard.js';
+import ModeltestPrompt from './ModeltestPrompt.jsx';
 import { WorkflowGraph } from './ModeltestWorkflow.jsx';
 import { GENERAL, EXTRA_STAGES, INPUTS, acceptsInput, modelChoice, registration } from './modeltestCatalog.js';
 
@@ -85,7 +86,7 @@ export default function ModeltestAgents({ flow, state, update, disabled, health,
               <label>모델 ID 또는 Hugging Face 링크<input aria-label="내부 단계 모델" disabled={disabled} value={registered?.model_id || step.model} maxLength={512} onChange={event => changeStep(modelChoice(event.target.value, health))} /><small>새 모델은 위의 Hugging Face 모델 추가에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</small></label>
               {models.find(model => model.id === modelId)?.description && <p className="mt-hint mt-settings-wide">{models.find(model => model.id === modelId).description}</p>}
               {modelId === 'google/siglip2-base-patch16-224' && step.kind === 'visual_extract' && <label className="mt-settings-wide">비교할 후보 문구<textarea aria-label="내부 단계 후보 문구" disabled={disabled} rows={3} maxLength={6432} value={step.labels} onChange={event => changeStep({ labels: event.target.value })} /></label>}
-              {!['google/owlv2-base-patch16', 'google/siglip2-base-patch16-224', 'vismatch/xfeat', 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF'].includes(modelId) && <label className="mt-settings-wide">모델 지시 · 선택<textarea aria-label="내부 단계 모델 지시" rows={4} disabled={disabled} maxLength={8000} value={step.prompt} onChange={event => changeStep({ prompt: event.target.value })} /><small>단계의 기본 작업 지시와 입력 자료에 추가됩니다. 응답 생성 단계는 직접 연결된 선행 단계의 결과와 입력한 검수 조건을 받습니다.</small></label>}
+              <ModeltestPrompt key={`${step.id}-${step.model}`} kind={step.kind} modelId={modelId} profile={registered} value={step} disabled={disabled} label="내부 단계 프롬프트" onChange={changeStep} />
             </>}
           {EXTRA_STAGES.some(kind => kind.id === step.kind) && <label className="mt-settings-wide">입력 설정 · JSON<textarea aria-label="내부 단계 입력 설정" rows={6} disabled={disabled} value={step.paramsText || ''} onChange={event => changeStep({ paramsText: event.target.value })} placeholder={'{"documents":["후보 문서 1","후보 문서 2"],"query":"검색 질의","image_source":"media","modality":"text"}'} /><small>documents: 텍스트 목록, query: 질의·이미지 설명, image_source: media / references / crops, modality: text / image. 연결된 입력을 우선 사용합니다. TF-IDF/LR은 classifier에 vocabulary·idf·coef·intercept·labels를 지정하세요.</small></label>}
           {inputRoles.map(role => <label key={role}>{STAGES.find(kind => kind.id === role)?.title || role} 입력<select aria-label={`내부 단계 ${role} 입력`} disabled={disabled} value={step.bindings?.[role] || ''} onChange={event => changeStep({ bindings: { ...step.bindings, [role]: event.target.value } })}><option value="">자동 · 가장 가까운 선행 결과</option>
