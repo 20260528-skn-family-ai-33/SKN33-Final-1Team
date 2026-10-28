@@ -6,6 +6,48 @@ import {
 } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
 import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
+import { modelChoice } from './modeltestCatalog.js';
+import { readSSH, writeSSH } from './modeltestConnection.js';
+
+test('SSH preferences retain only the command and a local session endpoint', () => {
+  let value; const storage = { getItem: () => value, setItem: (_, next) => { value = next; } };
+  writeSSH({ command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture', token: 'secret', health: { ready: true } }, storage);
+  assert.deepEqual(readSSH(storage), { command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture' });
+  assert.equal(value.includes('secret'), false); assert.equal(value.includes('ready'), false);
+  writeSSH({ command: '', endpoint: 'https://example.com/health' }, storage);
+  assert.deepEqual(readSSH(storage), { command: '', endpoint: '' });
+  assert.deepEqual(readSSH({ getItem: () => { throw new Error('blocked'); } }), { command: '', endpoint: '' });
+});
+
+test('registered profiles enforce task, version, stale settings and prepare without files', () => {
+  const model = { id: 'fixture', model_id: 'google/siglip2-base-patch16-224', resolved_revision: 'a'.repeat(40), fingerprint: 'one', status: 'unverified', tasks: ['image_embed'], name: 'SigLIP', family: 'clip', reasons: [] };
+  const capable = { registered: [model], ready: true, registry_version: 1 };
+  const value = modelChoice('registered:fixture', capable);
+  assert.equal(parseStageModel('image_embed', value, capable).registered_model, model.id);
+  assert.throws(() => parseStageModel('text_embed', value, capable), /지원하지/);
+  assert.throws(() => parseStageModel('image_embed', value, { ...capable, registered: [{ ...model, fingerprint: 'two' }] }), /설정이 바뀌/);
+  assert.throws(() => parseStageModel('image_embed', value, { ...capable, registered: [] }), /삭제/);
+  assert.throws(() => parseStageModel('text_generate', { model: 'unknown/generation' }), /먼저 등록/);
+  const manifest = { contract: CONTRACT, flow: 'video', purpose: 'prepare', stages: [{ id: 'model_prepare' }] };
+  assert.equal(makeFormData(manifest, { media: null, documents: [], references: [] }).has('media'), false);
+  assert.equal(validateRun({ contract: CONTRACT, id: 'prepared', status: 'completed', stages: [{ id: 'model_prepare', status: 'completed' }] }, 'prepared', manifest).status, 'completed');
+});
+
+test('agent graph checks vector identity and output type before submission', () => {
+  const state = fixture('image'); const agent = newAgent();
+  const models = ['one', 'two'].map(id => ({ id, model_id: `owner/${id}`, resolved_revision: 'a'.repeat(40), fingerprint: id, status: 'unverified', tasks: ['image_embed'], name: id, family: 'clip', reasons: [] }));
+  const capable = { ...health, workflow: { agents: true }, registry_version: 1, registered: models };
+  const first = { ...newAgentStep('image_embed'), ...modelChoice('registered:one', capable) };
+  const second = { ...newAgentStep('image_embed'), ...modelChoice('registered:one', capable) };
+  const compare = { ...newAgentStep('vector_compare'), bindings: { left: first.id, right: second.id } };
+  agent.nodes = [first, second, compare]; agent.edges = [first, second].map(node => ({ source: node.id, target: compare.id }));
+  state.agentWorkflow = { enabled: true, agents: [agent], edges: [], positions: {}, maxParallel: 1 };
+  assert.equal(compileAgents('image', state, capable).stages[2].inputs.left, first.id);
+  second.model = 'registered:two'; second.modelFingerprint = 'two';
+  assert.throws(() => compileAgents('image', state, capable), /같은 모델/);
+  second.kind = 'text_input'; second.paramsText = '{"documents":["sample"]}';
+  assert.throws(() => compileAgents('image', state, capable), /선행 연결/);
+});
 
 test('timings aggregate by model and revision, include active work, and preserve missing measurements', () => {
   const timing = { model_id: 'vismatch/xfeat', revision: 'v1', load_seconds: 2, inference_seconds: 3, calls: 1 };
@@ -200,10 +242,10 @@ test('server capabilities narrow accepted files, stage support and total upload 
 
 test('multipart contains the selected models, original files, references and sampling', () => {
   const state = fixture('video'); state.documents = [new File(['a'], 'a.pdf'), new File(['b'], 'b.hwpx')];
-  state.references = [new File(['logo'], 'logo.png')]; state.stages.visual_extract.model = 'https://huggingface.co/owner/vision/tree/rev';
+  state.references = [new File(['logo'], 'logo.png')]; state.stages.visual_extract.model = 'https://huggingface.co/Qwen/Qwen3.5-4B/tree/rev';
   const manifest = makeManifest('video', state); const form = makeFormData(manifest, state);
   assert.equal(manifest.contract, CONTRACT); assert.equal(manifest.stages.length, 3);
-  assert.deepEqual(manifest.stages.find(stage => stage.id === 'visual_extract'), { id: 'visual_extract', model_id: 'owner/vision', revision: 'rev' });
+  assert.deepEqual(manifest.stages.find(stage => stage.id === 'visual_extract'), { id: 'visual_extract', model_id: 'Qwen/Qwen3.5-4B', revision: 'rev' });
   assert.deepEqual(manifest.sampling, { unit: 'frames', interval: 30, max_frames: 120 });
   assert.deepEqual(JSON.parse(form.get('config')), manifest);
   assert.equal(form.get('media').name, 'video.mp4'); assert.equal(form.getAll('documents').length, 2); assert.equal(form.getAll('references').length, 1);
@@ -274,16 +316,4 @@ test('SSH requests stay on the local backend and preserve the multipart request 
 test('local SSH failures keep actionable messages without silently using an HTTP Pod endpoint', async t => {
   t.mock.method(globalThis, 'fetch', async () => Response.json({ detail: 'SSH 키 인증에 실패했습니다.' }, { status: 400 }));
   await assert.rejects(sshRequest('/api/modeltest/ssh/connections'), error => error.status === 400 && error.message.includes('키 인증'));
-});
-
-import { readSSH, writeSSH } from './modeltestConnection.js';
-
-test('SSH preferences retain only the command and a local session endpoint', () => {
-  let value; const storage = { getItem: () => value, setItem: (_, next) => { value = next; } };
-  writeSSH({ command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture', token: 'secret', health: { ready: true } }, storage);
-  assert.deepEqual(readSSH(storage), { command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture' });
-  assert.equal(value.includes('secret'), false); assert.equal(value.includes('ready'), false);
-  writeSSH({ command: '', endpoint: 'https://example.com/health' }, storage);
-  assert.deepEqual(readSSH(storage), { command: '', endpoint: '' });
-  assert.deepEqual(readSSH({ getItem: () => { throw new Error('blocked'); } }), { command: '', endpoint: '' });
 });

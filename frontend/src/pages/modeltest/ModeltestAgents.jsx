@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { STAGES, modelOptions, parseModel } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
 import { WorkflowGraph } from './ModeltestWorkflow.jsx';
+import { GENERAL, EXTRA_STAGES, INPUTS, acceptsInput, modelChoice, registration } from './modeltestCatalog.js';
 
 export default function ModeltestAgents({ flow, state, update, disabled, health }) {
   const board = state.agentWorkflow; const [agentId, setAgentId] = useState(''); const [stepId, setStepId] = useState(''); const [newKind, setNewKind] = useState('text_generate');
@@ -10,11 +11,13 @@ export default function ModeltestAgents({ flow, state, update, disabled, health 
   const kinds = STAGES.filter(kind => flow === 'video' || !kind.video);
   const change = patch => update({ agentWorkflow: { ...board, ...patch } });
   const changeAgent = patch => change({ agents: board.agents.map(item => item.id === agent.id ? { ...item, ...patch } : item) });
-  const changeStep = patch => changeAgent({ nodes: agent.nodes.map(item => item.id === step.id ? { ...item, ...patch } : item) });
+  const changeStep = patch => change({ agents: board.agents.map(item => ({ ...item, nodes: item.nodes.map(node => node.id === step.id ? { ...node, ...patch } : patch.model !== undefined && patch.model !== step.model && node.kind === 'candidate_filter' ? { ...node, threshold: '' } : node) })) });
   let error = ''; try { compileAgents(flow, state, health); } catch (cause) { error = cause.message; }
   let modelId = ''; try { modelId = parseModel(step?.model || '').model_id; } catch { /* An unfinished model ID stays editable. */ }
+  if (step?.model?.startsWith('registered:')) modelId = step.model;
+  const registered = registration(step?.model, health);
   const models = modelOptions(health).filter(model => model.stages.includes(step?.kind));
-  const inputRoles = ({ logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract', 'candidate_filter'], text_compare: ['text_extract', 'conditions'], visual_compare: ['visual_extract', 'conditions'] })[step?.kind] || [];
+  const inputRoles = INPUTS[step?.kind] ? Object.keys(INPUTS[step.kind]) : ({ logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract', 'candidate_filter'], text_compare: ['text_extract', 'conditions'], visual_compare: ['visual_extract', 'conditions'] })[step?.kind] || [];
   function addAgent() { const next = newAgent(); change({ agents: [...board.agents, next] }); setAgentId(next.id); setStepId(''); }
   function removeAgent() {
     if (!window.confirm(`${agent.name}와 내부 단계 ${agent.nodes.length}개를 삭제할까요?`)) return;
@@ -57,14 +60,15 @@ export default function ModeltestAgents({ flow, state, update, disabled, health 
           {step.kind === 'candidate_filter' ? <><label>최소 코사인 유사도<input aria-label="내부 필터 최소 유사도" type="number" min={-1} max={1} step="any" disabled={disabled} value={step.threshold} placeholder="비워두면 제한 없음" onChange={event => changeStep({ threshold: event.target.value })} /></label>
             <label>상위 후보 수<input aria-label="내부 필터 상위 후보 수" type="number" min={1} max={10} step={1} disabled={disabled} value={step.topK} placeholder="비워두면 모두" onChange={event => changeStep({ topK: event.target.value })} /></label>
             <p className="mt-hint mt-settings-wide">각 로고의 레퍼런스 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 후보가 없으면 다음 로고 대조의 모델 호출을 생략합니다.</p></>
-            : <><label>등록 모델<select aria-label="내부 단계 등록 모델" disabled={disabled} value={models.some(model => model.id === modelId) ? modelId : ''} onChange={event => changeStep({ model: event.target.value })}><option value="">직접 입력 / 링크 붙여넣기</option>{models.map(model => <option key={model.id} value={model.id}>{model.id}</option>)}</select></label>
-              <label>모델 ID 또는 Hugging Face 링크<input aria-label="내부 단계 모델" disabled={disabled} value={step.model} maxLength={512} onChange={event => changeStep({ model: event.target.value })} /></label>
+            : !GENERAL.includes(step.kind) && <><label>등록 모델<select aria-label="내부 단계 등록 모델" disabled={disabled} value={models.some(model => model.id === modelId) ? modelId : ''} onChange={event => changeStep(modelChoice(event.target.value, health))}><option value="">직접 입력 / 링크 붙여넣기</option>{models.map(model => <option key={model.id} value={model.id}>{model.label || model.id}</option>)}</select></label>
+              <label>모델 ID 또는 Hugging Face 링크<input aria-label="내부 단계 모델" disabled={disabled} value={registered?.model_id || step.model} maxLength={512} onChange={event => changeStep(modelChoice(event.target.value, health))} /><small>새 모델은 위의 Hugging Face 모델 추가에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</small></label>
               {models.find(model => model.id === modelId)?.description && <p className="mt-hint mt-settings-wide">{models.find(model => model.id === modelId).description}</p>}
               {modelId === 'google/siglip2-base-patch16-224' && step.kind === 'visual_extract' && <label className="mt-settings-wide">비교할 후보 문구<textarea aria-label="내부 단계 후보 문구" disabled={disabled} rows={3} maxLength={6432} value={step.labels} onChange={event => changeStep({ labels: event.target.value })} /></label>}
               {!['google/owlv2-base-patch16', 'google/siglip2-base-patch16-224', 'vismatch/xfeat', 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF'].includes(modelId) && <label className="mt-settings-wide">모델 지시 · 선택<textarea aria-label="내부 단계 모델 지시" rows={4} disabled={disabled} maxLength={8000} value={step.prompt} onChange={event => changeStep({ prompt: event.target.value })} /><small>단계의 기본 작업 지시와 입력 자료에 추가됩니다. 응답 생성 단계는 직접 연결된 선행 단계의 결과와 입력한 검수 조건을 받습니다.</small></label>}
             </>}
-          {inputRoles.map(role => <label key={role}>{STAGES.find(kind => kind.id === role)?.title} 입력<select aria-label={`내부 단계 ${role} 입력`} disabled={disabled} value={step.bindings?.[role] || ''} onChange={event => changeStep({ bindings: { ...step.bindings, [role]: event.target.value } })}><option value="">자동 · 가장 가까운 선행 결과</option>
-            {board.agents.filter(item => item.enabled).map(item => <optgroup key={item.id} label={item.name}>{item.nodes.filter(node => node.kind === role && node.id !== step.id).map(node => <option key={node.id} value={node.id}>{node.name}</option>)}</optgroup>)}</select></label>)}
+          {EXTRA_STAGES.some(kind => kind.id === step.kind) && <label className="mt-settings-wide">입력 설정 · JSON<textarea aria-label="내부 단계 입력 설정" rows={6} disabled={disabled} value={step.paramsText || ''} onChange={event => changeStep({ paramsText: event.target.value })} placeholder={'{"documents":["후보 문서 1","후보 문서 2"],"query":"검색 질의","image_source":"media","modality":"text"}'} /><small>documents: 텍스트 목록, query: 질의·이미지 설명, image_source: media / references / crops, modality: text / image. 연결된 입력을 우선 사용합니다. TF-IDF/LR은 classifier에 vocabulary·idf·coef·intercept·labels를 지정하세요.</small></label>}
+          {inputRoles.map(role => <label key={role}>{STAGES.find(kind => kind.id === role)?.title || role} 입력<select aria-label={`내부 단계 ${role} 입력`} disabled={disabled} value={step.bindings?.[role] || ''} onChange={event => changeStep({ bindings: { ...step.bindings, [role]: event.target.value } })}><option value="">자동 · 가장 가까운 선행 결과</option>
+            {board.agents.filter(item => item.enabled).map(item => <optgroup key={item.id} label={item.name}>{item.nodes.filter(node => acceptsInput(step.kind, role, node.kind) && node.id !== step.id).map(node => <option key={node.id} value={node.id}>{node.name}</option>)}</optgroup>)}</select></label>)}
           <div className="mt-settings-wide"><button type="button" className="text-btn mt-error" disabled={disabled} onClick={removeStep}>내부 단계 삭제</button></div>
         </div>}
       </div>}

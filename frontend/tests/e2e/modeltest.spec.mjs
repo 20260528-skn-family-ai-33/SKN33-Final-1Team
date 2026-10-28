@@ -4,6 +4,68 @@ import { chromium } from 'playwright';
 import { createServer } from 'vite';
 import { CONTRACT, FILE_LIMITS, FILE_TYPES, STAGES } from '../../src/pages/modeltest/modeltest.js';
 
+test('HF registry persists, selects a compatible node, prepares separately and shows embedding results', { timeout: 90000 }, async t => {
+  const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache', define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
+  await server.listen(); t.after(() => server.close()); const origin = 'http://127.0.0.1:5187';
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
+  const errors = []; const unexpected = []; const requests = []; let records = [];
+  const profile = { model_id: 'google/siglip2-base-patch16-224', revision: 'main', resolved_revision: 'a'.repeat(40), name: 'SigLIP 등록', family: 'clip', status: 'unverified', tasks: ['image_embed', 'logo_similarity'], options: { normalize: true, pooling: 'projection' }, training: {}, reasons: [], fingerprint: 'space-one' };
+  const families = { clip: { engine: 'transformers', defaults: profile.options, requirements: { transformers: '>=5.21,<6' } } };
+  const health = { contract: CONTRACT, ready: true, registry_version: 1, workflow: { version: 1, agents: true, max_parallel: 2 }, stages: [...STAGES.map(stage => stage.id), 'model_prepare'], formats: FILE_TYPES, limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
+  page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => dialog.accept());
+  await page.route('**/*', async route => {
+    const request = route.request(); const url = new URL(request.url());
+    if (url.origin !== origin) { unexpected.push(url.origin); return route.abort(); }
+    if (!url.pathname.startsWith('/api/')) return route.continue();
+    const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
+    if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname.endsWith('/models/inspect')) return json(profile);
+    if (url.pathname === '/api/modeltest/ssh/models' && request.method() === 'POST') { records = [{ ...profile, ...request.postDataJSON(), id: 'registered-one' }]; return json(records[0]); }
+    if (url.pathname === '/api/modeltest/ssh/models') return json({ models: records, families });
+    if (url.pathname.endsWith('/models/registered-one')) {
+      if (request.method() === 'DELETE') { records = []; return json({ deleted: true }); }
+      records[0] = { ...records[0], ...request.postDataJSON() }; return json(records[0]);
+    }
+    if (url.pathname.endsWith('/connections')) return json({ ...health, connection_id: 'fixture' });
+    if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
+      const config = JSON.parse(request.postDataBuffer().toString().match(/name="config"\r\n\r\n([^\r]+)/)[1]); requests.push(config);
+      return json({ contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'completed', stages: config.stages.map(stage => ({ ...stage, status: 'completed', output: { items: config.purpose === 'prepare' ? [{ text: '가중치 준비 완료' }] : [{ text: 'fixture embedding', vector: [1, 0], dimension: 2, space_id: 'space-one', model_id: profile.model_id, revision: profile.resolved_revision }] } })) });
+    }
+    unexpected.push(`${request.method()} ${url.pathname}`); return route.abort();
+  });
+  await page.goto(`${origin}/modeltest`); await page.locator('.mt-library>summary').click();
+  await page.getByLabel('추가할 HF 모델', { exact: true }).fill('https://huggingface.co/google/siglip2-base-patch16-224');
+  await page.getByRole('button', { name: '메타데이터 확인', exact: true }).click();
+  await page.getByRole('button', { name: '모델 등록·저장', exact: true }).click();
+  await page.locator('.mt-library-list article').waitFor(); assert.equal(requests.length, 0);
+  await page.reload(); await page.locator('.mt-library>summary').click();
+  await page.locator('.mt-library-list').getByText('SigLIP 등록', { exact: true }).waitFor();
+  await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10 -p 12345');
+  await page.getByRole('button', { name: '연결 확인', exact: true }).click(); await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '가중치·환경 준비', exact: true }).click();
+  await page.getByText('가중치 준비 완료', { exact: true }).waitFor(); assert.equal(requests[0].files.media, null); assert.equal(requests[0].purpose, 'prepare');
+  await page.getByRole('button', { name: '에이전트 보드', exact: true }).click();
+  const tabs = page.locator('[aria-label="편집할 에이전트"]');
+  for (const name of ['A02 문서·기준 분석', 'A04 문구 검수', 'A05 시각 요소 검수', 'A06 근거·결과 검증', 'A07 보고서 작성']) { await tabs.getByRole('button', { name, exact: true }).click(); await page.getByRole('checkbox', { name: '이 에이전트 실행', exact: true }).uncheck(); }
+  await tabs.getByRole('button', { name: 'A01 업무 총괄', exact: true }).click();
+  await page.getByLabel('내부 단계 처리 유형', { exact: true }).selectOption('image_embed');
+  await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('registered:registered-one');
+  await page.locator('input[type=file][aria-label="포스터 이미지"]').setInputFiles({ name: 'image.png', mimeType: 'image/png', buffer: Buffer.from('fixture') });
+  await page.locator('input[type=file][aria-label="발주서·계약서"]').setInputFiles({ name: 'contract.txt', mimeType: 'text/plain', buffer: Buffer.from('contract') });
+  await page.getByRole('button', { name: '현재 워크플로우 샘플 실행', exact: true }).click();
+  await page.getByText('임베딩 차원', { exact: true }).waitFor();
+  assert.equal(requests[1].purpose, 'sample'); assert.equal(requests[1].stages[0].registered_model, 'registered-one');
+  assert.equal(requests[1].stages[0].model_fingerprint, 'space-one');
+  await page.locator('.mt-library-list').getByRole('button', { name: '편집', exact: true }).click();
+  await page.getByLabel('등록 모델 이름', { exact: true }).fill('수정한 SigLIP'); await page.getByRole('button', { name: '모델 등록·저장', exact: true }).click();
+  await page.locator('.mt-library-list').getByText('수정한 SigLIP', { exact: true }).waitFor();
+  await page.locator('.mt-library').screenshot({ path: '../work/modeltest-hf-registry.png' });
+  await page.locator('.mt-library-list').getByRole('button', { name: '삭제', exact: true }).click();
+  await page.locator('.mt-library-list article').waitFor({ state: 'detached' });
+  assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
+});
+
 test('modeltest preserves files, keeps controls open, previews evidence and resumes/cancels the same job', { timeout: 90000 }, async t => {
   const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache',
     define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
@@ -23,6 +85,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
     if (url.origin !== origin) { unexpected.push(url.origin); return route.abort(); }
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
+    if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
     if (url.pathname === '/api/modeltest/ssh/connections') return json({ ...health, connection_id: 'fixture-connection' });
     if (url.pathname.endsWith('/health')) return json(health);
@@ -157,6 +220,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
     if (url.pathname === '/api/modeltest/ssh/connections') return json({ ...health, connection_id: 'agent-fixture' });
+    if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname.includes('/previews/')) {
       previews.push(url.pathname);
       return json({ mime: 'image/jpeg', data: jpeg });

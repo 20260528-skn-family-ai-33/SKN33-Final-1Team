@@ -1,4 +1,5 @@
 import { compileAgents } from './modeltestAgents.js';
+import { EXTRA_STAGES, GENERAL, registration, MODEL_STATUS } from './modeltestCatalog.js';
 
 export const CONTRACT = 'modeltest.v1';
 export const FILE_TYPES = {
@@ -19,6 +20,7 @@ export const STAGES = [
   { id: 'text_compare', title: '조건과 문구 대조', description: '검수 조건 ↔ 추출한 문구', icon: 'check', needs: 'text_extract' },
   { id: 'visual_compare', title: '조건과 시각 요소 대조', description: '검수 조건 ↔ 추출한 시각 요소', icon: 'check', needs: 'visual_extract' },
   { id: 'text_generate', title: '모델 응답 생성', description: '선행 단계 결과와 지시 → 모델 응답', icon: 'file', agentOnly: true },
+  ...EXTRA_STAGES,
 ];
 export const STATUS_LABELS = { queued: '대기', running: '실행 중', completed: '완료', failed: '실패', cancelled: '취소', skipped: '제외' };
 export const TERMINAL = ['completed', 'failed', 'cancelled'];
@@ -31,11 +33,11 @@ export const MODEL_OPTIONS = [
   { id: 'google/owlv2-base-patch16', stages: ['logo_extract'], description: '로고 영역을 찾아 좌표와 탐지 점수를 반환합니다.' },
   { id: SIGLIP2, stages: ['visual_extract', 'logo_similarity'], description: '시각 요소에서는 후보 문구, 로고 유사도에서는 원본 이미지와 대조합니다.' },
   { id: 'vismatch/xfeat', stages: ['logo_compare'], description: '잘라낸 로고와 원본의 특징점을 대조합니다. 특징점이 부족하면 판단을 보류합니다.' },
-  { id: 'Qwen/Qwen3.5-4B', stages: STAGES.filter(stage => !stage.workflowOnly).map(stage => stage.id), description: '문서·이미지를 읽고 문구, 시각 설명, 조건 대조 결과를 생성합니다.' },
+  { id: 'Qwen/Qwen3.5-4B', stages: ['conditions', 'logo_extract', 'text_extract', 'visual_extract', 'logo_compare', 'text_compare', 'visual_compare', 'text_generate'], description: '문서·이미지를 읽고 문구, 시각 설명, 조건 대조 결과를 생성합니다.' },
 ];
 
 export function modelOptions(health) {
-  return [...MODEL_OPTIONS, ...(health?.models || []).filter(model => !MODEL_OPTIONS.some(known => known.id === model.id))];
+  return [...MODEL_OPTIONS, ...(health?.models || []).filter(model => !MODEL_OPTIONS.some(known => known.id === model.id)), ...(health?.registered || []).map(model => ({ id: `registered:${model.id}`, label: `${model.name} · ${MODEL_STATUS[model.status]}`, stages: model.tasks, description: [model.model_id, model.family, ...model.reasons].join(' · ') }))];
 }
 
 export function stagesFor(flow) { return STAGES.filter(stage => !stage.agentOnly && (flow === 'video' || !stage.video)); }
@@ -137,6 +139,7 @@ export function parseModel(value) {
 }
 
 export function parseStageModel(stageId, value, health) {
+  if (GENERAL.includes(stageId)) return {};
   if (stageId === 'candidate_filter') {
     const threshold = value.threshold?.trim() ? Number(value.threshold) : null;
     const top_k = value.topK?.trim() ? Number(value.topK) : null;
@@ -145,9 +148,19 @@ export function parseStageModel(stageId, value, health) {
     if (top_k !== null && (!Number.isInteger(top_k) || top_k < 1 || top_k > 10)) throw new Error('상위 후보 수는 1~10 사이의 정수여야 합니다.');
     return { ...(threshold !== null ? { threshold } : {}), ...(top_k !== null ? { top_k } : {}) };
   }
+  if (value.model.startsWith('registered:')) {
+    const model = registration(value.model, health);
+    if (!model) throw new Error('등록 모델이 삭제됐거나 목록을 아직 읽지 못했습니다. 모델 목록을 새로 읽어 주세요.');
+    if (!['unverified', 'verified'].includes(model.status)) throw new Error(model.reasons.join(' · '));
+    if (!model.tasks.includes(stageId)) throw new Error('등록 모델이 지원하지 않는 작업 유형입니다.');
+    if (value.modelFingerprint && value.modelFingerprint !== model.fingerprint) throw new Error('등록 모델 설정이 바뀌었습니다. 모델을 다시 선택하고 임계값을 확인해 주세요.');
+    if (health.ready && health.registry_version !== 1) throw new Error('등록 모델 실행을 지원하는 SSH 실행기에 다시 연결해 주세요.');
+    return { model_id: model.model_id, revision: model.resolved_revision, registered_model: model.id, model_fingerprint: model.fingerprint };
+  }
   const parsed = parseModel(value.model);
   if (stageId === 'logo_similarity' && parsed.model_id !== SIGLIP2) throw new Error('로고 이미지 유사도에는 SigLIP2를 선택해 주세요.');
   const profile = modelOptions(health).find(model => model.id === parsed.model_id);
+  if (!profile) throw new Error('Hugging Face 모델 추가에서 이 모델의 실행 계열을 먼저 등록해 주세요.');
   if (profile && !profile.stages.includes(stageId)) {
     const titles = profile.stages.map(id => STAGES.find(stage => stage.id === id)?.title || id);
     throw new Error(`이 모델은 ${titles.join(', ')} 단계에서 사용해 주세요.`);
@@ -201,7 +214,7 @@ export function validateRun(body, expectedId, manifest) {
     throw new Error('Pod의 실행 응답을 해석할 수 없습니다. API 규격과 작업 ID를 확인해 주세요.');
   }
   if (manifest) {
-    const expected = [...manifest.stages.map(stage => stage.id), ...(manifest.flow === 'video' ? ['frames'] : [])];
+    const expected = [...manifest.stages.map(stage => stage.id), ...(manifest.flow === 'video' && manifest.purpose !== 'prepare' ? ['frames'] : [])];
     if (body.stages.length !== expected.length || body.stages.some(stage => !expected.includes(stage.id))
       || (body.status === 'completed' && body.stages.some(stage => stage.status !== 'completed'))) {
       throw new Error('요청한 단계와 Pod의 응답 단계가 다릅니다. 완료 상태와 단계별 결과를 확인해 주세요.');
@@ -259,7 +272,7 @@ export function makeManifest(flow, state, health) {
   };
 }
 export function makeFormData(manifest, state) {
-  const body = new FormData(); body.append('config', JSON.stringify(manifest)); body.append('media', state.media);
+  const body = new FormData(); body.append('config', JSON.stringify(manifest)); if (state.media) body.append('media', state.media);
   state.documents.forEach(file => body.append('documents', file));
   state.references.forEach(file => body.append('references', file));
   return body;
@@ -288,10 +301,10 @@ export async function podRequest(endpoint, path, { token = '', signal, timeout =
 }
 
 export async function sshRequest(path, { signal, timeout = 20000, ...options } = {}) {
-  if (!/^\/api\/modeltest\/ssh\/(?:connections)(?:\/[\w-]+(?:\/(?:health|prepare|runs)(?:\/[\w-]+(?:\/cancel|\/previews\/[\w.-]+)?)?)?)?$/.test(path)) throw new Error('SSH 요청 경로가 올바르지 않습니다.');
+  if (!/^\/api\/modeltest\/ssh\/(?:connections(?:\/[\w-]+(?:\/(?:health|prepare|runs)(?:\/[\w-]+(?:\/cancel|\/previews\/[\w.-]+)?)?)?)?|models(?:\/(?:inspect|[\w-]+))?)$/.test(path)) throw new Error('SSH 요청 경로가 올바르지 않습니다.');
   const deadline = AbortSignal.timeout(timeout); const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
   const headers = { Accept: 'application/json', 'X-Modeltest-Local': '1', ...options.headers };
-  if (options.method === 'POST' && import.meta.env && import.meta.env.VITE_API_PROFILE === 'v1') {
+  if (['POST', 'PUT', 'DELETE'].includes(options.method) && import.meta.env && import.meta.env.VITE_API_PROFILE === 'v1') {
     const { csrf } = await import('../../v1/api.js');
     headers['X-CSRFToken'] = (await csrf(combined)).csrf_token;
   }

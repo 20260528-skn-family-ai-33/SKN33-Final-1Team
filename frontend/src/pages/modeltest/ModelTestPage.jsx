@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '../../components/Brand.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import {
-  CONTRACT, STAGES, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
+  CONTRACT, STAGES, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
   stagesFor, parseModel, parseEndpoint, validateHealth, validateRun, formErrors,
   makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle,
 } from './modeltest.js';
@@ -13,6 +13,8 @@ import ModeltestResults from './ModeltestResults.jsx';
 import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
 import ModeltestWorkflow from './ModeltestWorkflow.jsx';
 import ModeltestAgents from './ModeltestAgents.jsx';
+import ModeltestLibrary from './ModeltestLibrary.jsx';
+import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
 
@@ -60,10 +62,11 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
 
 function ModelStage({ stage, index, value, update, health, disabled, extraSimilarity }) {
   let parsed; let invalid = '';
-  if (stage.id !== 'candidate_filter' && value.model.trim()) { try { parsed = parseModel(value.model); parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
+  if (stage.id !== 'candidate_filter' && value.model.trim()) { try { parsed = parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
+  const registered = registration(value.model, health);
   const unsupported = health && !health.stages.includes(stage.id);
   const models = modelOptions(health).filter(model => model.stages.includes(stage.id));
-  const profile = models.find(model => model.id === parsed?.model_id);
+  const profile = models.find(model => model.id === (registered ? value.model : parsed?.model_id));
   const id = `mt-model-${stage.id}`;
   return <div id={`mt-stage-${stage.id}`} className={`mt-stage ${value.enabled ? '' : 'is-off'}`}>
     <span className="mt-stage-number">{String(index).padStart(2, '0')}</span>
@@ -78,14 +81,14 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
       </div> : <>
       <label className="sr-only" htmlFor={`${id}-preset`}>{stage.title} 등록 모델 선택</label>
       <select id={`${id}-preset`} className="mt-model-select" value={profile?.id || ''} disabled={disabled || !value.enabled}
-        onChange={event => update({ ...value, model: event.target.value })}>
+        onChange={event => update({ ...value, ...modelChoice(event.target.value, health) })}>
         <option value="">직접 입력 / 링크 붙여넣기</option>
-        {models.map(model => <option key={model.id} value={model.id}>{model.id}</option>)}
+        {models.map(model => <option key={model.id} value={model.id}>{model.label || model.id}</option>)}
       </select>
       <label className="sr-only" htmlFor={id}>{stage.title} 모델</label>
-      <input id={id} value={value.model} disabled={disabled || !value.enabled} autoComplete="off" spellCheck={false}
+      <input id={id} value={registered?.model_id || value.model} disabled={disabled || !value.enabled} autoComplete="off" spellCheck={false}
         placeholder="소유자/모델명 또는 Hugging Face 링크" maxLength={512} aria-invalid={value.enabled && !!invalid}
-        aria-describedby={`${id}-hint`} onChange={event => update({ ...value, model: event.target.value })} />
+        aria-describedby={`${id}-hint`} onChange={event => update({ ...value, ...modelChoice(event.target.value, health) })} />
       <small id={`${id}-hint`} className={value.enabled && (invalid || unsupported) ? 'mt-error' : ''}>
         {unsupported ? '이 Pod에서 지원하지 않는 단계입니다.' : invalid || profile?.description || (parsed ? `${parsed.model_id}${parsed.revision ? ` @ ${parsed.revision}` : ''} · 입력 형식 확인, 실행 호환성은 Pod에서 확인` : '모델 목록에서 선택하거나 Hugging Face 링크를 입력하세요.')}
       </small>
@@ -123,6 +126,12 @@ export default function ModelTestPage() {
   const [connectionRestored, setConnectionRestored] = useState(false);
   const [connection, setConnection] = useState(null); const [connecting, setConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState('');
+  const [catalog, setCatalog] = useState({ models: [], families: {} }); const [catalogError, setCatalogError] = useState('');
+  async function reloadCatalog() {
+    try { const value = await sshRequest('/api/modeltest/ssh/models'); setCatalog(value); setCatalogError(''); }
+    catch (error) { setCatalogError(error.message); }
+  }
+  useEffect(() => { reloadCatalog(); }, []);
   const [connectionOpen, setConnectionOpen] = useState(true); const [restoring, setRestoring] = useState(false);
   const [restored, setRestored] = useState(false);
   const [job, setJob] = useState(null); const [manifest, setManifest] = useState(null);
@@ -137,20 +146,22 @@ export default function ModelTestPage() {
   const videoRef = useRef(null); const [previewError, setPreviewError] = useState('');
   const preview = usePreview(state.media);
   const health = connection?.health;
+  const modelHealth = { ...(health || { ready: false, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES, limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 }, workflow: { agents: true } }), registered: catalog.models };
   const preparing = health?.preparing === true;
   const terminal = job ? TERMINAL.includes(job.status) : false;
   const running = !!job && !terminal;
   const locked = !draft.ready || restoring || submitting || unknown || running || preparing;
-  const errors = formErrors(flow, state, health);
+  const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
   const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
   const completed = job?.stages.filter(stage => stage.status === 'completed').length || 0;
-  const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' ? 1 : 0) : selectedCount + (flow === 'video' ? 1 : 0);
+  const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' && manifest.purpose !== 'prepare' ? 1 : 0) : selectedCount + (flow === 'video' ? 1 : 0);
   const resultStage = job?.stages.find(stage => stage.id === selectedStage);
-  const runFileCount = manifest ? 1 + manifest.files.documents.length + manifest.files.references.length : Number(!!state.media) + state.documents.length + state.references.length;
+  const runFileCount = manifest ? Number(!!manifest.files.media) + manifest.files.documents.length + manifest.files.references.length : Number(!!state.media) + state.documents.length + state.references.length;
   const runTitle = submitting ? '자료 전송·접수 중' : unknown ? '접수 여부 확인 필요' : paused && running ? '상태 조회 일시정지' : job?.status === 'queued' ? preparationLabel(job.preparation) : job ? STATUS_LABELS[job.status] : '실행 전';
 
   useEffect(() => () => requestRef.current?.abort(), []);
+  useEffect(() => { if (job?.status === 'completed') reloadCatalog(); }, [job?.id, job?.status]);
   useEffect(() => {
     if (!draft.ready) return;
     if (draft.savedRun && (!savedSSH.endpoint || draft.savedRun.endpoint === savedSSH.endpoint)) restoreRun(draft.savedRun);
@@ -294,10 +305,31 @@ export default function ModelTestPage() {
   function start(event) {
     event.preventDefault(); setShowErrors(true);
     if (locked || connecting || submitLock.current || errors.length || !health?.ready) return;
-    const config = makeManifest(flow, state, health);
-    const context = { ...connection, manifest: config, media: state.media, body: makeFormData(config, state), requestId: crypto.randomUUID() };
+    const config = makeManifest(flow, state, modelHealth);
+    if (connection.transport !== 'ssh' && config.stages.some(stage => stage.registered_model)) { setRunError('등록 모델은 현재 SSH 실행기에서 지원합니다. SSH 연결을 선택해 주세요.'); return; }
+    launch(config, state);
+  }
+
+  function launch(config, attachments) {
+    const context = { ...connection, manifest: config, media: attachments.media, body: makeFormData(config, attachments), requestId: crypto.randomUUID() };
     contextRef.current = context; setManifest(config); setJob(null); setStartedAt(Date.now()); setElapsed(0); setRestored(false); setResultTab('results');
     submit(context);
+  }
+
+  function modelAction(model, action) {
+    if (locked || connecting || !health?.ready || connection.transport !== 'ssh') return;
+    try {
+      if (action === 'prepare') {
+        const config = { contract: CONTRACT, flow, purpose: 'prepare', stages: [model ? { id: 'model_prepare', model_id: model.model_id, registered_model: model.id, model_fingerprint: model.fingerprint } : { id: 'disk_lightglue_prepare' }], files: { media: null, documents: [], references: [] } };
+        launch(config, { media: null, documents: [], references: [] });
+      } else {
+        if (errors.length) throw new Error(errors[0]);
+        const config = makeManifest(flow, state, modelHealth);
+        if (!config.stages.some(stage => stage.registered_model === model.id)) throw new Error('현재 워크플로우 노드에서 이 등록 모델을 선택해 주세요.');
+        config.purpose = 'sample'; if (config.sampling) config.sampling.max_frames = 1;
+        launch(config, state);
+      }
+    } catch (error) { setRunError(error.message); setShowErrors(true); }
   }
 
   async function cancel() {
@@ -355,6 +387,7 @@ export default function ModelTestPage() {
       {draft.savedRun && !job && <div className="mt-restore-run"><p>{restoring ? '이전 검수 작업 상태를 확인하고 있습니다.' : `이전 작업 ID: ${draft.savedRun.jobId}`}</p>
         <button type="button" className="btn secondary small" disabled={locked || connecting} onClick={() => restoreRun(draft.savedRun, connection)}>이전 작업 조회</button></div>}
 
+      <ModeltestLibrary catalog={catalog} reload={reloadCatalog} error={catalogError} disabled={locked || connecting} canRun={health?.ready && connection?.transport === 'ssh'} onAction={modelAction} />
       <form onSubmit={start} noValidate>
         <div className="mt-workspace-bar"><div className="mt-flow-switch" aria-label="검수 유형">
           <button type="button" aria-pressed={flow === 'image'} disabled={locked} onClick={() => { setFlow('image'); setShowErrors(false); }}><Icon name="image" />이미지 검수</button>
@@ -363,7 +396,7 @@ export default function ModelTestPage() {
 
         <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식"><button type="button" aria-pressed={!state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: { ...state.agentWorkflow, enabled: false } })}>모델 단계 편집</button>
           <button type="button" aria-pressed={state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) })}>에이전트 보드</button></div>
-        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={health} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} />}
+        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={modelHealth} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} />}
         <div className={`mt-workspace ${state.agentWorkflow.enabled ? 'is-agents' : ''}`}>
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
@@ -403,9 +436,10 @@ export default function ModelTestPage() {
                     onChange={event => update({ sampling: { ...state.sampling, max_frames: event.target.value } })} /></label></div>
                 <small>최대 추출 수에 도달하면 샘플링을 멈춥니다. 모델 추론은 추출된 프레임에 수행합니다.</small>
               </div></div>}
-              <ModelStage stage={stage} index={index + 1 + (flow === 'video' && index > 0 ? 1 : 0)} value={state.stages[stage.id]} health={health} disabled={locked}
+              <ModelStage stage={stage} index={index + 1 + (flow === 'video' && index > 0 ? 1 : 0)} value={state.stages[stage.id]} health={modelHealth} disabled={locked}
                 extraSimilarity={!state.workflow.enabled || !state.stages.logo_similarity?.enabled}
                 update={value => update({ stages: { ...state.stages, [stage.id]: value,
+                  ...(value.model !== state.stages[stage.id].model && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
                   ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />
             </React.Fragment>)}
           </section>}

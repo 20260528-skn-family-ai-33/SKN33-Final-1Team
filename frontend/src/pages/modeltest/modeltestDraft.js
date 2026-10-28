@@ -55,7 +55,7 @@ function restoredFlow(flow, data) {
       for (const id of Object.keys(state.stages)) {
         const stage = value[id];
         if (stage && typeof stage.enabled === 'boolean' && typeof stage.model === 'string') {
-          state.stages[id] = { ...state.stages[id], enabled: stage.enabled, model: stage.model, labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true,
+          state.stages[id] = { ...state.stages[id], enabled: stage.enabled, model: stage.model, modelFingerprint: typeof stage.modelFingerprint === 'string' ? stage.modelFingerprint : '', labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true,
             threshold: typeof stage.threshold === 'string' ? stage.threshold : '', topK: typeof stage.topK === 'string' ? stage.topK : '2' };
         }
       }

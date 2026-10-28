@@ -1,12 +1,13 @@
 import { STAGES, parseStageModel } from './modeltest.js';
+import { EXTRA_STAGES, GENERAL, INPUTS, acceptsInput, paramsFor, registration } from './modeltestCatalog.js';
 
 export function newAgent(name = '새 에이전트') {
   return { id: `agent-${crypto.randomUUID()}`, name, enabled: true, nodes: [], edges: [], positions: {} };
 }
 export function newAgentStep(kind = 'text_generate') {
-  const model = ({ logo_extract: 'google/owlv2-base-patch16', logo_similarity: 'google/siglip2-base-patch16-224', logo_compare: 'vismatch/xfeat', candidate_filter: '' })[kind] ?? 'Qwen/Qwen3.5-4B';
+  const model = EXTRA_STAGES.some(stage => stage.id === kind) ? '' : ({ logo_extract: 'google/owlv2-base-patch16', logo_similarity: 'google/siglip2-base-patch16-224', logo_compare: 'vismatch/xfeat', candidate_filter: '' })[kind] ?? 'Qwen/Qwen3.5-4B';
   return { id: `step-${crypto.randomUUID()}`, kind, name: STAGES.find(stage => stage.id === kind)?.title || kind, model,
-    labels: '', prompt: '', threshold: '', topK: '2', imageSimilarity: false, bindings: {} };
+    labels: '', prompt: '', threshold: '', topK: '2', imageSimilarity: false, bindings: {}, paramsText: '' };
 }
 
 export function agentTemplate(flow) {
@@ -67,7 +68,7 @@ export function compileAgents(flow, state, health) {
       if (health && !health.stages.includes(node.kind)) throw new Error(`${agent.name}: 연결된 Pod가 ${kind.title} 단계를 지원하지 않습니다.`);
       if (!node.name.trim() || node.name.length > 100 || (node.prompt || '').length > 8000) throw new Error(`${agent.name}: 단계 이름은 1~100자, 모델 지시는 8,000자 이하여야 합니다.`);
       stages.push({ id: node.id, kind: node.kind, name: node.name.trim(), agent_id: agent.id, inputs: {},
-        ...parseStageModel(node.kind, node, health), ...(node.kind !== 'candidate_filter' && node.prompt?.trim() ? { prompt: node.prompt.trim() } : {}) });
+        ...parseStageModel(node.kind, node, health), ...(node.paramsText?.trim() ? { params: paramsFor(node) } : {}), ...(node.kind !== 'candidate_filter' && !GENERAL.includes(node.kind) && node.prompt?.trim() ? { prompt: node.prompt.trim() } : {}) });
     }
   }
   if (stages.length > 64) throw new Error('한 번에 실행할 내부 단계는 최대 64개입니다.');
@@ -82,11 +83,11 @@ export function compileAgents(flow, state, health) {
   const original = new Map(agents.flatMap(agent => agent.nodes).map(node => [node.id, node]));
   const required = { logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract'], text_compare: ['text_extract'], visual_compare: ['visual_extract'] };
   for (const stage of stages) {
-    const roles = new Set(required[stage.kind] || []);
+    const roles = new Set(INPUTS[stage.kind] ? Object.keys(INPUTS[stage.kind]) : required[stage.kind] || []);
     if (['text_compare', 'visual_compare'].includes(stage.kind)) roles.add('conditions');
     if (stage.kind === 'logo_compare') roles.add('candidate_filter');
     for (const role of roles) {
-      const candidates = stages.filter(source => source.kind === role && ancestors.get(stage.id).has(source.id));
+      const candidates = stages.filter(source => acceptsInput(stage.kind, role, source.kind) && ancestors.get(stage.id).has(source.id));
       const closest = candidates.filter(source => !candidates.some(next => ancestors.get(next.id).has(source.id)));
       const selected = original.get(stage.id).bindings?.[role];
       if (selected) {
@@ -94,11 +95,21 @@ export function compileAgents(flow, state, health) {
         stage.inputs[role] = selected;
       } else if (closest.length === 1) stage.inputs[role] = closest[0].id;
       else if (closest.length > 1) throw new Error(`${stage.name}: 같은 종류의 입력이 여러 개입니다. 단계 설정에서 사용할 입력을 지정해 주세요.`);
-      else if ((required[stage.kind] || []).includes(role) || (role === 'conditions' && !state.requirements.trim())) throw new Error(`${stage.name}: ${STAGES.find(item => item.id === role)?.title}에서 이어지는 연결이 필요합니다.`);
+      else if ((required[stage.kind] || []).includes(role) || (role === 'conditions' && !state.requirements.trim()) || ['left', 'right', 'ocr', 'logo_extract'].includes(role) || (role === 'images' && stage.params?.image_source === 'crops')) throw new Error(`${stage.name}: ${STAGES.find(item => item.id === role)?.title || role}에서 이어지는 연결이 필요합니다.`);
     }
+    if (stage.kind === 'vector_compare') {
+      const inputs = ['left', 'right'].map(role => stages.find(item => item.id === stage.inputs[role]));
+      if (!inputs[0]?.model_fingerprint || inputs[0].model_fingerprint !== inputs[1]?.model_fingerprint) throw new Error('벡터 비교에는 같은 모델·revision·처리 설정이 필요합니다.');
+    }
+    if (stage.kind === 'document_classify') {
+      const source = original.get(stage.inputs.ocr);
+      if (!['paddle_ocr', 'easyocr'].includes(registration(source?.model, health)?.family)) throw new Error('문서 분류에는 단어·좌표를 제공하는 PP-OCR 또는 EasyOCR 노드를 연결해 주세요.');
+      if (stage.params?.image_source && stage.params.image_source !== 'media') throw new Error('문서 분류는 OCR과 같은 원본 이미지를 사용해야 합니다.');
+    }
+    if (stage.kind === 'rerank' && stage.params?.modality === 'image' && !registration(original.get(stage.id)?.model, health)?.modalities?.includes('image')) throw new Error('이 재정렬 모델은 이미지 후보를 지원하지 않습니다.');
   }
   if (stages.some(stage => stage.kind === 'conditions') && !state.documents.length) throw new Error('문서에서 조건을 추출하려면 발주서·계약서를 첨부해 주세요.');
-  if (stages.some(stage => ['logo_compare', 'logo_similarity'].includes(stage.kind)) && !state.references.length) throw new Error('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+  if (stages.some(stage => ['logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue'].includes(stage.kind)) && !state.references.length) throw new Error('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
   if (health && health.workflow?.agents !== true) throw new Error('현재 연결은 에이전트 보드를 지원하지 않습니다. 백엔드 재시작 후 Pod에 다시 연결해 주세요.');
   return { stages, workflow: { edges, max_parallel: board.maxParallel, agents: agents.map(({ id, name }) => ({ id, name: name.trim() })) } };
 }
