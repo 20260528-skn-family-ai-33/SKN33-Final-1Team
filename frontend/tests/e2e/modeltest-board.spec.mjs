@@ -70,6 +70,15 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   const wire = board.getByRole('button', { name: '로고 추출에서 로고 이미지 유사도 연결 메뉴', exact: true });
   const wirePoint = await wire.evaluate(path => { const point = path.getPointAtLength(path.getTotalLength() / 2); const screen = new DOMPoint(point.x, point.y).matrixTransform(path.getScreenCTM()); return { x: screen.x, y: screen.y }; });
   assert.equal(await page.evaluate(point => document.elementFromPoint(point.x, point.y)?.getAttribute('aria-label'), wirePoint), '로고 추출에서 로고 이미지 유사도 연결 메뉴');
+  const relation = board.locator('.mt-workflow-edges li').filter({ has: page.getByRole('button', { name: '로고 추출에서 로고 이미지 유사도 연결 삭제', exact: true }) });
+  const highlighted = board.locator('.mt-workflow-edges li.is-highlighted');
+  await page.mouse.move(wirePoint.x, wirePoint.y); await highlighted.waitFor();
+  assert.equal(await relation.evaluate(element => element.classList.contains('is-highlighted')), true);
+  assert.equal(await board.locator('.mt-workflow-edges li.is-highlighted').count(), 1);
+  assert.notEqual(await relation.evaluate(element => getComputedStyle(element).backgroundColor), 'rgba(0, 0, 0, 0)');
+  await page.mouse.move(0, 0); await highlighted.waitFor({ state: 'hidden' });
+  await wire.focus(); await highlighted.waitFor();
+  await viewport.focus(); await highlighted.waitFor({ state: 'hidden' });
   await page.mouse.click(wirePoint.x, wirePoint.y, { button: 'right' }); await page.getByRole('menuitem', { name: '연결 해제', exact: true }).click(); assert.equal(await wire.count(), 0);
   await page.keyboard.press('Control+z'); await wire.waitFor();
   await wire.focus(); await wire.press('Enter'); await page.getByRole('menuitem', { name: '연결 해제', exact: true }).waitFor(); await page.keyboard.press('Escape');

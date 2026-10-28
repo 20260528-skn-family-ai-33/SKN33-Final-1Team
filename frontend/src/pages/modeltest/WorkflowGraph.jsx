@@ -9,6 +9,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
   const [drag, setDrag] = useState(null); const gesture = useRef(null); const [space, setSpace] = useState(false);
   const [source, setSource] = useState(''); const [point, setPoint] = useState(null); const [notice, setNotice] = useState('');
   const [menu, setMenu] = useState(null); const [fullscreen, setFullscreen] = useState(false);
+  const [hoveredEdge, setHoveredEdge] = useState(null); const [focusedEdge, setFocusedEdge] = useState(null);
   const placed = new Map(nodes.map((node, index) => [node.id, drag?.id === node.id ? drag : nodePosition(positions, node.id, index)]));
   const title = id => nodes.find(node => node.id === id)?.title || id;
   const localPoint = event => { const rect = viewport.current.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top }; };
@@ -53,6 +54,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
   }, []);
   useEffect(() => { if (disabled) { gesture.current = null; setDrag(null); setSource(''); setPoint(null); setMenu(null); } }, [disabled]);
   useEffect(() => { if (source && !nodes.some(node => node.id === source)) { setSource(''); setPoint(null); } }, [nodes, source]);
+  useEffect(() => { setHoveredEdge(null); setFocusedEdge(null); }, [edges]);
   useLayoutEffect(() => {
     if (!menu || !menuRef.current) return;
     const element = menuRef.current; const bounds = root.current.getBoundingClientRect();
@@ -130,6 +132,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
           {edges.map(edge => { const a = placed.get(edge.source); const b = placed.get(edge.target); const d = a && b && curve({ x: a.x + 250, y: a.y + 48 }, { x: b.x, y: b.y + 48 }); return d && <g key={`${edge.source}-${edge.target}`}>
             <path d={d} markerEnd={`url(#${arrowId})`} aria-hidden="true" />
             <path className="mt-wire-hit" d={d} tabIndex={0} role="button" aria-label={`${title(edge.source)}에서 ${title(edge.target)} 연결 메뉴`} onContextMenu={event => openMenu(event, { type: 'edge', edge })}
+              onPointerEnter={() => setHoveredEdge(edge)} onPointerLeave={() => setHoveredEdge(null)} onFocus={() => setFocusedEdge(edge)} onBlur={() => setFocusedEdge(null)}
               onKeyDown={event => { if (event.key === 'Enter' || (event.shiftKey && event.key === 'F10')) openMenu(event, { type: 'edge', edge }); }} />
           </g>; })}
           {source && point && placed.has(source) && <path className="is-connecting" aria-hidden="true" d={curve({ x: placed.get(source).x + 250, y: placed.get(source).y + 48 }, point)} />}
@@ -149,7 +152,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
     <div className="mt-board-controls"><span>휠 확대 · 배경 드래그 · Space 이동 · 우클릭 편집</span><button type="button" disabled={disabled || !canUndo} onClick={onUndo}>되돌리기 <kbd>Ctrl+Z</kbd></button>
       <button type="button" aria-label="보드 축소" onClick={() => zoom(view.zoom / 1.2)}>−</button><button type="button" aria-label="보드 100%로 보기" onClick={() => zoom(1)}>{Math.round(view.zoom * 100)}%</button><button type="button" aria-label="보드 확대" onClick={() => zoom(view.zoom * 1.2)}>+</button>
       <button type="button" onClick={fit}>전체 보기</button><button type="button" onClick={toggleFullscreen}>{fullscreen ? '전체화면 종료' : '전체화면'}</button></div>
-    <ul className="mt-workflow-edges" aria-label="워크플로우 연결 목록">{edges.map(edge => <li key={`${edge.source}-${edge.target}`}><span>{title(edge.source)} → {title(edge.target)}</span><button type="button" disabled={disabled} aria-label={`${title(edge.source)}에서 ${title(edge.target)} 연결 삭제`} onClick={() => disconnect(edge)}>삭제</button></li>)}</ul>
+    <ul className="mt-workflow-edges" aria-label="워크플로우 연결 목록">{edges.map(edge => <li key={`${edge.source}-${edge.target}`} className={hoveredEdge === edge || focusedEdge === edge ? 'is-highlighted' : undefined}><span>{title(edge.source)} → {title(edge.target)}</span><button type="button" disabled={disabled} aria-label={`${title(edge.source)}에서 ${title(edge.target)} 연결 삭제`} onClick={() => disconnect(edge)}>삭제</button></li>)}</ul>
     {!edges.length && <p className="mt-hint">연결이 없는 단계는 동시에 실행 가능한 시작 단계가 됩니다. 필수 입력 연결은 실행 전에 검사합니다.</p>}
     {menu && <div ref={menuRef} className="mt-board-menu" role="menu" aria-label="보드 편집 메뉴" onKeyDown={event => {
       if (event.key === 'Tab') { closeMenu(); return; }
