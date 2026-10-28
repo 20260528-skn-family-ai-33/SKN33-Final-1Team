@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { initialFlow } from './modeltest.js';
 
-const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages'];
+const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages', 'workflow', 'agentWorkflow'];
 let opening;
 export function openDraftDB() {
   if (!opening) opening = new Promise((resolve, reject) => {
@@ -46,11 +46,17 @@ function restoredFlow(flow, data) {
     else if (['documents', 'references'].includes(field) && Array.isArray(value)) state[field] = value.filter(file => file instanceof File);
     else if (['requirements', 'requirementsOpen'].includes(field) && typeof value === typeof state[field]) state[field] = value;
     else if (field === 'sampling' && value && ['frames', 'seconds'].includes(value.unit)) state.sampling = { ...state.sampling, ...value };
+    else if (field === 'agentWorkflow' && value && Array.isArray(value.agents) && Array.isArray(value.edges) && [1, 2].includes(value.maxParallel)) state.agentWorkflow = { ...state.agentWorkflow, ...value };
+    else if (field === 'workflow' && value && typeof value.enabled === 'boolean' && [1, 2].includes(value.maxParallel) && Array.isArray(value.edges)) {
+      state.workflow = { enabled: value.enabled, maxParallel: value.maxParallel,
+        edges: value.edges.filter(edge => edge && typeof edge.source === 'string' && typeof edge.target === 'string'), positions: value.positions || {} };
+    }
     else if (field === 'stages' && value) {
       for (const id of Object.keys(state.stages)) {
         const stage = value[id];
         if (stage && typeof stage.enabled === 'boolean' && typeof stage.model === 'string') {
-          state.stages[id] = { enabled: stage.enabled, model: stage.model, labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true };
+          state.stages[id] = { ...state.stages[id], enabled: stage.enabled, model: stage.model, labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true,
+            threshold: typeof stage.threshold === 'string' ? stage.threshold : '', topK: typeof stage.topK === 'string' ? stage.topK : '2' };
         }
       }
     }

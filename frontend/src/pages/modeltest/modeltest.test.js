@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CONTRACT, FILE_TYPES, FILE_LIMITS, STAGES, parseModel, parseEndpoint, initialFlow, SIGLIP2, modelOptions, parseStageModel, preparationLabel,
-  formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest,
+  formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest, workflowPreset, workflowError,
 } from './modeltest.js';
+import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
 import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
 
 test('timings aggregate by model and revision, include active work, and preserve missing measurements', () => {
@@ -57,6 +58,57 @@ test('known models are offered before connection and reject incompatible stages'
   const offered = modelOptions({ models: [{ id: 'Qwen/Qwen3.5-4B', stages: ['conditions'] }, { id: 'owner/custom', stages: ['conditions'] }] });
   assert.equal(offered.length, 5);
   assert.throws(() => parseStageModel('text_extract', { model: 'owner/custom' }, { models: offered }), /단계에서/);
+});
+
+test('workflow presets compile filtering and parallel branches, rejecting cycles and missing dependencies', () => {
+  const state = fixture('video'); state.references = [new File(['logo'], 'logo.png')];
+  const filtered = workflowPreset('video', state, 'filtered');
+  const capable = { ...health, workflow: { version: 1, max_parallel: 2, agents: true } };
+  assert.deepEqual(formErrors('video', filtered, capable), []);
+  assert.equal(makeManifest('video', filtered).stages.find(stage => stage.id === 'candidate_filter').top_k, 2);
+  filtered.stages.candidate_filter.threshold = '0.85';
+  assert.equal(makeManifest('video', filtered).stages.find(stage => stage.id === 'candidate_filter').threshold, 0.85);
+  filtered.workflow.edges.push({ source: 'logo_compare', target: 'logo_extract' });
+  assert.match(workflowError('video', filtered), /순환/);
+  const parallel = workflowPreset('video', state, 'parallel');
+  assert.equal(workflowError('video', parallel), '');
+  assert.equal(parallel.workflow.maxParallel, 2);
+  for (const target of ['logo_compare', 'logo_similarity']) assert.ok(parallel.workflow.edges.some(edge => edge.source === 'logo_extract' && edge.target === target));
+  parallel.workflow.edges = parallel.workflow.edges.filter(edge => edge.target !== 'logo_compare');
+  assert.match(workflowError('video', parallel), /연결이 필요/);
+});
+
+test('agent templates bypass disabled agents, bind inputs and preserve agent metadata in manifests', () => {
+  for (const flow of ['image', 'video']) {
+    const state = fixture(flow); state.agentWorkflow = agentTemplate(flow);
+    state.documents = [new File(['contract'], 'contract.txt')];
+    if (flow === 'video') state.references = [new File(['logo'], 'logo.png')];
+    const plan = compileAgents(flow, state, { ...health, workflow: { agents: true } });
+    assert.equal(plan.workflow.agents.length, 6);
+    const conditions = plan.stages.find(stage => stage.kind === 'conditions');
+    const text = plan.stages.find(stage => stage.kind === 'text_extract');
+    const comparison = plan.stages.find(stage => stage.kind === 'text_compare');
+    assert.equal(comparison.inputs.conditions, conditions.id);
+    assert.equal(comparison.inputs.text_extract, text.id);
+    assert.ok(plan.workflow.edges.some(edge => edge.source === conditions.id && edge.target === text.id));
+    assert.deepEqual(makeManifest(flow, state).stages, plan.stages);
+    assert.throws(() => compileAgents(flow, state, health), /지원하지 않습니다/);
+    assert.throws(() => compileAgents(flow, state, { ...health, stages: [], workflow: { agents: true } }), /지원하지 않습니다/);
+  }
+});
+
+test('multiple outputs of one kind require explicit ancestor input selection', () => {
+  const state = fixture('video'); state.requirements = '행사명 필수';
+  const agent = newAgent('문구 비교'); const first = newAgentStep('text_extract'); const second = newAgentStep('text_extract'); const compare = newAgentStep('text_compare');
+  agent.nodes = [first, second, compare]; agent.edges = [first, second].map(node => ({ source: node.id, target: compare.id }));
+  state.agentWorkflow = { enabled: true, agents: [agent], edges: [], positions: {}, maxParallel: 2 };
+  assert.throws(() => compileAgents('video', state), /입력이 여러 개/);
+  compare.bindings.text_extract = second.id;
+  assert.equal(compileAgents('video', state).stages.at(-1).inputs.text_extract, second.id);
+  agent.edges = agent.edges.filter(edge => edge.source !== second.id);
+  assert.throws(() => compileAgents('video', state), /선행 연결/);
+  agent.edges.push({ source: compare.id, target: first.id });
+  assert.throws(() => compileAgents('video', state), /순환/);
 });
 
 test('result coordinates preserve frame scaling and reject unsafe previews', () => {

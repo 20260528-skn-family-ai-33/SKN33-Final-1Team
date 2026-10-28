@@ -311,7 +311,7 @@ def modeltest_ssh_router(storage_root: Path):
                     if previous['digest'] != digest or previous['connection'] != identifier: raise HTTPException(409, '같은 요청 ID에 다른 설정이 연결돼 있습니다.')
                     return previous['job']
                 if any(run['job']['status'] in ('queued', 'running') for run in runs.values()) or not busy.acquire(blocking=False): raise HTTPException(409, '다른 환경 준비 또는 검수가 진행 중입니다.')
-                stages = [{'id': stage['id'], 'model_id': stage['model_id'], 'status': 'queued'} for stage in config['stages']]
+                stages = [{**{key: stage[key] for key in ('id', 'kind', 'name', 'agent_id', 'inputs') if key in stage}, 'model_id': stage.get('model_id'), 'status': 'queued'} for stage in config['stages']]
                 if config['flow'] == 'video': stages.insert(1 if stages[0]['id'] == 'conditions' else 0, {'id': 'frames', 'status': 'queued'})
                 run = {'connection': identifier, 'digest': digest, 'job': {'contract': remote.CONTRACT, 'id': run_id, 'status': 'queued', 'stages': stages}, 'disconnected': False, 'owns_busy': True}
                 runs[run_id] = run

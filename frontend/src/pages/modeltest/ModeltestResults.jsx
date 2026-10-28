@@ -33,14 +33,33 @@ function Scores({ rows }) {
   </div>)}</div>;
 }
 
-function LogoEvidence({ job, manifest, frame, context, cache, selectedLogo, setSelectedLogo, referenceIndex, setReferenceIndex }) {
-  const extracted = job.stages.find(stage => stage.id === 'logo_extract')?.output?.items?.find(item => item.index === frame.index);
+function sourceStage(job, stage, kind, visited = new Set()) {
+  if (!stage || visited.has(stage.id)) return null;
+  visited.add(stage.id);
+  if ((stage.kind || stage.id) === kind) return stage;
+  if (!stage.kind) return job.stages.find(item => item.id === kind);
+  if (stage.inputs?.[kind]) return job.stages.find(item => item.id === stage.inputs[kind]);
+  for (const id of Object.values(stage.inputs || {})) {
+    const found = sourceStage(job, job.stages.find(item => item.id === id), kind, visited);
+    if (found) return found;
+  }
+  return null;
+}
+
+function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLogo, setSelectedLogo, referenceIndex, setReferenceIndex }) {
+  const detector = sourceStage(job, stage, 'logo_extract');
+  const extracted = detector?.output?.items?.find(item => item.index === frame.index);
   const logos = extracted?.logos || [];
   const logo = logos[selectedLogo];
-  const compared = job.stages.find(stage => stage.id === 'logo_compare')?.output?.items?.find(item => item.index === frame.index);
+  const kind = stage.kind || stage.id;
+  const comparison = ['logo_compare', 'logo_similarity', 'candidate_filter'].includes(kind) ? stage : sourceStage(job, stage, 'logo_compare');
+  const compared = comparison?.output?.items?.find(item => item.index === frame.index);
   const matches = (compared?.matches || []).filter(match => match.logo_index === (logo?.logo_index ?? selectedLogo) || (match.logo_index === undefined && logos.length === 1));
   const reference = job.references?.find(item => item.index === referenceIndex);
-  const match = matches.find(item => item.reference_index === referenceIndex);
+  const comparedMatch = matches.find(item => item.reference_index === referenceIndex);
+  const similarities = job.stages.filter(item => (item.kind || item.id) === 'logo_similarity' && sourceStage(job, item, 'logo_extract')?.id === detector?.id);
+  const similarity = similarities.length === 1 ? similarities[0].output?.items?.find(item => item.index === frame.index)?.matches?.find(item => item.logo_index === (logo?.logo_index ?? selectedLogo) && item.reference_index === referenceIndex) : null;
+  const match = comparedMatch ? { ...similarity, ...comparedMatch } : null;
   if (!logos.length) return <p className="mt-empty">{extracted ? '이 프레임에서 탐지한 로고가 없습니다.' : job.stages.some(stage => stage.id === 'logo_extract') ? '로고 추출 결과를 기다리고 있습니다.' : '로고 추출 단계를 선택하지 않았습니다.'}</p>;
   return <section className="mt-logo-evidence" aria-label="로고 대조 결과">
     <div className="mt-logo-picker">{logos.map((item, index) => <button type="button" key={index} aria-pressed={selectedLogo === index} onClick={() => setSelectedLogo(index)}>로고 {index + 1}</button>)}</div>
@@ -58,8 +77,8 @@ function LogoEvidence({ job, manifest, frame, context, cache, selectedLogo, setS
       </figure>
     </div>
     {match ? <div className="mt-match-result">
-      <h4>{Number.isFinite(match.matches) ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4>
-      <strong className={`mt-decision mt-decision-${['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{decisionLabel(match.decision)}</strong>
+      <h4>{kind === 'candidate_filter' ? '후보 필터 결과' : kind === 'logo_similarity' ? '로고 이미지 유사도' : Number.isFinite(match.matches) ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4>
+      <strong className={`mt-decision mt-decision-${['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{kind === 'candidate_filter' ? '필터 통과 후보' : kind === 'logo_similarity' ? '유사도 측정' : decisionLabel(match.decision)}</strong>
       <dl className="mt-match-metrics">
         <div><dt>이미지 코사인 유사도 · SigLIP2</dt><dd>{Number.isFinite(match.image_cosine_similarity) ? match.image_cosine_similarity.toFixed(3) : '미계산'}</dd></div>
         {Number.isFinite(match.descriptor_similarity) && <div><dt>특징점 유사도 (코사인)</dt><dd>{match.descriptor_similarity.toFixed(3)}</dd></div>}
@@ -71,23 +90,26 @@ function LogoEvidence({ job, manifest, frame, context, cache, selectedLogo, setS
       {typeof match.text === 'string' && <p className="mt-readable-output">{match.text}</p>}
       {typeof match.note === 'string' && <p className="mt-hint">{match.note}</p>}
       {Number.isFinite(match.descriptor_similarity) && <p className="mt-hint">특징점 유사도는 매칭된 점들의 평균입니다. 이미지 코사인 및 특징점 지표는 일치 확률이 아닙니다.</p>}
-    </div> : <p className="mt-hint">{compared ? '선택한 로고와 레퍼런스의 대조 결과가 없습니다.' : '로고 대조를 선택하지 않았거나 아직 결과가 도착하지 않았습니다.'}</p>}
+    </div> : <p className="mt-hint">{compared ? Number.isFinite(compared.selected_count) ? '이 후보는 필터에서 제외되어 대조하지 않았습니다.' : '선택한 로고와 레퍼런스의 대조 결과가 없습니다.' : '결과를 확인할 로고 대조 단계를 선택해 주세요.'}</p>}
+    {Number.isFinite(compared?.selected_count) && <p className="mt-hint">이 프레임의 전체 후보 {compared.candidate_count}개 중 {compared.selected_count}개 선택</p>}
   </section>;
 }
 
 export default function ModeltestResults({ job, stage, manifest, context, onSeek, cache, selection, onSelect }) {
+  const kind = stage?.kind || stage?.id;
   const selectedFrame = selection.frame ?? 0; const selectedLogo = selection.logo ?? 0;
   const setSelectedLogo = logo => onSelect({ logo });
   const rows = stage?.output?.frames || stage?.output?.items;
   if (!Array.isArray(rows) || !rows.length) return <p className="mt-empty">이 단계의 결과가 아직 도착하지 않았습니다.</p>;
-  if (stage.id === 'conditions') return <div className="mt-document-results">{rows.map((row, index) => <article key={index}>
+  if (kind === 'text_generate') return <div>{rows.map((row, index) => <p key={index} className="mt-readable-output">{row.text || '모델 응답이 없습니다.'}</p>)}</div>;
+  if (kind === 'conditions') return <div className="mt-document-results">{rows.map((row, index) => <article key={index}>
     <h3>{manifest.files.documents[row.document_index]?.name || `문서 ${(row.document_index ?? index) + 1}`} · {row.page_or_chunk} 페이지/구간</h3>
     <p className="mt-readable-output">{row.text || '추출한 조건이 없습니다.'}</p>
   </article>)}</div>;
   const frame = rows[selectedFrame] || rows[0];
   const frameInfo = job.stages.find(item => item.id === 'frames')?.output?.frames?.find(item => item.index === frame.index) || job.media || {};
   const sample = { ...frameInfo, ...frame };
-  const logos = job.stages.find(item => item.id === 'logo_extract')?.output?.items?.find(item => item.index === frame.index)?.logos || [];
+  const logos = sourceStage(job, stage, 'logo_extract')?.output?.items?.find(item => item.index === frame.index)?.logos || [];
   return <div className="mt-sample-results">
     {manifest.flow === 'video' && <nav className="mt-frame-picker" aria-label="분석 프레임 선택"><p>{rows.length}개 프레임 · 첫 프레임은 0번</p>
       {rows.map((row, index) => <button type="button" key={index} aria-pressed={selectedFrame === index} onClick={() => onSelect({ frame: index, logo: 0, reference: 0 })}>{frameLabel(row)}</button>)}
@@ -102,7 +124,7 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
           return style && <button type="button" key={index} className={`mt-logo-box ${selectedLogo === index ? 'is-selected' : ''}`} style={style} aria-label={`로고 ${index + 1} 위치 보기`} aria-pressed={selectedLogo === index} onClick={() => setSelectedLogo(index)}><span>{index + 1}</span></button>;
         })}
       </Preview>
-      {['logo_extract', 'logo_compare', 'frames'].includes(stage.id) && <LogoEvidence key={sample.index} job={job} manifest={manifest} frame={sample} context={context} cache={cache} selectedLogo={selectedLogo} setSelectedLogo={setSelectedLogo}
+      {['logo_extract', 'logo_similarity', 'candidate_filter', 'logo_compare', 'frames'].includes(kind) && <LogoEvidence key={sample.index} job={job} stage={stage} manifest={manifest} frame={sample} context={context} cache={cache} selectedLogo={selectedLogo} setSelectedLogo={setSelectedLogo}
         referenceIndex={selection.reference ?? 0} setReferenceIndex={reference => onSelect({ reference })} />}
       {typeof frame.text === 'string' && <p className="mt-readable-output">{frame.text}</p>}
       {Array.isArray(frame.label_scores) && <Scores rows={frame.label_scores} />}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { STAGES, STATUS_LABELS } from './modeltest.js';
+import { stageTitle, STATUS_LABELS } from './modeltest.js';
 import { elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
 
 export function ModelTimingTable({ stages, now }) {
@@ -18,11 +18,11 @@ export function ModelTimingTable({ stages, now }) {
 export default function ModeltestTimings({ job, now }) {
   return <div className="mt-timings">
     <p className="mt-hint">로딩에는 모델 다운로드·전환이, 처리에는 입력 전처리·추론·결과 변환이 포함됩니다. 같은 모델·리비전은 합산하며, 호출 수에는 실패하거나 진행 중인 호출도 포함됩니다.</p>
-    <p className="mt-hint">단계 시간에는 파일 처리와 결과 저장·전송도 포함되므로 모델 시간의 합계와 다를 수 있습니다. 실행 중 시간은 추정 경과이며, 완료 후 서버 측정값으로 확정됩니다.</p>
+    <p className="mt-hint">단계 시간에는 파일 처리와 결과 저장·전송도 포함되므로 모델 시간의 합계와 다를 수 있습니다. 병렬 실행에서는 누적 시간과 전체 경과 시간이 다릅니다. 실행 중 시간은 추정 경과이며, 완료 후 서버 측정값으로 확정됩니다.</p>
     <div className="mt-timing-scroll"><table className="mt-timing-table">
       <caption>단계별 소요 시간</caption>
       <thead><tr><th scope="col">단계</th><th scope="col">상태</th><th scope="col">소요 시간</th></tr></thead>
-      <tbody>{job.stages.map(stage => <tr key={stage.id}><th scope="row">{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}</th>
+      <tbody>{job.stages.map(stage => <tr key={stage.id}><th scope="row">{stageTitle(stage)}{stage.agent_id && <small>{job.agents?.find(agent => agent.id === stage.agent_id)?.name}</small>}</th>
         <td>{STATUS_LABELS[stage.status]}</td><td>{formatDuration(elapsedSeconds(stage, now))}{(stage.status === 'running' || stage.timing_estimated) && <small>추정</small>}</td>
       </tr>)}</tbody>
     </table></div>

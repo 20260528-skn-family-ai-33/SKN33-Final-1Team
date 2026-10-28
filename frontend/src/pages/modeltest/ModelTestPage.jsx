@@ -4,12 +4,15 @@ import { Icon } from '../../components/Icon.jsx';
 import {
   CONTRACT, STAGES, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
   stagesFor, parseModel, parseEndpoint, validateHealth, validateRun, formErrors,
-  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel,
+  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle,
 } from './modeltest.js';
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
 import ModeltestResults from './ModeltestResults.jsx';
 import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
+import ModeltestWorkflow from './ModeltestWorkflow.jsx';
+import ModeltestAgents from './ModeltestAgents.jsx';
+import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
 
 function usePreview(file) {
@@ -54,19 +57,24 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
   </section>;
 }
 
-function ModelStage({ stage, index, value, update, health, disabled }) {
+function ModelStage({ stage, index, value, update, health, disabled, extraSimilarity }) {
   let parsed; let invalid = '';
-  if (value.model.trim()) { try { parsed = parseModel(value.model); parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
+  if (stage.id !== 'candidate_filter' && value.model.trim()) { try { parsed = parseModel(value.model); parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
   const unsupported = health && !health.stages.includes(stage.id);
   const models = modelOptions(health).filter(model => model.stages.includes(stage.id));
   const profile = models.find(model => model.id === parsed?.model_id);
   const id = `mt-model-${stage.id}`;
-  return <div className={`mt-stage ${value.enabled ? '' : 'is-off'}`}>
+  return <div id={`mt-stage-${stage.id}`} className={`mt-stage ${value.enabled ? '' : 'is-off'}`}>
     <span className="mt-stage-number">{String(index).padStart(2, '0')}</span>
     <div className="mt-stage-content">
       <div className="mt-stage-heading"><label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
         onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label><Icon name={stage.icon} /></div>
       <p>{stage.description}</p>
+      {stage.id === 'candidate_filter' ? <div className="mt-filter-fields">
+        <label>최소 코사인 유사도<input aria-label="필터 최소 코사인 유사도" type="number" min={-1} max={1} step="any" value={value.threshold} disabled={disabled || !value.enabled} placeholder="비워두면 제한 없음" onChange={event => update({ ...value, threshold: event.target.value })} /></label>
+        <label>상위 후보 수<input aria-label="필터 상위 후보 수" type="number" min={1} max={10} step={1} value={value.topK} disabled={disabled || !value.enabled} placeholder="비워두면 모두" onChange={event => update({ ...value, topK: event.target.value })} /></label>
+        <small>각 로고의 원본 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과한 후보가 없으면 해당 로고의 XFeat 호출은 생략합니다. 임계값은 검수 통과 확률이 아닙니다.</small>
+      </div> : <>
       <label className="sr-only" htmlFor={`${id}-preset`}>{stage.title} 등록 모델 선택</label>
       <select id={`${id}-preset`} className="mt-model-select" value={profile?.id || ''} disabled={disabled || !value.enabled}
         onChange={event => update({ ...value, model: event.target.value })}>
@@ -80,7 +88,7 @@ function ModelStage({ stage, index, value, update, health, disabled }) {
       <small id={`${id}-hint`} className={value.enabled && (invalid || unsupported) ? 'mt-error' : ''}>
         {unsupported ? '이 Pod에서 지원하지 않는 단계입니다.' : invalid || profile?.description || (parsed ? `${parsed.model_id}${parsed.revision ? ` @ ${parsed.revision}` : ''} · 입력 형식 확인, 실행 호환성은 Pod에서 확인` : '모델 목록에서 선택하거나 Hugging Face 링크를 입력하세요.')}
       </small>
-      {stage.id === 'logo_compare' && parsed?.model_id === 'vismatch/xfeat' && <label className="mt-similarity-option">
+      {stage.id === 'logo_compare' && extraSimilarity && parsed?.model_id === 'vismatch/xfeat' && <label className="mt-similarity-option">
         <input type="checkbox" checked={!!value.imageSimilarity} disabled={disabled || !value.enabled} onChange={event => update({ ...value, imageSimilarity: event.target.checked })} />
         <span>SigLIP2 이미지 코사인 유사도도 계산<small>크롭과 원본 이미지를 추가 모델로 대조합니다.</small></span>
       </label>}
@@ -91,6 +99,7 @@ function ModelStage({ stage, index, value, update, health, disabled }) {
           aria-describedby={`${id}-labels-hint`} onChange={event => update({ ...value, labels: event.target.value })} />
         <small id={`${id}-labels-hint`}>최대 32개, 문구당 200자. 각 문구의 유사도는 검수 통과 확률이 아닙니다.</small>
       </div>}
+      </>}
     </div>
   </div>;
 }
@@ -130,9 +139,10 @@ export default function ModelTestPage() {
   const running = !!job && !terminal;
   const locked = !draft.ready || restoring || submitting || unknown || running || preparing;
   const errors = formErrors(flow, state, health);
-  const stages = stagesFor(flow); const selected = stages.filter(stage => state.stages[stage.id].enabled);
+  const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
+  const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
   const completed = job?.stages.filter(stage => stage.status === 'completed').length || 0;
-  const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' ? 1 : 0) : selected.length + (flow === 'video' ? 1 : 0);
+  const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' ? 1 : 0) : selectedCount + (flow === 'video' ? 1 : 0);
   const resultStage = job?.stages.find(stage => stage.id === selectedStage);
   const runFileCount = manifest ? 1 + manifest.files.documents.length + manifest.files.references.length : Number(!!state.media) + state.documents.length + state.references.length;
   const runTitle = submitting ? '자료 전송·접수 중' : unknown ? '접수 여부 확인 필요' : paused && running ? '상태 조회 일시정지' : job?.status === 'queued' ? preparationLabel(job.preparation) : job ? STATUS_LABELS[job.status] : '실행 전';
@@ -323,7 +333,10 @@ export default function ModelTestPage() {
           <button type="button" aria-pressed={flow === 'video'} disabled={locked} onClick={() => { setFlow('video'); setShowErrors(false); }}><span aria-hidden="true">▶</span>영상 검수</button>
         </div><p>{flow === 'image' ? '포스터 + 문서 필수' : '영상 필수 · 문서·원본 로고 선택'}<span>{selected.length}개 모델 단계 선택</span></p></div>
 
-        <div className="mt-workspace">
+        <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식"><button type="button" aria-pressed={!state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: { ...state.agentWorkflow, enabled: false } })}>모델 단계 편집</button>
+          <button type="button" aria-pressed={state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) })}>에이전트 보드</button></div>
+        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={health} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} />}
+        <div className={`mt-workspace ${state.agentWorkflow.enabled ? 'is-agents' : ''}`}>
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
             <div className="mt-panel-body">
@@ -342,14 +355,17 @@ export default function ModelTestPage() {
                   placeholder={'예: 행사 날짜가 11월 5일로 표시되어야 합니다.\n브랜드 로고가 화면 오른쪽 위에 있어야 합니다.'}
                   onChange={event => update({ requirements: event.target.value })} /><p className="mt-hint">문서에서 추출한 조건과 함께 사용합니다. 문서가 없으면 대조할 조건을 직접 입력하세요.</p>
               </details>
+              {state.agentWorkflow.enabled && flow === 'video' && <div className="mt-sampling-fields mt-agent-sampling"><label>프레임 추출 기준<select aria-label="에이전트 프레임 추출 기준" disabled={locked} value={state.sampling.unit} onChange={event => update({ sampling: { ...state.sampling, unit: event.target.value, interval: event.target.value === 'frames' ? '30' : '1' } })}><option value="frames">N프레임마다</option><option value="seconds">N초마다</option></select></label>
+                <label>추출 간격<input aria-label="에이전트 프레임 추출 간격" type="number" min={state.sampling.unit === 'frames' ? 1 : 0.01} step="any" value={state.sampling.interval} disabled={locked} onChange={event => update({ sampling: { ...state.sampling, interval: event.target.value } })} /></label>
+                <label>최대 추출 수<input aria-label="에이전트 최대 추출 수" type="number" min={1} max={1000} value={state.sampling.max_frames} disabled={locked} onChange={event => update({ sampling: { ...state.sampling, max_frames: event.target.value } })} /></label></div>}
             </div>
           </section>
 
-          <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
-            <div className="mt-panel-heading"><h2 id="mt-pipeline-title">검수 파이프라인</h2><span>{flow === 'image' ? '5' : '8'}단계</span></div>
+          {!state.agentWorkflow.enabled && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
+            <div className="mt-panel-heading"><h2 id="mt-pipeline-title">검수 파이프라인</h2><span>{stages.length + (flow === 'video' ? 1 : 0)}단계</span></div>
             <p className="mt-pipeline-hint">필요한 단계를 선택하고 모델을 지정하세요.<br />소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p>
             {stages.map((stage, index) => <React.Fragment key={stage.id}>
-              {flow === 'video' && index === 1 && <div className="mt-stage mt-sampling"><span className="mt-stage-number">02</span><div className="mt-stage-content">
+              {flow === 'video' && index === 1 && <div id="mt-stage-frames" className="mt-stage mt-sampling"><span className="mt-stage-number">02</span><div className="mt-stage-content">
                 <div className="mt-stage-heading"><h3>프레임 이미지 추출</h3><span className="mt-tag">영상 처리</span></div><p>프레임 또는 시간 간격으로 샘플링합니다.</p>
                 <div className="mt-sampling-fields"><label>기준<select disabled={locked} value={state.sampling.unit} onChange={event => update({ sampling: { ...state.sampling, unit: event.target.value, interval: event.target.value === 'frames' ? '30' : '1' } })}>
                   <option value="frames">N프레임마다</option><option value="seconds">N초마다</option></select></label>
@@ -360,9 +376,11 @@ export default function ModelTestPage() {
                 <small>최대 추출 수에 도달하면 샘플링을 멈춥니다. 모델 추론은 추출된 프레임에 수행합니다.</small>
               </div></div>}
               <ModelStage stage={stage} index={index + 1 + (flow === 'video' && index > 0 ? 1 : 0)} value={state.stages[stage.id]} health={health} disabled={locked}
-                update={value => update({ stages: { ...state.stages, [stage.id]: value } })} />
+                extraSimilarity={!state.workflow.enabled || !state.stages.logo_similarity?.enabled}
+                update={value => update({ stages: { ...state.stages, [stage.id]: value,
+                  ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />
             </React.Fragment>)}
-          </section>
+          </section>}
 
           <aside className="mt-monitor" aria-label="실행 모니터">
             <section className="mt-run-card"><div className="mt-run-heading"><Icon name="grid" /><h2>실행 모니터</h2></div>
@@ -375,7 +393,7 @@ export default function ModelTestPage() {
               <div className="mt-metrics"><div><strong>{job ? completed : 0}<small> / {progressTotal}</small></strong><span>완료 단계</span></div><div><strong>{Math.floor(elapsed / 60)}<small>분 {elapsed % 60}초</small></strong><span>{restored ? '조회 재개 후 경과' : '접수 후 경과'}</span></div></div>
               <progress value={completed} max={Math.max(progressTotal, 1)} aria-label="완료한 검수 단계" />
               <dl className="mt-run-summary"><div><dt>{manifest ? '실행한 자료' : '입력 자료'}</dt><dd>{runFileCount}개</dd></div>
-                <div><dt>실행 위치</dt><dd>RunPod Pod</dd></div><div><dt>모델 단계</dt><dd>{manifest ? manifest.stages.length : selected.length}개</dd></div></dl>
+                <div><dt>실행 위치</dt><dd>RunPod Pod</dd></div><div><dt>선택 단계</dt><dd>{manifest ? manifest.stages.length : selectedCount}개</dd></div></dl>
               {!locked && <button type="submit" className="btn primary mt-run-button" disabled={connecting || !health?.ready}><Icon name="arrow" />검수 실행</button>}
               {submitting && <button className="btn primary mt-run-button" disabled>전송·접수 중…</button>}
               {unknown && !submitting && <><button type="button" className="btn primary mt-run-button" onClick={() => submit(contextRef.current)}>같은 요청으로 접수 확인</button>
@@ -389,7 +407,7 @@ export default function ModelTestPage() {
             {job?.status === 'failed' && <p className="mt-alert" role="alert">{typeof job.error === 'string' ? job.error : 'Pod의 검수 작업이 실패했습니다. 단계별 결과를 확인해 주세요.'}</p>}
             <section className="mt-panel mt-checklist"><div className="mt-panel-heading"><h2>{job ? '단계별 상태' : '실행 준비'}</h2></div>
               {job ? <ul>{job.stages.map(stage => <li key={stage.id}><button type="button" onClick={() => { setSelectedStage(stage.id); setResultTab('results'); }}>
-                <span>{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}<small className="mt-stage-time">{formatDuration(elapsedSeconds(stage))}{(stage.status === 'running' || stage.timing_estimated) && ' · 추정'}</small></span><span className={`mt-status mt-status-${stage.status}`}>{STATUS_LABELS[stage.status]}</span>
+                <span>{stageTitle(stage)}<small className="mt-stage-time">{formatDuration(elapsedSeconds(stage))}{(stage.status === 'running' || stage.timing_estimated) && ' · 추정'}</small></span><span className={`mt-status mt-status-${stage.status}`}>{STATUS_LABELS[stage.status]}</span>
               </button></li>)}</ul> : <ul className="mt-readiness">
                 {[[!!health?.ready, 'Pod 연결'], [!!state.media, flow === 'image' ? '이미지 첨부' : '영상 첨부'], [flow === 'video' || !!state.documents.length, flow === 'image' ? '문서 첨부' : '문서·레퍼런스 선택'], [!errors.length, '모델·실행 조건']].map(([ready, label]) => <li key={label}><span>{label}</span><span className={ready ? 'mt-ready' : ''}>{ready ? '준비됨' : '확인 필요'}</span></li>)}
               </ul>}
@@ -409,7 +427,7 @@ export default function ModelTestPage() {
             : resultTab === 'raw' ? <JsonView value={job} />
               : resultTab === 'timing' ? (job ? <ModeltestTimings job={job} now={Date.now()} /> : <p className="mt-empty">실행 후 단계별·모델별 소요 시간이 표시됩니다.</p>)
               : !job ? <div className="mt-result-empty"><Icon name="search" /><h3>첫 검수 결과를 기다리고 있어요</h3><p>Pod 연결 → 자료 첨부 → 모델 지정 후 검수를 실행해 주세요.<br />프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></div>
-                : <div className="mt-stage-results"><nav aria-label="결과 단계 선택">{job.stages.map(stage => <button type="button" key={stage.id} aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(stage.id)}>{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}</button>)}</nav>
+                : <div className="mt-stage-results"><nav aria-label="결과 단계 선택">{job.stages.map(stage => <button type="button" key={stage.id} aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(stage.id)}>{stageTitle(stage)}{stage.agent_id && <small className="mt-stage-time">{job.agents?.find(agent => agent.id === stage.agent_id)?.name}</small>}</button>)}</nav>
                   <div className="mt-stage-output"><p className="mt-hint">{resultStage ? STATUS_LABELS[resultStage.status] : '결과를 볼 단계를 선택하세요.'}{typeof resultStage?.model_id === 'string' ? ` · ${resultStage.model_id}` : ''}</p>
                     {resultStage && <details className="mt-stage-timing"><summary>단계 소요 시간 {formatDuration(elapsedSeconds(resultStage))}{(resultStage.status === 'running' || resultStage.timing_estimated) && ' · 추정'}</summary><ModelTimingTable stages={[resultStage]} now={Date.now()} /></details>}
                     {typeof resultStage?.error === 'string' && <p className="mt-error">{resultStage.error}</p>}

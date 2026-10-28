@@ -21,7 +21,7 @@ from backend.app import modeltest_ssh as bridge
 
 
 def config(flow='image'):
-    ids = list(remote.STAGES) if flow == 'video' else [name for name in remote.STAGES if not name.startswith('logo_')]
+    ids = [name for name in remote.STAGES if name not in ('logo_similarity', 'candidate_filter', 'text_generate') and (flow == 'video' or not name.startswith('logo_'))]
     return {'contract': remote.CONTRACT, 'flow': flow, 'requirements': '행사명을 표시해야 합니다.',
         'stages': [{'id': name, 'model_id': 'owner/model'} for name in ids],
         'sampling': {'unit': 'frames', 'interval': 30, 'max_frames': 3},
@@ -204,7 +204,7 @@ def test_runner_passes_conditions_extractions_and_logo_crops_to_comparison(tmp_p
         def load(self, stage): self.stage = stage['id']
         def generate(self, prompt, images=(), require_vision=False):
             calls.append((self.stage, prompt, list(images))); return self.stage + ' output'
-        def logos(self, _path): return [{'bbox': [2, 3, 12, 13]}]
+        def logos(self, _path, instruction=''): return [{'bbox': [2, 3, 12, 13]}]
     monkeypatch.setattr(remote, 'Models', FakeModels)
     monkeypatch.setattr(remote, 'process_start', lambda _pid: 'fixture')
     poster = tmp_path / 'poster.png'; Image.new('RGB', (20, 20)).save(poster)

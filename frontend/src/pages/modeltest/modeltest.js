@@ -1,3 +1,5 @@
+import { compileAgents } from './modeltestAgents.js';
+
 export const CONTRACT = 'modeltest.v1';
 export const FILE_TYPES = {
   image: ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'],
@@ -11,9 +13,12 @@ export const STAGES = [
   { id: 'logo_extract', title: '로고 추출', description: '프레임 이미지 → 로고 영역', icon: 'search', video: true },
   { id: 'text_extract', title: '문구 추출', description: '이미지 → 문구와 위치', icon: 'list' },
   { id: 'visual_extract', title: '시각 요소 추출', description: '이미지 → 객체·색상·배치', icon: 'image' },
+  { id: 'logo_similarity', title: '로고 이미지 유사도', description: '로고 크롭 ↔ 모든 원본 로고 · SigLIP2', icon: 'search', video: true, workflowOnly: true, needs: 'logo_extract' },
+  { id: 'candidate_filter', title: '후보 필터', description: '각 로고별 최소 유사도 → 상위 N개', icon: 'list', video: true, workflowOnly: true, needs: 'logo_similarity' },
   { id: 'logo_compare', title: '원본 로고와 대조', description: '추출한 로고 ↔ 레퍼런스 이미지', icon: 'search', video: true, needs: 'logo_extract' },
   { id: 'text_compare', title: '조건과 문구 대조', description: '검수 조건 ↔ 추출한 문구', icon: 'check', needs: 'text_extract' },
   { id: 'visual_compare', title: '조건과 시각 요소 대조', description: '검수 조건 ↔ 추출한 시각 요소', icon: 'check', needs: 'visual_extract' },
+  { id: 'text_generate', title: '모델 응답 생성', description: '선행 단계 결과와 지시 → 모델 응답', icon: 'file', agentOnly: true },
 ];
 export const STATUS_LABELS = { queued: '대기', running: '실행 중', completed: '완료', failed: '실패', cancelled: '취소', skipped: '제외' };
 export const TERMINAL = ['completed', 'failed', 'cancelled'];
@@ -23,24 +28,88 @@ export function preparationLabel(value) {
 export const SIGLIP2 = 'google/siglip2-base-patch16-224';
 export const MODEL_OPTIONS = [
   { id: 'google/owlv2-base-patch16', stages: ['logo_extract'], description: '로고 영역을 찾아 좌표와 탐지 점수를 반환합니다.' },
-  { id: SIGLIP2, stages: ['visual_extract'], description: '입력한 후보 문구와 이미지의 유사도를 계산합니다. OCR·설명 생성은 지원하지 않습니다.' },
+  { id: SIGLIP2, stages: ['visual_extract', 'logo_similarity'], description: '시각 요소에서는 후보 문구, 로고 유사도에서는 원본 이미지와 대조합니다.' },
   { id: 'vismatch/xfeat', stages: ['logo_compare'], description: '잘라낸 로고와 원본의 특징점을 대조합니다. 특징점이 부족하면 판단을 보류합니다.' },
-  { id: 'Qwen/Qwen3.5-4B', stages: STAGES.map(stage => stage.id), description: '문서·이미지를 읽고 문구, 시각 설명, 조건 대조 결과를 생성합니다.' },
+  { id: 'Qwen/Qwen3.5-4B', stages: STAGES.filter(stage => !stage.workflowOnly).map(stage => stage.id), description: '문서·이미지를 읽고 문구, 시각 설명, 조건 대조 결과를 생성합니다.' },
 ];
 
 export function modelOptions(health) {
   return [...MODEL_OPTIONS, ...(health?.models || []).filter(model => !MODEL_OPTIONS.some(known => known.id === model.id))];
 }
 
-export function stagesFor(flow) { return STAGES.filter(stage => flow === 'video' || !stage.video); }
+export function stagesFor(flow) { return STAGES.filter(stage => !stage.agentOnly && (flow === 'video' || !stage.video)); }
+export function stageTitle(stage) { return stage?.name || STAGES.find(item => item.id === (stage?.kind || stage?.id))?.title || (stage?.id === 'frames' ? '프레임 이미지 추출' : stage?.id || ''); }
 export function initialFlow(flow) {
   return {
     media: null, documents: [], references: [], requirements: '', requirementsOpen: false,
     sampling: { unit: 'frames', interval: '30', max_frames: '120' },
+    workflow: { enabled: false, edges: [], maxParallel: 1, positions: {} },
+    agentWorkflow: { enabled: false, agents: [], edges: [], positions: {}, maxParallel: 1 },
     stages: Object.fromEntries(stagesFor(flow).map(stage => [stage.id, {
-      enabled: flow === 'image' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: '', labels: '', imageSimilarity: false,
+      enabled: flow === 'image' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, threshold: '', topK: '2',
     }])),
   };
+}
+
+export function workflowNodes(flow, state) {
+  const nodes = stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled));
+  if (flow === 'video') nodes.splice(nodes[0]?.id === 'conditions' ? 1 : 0, 0, { id: 'frames', title: '프레임 이미지 추출', description: '영상 → 분석 프레임' });
+  return nodes;
+}
+
+export function workflowError(flow, state) {
+  if (!state.workflow.enabled) return '';
+  const nodes = workflowNodes(flow, state); const parents = new Map(nodes.map(node => [node.id, new Set()]));
+  if (![1, 2].includes(state.workflow.maxParallel)) return '동시 실행 수는 1 또는 2를 선택해 주세요.';
+  for (const { source, target } of state.workflow.edges) {
+    if (!parents.has(source) || !parents.has(target)) return '선택 해제한 단계의 연결을 삭제하거나 연결을 다시 배치해 주세요.';
+    if (source === target || parents.get(target).has(source)) return '자기 연결 또는 중복 연결은 사용할 수 없습니다.';
+    parents.get(target).add(source);
+  }
+  const ancestors = new Map(); const pending = new Map(parents);
+  while (pending.size) {
+    const ready = [...pending].filter(([, sources]) => [...sources].every(source => ancestors.has(source)));
+    if (!ready.length) return '순환 연결이 있습니다. 되돌아오는 연결을 삭제해 주세요.';
+    for (const [id, sources] of ready) {
+      const all = new Set(sources); for (const source of sources) for (const parent of ancestors.get(source)) all.add(parent);
+      ancestors.set(id, all); pending.delete(id);
+    }
+  }
+  for (const node of nodes) {
+    const required = node.needs ? [node.needs] : [];
+    if (flow === 'video' && !['conditions', 'frames'].includes(node.id)) required.push('frames');
+    if (['text_compare', 'visual_compare'].includes(node.id) && parents.has('conditions')) required.push('conditions');
+    if (node.id === 'logo_compare' && parents.has('candidate_filter')) required.push('candidate_filter');
+    const missing = required.filter(id => !ancestors.get(node.id).has(id));
+    if (missing.length) return `${node.title}: ${missing.map(id => STAGES.find(stage => stage.id === id)?.title || '프레임 이미지 추출').join(', ')}에서 이어지는 연결이 필요합니다.`;
+  }
+  if (parents.has('candidate_filter') && !parents.has('logo_compare')) return '후보 필터를 원본 로고와 대조 단계에 연결해 주세요.';
+  if (parents.has('logo_similarity') && state.stages.logo_compare.imageSimilarity) return '별도 유사도 노드를 사용할 때는 XFeat의 SigLIP2 추가 계산을 해제해 주세요.';
+  return '';
+}
+
+export function workflowPreset(flow, state, preset = 'serial') {
+  const stages = { ...state.stages };
+  if (flow === 'video' && preset !== 'serial') {
+    stages.logo_extract = { ...stages.logo_extract, enabled: true, model: stages.logo_extract.model || 'google/owlv2-base-patch16' };
+    stages.logo_similarity = { ...stages.logo_similarity, enabled: true, model: SIGLIP2 };
+    stages.candidate_filter = { ...stages.candidate_filter, enabled: preset === 'filtered', topK: stages.candidate_filter.topK || '2' };
+    stages.logo_compare = { ...stages.logo_compare, enabled: true, model: 'vismatch/xfeat', imageSimilarity: false };
+  }
+  const next = { ...state, stages, workflow: { ...state.workflow, enabled: true, maxParallel: preset === 'parallel' ? 2 : 1 } };
+  const nodes = workflowNodes(flow, next); let edges;
+  if (preset === 'serial') edges = nodes.slice(1).map((node, index) => ({ source: nodes[index].id, target: node.id }));
+  else {
+    const ids = new Set(nodes.map(node => node.id)); edges = [];
+    const add = (source, target) => { if (ids.has(source) && ids.has(target)) edges.push({ source, target }); };
+    for (const id of ['logo_extract', 'text_extract', 'visual_extract']) add('frames', id);
+    add('logo_extract', 'logo_similarity');
+    if (preset === 'filtered') { add('logo_similarity', 'candidate_filter'); add('candidate_filter', 'logo_compare'); }
+    else add('logo_extract', 'logo_compare');
+    for (const id of ['text', 'visual']) { add(`${id}_extract`, `${id}_compare`); add('conditions', `${id}_compare`); }
+  }
+  next.workflow.edges = edges;
+  return next;
 }
 
 export function parseModel(value) {
@@ -67,13 +136,22 @@ export function parseModel(value) {
 }
 
 export function parseStageModel(stageId, value, health) {
+  if (stageId === 'candidate_filter') {
+    const threshold = value.threshold?.trim() ? Number(value.threshold) : null;
+    const top_k = value.topK?.trim() ? Number(value.topK) : null;
+    if (threshold === null && top_k === null) throw new Error('최소 유사도 또는 상위 후보 수를 입력해 주세요.');
+    if (threshold !== null && (!Number.isFinite(threshold) || threshold < -1 || threshold > 1)) throw new Error('최소 코사인 유사도는 -1~1 사이여야 합니다.');
+    if (top_k !== null && (!Number.isInteger(top_k) || top_k < 1 || top_k > 10)) throw new Error('상위 후보 수는 1~10 사이의 정수여야 합니다.');
+    return { ...(threshold !== null ? { threshold } : {}), ...(top_k !== null ? { top_k } : {}) };
+  }
   const parsed = parseModel(value.model);
+  if (stageId === 'logo_similarity' && parsed.model_id !== SIGLIP2) throw new Error('로고 이미지 유사도에는 SigLIP2를 선택해 주세요.');
   const profile = modelOptions(health).find(model => model.id === parsed.model_id);
   if (profile && !profile.stages.includes(stageId)) {
     const titles = profile.stages.map(id => STAGES.find(stage => stage.id === id)?.title || id);
     throw new Error(`이 모델은 ${titles.join(', ')} 단계에서 사용해 주세요.`);
   }
-  if (parsed.model_id === SIGLIP2) {
+  if (parsed.model_id === SIGLIP2 && stageId === 'visual_extract') {
     const labels = (value.labels || '').split(/\r?\n/).map(label => label.trim()).filter(Boolean);
     if (!labels.length || labels.length > 32 || labels.some(label => label.length > 200)) throw new Error('비교할 후보 문구를 한 줄에 하나씩, 1~32개 입력해 주세요. 문구당 최대 200자입니다.');
     if (new Set(labels).size !== labels.length) throw new Error('후보 문구가 중복됐습니다.');
@@ -139,15 +217,22 @@ export function formErrors(flow, state, health) {
   files.forEach(([file, kind]) => { const error = fileError(file, kind, health); if (error) errors.push(error); });
   if (state.documents.length > 10 || state.references.length > 10) errors.push('문서와 레퍼런스는 각각 최대 10개까지 첨부할 수 있습니다.');
   if (health && files.reduce((sum, [file]) => sum + file.size, 0) > health.limits.total_bytes) errors.push(`첨부 파일 합계는 ${formatBytes(health.limits.total_bytes)} 이하여야 합니다.`);
-  const enabled = stagesFor(flow).filter(stage => state.stages[stage.id].enabled);
-  if (!enabled.length) errors.push('실행할 모델 단계를 하나 이상 선택해 주세요.');
+  const agentMode = state.agentWorkflow?.enabled;
+  if (agentMode) { try { compileAgents(flow, state, health); } catch (error) { errors.push(error.message); } }
+  const enabled = agentMode ? [] : stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled));
+  if (!agentMode && !enabled.length) errors.push('실행할 모델 단계를 하나 이상 선택해 주세요.');
   for (const stage of enabled) {
+    if (stage.workflowOnly && !state.workflow.enabled) errors.push(`${stage.title}: 워크플로우 편집을 활성화해 주세요.`);
     try { parseStageModel(stage.id, state.stages[stage.id], health); } catch (error) { errors.push(`${stage.title}: ${error.message}`); }
     if (health && !health.stages.includes(stage.id)) errors.push(`${stage.title}: 연결된 Pod가 지원하지 않습니다.`);
     if (stage.id === 'conditions' && !state.documents.length) errors.push('조건 추출을 실행하려면 문서를 첨부해 주세요.');
     if (stage.needs && !state.stages[stage.needs].enabled) errors.push(`${stage.title}: 먼저 추출 단계도 선택해 주세요.`);
     if (['text_compare', 'visual_compare'].includes(stage.id) && !state.stages.conditions.enabled && !state.requirements.trim()) errors.push(`${stage.title}: 문서 조건 추출을 선택하거나 조건을 직접 입력해 주세요.`);
-    if (stage.id === 'logo_compare' && !state.references.length) errors.push('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+    if (['logo_compare', 'logo_similarity'].includes(stage.id) && !state.references.length) errors.push('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+  }
+  if (!agentMode && state.workflow.enabled) {
+    const graphError = workflowError(flow, state); if (graphError) errors.push(graphError);
+    if (health && health.workflow?.version !== 1) errors.push('현재 연결은 워크플로우를 지원하지 않습니다. 백엔드 재시작 후 Pod에 다시 연결해 주세요.');
   }
   if (state.requirements.length > 12000) errors.push('직접 입력한 조건은 12,000자 이하여야 합니다.');
   if (flow === 'video') {
@@ -161,9 +246,13 @@ export function formErrors(flow, state, health) {
 
 function fileInfo(file) { return { name: file.name, size: file.size, type: file.type }; }
 export function makeManifest(flow, state, health) {
+  const execution = state.agentWorkflow?.enabled ? compileAgents(flow, state, health) : {
+    ...(state.workflow.enabled ? { workflow: { edges: state.workflow.edges, max_parallel: state.workflow.maxParallel } } : {}),
+    stages: stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled)).map(stage => ({ id: stage.id, ...parseStageModel(stage.id, state.stages[stage.id], health) })),
+  };
   return {
     contract: CONTRACT, flow, requirements: state.requirements.trim(),
-    stages: stagesFor(flow).filter(stage => state.stages[stage.id].enabled).map(stage => ({ id: stage.id, ...parseStageModel(stage.id, state.stages[stage.id], health) })),
+    ...execution,
     ...(flow === 'video' ? { sampling: { unit: state.sampling.unit, interval: Number(state.sampling.interval), max_frames: Number(state.sampling.max_frames) } } : {}),
     files: { media: fileInfo(state.media), documents: state.documents.map(fileInfo), references: state.references.map(fileInfo) },
   };
