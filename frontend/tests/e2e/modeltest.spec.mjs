@@ -437,10 +437,14 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await stopButton.click(); await confirmation.getByRole('heading', { name: '검수 강제 중단', exact: true }).waitFor(); await confirmation.getByRole('button', { name: '중단', exact: true }).click();
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some(button => button.textContent === '검수 강제 중단'));
   assert.equal(cancellations, 1); assert.equal(submissions, 1);
-  job = { ...job, status: 'failed', stages: job.stages.map(stage => stage.id === 'logo_compare' ? { ...stage, status: 'failed' } : stage) };
+  job = { ...job, status: 'failed', diagnostics: { returncode: -11, signal: 'SIGSEGV', log_tail: 'Fatal Python error: fixture <script>unsafe()</script>' }, stages: job.stages.map(stage => stage.id === 'logo_compare' ? { ...stage, status: 'failed' } : stage) };
   await page.reload();
   await monitor.getByRole('button', { name: '실패 단계 1개 · 첫 실패 단계 결과 보기', exact: true }).click();
   assert.equal(await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: '원본 로고와 대조', exact: true }).getAttribute('aria-pressed'), 'true');
+  const diagnosis = page.locator('summary').filter({ hasText: '종료 진단 · 코드 -11 · SIGSEGV' });
+  await diagnosis.focus(); await page.keyboard.press('Enter');
+  assert.equal(await page.getByLabel('Pod 실행 오류 로그', { exact: true }).textContent(), job.diagnostics.log_tail);
+  assert.equal(await page.getByLabel('Pod 실행 오류 로그', { exact: true }).locator('script').count(), 0);
   await page.getByRole('button', { name: '라이트', exact: true }).click();
   assert.equal(await page.locator('.mt-shell').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(244, 247, 250)');
   await page.getByRole('button', { name: '저장된 첨부·설정 지우기', exact: true }).click();

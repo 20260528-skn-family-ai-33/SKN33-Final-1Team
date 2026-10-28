@@ -74,6 +74,65 @@ def test_preview_is_bounded_jpeg_and_rejects_other_files(tmp_path):
         with pytest.raises(ValueError): remote.read_preview(tmp_path, name)
 
 
+@pytest.mark.parametrize('cancelled', [False, True])
+def test_dead_runner_reports_exit_signal_and_preserves_completed_results(tmp_path, monkeypatch, cancelled):
+    job = {'status': 'running', 'started_at': 10, 'updated_at': 11, 'stages': [
+        {'id': 'frames', 'status': 'completed', 'output': {'frames': []}},
+        {'id': 'logo_similarity', 'status': 'running', 'started_at': 11}, {'id': 'logo_compare', 'status': 'queued'}]}
+    (tmp_path / 'result.json').write_text(json.dumps(job))
+    (tmp_path / 'exit.json').write_text(json.dumps({'returncode': -9, 'signal': 'SIGKILL', 'finished_at': 20}))
+    (tmp_path / 'runner.log').write_text('native failure\n' + 'x' * 8000 + '\nCUDA fixture error')
+    if cancelled: (tmp_path / 'cancel-requested').touch()
+    value = remote.read_run(tmp_path)
+    assert value['status'] == ('cancelled' if cancelled else 'failed')
+    assert value['stages'][0] == job['stages'][0]
+    assert value['stages'][1]['status'] == ('cancelled' if cancelled else 'failed')
+    assert value['stages'][2]['status'] == ('cancelled' if cancelled else 'skipped')
+    assert value['elapsed_seconds'] == 10 and value['timing_estimated']
+    assert value['diagnostics']['returncode'] == -9 and value['diagnostics']['signal'] == 'SIGKILL'
+    assert value['diagnostics']['log_tail'].endswith('CUDA fixture error') and len(value['diagnostics']['log_tail']) <= 6000
+    if not cancelled: assert 'SIGKILL' in value['error']
+
+
+def test_live_supervisor_does_not_report_failure_before_exit_is_saved(tmp_path, monkeypatch):
+    job = {'status': 'running', 'stages': []}
+    (tmp_path / 'result.json').write_text(json.dumps(job))
+    (tmp_path / 'process.json').write_text(json.dumps({'pid': 10, 'start': 'worker'}))
+    (tmp_path / 'supervisor.json').write_text(json.dumps({'pid': 20, 'start': 'supervisor'}))
+    monkeypatch.setattr(remote, 'process_start', lambda pid: 'supervisor' if pid == 20 else None)
+    assert remote.read_run(tmp_path) == job
+    monkeypatch.setattr(remote, 'process_start', lambda _pid: None)
+    assert '종료 코드·오류 로그가 남아 있지 않습니다' in remote.read_run(tmp_path)['error']
+
+
+@pytest.mark.parametrize('failure', [False, True])
+def test_supervisor_saves_exit_and_logs_before_emitting_terminal_result(tmp_path, monkeypatch, failure):
+    runner = tmp_path / 'runner.py'; arguments = tmp_path / 'job.json'; arguments.write_text('{}')
+    runner.write_text('''import json,sys
+from pathlib import Path
+root=Path(sys.argv[1]).parent
+job={'status':'completed','stages':[]}
+(root/'result.json').write_text(json.dumps(job))
+print(sys.argv[2]+json.dumps({'kind':'run','data':job}),flush=True)
+print('hf_abcdefghijklmnopqrstuvwxyz123456 https://example.invalid/?token=secret',file=sys.stderr,flush=True)
+''' + ("raise RuntimeError('fixture native failure')\n" if failure else ''), encoding='utf-8')
+    monkeypatch.setattr(remote, 'process_start', lambda _pid: 'fixture')
+    events = []
+    def emit(kind, value):
+        assert (tmp_path / 'exit.json').is_file()
+        events.append((kind, value))
+    remote.supervise_run(runner, arguments, 'FIXTURE:', emit)
+    assert len(events) == 1
+    result = events[0][1]
+    assert result['status'] == ('failed' if failure else 'completed')
+    assert result['diagnostics']['returncode'] == (1 if failure else 0)
+    assert result['diagnostics']['signal'] is None
+    assert json.loads((tmp_path / 'result.json').read_text(encoding='utf-8')) == result
+    assert 'hf_abcdefghijklmnopqrstuvwxyz' not in (tmp_path / 'runner.log').read_text(encoding='utf-8')
+    assert 'token=secret' not in result['diagnostics']['log_tail']
+    if failure: assert 'RuntimeError: fixture native failure' in result['diagnostics']['log_tail']
+
+
 @pytest.mark.parametrize('corrupt', [False, True])
 def test_remote_binary_upload_checks_exact_size_and_checksum_before_launch(tmp_path, monkeypatch, corrupt):
     monkeypatch.setattr(Path, 'home', classmethod(lambda cls: tmp_path))

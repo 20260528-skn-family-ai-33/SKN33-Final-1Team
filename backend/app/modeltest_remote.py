@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+from dataclasses import asdict, is_dataclass
 import copy
 import gc
 import hashlib
@@ -22,6 +23,7 @@ import sys
 import tempfile
 import time
 import threading
+import traceback
 import zipfile
 import xml.etree.ElementTree as ET
 from urllib.request import Request, urlopen
@@ -324,12 +326,16 @@ def runtime_health():
             'detail': '준비 완료' if not missing and cuda else 'Pod 패키지 준비가 필요합니다.' if missing else 'Pod에서 CUDA GPU를 확인하지 못했습니다.'}
 
 
-def setup_error(stage, detail):
+def diagnostic_text(detail):
     text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', str(detail))
     text = re.sub(r'(https?://)[^\s/]+@', r'\1***@', text)
     text = re.sub(r'(https?://[^\s?#]+)[?#][^\s]*', r'\1?***', text)
     text = re.sub(r'\bhf_[A-Za-z0-9_]{20,}\b', '***', text)
-    return f'{stage} 실패\n{text[-6000:].strip()}'
+    return text[-6000:].strip()
+
+
+def setup_error(stage, detail):
+    return f'{stage} 실패\n{diagnostic_text(detail)}'
 
 
 def setup_command(stage, args, timeout=180, *, input=None):
@@ -607,7 +613,12 @@ class Models:
         self.processor = (AutoTokenizer if self.kind == 'text' else AutoProcessor).from_pretrained(key[0], **kwargs)
         self.model = cls.from_pretrained(key[0], **kwargs, use_safetensors=True, device_map='cuda', dtype='auto').eval()
         processor = getattr(self.processor, 'image_processor', None)
-        self.execution = {'model_id': key[0], 'revision': kwargs['revision'], 'preprocessing': {name: getattr(processor, name, None) for name in ('size', 'resample', 'image_mean', 'image_std', 'do_resize', 'do_normalize', 'do_rescale')}}
+        preprocessing = {}
+        for name in ('size', 'resample', 'image_mean', 'image_std', 'do_resize', 'do_normalize', 'do_rescale'):
+            value = getattr(processor, name, None)
+            # Transformers 5 image processors expose size as a SizeDict dataclass.
+            preprocessing[name] = asdict(value) if is_dataclass(value) else value
+        self.execution = {'model_id': key[0], 'revision': kwargs['revision'], 'preprocessing': preprocessing}
         self.key = key
 
     def generate(self, prompt, images=(), require_vision=False):
@@ -762,6 +773,79 @@ def process_start(pid):
     except (OSError, IndexError): return None
 
 
+def read_run(directory):
+    result = directory / 'result.json'; exit_file = directory / 'exit.json'
+    if not result.is_file() and not exit_file.is_file():
+        return {'not_started': not (directory / 'receipt.json').exists()}
+    job = json.loads(result.read_text(encoding='utf-8')) if result.is_file() else {
+        'contract': CONTRACT, 'id': directory.name, 'status': 'running', 'stages': []}
+    diagnosis = json.loads(exit_file.read_text(encoding='utf-8')) if exit_file.is_file() else None
+    if diagnosis is not None:
+        log = directory / 'runner.log'
+        if log.is_file():
+            with log.open('rb') as stream:
+                stream.seek(max(0, log.stat().st_size - 6000))
+                diagnosis['log_tail'] = diagnostic_text(stream.read().decode('utf-8', errors='replace'))
+        job['diagnostics'] = diagnosis
+    info_file = directory / 'process.json'
+    supervisor_file = directory / 'supervisor.json'
+    alive = False
+    for path in (info_file, supervisor_file):
+        if path.is_file():
+            info = json.loads(path.read_text())
+            alive |= info['start'] is not None and process_start(info['pid']) == info['start']
+    interrupted = job['status'] in ('running', 'queued') and (diagnosis is not None or (info_file.is_file() and not alive))
+    if interrupted or (diagnosis and diagnosis['returncode'] != 0 and job['status'] == 'completed'):
+        finish_interrupted_timings(job, diagnosis['finished_at'] if diagnosis else job.get('updated_at', time.time()))
+        reason = 'Pod 실행 프로세스가 종료돼 검수를 완료하지 못했습니다.'
+        if diagnosis:
+            reason += f" 종료 코드 {diagnosis['returncode']}" + (f" ({diagnosis['signal']})" if diagnosis.get('signal') else '') + '. 종료 진단을 확인해 주세요.'
+        else: reason += ' 이 작업에는 종료 코드·오류 로그가 남아 있지 않습니다.'
+        cancelled = (directory / 'cancel-requested').is_file()
+        job.update(status='cancelled' if cancelled else 'failed', error='사용자가 검수 작업을 중단했습니다.' if cancelled else reason)
+        for stage in job['stages']:
+            if stage['status'] == 'running': stage.update(status='cancelled' if cancelled else 'failed', error=job['error'])
+            elif stage['status'] == 'queued': stage['status'] = 'cancelled' if cancelled else 'skipped'
+    return job
+
+
+def supervise_run(runner, arguments, prefix, emit):
+    # Keep diagnostics alive when the SSH channel closes or the model process crashes.
+    if hasattr(signal, 'SIGHUP'): signal.signal(signal.SIGHUP, signal.SIG_IGN)
+    directory = arguments.parent
+    (directory / 'supervisor.json').write_text(json.dumps({'pid': os.getpid(), 'start': process_start(os.getpid())}))
+    with (directory / 'runner.log').open('wb') as log:
+        try:
+            process = subprocess.Popen([sys.executable, '-u', str(runner), str(arguments), prefix],
+                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True,
+                env={**os.environ, 'PYTHONFAULTHANDLER': '1'})
+            with process.stdout:
+                while raw := process.stdout.readline(16 * 1024**2 + 1):
+                    text = raw.decode('utf-8', errors='replace')
+                    if text.startswith(prefix):
+                        message = json.loads(text[len(prefix):])
+                        # Publish terminal results only after recording the child's exit.
+                        if message['kind'] != 'run' or message['data'].get('status') not in ('completed', 'failed', 'cancelled'):
+                            emit(message['kind'], message['data'])
+                    else:
+                        if log.tell() > 1024**2: log.seek(0); log.truncate()
+                        log.write(diagnostic_text(text).encode('utf-8') + b'\n'); log.flush()
+            returncode = process.wait()
+        except OSError as error:
+            log.write(setup_error('Pod 프로세스 시작', error).encode('utf-8')); log.flush()
+            returncode = 1
+    name = None
+    if returncode < 0:
+        try: name = signal.Signals(-returncode).name
+        except ValueError: name = f'SIGNAL_{-returncode}'
+    temp = directory / 'exit.tmp'
+    temp.write_text(json.dumps({'returncode': returncode, 'signal': name, 'finished_at': time.time()}), encoding='utf-8')
+    temp.replace(directory / 'exit.json')
+    job = read_run(directory)
+    temp = directory / 'supervisor-result.tmp'; temp.write_text(json.dumps(job, ensure_ascii=False), encoding='utf-8'); temp.replace(directory / 'result.json')
+    emit('run', job)
+
+
 def finish_interrupted_timings(job, observed_at):
     # A killed runner cannot report its final monotonic measurement.
     for stage in job['stages']:
@@ -790,6 +874,7 @@ def cancel_run(directory):
         args = Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0')
         if str(directory / 'runner.py').encode() not in args or str(directory / 'job.json').encode() not in args:
             raise ValueError('프로세스가 해당 검수 작업과 일치하지 않아 중단하지 않았습니다.')
+        (directory / 'cancel-requested').write_text(str(time.time()))
         for sig in (signal.SIGTERM, signal.SIGKILL):
             if process_start(pid) != start: break
             try:
@@ -987,7 +1072,7 @@ def execute_run(config, paths, root, emit):
                     current['model_execution'] = {'registration_id': stage['model_profile']['id'], 'fingerprint': stage['model_profile']['fingerprint'], 'versions': catalog.installed_versions()}
                 current['status'] = 'completed'; current['elapsed_seconds'] = round(time.monotonic() - began, 3); publish()
             except Exception as error:
-                message = str(error) if isinstance(error, ValueError) else f'{type(error).__name__}: 모델 지원 여부, Pod 메모리와 실행환경을 확인해 주세요.'
+                message = setup_error('모델 실행', f'{type(error).__name__}: {error}')
                 current.update(status='failed', error=message[:6500], elapsed_seconds=round(time.monotonic() - worker.began, 3))
                 publish()
                 raise
@@ -1010,8 +1095,9 @@ def execute_run(config, paths, root, emit):
             if failure is not None: raise failure
         job['status'] = 'completed'
     except Exception as error:
+        traceback.print_exc()
         job['status'] = 'failed'
-        message = str(error) if isinstance(error, ValueError) else f'{type(error).__name__}: 모델 지원 여부, Pod 메모리와 실행환경을 확인해 주세요.'
+        message = setup_error('모델 실행', f'{type(error).__name__}: {error}')
         job['error'] = message[:6500]
         for stage in stages:
             if stage['status'] == 'queued': stage['status'] = 'skipped'
@@ -1070,26 +1156,13 @@ def remote_main(boot, stream, prefix):
         except Exception as error: emit('error', str(error) if isinstance(error, ValueError) else 'Pod 미리보기를 읽지 못했습니다.')
         return
     if action == 'status':
-        result = directory / 'result.json'
-        if not result.is_file():
-            emit('run', {'not_started': not (directory / 'receipt.json').exists()}); return
-        job = json.loads(result.read_text(encoding='utf-8'))
-        process_info = directory / 'process.json'
-        if job['status'] == 'running' and process_info.is_file():
-            info = json.loads(process_info.read_text())
-            alive = info['start'] is not None and process_start(info['pid']) == info['start']
-            if not alive:
-                finish_interrupted_timings(job, job.get('updated_at', time.time()))
-                job.update(status='failed', error='Pod 실행 프로세스가 종료돼 검수를 완료하지 못했습니다.')
-                for stage in job['stages']:
-                    if stage['status'] in ('queued', 'running'): stage['status'] = 'skipped'
-        emit('run', job); return
+        emit('run', read_run(directory)); return
     if not python.exists(): raise ValueError('먼저 Pod 실행환경 준비를 실행해 주세요.')
     validate_config(boot['config']); digest = boot['digest']; receipt = directory / 'receipt.json'
     if receipt.exists():
         stored = json.loads(receipt.read_text())
         if stored['digest'] != digest: raise ValueError('동일 요청 ID의 내용이 다릅니다.')
-        emit('run', json.loads((directory / 'result.json').read_text(encoding='utf-8'))); return
+        emit('run', read_run(directory)); return
     directory.mkdir(parents=True, exist_ok=True)
     paths = {'documents': [], 'references': [], 'container': boot.get('container')}
     for item in boot['uploads']:
@@ -1117,13 +1190,17 @@ def remote_main(boot, stream, prefix):
     arguments = directory / 'job.json'
     arguments.write_text(json.dumps({'config': boot['config'], 'paths': {key: [str(p) for p in value] if isinstance(value, list) else str(value) if isinstance(value, Path) else value for key, value in paths.items()}}), encoding='utf-8')
     # The dedicated process persists progress on disk so a dropped SSH channel can be queried again.
-    subprocess.run([str(python), str(runner), str(arguments), prefix], check=True, start_new_session=True)
+    subprocess.run([str(python), str(runner), '--supervise', str(arguments), prefix], check=True, start_new_session=True)
 
 
-if __name__ == '__main__' and len(sys.argv) == 3:
-    payload = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
-    paths = {key: [Path(p) for p in value] if isinstance(value, list) else Path(value) if key == 'media' else value for key, value in payload['paths'].items()}
+if __name__ == '__main__' and len(sys.argv) in (3, 4):
+    prefix = sys.argv[-1]
     def event(kind, data):
-        try: print(sys.argv[2] + json.dumps({'kind': kind, 'data': data}, ensure_ascii=False, allow_nan=False), flush=True)
+        try: print(prefix + json.dumps({'kind': kind, 'data': data}, ensure_ascii=False, allow_nan=False), flush=True)
         except (BrokenPipeError, OSError): pass
-    execute_run(payload['config'], paths, Path(sys.argv[1]).parent, event)
+    if len(sys.argv) == 4 and sys.argv[1] == '--supervise':
+        supervise_run(Path(sys.argv[0]), Path(sys.argv[2]), prefix, event)
+    else:
+        payload = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+        paths = {key: [Path(p) for p in value] if isinstance(value, list) else Path(value) if key == 'media' else value for key, value in payload['paths'].items()}
+        execute_run(payload['config'], paths, Path(sys.argv[1]).parent, event)

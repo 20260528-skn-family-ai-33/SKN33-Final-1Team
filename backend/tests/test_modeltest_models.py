@@ -235,7 +235,9 @@ def test_optional_image_cosine_uses_siglip_pooler_features(tmp_path):
 
 
 @pytest.mark.parametrize('model_id', [*remote.OWLV2_MODELS, *remote.SIGLIP2_MODELS])
-def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch, model_id):
+@pytest.mark.parametrize('size_dataclass', [False, True])
+def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch, model_id, size_dataclass):
+    from dataclasses import make_dataclass
     calls = []; revision = 'b' * 40
     class Loader:
         @staticmethod
@@ -243,7 +245,9 @@ def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch,
             calls.append((repo, kwargs))
             if len(calls) == 1: return SimpleNamespace(_commit_hash=revision)
             if len(calls) == 2:
-                return SimpleNamespace(image_processor=SimpleNamespace(size={'width': 384, 'height': 384} if repo == remote.SIGLIP2_SO400M else {'width': 224, 'height': 224}))
+                size = {'width': 384, 'height': 384} if repo == remote.SIGLIP2_SO400M else {'width': 224, 'height': 224}
+                if size_dataclass: size = make_dataclass('SizeDict', [('width', int), ('height', int)])(**size)
+                return SimpleNamespace(image_processor=SimpleNamespace(size=size))
             return SimpleNamespace(eval=lambda: 'loaded model')
     monkeypatch.setitem(sys.modules, 'torch', SimpleNamespace(cuda=SimpleNamespace(empty_cache=lambda: None)))
     monkeypatch.setitem(sys.modules, 'transformers', SimpleNamespace(**{name: Loader for name in (
@@ -255,5 +259,7 @@ def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch,
     assert [repo for repo, _ in calls] == [model_id] * 3
     assert all(options['revision'] == revision for _, options in calls[1:])
     assert models.execution['revision'] == revision
-    if model_id == remote.SIGLIP2_SO400M: assert models.processor.image_processor.size == {'width': 384, 'height': 384}
+    execution = json.loads(json.dumps(models.execution, allow_nan=False))
+    size = 384 if model_id == remote.SIGLIP2_SO400M else 224
+    assert execution['preprocessing']['size'] == {'width': size, 'height': size}
     assert remote.MODEL_HANDLERS[model_id] is (remote.run_owlv2 if role == 'logo_extract' else remote.run_siglip2)

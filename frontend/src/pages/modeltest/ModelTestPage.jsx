@@ -589,6 +589,10 @@ export default function ModelTestPage() {
         <button type="button" className="btn secondary small" disabled={!manifest} onClick={download}>JSON 내려받기</button></div>
         <div className="mt-result-tabs" aria-label="결과 보기">{[['results', '단계별 결과'], ['timing', '소요 시간'], ['debug', '디버그']].map(([id, title]) => <button type="button" key={id} aria-pressed={resultTab === id} onClick={() => setResultTab(id)}>{title}</button>)}</div>
         <div className="mt-result-body">
+          {job?.diagnostics && job.status !== 'completed' && <details className="mt-stage-timing"><summary>종료 진단 · 코드 {job.diagnostics.returncode}{job.diagnostics.signal && ` · ${job.diagnostics.signal}`}</summary>
+            <p className="mt-hint">Pod 모델 프로세스의 종료 기록입니다. 강제 종료 신호만으로 메모리 부족을 확정할 수는 없습니다.</p>
+            {job.diagnostics.log_tail && <pre className="mt-json" tabIndex={0} aria-label="Pod 실행 오류 로그">{job.diagnostics.log_tail}</pre>}
+          </details>}
           {resultTab === 'debug' ? <div className="mt-debug">
             <section aria-labelledby="mt-debug-request"><h3 id="mt-debug-request">실행 설정</h3>{contextRef.current && <p className="mt-hint">요청 ID: {contextRef.current.requestId}</p>}<JsonView value={manifest} /></section>
             <section aria-labelledby="mt-debug-response"><h3 id="mt-debug-response">전체 응답</h3><JsonView value={job} /></section>
