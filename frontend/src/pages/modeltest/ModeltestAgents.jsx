@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { STAGES, modelOptions, parseModel } from './modeltest.js';
-import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
+import { agentTemplate, compileAgents, newAgent, newAgentStep, cleanAgentBindings, removeAgentNode, duplicateAgentStep } from './modeltestAgents.js';
+import { nodePosition } from './modeltestBoard.js';
 import { WorkflowGraph } from './ModeltestWorkflow.jsx';
 import { GENERAL, EXTRA_STAGES, INPUTS, acceptsInput, modelChoice, registration } from './modeltestCatalog.js';
 
-export default function ModeltestAgents({ flow, state, update, disabled, health }) {
+export default function ModeltestAgents({ flow, state, update, disabled, health, onUndo, canUndo }) {
   const board = state.agentWorkflow; const [agentId, setAgentId] = useState(''); const [stepId, setStepId] = useState(''); const [newKind, setNewKind] = useState('text_generate');
   const agent = board.agents.find(item => item.id === agentId) || board.agents[0];
   const step = agent?.nodes.find(item => item.id === stepId) || agent?.nodes[0];
   const kinds = STAGES.filter(kind => flow === 'video' || !kind.video);
-  const change = patch => update({ agentWorkflow: { ...board, ...patch } });
-  const changeAgent = patch => change({ agents: board.agents.map(item => item.id === agent.id ? { ...item, ...patch } : item) });
+  const change = patch => update({ agentWorkflow: patch.edges ? cleanAgentBindings({ ...board, ...patch }) : { ...board, ...patch } });
+  const changeAgent = patch => { const next = { ...board, agents: board.agents.map(item => item.id === agent.id ? { ...item, ...patch } : item) }; update({ agentWorkflow: patch.edges ? cleanAgentBindings(next) : next }); };
   const changeStep = patch => change({ agents: board.agents.map(item => ({ ...item, nodes: item.nodes.map(node => node.id === step.id ? { ...node, ...patch } : patch.model !== undefined && patch.model !== step.model && node.kind === 'candidate_filter' ? { ...node, threshold: '' } : node) })) });
   let error = ''; try { compileAgents(flow, state, health); } catch (cause) { error = cause.message; }
   let modelId = ''; try { modelId = parseModel(step?.model || '').model_id; } catch { /* An unfinished model ID stays editable. */ }
@@ -18,22 +19,36 @@ export default function ModeltestAgents({ flow, state, update, disabled, health 
   const registered = registration(step?.model, health);
   const models = modelOptions(health).filter(model => model.stages.includes(step?.kind));
   const inputRoles = INPUTS[step?.kind] ? Object.keys(INPUTS[step.kind]) : ({ logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract', 'candidate_filter'], text_compare: ['text_extract', 'conditions'], visual_compare: ['visual_extract', 'conditions'] })[step?.kind] || [];
-  function addAgent() { const next = newAgent(); change({ agents: [...board.agents, next] }); setAgentId(next.id); setStepId(''); }
-  function removeAgent() {
-    if (!window.confirm(`${agent.name}와 내부 단계 ${agent.nodes.length}개를 삭제할까요?`)) return;
-    change({ agents: board.agents.filter(item => item.id !== agent.id), edges: board.edges.filter(edge => edge.source !== agent.id && edge.target !== agent.id) }); setAgentId(''); setStepId('');
+  function addAgent(point) { if (board.agents.length >= 32) return; const next = newAgent(); change({ agents: [...board.agents, next], ...(point ? { positions: { ...board.positions, [next.id]: point } } : {}) }); setAgentId(next.id); setStepId(''); }
+  function removeAgent(id = agent.id) {
+    const target = board.agents.find(item => item.id === id);
+    if (!target || !window.confirm(`${target.name}와 내부 단계 ${target.nodes.length}개를 삭제할까요?`)) return;
+    update({ agentWorkflow: removeAgentNode(board, id) }); setAgentId(''); setStepId('');
   }
-  function addStep() {
-    const node = newAgentStep(newKind); const previous = step || agent.nodes.at(-1);
-    changeAgent({ nodes: [...agent.nodes, node], edges: previous ? [...agent.edges, { source: previous.id, target: node.id }] : agent.edges }); setStepId(node.id);
+  function addStep(kind = newKind, point) {
+    if (board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64) return;
+    const node = newAgentStep(kind); const previous = point ? null : step || agent.nodes.at(-1);
+    changeAgent({ nodes: [...agent.nodes, node], edges: previous ? [...agent.edges, { source: previous.id, target: node.id }] : agent.edges, ...(point ? { positions: { ...agent.positions, [node.id]: point } } : {}) }); setStepId(node.id);
   }
-  function removeStep() {
-    changeAgent({ nodes: agent.nodes.filter(item => item.id !== step.id), edges: agent.edges.filter(edge => edge.source !== step.id && edge.target !== step.id) }); setStepId('');
+  function removeStep(id = step.id) {
+    update({ agentWorkflow: removeAgentNode(board, agent.id, id) }); setStepId('');
+  }
+  function rename(id, internal = false) {
+    const target = (internal ? agent.nodes : board.agents).find(item => item.id === id);
+    const name = window.prompt('이름을 입력하세요. (최대 100자)', target.name);
+    if (!name?.trim()) return;
+    if (internal) changeAgent({ nodes: agent.nodes.map(node => node.id === id ? { ...node, name: name.trim().slice(0, 100) } : node) });
+    else change({ agents: board.agents.map(item => item.id === id ? { ...item, name: name.trim().slice(0, 100) } : item) });
+  }
+  function duplicate(id) {
+    if (board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64) return;
+    const index = agent.nodes.findIndex(node => node.id === id); const node = duplicateAgentStep(agent.nodes[index]); const pos = nodePosition(agent.positions, id, index);
+    changeAgent({ nodes: [...agent.nodes, node], positions: { ...agent.positions, [node.id]: { x: pos.x + 36, y: pos.y + 120 } } }); setStepId(node.id);
   }
   return <section className="mt-panel mt-agent-board" aria-label="에이전트 워크플로우 보드">
     <div className="mt-panel-heading"><div><h2>에이전트 워크플로우 보드</h2><p>바깥 연결은 에이전트 순서, 내부 연결은 모델·필터 실행 순서입니다.</p></div><span>{board.agents.length}개 에이전트</span></div>
     <div className="mt-workflow-body">
-      <div className="mt-workflow-toolbar"><button type="button" className="btn secondary small" disabled={disabled || board.agents.length >= 32} onClick={addAgent}>에이전트 추가</button>
+      <div className="mt-workflow-toolbar"><button type="button" className="btn secondary small" disabled={disabled || board.agents.length >= 32} onClick={() => addAgent()}>에이전트 추가</button>
         <button type="button" className="btn secondary small" disabled={disabled} onClick={() => { if (!board.agents.length || window.confirm('현재 보드를 A01~A08 템플릿으로 바꿀까요?')) { update({ agentWorkflow: agentTemplate(flow) }); setAgentId(''); setStepId(''); } }}>A01~A08 템플릿</button>
         <label>동시 실행 수<select aria-label="에이전트 보드 동시 실행 수" disabled={disabled} value={board.maxParallel} onChange={event => change({ maxParallel: Number(event.target.value) })}><option value={1}>1개</option><option value={2}>최대 2개</option></select></label>
         <button type="button" className="text-btn" disabled={disabled} onClick={() => change({ positions: {} })}>보드 위치 초기화</button>
@@ -41,17 +56,23 @@ export default function ModeltestAgents({ flow, state, update, disabled, health 
       <p className="mt-hint">노드 제목을 드래그하거나 방향키로 옮기고, 출력 점과 입력 점을 연결하세요. 활성 에이전트의 내부 단계가 모두 끝나면 다음 에이전트가 시작합니다. 비활성 에이전트는 건너뛰어 연결을 이어갑니다.</p>
       <p className="mt-hint">A01~A08은 수정 가능한 초안입니다. 현재 모델 호출·필터 실행을 지원하며 검색·MCP 호출, 사람 승인, 자동 재검사 반복은 연결되지 않았습니다. A03과 A08은 기본 비활성입니다.</p>
       {board.maxParallel === 2 && <p className="mt-hint">두 모델을 함께 올릴 GPU 메모리가 필요합니다. 병렬 실행 여부는 선행 연결과 남은 실행 슬롯에 따라 결정됩니다.</p>}
-      <WorkflowGraph nodes={board.agents.map(item => ({ id: item.id, title: item.name || '이름 없음', description: `${item.enabled ? '활성' : '비활성'} · 내부 ${item.nodes.length}단계` }))}
+      <WorkflowGraph key={`${flow}-agents`} boardId={`${flow}-agents`} label="에이전트 보드" onUndo={onUndo} canUndo={canUndo}
+        nodeActions={id => [{ label: '이름 변경', run: () => rename(id) }, { label: board.agents.find(item => item.id === id)?.enabled ? '비활성화' : '활성화', run: () => change({ agents: board.agents.map(item => item.id === id ? { ...item, enabled: !item.enabled } : item) }) }, { label: '에이전트 삭제', danger: true, run: () => removeAgent(id) }]}
+        addActions={[{ label: '에이전트 추가', disabled: board.agents.length >= 32, run: addAgent }]}
+        nodes={board.agents.map(item => ({ id: item.id, title: item.name || '이름 없음', description: `${item.enabled ? '활성' : '비활성'} · 내부 ${item.nodes.length}단계` }))}
         edges={board.edges} positions={board.positions} onChange={change} disabled={disabled} error={error} onConfigure={id => { setAgentId(id); setStepId(''); }} />
       {agent && <div className="mt-agent-detail">
         <div className="mt-agent-tabs" aria-label="편집할 에이전트">{board.agents.map(item => <button type="button" key={item.id} aria-pressed={item.id === agent.id} onClick={() => { setAgentId(item.id); setStepId(''); }}>{item.name || '이름 없음'}</button>)}</div>
         <div className="mt-workflow-toolbar"><label>에이전트 이름<input aria-label="에이전트 이름" maxLength={100} value={agent.name} disabled={disabled} onChange={event => changeAgent({ name: event.target.value })} /></label>
           <label className="mt-toggle"><input type="checkbox" checked={agent.enabled} disabled={disabled} onChange={event => changeAgent({ enabled: event.target.checked })} />이 에이전트 실행</label>
-          <button type="button" className="text-btn mt-error" disabled={disabled} onClick={removeAgent}>에이전트 삭제</button></div>
+          <button type="button" className="text-btn mt-error" disabled={disabled} onClick={() => removeAgent()}>에이전트 삭제</button></div>
         <div className="mt-workflow-toolbar"><label>추가할 단계<select aria-label="추가할 에이전트 단계" disabled={disabled} value={newKind} onChange={event => setNewKind(event.target.value)}>{kinds.map(kind => <option key={kind.id} value={kind.id}>{kind.title}</option>)}</select></label>
-          <button type="button" className="btn secondary small" disabled={disabled || board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64} onClick={addStep}>내부 단계 추가</button>
+          <button type="button" className="btn secondary small" disabled={disabled || board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64} onClick={() => addStep()}>내부 단계 추가</button>
           <button type="button" className="text-btn" disabled={disabled} onClick={() => changeAgent({ positions: {} })}>내부 위치 초기화</button></div>
-        <WorkflowGraph nodes={agent.nodes.map(node => ({ id: node.id, title: node.name, description: node.kind === 'candidate_filter' ? '유사도 임계값 · 상위 후보 수' : node.model }))} edges={agent.edges} positions={agent.positions}
+        <WorkflowGraph key={`${flow}-${agent.id}`} boardId={`${flow}-${agent.id}`} label={`${agent.name} 내부 단계 보드`} onUndo={onUndo} canUndo={canUndo}
+          nodeActions={id => [{ label: '이름 변경', run: () => rename(id, true) }, { label: '복제', disabled: board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64, run: () => duplicate(id) }, { label: '단계 삭제', danger: true, run: () => removeStep(id) }]}
+          addActions={kinds.map(kind => ({ label: `단계 추가: ${kind.title}`, disabled: board.agents.reduce((sum, item) => sum + item.nodes.length, 0) >= 64, run: point => addStep(kind.id, point) }))}
+          nodes={agent.nodes.map(node => ({ id: node.id, title: node.name, description: node.kind === 'candidate_filter' ? '유사도 임계값 · 상위 후보 수' : node.model }))} edges={agent.edges} positions={agent.positions}
           onChange={changeAgent} disabled={disabled} onConfigure={setStepId} error={!agent.nodes.length ? '내부 단계를 추가해 주세요.' : ''} />
         <div className="mt-agent-tabs" aria-label="편집할 내부 단계">{agent.nodes.map(node => <button type="button" key={node.id} aria-pressed={step?.id === node.id} onClick={() => setStepId(node.id)}>{node.name}</button>)}</div>
         {step && <div className="mt-agent-settings" aria-label="내부 단계 설정">
@@ -69,7 +90,7 @@ export default function ModeltestAgents({ flow, state, update, disabled, health 
           {EXTRA_STAGES.some(kind => kind.id === step.kind) && <label className="mt-settings-wide">입력 설정 · JSON<textarea aria-label="내부 단계 입력 설정" rows={6} disabled={disabled} value={step.paramsText || ''} onChange={event => changeStep({ paramsText: event.target.value })} placeholder={'{"documents":["후보 문서 1","후보 문서 2"],"query":"검색 질의","image_source":"media","modality":"text"}'} /><small>documents: 텍스트 목록, query: 질의·이미지 설명, image_source: media / references / crops, modality: text / image. 연결된 입력을 우선 사용합니다. TF-IDF/LR은 classifier에 vocabulary·idf·coef·intercept·labels를 지정하세요.</small></label>}
           {inputRoles.map(role => <label key={role}>{STAGES.find(kind => kind.id === role)?.title || role} 입력<select aria-label={`내부 단계 ${role} 입력`} disabled={disabled} value={step.bindings?.[role] || ''} onChange={event => changeStep({ bindings: { ...step.bindings, [role]: event.target.value } })}><option value="">자동 · 가장 가까운 선행 결과</option>
             {board.agents.filter(item => item.enabled).map(item => <optgroup key={item.id} label={item.name}>{item.nodes.filter(node => acceptsInput(step.kind, role, node.kind) && node.id !== step.id).map(node => <option key={node.id} value={node.id}>{node.name}</option>)}</optgroup>)}</select></label>)}
-          <div className="mt-settings-wide"><button type="button" className="text-btn mt-error" disabled={disabled} onClick={removeStep}>내부 단계 삭제</button></div>
+          <div className="mt-settings-wide"><button type="button" className="text-btn mt-error" disabled={disabled} onClick={() => removeStep()}>내부 단계 삭제</button></div>
         </div>}
       </div>}
     </div>

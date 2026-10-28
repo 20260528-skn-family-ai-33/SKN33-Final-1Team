@@ -1,5 +1,32 @@
 import { STAGES, parseStageModel } from './modeltest.js';
 import { EXTRA_STAGES, GENERAL, INPUTS, acceptsInput, paramsFor, registration } from './modeltestCatalog.js';
+import { omitPosition } from './modeltestBoard.js';
+
+export function cleanAgentBindings(board) {
+  const owners = new Map(board.agents.flatMap(agent => agent.nodes.map(node => [node.id, agent])));
+  let outer; const inner = new Map();
+  try { outer = ancestry(board.agents.map(agent => agent.id), board.edges, '에이전트 연결'); } catch { /* The editor still shows cycle errors. */ }
+  for (const agent of board.agents) {
+    try { inner.set(agent.id, ancestry(agent.nodes.map(node => node.id), agent.edges, agent.name)); } catch { /* Retain existing references until the cycle is fixed. */ }
+  }
+  return { ...board, agents: board.agents.map(agent => ({ ...agent, nodes: agent.nodes.map(node => ({ ...node,
+    bindings: Object.fromEntries(Object.entries(node.bindings || {}).filter(([, id]) => {
+      if (!id) return true;
+      const owner = owners.get(id); if (!owner || id === node.id) return false;
+      return owner.id === agent.id ? !inner.has(agent.id) || inner.get(agent.id).get(node.id).has(id) : !outer || outer.get(agent.id).has(owner.id);
+    })),
+  })) })) };
+}
+
+export function removeAgentNode(board, agentId, nodeId) {
+  const agents = nodeId ? board.agents.map(agent => agent.id !== agentId ? agent : { ...agent, nodes: agent.nodes.filter(node => node.id !== nodeId),
+    edges: agent.edges.filter(edge => edge.source !== nodeId && edge.target !== nodeId), positions: omitPosition(agent.positions, nodeId) }) : board.agents.filter(agent => agent.id !== agentId);
+  return cleanAgentBindings({ ...board, agents, ...(nodeId ? {} : { edges: board.edges.filter(edge => edge.source !== agentId && edge.target !== agentId), positions: omitPosition(board.positions, agentId) }) });
+}
+
+export function duplicateAgentStep(node) {
+  return { ...structuredClone(node), id: `step-${crypto.randomUUID()}`, name: `${node.name} 복사`.slice(0, 100), bindings: {} };
+}
 
 export function newAgent(name = '새 에이전트') {
   return { id: `agent-${crypto.randomUUID()}`, name, enabled: true, nodes: [], edges: [], positions: {} };

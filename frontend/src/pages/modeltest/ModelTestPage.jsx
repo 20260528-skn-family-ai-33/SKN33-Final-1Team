@@ -9,6 +9,7 @@ import {
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
 import { readSSH, writeSSH } from './modeltestConnection.js';
+import { rememberBoard } from './modeltestBoard.js';
 import ModeltestResults from './ModeltestResults.jsx';
 import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
 import ModeltestWorkflow from './ModeltestWorkflow.jsx';
@@ -119,7 +120,16 @@ export default function ModelTestPage() {
   useEffect(() => { try { localStorage.setItem('creative-checker-modeltest-theme', theme); } catch { /* Theme switching still works without storage. */ } }, [theme]);
   const draft = useModeltestDraft();
   const { flow, setFlow, flows, setFlows } = draft;
-  const state = flows[flow]; const update = patch => setFlows(current => ({ ...current, [flow]: { ...current[flow], ...patch } }));
+  const state = flows[flow]; const boardHistory = useRef({ image: [], video: [] });
+  const update = patch => {
+    if (['stages', 'workflow', 'agentWorkflow'].some(key => patch[key] && patch[key] !== state[key])) rememberBoard(boardHistory.current[flow], state);
+    setFlows(current => ({ ...current, [flow]: { ...current[flow], ...patch } }));
+  };
+  function undoBoard() {
+    if (locked) return;
+    const previous = boardHistory.current[flow].pop();
+    if (previous) setFlows(current => ({ ...current, [flow]: { ...current[flow], ...previous } }));
+  }
   const [endpoint, setEndpoint] = useState(''); const [token, setToken] = useState('');
   const [savedSSH] = useState(readSSH);
   const [method, setMethod] = useState('ssh'); const [sshCommand, setSshCommand] = useState(savedSSH.command);
@@ -151,6 +161,12 @@ export default function ModelTestPage() {
   const terminal = job ? TERMINAL.includes(job.status) : false;
   const running = !!job && !terminal;
   const locked = !draft.ready || restoring || submitting || unknown || running || preparing;
+  useEffect(() => {
+    const keydown = event => {
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'z' && !event.target.closest('input,textarea,select,[contenteditable=true]')) { event.preventDefault(); undoBoard(); }
+    };
+    window.addEventListener('keydown', keydown); return () => window.removeEventListener('keydown', keydown);
+  }, [flow, locked]);
   const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
   const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
@@ -381,7 +397,7 @@ export default function ModelTestPage() {
       </section>
       </details>
       <div className="mt-draft-status"><p role="status">{draft.saving ? '첨부·설정 저장 중… 저장 완료 후 새로고침해 주세요.' : draft.storage}</p>
-        <button type="button" className="text-btn" disabled={locked} onClick={() => { if (window.confirm('이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.')) draft.clearDraft(); }}>저장된 첨부·설정 지우기</button>
+        <button type="button" className="text-btn" disabled={locked} onClick={() => { if (window.confirm('이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.')) { boardHistory.current = { image: [], video: [] }; draft.clearDraft(); } }}>저장된 첨부·설정 지우기</button>
       </div>
       {draft.savedRun && !job && <div className="mt-restore-run"><p>{restoring ? '이전 검수 작업 상태를 확인하고 있습니다.' : `이전 작업 ID: ${draft.savedRun.jobId}`}</p>
         <button type="button" className="btn secondary small" disabled={locked || connecting} onClick={() => restoreRun(draft.savedRun, connection)}>이전 작업 조회</button></div>}
@@ -395,7 +411,7 @@ export default function ModelTestPage() {
 
         <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식"><button type="button" aria-pressed={!state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: { ...state.agentWorkflow, enabled: false } })}>모델 단계 편집</button>
           <button type="button" aria-pressed={state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) })}>에이전트 보드</button></div>
-        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={modelHealth} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} />}
+        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} />}
         <div className={`mt-workspace ${state.agentWorkflow.enabled ? 'is-agents' : ''}`}>
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
