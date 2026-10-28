@@ -50,14 +50,20 @@ test('owner/model and HF repository links resolve without guessing an owner', ()
 });
 
 test('known models are offered before connection and reject incompatible stages', () => {
-  assert.equal(modelOptions().length, 4);
+  assert.equal(modelOptions().length, 5);
   for (const [model, stage] of [['google/owlv2-base-patch16', 'text_extract'], [SIGLIP2, 'logo_extract'], ['vismatch/xfeat', 'visual_extract']]) {
     assert.throws(() => parseStageModel(stage, { model }), /단계에서/);
   }
   assert.deepEqual(parseStageModel('logo_compare', { model: 'vismatch/xfeat' }), { model_id: 'vismatch/xfeat' });
   const offered = modelOptions({ models: [{ id: 'Qwen/Qwen3.5-4B', stages: ['conditions'] }, { id: 'owner/custom', stages: ['conditions'] }] });
-  assert.equal(offered.length, 5);
+  assert.equal(offered.length, 6);
   assert.throws(() => parseStageModel('text_extract', { model: 'owner/custom' }, { models: offered }), /단계에서/);
+});
+
+test('PaddleOCR GGUF is available only for OCR and accepts the official repository URL', () => {
+  const id = 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF';
+  assert.deepEqual(parseStageModel('text_extract', { model: `https://huggingface.co/${id}` }), { model_id: id });
+  assert.throws(() => parseStageModel('conditions', { model: id }), /단계에서/);
 });
 
 test('workflow presets compile filtering and parallel branches, rejecting cycles and missing dependencies', () => {

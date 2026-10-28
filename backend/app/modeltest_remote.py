@@ -14,12 +14,18 @@ import os
 from pathlib import Path
 import re
 import signal
+import secrets
+import shutil
+import socket
 import subprocess
 import sys
+import tempfile
 import time
 import threading
 import zipfile
 import xml.etree.ElementTree as ET
+from urllib.request import Request, urlopen
+from urllib.error import URLError
 
 CONTRACT = 'modeltest.v1'
 STAGES = ('conditions', 'logo_extract', 'text_extract', 'visual_extract', 'logo_similarity', 'candidate_filter', 'logo_compare', 'text_compare', 'visual_compare', 'text_generate')
@@ -36,7 +42,10 @@ OWLV2 = 'google/owlv2-base-patch16'
 SIGLIP2 = 'google/siglip2-base-patch16-224'
 XFEAT = 'vismatch/xfeat'
 QWEN = 'Qwen/Qwen3.5-4B'
-MODEL_STAGES = {OWLV2: ('logo_extract',), SIGLIP2: ('visual_extract', 'logo_similarity'), XFEAT: ('logo_compare',), QWEN: tuple(name for name in STAGES if name not in ('logo_similarity', 'candidate_filter'))}
+PADDLE_GGUF = 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF'
+LLAMA_COMMIT = '620d2225cc436ab0b001e3200e590e3b286ef9ab'
+LLAMA_BUILD_LOCK = threading.Lock()
+MODEL_STAGES = {OWLV2: ('logo_extract',), SIGLIP2: ('visual_extract', 'logo_similarity'), XFEAT: ('logo_compare',), QWEN: tuple(name for name in STAGES if name not in ('logo_similarity', 'candidate_filter')), PADDLE_GGUF: ('text_extract',)}
 XFEAT_SOURCE = 'verlab/accelerated_features:e92685f57f8318b18725c5c8c0bd28c7fe188d9a'
 PREVIEW_NAME = r'(?:frame-\d{8,12}\.jpg|logo-(?:[A-Za-z0-9_-]{1,64}-)?\d{1,6}-\d{1,6}\.png|preview-(?:poster|reference-\d{1,2})\.jpg)'
 
@@ -344,10 +353,97 @@ def frames_of(path, sampling, directory, container_format):
     return frames
 
 
-class Models:
-    def __init__(self): self.key = None; self.model = None; self.processor = None; self.kind = None
+def ensure_llama_server():
+    root = Path(sys.prefix) / 'modeltest-llama' / LLAMA_COMMIT
+    binary = root / 'build/bin/llama-server'; marker = root / 'build/modeltest-ready.txt'
+    with LLAMA_BUILD_LOCK:
+        if binary.is_file() and marker.is_file() and marker.read_text().strip() == LLAMA_COMMIT: return binary
+        nvcc = shutil.which('nvcc') or ('/usr/local/cuda/bin/nvcc' if Path('/usr/local/cuda/bin/nvcc').is_file() else None)
+        if not shutil.which('git') or not (shutil.which('g++') or shutil.which('clang++')) or not nvcc:
+            raise ValueError('PaddleOCR GGUF 준비에는 Pod의 git, C++ 컴파일러와 CUDA nvcc가 필요합니다. CUDA devel 이미지에서 실행하거나 해당 개발 도구를 설치해 주세요.')
+        cmake = str(Path(sys.executable).parent / 'cmake')
+        if not Path(cmake).is_file():
+            setup_command('GGUF 빌드 도구 설치', [sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check', 'cmake>=3.28,<5'], timeout=300)
+        root.mkdir(parents=True, exist_ok=True)
+        if not (root / '.git').is_dir(): setup_command('GGUF 실행기 저장소 준비', ['git', 'init', str(root)])
+        setup_command('고정 버전 GGUF 실행기 다운로드', ['git', '-C', str(root), 'fetch', '--depth=1', '--no-tags', 'https://github.com/ggml-org/llama.cpp.git', LLAMA_COMMIT], timeout=300)
+        setup_command('GGUF 실행기 버전 고정', ['git', '-C', str(root), 'checkout', '--detach', LLAMA_COMMIT])
+        setup_command('GGUF CUDA 빌드 설정', [cmake, '-S', str(root), '-B', str(root / 'build'), '-DGGML_CUDA=ON',
+            f'-DCMAKE_CUDA_COMPILER={nvcc}', '-DCMAKE_CUDA_ARCHITECTURES=native', '-DCMAKE_BUILD_TYPE=Release',
+            '-DLLAMA_BUILD_TESTS=OFF', '-DLLAMA_BUILD_EXAMPLES=OFF', '-DLLAMA_BUILD_APP=OFF', '-DLLAMA_BUILD_SERVER=ON',
+            '-DLLAMA_BUILD_UI=OFF', '-DLLAMA_USE_PREBUILT_UI=OFF', '-DLLAMA_OPENSSL=OFF'], timeout=300)
+        setup_command('GGUF CUDA 실행기 빌드', [cmake, '--build', str(root / 'build'), '--target', 'llama-server', '-j', '2'], timeout=1800)
+        if not binary.is_file(): raise ValueError('GGUF 빌드가 끝났지만 llama-server를 찾지 못했습니다.')
+        marker.write_text(LLAMA_COMMIT)
+        return binary
+
+
+class GGUFServer:
+    def __init__(self, revision=None):
+        from huggingface_hub import hf_hub_download, model_info
+        self.process = None; self.log = None; self.token = secrets.token_hex(32)
+        binary = ensure_llama_server()
+        revision = model_info(PADDLE_GGUF, revision=revision).sha
+        model = hf_hub_download(PADDLE_GGUF, 'PaddleOCR-VL-1.6-GGUF.gguf', revision=revision)
+        projector = hf_hub_download(PADDLE_GGUF, 'PaddleOCR-VL-1.6-GGUF-mmproj.gguf', revision=revision)
+        with socket.socket() as address:
+            address.bind(('127.0.0.1', 0)); port = address.getsockname()[1]
+        self.url = f'http://127.0.0.1:{port}'; self.log = tempfile.TemporaryFile()
+        try:
+            self.process = subprocess.Popen([str(binary), '-m', model, '--mmproj', projector, '--host', '127.0.0.1', '--port', str(port),
+                '--alias', 'paddle-ocr', '--n-gpu-layers', '99', '--ctx-size', '8192', '--parallel', '1', '--threads', '2', '--temp', '0'],
+                stdin=subprocess.DEVNULL, stdout=self.log, stderr=subprocess.STDOUT, env={**os.environ, 'LLAMA_API_KEY': self.token})
+            deadline = time.monotonic() + 180
+            while time.monotonic() < deadline:
+                if self.process.poll() is not None: raise ValueError(self.failure())
+                try:
+                    if self.request('/health', timeout=3).get('status') == 'ok': return
+                except URLError: pass
+                time.sleep(0.5)
+            raise ValueError('PaddleOCR GGUF 모델 로딩 시간이 초과됐습니다. Pod 메모리와 실행환경을 확인해 주세요.\n' + self.failure())
+        except Exception:
+            self.close(); raise
+
+    def failure(self):
+        self.log.seek(0, io.SEEK_END); size = self.log.tell(); self.log.seek(max(0, size - 4000))
+        detail = self.log.read().decode('utf-8', errors='replace').replace(self.token, '[redacted]')
+        return setup_error('PaddleOCR GGUF 실행기', detail)
+
+    def request(self, path, payload=None, timeout=180):
+        request = Request(self.url + path, data=json.dumps(payload).encode() if payload is not None else None,
+            headers={'Content-Type': 'application/json', 'Authorization': 'Bearer ' + self.token})
+        with urlopen(request, timeout=timeout) as response: raw = response.read(8 * 1024**2 + 1)
+        if len(raw) > 8 * 1024**2: raise ValueError('GGUF 응답 크기 한도를 초과했습니다.')
+        return json.loads(raw)
+
+    def ocr(self, path):
+        output = io.BytesIO(); image_of(path).save(output, format='JPEG', quality=95)
+        payload = {'model': 'paddle-ocr', 'temperature': 0, 'max_tokens': 1536, 'stream': False, 'messages': [{'role': 'user', 'content': [
+            {'type': 'image_url', 'image_url': {'url': 'data:image/jpeg;base64,' + base64.b64encode(output.getvalue()).decode('ascii')}}, {'type': 'text', 'text': 'OCR:'}]}]}
+        try: response = self.request('/v1/chat/completions', payload)
+        except (URLError, TimeoutError) as error: raise ValueError('PaddleOCR GGUF 추론 요청에 실패했습니다. Pod 메모리와 실행기 상태를 확인해 주세요.') from error
+        choices = response.get('choices')
+        if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict): raise ValueError('PaddleOCR GGUF 응답 형식이 올바르지 않습니다.')
+        choice = choices[0]; message = choice.get('message'); content = message.get('content') if isinstance(message, dict) else None
+        if isinstance(content, list): content = ''.join(part.get('text', '') for part in content if isinstance(part, dict) and part.get('type') == 'text')
+        if not isinstance(content, str): raise ValueError('PaddleOCR GGUF가 텍스트 응답을 반환하지 않았습니다.')
+        return {'text': content, 'note': '출력 길이 제한에 도달했습니다. 이미지 영역을 나누어 다시 확인해 주세요.' if choice.get('finish_reason') == 'length' else 'OCR 텍스트입니다. 문구 좌표와 문서 레이아웃 분석은 포함하지 않습니다.'}
 
     def close(self):
+        if self.process is not None:
+            if self.process.poll() is None:
+                self.process.terminate()
+                try: self.process.wait(timeout=3)
+                except subprocess.TimeoutExpired: self.process.kill(); self.process.wait(timeout=3)
+            self.process = None
+        if self.log is not None: self.log.close(); self.log = None
+
+
+class Models:
+    def __init__(self): self.key = None; self.model = None; self.processor = None; self.kind = None; self.gguf = None
+
+    def close(self):
+        if self.gguf is not None: self.gguf.close(); self.gguf = None
         self.model = None; self.processor = None; self.key = None
 
     def load(self, stage):
@@ -355,6 +451,8 @@ class Models:
         if self.key == key: return
         import torch
         self.close(); gc.collect(); torch.cuda.empty_cache()
+        if key[0] == PADDLE_GGUF:
+            self.gguf = GGUFServer(key[1]); self.kind = 'gguf'; self.key = key; return
         if key[0] == XFEAT:
             from huggingface_hub import hf_hub_download
             weights = hf_hub_download(key[0], 'xfeat.pt', revision=key[1])
@@ -496,7 +594,12 @@ def image_similarity(models, images):
     return {'image_cosine_similarity': round(score, 4), 'similarity_model': SIGLIP2}
 
 
-MODEL_HANDLERS = {OWLV2: run_owlv2, SIGLIP2: run_siglip2, XFEAT: run_xfeat, QWEN: run_qwen}
+def run_paddle_gguf(models, stage, *, images, **_):
+    if len(images) != 1: raise ValueError('PaddleOCR GGUF 문구 추출에는 이미지 한 장이 필요합니다.')
+    return models.gguf.ocr(images[0])
+
+
+MODEL_HANDLERS = {OWLV2: run_owlv2, SIGLIP2: run_siglip2, XFEAT: run_xfeat, QWEN: run_qwen, PADDLE_GGUF: run_paddle_gguf}
 
 
 def run_model(models, stage, **inputs):

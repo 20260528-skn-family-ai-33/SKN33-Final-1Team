@@ -202,7 +202,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await agents.getByRole('button', { name: 'A04 문구 검수', exact: true }).click();
   await page.getByLabel('에이전트 이름', { exact: true }).fill('A04 OCR 비교');
   await page.getByLabel('내부 단계 이름', { exact: true }).fill('브랜드 문구 OCR');
-  await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('Qwen/Qwen3.5-4B');
+  await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
   await page.getByRole('button', { name: '내부 단계 추가', exact: true }).click();
   await page.getByRole('button', { name: '내부 단계 삭제', exact: true }).click();
   await agents.getByRole('button', { name: 'A05 시각 요소 검수', exact: true }).click();
@@ -215,7 +215,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await page.locator('input[type=file][aria-label="원본 로고·레퍼런스"]').setInputFiles({ name: 'reference.png', mimeType: 'image/png', buffer: Buffer.from('fixture') });
   await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
   await agents.getByRole('button', { name: 'A04 OCR 비교', exact: true }).click();
-  assert.equal(await page.getByLabel('내부 단계 모델', { exact: true }).inputValue(), 'Qwen/Qwen3.5-4B');
+  assert.equal(await page.getByLabel('내부 단계 모델', { exact: true }).inputValue(), 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
   assert.equal(await page.getByLabel('내부 단계 이름', { exact: true }).inputValue(), '브랜드 문구 OCR');
   await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10');
   await page.getByRole('button', { name: '연결 확인', exact: true }).click(); await page.getByText('Pod 연결됨', { exact: true }).waitFor();
@@ -224,7 +224,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: /브랜드 문구 OCR/ }).waitFor();
   assert.equal(manifest.workflow.agents.length, 6); assert.equal(manifest.workflow.max_parallel, 2);
   const ocr = manifest.stages.find(stage => stage.name === '브랜드 문구 OCR');
-  assert.equal(ocr.kind, 'text_extract'); assert.equal(ocr.model_id, 'Qwen/Qwen3.5-4B');
+  assert.equal(ocr.kind, 'text_extract'); assert.equal(ocr.model_id, 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF');
   assert.equal(manifest.stages.find(stage => stage.kind === 'text_compare').inputs.text_extract, ocr.id);
   const filter = manifest.stages.find(stage => stage.kind === 'candidate_filter'); assert.equal(filter.threshold, 0.85); assert.equal(filter.top_k, 1);
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: /원본 로고와 대조/ }).click();

@@ -27,6 +27,7 @@ export function preparationLabel(value) {
 }
 export const SIGLIP2 = 'google/siglip2-base-patch16-224';
 export const MODEL_OPTIONS = [
+  { id: 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF', stages: ['text_extract'], description: 'OCR 문구 추출 전용. 첫 실행에 llama.cpp CUDA 빌드와 GGUF·mmproj 다운로드가 필요합니다. Pod에 git·C++ 컴파일러·nvcc가 있어야 합니다.' },
   { id: 'google/owlv2-base-patch16', stages: ['logo_extract'], description: '로고 영역을 찾아 좌표와 탐지 점수를 반환합니다.' },
   { id: SIGLIP2, stages: ['visual_extract', 'logo_similarity'], description: '시각 요소에서는 후보 문구, 로고 유사도에서는 원본 이미지와 대조합니다.' },
   { id: 'vismatch/xfeat', stages: ['logo_compare'], description: '잘라낸 로고와 원본의 특징점을 대조합니다. 특징점이 부족하면 판단을 보류합니다.' },
