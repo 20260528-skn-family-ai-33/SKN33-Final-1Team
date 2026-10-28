@@ -9,6 +9,15 @@ from PIL import Image
 from backend.app import modeltest_remote as remote
 
 
+def test_registered_gguf_requires_prepared_binary_without_build_or_download(tmp_path, monkeypatch):
+    def unexpected(*args, **kwargs): pytest.fail('sample must not build or download')
+    monkeypatch.setattr(sys, 'prefix', str(tmp_path))
+    monkeypatch.setattr(remote, 'ensure_llama_server', unexpected)
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', SimpleNamespace(model_info=unexpected, hf_hub_download=unexpected))
+    with pytest.raises(ValueError, match='준비가 필요'):
+        remote.GGUFServer('a' * 40, local_files_only=True)
+
+
 def test_paddle_gguf_sends_official_ocr_prompt_with_image_and_handles_truncation(tmp_path):
     image = tmp_path / 'image.png'; Image.new('RGB', (20, 20)).save(image)
     server = remote.GGUFServer.__new__(remote.GGUFServer); requests = []

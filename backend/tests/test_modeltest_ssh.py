@@ -21,9 +21,9 @@ from backend.app import modeltest_ssh as bridge
 
 
 def config(flow='image'):
-    ids = [name for name in remote.STAGES if name not in ('logo_similarity', 'candidate_filter', 'text_generate') and (flow == 'video' or not name.startswith('logo_'))]
+    ids = [name for name in remote.STAGES if name not in remote.catalog.EXTRA_STAGES and name not in ('logo_similarity', 'candidate_filter', 'text_generate') and (flow == 'video' or not name.startswith('logo_'))]
     return {'contract': remote.CONTRACT, 'flow': flow, 'requirements': '행사명을 표시해야 합니다.',
-        'stages': [{'id': name, 'model_id': 'owner/model'} for name in ids],
+        'stages': [{'id': name, 'model_id': remote.QWEN} for name in ids],
         'sampling': {'unit': 'frames', 'interval': 30, 'max_frames': 3},
         'files': {'media': {'name': 'poster.png' if flow == 'image' else 'video.mp4', 'size': 5, 'type': ''},
                   'documents': [{'name': 'contract.txt', 'size': 4, 'type': ''}],

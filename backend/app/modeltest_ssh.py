@@ -25,6 +25,8 @@ from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 
 from . import modeltest_remote as remote
+from . import modeltest_catalog, modeltest_adapters
+from .modeltest_registry import Registry, registry_router
 from .video_frames import sniff_container
 
 
@@ -94,6 +96,17 @@ def ssh_failure(text):
     return 'SSH 연결 또는 Pod 실행에 실패했습니다. 접속 명령, Pod 실행 상태와 python3 설치를 확인해 주세요.'
 
 
+def runner_source():
+    # Only reviewed local modules are bundled; HF repositories never provide executable source.
+    lines = ['import sys, types']
+    for module in (modeltest_catalog, modeltest_adapters):
+        name = module.__name__.rsplit('.', 1)[1]
+        lines.append(f'module = types.ModuleType({name!r}); sys.modules[{name!r}] = module')
+        lines.append(f'exec(compile({Path(module.__file__).read_text(encoding="utf-8")!r}, {name!r}, "exec"), module.__dict__)')
+    lines.append(Path(remote.__file__).read_text(encoding='utf-8').replace('from __future__ import annotations', ''))
+    return '\n'.join(lines)
+
+
 def exchange(connection, action, *, uploads=(), on_event=None, timeout=90, **payload):
     began = time.monotonic(); connected_at = None; transfer_started = None; transfer_finished = None
     sent = 0; total = sum(item['size'] for item in uploads); last_progress = 0
@@ -129,7 +142,7 @@ def exchange(connection, action, *, uploads=(), on_event=None, timeout=90, **pay
                     if len(logs) > 8: logs.pop(0)
         finally: events.put(('end', None))
     reader = threading.Thread(target=read, daemon=True); reader.start()
-    source = Path(remote.__file__).read_text(encoding='utf-8')
+    source = runner_source()
     upload_map = {item['stored_name']: item for item in uploads}; result = None
     def send(value): process.stdin.write((json.dumps(value, ensure_ascii=True) + '\n').encode()); process.stdin.flush()
     try:
@@ -215,6 +228,8 @@ def modeltest_ssh_router(storage_root: Path):
             raise HTTPException(403, '로컬 화면에서만 SSH를 요청할 수 있습니다.')
         response.headers['Cache-Control'] = 'no-store'
     router = APIRouter(prefix='/api/modeltest/ssh', dependencies=[Depends(local)])
+    registry = Registry(storage_root / 'models.json')
+    router.include_router(registry_router(registry))
     def session(identifier):
         item = sessions.get(identifier)
         if item is None: raise HTTPException(404, 'SSH 연결을 다시 확인해 주세요.')
@@ -280,9 +295,9 @@ def modeltest_ssh_router(storage_root: Path):
         storage_root.mkdir(parents=True, exist_ok=True)
         temp = tempfile.TemporaryDirectory(prefix='upload-', dir=storage_root)
         try:
-            async with request.form(max_files=21, max_fields=1, max_part_size=64 * 1024) as form:
-                config = remote.validate_config(json.loads(form.get('config', '')))
-                expected = [('media', [config['files']['media']], config['flow']), ('documents', config['files']['documents'], 'document'), ('references', config['files']['references'], 'reference')]
+            async with request.form(max_files=21, max_fields=1, max_part_size=256 * 1024) as form:
+                config = remote.validate_config(registry.hydrate(json.loads(form.get('config', ''))))
+                expected = [('media', [config['files']['media']] if config['files']['media'] else [], config['flow']), ('documents', config['files']['documents'], 'document'), ('references', config['files']['references'], 'reference')]
                 if any(key not in ('config', 'media', 'documents', 'references') for key in form): raise ValueError('지원하지 않는 업로드 필드입니다.')
                 uploads = []; total = 0; container = None
                 for kind, metadata, file_kind in expected:
@@ -312,7 +327,7 @@ def modeltest_ssh_router(storage_root: Path):
                     return previous['job']
                 if any(run['job']['status'] in ('queued', 'running') for run in runs.values()) or not busy.acquire(blocking=False): raise HTTPException(409, '다른 환경 준비 또는 검수가 진행 중입니다.')
                 stages = [{**{key: stage[key] for key in ('id', 'kind', 'name', 'agent_id', 'inputs') if key in stage}, 'model_id': stage.get('model_id'), 'status': 'queued'} for stage in config['stages']]
-                if config['flow'] == 'video': stages.insert(1 if stages[0]['id'] == 'conditions' else 0, {'id': 'frames', 'status': 'queued'})
+                if config['flow'] == 'video' and config.get('purpose') != 'prepare': stages.insert(1 if stages[0]['id'] == 'conditions' else 0, {'id': 'frames', 'status': 'queued'})
                 run = {'connection': identifier, 'digest': digest, 'job': {'contract': remote.CONTRACT, 'id': run_id, 'status': 'queued', 'stages': stages}, 'disconnected': False, 'owns_busy': True}
                 runs[run_id] = run
             owned_temp = temp; temp = None
@@ -325,6 +340,8 @@ def modeltest_ssh_router(storage_root: Path):
                         if run['job']['status'] == 'queued': run['job'] = {**run['job'], 'preparation': data}
                     elif kind == 'run' and data is not None and run['job']['status'] not in ('completed', 'failed', 'cancelled'):
                         run['job'] = {**data, **({'preparation': run['job']['preparation']} if 'preparation' in run['job'] else {})}
+                        try: registry.observe(data)
+                        except (ValueError, OSError): run['job']['registry_notice'] = '실행 기록을 모델 목록에 저장하지 못했습니다. 결과 JSON은 유지됩니다.'
                 try:
                     exchange(item['ssh'], 'run', uploads=uploads, on_event=event, timeout=4 * 3600,
                         id=run_id, config=config, digest=digest, container=container)
@@ -367,6 +384,8 @@ def modeltest_ssh_router(storage_root: Path):
                 if value['status'] in ('completed', 'failed', 'cancelled'):
                     run['disconnected'] = False; release_run(run)
             except ValueError: raise HTTPException(503, 'SSH 연결이 끊겨 원격 상태가 미확인입니다. Pod를 확인한 후 같은 작업의 조회를 재개해 주세요.') from None
+        try: registry.observe(run['job'])
+        except (ValueError, OSError): run['job']['registry_notice'] = '모델 실행 확인 기록을 저장하지 못했습니다.'
         return run['job']
 
     @router.post('/connections/{identifier}/runs/{run_id}/cancel')
