@@ -8,6 +8,8 @@ import ModeltestInspector, { useInspector } from './ModeltestInspector.jsx';
 import { WorkflowGraph } from './ModeltestWorkflow.jsx';
 import { GENERAL, EXTRA_STAGES, INPUTS, acceptsInput, modelChoice, registration } from './modeltestCatalog.js';
 
+function preventNameSubmit(event) { if (event.key === 'Enter') event.preventDefault(); }
+
 export default function ModeltestAgents({ flow, state, update, disabled, health, onUndo, canUndo, onRedo, canRedo, confirmAction }) {
   const board = state.agentWorkflow; const [agentId, setAgentId] = useState(''); const [stepId, setStepId] = useState(''); const [newKind, setNewKind] = useState('text_generate');
   const [inspectorOpen, setInspectorOpen] = useInspector('creative-checker-agent-inspector');
@@ -74,7 +76,7 @@ export default function ModeltestAgents({ flow, state, update, disabled, health,
         nodes={board.agents.map(item => ({ id: item.id, title: item.name || '이름 없음', description: `${item.enabled ? '활성' : '비활성'} · 내부 ${item.nodes.length}단계` }))}
         edges={board.edges} positions={board.positions} onChange={change} disabled={disabled} error={error} onConfigure={selectAgent} />
       {agent && <div className="mt-agent-detail">
-        <div className="mt-workflow-toolbar"><label>에이전트 이름<input ref={agentName} aria-label="에이전트 이름" maxLength={100} value={agent.name} disabled={disabled} onChange={event => changeAgent({ name: event.target.value })} /></label>
+        <div className="mt-workflow-toolbar"><label>에이전트 이름<input ref={agentName} aria-label="에이전트 이름" maxLength={100} value={agent.name} disabled={disabled} onKeyDown={preventNameSubmit} onChange={event => changeAgent({ name: event.target.value })} /></label>
           <label className="mt-toggle"><input type="checkbox" checked={agent.enabled} disabled={disabled} onChange={event => changeAgent({ enabled: event.target.checked })} />이 에이전트 실행</label>
           <button type="button" className="text-btn mt-error" disabled={disabled} onClick={() => removeAgent()}>에이전트 삭제</button></div>
         <div className="mt-workflow-toolbar"><label>추가할 단계<select aria-label="추가할 에이전트 단계" disabled={disabled} value={newKind} onChange={event => setNewKind(event.target.value)}>{kinds.map(kind => <option key={kind.id} value={kind.id}>{kind.title}</option>)}</select></label>
@@ -87,7 +89,7 @@ export default function ModeltestAgents({ flow, state, update, disabled, health,
           nodes={agent.nodes.map(node => ({ id: node.id, title: node.name, description: node.kind === 'candidate_filter' ? '유사도 임계값 · 상위 후보 수' : node.model }))} edges={agent.edges} positions={agent.positions}
           onChange={changeAgent} disabled={disabled} onConfigure={selectStep} error={!agent.nodes.length ? '내부 단계를 추가해 주세요.' : ''} />}>
         {step ? <div className="mt-agent-settings" aria-label="내부 단계 설정">
-          <label>단계 이름<input ref={stepName} aria-label="내부 단계 이름" disabled={disabled} maxLength={100} value={step.name} onChange={event => changeStep({ name: event.target.value })} /></label>
+          <label>단계 이름<input ref={stepName} aria-label="내부 단계 이름" disabled={disabled} maxLength={100} value={step.name} onKeyDown={preventNameSubmit} onChange={event => changeStep({ name: event.target.value })} /></label>
           <label>처리 유형<select aria-label="내부 단계 처리 유형" disabled={disabled} value={step.kind} onChange={event => changeStep({ ...newAgentStep(event.target.value), id: step.id })}>{kinds.map(kind => <option key={kind.id} value={kind.id}>{kind.title}</option>)}</select></label>
           {step.kind === 'candidate_filter' ? <><div className="mt-title-help mt-settings-wide"><strong>후보 필터</strong><ModeltestHelp label="내부 후보 필터"><p>각 로고의 레퍼런스 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 후보가 없으면 다음 로고 대조의 모델 호출을 생략합니다.</p></ModeltestHelp></div><label>최소 코사인 유사도<input aria-label="내부 필터 최소 유사도" type="number" min={-1} max={1} step="any" disabled={disabled} value={step.threshold} placeholder="비워두면 제한 없음" onChange={event => changeStep({ threshold: event.target.value })} /></label>
             <label>상위 후보 수<input aria-label="내부 필터 상위 후보 수" type="number" min={1} max={10} step={1} disabled={disabled} value={step.topK} placeholder="비워두면 모두" onChange={event => changeStep({ topK: event.target.value })} /></label>

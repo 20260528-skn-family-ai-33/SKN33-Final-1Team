@@ -360,7 +360,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   const origin = `http://127.0.0.1:${server.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
-  const errors = []; const unexpected = []; const previews = []; let manifest; let jpeg;
+  const errors = []; const unexpected = []; const previews = []; let manifest; let jpeg; let submissions = 0;
   page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => { if (dialog.type() === 'beforeunload') return dialog.accept(); errors.push(`Unexpected native ${dialog.type()}`); return dialog.dismiss(); });
   const health = { contract: CONTRACT, ready: true, prompt_overrides: 1, workflow: { version: 1, max_parallel: 2, agents: true }, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
@@ -377,6 +377,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
       return json({ mime: 'image/jpeg', data: jpeg });
     }
     if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
+      submissions++;
       manifest = JSON.parse(request.postDataBuffer().toString().match(/name="config"\r\n\r\n([^\r]+)/)[1]);
       const frame = { index: 0, timestamp_seconds: 0, width: 80, height: 40, preview: 'frame-00000000.jpg' };
       const outputs = stage => {
@@ -512,9 +513,29 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   assert.equal(await page.getByLabel('내부 단계 프롬프트', { exact: true }).inputValue(), 'OCR: Read the headline only.');
   await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10');
   await page.getByRole('button', { name: '연결 확인', exact: true }).click(); await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  assert.equal(await page.locator('.mt-readiness li').last().getByText('준비됨', { exact: true }).count(), 1);
+  await page.locator('.mt-execution-form').evaluate(form => {
+    window.renameSubmissions = 0;
+    form.addEventListener('submit', () => { window.renameSubmissions++; });
+  });
+  for (const [board, name, label] of [
+    [agents, 'A04 OCR 비교', '에이전트 이름'],
+    [page.locator('.mt-agent-detail .mt-board'), '브랜드 문구 OCR', '내부 단계 이름'],
+  ]) {
+    await board.getByRole('button', { name: `${name} 노드 이동`, exact: true }).press('Shift+F10');
+    await page.getByRole('menuitem', { name: '이름 변경', exact: true }).click();
+    const input = page.getByLabel(label, { exact: true });
+    assert.equal(await input.evaluate(node => node === document.activeElement), true);
+    await input.fill(`${name} 수정`); await input.press('Enter');
+    assert.equal(await page.evaluate(() => window.renameSubmissions), 0, `${label}: Enter cannot submit the review form`);
+    assert.equal(submissions, 0);
+    assert.equal(await input.inputValue(), `${name} 수정`);
+    await input.fill(name);
+  }
   await page.locator('.mt-agent-board').screenshot({ path: '../work/modeltest-agent-board.png' });
   await page.getByRole('button', { name: '검수 실행', exact: true }).click();
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: /브랜드 문구 OCR/ }).waitFor();
+  assert.equal(submissions, 1, 'The explicit run button still submits once');
   assert.equal(manifest.workflow.agents.length, 6); assert.equal(manifest.workflow.max_parallel, 2);
   assert.deepEqual(manifest.sampling, { unit: 'frames', interval: 12, max_frames: 80 });
   const ocr = manifest.stages.find(stage => stage.name === '브랜드 문구 OCR');
