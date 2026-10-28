@@ -9,6 +9,8 @@ import {
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
 import ModeltestResults from './ModeltestResults.jsx';
+import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
+import { elapsedSeconds, formatDuration } from './modeltestResults.js';
 
 function usePreview(file) {
   const [url, setUrl] = useState('');
@@ -98,6 +100,10 @@ function JsonView({ value, empty = '아직 반환된 결과가 없습니다.' })
 }
 
 export default function ModelTestPage() {
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('creative-checker-modeltest-theme') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
+  });
+  useEffect(() => { try { localStorage.setItem('creative-checker-modeltest-theme', theme); } catch { /* Theme switching still works without storage. */ } }, [theme]);
   const draft = useModeltestDraft();
   const { flow, setFlow, flows, setFlows } = draft;
   const state = flows[flow]; const update = patch => setFlows(current => ({ ...current, [flow]: { ...current[flow], ...patch } }));
@@ -275,8 +281,9 @@ export default function ModelTestPage() {
     anchor.href = url; anchor.download = `modeltest-${job?.id || 'request'}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  return <div className="mt-shell">
+  return <div className="mt-shell" data-theme={theme}>
     <header className="mt-topbar"><Brand onClick={() => { if (!locked) window.location.assign('/'); }} /><span className="mt-product-label">모델 테스트</span>
+      <div className="mt-theme-switch" role="group" aria-label="화면 테마">{[['light', '라이트'], ['dark', '다크']].map(([value, title]) => <button type="button" key={value} aria-pressed={theme === value} onClick={() => setTheme(value)}>{title}</button>)}</div>
       <button type="button" className="text-btn mt-home" disabled={locked} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
     <main className="mt-main">
       <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div>
@@ -382,7 +389,7 @@ export default function ModelTestPage() {
             {job?.status === 'failed' && <p className="mt-alert" role="alert">{typeof job.error === 'string' ? job.error : 'Pod의 검수 작업이 실패했습니다. 단계별 결과를 확인해 주세요.'}</p>}
             <section className="mt-panel mt-checklist"><div className="mt-panel-heading"><h2>{job ? '단계별 상태' : '실행 준비'}</h2></div>
               {job ? <ul>{job.stages.map(stage => <li key={stage.id}><button type="button" onClick={() => { setSelectedStage(stage.id); setResultTab('results'); }}>
-                <span>{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}</span><span className={`mt-status mt-status-${stage.status}`}>{STATUS_LABELS[stage.status]}</span>
+                <span>{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}<small className="mt-stage-time">{formatDuration(elapsedSeconds(stage))}{(stage.status === 'running' || stage.timing_estimated) && ' · 추정'}</small></span><span className={`mt-status mt-status-${stage.status}`}>{STATUS_LABELS[stage.status]}</span>
               </button></li>)}</ul> : <ul className="mt-readiness">
                 {[[!!health?.ready, 'Pod 연결'], [!!state.media, flow === 'image' ? '이미지 첨부' : '영상 첨부'], [flow === 'video' || !!state.documents.length, flow === 'image' ? '문서 첨부' : '문서·레퍼런스 선택'], [!errors.length, '모델·실행 조건']].map(([ready, label]) => <li key={label}><span>{label}</span><span className={ready ? 'mt-ready' : ''}>{ready ? '준비됨' : '확인 필요'}</span></li>)}
               </ul>}
@@ -396,13 +403,15 @@ export default function ModelTestPage() {
 
       <section className="mt-panel mt-results" aria-labelledby="mt-results-title"><div className="mt-panel-heading"><div><h2 id="mt-results-title">실행 결과</h2><p>{job ? `작업 ${job.id}` : '실행한 모델의 출력과 요청 설정을 확인합니다.'}</p></div>
         <button type="button" className="btn secondary small" disabled={!manifest} onClick={download}>JSON 내려받기</button></div>
-        <div className="mt-result-tabs" aria-label="결과 보기">{[['results', '단계별 결과'], ['request', '실행 설정'], ['raw', '전체 응답']].map(([id, title]) => <button type="button" key={id} aria-pressed={resultTab === id} onClick={() => setResultTab(id)}>{title}</button>)}</div>
+        <div className="mt-result-tabs" aria-label="결과 보기">{[['results', '단계별 결과'], ['timing', '소요 시간'], ['request', '실행 설정'], ['raw', '전체 응답']].map(([id, title]) => <button type="button" key={id} aria-pressed={resultTab === id} onClick={() => setResultTab(id)}>{title}</button>)}</div>
         <div className="mt-result-body">
           {resultTab === 'request' ? <><p className="mt-hint">실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.{contextRef.current && ` 요청 ID: ${contextRef.current.requestId}`}</p><JsonView value={manifest} /></>
             : resultTab === 'raw' ? <JsonView value={job} />
+              : resultTab === 'timing' ? (job ? <ModeltestTimings job={job} now={Date.now()} /> : <p className="mt-empty">실행 후 단계별·모델별 소요 시간이 표시됩니다.</p>)
               : !job ? <div className="mt-result-empty"><Icon name="search" /><h3>첫 검수 결과를 기다리고 있어요</h3><p>Pod 연결 → 자료 첨부 → 모델 지정 후 검수를 실행해 주세요.<br />프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></div>
                 : <div className="mt-stage-results"><nav aria-label="결과 단계 선택">{job.stages.map(stage => <button type="button" key={stage.id} aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(stage.id)}>{STAGES.find(item => item.id === stage.id)?.title || (stage.id === 'frames' ? '프레임 이미지 추출' : stage.id)}</button>)}</nav>
                   <div className="mt-stage-output"><p className="mt-hint">{resultStage ? STATUS_LABELS[resultStage.status] : '결과를 볼 단계를 선택하세요.'}{typeof resultStage?.model_id === 'string' ? ` · ${resultStage.model_id}` : ''}</p>
+                    {resultStage && <details className="mt-stage-timing"><summary>단계 소요 시간 {formatDuration(elapsedSeconds(resultStage))}{(resultStage.status === 'running' || resultStage.timing_estimated) && ' · 추정'}</summary><ModelTimingTable stages={[resultStage]} now={Date.now()} /></details>}
                     {typeof resultStage?.error === 'string' && <p className="mt-error">{resultStage.error}</p>}
                     {typeof resultStage?.detail === 'string' && <p className="mt-hint" role="status">{resultStage.detail}</p>}
                     {manifest && <ModeltestResults key={`${job.id}-${selectedStage}`} job={job} stage={resultStage} manifest={manifest} context={contextRef.current} cache={previewCache}

@@ -18,3 +18,39 @@ export function previewURL(value) {
 export function decisionLabel(value) {
   return ({ candidate_match: '일치 후보', match: '일치', mismatch: '불일치', uncertain: '판단 보류', pass: '통과', fail: '미통과' })[value] || '모델 설명 확인';
 }
+
+const secondsValue = value => Number.isFinite(value) && value >= 0;
+
+export function formatDuration(seconds) {
+  if (!secondsValue(seconds)) return '미측정';
+  if (seconds < 1) return `${seconds.toFixed(3)}초`;
+  const rounded = Math.round(seconds * 10) / 10;
+  const minutes = Math.floor(rounded / 60);
+  return `${minutes ? `${minutes}분 ` : ''}${(rounded % 60).toFixed(1)}초`;
+}
+
+export function elapsedSeconds(stage, now = Date.now()) {
+  const measured = secondsValue(stage?.elapsed_seconds) ? stage.elapsed_seconds : null;
+  if (stage?.status === 'running' && secondsValue(stage.started_at)) return Math.max(measured || 0, now / 1000 - stage.started_at);
+  return measured;
+}
+
+export function modelTimings(stages, now = Date.now()) {
+  const models = new Map();
+  for (const stage of stages) {
+    for (const timing of Array.isArray(stage.model_timings) ? stage.model_timings : []) {
+      if (!timing || typeof timing.model_id !== 'string' || !secondsValue(timing.load_seconds) || !secondsValue(timing.inference_seconds)
+        || !Number.isSafeInteger(timing.calls) || timing.calls < 0 || (timing.revision != null && typeof timing.revision !== 'string')) continue;
+      const key = JSON.stringify([timing.model_id, timing.revision || '']);
+      const row = models.get(key) || { key, model_id: timing.model_id, revision: timing.revision, load_seconds: 0, inference_seconds: 0, calls: 0 };
+      row.load_seconds += timing.load_seconds; row.inference_seconds += timing.inference_seconds; row.calls += timing.calls;
+      if (stage.status === 'running' && ['load', 'inference'].includes(timing.active_phase) && secondsValue(timing.active_started_at)) {
+        row[`${timing.active_phase}_seconds`] += Math.max(0, now / 1000 - timing.active_started_at);
+        row.running = true;
+      }
+      row.estimated ||= !!timing.timing_estimated;
+      models.set(key, row);
+    }
+  }
+  return [...models.values()];
+}

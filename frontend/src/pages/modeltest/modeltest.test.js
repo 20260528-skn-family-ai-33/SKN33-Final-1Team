@@ -4,7 +4,27 @@ import {
   CONTRACT, FILE_TYPES, FILE_LIMITS, STAGES, parseModel, parseEndpoint, initialFlow, SIGLIP2, modelOptions, parseStageModel, preparationLabel,
   formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest,
 } from './modeltest.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL } from './modeltestResults.js';
+import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
+
+test('timings aggregate by model and revision, include active work, and preserve missing measurements', () => {
+  const timing = { model_id: 'vismatch/xfeat', revision: 'v1', load_seconds: 2, inference_seconds: 3, calls: 1 };
+  const rows = modelTimings([
+    { status: 'completed', model_timings: [timing] },
+    { status: 'running', model_timings: [{ ...timing, load_seconds: 0, active_phase: 'inference', active_started_at: 17 },
+      { ...timing, model_id: SIGLIP2 }, { ...timing, revision: 'v2' }, { ...timing, calls: -1 }, null] },
+    { status: 'completed', elapsed_seconds: 12, model_id: 'old/unmeasured' },
+  ], 20000);
+  assert.equal(rows.length, 3);
+  assert.deepEqual([rows[0].load_seconds, rows[0].inference_seconds, rows[0].calls], [2, 9, 2]);
+  assert.equal(rows[0].running, true);
+  assert.equal(elapsedSeconds({ status: 'running', started_at: 10, elapsed_seconds: 2 }, 20000), 10);
+  assert.equal(elapsedSeconds({ status: 'failed', started_at: 10, elapsed_seconds: 3 }, 20000), 3);
+  assert.equal(elapsedSeconds({ status: 'completed' }), null);
+  assert.equal(formatDuration(null), '미측정');
+  assert.equal(formatDuration(-1), '미측정');
+  assert.equal(formatDuration(0.002), '0.002초');
+  assert.equal(formatDuration(59.99), '1분 0.0초');
+});
 
 const health = {
   contract: CONTRACT, ready: true, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,

@@ -33,6 +33,14 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
         stages: [{ id: 'frames', status: 'completed', output: { frames } },
           { id: 'logo_extract', model_id: 'google/owlv2-base-patch16', status: 'completed', output: { items: frames.map((frame, index) => ({ ...frame, logos: [{ bbox: [8, 4, 40, 20], logo_index: 0, preview: `logo-${index}-0.png`, score: 0.8 }] })) } },
           { id: 'logo_compare', model_id: 'vismatch/xfeat', status: 'running', output: { items: frames.map(frame => ({ ...frame, matches: [{ logo_index: 0, reference_index: 0, matches: 12, inliers: 9, keypoints: [100, 105], inlier_ratio: 0.75, descriptor_similarity: 0.93, image_cosine_similarity: 0.86, decision: 'candidate_match' }] })) } }] };
+      job.stages[0].elapsed_seconds = 1.25;
+      job.stages[1].elapsed_seconds = 5;
+      job.stages[1].model_timings = [{ model_id: 'google/owlv2-base-patch16', load_seconds: 2, inference_seconds: 3, calls: 2 }];
+      job.stages[2].elapsed_seconds = 11;
+      job.stages[2].model_timings = [
+        { model_id: 'vismatch/xfeat', load_seconds: 2, inference_seconds: 3, calls: 2 },
+        { model_id: 'google/siglip2-base-patch16-224', load_seconds: 2, inference_seconds: 4, calls: 2 },
+      ];
       return json(job);
     }
     if (url.pathname.includes('/previews/')) { previews++; return json({ mime: 'image/jpeg', data: jpeg }); }
@@ -43,6 +51,9 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
     unexpected.push(`${request.method()} ${url.pathname}`); return route.abort();
   });
   await page.goto(`${origin}/modeltest`);
+  await page.getByRole('button', { name: '다크', exact: true }).click();
+  assert.equal(await page.locator('.mt-shell').getAttribute('data-theme'), 'dark');
+  assert.equal(await page.locator('.mt-shell').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(16, 27, 41)');
   await page.getByRole('button', { name: '영상 검수', exact: true }).click();
   jpeg = await page.evaluate(() => {
     const canvas = document.createElement('canvas'); canvas.width = 80; canvas.height = 40;
@@ -67,6 +78,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor();
   await page.reload();
   await page.getByText('fixture.mp4', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: '다크', exact: true }).getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('.mt-conditions').getAttribute('open'), '');
   assert.equal(await page.getByLabel('로고 추출 모델', { exact: true }).inputValue(), 'https://huggingface.co/google/owlv2-base-patch16');
   const storedBytes = await page.evaluate(async () => {
@@ -93,8 +105,14 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   for (const text of ['0.860', '0.930', '75.0%', '12 / 9개', '일치 후보']) await page.getByText(text, { exact: true }).waitFor();
   await page.getByRole('img', { name: '30 프레임 · 1.25초 분석 이미지', exact: true }).waitFor();
   const loadedPreviews = previews;
-  for (const name of ['실행 설정', '전체 응답']) {
+  for (const name of ['소요 시간', '실행 설정', '전체 응답']) {
     await page.getByRole('button', { name, exact: true }).click();
+    if (name === '소요 시간') {
+      const table = page.getByRole('table', { name: '모델별 누적 소요 시간' });
+      await table.getByRole('rowheader', { name: 'google/siglip2-base-patch16-224', exact: true }).waitFor();
+      assert.match(await table.getByRole('row').filter({ hasText: 'google/siglip2-base-patch16-224' }).innerText(), /2\.0초\s+4\.0초\s+6\.0초\s+2회/);
+      await page.getByRole('table', { name: '단계별 소요 시간' }).getByText('1.3초', { exact: true }).waitFor();
+    }
     await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
     await page.getByRole('heading', { name: '30 프레임 · 1.25초', exact: true }).waitFor();
     await page.getByRole('img', { name: '추출 로고 1', exact: true }).waitFor();
@@ -107,6 +125,8 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.getByRole('button', { name: '검수 강제 중단', exact: true }).click();
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some(button => button.textContent === '검수 강제 중단'));
   assert.equal(cancellations, 1); assert.equal(submissions, 1);
+  await page.getByRole('button', { name: '라이트', exact: true }).click();
+  assert.equal(await page.locator('.mt-shell').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(244, 247, 250)');
   await page.getByRole('button', { name: '저장된 첨부·설정 지우기', exact: true }).click();
   await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor();
   await page.reload();

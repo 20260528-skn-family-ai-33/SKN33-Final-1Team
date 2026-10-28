@@ -1,5 +1,6 @@
 """CPU-only adapter checks with fixture outputs; no weights, network or GPU inference."""
 import json
+import copy
 import sys
 from types import SimpleNamespace
 
@@ -7,6 +8,68 @@ import pytest
 from PIL import Image
 
 from backend.app import modeltest_remote as remote
+
+
+@pytest.mark.parametrize('failure', [None, 'load', 'inference'])
+def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, failure):
+    clock = [0.0]; events = []
+    monkeypatch.setattr(remote.time, 'monotonic', lambda: clock[0])
+    monkeypatch.setattr(remote.time, 'time', lambda: 1000 + clock[0])
+    class Models:
+        def load(self, stage):
+            clock[0] += 2
+            if failure == 'load' and stage['model_id'] == remote.XFEAT: raise ValueError('fixture load failed')
+    monkeypatch.setattr(remote, 'Models', Models)
+    image = tmp_path / 'poster.png'; Image.new('RGB', (40, 40)).save(image)
+    def frames(*args):
+        clock[0] += 1
+        return [{'index': 0, 'path': image}]
+    def detect(*args, **kwargs):
+        clock[0] += 3
+        return {'logos': [{'bbox': [0, 0, 20, 20]}]}
+    def compare(*args, **kwargs):
+        clock[0] += 3
+        if failure == 'inference': raise ValueError('fixture inference failed')
+        return {'decision': 'uncertain'}
+    def similarity(*args):
+        clock[0] += 4
+        return {'image_cosine_similarity': 0.8}
+    monkeypatch.setattr(remote, 'frames_of', frames)
+    monkeypatch.setitem(remote.MODEL_HANDLERS, remote.OWLV2, detect)
+    monkeypatch.setitem(remote.MODEL_HANDLERS, remote.XFEAT, compare)
+    monkeypatch.setattr(remote, 'image_similarity', similarity)
+    config = {'contract': remote.CONTRACT, 'flow': 'video', 'sampling': {'unit': 'frames', 'interval': 1, 'max_frames': 1},
+        'files': {'media': {}, 'documents': [], 'references': [{}]}, 'stages': [
+            {'id': 'logo_extract', 'model_id': remote.OWLV2},
+            {'id': 'logo_compare', 'model_id': remote.XFEAT, 'image_similarity': True}]}
+    remote.execute_run(config, {'media': image, 'documents': [], 'references': [image], 'container': 'mov'}, tmp_path,
+        lambda kind, value: events.append(copy.deepcopy(value)) if kind == 'run' else None)
+    job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
+    assert job['status'] == ('failed' if failure else 'completed')
+    assert job['stages'][0]['elapsed_seconds'] == 1
+    assert job['stages'][1]['elapsed_seconds'] == 5
+    stage = job['stages'][2]; xfeat = stage['model_timings'][0]
+    assert xfeat['load_seconds'] == 2
+    assert xfeat['inference_seconds'] == (0 if failure == 'load' else 3)
+    assert xfeat['calls'] == (0 if failure == 'load' else 1)
+    assert stage['elapsed_seconds'] == (2 if failure == 'load' else 5 if failure else 11)
+    assert job['elapsed_seconds'] == 6 + stage['elapsed_seconds']
+    assert all('active_phase' not in row for row in stage['model_timings'])
+    assert any(row.get('active_phase') == 'load' for event in events for item in event['stages'] for row in item.get('model_timings', []))
+    if not failure:
+        siglip = stage['model_timings'][1]
+        assert (siglip['model_id'], siglip['load_seconds'], siglip['inference_seconds'], siglip['calls']) == (remote.SIGLIP2, 2, 4, 1)
+
+
+def test_interrupted_timing_freezes_active_call_and_marks_estimate():
+    timing = {'model_id': remote.XFEAT, 'load_seconds': 2, 'inference_seconds': 3, 'calls': 2,
+        'active_phase': 'inference', 'active_started_at': 15}
+    stage = {'status': 'running', 'started_at': 10, 'model_timings': [timing]}
+    job = {'started_at': 5, 'stages': [stage, {'status': 'queued'}]}
+    remote.finish_interrupted_timings(job, 20)
+    assert stage['elapsed_seconds'] == 10 and stage['timing_estimated']
+    assert timing['inference_seconds'] == 8 and 'active_phase' not in timing
+    assert job['elapsed_seconds'] == 15
 
 
 def test_model_roles_and_candidates_are_validated_before_execution():
