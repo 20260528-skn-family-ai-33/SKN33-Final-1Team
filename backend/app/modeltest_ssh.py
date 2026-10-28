@@ -296,9 +296,9 @@ def modeltest_ssh_router(storage_root: Path):
         storage_root.mkdir(parents=True, exist_ok=True)
         temp = tempfile.TemporaryDirectory(prefix='upload-', dir=storage_root)
         try:
-            async with request.form(max_files=21, max_fields=1, max_part_size=256 * 1024) as form:
+            async with request.form(max_files=101, max_fields=1, max_part_size=256 * 1024) as form:
                 config = remote.validate_config(registry.hydrate(json.loads(form.get('config', ''))))
-                expected = [('media', [config['files']['media']] if config['files']['media'] else [], config['flow']), ('documents', config['files']['documents'], 'document'), ('references', config['files']['references'], 'reference')]
+                expected = [('media', [config['files']['media']] if config['files']['media'] else [], 'image' if config['flow'] == 'similarity' else config['flow']), ('documents', config['files']['documents'], 'document'), ('references', config['files']['references'], 'reference')]
                 if any(key not in ('config', 'media', 'documents', 'references') for key in form): raise ValueError('지원하지 않는 업로드 필드입니다.')
                 uploads = []; total = 0; container = None
                 for kind, metadata, file_kind in expected:

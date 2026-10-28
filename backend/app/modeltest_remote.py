@@ -48,12 +48,18 @@ PACKAGES = ('transformers>=5.11,<6', 'accelerate>=1,<2', 'Pillow>=12.3,<13', 'av
 MODULES = ('torch', 'transformers', 'accelerate', 'PIL', 'av', 'pypdfium2', 'safetensors', 'cv2', 'numpy', 'tqdm')
 OWLV2 = 'google/owlv2-base-patch16'
 SIGLIP2 = 'google/siglip2-base-patch16-224'
+OWLV2_ENSEMBLE = 'google/owlv2-base-patch16-ensemble'
+SIGLIP2_SO400M = 'google/siglip2-so400m-patch14-384'
+OWLV2_MODELS = (OWLV2, OWLV2_ENSEMBLE)
+SIGLIP2_MODELS = (SIGLIP2, SIGLIP2_SO400M)
+FILTER_SCOPES = ('references_per_crop', 'crops_per_reference_frame', 'crops_per_reference_video')
 XFEAT = 'vismatch/xfeat'
 QWEN = 'Qwen/Qwen3.5-4B'
 PADDLE_GGUF = 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF'
 LLAMA_COMMIT = '620d2225cc436ab0b001e3200e590e3b286ef9ab'
 LLAMA_BUILD_LOCK = threading.Lock()
 MODEL_STAGES = {OWLV2: ('logo_extract',), SIGLIP2: ('visual_extract', 'logo_similarity'), XFEAT: ('logo_compare',), QWEN: tuple(name for name in STAGES if name not in ('logo_similarity', 'candidate_filter')), PADDLE_GGUF: ('text_extract',)}
+MODEL_STAGES.update({OWLV2_ENSEMBLE: MODEL_STAGES[OWLV2], SIGLIP2_SO400M: MODEL_STAGES[SIGLIP2]})
 STAGES += catalog.EXTRA_STAGES
 PAIR_STAGES = ('logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue')
 XFEAT_SOURCE = 'verlab/accelerated_features:e92685f57f8318b18725c5c8c0bd28c7fe188d9a'
@@ -82,14 +88,16 @@ def validate_model_stage(stage):
         if stage.get('image_similarity'): raise ValueError('등록 모델에는 별도 이미지 유사도 노드를 연결해 주세요.')
         return
     if model_id not in MODEL_STAGES: raise ValueError('미등록 모델입니다. Hugging Face 모델 추가에서 계열과 실행 설정을 확인해 주세요.')
-    if kind == 'logo_similarity' and model_id != SIGLIP2:
+    if kind == 'logo_similarity' and model_id not in SIGLIP2_MODELS:
         raise ValueError('이미지 유사도 단계에는 SigLIP2 모델을 선택해 주세요.')
     if 'image_similarity' in stage and (type(stage['image_similarity']) is not bool or model_id != XFEAT or kind != 'logo_compare'):
         raise ValueError('이미지 유사도 추가 계산은 XFeat 로고 대조에서만 선택할 수 있습니다.')
+    if 'image_similarity_model' in stage and (not stage.get('image_similarity') or stage['image_similarity_model'] not in SIGLIP2_MODELS):
+        raise ValueError('추가 계산에 사용할 SigLIP2 모델을 확인해 주세요.')
     if model_id in MODEL_STAGES and kind not in MODEL_STAGES[model_id]:
         raise ValueError(f'{model_id}는 {stage["id"]} 단계에서 지원하지 않습니다. 지원 단계: {", ".join(MODEL_STAGES[model_id])}')
     labels = stage.get('labels')
-    if model_id == SIGLIP2 and kind == 'visual_extract':
+    if model_id in SIGLIP2_MODELS and kind == 'visual_extract':
         if not isinstance(labels, list) or not 1 <= len(labels) <= 32 or any(not isinstance(label, str) or not label.strip() or len(label) > 200 for label in labels):
             raise ValueError('SigLIP2에는 비교할 후보 문구 1~32개가 필요합니다. 문구당 최대 200자입니다.')
         if len(set(label.strip() for label in labels)) != len(labels): raise ValueError('후보 문구가 중복됐습니다.')
@@ -99,6 +107,8 @@ def validate_model_stage(stage):
 
 def workflow_dependencies(config):
     ids = [stage['id'] for stage in config['stages']]
+    if config['flow'] == 'similarity':
+        return {name: set(ids[index - 1:index]) for index, name in enumerate(ids)}
     if config['flow'] == 'video' and config.get('purpose') != 'prepare': ids.insert(1 if ids[0] == 'conditions' else 0, 'frames')
     workflow = config.get('workflow')
     if workflow is None:
@@ -173,31 +183,45 @@ def workflow_dependencies(config):
             if similarity.get('inputs', {}).get('logo_extract', 'logo_extract') != bindings.get('logo_extract', 'logo_extract'):
                 raise ValueError('필터 후보와 로고 대조는 같은 로고 추출 결과를 사용해야 합니다.')
     if not dynamic and 'candidate_filter' in ids and 'logo_compare' not in ids: raise ValueError('후보 필터를 로고 대조 단계에 연결해 주세요.')
-    if not dynamic and 'logo_similarity' in ids and any(stage.get('image_similarity') for stage in config['stages']):
+    if any(stage.get('kind', stage['id']) == 'logo_similarity' for stage in config['stages']) and any(stage.get('image_similarity') for stage in config['stages']):
         raise ValueError('별도 이미지 유사도 노드와 XFeat의 추가 SigLIP2 계산은 함께 선택할 수 없습니다.')
     return dependencies
 
 
 def filter_candidates(rows, stage):
-    result = []
-    for row in rows:
-        candidates = []
-        for logo_index in sorted({match['logo_index'] for match in row['matches']}):
-            matches = [match for match in row['matches'] if match['logo_index'] == logo_index]
-            for match in matches:
-                score = match.get('image_cosine_similarity')
-                if type(score) not in (int, float) or not math.isfinite(score): raise ValueError('후보의 이미지 유사도 값이 올바르지 않습니다.')
-            matches.sort(key=lambda match: (-match['image_cosine_similarity'], match['reference_index']))
-            if stage.get('threshold') is not None: matches = [match for match in matches if match['image_cosine_similarity'] >= stage['threshold']]
-            if stage.get('top_k') is not None: matches = matches[:stage['top_k']]
-            candidates.extend(matches)
-        result.append({**row, 'matches': candidates, 'candidate_count': len(row['matches']), 'selected_count': len(candidates),
-            'note': '각 로고별로 임계값을 적용한 뒤 유사도 상위 후보를 선택했습니다.'})
+    scope = stage.get('scope', 'references_per_crop'); groups = {}; identities = set()
+    if scope not in FILTER_SCOPES: raise ValueError('후보 선정 기준을 확인해 주세요.')
+    for ri, row in enumerate(rows):
+        for mi, match in enumerate(row['matches']):
+            score = match.get('image_cosine_similarity')
+            if type(score) not in (int, float) or not math.isfinite(score): raise ValueError('후보의 이미지 유사도 값이 올바르지 않습니다.')
+            identities.add((match.get('similarity_model'), match.get('similarity_revision'), match.get('space_id')))
+            key = (ri, match['logo_index']) if scope == 'references_per_crop' else (ri, match['reference_index']) if scope == 'crops_per_reference_frame' else match['reference_index']
+            groups.setdefault(key, []).append((ri, mi, match))
+    if len(identities) > 1: raise ValueError('모델·revision·전처리가 다른 유사도 결과를 함께 순위화할 수 없습니다.')
+    decisions = {}
+    for group in groups.values():
+        group.sort(key=lambda item: (-item[2]['image_cosine_similarity'], rows[item[0]].get('index', item[0]), item[2]['logo_index'], item[2]['reference_index']))
+        selected = 0
+        for rank, (ri, mi, match) in enumerate(group, 1):
+            reason = 'below_threshold' if stage.get('threshold') is not None and match['image_cosine_similarity'] < stage['threshold'] else 'outside_top_k' if stage.get('top_k') is not None and selected >= stage['top_k'] else None
+            if reason is None: selected += 1
+            decisions[ri, mi] = (rank, reason)
+    total = len(decisions); selected_total = sum(reason is None for _, reason in decisions.values()); result = []
+    for ri, row in enumerate(rows):
+        candidates = []; excluded = []
+        for mi, match in enumerate(row['matches']):
+            rank, reason = decisions[ri, mi]; value = {**match, 'candidate_rank': rank}
+            if reason is None: candidates.append(value)
+            else: excluded.append({**value, 'exclusion_reason': reason})
+        candidates.sort(key=lambda match: (match['logo_index'], -match['image_cosine_similarity'], match['reference_index']))
+        result.append({**row, 'matches': candidates, 'excluded_matches': excluded, 'candidate_count': len(row['matches']), 'selected_count': len(candidates),
+                       'filter': {'scope': scope, 'threshold': stage.get('threshold'), 'top_k': stage.get('top_k'), 'total_candidates': total, 'total_selected': selected_total}})
     return result
 
 
 def validate_config(config):
-    if not isinstance(config, dict) or config.get('contract') != CONTRACT or config.get('flow') not in ('image', 'video'):
+    if not isinstance(config, dict) or config.get('contract') != CONTRACT or config.get('flow') not in ('image', 'video', 'similarity'):
         raise ValueError('검수 요청 형식이 올바르지 않습니다.')
     if 'workflow' in config and not isinstance(config['workflow'], dict): raise ValueError('워크플로우 연결 형식이 올바르지 않습니다.')
     stages = config.get('stages')
@@ -222,11 +246,11 @@ def validate_config(config):
             ids.append(stage['id']); continue
         if stage.get('kind', stage['id']) == 'candidate_filter':
             threshold, top_k = stage.get('threshold'), stage.get('top_k')
-            if set(stage) - common - {'threshold', 'top_k'} or (threshold is None and top_k is None): raise ValueError('필터의 최소 유사도 또는 상위 후보 수를 입력해 주세요.')
+            if set(stage) - common - {'threshold', 'top_k', 'scope'} or stage.get('scope', 'references_per_crop') not in FILTER_SCOPES or (threshold is None and top_k is None): raise ValueError('필터의 선정 기준·최소 유사도·상위 후보 수를 확인해 주세요.')
             if threshold is not None and (type(threshold) not in (int, float) or not math.isfinite(threshold) or not -1 <= threshold <= 1): raise ValueError('최소 코사인 유사도는 -1~1 사이여야 합니다.')
             if top_k is not None and (type(top_k) is not int or not 1 <= top_k <= 10): raise ValueError('상위 후보 수는 1~10 사이의 정수여야 합니다.')
             ids.append(stage['id']); continue
-        if set(stage) - common - {'model_id', 'revision', 'labels', 'image_similarity', 'prompt', 'prompt_override', 'registered_model', 'model_fingerprint', 'model_profile'}: raise ValueError('지원하지 않는 모델 설정입니다.')
+        if set(stage) - common - {'model_id', 'revision', 'labels', 'image_similarity', 'image_similarity_model', 'prompt', 'prompt_override', 'registered_model', 'model_fingerprint', 'model_profile'}: raise ValueError('지원하지 않는 모델 설정입니다.')
         if stage.get('prompt') is not None and (not isinstance(stage['prompt'], str) or len(stage['prompt']) > 8000): raise ValueError('모델 지시는 8,000자 이하여야 합니다.')
         identifier = stage.get('model_id', '')
         if not isinstance(identifier, str) or not re.fullmatch(r'[\w][\w.-]{0,95}/[\w][\w.-]{0,95}', identifier, re.ASCII) or '..' in identifier or '--' in identifier or any(part.endswith(('.', '-', '.git')) for part in identifier.split('/')) or identifier.split('/')[0] in ('datasets', 'spaces'):
@@ -242,6 +266,8 @@ def validate_config(config):
     if not isinstance(requirements, str) or len(requirements) > 12000:
         raise ValueError('직접 입력 조건은 12,000자 이하여야 합니다.')
     files = config.get('files')
+    if config['flow'] == 'similarity' and config.get('purpose') is not None:
+        raise ValueError('유사도 테스트는 별도 준비·샘플 요청 없이 두 모델을 실행합니다.')
     if config.get('purpose') == 'prepare':
         if len(stages) != 1 or stages[0].get('kind', stages[0]['id']) not in ('model_prepare', 'disk_lightglue_prepare') or files != {'media': None, 'documents': [], 'references': []}: raise ValueError('모델 준비는 첨부 없이 준비 단계 하나로 실행해야 합니다.')
         workflow_dependencies(config); return config
@@ -249,8 +275,18 @@ def validate_config(config):
     if not isinstance(files, dict) or not isinstance(files.get('media'), dict):
         raise ValueError('검수할 파일이 필요합니다.')
     for kind in ('documents', 'references'):
-        if not isinstance(files.get(kind), list) or len(files[kind]) > 10 or not all(isinstance(item, dict) for item in files[kind]):
-            raise ValueError('문서와 레퍼런스는 각각 최대 10개입니다.')
+        maximum = 100 if config['flow'] == 'similarity' and kind == 'references' else 10
+        if not isinstance(files.get(kind), list) or len(files[kind]) > maximum or not all(isinstance(item, dict) for item in files[kind]):
+            raise ValueError('대조 이미지는 최대 100개입니다.' if maximum == 100 else '문서와 레퍼런스는 각각 최대 10개입니다.')
+    if config['flow'] == 'similarity':
+        if config.get('workflow') is not None or config.get('purpose') is not None or files['documents'] or not files['references']:
+            raise ValueError('유사도 테스트는 기준 이미지 1장과 대조 이미지 1~100장으로 실행합니다.')
+        if ids != ['logo_similarity', 'logo_compare'] or stages[1].get('model_id') != XFEAT or any(set(stage) - {'id', 'name', 'model_id', 'revision', 'registered_model', 'model_fingerprint', 'model_profile'} for stage in stages):
+            raise ValueError('유사도 테스트는 이미지 유사도와 XFeat 두 단계로 실행해야 합니다.')
+        resize = config.get('resize')
+        if resize is not None and (not isinstance(resize, dict) or set(resize) != {'width', 'height'} or any(type(value) is not int or not 1 <= value <= 8192 for value in resize.values())):
+            raise ValueError('다운사이징 가로·세로는 1~8,192px 정수여야 합니다.')
+        return config
     kinds = [stage.get('kind', stage['id']) for stage in stages]
     if config['flow'] == 'image' and (not files['documents'] or files['references'] or any(name.startswith('logo_') or name == 'candidate_filter' for name in kinds)):
         raise ValueError('이미지 검수에는 문서가 필요하며 영상 전용 단계는 사용할 수 없습니다.')
@@ -279,7 +315,7 @@ def runtime_health():
         import torch
         cuda = torch.cuda.is_available()
     return {'contract': CONTRACT, 'ready': not missing and cuda, 'stages': list(STAGES),
-            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
+            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'similarity_test': 1, 'candidate_filter_scopes': list(FILTER_SCOPES), 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
             'models': [{'id': model_id, 'stages': list(stages)} for model_id, stages in MODEL_STAGES.items()],
             'setup_required': bool(missing), 'can_prepare': 'torch' not in missing and cuda, 'missing': missing, 'cuda': cuda,
             'detail': '준비 완료' if not missing and cuda else 'Pod 패키지 준비가 필요합니다.' if missing else 'Pod에서 CUDA GPU를 확인하지 못했습니다.'}
@@ -351,6 +387,20 @@ def image_of(path):
         if source.width * source.height > 30_000_000:
             raise ValueError('이미지는 3,000만 픽셀 이하여야 합니다.')
         return ImageOps.exif_transpose(source).convert('RGB')
+
+
+def similarity_base(path, resize, root):
+    from PIL import Image
+    image = image_of(path); original = image.size
+    if resize is not None:
+        size = (resize['width'], resize['height'])
+        if any(target > source for target, source in zip(size, original)):
+            raise ValueError(f'다운사이징 크기는 기준 이미지 원본 {original[0]} × {original[1]}px 이하여야 합니다.')
+        image = image.resize(size, Image.Resampling.LANCZOS)
+    # Keep the measurement input lossless; the JPEG below is only a preview.
+    target = root / 'similarity-base.png'; image.save(target)
+    return target, {'original_width': original[0], 'original_height': original[1], 'width': image.width, 'height': image.height,
+                    'resized': image.size != original, 'resize_filter': 'Lanczos' if resize is not None else None}
 
 
 def document_parts(path, directory):
@@ -502,13 +552,13 @@ class GGUFServer:
 
 
 class Models:
-    def __init__(self): self.key = None; self.model = None; self.processor = None; self.kind = None; self.gguf = None; self.registered = None; self.classical = {}
+    def __init__(self): self.key = None; self.model = None; self.processor = None; self.kind = None; self.gguf = None; self.registered = None; self.classical = {}; self.execution = None
 
     def close(self):
         self.classical = {}
         if self.registered is not None: self.registered.close(); self.registered = None
         if self.gguf is not None: self.gguf.close(); self.gguf = None
-        self.model = None; self.processor = None; self.key = None
+        self.model = None; self.processor = None; self.key = None; self.execution = None
 
     def load(self, stage):
         key = (stage['model_id'], stage.get('revision'), stage.get('model_profile', {}).get('fingerprint'))
@@ -518,7 +568,8 @@ class Models:
         if stage.get('model_profile'):
             self.registered = adapters.Adapter(stage['model_profile'], self, SimpleNamespace(**globals()))
             self.model = self.registered.model; self.processor = self.registered.processor
-            self.kind = 'vision' if self.registered.family == 'qwen_vision' else self.registered.family; self.key = key; return
+            self.kind = 'vision' if self.registered.family == 'qwen_vision' else self.registered.family; self.key = key
+            self.execution = {**(self.execution or {}), 'model_id': key[0], 'revision': key[1], 'fingerprint': key[2], 'options': stage['model_profile']['options']}; return
         if key[0] == PADDLE_GGUF:
             self.gguf = GGUFServer(key[1]); self.kind = 'gguf'; self.key = key; return
         if key[0] == XFEAT:
@@ -535,19 +586,25 @@ class Models:
                                         trust_repo=True, skip_validation=True, verbose=False)
             self.model.net.load_state_dict(torch.load(weights, map_location='cpu', weights_only=True))
             self.model.dev = torch.device('cuda'); self.model.to('cuda').eval()
+            resolved = Path(weights).parent.name
+            self.execution = {'model_id': XFEAT, 'requested_revision': key[1] or 'main', 'revision': resolved if re.fullmatch(r'[a-f0-9]{40}', resolved) else None,
+                              'weights_sha256': hashlib.sha256(Path(weights).read_bytes()).hexdigest(), 'code_source': XFEAT_SOURCE}
             self.kind = 'features'; self.key = key; return
         from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoModelForImageTextToText, AutoModelForZeroShotObjectDetection, AutoProcessor, AutoTokenizer, Owlv2ForObjectDetection
         kwargs = {'revision': key[1], 'trust_remote_code': False}
         config = AutoConfig.from_pretrained(key[0], **kwargs)
-        if key[0] == OWLV2:
+        kwargs['revision'] = getattr(config, '_commit_hash', None) or key[1]
+        if key[0] in OWLV2_MODELS:
             self.kind = 'owlv2'; cls = Owlv2ForObjectDetection
-        elif key[0] == SIGLIP2:
+        elif key[0] in SIGLIP2_MODELS:
             self.kind = 'siglip2'; cls = AutoModel
         elif key[0] == QWEN:
             self.kind = 'vision'; cls = AutoModelForImageTextToText
         else: raise ValueError('미등록 모델입니다. 모델 계열과 실행 설정을 먼저 등록해 주세요.')
         self.processor = (AutoTokenizer if self.kind == 'text' else AutoProcessor).from_pretrained(key[0], **kwargs)
         self.model = cls.from_pretrained(key[0], **kwargs, use_safetensors=True, device_map='cuda', dtype='auto').eval()
+        processor = getattr(self.processor, 'image_processor', None)
+        self.execution = {'model_id': key[0], 'revision': kwargs['revision'], 'preprocessing': {name: getattr(processor, name, None) for name in ('size', 'resample', 'image_mean', 'image_std', 'do_resize', 'do_normalize', 'do_rescale')}}
         self.key = key
 
     def generate(self, prompt, images=(), require_vision=False):
@@ -623,16 +680,20 @@ def run_xfeat(models, stage, *, images, **_):
     import cv2
     import numpy as np
     import torch
-    features = []; scales = []
+    features = []; scales = []; image_sizes = []
     for path in images:
         image = image_of(path); width, height = image.size; image.thumbnail((1024, 1024))
+        image_sizes.append([width, height])
         image = image.resize((max(32, image.width), max(32, image.height)))
         scales.append(np.array([width / image.width, height / image.height]))
         tensor = torch.from_numpy(np.asarray(image, dtype=np.float32) / 255).permute(2, 0, 1)[None].to(models.model.dev)
         with torch.inference_mode(): features.append(models.model.detectAndCompute(tensor)[0])
     first, second = features
     result = {'keypoints': [len(first['keypoints']), len(second['keypoints'])], 'matches': 0, 'descriptor_similarity': None,
-              'inliers': 0, 'inlier_ratio': 0.0, 'decision': 'uncertain', 'matched_points': [],
+              'inliers': 0, 'inlier_ratio': 0.0, 'decision': 'uncertain', 'matched_points': [], 'image_sizes': image_sizes,
+              'matching_settings': {**(getattr(models, 'execution', None) or {}), 'code_source': XFEAT_SOURCE, 'top_k': 1024, 'match_min_cosine': 0.82,
+                                    'resize_max_side': 1024, 'resize_min_side': 32, 'ransac_px': 3.0, 'ransac_max_iters': 2000, 'ransac_confidence': 0.995,
+                                    'candidate_min_inliers': 8, 'candidate_min_ratio': 0.5, 'color_comparison': 'not_implemented', 'teammate_reproduction': 'unverified'},
               'note': '특징점과 기하 검증에 따른 참고 결과입니다. 단순한 로고는 특징점 부족으로 판정하지 못할 수 있습니다.'}
     if not all(result['keypoints']): return result
     with torch.inference_mode(): a, b = models.model.match(first['descriptors'], second['descriptors'], min_cossim=0.82)
@@ -656,13 +717,15 @@ def run_xfeat(models, stage, *, images, **_):
 def image_similarity(models, images):
     if getattr(models, 'registered', None) is not None:
         adapter = models.registered; vectors = adapters.normalized(adapter.embed([str(path) for path in images]))
-        return {'image_cosine_similarity': float(vectors[0] @ vectors[1]), 'similarity_model': adapter.profile['model_id'], 'space_id': adapter.profile['fingerprint'], 'metric': 'cosine_similarity'}
+        return {'image_cosine_similarity': float(vectors[0] @ vectors[1]), 'similarity_model': adapter.profile['model_id'], 'similarity_revision': adapter.profile['resolved_revision'], 'space_id': adapter.profile['fingerprint'], 'metric': 'cosine_similarity'}
     import torch
     inputs = models.processor(images=[image_of(path) for path in images], return_tensors='pt').to(models.model.device)
     with torch.inference_mode():
         features = models.model.get_image_features(**inputs, return_dict=True).pooler_output
         score = torch.nn.functional.cosine_similarity(features[:1].float(), features[1:2].float()).item()
-    return {'image_cosine_similarity': round(score, 4), 'similarity_model': SIGLIP2}
+    execution = getattr(models, 'execution', None) or {'model_id': (getattr(models, 'key', None) or (SIGLIP2,))[0]}
+    space = hashlib.sha256(json.dumps(execution, sort_keys=True, ensure_ascii=True).encode()).hexdigest()
+    return {'image_cosine_similarity': round(score, 4), 'similarity_model': execution['model_id'], 'similarity_revision': execution.get('revision'), 'space_id': space, 'metric': 'cosine_similarity'}
 
 
 def run_paddle_gguf(models, stage, *, images, **_):
@@ -671,6 +734,7 @@ def run_paddle_gguf(models, stage, *, images, **_):
 
 
 MODEL_HANDLERS = {OWLV2: run_owlv2, SIGLIP2: run_siglip2, XFEAT: run_xfeat, QWEN: run_qwen, PADDLE_GGUF: run_paddle_gguf}
+MODEL_HANDLERS.update({OWLV2_ENSEMBLE: run_owlv2, SIGLIP2_SO400M: run_siglip2})
 
 
 def run_model(models, stage, **inputs):
@@ -781,6 +845,8 @@ def execute_run(config, paths, root, emit):
         publish(); started = time.monotonic()
         try: return function(*args, **kwargs)
         finally:
+            execution = getattr(getattr(worker, 'models', None), 'execution', None)
+            if phase == 'load' and execution and execution.get('model_id') == stage['model_id']: timing['execution'] = copy.deepcopy(execution)
             timing[phase + '_seconds'] = round(timing[phase + '_seconds'] + time.monotonic() - started, 6)
             timing.pop('active_phase', None); timing.pop('active_started_at', None)
     preview_budget = 32 * 1024**2
@@ -794,16 +860,19 @@ def execute_run(config, paths, root, emit):
                 if preview_budget >= 0: emit('preview', {'name': name, **value})
         except (OSError, ValueError): pass  # A preview failure must not stop inference; on-demand retrieval remains available.
     try:
+        similarity_path = None; similarity_meta = {}
+        if config['flow'] == 'similarity':
+            similarity_path, similarity_meta = similarity_base(paths['media'], config.get('resize'), root)
         job['references'] = []
         for index, path in enumerate(paths['references']):
             image = image_of(path); target = root / f'preview-reference-{index}.jpg'
             width, height = image.size; image.thumbnail((1280, 1280)); image.save(target, quality=90)
             job['references'].append({'index': index, 'preview': target.name, 'width': width, 'height': height})
             prefetch(target.name)
-        if config['flow'] == 'image' and config.get('purpose') != 'prepare':
-            image = image_of(paths['media']); target = root / 'preview-poster.jpg'
+        if config['flow'] in ('image', 'similarity') and config.get('purpose') != 'prepare':
+            image = image_of(similarity_path or paths['media']); target = root / 'preview-poster.jpg'
             width, height = image.size; image.thumbnail((1280, 1280)); image.save(target, quality=90)
-            job['media'] = {'index': 0, 'preview': target.name, 'width': width, 'height': height}
+            job['media'] = {'index': 0, 'preview': target.name, 'width': width, 'height': height, **similarity_meta}
             prefetch(target.name)
         def execute_stage(template):
             nonlocal frames
@@ -817,9 +886,17 @@ def execute_run(config, paths, root, emit):
                 node_id = current['id']; name = current.get('kind', node_id); rows = []; crops = []
                 stage = next((item for item in config['stages'] if item['id'] == node_id), None)
                 def input_rows(role): return outputs[stage.get('inputs', {}).get(role, role)]
-                if name in PAIR_STAGES:
+                if name in PAIR_STAGES and config['flow'] != 'similarity':
                     crops = [(index, root / logo['preview']) for index, row in enumerate(input_rows('logo_extract')) for logo in row['logos']]
-                if name == 'frames':
+                if config['flow'] == 'similarity':
+                    measure(stage, 'load', models.load, stage)
+                    current['output'] = {'items': rows}
+                    for index, reference in enumerate(paths['references']):
+                        current['detail'] = f'대조 이미지 {index + 1} / {len(paths["references"])} 측정 중'; publish()
+                        result = measure(stage, 'inference', image_similarity, models, [similarity_path, reference]) if name == 'logo_similarity' else measure(stage, 'inference', run_model, models, stage, images=[similarity_path, reference])
+                        rows.append({'reference_index': index, **result}); publish()
+                    current.pop('detail', None); outputs[node_id] = rows
+                elif name == 'frames':
                     frames = frames_of(paths['media'], config['sampling'], root, paths['container'])
                     current['output'] = {'frames': [{k: v for k, v in item.items() if k != 'path'} for item in frames]}
                     outputs[node_id] = current['output']['frames']
@@ -877,7 +954,7 @@ def execute_run(config, paths, root, emit):
                                             images=[crop, reference], require_vision=True)
                                         matches.append({**(candidates.get(key, {}) if candidates is not None else {}), 'logo_index': logo_index, 'reference_index': ref_index, **result})
                                 rows.append({**meta, 'matches': matches, 'detected_logos': sum(i == sample_index for i, _ in crops),
-                                    **({'candidate_count': filtered[sample_index]['candidate_count'], 'selected_count': len(matches), 'note': '필터를 통과한 후보만 대조했습니다.'} if filtered is not None else {})})
+                                    **({'candidate_count': filtered[sample_index]['candidate_count'], 'selected_count': len(matches), 'filter': filtered[sample_index].get('filter'), 'excluded_matches': filtered[sample_index].get('excluded_matches', []), 'note': '필터를 통과한 후보만 대조했습니다.'} if filtered is not None else {})})
                             elif name in ('text_extract', 'visual_extract'):
                                 rows.append({**meta, **measure(stage, 'inference', run_model, models, stage, images=[path], require_vision=True)})
                             else:
@@ -889,8 +966,8 @@ def execute_run(config, paths, root, emit):
                                 rows.append({**meta, **measure(stage, 'inference', run_model, models, stage, evidence=evidence, images=[path] if name == 'visual_compare' and models.kind == 'vision' else [])})
                             current['output'] = {'items': rows}; publish()
                     if name == 'logo_compare' and stage.get('image_similarity') and crops:
-                        current['detail'] = 'SigLIP2로 로고 이미지 유사도를 계산하고 있습니다.'; publish()
-                        similarity_stage = {'model_id': SIGLIP2}
+                        similarity_stage = {'model_id': stage.get('image_similarity_model', SIGLIP2)}
+                        current['detail'] = f'{similarity_stage["model_id"]}로 로고 이미지 유사도를 계산하고 있습니다.'; publish()
                         measure(similarity_stage, 'load', models.load, similarity_stage)
                         for sample_index, row in enumerate(rows):
                             for match in row['matches']:

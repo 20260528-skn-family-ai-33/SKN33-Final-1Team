@@ -10,8 +10,9 @@ from PIL import Image
 from backend.app import modeltest_remote as remote
 
 
+@pytest.mark.parametrize('similarity_model', remote.SIGLIP2_MODELS)
 @pytest.mark.parametrize('failure', [None, 'load', 'inference'])
-def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, failure):
+def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, failure, similarity_model):
     clock = [0.0]; events = []
     monkeypatch.setattr(remote.time, 'monotonic', lambda: clock[0])
     monkeypatch.setattr(remote.time, 'time', lambda: 1000 + clock[0])
@@ -41,7 +42,7 @@ def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, fai
     config = {'contract': remote.CONTRACT, 'flow': 'video', 'sampling': {'unit': 'frames', 'interval': 1, 'max_frames': 1},
         'files': {'media': {}, 'documents': [], 'references': [{}]}, 'stages': [
             {'id': 'logo_extract', 'model_id': remote.OWLV2},
-            {'id': 'logo_compare', 'model_id': remote.XFEAT, 'image_similarity': True}]}
+            {'id': 'logo_compare', 'model_id': remote.XFEAT, 'image_similarity': True, 'image_similarity_model': similarity_model}]}
     remote.execute_run(config, {'media': image, 'documents': [], 'references': [image], 'container': 'mov'}, tmp_path,
         lambda kind, value: events.append(copy.deepcopy(value)) if kind == 'run' else None)
     job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
@@ -58,7 +59,7 @@ def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, fai
     assert any(row.get('active_phase') == 'load' for event in events for item in event['stages'] for row in item.get('model_timings', []))
     if not failure:
         siglip = stage['model_timings'][1]
-        assert (siglip['model_id'], siglip['load_seconds'], siglip['inference_seconds'], siglip['calls']) == (remote.SIGLIP2, 2, 4, 1)
+        assert (siglip['model_id'], siglip['load_seconds'], siglip['inference_seconds'], siglip['calls']) == (similarity_model, 2, 4, 1)
 
 
 def test_interrupted_timing_freezes_active_call_and_marks_estimate():
@@ -153,17 +154,18 @@ def test_xfeat_handles_missing_features_and_returns_original_crop_coordinates(tm
         assert output['matched_points'][0] == {'crop': [2., 1.], 'reference': [8., 8.]}
 
 
-def test_xfeat_loader_pins_code_uses_only_tensor_weights_and_reuses_model(monkeypatch):
+def test_xfeat_loader_pins_code_uses_only_tensor_weights_and_reuses_model(tmp_path, monkeypatch):
     torch = pytest.importorskip('torch'); calls = []
+    weights = tmp_path / ('a' * 40) / 'xfeat.pt'; weights.parent.mkdir(); weights.write_bytes(b'fixture weights')
     class Model:
         def __init__(self): self.net = self
         def load_state_dict(self, state): assert state == {'fixture': True}
         def to(self, device): assert device == 'cuda'; return self
         def eval(self): return self
     def download(repo, filename, revision):
-        calls.append(('weights', repo, filename, revision)); return 'fixture.pt'
+        calls.append(('weights', repo, filename, revision)); return str(weights)
     def load_weights(path, **kwargs):
-        assert path == 'fixture.pt' and kwargs == {'map_location': 'cpu', 'weights_only': True}
+        assert path == str(weights) and kwargs == {'map_location': 'cpu', 'weights_only': True}
         return {'fixture': True}
     def load_code(source, name, **kwargs):
         assert source.endswith(':e92685f57f8318b18725c5c8c0bd28c7fe188d9a') and name == 'XFeat'
@@ -175,6 +177,8 @@ def test_xfeat_loader_pins_code_uses_only_tensor_weights_and_reuses_model(monkey
     models = remote.Models(); stage = {'id': 'logo_compare', 'model_id': remote.XFEAT, 'revision': 'fixture'}
     models.load(stage); first = models.model; models.load(stage)
     assert models.model is first and len(calls) == 1
+    assert models.execution['revision'] == 'a' * 40
+    assert models.execution['weights_sha256'] == remote.hashlib.sha256(weights.read_bytes()).hexdigest()
     models.load({**stage, 'revision': 'other'})
     assert models.model is not first and calls[-1] == ('weights', remote.XFEAT, 'xfeat.pt', 'other')
 
@@ -223,7 +227,33 @@ def test_optional_image_cosine_uses_siglip_pooler_features(tmp_path):
         assert len(kwargs['images']) == 2
         return Batch()
     result = remote.image_similarity(SimpleNamespace(model=Model(), processor=processor), [path, path])
-    assert result == {'image_cosine_similarity': 0.8, 'similarity_model': remote.SIGLIP2}
+    assert result['image_cosine_similarity'] == 0.8 and result['similarity_model'] == remote.SIGLIP2
+    assert result['metric'] == 'cosine_similarity' and len(result['space_id']) == 64
     remote.validate_model_stage({'id': 'logo_compare', 'model_id': remote.XFEAT, 'image_similarity': True})
     with pytest.raises(ValueError):
         remote.validate_model_stage({'id': 'visual_extract', 'model_id': remote.SIGLIP2, 'labels': ['a'], 'image_similarity': True})
+
+
+@pytest.mark.parametrize('model_id', [*remote.OWLV2_MODELS, *remote.SIGLIP2_MODELS])
+def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch, model_id):
+    calls = []; revision = 'b' * 40
+    class Loader:
+        @staticmethod
+        def from_pretrained(repo, **kwargs):
+            calls.append((repo, kwargs))
+            if len(calls) == 1: return SimpleNamespace(_commit_hash=revision)
+            if len(calls) == 2:
+                return SimpleNamespace(image_processor=SimpleNamespace(size={'width': 384, 'height': 384} if repo == remote.SIGLIP2_SO400M else {'width': 224, 'height': 224}))
+            return SimpleNamespace(eval=lambda: 'loaded model')
+    monkeypatch.setitem(sys.modules, 'torch', SimpleNamespace(cuda=SimpleNamespace(empty_cache=lambda: None)))
+    monkeypatch.setitem(sys.modules, 'transformers', SimpleNamespace(**{name: Loader for name in (
+        'AutoConfig', 'AutoModel', 'AutoModelForCausalLM', 'AutoModelForImageTextToText', 'AutoModelForZeroShotObjectDetection', 'AutoProcessor', 'AutoTokenizer', 'Owlv2ForObjectDetection')}))
+    role = 'logo_extract' if model_id in remote.OWLV2_MODELS else 'logo_similarity'
+    stage = {'id': role, 'model_id': model_id, 'revision': 'main'}
+    remote.validate_model_stage(stage)
+    models = remote.Models(); models.load(stage)
+    assert [repo for repo, _ in calls] == [model_id] * 3
+    assert all(options['revision'] == revision for _, options in calls[1:])
+    assert models.execution['revision'] == revision
+    if model_id == remote.SIGLIP2_SO400M: assert models.processor.image_processor.size == {'width': 384, 'height': 384}
+    assert remote.MODEL_HANDLERS[model_id] is (remote.run_owlv2 if role == 'logo_extract' else remote.run_siglip2)

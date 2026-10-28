@@ -2,6 +2,7 @@
   "models": {
     "Qwen/Qwen3.5-4B": "qwen_vision",
     "google/owlv2-base-patch16": "owlv2",
+    "google/owlv2-base-patch16-ensemble": "owlv2",
     "PaddlePaddle/PaddleOCR-VL-1.6-GGUF": "paddle_gguf"
   },
   "generation": {

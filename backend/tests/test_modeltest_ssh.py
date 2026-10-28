@@ -282,6 +282,23 @@ def test_bridge_rejects_upload_metadata_mismatch(local_client):
     assert response.status_code == 422 and 'run' not in calls
 
 
+def test_similarity_bridge_accepts_hundred_image_candidates(local_client):
+    client, calls = local_client; headers = {'X-Modeltest-Local': '1'}
+    identifier = client.post('/api/modeltest/ssh/connections', json={'command': 'ssh root@203.0.113.10'}, headers=headers).json()['connection_id']
+    state = {'contract': remote.CONTRACT, 'flow': 'similarity', 'resize': {'width': 100, 'height': 50},
+             'stages': [{'id': 'logo_similarity', 'model_id': remote.SIGLIP2}, {'id': 'logo_compare', 'model_id': remote.XFEAT}],
+             'files': {'media': {'name': 'base.png', 'size': 5}, 'documents': [], 'references': [{'name': f'{i}.png', 'size': 5} for i in range(100)]}}
+    files = [('media', ('base.png', b'image', 'image/png')), *[('references', (f'{i}.png', b'image', 'image/png')) for i in range(100)]]
+    headers['Idempotency-Key'] = str(uuid4())
+    response = client.post(f'/api/modeltest/ssh/connections/{identifier}/runs', data={'config': json.dumps(state)}, files=files, headers=headers)
+    assert response.status_code == 202, response.text
+    for _ in range(100):
+        result = client.get(f'/api/modeltest/ssh/connections/{identifier}/runs/{headers["Idempotency-Key"]}', headers=headers)
+        if result.json()['status'] == 'completed': break
+        time.sleep(.01)
+    assert result.json()['status'] == 'completed' and calls.count('run') == 1
+
+
 def test_environment_preparation_is_explicit_and_status_is_queryable(local_client):
     client, calls = local_client; headers = {'X-Modeltest-Local': '1'}
     identifier = client.post('/api/modeltest/ssh/connections', json={'command': 'ssh root@203.0.113.10'}, headers=headers).json()['connection_id']
