@@ -92,10 +92,10 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
     if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
       submissions++;
       const frames = [0, 30].map((index, i) => ({ index, timestamp_seconds: i * 1.25, width: 80, height: 40, preview: `frame-${String(index).padStart(8, '0')}.jpg` }));
-      job = { contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'running', references: [{ index: 0, preview: 'preview-reference-0.jpg' }],
+      job = { contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'running', references: [0, 1].map(index => ({ index, preview: `preview-reference-${index}.jpg` })),
         stages: [{ id: 'frames', status: 'completed', output: { frames } },
-          { id: 'logo_extract', model_id: 'google/owlv2-base-patch16', status: 'completed', output: { items: frames.map((frame, index) => ({ ...frame, logos: [{ bbox: [8, 4, 40, 20], logo_index: 0, preview: `logo-${index}-0.png`, score: 0.8 }] })) } },
-          { id: 'logo_compare', model_id: 'vismatch/xfeat', status: 'running', output: { items: frames.map(frame => ({ ...frame, matches: [{ logo_index: 0, reference_index: 0, matches: 12, inliers: 9, keypoints: [100, 105], inlier_ratio: 0.75, descriptor_similarity: 0.93, image_cosine_similarity: 0.86, decision: 'candidate_match' }] })) } }] };
+          { id: 'logo_extract', model_id: 'google/owlv2-base-patch16', status: 'completed', output: { items: frames.map((frame, index) => ({ ...frame, logos: [0, 1].map(logo => ({ bbox: [8 + logo * 32, 4, 40 + logo * 32, 20], logo_index: logo, preview: `logo-${index}-${logo}.png`, score: 0.8 })) })) } },
+          { id: 'logo_compare', model_id: 'vismatch/xfeat', status: 'running', output: { items: frames.map(frame => ({ ...frame, matches: [0, 1].flatMap(logo => [0, 1].map(reference => ({ logo_index: logo, reference_index: reference, matches: 12, inliers: 9, keypoints: [100, 105], inlier_ratio: 0.75, descriptor_similarity: 0.93, image_cosine_similarity: logo !== reference ? 0.86 : 0.45, decision: 'candidate_match' }))) })) } }] };
       job.stages[0].elapsed_seconds = 1.25;
       job.stages[1].elapsed_seconds = 5;
       job.stages[1].model_timings = [{ model_id: 'google/owlv2-base-patch16', load_seconds: 2, inference_seconds: 3, calls: 2 }];
@@ -129,7 +129,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   assert.equal(await page.locator('.mt-conditions').getAttribute('open'), '');
   await page.locator('input[type=file][aria-label="검수 영상"]').setInputFiles({ name: 'fixture.mp4', mimeType: 'video/mp4', buffer: Buffer.from('test-video') });
   await page.locator('input[type=file][aria-label="발주서·계약서"]').setInputFiles({ name: 'contract.txt', mimeType: 'text/plain', buffer: Buffer.from('fixture contract') });
-  await page.locator('input[type=file][aria-label="원본 로고·레퍼런스"]').setInputFiles({ name: 'logo.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') });
+  await page.locator('input[type=file][aria-label="원본 로고·레퍼런스"]').setInputFiles(['logo.jpg', 'best-logo.jpg'].map(name => ({ name, mimeType: 'image/jpeg', buffer: Buffer.from(jpeg, 'base64') })));
   await page.getByRole('checkbox', { name: '문구 추출', exact: true }).uncheck();
   await page.getByRole('checkbox', { name: '시각 요소 추출', exact: true }).uncheck();
   await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16');
@@ -167,9 +167,21 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: '원본 로고와 대조' }).click();
   await page.getByRole('navigation', { name: '분석 프레임 선택' }).getByRole('button', { name: '30 프레임 · 1.25초', exact: true }).click();
   await page.getByRole('img', { name: '추출 로고 1', exact: true }).waitFor();
-  await page.getByRole('img', { name: '원본 로고 logo.jpg', exact: true }).waitFor();
+  await page.getByRole('img', { name: '원본 로고 best-logo.jpg', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '1');
   assert.equal(await page.getByRole('button', { name: '로고 1 위치 보기', exact: true }).evaluate(node => node.style.left), '10%');
   for (const text of ['0.860', '0.930', '75.0%', '12 / 9개', '일치 후보']) await page.getByText(text, { exact: true }).waitFor();
+  await page.getByLabel('원본 로고', { exact: true }).selectOption('0');
+  await page.getByRole('img', { name: '원본 로고 logo.jpg', exact: true }).waitFor();
+  await page.getByRole('button', { name: '로고 2', exact: true }).click();
+  assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '0', 'Each crop gets its own best reference');
+  await page.getByLabel('원본 로고', { exact: true }).selectOption('1');
+  await page.getByRole('button', { name: '로고 1', exact: true }).click();
+  assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '0', 'Keep the manual choice for the first crop');
+  await page.getByRole('navigation', { name: '분석 프레임 선택' }).getByRole('button', { name: '0 프레임 · 0.00초', exact: true }).click();
+  assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '1', 'A new frame starts with its best reference');
+  await page.getByRole('navigation', { name: '분석 프레임 선택' }).getByRole('button', { name: '30 프레임 · 1.25초', exact: true }).click();
+  assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '0');
   await page.getByRole('img', { name: '30 프레임 · 1.25초 분석 이미지', exact: true }).waitFor();
   const loadedPreviews = previews;
   for (const name of ['소요 시간', '실행 설정', '전체 응답']) {
@@ -183,6 +195,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
     await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
     await page.getByRole('heading', { name: '30 프레임 · 1.25초', exact: true }).waitFor();
     await page.getByRole('img', { name: '추출 로고 1', exact: true }).waitFor();
+    assert.equal(await page.getByLabel('원본 로고', { exact: true }).inputValue(), '0', 'Tab changes must preserve the manual reference');
   }
   assert.equal(previews, loadedPreviews, 'Changing result tabs must reuse previews and keep the selected frame');
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: '로고 추출', exact: true }).click();

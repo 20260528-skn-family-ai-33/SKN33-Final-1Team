@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { modeltestRequest } from './modeltest.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL } from './modeltestResults.js';
+import { boxStyle, decisionLabel, frameLabel, previewURL, preferredReference } from './modeltestResults.js';
 import { EXTRA_STAGES } from './modeltestCatalog.js';
 
 const PAIRS = ['logo_compare', 'logo_similarity', 'candidate_filter', 'phash', 'orb', 'sift', 'disk_lightglue'];
@@ -76,12 +76,13 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
   const kind = stage.kind || stage.id;
   const comparison = PAIRS.includes(kind) ? stage : sourceStage(job, stage, 'logo_compare');
   const compared = comparison?.output?.items?.find(item => item.index === frame.index);
-  const matches = (compared?.matches || []).filter(match => match.logo_index === (logo?.logo_index ?? selectedLogo) || (match.logo_index === undefined && logos.length === 1));
-  const reference = job.references?.find(item => item.index === referenceIndex);
-  const comparedMatch = matches.find(item => item.reference_index === referenceIndex);
   const similarities = job.stages.filter(item => (item.kind || item.id) === 'logo_similarity' && sourceStage(job, item, 'logo_extract')?.id === detector?.id);
-  const similarity = similarities.length === 1 ? similarities[0].output?.items?.find(item => item.index === frame.index)?.matches?.find(item => item.logo_index === (logo?.logo_index ?? selectedLogo) && item.reference_index === referenceIndex) : null;
-  const match = comparedMatch ? { ...similarity, ...comparedMatch } : null;
+  const similaritiesForLogo = similarities.length === 1 ? similarities[0].output?.items?.find(item => item.index === frame.index)?.matches?.filter(item => item.logo_index === (logo?.logo_index ?? selectedLogo)) || [] : [];
+  const matches = (compared?.matches || []).filter(match => match.logo_index === (logo?.logo_index ?? selectedLogo) || (match.logo_index === undefined && logos.length === 1))
+    .map(match => ({ ...similaritiesForLogo.find(item => item.reference_index === match.reference_index), ...match }));
+  const selectedReference = preferredReference(matches, manifest.files.references.length, referenceIndex);
+  const reference = job.references?.find(item => item.index === selectedReference);
+  const match = matches.find(item => item.reference_index === selectedReference);
   if (!logos.length) return <p className="mt-empty">{extracted ? '이 프레임에서 탐지한 로고가 없습니다.' : job.stages.some(stage => stage.id === 'logo_extract') ? '로고 추출 결과를 기다리고 있습니다.' : '로고 추출 단계를 선택하지 않았습니다.'}</p>;
   return <section className="mt-logo-evidence" aria-label="로고 대조 결과">
     <div className="mt-logo-picker">{logos.map((item, index) => <button type="button" key={index} aria-pressed={selectedLogo === index} onClick={() => setSelectedLogo(index)}>로고 {index + 1}</button>)}</div>
@@ -91,13 +92,14 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
       <figure><figcaption>추출 로고 {selectedLogo + 1}</figcaption><Preview context={context} jobId={job.id} name={logo?.preview} cache={cache} alt={`추출 로고 ${selectedLogo + 1}`} /></figure>
       <span className="mt-pair-arrow" aria-hidden="true">↔</span>
       <figure><figcaption><label htmlFor="mt-result-reference">원본 로고</label>
-        <select id="mt-result-reference" value={referenceIndex} onChange={event => setReferenceIndex(Number(event.target.value))} disabled={!manifest.files.references.length}>
+        <select id="mt-result-reference" value={selectedReference} onChange={event => setReferenceIndex(Number(event.target.value))} disabled={!manifest.files.references.length}>
           {!manifest.files.references.length && <option value={0}>첨부하지 않음</option>}
           {manifest.files.references.map((file, index) => <option key={index} value={index}>{file.name}</option>)}
         </select></figcaption>
-        {manifest.files.references.length ? <Preview context={context} jobId={job.id} name={reference?.preview} cache={cache} alt={`원본 로고 ${manifest.files.references[referenceIndex]?.name || ''}`} /> : <p className="mt-empty">원본 로고를 첨부하지 않았습니다.</p>}
+        {manifest.files.references.length ? <Preview context={context} jobId={job.id} name={reference?.preview} cache={cache} alt={`원본 로고 ${manifest.files.references[selectedReference]?.name || ''}`} /> : <p className="mt-empty">원본 로고를 첨부하지 않았습니다.</p>}
       </figure>
     </div>
+    {PAIRS.includes(kind) && <p className="mt-hint">원본 로고는 이미지 코사인 유사도가 가장 높은 대조 후보를 우선 표시합니다. 유사도 미계산 시 첫 대조 후보를 표시하며, 직접 바꾼 선택은 유지합니다.</p>}
     {match ? <div className="mt-match-result">
       <h4>{kind === 'candidate_filter' ? '후보 필터 결과' : kind === 'logo_similarity' ? '로고 이미지 유사도' : stage.model_id === 'vismatch/xfeat' ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4>
       <strong className={`mt-decision mt-decision-${['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{kind === 'candidate_filter' ? '필터 통과 후보' : kind === 'logo_similarity' ? '유사도 측정' : decisionLabel(match.decision)}</strong>
@@ -135,9 +137,10 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
   const frameInfo = job.stages.find(item => item.id === 'frames')?.output?.frames?.find(item => item.index === frame.index) || job.media || {};
   const sample = { ...frameInfo, ...frame };
   const logos = sourceStage(job, stage, 'logo_extract')?.output?.items?.find(item => item.index === frame.index)?.logos || [];
+  const referenceKey = `${sample.index}:${logos[selectedLogo]?.logo_index ?? selectedLogo}`;
   return <div className="mt-sample-results">
     {manifest.flow === 'video' && <nav className="mt-frame-picker" aria-label="분석 프레임 선택"><p>{rows.length}개 프레임 · 첫 프레임은 0번</p>
-      {rows.map((row, index) => <button type="button" key={index} aria-pressed={selectedFrame === index} onClick={() => onSelect({ frame: index, logo: 0, reference: 0 })}>{frameLabel(row)}</button>)}
+      {rows.map((row, index) => <button type="button" key={index} aria-pressed={selectedFrame === index} onClick={() => onSelect({ frame: index, logo: 0 })}>{frameLabel(row)}</button>)}
     </nav>}
     <div className="mt-sample-detail">
       <div className="mt-sample-title"><h3>{manifest.flow === 'video' ? frameLabel(sample) : '검수 이미지'}</h3>
@@ -150,7 +153,7 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
         })}
       </Preview>
       {['logo_extract', 'frames', ...PAIRS].includes(kind) && <LogoEvidence key={sample.index} job={job} stage={stage} manifest={manifest} frame={sample} context={context} cache={cache} selectedLogo={selectedLogo} setSelectedLogo={setSelectedLogo}
-        referenceIndex={selection.reference ?? 0} setReferenceIndex={reference => onSelect({ reference })} />}
+        referenceIndex={selection.references?.[referenceKey]} setReferenceIndex={reference => onSelect({ references: { ...selection.references, [referenceKey]: reference } })} />}
       {typeof frame.text === 'string' && <p className="mt-readable-output">{frame.text}</p>}
       {Array.isArray(frame.label_scores) && <Scores rows={frame.label_scores} />}
       <Metrics row={frame} />

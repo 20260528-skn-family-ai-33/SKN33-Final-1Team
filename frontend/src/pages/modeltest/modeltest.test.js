@@ -5,10 +5,27 @@ import {
   formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest, workflowPreset, workflowError,
 } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings } from './modeltestResults.js';
+import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
 import { readSSH, writeSSH } from './modeltestConnection.js';
 import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
+
+test('reference defaults use the highest image similarity and preserve manual choices', () => {
+  const matches = [
+    { reference_index: 0, image_cosine_similarity: -0.4, descriptor_similarity: 0.99 },
+    { reference_index: 2, image_cosine_similarity: -0.1 },
+    { reference_index: 1, image_cosine_similarity: -0.1 },
+    { reference_index: 9, image_cosine_similarity: 1 },
+    { reference_index: 3, image_cosine_similarity: NaN },
+  ];
+  assert.equal(preferredReference(matches, 4), 1);
+  assert.equal(preferredReference(matches, 4, 0), 0);
+  assert.equal(preferredReference(matches, 4, 99), 1);
+  assert.equal(matches[0].reference_index, 0, 'Do not reorder the result payload');
+  assert.equal(preferredReference([{ reference_index: 2, descriptor_similarity: 0.5 }], 4), 2);
+  assert.equal(preferredReference([], 4), 0);
+  assert.equal(preferredReference([], 0), 0);
+});
 
 test('review prompt defaults, replacements and legacy instructions follow the selected model', () => {
   const qwen = 'Qwen/Qwen3.5-4B'; const spec = promptSpec('text_extract', qwen);

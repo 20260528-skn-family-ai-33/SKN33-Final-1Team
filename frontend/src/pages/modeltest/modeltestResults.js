@@ -19,6 +19,15 @@ export function decisionLabel(value) {
   return ({ candidate_match: '일치 후보', match: '일치', mismatch: '불일치', uncertain: '판단 보류', pass: '통과', fail: '미통과' })[value] || '모델 설명 확인';
 }
 
+export function preferredReference(matches, count, selected) {
+  const valid = index => Number.isInteger(index) && index >= 0 && index < count;
+  if (valid(selected)) return selected;
+  const candidates = matches.filter(item => valid(item.reference_index));
+  const scored = candidates.filter(item => Number.isFinite(item.image_cosine_similarity));
+  scored.sort((a, b) => b.image_cosine_similarity - a.image_cosine_similarity || a.reference_index - b.reference_index);
+  return scored[0]?.reference_index ?? candidates.map(item => item.reference_index).sort((a, b) => a - b)[0] ?? 0;
+}
+
 const secondsValue = value => Number.isFinite(value) && value >= 0;
 
 export function formatDuration(seconds) {
