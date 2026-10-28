@@ -5,10 +5,31 @@ import {
   formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest, workflowPreset, workflowError,
 } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference } from './modeltestResults.js';
+import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference, latestCompletedStage } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
 import { readSSH, writeSSH, connectionTarget } from './modeltestConnection.js';
 import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
+
+test('latest completed stage follows finish time across parallel and reordered workflows', () => {
+  const slow = { id: 'slow', status: 'completed', started_at: 100, elapsed_seconds: 30 };
+  const quick = { id: 'quick', status: 'completed', started_at: 110, elapsed_seconds: 5 };
+  const running = { id: 'running', status: 'running', started_at: 150, elapsed_seconds: 10 };
+  const failed = { ...running, id: 'failed', status: 'failed' };
+  const stages = [slow, quick, running, failed];
+  assert.equal(latestCompletedStage(stages), slow);
+  assert.equal(latestCompletedStage([quick, slow]), slow);
+  assert.deepEqual(stages.map(stage => stage.id), ['slow', 'quick', 'running', 'failed']);
+  const zero = { ...quick, id: 'zero', started_at: 140, elapsed_seconds: 0 };
+  assert.equal(latestCompletedStage([zero, slow]), zero);
+  const tied = { ...quick, id: 'tied', started_at: 120, elapsed_seconds: 10 };
+  assert.equal(latestCompletedStage([slow, tied]), tied);
+  const missing = { id: 'missing', status: 'completed' };
+  const invalid = { ...missing, id: 'invalid', started_at: 500, elapsed_seconds: -1 };
+  assert.equal(latestCompletedStage([slow, missing, invalid]), slow);
+  assert.equal(latestCompletedStage([missing, invalid]), invalid, 'Legacy untimed responses retain their previous fallback');
+  assert.equal(latestCompletedStage([running, failed]), undefined);
+  assert.equal(latestCompletedStage([]), undefined);
+});
 
 test('reference defaults use the highest image similarity and preserve manual choices', () => {
   const matches = [

@@ -21,7 +21,7 @@ import ModeltestConfirm from './ModeltestConfirm.jsx';
 import FrameSampling from './FrameSampling.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
-import { elapsedSeconds, formatDuration } from './modeltestResults.js';
+import { elapsedSeconds, formatDuration, latestCompletedStage } from './modeltestResults.js';
 
 function usePreview(file) {
   const [url, setUrl] = useState('');
@@ -534,7 +534,7 @@ export default function ModelTestPage() {
                 {Number.isFinite(job.preparation.connection_seconds) && ` · 연결 ${job.preparation.connection_seconds}초`}
                 {Number.isFinite(job.preparation.transfer_seconds) && ` · 전송 ${job.preparation.transfer_seconds}초`}
                 {Number.isFinite(job.preparation.startup_seconds) && ` · 실행 ${job.preparation.startup_seconds}초`}</p>}
-              <div className="mt-metrics"><button type="button" disabled={!job || !completed} aria-label={`완료 단계 ${completed}개 · 마지막 완료 단계 결과 보기`} onClick={() => viewResults(completedStages.at(-1)?.id)}><strong>{job ? completed : 0}<small> / {progressTotal}</small></strong><span>완료 단계</span></button><div><strong>{Math.floor(elapsed / 60)}<small>분 {elapsed % 60}초</small></strong><span>{restored ? '조회 재개 후 경과' : '접수 후 경과'}</span></div></div>
+              <div className="mt-metrics"><button type="button" disabled={!job || !completed} aria-label={`완료 단계 ${completed}개 · 마지막 완료 단계 결과 보기`} onClick={() => viewResults(latestCompletedStage(completedStages)?.id)}><strong>{job ? completed : 0}<small> / {progressTotal}</small></strong><span>완료 단계</span></button><div><strong>{Math.floor(elapsed / 60)}<small>분 {elapsed % 60}초</small></strong><span>{restored ? '조회 재개 후 경과' : '접수 후 경과'}</span></div></div>
               <progress value={completed} max={Math.max(progressTotal, 1)} aria-label="완료한 검수 단계" />
               <dl className="mt-run-summary"><div><dt>{manifest ? '실행한 자료' : '입력 자료'}</dt><dd>{runFileCount}개</dd></div>
                 <div><dt>선택 단계</dt><dd>{manifest ? manifest.stages.length : selectedCount}개</dd></div></dl>

@@ -30,6 +30,18 @@ export function preferredReference(matches, count, selected) {
 
 const secondsValue = value => Number.isFinite(value) && value >= 0;
 
+export function latestCompletedStage(stages) {
+  let latest; let latestEnd = -1; let fallback;
+  for (const stage of stages) {
+    if (stage.status !== 'completed') continue;
+    fallback = stage;
+    if (!secondsValue(stage.started_at) || !secondsValue(stage.elapsed_seconds)) continue;
+    const end = stage.started_at + stage.elapsed_seconds;
+    if (end >= latestEnd) { latest = stage; latestEnd = end; }
+  }
+  return latest || fallback;
+}
+
 export function formatDuration(seconds) {
   if (!secondsValue(seconds)) return '미측정';
   if (seconds < 1) return `${seconds.toFixed(3)}초`;

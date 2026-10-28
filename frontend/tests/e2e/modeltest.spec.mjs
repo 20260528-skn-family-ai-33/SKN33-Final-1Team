@@ -159,6 +159,10 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
         { model_id: 'vismatch/xfeat', load_seconds: 2, inference_seconds: 3, calls: 2 },
         { model_id: 'google/siglip2-base-patch16-224', load_seconds: 2, inference_seconds: 4, calls: 2 },
       ];
+      job.stages[0].started_at = 100;
+      job.stages[1].started_at = 101.25;
+      // Response order is not completion order; extraction finished after frames.
+      job.stages = [job.stages[1], job.stages[0], job.stages[2]];
       return json(job);
     }
     if (url.pathname.includes('/previews/')) { previews++; return json({ mime: 'image/jpeg', data: jpeg }); }
