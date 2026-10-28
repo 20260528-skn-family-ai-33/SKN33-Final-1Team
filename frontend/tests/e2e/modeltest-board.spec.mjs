@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
@@ -12,7 +13,7 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   const errors = []; const unexpected = [];
   const health = { contract: CONTRACT, ready: false, preparing: true, can_prepare: true, stages: STAGES.map(stage => stage.id), workflow: { version: 1, agents: true, max_parallel: 2 }, formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
-  page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => dialog.type() === 'prompt' ? dialog.accept('이름 변경 확인') : dialog.accept());
+  page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => { if (dialog.type() === 'beforeunload') return dialog.accept(); errors.push(`Unexpected native ${dialog.type()}`); return dialog.dismiss(); });
   await page.route('**/*', async route => {
     const request = route.request(); const url = new URL(request.url());
     if (url.origin !== origin) { unexpected.push(url.origin); return route.abort(); }
@@ -32,7 +33,7 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   await page.setViewportSize({ width: 1440, height: 1100 });
   assert.ok(await pipeline.evaluate(element => element.getBoundingClientRect().height) > 760 - 48);
   await stageList.locator('.mt-stage').last().scrollIntoViewIfNeeded(); assert.ok(await stageList.evaluate(element => element.scrollTop) > 0);
-  await page.getByRole('checkbox', { name: '편집 사용', exact: true }).check();
+  await page.getByRole('button', { name: '그래프', exact: true }).click();
   await page.getByRole('button', { name: 'SigLIP2 → 필터 → XFeat', exact: true }).click();
   const board = page.locator('[data-board="video-models"]'); const viewport = board.locator('.mt-workflow-scroll'); const canvas = board.locator('.mt-workflow-canvas');
   await viewport.scrollIntoViewIfNeeded(); let rect = await viewport.boundingBox();
@@ -45,6 +46,14 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   const before = await nodePos(); let box = await node.boundingBox();
   await page.mouse.move(box.x + 30, box.y + 15); await page.mouse.down(); await page.mouse.move(box.x + 90, box.y + 45, { steps: 5 }); await page.mouse.up();
   const moved = await nodePos(); assert.ok(Math.abs(moved.x - before.x - 60 / zoomed.zoom) < 1);
+  await page.keyboard.press('Control+z'); assert.deepEqual(await nodePos(), before);
+  await page.keyboard.press('Control+Shift+z'); assert.deepEqual(await nodePos(), moved);
+  await page.keyboard.press('Control+z'); await page.keyboard.press('Control+y'); assert.deepEqual(await nodePos(), moved);
+  await page.keyboard.press('Control+z');
+  await board.getByRole('button', { name: /다시 실행/ }).click(); assert.deepEqual(await nodePos(), moved);
+  await board.getByRole('button', { name: /되돌리기/ }).click(); assert.deepEqual(await nodePos(), before);
+  await node.focus(); await page.keyboard.press('ArrowRight');
+  assert.equal(await board.getByRole('button', { name: /다시 실행/ }).isDisabled(), true, 'A new board edit clears redo');
   await page.keyboard.press('Control+z'); assert.deepEqual(await nodePos(), before);
   rect = await viewport.boundingBox(); const panBefore = await transform();
   await page.mouse.move(rect.x + rect.width - 70, rect.y + rect.height - 35); await page.mouse.down(); await page.mouse.move(rect.x + rect.width - 110, rect.y + rect.height - 70, { steps: 4 }); await page.mouse.up();
@@ -85,13 +94,38 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   await board.getByRole('button', { name: '전체화면', exact: true }).click(); await page.waitForFunction(() => !!document.fullscreenElement);
   await board.getByRole('button', { name: '전체 보기', exact: true }).click();
   await board.getByRole('button', { name: '전체화면 종료', exact: true }).click(); await page.waitForFunction(() => !document.fullscreenElement);
-  await page.getByRole('button', { name: '에이전트 보드', exact: true }).click();
+  await page.getByRole('button', { name: '에이전트', exact: true }).click();
   const outer = page.locator('[data-board="video-agents"]'); await outer.getByRole('button', { name: '전체 보기', exact: true }).click();
   await outer.getByRole('button', { name: 'A04 문구 검수 노드 이동', exact: true }).click({ button: 'right' });
-  await page.getByRole('menuitem', { name: '이름 변경', exact: true }).click(); await outer.getByRole('button', { name: '이름 변경 확인 노드 이동', exact: true }).waitFor();
+  await page.getByRole('menuitem', { name: '이름 변경', exact: true }).click();
+  const agentName = page.getByLabel('에이전트 이름', { exact: true });
+  assert.equal(await agentName.evaluate(node => node === document.activeElement && node.selectionStart === 0 && node.selectionEnd === node.value.length), true);
+  assert.equal(await agentName.inputValue(), 'A04 문구 검수');
+  await agentName.fill('이름 변경 확인'); await outer.getByRole('button', { name: '이름 변경 확인 노드 이동', exact: true }).waitFor();
+  await outer.locator('.mt-workflow-scroll').focus();
   await page.keyboard.press('Control+z'); await outer.getByRole('button', { name: 'A04 문구 검수 노드 이동', exact: true }).waitFor();
-  await page.locator('[aria-label="편집할 에이전트"]').getByRole('button', { name: 'A04 문구 검수', exact: true }).click();
+  await page.locator('[data-board="video-agents"]').getByRole('button', { name: 'A04 문구 검수 노드 이동', exact: true }).press('Enter');
   const inner = page.locator('.mt-agent-detail .mt-board'); await inner.getByRole('button', { name: '전체 보기', exact: true }).click();
+  await inner.getByRole('button', { name: '전체화면', exact: true }).click();
+  await page.waitForFunction(() => !!document.fullscreenElement);
+  await inner.getByRole('button', { name: '조건과 문구 대조 노드 이동', exact: true }).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: '이름 변경', exact: true }).click();
+  await page.waitForFunction(() => !document.fullscreenElement && document.activeElement?.getAttribute('aria-label') === '내부 단계 이름');
+  const stepName = page.getByLabel('내부 단계 이름', { exact: true });
+  assert.equal(await stepName.evaluate(node => node.selectionStart === 0 && node.selectionEnd === node.value.length), true);
+  assert.equal(await stepName.inputValue(), '조건과 문구 대조');
+  await stepName.fill('내부 이름 수정'); await inner.locator('.mt-workflow-scroll').focus();
+  await page.keyboard.press('Control+z'); assert.equal(await stepName.inputValue(), '조건과 문구 대조');
+  await page.keyboard.press('Control+Shift+z'); assert.equal(await stepName.inputValue(), '내부 이름 수정');
+  await page.keyboard.press('Control+z');
+  const template = page.getByRole('button', { name: 'A01~A08 템플릿', exact: true });
+  const confirmation = page.getByRole('dialog', { name: '템플릿 적용', exact: true });
+  await template.click(); await confirmation.waitFor();
+  assert.equal(await confirmation.getByRole('button', { name: '바꾸기', exact: true }).evaluate(node => node.classList.contains('primary')), true);
+  await page.keyboard.press('Control+z');
+  assert.equal(await stepName.inputValue(), '조건과 문구 대조', 'Confirmation must block board history shortcuts');
+  await confirmation.getByRole('button', { name: '취소', exact: true }).click(); await confirmation.waitFor({ state: 'hidden' });
+  assert.equal(await template.evaluate(node => node === document.activeElement), true);
   await inner.getByRole('button', { name: '문구 추출 노드 이동', exact: true }).click({ button: 'right' }); await page.getByRole('menuitem', { name: '복제', exact: true }).click();
   await inner.getByRole('button', { name: '문구 추출 복사 노드 이동', exact: true }).waitFor();
   assert.equal(await inner.locator('.mt-wire-hit').count(), 1); await page.keyboard.press('Control+z'); assert.equal(await inner.getByRole('button', { name: '문구 추출 복사 노드 이동', exact: true }).count(), 0);
@@ -99,9 +133,110 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   assert.equal(await inner.locator('.mt-wire-hit').count(), 0); await page.keyboard.press('Control+z'); assert.equal(await inner.locator('.mt-wire-hit').count(), 1);
   await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10'); await page.getByRole('button', { name: '연결 확인', exact: true }).click();
   await page.getByText('실행환경 준비 중', { exact: true }).waitFor();
-  await inner.getByRole('button', { name: '문구 추출 노드 이동', exact: true }).click({ button: 'right', force: true }); assert.equal(await page.getByRole('menuitem', { name: '단계 삭제', exact: true }).isDisabled(), true); await page.keyboard.press('Escape');
+  await inner.getByRole('button', { name: '문구 추출 노드 이동', exact: true }).locator('..').click({ button: 'right' }); assert.equal(await page.getByRole('menuitem', { name: '단계 삭제', exact: true }).isDisabled(), true); await page.keyboard.press('Escape');
   assert.equal(await inner.getByRole('button', { name: /되돌리기/ }).isDisabled(), true);
+  assert.equal(await inner.getByRole('button', { name: /다시 실행/ }).isDisabled(), true);
+  assert.equal(await page.locator('#mt-lock-reason').textContent(), 'Pod 실행환경을 준비하는 중이라 편집할 수 없습니다.');
+  assert.equal(await page.locator('#mt-lock-reason').getAttribute('role'), 'status');
+  for (const name of ['크리에이티브체커 홈', '서비스 홈']) {
+    const home = page.getByRole('button', { name, exact: true });
+    assert.equal(await home.isDisabled(), true); assert.equal(await home.getAttribute('title'), 'Pod 실행환경을 준비하는 중이라 편집할 수 없습니다.');
+    assert.equal(await home.getAttribute('aria-describedby'), 'mt-lock-reason');
+  }
+  const lockedNodes = await inner.locator('.mt-workflow-canvas').innerHTML();
+  await inner.locator('.mt-workflow-scroll').focus(); await page.keyboard.press('Control+z'); await page.keyboard.press('Control+Shift+z'); await page.keyboard.press('Control+y');
+  assert.equal(await inner.locator('.mt-workflow-canvas').innerHTML(), lockedNodes, 'Locked history keys cannot edit the board');
   const lockedBefore = await inner.locator('.mt-workflow-canvas').getAttribute('style'); await inner.getByRole('button', { name: '보드 축소', exact: true }).click(); assert.notEqual(await inner.locator('.mt-workflow-canvas').getAttribute('style'), lockedBefore);
   await page.screenshot({ path: '../work/modeltest-board-controls.png', fullPage: true });
   assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
+});
+
+test('full width boards, collapsible inspectors and anchored help remain usable at each breakpoint', { timeout: 90000 }, async t => {
+  const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache', define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
+  await server.listen(); t.after(() => server.close());
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+  const errors = []; const measurements = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('dialog', dialog => { if (dialog.type() === 'beforeunload') return dialog.accept(); errors.push(`Unexpected native ${dialog.type()}`); return dialog.dismiss(); });
+  await page.route('**/*', route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== 'http://127.0.0.1:5187') return route.abort();
+    if (url.pathname.startsWith('/api/')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify(url.pathname.endsWith('/models') ? { models: [], families: {} } : { authenticated: false }) });
+    return route.continue();
+  });
+  await page.goto('http://127.0.0.1:5187/modeltest', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: '영상 검수', exact: true }).click();
+  await page.getByRole('button', { name: '그래프', exact: true }).click();
+  const board = page.locator('[data-board="video-models"]'); const canvas = board.locator('.mt-workflow-scroll');
+  const inspector = page.getByRole('complementary', { name: '모델 단계 설정', exact: true });
+  const openWidth = (await canvas.boundingBox()).width;
+  assert.ok(openWidth >= 700, `1280px: board width ${openWidth}`);
+  measurements.push({ width: 1280, board: openWidth });
+  await page.getByRole('button', { name: '모델 단계 설정 접기', exact: true }).click();
+  assert.equal(await inspector.isVisible(), false);
+  assert.ok((await canvas.boundingBox()).width > openWidth + 300);
+  await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
+  await canvas.waitFor(); assert.equal(await inspector.isVisible(), false, 'Collapsed state survives reload');
+  await board.getByRole('button', { name: '로고 추출 노드 이동', exact: true }).press('Enter');
+  assert.equal(await inspector.isVisible(), true);
+  assert.equal(await inspector.locator('.mt-stage-number,.mt-toggle').count(), 0);
+  await board.getByRole('button', { name: '로고 추출 노드 이동', exact: true }).press('Shift+F10');
+  await page.getByRole('menuitem', { name: '이 단계 제외', exact: true }).click();
+  assert.equal(await inspector.getByText('보드에서 단계를 선택하세요', { exact: true }).isVisible(), true);
+  await page.keyboard.press('Control+z');
+  await board.getByRole('button', { name: '프레임 이미지 추출 노드 이동', exact: true }).press('Enter');
+  assert.equal(await inspector.locator('#mt-stage-frames').count(), 1);
+  assert.equal(await page.locator('.mt-materials #mt-stage-frames').count(), 0);
+  for (const id of ['mt-sampling-unit', 'mt-sampling-title', 'mt-stage-frames']) assert.equal(await page.locator(`#${id}`).count(), 1);
+  await page.locator('input[type=file][aria-label="발주서·계약서"]').setInputFiles(Array.from({ length: 10 }, (_, index) => ({ name: `${index}.txt`, mimeType: 'text/plain', buffer: Buffer.from('fixture') })));
+  for (const width of [1440, 1200, 1100, 780, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const mode of ['순차', '그래프', '에이전트']) {
+      await page.getByRole('button', { name: mode, exact: true }).click();
+      const layout = page.locator('.mt-run-layout'), materials = page.locator('.mt-materials'), monitor = page.locator('.mt-monitor');
+      await layout.scrollIntoViewIfNeeded();
+      const data = await monitor.evaluate(node => ({ position: getComputedStyle(node).position, overflow: getComputedStyle(node).overflowY, scrollHeight: node.scrollHeight, height: node.clientHeight }));
+      assert.equal(data.position, width > 1100 ? 'sticky' : 'static');
+      const m = await monitor.boundingBox(), a = await materials.boundingBox();
+      if (width > 1100) {
+        assert.equal(data.overflow, 'auto'); assert.ok(m.height <= 956); assert.ok(m.x >= a.x + a.width);
+        await page.evaluate(() => { const area = document.querySelector('.mt-run-layout'); window.scrollTo(0, area.getBoundingClientRect().top + scrollY + 40); });
+        assert.ok(Math.abs((await monitor.boundingBox()).y - 22) < 2);
+      } else { assert.ok(m.y >= a.y + a.height); assert.equal(data.overflow, 'visible'); }
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}/${mode}: horizontal overflow`);
+      if (mode === '그래프') {
+        const b = await canvas.boundingBox(), panel = await inspector.boundingBox();
+        if (width <= 1000) assert.ok(panel.y >= b.y + b.height);
+      }
+      measurements.push({ width, mode, ...data });
+    }
+  }
+  await page.getByRole('button', { name: '그래프', exact: true }).click();
+  const helpButton = page.getByRole('button', { name: '워크플로우 도움말', exact: true });
+  const tip = page.getByRole('dialog', { name: '워크플로우 도움말', exact: true });
+  await helpButton.focus(); await page.keyboard.press('Enter'); await tip.waitFor();
+  const assertTip = async () => { const box = await tip.boundingBox(); assert.ok(box.width <= 320); assert.ok(box.x >= 0 && box.x + box.width <= 390); assert.ok(box.y >= 0 && box.y + box.height <= page.viewportSize().height); };
+  await assertTip();
+  await page.setViewportSize({ width: 390, height: 500 });
+  await page.evaluate(() => { const button = document.querySelector('[aria-label="워크플로우 도움말"]'); window.scrollBy(0, button.getBoundingClientRect().top - 460); });
+  await page.evaluate(() => new Promise(requestAnimationFrame)); await assertTip();
+  assert.ok((await helpButton.boundingBox()).y >= 450, 'The anchor is near the bottom before testing the flip');
+  assert.ok((await tip.boundingBox()).y < (await helpButton.boundingBox()).y, 'Tip flips above its anchor near the bottom');
+  await page.keyboard.press('Escape'); await tip.waitFor({ state: 'hidden' });
+  assert.equal(await helpButton.evaluate(node => node === document.activeElement), true);
+  await helpButton.click(); await tip.waitFor(); await page.locator('.mt-topbar').click(); await tip.waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: '에이전트', exact: true }).click();
+  assert.equal(await page.locator('[aria-label="편집할 에이전트"],[aria-label="편집할 내부 단계"]').count(), 0);
+  const agents = page.locator('[data-board="video-agents"]');
+  await agents.getByRole('button', { name: 'A04 문구 검수 노드 이동', exact: true }).press('Enter');
+  assert.match(await agents.locator('.mt-workflow-node.is-selected').innerText(), /A04 문구 검수/);
+  await page.getByRole('button', { name: '내부 단계 인스펙터 접기', exact: true }).click();
+  const inner = page.locator('.mt-agent-detail .mt-board');
+  await inner.getByRole('button', { name: '문구 추출 노드 이동', exact: true }).press('Enter');
+  assert.equal(await page.getByRole('complementary', { name: '내부 단계 인스펙터', exact: true }).isVisible(), true);
+  assert.match(await inner.locator('.mt-workflow-node.is-selected').innerText(), /문구 추출/);
+  await fs.writeFile('../work/modeltest-layout-ag-measurements.json', JSON.stringify(measurements, null, 2));
+  console.log(`1280px inspector open board: ${openWidth}px; 15 breakpoint/mode checks passed`);
+  assert.deepEqual(errors, []);
 });

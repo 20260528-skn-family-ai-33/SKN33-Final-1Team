@@ -4,7 +4,7 @@ import { Icon } from '../../components/Icon.jsx';
 import {
   CONTRACT, STAGES, MODEL_OPTIONS, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
   stagesFor, parseModel, parseEndpoint, validateHealth, validateRun, formErrors,
-  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle,
+  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle, workflowPreset,
 } from './modeltest.js';
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
@@ -18,6 +18,7 @@ import ModeltestLibrary from './ModeltestLibrary.jsx';
 import ModeltestPrompt from './ModeltestPrompt.jsx';
 import ModeltestHelp from './ModeltestHelp.jsx';
 import ModeltestConfirm from './ModeltestConfirm.jsx';
+import FrameSampling from './FrameSampling.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
@@ -63,7 +64,7 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
   </section>;
 }
 
-function ModelStage({ stage, index, value, update, health, disabled, extraSimilarity }) {
+function ModelStage({ stage, index, value, update, health, disabled, extraSimilarity, inInspector = false }) {
   let parsed; let invalid = '';
   if (stage.id !== 'candidate_filter' && value.model.trim()) { try { parsed = parseStageModel(stage.id, value, health); } catch (error) { invalid = error.message; } }
   const registered = registration(value.model, health);
@@ -73,11 +74,11 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
   const profile = models.find(model => model.id === (registered ? value.model : parsed?.model_id));
   const modelWarning = registered?.reasons?.join(' · ') || (profile && (!MODEL_OPTIONS.some(model => model.id === profile.id) || profile.id === 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF') ? profile.description : '');
   const id = `mt-model-${stage.id}`;
-  return <div id={`mt-stage-${stage.id}`} className={`mt-stage ${value.enabled ? '' : 'is-off'}`}>
-    <span className="mt-stage-number">{String(index).padStart(2, '0')}</span>
+  return <div id={`mt-stage-${stage.id}`} className={`mt-stage ${value.enabled ? '' : 'is-off'} ${inInspector ? 'is-inspector' : ''}`}>
+    {!inInspector && <span className="mt-stage-number">{String(index).padStart(2, '0')}</span>}
     <div className="mt-stage-content">
-      <div className="mt-stage-heading"><div className="mt-title-help"><label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
-        onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label><ModeltestHelp label={stage.title}>
+      <div className="mt-stage-heading"><div className="mt-title-help">{inInspector ? <h3>{stage.title}</h3> : <label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
+        onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label>}<ModeltestHelp label={stage.title}>
           <p>{stage.description}</p>
           {stage.id === 'candidate_filter' ? <p>각 로고의 원본 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과한 후보가 없으면 해당 로고의 XFeat 호출은 생략합니다.</p>
             : null}
@@ -153,6 +154,9 @@ export default function ModelTestPage() {
   const [connectionRestored, setConnectionRestored] = useState(false);
   const [connection, setConnection] = useState(null); const [connecting, setConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState('');
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const monitorRef = useRef(null); const focusMonitor = useRef(false);
+  const resultsRef = useRef(null); const pendingResults = useRef(null);
   const [catalog, setCatalog] = useState({ models: [], families: {} }); const [catalogError, setCatalogError] = useState('');
   async function reloadCatalog() {
     try { const value = await sshRequest('/api/modeltest/ssh/models'); setCatalog(value); setCatalogError(''); }
@@ -189,22 +193,39 @@ export default function ModelTestPage() {
   const locked = !!lockReason;
   useEffect(() => {
     const keydown = event => {
-      if (confirmation || event.defaultPrevented || event.target.closest('input,textarea,select,[contenteditable=true],[popover]')) return;
+      if (libraryOpen || confirmation || event.defaultPrevented || event.target.closest('input,textarea,select,[contenteditable=true],[popover]')) return;
       if ((event.ctrlKey || event.metaKey) && !event.altKey) {
         const key = event.key.toLowerCase();
         if (key === 'z' || (key === 'y' && !event.shiftKey)) { event.preventDefault(); if (event.shiftKey || key === 'y') redoBoard(); else undoBoard(); }
       }
     };
     window.addEventListener('keydown', keydown); return () => window.removeEventListener('keydown', keydown);
-  }, [flow, locked, confirmation, state]);
+  }, [flow, locked, libraryOpen, confirmation, state]);
   const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
+  const editorMode = state.agentWorkflow.enabled ? 'agents' : state.workflow.enabled ? 'graph' : 'sequential';
   const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
-  const completed = job?.stages.filter(stage => stage.status === 'completed').length || 0;
+  const completedStages = job?.stages.filter(stage => stage.status === 'completed') || [];
+  const failedStages = job?.stages.filter(stage => stage.status === 'failed') || [];
+  const activeStages = job?.stages.filter(stage => stage.status === 'running') || [];
+  const completed = completedStages.length;
   const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' && manifest.purpose !== 'prepare' ? 1 : 0) : selectedCount + (flow === 'video' ? 1 : 0);
   const resultStage = job?.stages.find(stage => stage.id === selectedStage);
   const runFileCount = manifest ? Number(!!manifest.files.media) + manifest.files.documents.length + manifest.files.references.length : Number(!!state.media) + state.documents.length + state.references.length;
   const runTitle = submitting ? '자료 전송·접수 중' : unknown ? '접수 여부 확인 필요' : paused && running ? '상태 조회 일시정지' : job?.status === 'queued' ? preparationLabel(job.preparation) : job ? STATUS_LABELS[job.status] : '실행 전';
+
+  function viewResults(stageId) {
+    if (stageId) setSelectedStage(stageId);
+    setResultTab('results');
+    resultsRef.current?.focus({ preventScroll: true });
+    resultsRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+  useEffect(() => {
+    if (!job?.id || pendingResults.current !== job.id) return;
+    if (libraryOpen) { setLibraryOpen(false); return; }
+    pendingResults.current = null; focusMonitor.current = false;
+    viewResults();
+  }, [job?.id, libraryOpen]);
 
   useEffect(() => () => requestRef.current?.abort(), []);
   useEffect(() => { if (job?.status === 'completed') reloadCatalog(); }, [job?.id, job?.status]);
@@ -338,7 +359,10 @@ export default function ModelTestPage() {
         method: 'POST', body: context.body, headers: { 'Idempotency-Key': context.requestId },
         signal: controller.signal, timeout: 120000,
       }), undefined, context.manifest);
-      if (!controller.signal.aborted) { setJob(next); setSelectedStage(next.stages[0]?.id || context.manifest.stages[0].id); await draft.rememberRun(context, next.id); }
+      if (!controller.signal.aborted) {
+        if (next.id !== job?.id) pendingResults.current = next.id;
+        setJob(next); setSelectedStage(next.stages[0]?.id || context.manifest.stages[0].id); await draft.rememberRun(context, next.id);
+      }
     } catch (error) {
       if (!controller.signal.aborted) {
         const uncertain = !error.status || error.status >= 500 || error.status === 408;
@@ -362,6 +386,33 @@ export default function ModelTestPage() {
     submit(context);
   }
 
+  function changeEditor(mode) {
+    if (locked) return;
+    if (mode === 'agents') update({ workflow: { ...state.workflow, enabled: false }, agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) });
+    else if (mode === 'graph') update({ ...(!state.workflow.edges.length ? workflowPreset(flow, state) : { workflow: { ...state.workflow, enabled: true } }), agentWorkflow: { ...state.agentWorkflow, enabled: false } });
+    else update({ workflow: { ...state.workflow, enabled: false }, agentWorkflow: { ...state.agentWorkflow, enabled: false } });
+  }
+
+  function closeLibrary() {
+    setLibraryOpen(false);
+    if (focusMonitor.current) {
+      focusMonitor.current = false;
+      monitorRef.current?.focus({ preventScroll: true });
+      monitorRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }
+
+  function renderStage(id, inInspector = false) {
+    if (id === 'frames') return <FrameSampling sampling={state.sampling} onChange={sampling => update({ sampling })} disabled={locked} />;
+    const index = stages.findIndex(stage => stage.id === id); const stage = stages[index];
+    if (!stage) return null;
+    return <ModelStage stage={stage} inInspector={inInspector} index={index + 1} value={state.stages[stage.id]} health={modelHealth} disabled={locked}
+                extraSimilarity={!state.workflow.enabled || !state.stages.logo_similarity?.enabled}
+                update={value => update({ stages: { ...state.stages, [stage.id]: value,
+                  ...(value.model !== state.stages[stage.id].model && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
+                  ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />;
+  }
+
   function modelAction(model, action) {
     if (locked || connecting || !health?.ready || connection.transport !== 'ssh') return;
     try {
@@ -376,6 +427,7 @@ export default function ModelTestPage() {
         launch(config, state);
       }
     } catch (error) { setRunError(error.message); setShowErrors(true); }
+    focusMonitor.current = true; setLibraryOpen(false);
   }
 
   async function cancel() {
@@ -398,6 +450,7 @@ export default function ModelTestPage() {
   return <div className="mt-shell" data-theme={theme}>
     <header className="mt-topbar"><Brand disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')} /><span className="mt-product-label">모델 테스트</span>
       <div className="mt-theme-switch" role="group" aria-label="화면 테마">{[['light', '라이트'], ['dark', '다크']].map(([value, title]) => <button type="button" key={value} aria-pressed={theme === value} onClick={() => setTheme(value)}>{title}</button>)}</div>
+      <button type="button" className="btn secondary small" aria-haspopup="dialog" aria-controls="mt-model-library" aria-expanded={libraryOpen} onClick={() => setLibraryOpen(true)}>모델 관리</button>
       <button type="button" className="text-btn mt-home" disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
     <main className="mt-main">
       <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
@@ -432,22 +485,30 @@ export default function ModelTestPage() {
       {draft.savedRun && !job && <div className="mt-restore-run"><p>{restoring ? '이전 검수 작업 상태를 확인하고 있습니다.' : `이전 작업 ID: ${draft.savedRun.jobId}`}</p>
         <button type="button" className="btn secondary small" disabled={locked || connecting} onClick={() => restoreRun(draft.savedRun, connection)}>이전 작업 조회</button></div>}
 
-      <ModeltestLibrary confirmAction={confirmAction} catalog={catalog} reload={reloadCatalog} error={catalogError} disabled={locked || connecting} canRun={health?.ready && connection?.transport === 'ssh'} onAction={modelAction} />
-      <form onSubmit={start} noValidate>
+      <ModeltestLibrary confirmAction={confirmAction} open={libraryOpen} onClose={closeLibrary} catalog={catalog} reload={reloadCatalog} error={catalogError} disabled={locked || connecting} canRun={health?.ready && connection?.transport === 'ssh'} onAction={modelAction} />
+      <form className="mt-execution-form" onSubmit={start} noValidate>
         <div className="mt-workspace-bar"><div className="mt-flow-switch" aria-label="검수 유형">
           <button type="button" aria-pressed={flow === 'image'} disabled={locked} onClick={() => { setFlow('image'); setShowErrors(false); }}><Icon name="image" />이미지 검수</button>
           <button type="button" aria-pressed={flow === 'video'} disabled={locked} onClick={() => { setFlow('video'); setShowErrors(false); }}><span aria-hidden="true">▶</span>영상 검수</button>
         </div><p>{flow === 'image' ? '포스터 + 문서 필수' : '영상 필수 · 문서·원본 로고 선택'}<span>{selected.length}개 모델 단계 선택</span></p></div>
 
-        <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식"><button type="button" aria-pressed={!state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: { ...state.agentWorkflow, enabled: false } })}>모델 단계 편집</button>
-          <button type="button" aria-pressed={state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) })}>에이전트 보드</button></div>
-        {state.agentWorkflow.enabled ? <ModeltestAgents confirmAction={confirmAction} flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} />}
-        <div className={`mt-workspace ${state.agentWorkflow.enabled ? 'is-agents' : ''}`}>
+        <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식">{[['sequential', '순차'], ['graph', '그래프'], ['agents', '에이전트']].map(([mode, title]) => <button type="button" key={mode} aria-pressed={editorMode === mode} disabled={locked} onClick={() => changeEditor(mode)}>{title}</button>)}</div>
+        {editorMode === 'agents' && <ModeltestAgents confirmAction={confirmAction} flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} />}
+        {editorMode === 'graph' && <ModeltestWorkflow key={flow} flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} renderStage={renderStage} />}
+          {editorMode === 'sequential' && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
+            <div className="mt-panel-heading"><div className="mt-title-help"><h2 id="mt-pipeline-title">검수 파이프라인</h2></div><span>{stages.length}단계</span></div>
+            <div className="mt-pipeline-scroll" role="region" aria-label="검수 단계 설정 목록" tabIndex={0}>
+            {stages.map(stage => <React.Fragment key={stage.id}>{renderStage(stage.id)}</React.Fragment>)}
+            </div>
+          </section>}
+
+        <div className="mt-run-layout">
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
             <div className="mt-panel-body">
               <Attachments key={flow} kind={flow} title={flow === 'image' ? '포스터 이미지' : '검수 영상'} required files={state.media ? [state.media] : []}
                 onChange={files => update({ media: files[0] || null })} disabled={locked} health={health} />
+              {flow === 'video' && editorMode !== 'graph' && <FrameSampling sampling={state.sampling} onChange={sampling => update({ sampling })} disabled={locked} agentMode={state.agentWorkflow.enabled} />}
               {preview && <div className="mt-preview">{flow === 'image'
                 ? <img src={preview} alt="첨부한 포스터" onError={() => setPreviewError('이 형식은 브라우저 미리보기를 지원하지 않을 수 있습니다. Pod 지원 형식을 확인해 주세요.')} />
                 : <video ref={videoRef} src={preview} controls preload="metadata" onError={() => setPreviewError('브라우저에서 재생할 수 없는 코덱입니다. 영상 처리는 Pod의 지원 여부에 따릅니다.')} />}
@@ -457,41 +518,14 @@ export default function ModelTestPage() {
               {flow === 'video' && <Attachments kind="reference" title="원본 로고·레퍼런스" multiple files={state.references}
                 onChange={references => update({ references })} disabled={locked} health={health} />}
               <details key={`conditions-${flow}`} className="mt-conditions" open={state.requirementsOpen} onToggle={event => { if (event.currentTarget.open !== state.requirementsOpen) update({ requirementsOpen: event.currentTarget.open }); }}><summary>조건 직접 입력 <span>선택</span></summary>
-                <label className="sr-only" htmlFor="mt-requirements">추가 검수 조건</label><textarea id="mt-requirements" value={state.requirements} rows={4} maxLength={12000} disabled={locked}
+                <div className="mt-title-help"><label htmlFor="mt-requirements">추가 검수 조건</label><ModeltestHelp label="조건 직접 입력"><p>문서에서 추출한 조건과 함께 사용합니다. 문서가 없으면 대조할 조건을 직접 입력하세요.</p></ModeltestHelp></div><textarea id="mt-requirements" value={state.requirements} rows={4} maxLength={12000} disabled={locked}
                   placeholder={'예: 행사 날짜가 11월 5일로 표시되어야 합니다.\n브랜드 로고가 화면 오른쪽 위에 있어야 합니다.'}
-                  onChange={event => update({ requirements: event.target.value })} /><p className="mt-hint">문서에서 추출한 조건과 함께 사용합니다. 문서가 없으면 대조할 조건을 직접 입력하세요.</p>
+                  onChange={event => update({ requirements: event.target.value })} />
               </details>
-              {state.agentWorkflow.enabled && flow === 'video' && <div className="mt-sampling-fields mt-agent-sampling"><label>프레임 추출 기준<select aria-label="에이전트 프레임 추출 기준" disabled={locked} value={state.sampling.unit} onChange={event => update({ sampling: { ...state.sampling, unit: event.target.value, interval: event.target.value === 'frames' ? '30' : '1' } })}><option value="frames">N프레임마다</option><option value="seconds">N초마다</option></select></label>
-                <label>추출 간격<input aria-label="에이전트 프레임 추출 간격" type="number" min={state.sampling.unit === 'frames' ? 1 : 0.01} step="any" value={state.sampling.interval} disabled={locked} onChange={event => update({ sampling: { ...state.sampling, interval: event.target.value } })} /></label>
-                <label>최대 추출 수<input aria-label="에이전트 최대 추출 수" type="number" min={1} max={1000} value={state.sampling.max_frames} disabled={locked} onChange={event => update({ sampling: { ...state.sampling, max_frames: event.target.value } })} /></label></div>}
             </div>
           </section>
 
-          {!state.agentWorkflow.enabled && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
-            <div className="mt-panel-heading"><h2 id="mt-pipeline-title">검수 파이프라인</h2><span>{stages.length + (flow === 'video' ? 1 : 0)}단계</span></div>
-            <div className="mt-pipeline-scroll" role="region" aria-label="검수 단계 설정 목록" tabIndex={0}>
-            <p className="mt-pipeline-hint">필요한 단계를 선택하고 모델을 지정하세요.<br />소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p>
-            {stages.map((stage, index) => <React.Fragment key={stage.id}>
-              {flow === 'video' && index === 1 && <div id="mt-stage-frames" className="mt-stage mt-sampling"><span className="mt-stage-number">02</span><div className="mt-stage-content">
-                <div className="mt-stage-heading"><h3>프레임 이미지 추출</h3><span className="mt-tag">영상 처리</span></div><p>프레임 또는 시간 간격으로 샘플링합니다.</p>
-                <div className="mt-sampling-fields"><label>기준<select disabled={locked} value={state.sampling.unit} onChange={event => update({ sampling: { ...state.sampling, unit: event.target.value, interval: event.target.value === 'frames' ? '30' : '1' } })}>
-                  <option value="frames">N프레임마다</option><option value="seconds">N초마다</option></select></label>
-                  <label>간격<input type="number" min={state.sampling.unit === 'frames' ? 1 : 0.01} max={3600} step={state.sampling.unit === 'frames' ? 1 : 'any'} value={state.sampling.interval} disabled={locked}
-                    onChange={event => update({ sampling: { ...state.sampling, interval: event.target.value } })} /></label>
-                  <label>최대 추출 수<input type="number" min={1} max={1000} step={1} value={state.sampling.max_frames} disabled={locked}
-                    onChange={event => update({ sampling: { ...state.sampling, max_frames: event.target.value } })} /></label></div>
-                <small>최대 추출 수에 도달하면 샘플링을 멈춥니다. 모델 추론은 추출된 프레임에 수행합니다.</small>
-              </div></div>}
-              <ModelStage stage={stage} index={index + 1 + (flow === 'video' && index > 0 ? 1 : 0)} value={state.stages[stage.id]} health={modelHealth} disabled={locked}
-                extraSimilarity={!state.workflow.enabled || !state.stages.logo_similarity?.enabled}
-                update={value => update({ stages: { ...state.stages, [stage.id]: value,
-                  ...(value.model !== state.stages[stage.id].model && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
-                  ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />
-            </React.Fragment>)}
-            </div>
-          </section>}
-
-          <aside className="mt-monitor" aria-label="실행 모니터">
+          <aside ref={monitorRef} className="mt-monitor" aria-label="실행 모니터" tabIndex={-1}>
             <section className="mt-run-card"><div className="mt-run-heading"><Icon name="grid" /><h2>실행 모니터</h2></div>
               <div className="mt-run-status" aria-live="polite"><span className={`mt-state-dot ${running ? 'is-running' : ''}`} />{runTitle}</div>
               {locked && <p id="mt-lock-reason" className="mt-lock-reason" role="status">{lockReason}</p>}
@@ -500,43 +534,49 @@ export default function ModelTestPage() {
                 {Number.isFinite(job.preparation.connection_seconds) && ` · 연결 ${job.preparation.connection_seconds}초`}
                 {Number.isFinite(job.preparation.transfer_seconds) && ` · 전송 ${job.preparation.transfer_seconds}초`}
                 {Number.isFinite(job.preparation.startup_seconds) && ` · 실행 ${job.preparation.startup_seconds}초`}</p>}
-              <div className="mt-metrics"><div><strong>{job ? completed : 0}<small> / {progressTotal}</small></strong><span>완료 단계</span></div><div><strong>{Math.floor(elapsed / 60)}<small>분 {elapsed % 60}초</small></strong><span>{restored ? '조회 재개 후 경과' : '접수 후 경과'}</span></div></div>
+              <div className="mt-metrics"><button type="button" disabled={!job || !completed} aria-label={`완료 단계 ${completed}개 · 마지막 완료 단계 결과 보기`} onClick={() => viewResults(completedStages.at(-1)?.id)}><strong>{job ? completed : 0}<small> / {progressTotal}</small></strong><span>완료 단계</span></button><div><strong>{Math.floor(elapsed / 60)}<small>분 {elapsed % 60}초</small></strong><span>{restored ? '조회 재개 후 경과' : '접수 후 경과'}</span></div></div>
               <progress value={completed} max={Math.max(progressTotal, 1)} aria-label="완료한 검수 단계" />
               <dl className="mt-run-summary"><div><dt>{manifest ? '실행한 자료' : '입력 자료'}</dt><dd>{runFileCount}개</dd></div>
-                <div><dt>실행 위치</dt><dd>RunPod Pod</dd></div><div><dt>선택 단계</dt><dd>{manifest ? manifest.stages.length : selectedCount}개</dd></div></dl>
+                <div><dt>선택 단계</dt><dd>{manifest ? manifest.stages.length : selectedCount}개</dd></div></dl>
               {!locked && <button type="submit" className="btn primary mt-run-button" disabled={connecting || !health?.ready}><Icon name="arrow" />검수 실행</button>}
               {submitting && <button className="btn primary mt-run-button" disabled>전송·접수 중…</button>}
               {unknown && !submitting && <><button type="button" className="btn primary mt-run-button" onClick={() => submit(contextRef.current)}>같은 요청으로 접수 확인</button>
                 <button type="button" className="mt-subtle-button" onClick={() => confirmAction({ title: '접수 확인 종료', message: 'Pod에 접수된 작업이 남아 있을 수 있습니다. Pod에서 요청 ID를 확인한 후 새 설정으로 돌아갈까요?', confirmLabel: '종료', danger: false }, () => { setUnknown(false); setRunError('접수 확인을 종료했습니다. Pod 작업은 취소하지 않았습니다.'); })}>접수 확인 종료</button></>}
               {running && <div className="mt-run-actions"><button type="button" className="btn secondary" onClick={() => { setPaused(!paused); setRunError(''); }}>{paused ? '상태 조회 재개' : '상태 조회 일시정지'}</button>
                 {health?.cancel === true && <button type="button" className="btn mt-stop-button" onClick={() => confirmAction({ title: '검수 강제 중단', message: '이 검수 작업을 강제로 중단할까요? 완료된 결과는 남고 Pod 자체는 계속 실행됩니다.', confirmLabel: '중단', danger: true }, 'cancel')} disabled={cancelling || job.status === 'queued'}>{cancelling ? '중단 확인 중…' : '검수 강제 중단'}</button>}
-                {job.status === 'queued' && <small>자료 전송 후 Pod 실행이 시작되면 중단할 수 있습니다.</small>}</div>}
-              <p className="mt-monitor-note">{running ? '조회 일시정지나 화면 닫기는 Pod의 계산을 중단하지 않습니다.' : method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p>
+                </div>}
+              {job && <a className="mt-results-link" href="#mt-results-title" onClick={event => { event.preventDefault(); viewResults(); }}>결과 보기</a>}
+              {running && <p className="mt-monitor-note">조회 일시정지나 화면 닫기는 Pod의 계산을 중단하지 않습니다. 검수 강제 중단은 이 작업만 종료하며 Pod는 유지합니다.{job.status === 'queued' && ' 자료 전송 후 Pod 실행이 시작되면 중단할 수 있습니다.'}</p>}
             </section>
             {runError && <p className="mt-alert" role="alert">{runError}</p>}
             {job?.status === 'failed' && <p className="mt-alert" role="alert">{typeof job.error === 'string' ? job.error : 'Pod의 검수 작업이 실패했습니다. 단계별 결과를 확인해 주세요.'}</p>}
-            <section className="mt-panel mt-checklist"><div className="mt-panel-heading"><h2>{job ? '단계별 상태' : '실행 준비'}</h2></div>
-              {job ? <ul>{job.stages.map(stage => <li key={stage.id}><button type="button" onClick={() => { setSelectedStage(stage.id); setResultTab('results'); }}>
-                <span>{stageTitle(stage)}<small className="mt-stage-time">{formatDuration(elapsedSeconds(stage))}{(stage.status === 'running' || stage.timing_estimated) && ' · 추정'}</small></span><span className={`mt-status mt-status-${stage.status}`}>{STATUS_LABELS[stage.status]}</span>
-              </button></li>)}</ul> : <ul className="mt-readiness">
+            <section className="mt-panel mt-checklist"><div className="mt-panel-heading"><h2>{job ? '실행 요약' : '실행 준비'}</h2></div>
+              {job ? <div className="mt-status-summary">
+                {failedStages.length > 0 && <div className="mt-status-totals">
+                  <button type="button" aria-label={`실패 단계 ${failedStages.length}개 · 첫 실패 단계 결과 보기`} onClick={() => viewResults(failedStages[0]?.id)}>실패 <strong>{failedStages.length}개</strong></button>
+                </div>}
+                {running && <><p className="mt-hint">현재 실행 중</p>
+                {activeStages.length ? activeStages.map(stage => <button type="button" className="mt-active-stage" key={stage.id} onClick={() => viewResults(stage.id)} aria-label={`${stageTitle(stage)} 실행 중 · 결과 보기`}>{stageTitle(stage)}</button>) : <p className="mt-hint">실행 중인 단계 없음</p>}</>}
+              </div> : <ul className="mt-readiness">
                 {[[!!health?.ready, 'Pod 연결'], [!!state.media, flow === 'image' ? '이미지 첨부' : '영상 첨부'], [flow === 'video' || !!state.documents.length, flow === 'image' ? '문서 첨부' : '문서·레퍼런스 선택'], [!errors.length, '모델·실행 조건']].map(([ready, label]) => <li key={label}><span>{label}</span><span className={ready ? 'mt-ready' : ''}>{ready ? '준비됨' : '확인 필요'}</span></li>)}
               </ul>}
               {showErrors && errors.length > 0 && <ul className="mt-validation" role="alert">{errors.map((error, index) => <li key={index}>{error}</li>)}</ul>}
             </section>
-            <details className="mt-api-help"><summary>Pod 연결 안내</summary>{method === 'ssh' ? <><p>노트북의 로컬 백엔드가 OpenSSH로 접속합니다. 최초 접속은 터미널에서 서버 지문을 확인하고, 암호화된 키는 ssh-agent에 등록해 주세요.</p><p>TCP SSH는 일반 데이터 통신을, 기본 SSH는 터미널을 통한 전송을 사용합니다. 큰 영상에는 TCP SSH를 권장합니다.</p><p>OWLv2는 로고 추출, SigLIP2는 후보 문구별 시각 유사도, XFeat는 로고 대조, Qwen3.5는 문서·이미지 분석에 연결됩니다. 기존 Transformers 생성 모델과 Grounding DINO도 지원 범위에서 사용할 수 있습니다.</p><p>새로고침은 Pod 작업을 취소하지 않습니다. 실행 ID로 조회를 복원하며, 백엔드를 재시작했다면 같은 Pod에 연결 후 이전 작업을 조회하세요. 검수 강제 중단은 이 작업만 종료하며 Pod는 유지합니다.</p></>
-              : <><p>HTTP 방식은 전용 검수 API가 필요합니다. 기존 OCR 워커나 일반 채팅 API에는 직접 연결되지 않습니다.</p><p>GET /api/modeltest/health<br />POST /api/modeltest/runs<br />GET /api/modeltest/runs/:id</p><p>Pod에서 현재 화면의 출처({window.location.origin})를 CORS로 허용해야 합니다.</p><p>RunPod 계정 API 키가 아닌 Pod 검수 API 토큰을 입력하세요.</p></>}</details>
+
           </aside>
         </div>
       </form>
 
-      <section className="mt-panel mt-results" aria-labelledby="mt-results-title"><div className="mt-panel-heading"><div><h2 id="mt-results-title">실행 결과</h2><p>{job ? `작업 ${job.id}` : '실행한 모델의 출력과 요청 설정을 확인합니다.'}</p></div>
+      <section className="mt-panel mt-results" aria-labelledby="mt-results-title"><div className="mt-panel-heading"><div><div className="mt-title-help"><h2 ref={resultsRef} id="mt-results-title" tabIndex={-1}>실행 결과</h2></div>{job && <p>작업 {job.id}</p>}</div>
         <button type="button" className="btn secondary small" disabled={!manifest} onClick={download}>JSON 내려받기</button></div>
-        <div className="mt-result-tabs" aria-label="결과 보기">{[['results', '단계별 결과'], ['timing', '소요 시간'], ['request', '실행 설정'], ['raw', '전체 응답']].map(([id, title]) => <button type="button" key={id} aria-pressed={resultTab === id} onClick={() => setResultTab(id)}>{title}</button>)}</div>
+        <div className="mt-result-tabs" aria-label="결과 보기">{[['results', '단계별 결과'], ['timing', '소요 시간'], ['debug', '디버그']].map(([id, title]) => <button type="button" key={id} aria-pressed={resultTab === id} onClick={() => setResultTab(id)}>{title}</button>)}</div>
         <div className="mt-result-body">
-          {resultTab === 'request' ? <><p className="mt-hint">실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.{contextRef.current && ` 요청 ID: ${contextRef.current.requestId}`}</p><JsonView value={manifest} /></>
-            : resultTab === 'raw' ? <JsonView value={job} />
+          {resultTab === 'debug' ? <div className="mt-debug">
+            <section aria-labelledby="mt-debug-request"><h3 id="mt-debug-request">실행 설정</h3>{contextRef.current && <p className="mt-hint">요청 ID: {contextRef.current.requestId}</p>}<JsonView value={manifest} /></section>
+            <section aria-labelledby="mt-debug-response"><h3 id="mt-debug-response">전체 응답</h3><JsonView value={job} /></section>
+          </div>
               : resultTab === 'timing' ? (job ? <ModeltestTimings job={job} now={Date.now()} /> : <p className="mt-empty">실행 후 단계별·모델별 소요 시간이 표시됩니다.</p>)
-              : !job ? <div className="mt-result-empty"><Icon name="search" /><h3>첫 검수 결과를 기다리고 있어요</h3><p>Pod 연결 → 자료 첨부 → 모델 지정 후 검수를 실행해 주세요.<br />프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></div>
+              : !job ? <div className="mt-result-empty"><Icon name="search" /><h3>첫 검수 결과를 기다리고 있어요</h3><p>Pod 연결 → 자료 첨부 → 모델 지정 후 검수를 실행해 주세요.</p></div>
                 : <div className="mt-stage-results"><nav aria-label="결과 단계 선택">{job.stages.map(stage => <button type="button" key={stage.id} aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(stage.id)}>{stageTitle(stage)}{stage.agent_id && <small className="mt-stage-time">{job.agents?.find(agent => agent.id === stage.agent_id)?.name}</small>}</button>)}</nav>
                   <div className="mt-stage-output"><p className="mt-hint">{resultStage ? STATUS_LABELS[resultStage.status] : '결과를 볼 단계를 선택하세요.'}{typeof resultStage?.model_id === 'string' ? ` · ${resultStage.model_id}` : ''}</p>
                     {resultStage && <details className="mt-stage-timing"><summary>단계 소요 시간 {formatDuration(elapsedSeconds(resultStage))}{(resultStage.status === 'running' || resultStage.timing_estimated) && ' · 추정'}</summary><ModelTimingTable stages={[resultStage]} now={Date.now()} /></details>}
@@ -554,7 +594,7 @@ export default function ModelTestPage() {
       <p className="mt-result-guidance">임계값·유사도는 검수 통과 확률이 아니며, 이미지 코사인 및 특징점 지표는 일치 확률이 아닙니다. 실행 성공은 품질 검증을 뜻하지 않습니다. 실행 환경과 품질은 별도 확인이 필요합니다.</p>
       <details className="mt-api-help mt-page-help"><summary>페이지 도움말</summary><h3>Pod 연결과 작업 복원</h3>{method === 'ssh' ? <><p>노트북의 로컬 백엔드가 OpenSSH로 접속합니다. 최초 접속은 터미널에서 서버 지문을 확인하고, 암호화된 키는 ssh-agent에 등록해 주세요.</p><p>TCP SSH는 일반 데이터 통신을, 기본 SSH는 터미널을 통한 전송을 사용합니다. 큰 영상에는 TCP SSH를 권장합니다.</p><p>OWLv2는 로고 추출, SigLIP2는 후보 문구별 시각 유사도, XFeat는 로고 대조, Qwen3.5는 문서·이미지 분석에 연결됩니다. 기존 Transformers 생성 모델과 Grounding DINO도 지원 범위에서 사용할 수 있습니다.</p><p>실행 ID로 조회를 복원하며, 백엔드를 재시작했다면 같은 Pod에 연결 후 이전 작업을 조회하세요.</p></>
               : <><p>HTTP 방식은 전용 검수 API가 필요합니다. 기존 OCR 워커나 일반 채팅 API에는 직접 연결되지 않습니다.</p><p>GET /api/modeltest/health<br />POST /api/modeltest/runs<br />GET /api/modeltest/runs/:id</p><p>Pod에서 현재 화면의 출처({window.location.origin})를 CORS로 허용해야 합니다.</p><p>RunPod 계정 API 키가 아닌 Pod 검수 API 토큰을 입력하세요.</p></>}<h3>검수 자료와 결과</h3><p>필요한 단계를 선택하고 모델을 지정하세요.</p><p>소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p><p>{method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p><p>실행한 모델의 출력과 요청 설정을 확인합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p><p>실행 설정은 실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.</p><p>모델·revision·처리 설정이 같은 벡터만 비교합니다.</p><p>유사도, 재정렬 점수, 분류 점수는 서로 다른 지표입니다.</p><p>새 모델은 상단 모델 관리에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</p><p>입력한 모델의 로딩·추론은 Pod에서 처리합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></details>
-      <footer className="mt-footer"><span>크리에이티브체커 · 모델 테스트</span><span>입력한 모델의 로딩·추론은 Pod에서 처리합니다.</span></footer>
+      <footer className="mt-footer"><span>크리에이티브체커 · 모델 테스트</span></footer>
     </main>
     <ModeltestConfirm request={confirmation} onResolve={accepted => { setConfirmation(null); if (accepted) { if (confirmation.action === 'cancel') cancel(); else confirmation.action(); } }} />
   </div>;

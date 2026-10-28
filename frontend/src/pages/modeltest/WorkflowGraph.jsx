@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { boardPoint, boardView, DEFAULT_VIEW, fitBoard, nodePosition, zoomAt } from './modeltestBoard.js';
 
-export default function WorkflowGraph({ boardId, label, nodes, edges, positions, onChange, disabled, onConfigure, error = '', nodeActions = () => [], addActions = [], onUndo, canUndo, onRedo, canRedo }) {
+export default function WorkflowGraph({ boardId, label, nodes, edges, positions, onChange, disabled, onConfigure, selectedNode, selectOnClick = false, error = '', nodeActions = () => [], addActions = [], onUndo, canUndo, onRedo, canRedo }) {
   const arrowId = useId().replace(/:/g, ''); const root = useRef(null); const viewport = useRef(null); const menuRef = useRef(null); const focusBeforeMenu = useRef(null);
   const storageKey = `creative-checker-board-${boardId}`;
   const [view, setView] = useState(() => { try { return boardView(JSON.parse(localStorage.getItem(storageKey))); } catch { return { ...DEFAULT_VIEW }; } });
@@ -104,6 +104,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
     const active = gesture.current;
     if (!active || active.pointerId !== event.pointerId) return;
     if (active.type === 'node' && !disabled && (event.clientX !== active.x || event.clientY !== active.y)) onChange({ positions: { ...positions, [active.id]: { x: active.pos.x + (event.clientX - active.x) / active.view.zoom, y: active.pos.y + (event.clientY - active.y) / active.view.zoom } } });
+    else if (active.type === 'node' && selectOnClick) configure(active.id);
     gesture.current = null; setDrag(null);
   }
   function keyDown(event) {
@@ -137,9 +138,10 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
           </g>; })}
           {source && point && placed.has(source) && <path className="is-connecting" aria-hidden="true" d={curve({ x: placed.get(source).x + 250, y: placed.get(source).y + 48 }, point)} />}
         </svg>
-        {nodes.map(node => { const pos = placed.get(node.id); return <div className="mt-workflow-node" key={node.id} style={{ left: pos.x, top: pos.y }} data-node={node.id} onContextMenu={event => openMenu(event, { type: 'node', id: node.id })}>
+        {nodes.map(node => { const pos = placed.get(node.id); return <div className={`mt-workflow-node ${selectedNode === node.id ? 'is-selected' : ''}`} key={node.id} style={{ left: pos.x, top: pos.y }} data-node={node.id} onContextMenu={event => openMenu(event, { type: 'node', id: node.id })}
+          onClick={event => { if (selectOnClick && !event.target.closest('button') && !space) configure(node.id); }}>
           <button type="button" className="mt-node-port mt-node-input" disabled={disabled} aria-label={`${node.title} 입력 연결`} onPointerUp={() => connect(node.id)} onClick={event => { if (event.detail === 0) connect(node.id); }} />
-          <button type="button" className="mt-node-drag" aria-disabled={disabled} aria-label={`${node.title} 노드 이동`} onKeyDown={event => keyMove(event, node.id, pos)} onPointerDown={event => { if (event.button === 0 && !disabled) begin(event, 'node', node.id); }}>{node.title}</button>
+          <button type="button" className="mt-node-drag" aria-disabled={disabled} aria-label={`${node.title} 노드 이동`} onKeyDown={event => keyMove(event, node.id, pos)} onClick={event => { if (selectOnClick && (event.detail === 0 || disabled)) configure(node.id); }} onPointerDown={event => { if (event.button === 0 && !disabled) begin(event, 'node', node.id); }}>{node.title}</button>
           <small>{node.id === 'frames' ? '영상 프레임 샘플링' : node.id === 'candidate_filter' ? '최소 유사도 · 상위 후보 수' : node.description || '단계를 설정하세요'}</small>
           <button type="button" className="text-btn" onClick={() => configure(node.id)}>설정</button>
           <button type="button" className={`mt-node-port mt-node-output ${source === node.id ? 'is-selected' : ''}`} disabled={disabled} aria-label={`${node.title} 출력 연결`}
