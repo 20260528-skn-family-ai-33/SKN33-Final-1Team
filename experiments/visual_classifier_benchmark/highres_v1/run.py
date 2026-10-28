@@ -179,6 +179,12 @@ def logits(backbone,head,x,size):
     output=backbone(x,interpolate_pos_encoding=(size!=384)).pooler_output
     return head(F.normalize(output.float(),p=2,dim=-1))
 
+def target_tensor(row,device):
+    import torch
+    # Fully known labels otherwise infer LongTensor, which BCE cannot accept.
+    return torch.tensor([[float('nan') if row['labels'][k] is None else row['labels'][k] for k in LABELS]],
+                        device=device,dtype=torch.float32)
+
 def masked_loss(logit,y):
     import torch
     from torch.nn import functional as F
@@ -186,13 +192,13 @@ def masked_loss(logit,y):
     require(bool(mask.any()),'No known labels in batch')
     return (F.binary_cross_entropy_with_logits(logit.float(),safe,reduction='none')*mask).sum(),int(mask.sum().item())
 
-def infer(args,backbone,head,rows,size):
+def infer(args,backbone,head,rows,size,device='cuda'):
     import torch
     backbone.eval();head.eval();probs=[];total=0.;known=0
     with torch.inference_mode():
         for r in rows:
-            x=images(args,[r],size,'cuda'); z=logits(backbone,head,x,size)
-            y=torch.tensor([[float('nan') if r['labels'][k] is None else r['labels'][k] for k in LABELS]],device='cuda')
+            x=images(args,[r],size,device); z=logits(backbone,head,x,size)
+            y=target_tensor(r,device)
             loss,n=masked_loss(z,y);total+=float(loss.item());known+=n
             probs.append(torch.sigmoid(z).cpu().tolist()[0])
     return total/known,probs
@@ -207,7 +213,7 @@ def freeze_tail(backbone,head):
     for layer in layers[-4:]:layer.requires_grad_(True)
     backbone.post_layernorm.requires_grad_(True);backbone.head.requires_grad_(True);head.requires_grad_(True)
 
-def train_epoch(args,backbone,head,rows,size,optimizer,epoch):
+def train_epoch(args,backbone,head,rows,size,optimizer,epoch,device='cuda'):
     import torch
     backbone.eval();head.train()
     for layer in list(backbone.encoder.layers)[-4:]:layer.train()
@@ -219,8 +225,8 @@ def train_epoch(args,backbone,head,rows,size,optimizer,epoch):
         group=order[start:start+8];known=sum(v is not None for r in group for v in r['labels'].values());require(known>0,'No known labels')
         optimizer.zero_grad(set_to_none=True)
         for r in group:
-            x=images(args,[r],size,'cuda')
-            y=torch.tensor([[float('nan') if r['labels'][k] is None else r['labels'][k] for k in LABELS]],device='cuda')
+            x=images(args,[r],size,device)
+            y=target_tensor(r,device)
             numerator,n=masked_loss(logits(backbone,head,x,size),y)
             require(bool(torch.isfinite(numerator)),'Non-finite loss')
             (numerator/known).backward();total+=float(numerator.detach().cpu());count+=n
@@ -229,12 +235,12 @@ def train_epoch(args,backbone,head,rows,size,optimizer,epoch):
         torch.nn.utils.clip_grad_norm_(params,1.0,error_if_nonfinite=True);optimizer.step()
     return total/count
 
-def smoke(args):
+def smoke(args,device='cuda'):
     """One forward/backward per size, without optimizer steps or file writes."""
     import torch
     env=preflight(args);_,rows,_=check_packet(args.packet);check_cache(args,rows)
     row=next(r for r in rows if r['split']=='train' and r['use']=='active')
-    backbone,head=load_models(args,Path(env['model']['checkpoint']));freeze_tail(backbone,head)
+    backbone,head=load_models(args,Path(env['model']['checkpoint']),device=device);freeze_tail(backbone,head)
     try:
         for size in args.sizes:
             backbone.eval();head.train()
@@ -242,8 +248,8 @@ def smoke(args):
             backbone.post_layernorm.train();backbone.head.train()
             backbone.zero_grad(set_to_none=True);head.zero_grad(set_to_none=True)
             torch.cuda.reset_peak_memory_stats()
-            x=images(args,[row],size,'cuda')
-            y=torch.tensor([[float('nan') if row['labels'][k] is None else row['labels'][k] for k in LABELS]],device='cuda')
+            x=images(args,[row],size,device)
+            y=target_tensor(row,device)
             z=logits(backbone,head,x,size)
             require(z.shape==(1,8) and bool(torch.isfinite(z).all()),'Invalid smoke logits')
             loss,n=masked_loss(z,y);(loss/n).backward();torch.cuda.synchronize()

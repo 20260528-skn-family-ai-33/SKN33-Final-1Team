@@ -1,5 +1,7 @@
 """CPU-only contract checks; no model download, inference or training."""
 import importlib.util
+from contextlib import ExitStack, redirect_stdout
+import io
 import math
 import hashlib
 import json
@@ -28,6 +30,51 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(m['known_cells'],7);self.assertEqual(m['accuracy'],1.)
         self.assertEqual(m['per_label'][1]['known'],0)
         self.assertIsNone(m['per_label'][1]['f1'])
+
+    def test_known_and_unknown_targets_are_float32(self):
+        labels=dict.fromkeys(run.LABELS,0);labels['person']=1
+        y=run.target_tensor({'labels':labels},'cpu')
+        self.assertEqual(y.dtype,torch.float32)
+        loss,n=run.masked_loss(torch.zeros((1,8)),y)
+        self.assertEqual(n,8);self.assertTrue(torch.isfinite(loss))
+        labels['food_drink']=None
+        y=run.target_tensor({'labels':labels},'cpu')
+        self.assertEqual(y.dtype,torch.float32);self.assertTrue(torch.isnan(y[0,1]))
+
+    def test_smoke_and_train_epoch_accept_fully_known_labels(self):
+        class Body(torch.nn.Module):
+            def __init__(self):
+                super().__init__();self.encoder=torch.nn.Module()
+                self.encoder.layers=torch.nn.ModuleList([torch.nn.Linear(4,4) for _ in range(4)])
+                self.post_layernorm=torch.nn.LayerNorm(4);self.head=torch.nn.Linear(4,4)
+            def forward(self,x,interpolate_pos_encoding=False):
+                for layer in self.encoder.layers:x=layer(x)
+                return types.SimpleNamespace(pooler_output=self.head(self.post_layernorm(x)))
+        body=Body();head=torch.nn.Linear(4,8)
+        labels=dict.fromkeys(run.LABELS,0);labels['person']=1
+        row=dict(image_id='synthetic',split='train',use='active',labels=labels)
+        args=types.SimpleNamespace(sizes=[384,768],packet=Path('unused'))
+        with ExitStack() as stack:
+            stack.enter_context(patch.object(run,'preflight',return_value={'model':{'checkpoint':'unused'}}))
+            stack.enter_context(patch.object(run,'check_packet',return_value=({},[row],{})))
+            stack.enter_context(patch.object(run,'check_cache'))
+            stack.enter_context(patch.object(run,'load_models',return_value=(body,head)))
+            stack.enter_context(patch.object(run,'images',side_effect=lambda *a:torch.ones((1,4))))
+            for name in ('reset_peak_memory_stats','synchronize','empty_cache'):
+                stack.enter_context(patch.object(torch.cuda,name))
+            stack.enter_context(patch.object(torch.cuda,'max_memory_allocated',return_value=0))
+            captured=io.StringIO()
+            with redirect_stdout(captured):run.smoke(args,device='cpu')
+            self.assertIn('SMOKE OK',captured.getvalue())
+            class NoUpdate:
+                steps=0
+                def zero_grad(self,set_to_none=True):body.zero_grad(set_to_none=True);head.zero_grad(set_to_none=True)
+                def step(self):self.steps+=1
+            optimizer=NoUpdate()
+            loss=run.train_epoch(args,body,head,[row],384,optimizer,1,device='cpu')
+            self.assertTrue(math.isfinite(loss));self.assertEqual(optimizer.steps,1)
+            loss,probs=run.infer(args,body,head,[row],384,device='cpu')
+            self.assertTrue(math.isfinite(loss));self.assertEqual(len(probs[0]),8)
 
     def test_interpolation_detection_across_transformers_versions(self):
         class OldVision:
