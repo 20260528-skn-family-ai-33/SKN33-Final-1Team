@@ -53,3 +53,12 @@
 .mt-page-help h3{font-size:14px;margin-top:16px}
 .mt-result-guidance{margin:18px 0;font-size:12px;line-height:1.7;color:var(--muted)}
 .mt-shell .mt-help-popover[data-variant=tip]{position:fixed;inset:auto;margin:0;width:min(320px,calc(100vw - 16px));max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:12px}
+
+.mt-connection-wrap>summary{display:flex;align-items:center;gap:10px;padding:15px 24px;cursor:pointer;font-weight:700;white-space:nowrap}
+.mt-connection-wrap>summary::before{content:"▸";flex:none}
+.mt-connection-wrap>summary::-webkit-details-marker{display:none}
+.mt-connection-wrap>summary>span:not(.mt-connection-target){flex-shrink:0}
+.mt-connection-wrap>summary .mt-connection-state{display:inline-flex;vertical-align:middle;margin-left:0;font-size:12px;font-weight:400}
+.mt-connection-target{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:400;color:var(--muted)}
+@media (max-width:600px){.mt-connection-wrap>summary{padding:14px 16px}}
+@media (max-width:600px){.mt-connection-wrap>summary span{font-size:11px}}

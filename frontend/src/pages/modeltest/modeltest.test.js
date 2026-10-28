@@ -7,7 +7,7 @@ import {
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
 import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
-import { readSSH, writeSSH } from './modeltestConnection.js';
+import { readSSH, writeSSH, connectionTarget } from './modeltestConnection.js';
 import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
 
 test('reference defaults use the highest image similarity and preserve manual choices', () => {
@@ -354,4 +354,16 @@ test('SSH requests stay on the local backend and preserve the multipart request 
 test('local SSH failures keep actionable messages without silently using an HTTP Pod endpoint', async t => {
   t.mock.method(globalThis, 'fetch', async () => Response.json({ detail: 'SSH 키 인증에 실패했습니다.' }, { status: 400 }));
   await assert.rejects(sshRequest('/api/modeltest/ssh/connections'), error => error.status === 400 && error.message.includes('키 인증'));
+});
+
+
+test('connection summaries show only the destination, excluding key paths and HTTP credentials', () => {
+  assert.equal(connectionTarget('ssh', 'ssh -i "key@private" -p 1234 root@203.0.113.10'), 'root@203.0.113.10');
+  assert.equal(connectionTarget('ssh', 'ssh "user@ssh.runpod.io" -i "C:/private keys/id_key"'), 'user@ssh.runpod.io');
+  assert.equal(connectionTarget('ssh', 'ssh root@[2001:db8::1] -p 22'), 'root@[2001:db8::1]');
+  assert.equal(connectionTarget('ssh', 'ssh root@2001:db8::1'), 'root@2001:db8::1');
+  assert.equal(connectionTarget('ssh', 'ssh -i key@private'), '');
+  assert.equal(connectionTarget('http', 'https://name:secret@pod-8000.proxy.runpod.net/path?token=secret'), 'pod-8000.proxy.runpod.net');
+  assert.equal(connectionTarget('http', 'http://localhost:8000'), 'localhost:8000');
+  assert.equal(connectionTarget('http', ''), '');
 });

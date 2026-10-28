@@ -8,7 +8,7 @@ import {
 } from './modeltest.js';
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
-import { readSSH, writeSSH } from './modeltestConnection.js';
+import { readSSH, writeSSH, connectionTarget } from './modeltestConnection.js';
 import { rememberBoard } from './modeltestBoard.js';
 import ModeltestResults from './ModeltestResults.jsx';
 import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
@@ -150,6 +150,7 @@ export default function ModelTestPage() {
   }
   useEffect(() => { reloadCatalog(); }, []);
   const [connectionOpen, setConnectionOpen] = useState(true); const [restoring, setRestoring] = useState(false);
+  const wasReady = useRef(false);
   const [restored, setRestored] = useState(false);
   const [job, setJob] = useState(null); const [manifest, setManifest] = useState(null);
   const [submitting, setSubmitting] = useState(false); const [unknown, setUnknown] = useState(false);
@@ -163,6 +164,13 @@ export default function ModelTestPage() {
   const videoRef = useRef(null); const [previewError, setPreviewError] = useState('');
   const preview = usePreview(state.media);
   const health = connection?.health;
+  const target = connectionTarget(method, method === 'ssh' ? sshCommand : connection?.endpoint || endpoint);
+  useEffect(() => {
+    const ready = health?.ready === true;
+    if (connectionError || !ready) setConnectionOpen(true);
+    else if (!wasReady.current) setConnectionOpen(false);
+    wasReady.current = ready;
+  }, [health?.ready, connectionError]);
   const modelHealth = { ...(health || { ready: false, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES, limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 }, workflow: { agents: true } }), registered: catalog.models };
   const preparing = health?.preparing === true;
   const terminal = job ? TERMINAL.includes(job.status) : false;
@@ -381,9 +389,11 @@ export default function ModelTestPage() {
       <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
 
       <details className="mt-connection-wrap" open={connectionOpen} onToggle={event => setConnectionOpen(event.currentTarget.open)}>
-        <summary>RunPod 연결 <span className={`mt-connection-state ${health?.ready ? 'is-ready' : ''}`}><i />{connecting ? 'Pod 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? 'Pod 연결됨' : health ? 'Pod 준비 필요' : 'Pod 연결 전'}</span></summary>
+        <summary><span>RunPod 연결</span><span className={`mt-connection-state ${health?.ready && !connectionError ? 'is-ready' : ''}`}><i />{connectionError ? '연결 오류' : connecting ? 'Pod 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? 'Pod 연결됨' : health ? 'Pod 준비 필요' : 'Pod 연결 전'}</span><span className="mt-connection-target" title={target}>{method === 'ssh' ? 'SSH' : 'HTTP'}{target && ` · ${target}`}</span></summary>
       <section className="mt-connection" aria-labelledby="mt-connection-title">
-        <div className="mt-connection-method"><div className="mt-connection-label"><Icon name="grid" /><h2 id="mt-connection-title">RunPod 연결</h2></div>
+        <div className="mt-connection-method"><div className="mt-connection-label"><Icon name="grid" /><h2 id="mt-connection-title">RunPod 연결</h2><ModeltestHelp label="RunPod 연결">
+            {method === 'ssh' ? <>{!connection && <><p>SSH over exposed TCP와 ssh.runpod.io 기본 SSH를 구분합니다. 개인키는 노트북에 두고 경로만 입력하세요. 공개 HTTP 포트는 필요하지 않습니다.</p><p>SSH 명령과 연결 설정은 이 브라우저에 저장됩니다. 개인키 내용은 저장하지 않습니다.</p></>}<p>환경 준비는 Pod의 전용 가상환경에 패키지를 설치합니다. 모델 가중치는 검수 실행 시 다운로드합니다.</p></> : <p>{CONTRACT} API의 준비 상태를 확인합니다. 토큰은 이 화면의 메모리에만 보관합니다.</p>}
+          </ModeltestHelp></div>
           <div className="mt-method-buttons" aria-label="RunPod 연결 방식">{[['ssh', 'SSH 명령'], ['http', 'HTTP API']].map(([id, label]) => <button type="button" key={id} disabled={locked || connecting} aria-pressed={method === id}
             onClick={() => { setMethod(id); setConnection(null); setConnectionError(''); }}>{label}</button>)}</div></div>
         {method === 'ssh' ? <div className="mt-ssh-command"><label htmlFor="mt-ssh-command">RunPod Connect의 SSH 명령</label><input id="mt-ssh-command" value={sshCommand} disabled={locked || connecting} autoComplete="off" spellCheck={false} maxLength={2048}
@@ -394,12 +404,11 @@ export default function ModelTestPage() {
         <div className="mt-token"><label htmlFor="mt-token">Pod API 토큰 <span>선택</span></label><input id="mt-token" type="password" value={token} disabled={locked || connecting}
           placeholder="Pod API에 설정한 토큰" autoComplete="off" onChange={event => { setToken(event.target.value); setConnection(null); setConnectionError(''); }} /></div></>}
         <button type="button" className="btn secondary" disabled={locked || connecting || !(method === 'ssh' ? sshCommand.trim() : endpoint.trim())} onClick={connect}>{connecting ? '연결 확인 중…' : '연결 확인'}</button>
-        <p className="mt-connection-hint">{method === 'ssh' ? 'SSH over exposed TCP와 ssh.runpod.io 기본 SSH를 구분합니다. 개인키는 노트북에 두고 경로만 입력하세요. 공개 HTTP 포트는 필요하지 않습니다.' : `${CONTRACT} API의 준비 상태를 확인합니다. 토큰은 이 화면의 메모리에만 보관합니다.`}</p>
         {connectionError && <p className="mt-error mt-connection-hint" role="alert">{connectionError}</p>}
-        {method === 'ssh' && <p className="mt-connection-hint">SSH 명령과 연결 설정은 이 브라우저에 저장됩니다. 개인키 내용은 저장하지 않습니다.{connectionRestored && ' 이전 로컬 세션을 복원했습니다. 현재 Pod 상태를 갱신하려면 연결 확인을 누르세요.'}</p>}
+        {method === 'ssh' && connectionRestored && <p className="mt-connection-hint">이전 로컬 세션을 복원했습니다. 현재 Pod 상태를 갱신하려면 연결 확인을 누르세요.</p>}
         {method === 'ssh' && health && <div className="mt-ssh-readiness"><p role="status">{preparing ? 'Pod의 전용 가상환경에 패키지를 준비하고 있습니다. 잠시 기다려 주세요.' : health.detail}</p>
           {!health.ready && !preparing && health.can_prepare && <button type="button" className="btn secondary small" disabled={connecting} onClick={preparePod}>Pod 실행환경 준비</button>}
-          <small>{health.cuda === false ? 'CUDA GPU와 PyTorch가 포함된 Pod가 필요합니다. ' : ''}환경 준비는 Pod의 전용 가상환경에 패키지를 설치합니다. 모델 가중치는 검수 실행 시 다운로드합니다.</small></div>}
+          {health.cuda === false && <small>CUDA GPU와 PyTorch가 포함된 Pod가 필요합니다.</small>}</div>}
         {method === 'http' && health && !health.ready && <p className="mt-error mt-connection-hint" role="status">Pod에는 연결됐지만 검수 준비가 끝나지 않았습니다. 준비 후 다시 연결해 주세요.</p>}
       </section>
       </details>
