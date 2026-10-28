@@ -4,13 +4,13 @@ import { chromium } from 'playwright';
 import { createServer } from 'vite';
 import { CONTRACT, FILE_LIMITS, FILE_TYPES, STAGES, FILTER_SCOPES } from '../../src/pages/modeltest/modeltest.js';
 
-test('similarity test preserves one hundred images and resize, then shows both metrics and selected previews', { timeout: 90000 }, async t => {
+for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves one hundred images and resize, then shows both metrics and selected previews (${resizeMode})`, { timeout: 90000 }, async t => {
   const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache', define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
   await server.listen(); t.after(() => server.close()); const origin = 'http://127.0.0.1:5187';
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
   const errors = []; const unexpected = []; let manifest; let png; let jpeg;
-  const health = { contract: CONTRACT, ready: true, similarity_test: 1, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
+  const health = { contract: CONTRACT, ready: true, similarity_test: 1, similarity_resize_percent: true, similarity_reference_resize: true, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/*', route => {
@@ -25,8 +25,8 @@ test('similarity test preserves one hundred images and resize, then shows both m
     if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
       manifest = JSON.parse(request.postDataBuffer().toString().match(/name="config"\r\n\r\n([^\r]+)/)[1]);
       return json({ contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'completed', media: { preview: 'preview-poster.jpg', original_width: 200, original_height: 100, width: 100, height: 50, resized: true },
-        references: manifest.files.references.map((_, index) => ({ index, preview: `preview-reference-${index}.jpg`, width: 200, height: 100 })),
-        stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity' ? { image_cosine_similarity: 0.9 } : { descriptor_similarity: 0.85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: 'candidate_match', image_sizes: [[100, 50], [200, 100]], matched_points: [{ crop: [25, 10], reference: [50, 20] }, { crop: [50, 25], reference: [100, 50] }] }) })) } })) });
+        references: manifest.files.references.map((_, index) => ({ index, preview: `preview-reference-${index}.jpg`, original_width: 200, original_height: 100, width: 50, height: 25, resized: true })),
+        stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity' ? { image_cosine_similarity: 0.9 } : { descriptor_similarity: 0.85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: 'candidate_match', image_sizes: [[100, 50], [50, 25]], matched_points: [{ crop: [25, 10], reference: [12.5, 5] }, { crop: [50, 25], reference: [25, 12.5] }] }) })) } })) });
     }
     unexpected.push(url.pathname); return route.abort();
   });
@@ -41,6 +41,18 @@ test('similarity test preserves one hundred images and resize, then shows both m
   assert.equal(await page.getByRole('group', { name: '워크플로우 편집 방식' }).count(), 0);
   await page.locator('input[type=file][aria-label="기준 이미지"]').setInputFiles({ name: 'base.png', mimeType: 'image/png', buffer });
   await page.getByLabel('기준 이미지 가로', { exact: true }).fill('100'); await page.getByLabel('기준 이미지 세로', { exact: true }).fill('50');
+  const referenceResize = page.getByRole('group', { name: '대조 이미지 다운사이징', exact: true });
+  await page.getByLabel('대조 이미지 가로', { exact: true }).fill('40'); await page.getByLabel('대조 이미지 세로', { exact: true }).fill('20');
+  await referenceResize.getByRole('button', { name: '원본 크기 사용', exact: true }).click();
+  assert.equal(await page.getByLabel('대조 이미지 가로', { exact: true }).inputValue(), '');
+  assert.equal(await page.getByLabel('기준 이미지 가로', { exact: true }).inputValue(), '100');
+  await page.getByLabel('대조 이미지 가로', { exact: true }).fill('50'); await page.getByLabel('대조 이미지 세로', { exact: true }).fill('25');
+  if (resizeMode === 'percent') {
+    await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).selectOption('percent');
+    await page.getByLabel('기준 이미지 축소 비율', { exact: true }).fill('50');
+    await page.getByLabel('대조 이미지 크기 입력 방식', { exact: true }).selectOption('percent');
+    await page.getByLabel('대조 이미지 축소 비율', { exact: true }).fill('25');
+  }
   const input = page.locator('input[type=file][aria-label="대조 이미지"]');
   await input.setInputFiles(Array.from({ length: 101 }, (_, i) => candidate(i)));
   await page.getByRole('alert').filter({ hasText: '최대 100개까지' }).waitFor(); assert.equal(await page.locator('.mt-file-gallery li').count(), 0);
@@ -60,26 +72,46 @@ test('similarity test preserves one hundred images and resize, then shows both m
   await page.getByText('Pod 연결됨', { exact: true }).waitFor();
   assert.equal(await page.getByRole('button', { name: '유사도 테스트', exact: true }).getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('.mt-file-gallery li').count(), 100);
+  assert.equal(await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).inputValue(), resizeMode);
+  assert.equal(await page.getByLabel('대조 이미지 크기 입력 방식', { exact: true }).inputValue(), resizeMode);
+  if (resizeMode === 'percent') {
+    assert.equal(await page.getByLabel('대조 이미지 축소 비율', { exact: true }).inputValue(), '25');
+    await page.getByLabel('대조 이미지 크기 입력 방식', { exact: true }).selectOption('pixels');
+  }
+  assert.equal(await page.getByLabel('대조 이미지 가로', { exact: true }).inputValue(), '50');
+  assert.equal(await page.getByLabel('대조 이미지 세로', { exact: true }).inputValue(), '25');
+  if (resizeMode === 'percent') await page.getByLabel('대조 이미지 크기 입력 방식', { exact: true }).selectOption('percent');
+  if (resizeMode === 'percent') {
+    assert.equal(await page.getByLabel('기준 이미지 축소 비율', { exact: true }).inputValue(), '50');
+    await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).selectOption('pixels');
+  }
   assert.equal(await page.getByLabel('기준 이미지 가로', { exact: true }).inputValue(), '100');
   assert.equal(await page.getByLabel('기준 이미지 세로', { exact: true }).inputValue(), '50');
+  if (resizeMode === 'percent') await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).selectOption('percent');
   assert.equal(await page.getByLabel('유사도 테스트 모델 선택', { exact: true }).inputValue(), 'google/siglip2-so400m-patch14-384');
   await page.getByRole('button', { name: '검수 실행', exact: true }).click();
   await page.getByRole('region', { name: '이미지별 유사도 표', exact: true }).waitFor();
-  assert.equal(manifest.flow, 'similarity'); assert.equal(manifest.files.references.length, 100); assert.deepEqual(manifest.resize, { width: 100, height: 50 });
+  assert.equal(manifest.flow, 'similarity'); assert.equal(manifest.files.references.length, 100); assert.deepEqual(manifest.resize, resizeMode === 'percent' ? { percent: 50 } : { width: 100, height: 50 });
+  assert.deepEqual(manifest.reference_resize, resizeMode === 'percent' ? { percent: 25 } : { width: 50, height: 25 });
   assert.deepEqual(manifest.stages.map(stage => stage.model_id), ['google/siglip2-so400m-patch14-384', 'vismatch/xfeat']);
   await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).click();
   const detail = page.locator('.mt-similarity-results');
   await detail.getByRole('img', { name: '대조 이미지 100 미리보기', exact: true }).waitFor();
   await detail.getByRole('img', { name: '측정에 사용한 기준 이미지', exact: true }).waitFor();
   assert.match(await detail.innerText(), /원본 200 × 100px → 측정 100 × 50px/);
+  assert.match(await detail.innerText(), /원본 200 × 100px → 측정 50 × 25px/);
+  if (resizeMode === 'percent') assert.match(await detail.innerText(), /원본의 25%/);
+  if (resizeMode === 'percent') assert.match(await detail.innerText(), /원본의 50%/);
   assert.match(await detail.locator('dl').innerText(), /0\.9000/); assert.match(await detail.locator('dl').innerText(), /0\.8500/); assert.match(await detail.locator('dl').innerText(), /111 \/ 10개/);
   await detail.getByRole('img', { name: '기하 검증 대응점 2쌍', exact: true }).waitFor();
   async function pointError() {
     return detail.locator('.mt-match-overlay-frame').evaluate(element => {
-      const root = element.getBoundingClientRect(); const image = element.querySelector('img'); const box = image.getBoundingClientRect();
-      const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight); const width = image.naturalWidth * scale; const height = image.naturalHeight * scale;
-      const point = element.querySelector('circle');
-      return Math.abs(Number(point.getAttribute('cx')) - (box.x - root.x + (box.width - width) / 2 + width * .25)) + Math.abs(Number(point.getAttribute('cy')) - (box.y - root.y + (box.height - height) / 2 + height * .2));
+      const root = element.getBoundingClientRect();
+      return [...element.querySelectorAll('img')].reduce((error, image, i) => {
+        const box = image.getBoundingClientRect(); const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight); const width = image.naturalWidth * scale; const height = image.naturalHeight * scale;
+        const point = element.querySelectorAll('circle')[i];
+        return error + Math.abs(Number(point.getAttribute('cx')) - (box.x - root.x + (box.width - width) / 2 + width * .25)) + Math.abs(Number(point.getAttribute('cy')) - (box.y - root.y + (box.height - height) / 2 + height * .2));
+      }, 0);
     });
   }
   assert.ok(await pointError() < 1);

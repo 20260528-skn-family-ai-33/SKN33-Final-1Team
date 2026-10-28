@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { initialFlow } from './modeltest.js';
 
-const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages', 'workflow', 'agentWorkflow', 'resize'];
+const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages', 'workflow', 'agentWorkflow', 'resize', 'referenceResize'];
 const FLOWS = ['image', 'video', 'similarity'];
 const initialFlows = () => Object.fromEntries(FLOWS.map(flow => [flow, initialFlow(flow)]));
 let opening;
@@ -48,7 +48,7 @@ function restoredFlow(flow, data) {
     else if (['documents', 'references'].includes(field) && Array.isArray(value)) state[field] = value.filter(file => file instanceof File);
     else if (['requirements', 'requirementsOpen'].includes(field) && typeof value === typeof state[field]) state[field] = value;
     else if (field === 'sampling' && value && ['frames', 'seconds'].includes(value.unit)) state.sampling = { ...state.sampling, ...value };
-    else if (field === 'resize' && flow === 'similarity' && value && typeof value.width === 'string' && typeof value.height === 'string') state.resize = { width: value.width, height: value.height };
+    else if (['resize', 'referenceResize'].includes(field) && flow === 'similarity' && value && typeof value.width === 'string' && typeof value.height === 'string') state[field] = { width: value.width, height: value.height, mode: value.mode === 'percent' ? 'percent' : 'pixels', percent: typeof value.percent === 'string' ? value.percent : '' };
     else if (field === 'agentWorkflow' && value && Array.isArray(value.agents) && Array.isArray(value.edges) && [1, 2].includes(value.maxParallel)) state.agentWorkflow = { ...state.agentWorkflow, ...value };
     else if (field === 'workflow' && value && typeof value.enabled === 'boolean' && [1, 2].includes(value.maxParallel) && Array.isArray(value.edges)) {
       state.workflow = { enabled: value.enabled, maxParallel: value.maxParallel,

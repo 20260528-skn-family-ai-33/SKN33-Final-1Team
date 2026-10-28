@@ -17,6 +17,10 @@ def config(count=2, resize=None):
 def test_similarity_validates_counts_resize_and_exact_model_pair():
     remote.validate_config(config(100, {'width': 100, 'height': 50}))
     remote.validate_config(config(1))
+    for percent in (0.01, 12.5, 50, 100): remote.validate_config(config(resize={'percent': percent}))
+    for percent in (0, -1, 100.1, True, '50', None, float('nan'), float('inf'), .001):
+        with pytest.raises(ValueError): remote.validate_config(config(resize={'percent': percent}))
+    with pytest.raises(ValueError): remote.validate_config(config(resize={'percent': 50, 'width': 100, 'height': 50}))
     for count in (0, 101):
         with pytest.raises(ValueError): remote.validate_config(config(count))
     for resize in ({'width': 100}, {'width': 0, 'height': 50}, {'width': True, 'height': 50}, {'width': 10.5, 'height': 50}, {'width': 8193, 'height': 50}):
@@ -30,7 +34,7 @@ def test_similarity_validates_counts_resize_and_exact_model_pair():
 
 
 @pytest.mark.parametrize('similarity_model', remote.SIGLIP2_MODELS)
-@pytest.mark.parametrize('resize,expected', [(None, (200, 100)), ({'width': 100, 'height': 50}, (100, 50))])
+@pytest.mark.parametrize('resize,expected', [(None, (200, 100)), ({'width': 100, 'height': 50}, (100, 50)), ({'percent': 50}, (100, 50)), ({'percent': 12.5}, (25, 13)), ({'percent': 0.01}, (1, 1)), ({'percent': 100}, (200, 100))])
 def test_both_models_receive_actual_resized_base_and_keep_candidate_order(tmp_path, monkeypatch, resize, expected, similarity_model):
     base = tmp_path / 'base.png'; Image.new('RGB', (200, 100), 'red').save(base); original = base.read_bytes()
     candidates = []
@@ -76,3 +80,54 @@ def test_upsize_fails_before_loading_any_model(tmp_path, monkeypatch):
     job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
     assert job['status'] == 'failed' and '80 × 40' in job['error']
     assert all(stage['status'] == 'skipped' for stage in job['stages'])
+
+
+@pytest.mark.parametrize('resize,expected', [({'width': 20, 'height': 10}, [(20, 10), (20, 10)]), ({'percent': 50}, [(30, 20), (40, 35)]), ({'percent': 100}, [(60, 40), (80, 70)])])
+def test_candidates_are_resized_once_for_both_models_and_previews(tmp_path, monkeypatch, resize, expected):
+    base = tmp_path / 'base.png'; Image.new('RGB', (200, 100), 'red').save(base)
+    candidates = []
+    for i, size in enumerate([(60, 40), (80, 70)]):
+        path = tmp_path / f'candidate-{i}.png'; Image.new('RGB', size, 'blue').save(path); candidates.append(path)
+    originals = [path.read_bytes() for path in candidates]; calls = []
+    class Models:
+        def load(self, stage): pass
+    monkeypatch.setattr(remote, 'Models', Models)
+    monkeypatch.setattr(remote, 'process_start', lambda _pid: 'fixture')
+    def inspect(kind, images):
+        index = int(images[1].stem.rsplit('-', 1)[1])
+        assert images[1] not in candidates and images[1].suffix == '.png'
+        assert remote.image_of(images[0]).size == (50, 25)
+        assert remote.image_of(images[1]).size == expected[index]
+        calls.append((kind, index, images[1])); return index
+    def similarity(_models, images):
+        inspect('cosine', images); return {'image_cosine_similarity': 0.9}
+    def compare(_models, _stage, *, images, **_):
+        index = inspect('xfeat', images); return {'image_sizes': [[50, 25], list(expected[index])], 'matches': 0}
+    monkeypatch.setattr(remote, 'image_similarity', similarity)
+    monkeypatch.setitem(remote.MODEL_HANDLERS, remote.XFEAT, compare)
+    state = config(resize={'percent': 25}); state['reference_resize'] = resize
+    remote.execute_run(state, {'media': base, 'documents': [], 'references': candidates}, tmp_path, lambda *_: None)
+    job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
+    assert job['status'] == 'completed', job.get('error')
+    assert [(kind, index) for kind, index, _ in calls] == [('cosine', 0), ('cosine', 1), ('xfeat', 0), ('xfeat', 1)]
+    assert [path for _, _, path in calls[:2]] == [path for _, _, path in calls[2:]]
+    assert [path.read_bytes() for path in candidates] == originals
+    for i, reference in enumerate(job['references']):
+        assert (reference['width'], reference['height']) == expected[i]
+        assert (reference['original_width'], reference['original_height']) == ((60, 40), (80, 70))[i]
+        assert Image.open(tmp_path / reference['preview']).size == expected[i]
+
+
+def test_candidate_resize_validation_and_upsize_fail_before_model_load(tmp_path, monkeypatch):
+    state = config()
+    for invalid in ({'percent': 0}, {'percent': True}, {'percent': float('nan')}, {'percent': 101}, {'width': 10}, {'width': 0, 'height': 10}, {'percent': 50, 'width': 10, 'height': 10}):
+        state['reference_resize'] = invalid
+        with pytest.raises(ValueError, match='대조 이미지'): remote.validate_config(state)
+    large = tmp_path / 'large.png'; Image.new('RGB', (80, 40)).save(large)
+    small = tmp_path / 'small.png'; Image.new('RGB', (20, 10)).save(small)
+    state['reference_resize'] = {'width': 50, 'height': 20}
+    monkeypatch.setattr(remote, 'process_start', lambda _pid: 'fixture')
+    monkeypatch.setattr(remote, 'Models', lambda: pytest.fail('Upsize must fail before any model is loaded'))
+    remote.execute_run(state, {'media': large, 'documents': [], 'references': [large, small]}, tmp_path, lambda *_: None)
+    job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
+    assert job['status'] == 'failed' and '대조 이미지 2 원본 20 × 10' in job['error']

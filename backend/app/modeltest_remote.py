@@ -283,9 +283,12 @@ def validate_config(config):
             raise ValueError('유사도 테스트는 기준 이미지 1장과 대조 이미지 1~100장으로 실행합니다.')
         if ids != ['logo_similarity', 'logo_compare'] or stages[1].get('model_id') != XFEAT or any(set(stage) - {'id', 'name', 'model_id', 'revision', 'registered_model', 'model_fingerprint', 'model_profile'} for stage in stages):
             raise ValueError('유사도 테스트는 이미지 유사도와 XFeat 두 단계로 실행해야 합니다.')
-        resize = config.get('resize')
-        if resize is not None and (not isinstance(resize, dict) or set(resize) != {'width', 'height'} or any(type(value) is not int or not 1 <= value <= 8192 for value in resize.values())):
-            raise ValueError('다운사이징 가로·세로는 1~8,192px 정수여야 합니다.')
+        for field, label in (('resize', '기준 이미지'), ('reference_resize', '대조 이미지')):
+            resize = config.get(field)
+            if resize is not None:
+                pixels = isinstance(resize, dict) and set(resize) == {'width', 'height'} and all(type(value) is int and 1 <= value <= 8192 for value in resize.values())
+                percent = isinstance(resize, dict) and set(resize) == {'percent'} and type(resize['percent']) in (int, float) and math.isfinite(resize['percent']) and 0.01 <= resize['percent'] <= 100
+                if not (pixels or percent): raise ValueError(f'{label} 다운사이징은 가로·세로 1~8,192px 정수 또는 비율 0.01~100%로 입력해 주세요.')
         return config
     kinds = [stage.get('kind', stage['id']) for stage in stages]
     if config['flow'] == 'image' and (not files['documents'] or files['references'] or any(name.startswith('logo_') or name == 'candidate_filter' for name in kinds)):
@@ -315,7 +318,7 @@ def runtime_health():
         import torch
         cuda = torch.cuda.is_available()
     return {'contract': CONTRACT, 'ready': not missing and cuda, 'stages': list(STAGES),
-            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'similarity_test': 1, 'candidate_filter_scopes': list(FILTER_SCOPES), 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
+            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'similarity_test': 1, 'similarity_resize_percent': True, 'similarity_reference_resize': True, 'candidate_filter_scopes': list(FILTER_SCOPES), 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
             'models': [{'id': model_id, 'stages': list(stages)} for model_id, stages in MODEL_STAGES.items()],
             'setup_required': bool(missing), 'can_prepare': 'torch' not in missing and cuda, 'missing': missing, 'cuda': cuda,
             'detail': '준비 완료' if not missing and cuda else 'Pod 패키지 준비가 필요합니다.' if missing else 'Pod에서 CUDA GPU를 확인하지 못했습니다.'}
@@ -389,16 +392,16 @@ def image_of(path):
         return ImageOps.exif_transpose(source).convert('RGB')
 
 
-def similarity_base(path, resize, root):
+def similarity_image(path, resize, target, label):
     from PIL import Image
     image = image_of(path); original = image.size
     if resize is not None:
-        size = (resize['width'], resize['height'])
+        size = tuple(max(1, math.floor(length * resize['percent'] / 100 + 0.5)) for length in original) if 'percent' in resize else (resize['width'], resize['height'])
         if any(target > source for target, source in zip(size, original)):
-            raise ValueError(f'다운사이징 크기는 기준 이미지 원본 {original[0]} × {original[1]}px 이하여야 합니다.')
+            raise ValueError(f'다운사이징 크기는 {label} 원본 {original[0]} × {original[1]}px 이하여야 합니다.')
         image = image.resize(size, Image.Resampling.LANCZOS)
     # Keep the measurement input lossless; the JPEG below is only a preview.
-    target = root / 'similarity-base.png'; image.save(target)
+    image.save(target)
     return target, {'original_width': original[0], 'original_height': original[1], 'width': image.width, 'height': image.height,
                     'resized': image.size != original, 'resize_filter': 'Lanczos' if resize is not None else None}
 
@@ -860,14 +863,18 @@ def execute_run(config, paths, root, emit):
                 if preview_budget >= 0: emit('preview', {'name': name, **value})
         except (OSError, ValueError): pass  # A preview failure must not stop inference; on-demand retrieval remains available.
     try:
-        similarity_path = None; similarity_meta = {}
+        similarity_path = None; similarity_meta = {}; similarity_references = []
         if config['flow'] == 'similarity':
-            similarity_path, similarity_meta = similarity_base(paths['media'], config.get('resize'), root)
+            similarity_path, similarity_meta = similarity_image(paths['media'], config.get('resize'), root / 'similarity-base.png', '기준 이미지')
         job['references'] = []
         for index, path in enumerate(paths['references']):
+            reference_meta = {}
+            if config['flow'] == 'similarity' and config.get('reference_resize') is not None:
+                path, reference_meta = similarity_image(path, config['reference_resize'], root / f'similarity-reference-{index}.png', f'대조 이미지 {index + 1}')
+            similarity_references.append(path)
             image = image_of(path); target = root / f'preview-reference-{index}.jpg'
             width, height = image.size; image.thumbnail((1280, 1280)); image.save(target, quality=90)
-            job['references'].append({'index': index, 'preview': target.name, 'width': width, 'height': height})
+            job['references'].append({'index': index, 'preview': target.name, 'width': width, 'height': height, **reference_meta})
             prefetch(target.name)
         if config['flow'] in ('image', 'similarity') and config.get('purpose') != 'prepare':
             image = image_of(similarity_path or paths['media']); target = root / 'preview-poster.jpg'
@@ -891,7 +898,7 @@ def execute_run(config, paths, root, emit):
                 if config['flow'] == 'similarity':
                     measure(stage, 'load', models.load, stage)
                     current['output'] = {'items': rows}
-                    for index, reference in enumerate(paths['references']):
+                    for index, reference in enumerate(similarity_references):
                         current['detail'] = f'대조 이미지 {index + 1} / {len(paths["references"])} 측정 중'; publish()
                         result = measure(stage, 'inference', image_similarity, models, [similarity_path, reference]) if name == 'logo_similarity' else measure(stage, 'inference', run_model, models, stage, images=[similarity_path, reference])
                         rows.append({'reference_index': index, **result}); publish()

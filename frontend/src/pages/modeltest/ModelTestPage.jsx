@@ -19,6 +19,7 @@ import ModeltestPrompt from './ModeltestPrompt.jsx';
 import ModeltestHelp from './ModeltestHelp.jsx';
 import ModeltestConfirm from './ModeltestConfirm.jsx';
 import FrameSampling from './FrameSampling.jsx';
+import ImageResize from './ImageResize.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration, latestCompletedStage } from './modeltestResults.js';
@@ -526,11 +527,8 @@ export default function ModelTestPage() {
                 : <video ref={videoRef} src={preview} controls preload="metadata" onError={() => setPreviewError('브라우저에서 재생할 수 없는 코덱입니다. 영상 처리는 Pod의 지원 여부에 따릅니다.')} />}
                 {previewError && <p className="mt-hint">{previewError}</p>}</div>}
               {flow === 'similarity' && <>
-                <fieldset className="mt-similarity-resize" disabled={locked || !state.media}><legend>기준 이미지 다운사이징</legend>
-                  <div className="mt-sampling-fields"><label>가로 (px)<input aria-label="기준 이미지 가로" type="number" min={1} max={8192} step={1} placeholder="원본" value={state.resize.width} onChange={event => update({ resize: { ...state.resize, width: event.target.value } })} /></label>
-                  <span aria-hidden="true">×</span><label>세로 (px)<input aria-label="기준 이미지 세로" type="number" min={1} max={8192} step={1} placeholder="원본" value={state.resize.height} onChange={event => update({ resize: { ...state.resize, height: event.target.value } })} /></label>
-                  <button type="button" className="btn secondary small" onClick={() => update({ resize: { width: '', height: '' } })}>원본 크기 사용</button></div>
-                </fieldset><p className="mt-hint">비워 두면 원본 크기를 사용합니다. 입력하면 실행 시 기준 이미지를 해당 크기로 실제 축소합니다. 원본보다 큰 크기는 사용할 수 없으며 가로·세로 비율은 입력값을 따릅니다.</p>
+                <ImageResize label="기준 이미지" value={state.resize} onChange={resize => update({ resize })} disabled={locked || !state.media} />
+                <ImageResize label="대조 이미지" value={state.referenceResize} onChange={referenceResize => update({ referenceResize })} disabled={locked} />
                 <Attachments kind="reference" title="대조 이미지" multiple required maxFiles={100} thumbnails files={state.references} onChange={references => update({ references })} disabled={locked} health={health} />
               </>}
               {flow !== 'similarity' && <Attachments kind="document" title="발주서·계약서" multiple required={flow === 'image'} files={state.documents}

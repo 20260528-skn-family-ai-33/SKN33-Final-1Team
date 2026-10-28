@@ -33,6 +33,41 @@ test('image similarity sends one base and up to one hundred candidates with expl
   state.references = []; assert.ok(formErrors('similarity', state).some(error => error.includes('1~100')));
 });
 
+test('percentage resize accepts decimals, excludes inactive pixel fields and checks runner support', () => {
+  const state = initialFlow('similarity'); state.media = new File(['base'], 'base.png'); state.references = [new File(['candidate'], 'candidate.png')];
+  state.resize = { mode: 'percent', percent: '12.5', width: '100', height: '50' };
+  assert.deepEqual(formErrors('similarity', state), []);
+  assert.deepEqual(makeManifest('similarity', state).resize, { percent: 12.5 });
+  for (const percent of ['0', '-1', '100.1', 'NaN', 'Infinity', '0.001']) {
+    state.resize.percent = percent; assert.ok(formErrors('similarity', state).some(error => error.includes('다운사이징 비율')));
+  }
+  state.resize.percent = '50';
+  const capable = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1 };
+  assert.ok(formErrors('similarity', state, capable).some(error => error.includes('최신 백엔드')));
+  assert.deepEqual(formErrors('similarity', state, { ...capable, similarity_resize_percent: true }), []);
+  state.resize.percent = ''; assert.equal(makeManifest('similarity', state).resize, null);
+  state.resize.mode = 'pixels'; assert.deepEqual(makeManifest('similarity', state).resize, { width: 100, height: 50 });
+});
+
+test('candidate resize is independent, validated and requires explicit runner support', () => {
+  const state = initialFlow('similarity'); state.media = new File(['base'], 'base.png'); state.references = [new File(['candidate'], 'candidate.png')];
+  state.resize = { mode: 'percent', percent: '50', width: '', height: '' };
+  assert.equal(makeManifest('similarity', state).reference_resize, null);
+  state.referenceResize = { mode: 'pixels', width: '20', height: '10', percent: '12.5' };
+  assert.deepEqual(formErrors('similarity', state), []);
+  assert.deepEqual(makeManifest('similarity', state).reference_resize, { width: 20, height: 10 });
+  assert.deepEqual(makeManifest('similarity', state).resize, { percent: 50 });
+  state.referenceResize.mode = 'percent';
+  assert.deepEqual(makeManifest('similarity', state).reference_resize, { percent: 12.5 });
+  const health = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1, similarity_resize_percent: true };
+  assert.ok(formErrors('similarity', state, health).some(error => error.includes('대조 이미지 다운사이징을 지원')));
+  assert.deepEqual(formErrors('similarity', state, { ...health, similarity_reference_resize: true }), []);
+  for (const bad of [{ mode: 'percent', percent: '0' }, { mode: 'percent', percent: '101' }, { width: '20', height: '' }, { width: '-1', height: '10' }]) {
+    state.referenceResize = bad; assert.ok(formErrors('similarity', state).some(error => error.includes('대조 이미지 다운사이징')));
+  }
+  delete state.referenceResize; assert.equal(makeManifest('similarity', state).reference_resize, null);
+});
+
 test('teammate models and explicit candidate scopes reach the manifest without replacing defaults', () => {
   const detection = parseStageModel('logo_extract', { model: 'https://huggingface.co/google/owlv2-base-patch16-ensemble' });
   assert.equal(detection.model_id, 'google/owlv2-base-patch16-ensemble');

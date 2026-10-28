@@ -59,7 +59,7 @@ export function stageTitle(stage) { return stage?.name || STAGES.find(item => it
 export function initialFlow(flow) {
   return {
     media: null, documents: [], references: [], requirements: '', requirementsOpen: false,
-    ...(flow === 'similarity' ? { resize: { width: '', height: '' } } : {}),
+    ...(flow === 'similarity' ? { resize: { mode: 'pixels', width: '', height: '', percent: '' }, referenceResize: { mode: 'pixels', width: '', height: '', percent: '' } } : {}),
     sampling: { unit: 'frames', interval: '30', max_frames: '120' },
     workflow: { enabled: false, edges: [], maxParallel: 1, positions: {} },
     agentWorkflow: { enabled: false, agents: [], edges: [], positions: {}, maxParallel: 1 },
@@ -260,8 +260,14 @@ export function formErrors(flow, state, health) {
   if (flow === 'similarity') {
     if (!state.references.length || state.references.length > 100) errors.push('대조 이미지는 1~100장 첨부해 주세요.');
     try { parseStageModel('logo_similarity', state.stages.logo_similarity, health); } catch (error) { errors.push(error.message); }
-    const { width, height } = state.resize;
-    if ((width !== '' || height !== '') && ![width, height].every(value => value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 8192)) errors.push('다운사이징 가로·세로를 모두 1~8,192px 정수로 입력하거나 둘 다 비워 주세요.');
+    for (const [field, label] of [['resize', '기준 이미지'], ['referenceResize', '대조 이미지']]) {
+      const { width = '', height = '', mode, percent = '' } = state[field] || {};
+      if (mode === 'percent') {
+        if (percent !== '' && (!Number.isFinite(Number(percent)) || Number(percent) < 0.01 || Number(percent) > 100)) errors.push(`${label} 다운사이징 비율은 0.01~100%로 입력하거나 비워 주세요.`);
+        if (field === 'resize' && percent !== '' && health && health.similarity_resize_percent !== true) errors.push('비율 다운사이징을 지원하는 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
+      } else if ((width !== '' || height !== '') && ![width, height].every(value => value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 8192)) errors.push(`${label} 다운사이징 가로·세로를 모두 1~8,192px 정수로 입력하거나 둘 다 비워 주세요.`);
+      if (field === 'referenceResize' && resizeConfig(state[field]) !== null && health && health.similarity_reference_resize !== true) errors.push('대조 이미지 다운사이징을 지원하는 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
+    }
     if (health && (health.similarity_test !== 1 || SIMILARITY_STAGES.some(stage => !health.stages.includes(stage.id)))) errors.push('현재 연결은 이미지 유사도 테스트를 지원하지 않습니다. 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
     return errors;
   }
@@ -293,11 +299,14 @@ export function formErrors(flow, state, health) {
 }
 
 function fileInfo(file) { return { name: file.name, size: file.size, type: file.type }; }
+function resizeConfig({ width = '', height = '', mode, percent = '' } = {}) {
+  return mode === 'percent' ? (percent === '' ? null : { percent: Number(percent) }) : width === '' && height === '' ? null : { width: Number(width), height: Number(height) };
+}
 export function makeManifest(flow, state, health) {
   if (flow === 'similarity') return {
     contract: CONTRACT, flow,
     stages: SIMILARITY_STAGES.map(stage => ({ id: stage.id, name: stage.title, ...(stage.id === 'logo_similarity' ? parseStageModel(stage.id, state.stages[stage.id], health) : { model_id: stage.model }) })),
-    resize: state.resize.width === '' && state.resize.height === '' ? null : { width: Number(state.resize.width), height: Number(state.resize.height) },
+    resize: resizeConfig(state.resize), reference_resize: resizeConfig(state.referenceResize),
     files: { media: fileInfo(state.media), documents: [], references: state.references.map(fileInfo) },
   };
   const execution = state.agentWorkflow?.enabled ? compileAgents(flow, state, health) : {
