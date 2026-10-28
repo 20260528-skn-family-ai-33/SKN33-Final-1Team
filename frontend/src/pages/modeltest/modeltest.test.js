@@ -275,3 +275,15 @@ test('local SSH failures keep actionable messages without silently using an HTTP
   t.mock.method(globalThis, 'fetch', async () => Response.json({ detail: 'SSH 키 인증에 실패했습니다.' }, { status: 400 }));
   await assert.rejects(sshRequest('/api/modeltest/ssh/connections'), error => error.status === 400 && error.message.includes('키 인증'));
 });
+
+import { readSSH, writeSSH } from './modeltestConnection.js';
+
+test('SSH preferences retain only the command and a local session endpoint', () => {
+  let value; const storage = { getItem: () => value, setItem: (_, next) => { value = next; } };
+  writeSSH({ command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture', token: 'secret', health: { ready: true } }, storage);
+  assert.deepEqual(readSSH(storage), { command: 'ssh root@203.0.113.10 -i ~/.ssh/id_ed25519', endpoint: '/api/modeltest/ssh/connections/fixture' });
+  assert.equal(value.includes('secret'), false); assert.equal(value.includes('ready'), false);
+  writeSSH({ command: '', endpoint: 'https://example.com/health' }, storage);
+  assert.deepEqual(readSSH(storage), { command: '', endpoint: '' });
+  assert.deepEqual(readSSH({ getItem: () => { throw new Error('blocked'); } }), { command: '', endpoint: '' });
+});

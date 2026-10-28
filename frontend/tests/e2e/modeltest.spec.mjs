@@ -89,6 +89,10 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10');
   await page.getByRole('button', { name: '연결 확인', exact: true }).click();
   await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  await page.reload();
+  await page.getByText('이전 로컬 세션을 복원했습니다.', { exact: false }).waitFor();
+  await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  assert.equal(await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).inputValue(), 'ssh root@203.0.113.10');
   await page.locator('.mt-connection-wrap>summary').click();
   assert.equal(await page.locator('.mt-connection-wrap').getAttribute('open'), null);
   await page.getByRole('button', { name: '검수 실행', exact: true }).click();
@@ -96,7 +100,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.reload();
   await page.getByRole('button', { name: '검수 강제 중단', exact: true }).waitFor();
   assert.equal(submissions, 1, 'Reload must query, never resubmit');
-  assert.equal(await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).inputValue(), '');
+  assert.equal(await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).inputValue(), 'ssh root@203.0.113.10');
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: '원본 로고와 대조' }).click();
   await page.getByRole('navigation', { name: '분석 프레임 선택' }).getByRole('button', { name: '30 프레임 · 1.25초', exact: true }).click();
   await page.getByRole('img', { name: '추출 로고 1', exact: true }).waitFor();

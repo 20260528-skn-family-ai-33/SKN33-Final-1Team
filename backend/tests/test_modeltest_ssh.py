@@ -285,6 +285,7 @@ def test_bridge_rejects_upload_metadata_mismatch(local_client):
 def test_environment_preparation_is_explicit_and_status_is_queryable(local_client):
     client, calls = local_client; headers = {'X-Modeltest-Local': '1'}
     identifier = client.post('/api/modeltest/ssh/connections', json={'command': 'ssh root@203.0.113.10'}, headers=headers).json()['connection_id']
+    assert client.get(f'/api/modeltest/ssh/connections/{identifier}/health', headers=headers).json()['ready']
     assert calls == ['probe']
     assert client.post(f'/api/modeltest/ssh/connections/{identifier}/prepare', headers=headers).status_code == 202
     for _ in range(100):
@@ -343,6 +344,18 @@ def test_probe_keeps_repair_available_for_broken_venv(tmp_path, monkeypatch):
     broken = {'ready': False, 'can_prepare': False, 'missing': ['torch'], 'cuda': False}
     monkeypatch.setattr(remote, 'setup_command', lambda *args, **kwargs: json.dumps(broken))
     assert remote.probe_runtime(tmp_path, '', {'can_prepare': True})['can_prepare'] is True
+
+
+def test_probe_streams_large_runner_source_without_large_arguments(tmp_path, monkeypatch):
+    python = tmp_path / 'venv/bin/python'; python.parent.mkdir(parents=True); python.touch()
+    source = '# ' + 'x' * 256000 + '\nMODULES = []\ndef runtime_health(): return {"ready": True, "can_prepare": False, "detail": "정상"}\n'
+    real_run = subprocess.run
+    def run(args, **kwargs):
+        assert max(map(len, args)) < 1024 and kwargs['input'] == source
+        return real_run([sys.executable, *args[1:]], **kwargs)
+    monkeypatch.setattr(remote.subprocess, 'run', run)
+    result = remote.probe_runtime(tmp_path, source, {'can_prepare': True})
+    assert result == {'ready': True, 'can_prepare': True, 'detail': '정상'}
 
 
 def test_remote_probe_and_prepare_report_repairable_failures(monkeypatch):

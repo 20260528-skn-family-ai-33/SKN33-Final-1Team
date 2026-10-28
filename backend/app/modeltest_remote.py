@@ -238,10 +238,10 @@ def setup_error(stage, detail):
     return f'{stage} 실패\n{text[-6000:].strip()}'
 
 
-def setup_command(stage, args, timeout=180):
+def setup_command(stage, args, timeout=180, *, input=None):
     try:
         result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                text=True, errors='replace', timeout=timeout)
+                                text=True, encoding='utf-8', errors='replace', timeout=timeout, input=input)
     except subprocess.TimeoutExpired as error:
         output = error.output or b''
         if isinstance(output, bytes): output = output.decode('utf-8', errors='replace')
@@ -277,11 +277,12 @@ def probe_runtime(root, source, base_health):
     python = root / 'venv/bin/python'
     if not python.exists():
         return {**base_health, 'ready': False, 'setup_required': True, 'detail': '전용 실행환경을 준비해 주세요. 기존 PyTorch는 재사용합니다.'}
-    code = ('import json; exec(' + repr(source) + '); health=runtime_health()\n'
+    code = ('import sys,json; exec(sys.stdin.buffer.read().decode("utf-8")); health=runtime_health()\n'
             'if health["ready"]:\n'
             '    for name in MODULES: __import__(name)\n'
             'print(json.dumps(health))')
-    output = setup_command('실행환경 확인', [str(python), '-c', code], timeout=60)
+    # Bundled adapters exceed Linux's per-argument limit; stream source instead of putting it in argv.
+    output = setup_command('실행환경 확인', [str(python), '-c', code], timeout=60, input=source)
     health = json.loads(output.strip().splitlines()[-1])
     # A broken dedicated environment must not hide the repair action when the base CUDA runtime works.
     health['can_prepare'] = base_health['can_prepare']

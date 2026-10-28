@@ -8,6 +8,7 @@ import {
 } from './modeltest.js';
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
+import { readSSH, writeSSH } from './modeltestConnection.js';
 import ModeltestResults from './ModeltestResults.jsx';
 import ModeltestTimings, { ModelTimingTable } from './ModeltestTimings.jsx';
 import ModeltestWorkflow from './ModeltestWorkflow.jsx';
@@ -117,7 +118,9 @@ export default function ModelTestPage() {
   const { flow, setFlow, flows, setFlows } = draft;
   const state = flows[flow]; const update = patch => setFlows(current => ({ ...current, [flow]: { ...current[flow], ...patch } }));
   const [endpoint, setEndpoint] = useState(''); const [token, setToken] = useState('');
-  const [method, setMethod] = useState('ssh'); const [sshCommand, setSshCommand] = useState('');
+  const [savedSSH] = useState(readSSH);
+  const [method, setMethod] = useState('ssh'); const [sshCommand, setSshCommand] = useState(savedSSH.command);
+  const [connectionRestored, setConnectionRestored] = useState(false);
   const [connection, setConnection] = useState(null); const [connecting, setConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState('');
   const [connectionOpen, setConnectionOpen] = useState(true); const [restoring, setRestoring] = useState(false);
@@ -149,7 +152,9 @@ export default function ModelTestPage() {
 
   useEffect(() => () => requestRef.current?.abort(), []);
   useEffect(() => {
-    if (draft.ready && draft.savedRun) restoreRun(draft.savedRun);
+    if (!draft.ready) return;
+    if (draft.savedRun && (!savedSSH.endpoint || draft.savedRun.endpoint === savedSSH.endpoint)) restoreRun(draft.savedRun);
+    else if (savedSSH.endpoint) restoreSSH();
   }, [draft.ready]);
   useEffect(() => { setPreviewError(''); }, [state.media]);
   useEffect(() => {
@@ -216,15 +221,37 @@ export default function ModelTestPage() {
     } finally { requestRef.current = null; setRestoring(false); }
   }
 
+  function rememberSSH(value) {
+    try { writeSSH(value); }
+    catch { setConnectionError('브라우저 제한으로 SSH 명령을 저장하지 못했습니다. 새로고침 후 다시 입력해 주세요.'); }
+  }
+
+  async function restoreSSH() {
+    const controller = new AbortController(); requestRef.current = controller; setConnecting(true);
+    try {
+      const context = { transport: 'ssh', endpoint: savedSSH.endpoint };
+      const nextHealth = validateHealth(await modeltestRequest(context, '/health', { signal: controller.signal }));
+      if (!controller.signal.aborted) { setConnection({ ...context, health: nextHealth }); setConnectionRestored(true); }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        rememberSSH({ command: sshCommand });
+        setConnectionError(`이전 연결 세션을 복원하지 못했습니다. 저장된 명령으로 연결 확인을 눌러 주세요. ${error.message}`);
+      }
+    } finally { requestRef.current = null; setConnecting(false); }
+  }
+
   async function connect() {
     if (requestRef.current || locked) return;
     const controller = new AbortController(); requestRef.current = controller;
-    setConnecting(true); setConnection(null); setConnectionError('');
+    setConnecting(true); setConnection(null); setConnectionRestored(false); setConnectionError('');
     try {
       if (method === 'ssh') {
         const result = validateHealth(await sshRequest('/api/modeltest/ssh/connections', { method: 'POST', body: JSON.stringify({ command: sshCommand }), headers: { 'Content-Type': 'application/json' }, signal: controller.signal, timeout: 90000 }));
         if (typeof result.connection_id !== 'string' || !/^[\w-]{1,128}$/.test(result.connection_id)) throw new Error('SSH 연결 ID를 확인하지 못했습니다.');
-        if (!controller.signal.aborted) setConnection({ transport: 'ssh', endpoint: `/api/modeltest/ssh/connections/${result.connection_id}`, health: result });
+        if (!controller.signal.aborted) {
+          const context = { transport: 'ssh', endpoint: `/api/modeltest/ssh/connections/${result.connection_id}`, health: result };
+          setConnection(context); rememberSSH({ command: sshCommand, endpoint: context.endpoint });
+        }
       } else {
         const base = parseEndpoint(endpoint);
         const result = validateHealth(await podRequest(base, '/health', { token, signal: controller.signal }));
@@ -306,7 +333,7 @@ export default function ModelTestPage() {
           <div className="mt-method-buttons" aria-label="RunPod 연결 방식">{[['ssh', 'SSH 명령'], ['http', 'HTTP API']].map(([id, label]) => <button type="button" key={id} disabled={locked || connecting} aria-pressed={method === id}
             onClick={() => { setMethod(id); setConnection(null); setConnectionError(''); }}>{label}</button>)}</div></div>
         {method === 'ssh' ? <div className="mt-ssh-command"><label htmlFor="mt-ssh-command">RunPod Connect의 SSH 명령</label><input id="mt-ssh-command" value={sshCommand} disabled={locked || connecting} autoComplete="off" spellCheck={false} maxLength={2048}
-          placeholder={'ssh root@IP주소 -p 포트 -i ~/.ssh/id_ed25519'} onChange={event => { setSshCommand(event.target.value); setConnection(null); setConnectionError(''); }} /></div>
+          placeholder={'ssh root@IP주소 -p 포트 -i ~/.ssh/id_ed25519'} onChange={event => { setSshCommand(event.target.value); setConnection(null); setConnectionError(''); rememberSSH({ command: event.target.value }); }} /></div>
           : <><div className="mt-endpoint"><label htmlFor="mt-endpoint">Pod HTTP 서비스 주소</label><input id="mt-endpoint" type="url" value={endpoint} disabled={locked || connecting}
           placeholder="https://pod-id-8000.proxy.runpod.net" spellCheck={false} autoComplete="off"
           onChange={event => { setEndpoint(event.target.value); setConnection(null); setConnectionError(''); }} /></div>
@@ -315,6 +342,7 @@ export default function ModelTestPage() {
         <button type="button" className="btn secondary" disabled={locked || connecting || !(method === 'ssh' ? sshCommand.trim() : endpoint.trim())} onClick={connect}>{connecting ? '연결 확인 중…' : '연결 확인'}</button>
         <p className="mt-connection-hint">{method === 'ssh' ? 'SSH over exposed TCP와 ssh.runpod.io 기본 SSH를 구분합니다. 개인키는 노트북에 두고 경로만 입력하세요. 공개 HTTP 포트는 필요하지 않습니다.' : `${CONTRACT} API의 준비 상태를 확인합니다. 토큰은 이 화면의 메모리에만 보관합니다.`}</p>
         {connectionError && <p className="mt-error mt-connection-hint" role="alert">{connectionError}</p>}
+        {method === 'ssh' && <p className="mt-connection-hint">SSH 명령과 연결 설정은 이 브라우저에 저장됩니다. 개인키 내용은 저장하지 않습니다.{connectionRestored && ' 이전 로컬 세션을 복원했습니다. 현재 Pod 상태를 갱신하려면 연결 확인을 누르세요.'}</p>}
         {method === 'ssh' && health && <div className="mt-ssh-readiness"><p role="status">{preparing ? 'Pod의 전용 가상환경에 패키지를 준비하고 있습니다. 잠시 기다려 주세요.' : health.detail}</p>
           {!health.ready && !preparing && health.can_prepare && <button type="button" className="btn secondary small" disabled={connecting} onClick={preparePod}>Pod 실행환경 준비</button>}
           <small>{health.cuda === false ? 'CUDA GPU와 PyTorch가 포함된 Pod가 필요합니다. ' : ''}환경 준비는 Pod의 전용 가상환경에 패키지를 설치합니다. 모델 가중치는 검수 실행 시 다운로드합니다.</small></div>}
