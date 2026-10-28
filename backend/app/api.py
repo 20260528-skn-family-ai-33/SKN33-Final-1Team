@@ -528,6 +528,9 @@ def create_app(
     if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
         auth_router = local_auth_router()
         application.include_router(auth_router)
+    if not readonly and os.getenv('APP_ENV', 'development') in ('development', 'test'):
+        from .modeltest_ssh import modeltest_ssh_router
+        application.include_router(modeltest_ssh_router(PROJECT_ROOT / '.runtime' / 'modeltest-ssh'))
     allowed_origins = [
         value.strip()
         for value in os.getenv(
