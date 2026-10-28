@@ -3,6 +3,7 @@ import { modeltestRequest } from './modeltest.js';
 import { boxStyle, decisionLabel, frameLabel, previewURL, preferredReference } from './modeltestResults.js';
 import { EXTRA_STAGES } from './modeltestCatalog.js';
 import ModeltestHelp from './ModeltestHelp.jsx';
+import { MatchedImages, CandidateAudit, MatchingSettings } from './ModeltestMatches.jsx';
 
 const PAIRS = ['logo_compare', 'logo_similarity', 'candidate_filter', 'phash', 'orb', 'sift', 'disk_lightglue'];
 function Metrics({ row }) {
@@ -89,7 +90,7 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
     <div className="mt-logo-picker">{logos.map((item, index) => <button type="button" key={index} aria-pressed={selectedLogo === index} onClick={() => setSelectedLogo(index)}>로고 {index + 1}</button>)}</div>
     <p className="mt-hint">위치 (x1, y1) → (x2, y2): {logo?.bbox?.join(', ')} px · 분석 프레임 {frame.width || extracted?.width} × {frame.height || extracted?.height} px
       {Number.isFinite(logo?.score) && ` · 탐지 점수 ${logo.score.toFixed(3)}`}</p>
-    <div className="mt-logo-pair">
+    <MatchedImages match={match} sizes={[[logo?.bbox?.[2] - logo?.bbox?.[0], logo?.bbox?.[3] - logo?.bbox?.[1]], [reference?.width, reference?.height]]}>
       <figure><figcaption>추출 로고 {selectedLogo + 1}</figcaption><Preview context={context} jobId={job.id} name={logo?.preview} cache={cache} alt={`추출 로고 ${selectedLogo + 1}`} /></figure>
       <span className="mt-pair-arrow" aria-hidden="true">↔</span>
       <figure><figcaption><div className="mt-title-help"><label htmlFor="mt-result-reference">원본 로고</label>{PAIRS.includes(kind) && <ModeltestHelp label="원본 로고 선택"><p>원본 로고는 이미지 코사인 유사도가 가장 높은 대조 후보를 우선 표시합니다. 유사도 미계산 시 첫 대조 후보를 표시하며, 직접 바꾼 선택은 유지합니다.</p></ModeltestHelp>}</div>
@@ -99,7 +100,7 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
         </select></figcaption>
         {manifest.files.references.length ? <Preview context={context} jobId={job.id} name={reference?.preview} cache={cache} alt={`원본 로고 ${manifest.files.references[selectedReference]?.name || ''}`} /> : <p className="mt-empty">원본 로고를 첨부하지 않았습니다.</p>}
       </figure>
-    </div>
+    </MatchedImages>
     {match ? <div className="mt-match-result">
       <div className="mt-title-help"><h4>{kind === 'candidate_filter' ? '후보 필터 결과' : kind === 'logo_similarity' ? '로고 이미지 유사도' : stage.model_id === 'vismatch/xfeat' ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4><ModeltestHelp label="로고 대조 지표"><p>특징점 유사도는 매칭된 점들의 평균입니다.</p><p>이미지 코사인 값도 보려면 같은 로고 추출 결과에 임베딩 모델의 로고 이미지 유사도 단계를 연결하세요.</p></ModeltestHelp></div>
       <strong className={`mt-decision mt-decision-${['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{kind === 'candidate_filter' ? '필터 통과 후보' : kind === 'logo_similarity' ? '유사도 측정' : decisionLabel(match.decision)}</strong>
@@ -114,12 +115,46 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
       </dl>
       {typeof match.text === 'string' && <p className="mt-readable-output">{match.text}</p>}
       {typeof match.note === 'string' && <p className="mt-hint">{match.note}</p>}
+      <MatchingSettings match={match} />
     </div> : <p className="mt-hint">{compared ? Number.isFinite(compared.selected_count) ? '이 후보는 필터에서 제외되어 대조하지 않았습니다.' : '선택한 로고와 레퍼런스의 대조 결과가 없습니다.' : '결과를 확인할 로고 대조 단계를 선택해 주세요.'}</p>}
     {Number.isFinite(compared?.selected_count) && <p className="mt-hint">이 프레임의 전체 후보 {compared.candidate_count}개 중 {compared.selected_count}개 선택</p>}
+    <CandidateAudit row={compared} references={manifest.files.references} />
   </section>;
 }
 
+function SimilarityResults({ job, manifest, context, cache, selection, onSelect }) {
+  const cosine = new Map((job.stages.find(stage => stage.id === 'logo_similarity')?.output?.items || []).map(row => [row.reference_index, row]));
+  const matches = new Map((job.stages.find(stage => stage.id === 'logo_compare')?.output?.items || []).map(row => [row.reference_index, row]));
+  const index = Math.max(0, Math.min(selection.reference ?? 0, manifest.files.references.length - 1));
+  const match = matches.get(index); const score = cosine.get(index);
+  const reference = job.references?.find(item => item.index === index); const base = job.media;
+  const metric = value => Number.isFinite(value) ? value.toFixed(4) : '미계산';
+  return <div className="mt-similarity-results">
+    <div className="mt-title-help"><h3>이미지별 측정 결과 · {manifest.files.references.length}장</h3><ModeltestHelp label="이미지 유사도 결과"><p>표에서 이미지를 선택하면 기준 이미지와 나란히 볼 수 있습니다. 코사인 유사도와 특징점 유사도, 매칭 수, 기하 검증 통과율은 각각 다른 지표입니다.</p><p>기준 이미지 미리보기는 실제 측정에 사용한 이미지입니다. 표시용 미리보기는 최대 1,280px로 줄어들 수 있으며 측정 크기는 아래에 표시됩니다.</p></ModeltestHelp></div>
+    <div className="mt-timing-scroll mt-similarity-table" tabIndex={0} role="region" aria-label="이미지별 유사도 표"><table className="mt-timing-table"><thead><tr><th scope="col">대조 이미지</th><th scope="col">이미지 코사인</th><th scope="col">XFeat 특징점 유사도</th><th scope="col">매칭 / 기하 검증 통과</th><th scope="col">XFeat 판정</th></tr></thead>
+      <tbody>{manifest.files.references.map((file, i) => { const x = matches.get(i); return <tr key={i} className={i === index ? 'is-selected' : ''}><th scope="row"><button type="button" className="text-btn" aria-pressed={i === index} onClick={() => onSelect({ reference: i })}>{i + 1}. {file.name}</button></th><td>{metric(cosine.get(i)?.image_cosine_similarity)}</td><td>{metric(x?.descriptor_similarity)}</td><td>{x ? `${x.matches ?? 0} / ${x.inliers ?? 0}` : '미계산'}</td><td>{x ? decisionLabel(x.decision) : '미계산'}</td></tr>; })}</tbody>
+    </table></div>
+    <MatchedImages match={match} sizes={[[base?.width, base?.height], [reference?.width, reference?.height]]}>
+      <figure><figcaption>기준 이미지 · {manifest.files.media.name}</figcaption><Preview context={context} jobId={job.id} name={base?.preview} cache={cache} alt="측정에 사용한 기준 이미지" />
+        {base && <p className="mt-hint">원본 {base.original_width} × {base.original_height}px → 측정 {base.width} × {base.height}px{base.resized ? ' · 다운사이징 적용' : ' · 원본 크기'}</p>}</figure>
+      <span className="mt-pair-arrow" aria-hidden="true">↔</span>
+      <figure><figcaption>대조 이미지 {index + 1} · {manifest.files.references[index]?.name}</figcaption><Preview context={context} jobId={job.id} name={reference?.preview} cache={cache} alt={`대조 이미지 ${index + 1} 미리보기`} />{reference && <p className="mt-hint">{reference.width} × {reference.height}px · 원본 크기 사용</p>}</figure>
+    </MatchedImages>
+    <dl className="mt-match-metrics">
+      <div><dt>이미지 코사인 유사도 · {score?.similarity_model || job.stages.find(stage => stage.id === 'logo_similarity')?.model_id}</dt><dd>{metric(score?.image_cosine_similarity)}</dd></div>
+      <div><dt>XFeat 특징점 유사도 (코사인)</dt><dd>{metric(match?.descriptor_similarity)}</dd></div>
+      <div><dt>매칭 / 기하 검증 통과</dt><dd>{match ? `${match.matches ?? 0} / ${match.inliers ?? 0}개` : '미계산'}</dd></div>
+      <div><dt>기하 검증 통과율</dt><dd>{Number.isFinite(match?.inlier_ratio) ? `${(match.inlier_ratio * 100).toFixed(1)}%` : '미계산'}</dd></div>
+      <div><dt>특징점 · 기준 / 대조</dt><dd>{Array.isArray(match?.keypoints) ? `${match.keypoints.join(' / ')}개` : '미계산'}</dd></div>
+      <div><dt>XFeat 판정</dt><dd>{match ? decisionLabel(match.decision) : '미계산'}</dd></div>
+    </dl>
+    {match?.note && <p className="mt-hint">{match.note}</p>}
+    <MatchingSettings match={match} />
+  </div>;
+}
+
 export default function ModeltestResults({ job, stage, manifest, context, onSeek, cache, selection, onSelect }) {
+  if (manifest.flow === 'similarity' && manifest.purpose !== 'prepare') return <SimilarityResults job={job} manifest={manifest} context={context} cache={cache} selection={selection} onSelect={onSelect} />;
   const kind = stage?.kind || stage?.id;
   const selectedFrame = selection.frame ?? 0; const selectedLogo = selection.logo ?? 0;
   const setSelectedLogo = logo => onSelect({ logo });

@@ -1,14 +1,66 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CONTRACT, FILE_TYPES, FILE_LIMITS, STAGES, parseModel, parseEndpoint, initialFlow, SIGLIP2, modelOptions, parseStageModel, preparationLabel,
+  CONTRACT, FILE_TYPES, FILE_LIMITS, STAGES, parseModel, parseEndpoint, initialFlow, SIGLIP2, SIGLIP2_SO400M, FILTER_SCOPES, modelOptions, parseStageModel, preparationLabel,
   formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest, workflowPreset, workflowError,
 } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference, latestCompletedStage } from './modeltestResults.js';
+import { containedPoint, boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference, latestCompletedStage } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
 import { readSSH, writeSSH, connectionTarget } from './modeltestConnection.js';
 import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
+
+test('image similarity sends one base and up to one hundred candidates with explicit resize and both models', () => {
+  const state = initialFlow('similarity');
+  state.media = new File(['base'], 'base.png', { type: 'image/png' });
+  state.references = Array.from({ length: 100 }, (_, i) => new File(['candidate'], `candidate-${i}.png`, { type: 'image/png' }));
+  state.resize = { width: '100', height: '50' };
+  assert.deepEqual(formErrors('similarity', state), []);
+  const manifest = makeManifest('similarity', state);
+  assert.deepEqual(manifest.resize, { width: 100, height: 50 });
+  assert.deepEqual(manifest.stages.map(stage => [stage.id, stage.model_id]), [['logo_similarity', SIGLIP2], ['logo_compare', 'vismatch/xfeat']]);
+  assert.deepEqual(manifest.files.documents, []);
+  const body = makeFormData(manifest, state);
+  assert.equal(body.getAll('media').length, 1); assert.equal(body.getAll('references').length, 100);
+  state.references.push(state.references[0]); assert.ok(formErrors('similarity', state).some(error => error.includes('1~100'))); state.references.pop();
+  for (const resize of [{ width: '100', height: '' }, { width: '0', height: '50' }, { width: '1.5', height: '50' }, { width: '8193', height: '50' }]) {
+    state.resize = resize; assert.ok(formErrors('similarity', state).some(error => error.includes('다운사이징')));
+  }
+  state.resize = { width: '', height: '' }; assert.equal(makeManifest('similarity', state).resize, null);
+  const health = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 } };
+  assert.ok(formErrors('similarity', state, health).some(error => error.includes('현재 연결')));
+  assert.deepEqual(formErrors('similarity', state, { ...health, similarity_test: 1 }), []);
+  state.references = []; assert.ok(formErrors('similarity', state).some(error => error.includes('1~100')));
+});
+
+test('teammate models and explicit candidate scopes reach the manifest without replacing defaults', () => {
+  const detection = parseStageModel('logo_extract', { model: 'https://huggingface.co/google/owlv2-base-patch16-ensemble' });
+  assert.equal(detection.model_id, 'google/owlv2-base-patch16-ensemble');
+  const state = initialFlow('similarity'); state.stages.logo_similarity.model = `https://huggingface.co/${SIGLIP2_SO400M}/tree/release`;
+  state.media = new File(['base'], 'base.png'); state.references = [new File(['candidate'], 'candidate.png')];
+  assert.deepEqual(makeManifest('similarity', state).stages[0], { id: 'logo_similarity', name: '이미지 코사인 유사도', model_id: SIGLIP2_SO400M, revision: 'release' });
+  assert.deepEqual(parseStageModel('logo_compare', { model: 'vismatch/xfeat', imageSimilarity: true, imageSimilarityModel: SIGLIP2_SO400M }), { model_id: 'vismatch/xfeat', image_similarity: true, image_similarity_model: SIGLIP2_SO400M });
+  for (const scope of Object.keys(FILTER_SCOPES)) {
+    const result = parseStageModel('candidate_filter', { filterScope: scope, topK: '2', threshold: '' });
+    assert.equal(result.scope || 'references_per_crop', scope); assert.equal(result.top_k, 2);
+  }
+  assert.throws(() => parseStageModel('candidate_filter', { filterScope: 'crops_per_reference_video', topK: '2' }, { ready: true }), /다시 연결/);
+  const video = initialFlow('video'); video.stages.logo_similarity.model = SIGLIP2_SO400M;
+  assert.equal(workflowPreset('video', video, 'filtered').stages.logo_similarity.model, SIGLIP2_SO400M);
+  assert.equal(initialFlow('similarity').stages.logo_similarity.model, SIGLIP2);
+  const registered = { id: 'so', model_id: SIGLIP2_SO400M, resolved_revision: 'a'.repeat(40), status: 'unverified', tasks: ['logo_similarity'], fingerprint: 'so-space' };
+  state.stages.logo_similarity.model = 'registered:so';
+  assert.equal(makeManifest('similarity', state, { registered: [registered] }).stages[0].registered_model, 'so');
+});
+
+test('feature points account for resized inputs, preview pixels and contain letterboxing', () => {
+  const box = { x: 10, y: 20, width: 300, height: 200 };
+  assert.deepEqual(containedPoint([50, 25], [100, 50], box, [1000, 500]), { x: 160, y: 120 });
+  assert.deepEqual(containedPoint([0, 0], [100, 50], box, [1000, 500]), { x: 10, y: 45 });
+  assert.deepEqual(containedPoint([25, 50], [50, 100], box, [250, 500]), { x: 160, y: 120 });
+  for (const point of [[-1, 0], [101, 0], [NaN, 0], null]) assert.equal(containedPoint(point, [100, 50], box, [1000, 500]), null);
+  assert.equal(containedPoint([0, 0], [0, 50], box, [1000, 500]), null);
+});
 
 test('latest completed stage follows finish time across parallel and reordered workflows', () => {
   const slow = { id: 'slow', status: 'completed', started_at: 100, elapsed_seconds: 30 };
@@ -151,13 +203,13 @@ test('owner/model and HF repository links resolve without guessing an owner', ()
 });
 
 test('known models are offered before connection and reject incompatible stages', () => {
-  assert.equal(modelOptions().length, 5);
+  assert.equal(modelOptions().length, 7);
   for (const [model, stage] of [['google/owlv2-base-patch16', 'text_extract'], [SIGLIP2, 'logo_extract'], ['vismatch/xfeat', 'visual_extract']]) {
     assert.throws(() => parseStageModel(stage, { model }), /단계에서/);
   }
   assert.deepEqual(parseStageModel('logo_compare', { model: 'vismatch/xfeat' }), { model_id: 'vismatch/xfeat' });
   const offered = modelOptions({ models: [{ id: 'Qwen/Qwen3.5-4B', stages: ['conditions'] }, { id: 'owner/custom', stages: ['conditions'] }] });
-  assert.equal(offered.length, 6);
+  assert.equal(offered.length, 8);
   assert.throws(() => parseStageModel('text_extract', { model: 'owner/custom' }, { models: offered }), /단계에서/);
 });
 
@@ -169,6 +221,7 @@ test('PaddleOCR GGUF is available only for OCR and accepts the official reposito
 
 test('workflow presets compile filtering and parallel branches, rejecting cycles and missing dependencies', () => {
   const state = fixture('video'); state.references = [new File(['logo'], 'logo.png')];
+  state.stages.logo_similarity.model = SIGLIP2_SO400M;
   const filtered = workflowPreset('video', state, 'filtered');
   const capable = { ...health, workflow: { version: 1, max_parallel: 2, agents: true } };
   assert.deepEqual(formErrors('video', filtered, capable), []);

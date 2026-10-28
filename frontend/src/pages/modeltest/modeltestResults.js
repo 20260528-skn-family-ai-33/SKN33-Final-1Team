@@ -19,6 +19,15 @@ export function decisionLabel(value) {
   return ({ candidate_match: '일치 후보', match: '일치', mismatch: '불일치', uncertain: '판단 보류', pass: '통과', fail: '미통과' })[value] || '모델 설명 확인';
 }
 
+// Preview images use object-fit: contain; coordinates refer to measurement pixels.
+export function containedPoint(point, source, box, natural) {
+  if (![point, source, natural].every(value => Array.isArray(value) && value.length === 2) || ![...point, ...source, ...natural, box.x, box.y, box.width, box.height].every(Number.isFinite)) return null;
+  if (source.some(value => value <= 0) || natural.some(value => value <= 0) || box.width <= 0 || box.height <= 0 || point.some((value, index) => value < 0 || value > source[index])) return null;
+  const scale = Math.min(box.width / natural[0], box.height / natural[1]);
+  const width = natural[0] * scale; const height = natural[1] * scale;
+  return { x: box.x + (box.width - width) / 2 + point[0] / source[0] * width, y: box.y + (box.height - height) / 2 + point[1] / source[1] * height };
+}
+
 export function preferredReference(matches, count, selected) {
   const valid = index => Number.isInteger(index) && index >= 0 && index < count;
   if (valid(selected)) return selected;

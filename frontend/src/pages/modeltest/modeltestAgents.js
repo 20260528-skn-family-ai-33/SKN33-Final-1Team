@@ -34,7 +34,7 @@ export function newAgent(name = '새 에이전트') {
 export function newAgentStep(kind = 'text_generate') {
   const model = EXTRA_STAGES.some(stage => stage.id === kind) ? '' : ({ logo_extract: 'google/owlv2-base-patch16', logo_similarity: 'google/siglip2-base-patch16-224', logo_compare: 'vismatch/xfeat', candidate_filter: '' })[kind] ?? 'Qwen/Qwen3.5-4B';
   return { id: `step-${crypto.randomUUID()}`, kind, name: STAGES.find(stage => stage.id === kind)?.title || kind, model,
-    labels: '', prompt: '', promptOverride: null, threshold: '', topK: '2', imageSimilarity: false, bindings: {}, paramsText: '' };
+    labels: '', prompt: '', promptOverride: null, threshold: '', topK: '2', filterScope: 'references_per_crop', imageSimilarity: false, imageSimilarityModel: 'google/siglip2-base-patch16-224', bindings: {}, paramsText: '' };
 }
 
 export function agentTemplate(flow) {
@@ -137,6 +137,7 @@ export function compileAgents(flow, state, health) {
   }
   if (stages.some(stage => stage.kind === 'conditions') && !state.documents.length) throw new Error('문서에서 조건을 추출하려면 발주서·계약서를 첨부해 주세요.');
   if (stages.some(stage => ['logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue'].includes(stage.kind)) && !state.references.length) throw new Error('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+  if (stages.some(stage => stage.kind === 'logo_similarity') && stages.some(stage => stage.image_similarity)) throw new Error('별도 유사도 단계가 있으면 XFeat 추가 유사도 계산을 해제해 주세요.');
   if (health && health.workflow?.agents !== true) throw new Error('현재 연결은 에이전트 보드를 지원하지 않습니다. 백엔드 재시작 후 Pod에 다시 연결해 주세요.');
   return { stages, workflow: { edges, max_parallel: board.maxParallel, agents: agents.map(({ id, name }) => ({ id, name: name.trim() })) } };
 }

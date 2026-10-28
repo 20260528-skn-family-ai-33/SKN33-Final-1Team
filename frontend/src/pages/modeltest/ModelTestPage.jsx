@@ -4,7 +4,7 @@ import { Icon } from '../../components/Icon.jsx';
 import {
   CONTRACT, STAGES, MODEL_OPTIONS, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
   stagesFor, parseModel, parseEndpoint, validateHealth, validateRun, formErrors,
-  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle, workflowPreset,
+  makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, SIGLIP2_MODELS, FILTER_SCOPES, SIMILARITY_STAGES, modelOptions, parseStageModel, preparationLabel, stageTitle, workflowPreset,
 } from './modeltest.js';
 import './modeltest.css';
 import { useModeltestDraft } from './modeltestDraft.js';
@@ -33,7 +33,12 @@ function usePreview(file) {
   return url;
 }
 
-function Attachments({ kind, title, files, onChange, required, multiple, disabled, health }) {
+function FileThumbnail({ file }) {
+  const url = usePreview(file); const [failed, setFailed] = useState(false);
+  return failed ? <small>브라우저 미리보기 불가</small> : <img className="mt-file-thumbnail" src={url || undefined} alt={`${file.name} 미리보기`} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+}
+
+function Attachments({ kind, title, files, onChange, required, multiple, disabled, health, maxFiles = 10, thumbnails = false }) {
   const input = useRef(null); const [error, setError] = useState(''); const [dragging, setDragging] = useState(false);
   const types = allowedTypes(kind, health);
   function select(incoming) {
@@ -43,7 +48,7 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
     const bad = next.map(file => fileError(file, kind, health)).find(Boolean);
     if (bad) { setError(bad); return; }
     if (!multiple && next.length !== 1) { setError('검수할 파일은 하나만 선택해 주세요.'); return; }
-    if (multiple && files.length + next.length > 10) { setError('최대 10개까지 첨부할 수 있습니다.'); return; }
+    if (multiple && files.length + next.length > maxFiles) { setError(`최대 ${maxFiles}개까지 첨부할 수 있습니다.`); return; }
     onChange(multiple ? [...files, ...next] : next); setError('');
   }
   return <section className="mt-attachment" aria-label={title}>
@@ -54,11 +59,12 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
       onClick={() => input.current.click()} onDragOver={event => { event.preventDefault(); if (!disabled) setDragging(true); }}
       onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); select(event.dataTransfer.files); }}>
       <Icon name={kind === 'document' ? 'file' : 'upload'} /><strong>{files.length ? '파일 추가·변경' : '클릭하거나 파일을 놓으세요'}</strong>
-      <small>{types.length ? types.map(ext => ext.slice(1).toUpperCase()).join(', ') : 'Pod에서 지원하는 형식 없음'} · 파일당 {formatBytes(fileLimit(kind, health))}{multiple ? ' · 최대 10개' : ''}</small>
+      <small>{types.length ? types.map(ext => ext.slice(1).toUpperCase()).join(', ') : 'Pod에서 지원하는 형식 없음'} · 파일당 {formatBytes(fileLimit(kind, health))}{multiple ? ` · 최대 ${maxFiles}개` : ''}</small>
     </button>
-    {files.length > 0 && <ul className="mt-file-list">{files.map((file, index) => <li key={`${file.name}-${index}`}>
-      <div><strong title={file.name}>{file.name}</strong><small>{formatBytes(file.size)}</small></div>
-      <button type="button" disabled={disabled} aria-label={`${file.name} 삭제`} onClick={() => { onChange(files.filter((_, i) => i !== index)); setError(''); }}>×</button>
+    {files.length > 0 && <ul className={`mt-file-list ${thumbnails ? 'mt-file-gallery' : ''}`} aria-label={thumbnails ? '대조 이미지 미리보기 목록' : undefined}>{files.map((file, index) => <li key={`${file.name}-${file.lastModified}-${index}`} title={thumbnails ? file.name : undefined}>
+      {thumbnails && <FileThumbnail file={file} />}
+      {!thumbnails && <div><strong title={file.name}>{file.name}</strong><small>{formatBytes(file.size)}</small></div>}
+      <button type="button" disabled={disabled} aria-label={`${file.name} 삭제`} title={thumbnails ? "이미지 삭제" : "파일 삭제"} onClick={() => { onChange(files.filter((_, i) => i !== index)); setError(''); }}>×</button>
     </li>)}</ul>}
     {error && <p className="mt-error" role="alert">{error}</p>}
   </section>;
@@ -80,10 +86,11 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
       <div className="mt-stage-heading"><div className="mt-title-help">{inInspector ? <h3>{stage.title}</h3> : <label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
         onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label>}<ModeltestHelp label={stage.title}>
           <p>{stage.description}</p>
-          {stage.id === 'candidate_filter' ? <p>각 로고의 원본 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과한 후보가 없으면 해당 로고의 XFeat 호출은 생략합니다.</p>
+          {stage.id === 'candidate_filter' ? <p>선정 기준별로 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과하지 못한 쌍은 XFeat에 전달하지 않습니다. 팀원 실험의 프레임별·영상 전체 범위는 별도 확인이 필요합니다.</p>
             : null}
         </ModeltestHelp></div><Icon name={stage.icon} /></div>
       {stage.id === 'candidate_filter' ? <div className="mt-filter-fields">
+        <label className="mt-settings-wide">선정 기준<select aria-label="필터 선정 기준" value={value.filterScope || 'references_per_crop'} disabled={disabled || !value.enabled} onChange={event => update({ ...value, filterScope: event.target.value })}>{Object.entries(FILTER_SCOPES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
         <label>최소 코사인 유사도<input aria-label="필터 최소 코사인 유사도" type="number" min={-1} max={1} step="any" value={value.threshold} disabled={disabled || !value.enabled} placeholder="비워두면 제한 없음" onChange={event => update({ ...value, threshold: event.target.value })} /></label>
         <label>상위 후보 수<input aria-label="필터 상위 후보 수" type="number" min={1} max={10} step={1} value={value.topK} disabled={disabled || !value.enabled} placeholder="비워두면 모두" onChange={event => update({ ...value, topK: event.target.value })} /></label>
       </div> : <>
@@ -100,11 +107,11 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
       <small id={`${id}-hint`} className={value.enabled && (invalid || unsupported) ? 'mt-error' : ''}>
         {unsupported ? '이 Pod에서 지원하지 않는 단계입니다.' : invalid || modelWarning || profile?.description || (parsed ? `${parsed.model_id}${parsed.revision ? ` @ ${parsed.revision}` : ''} · 입력 형식 확인, 실행 호환성은 Pod에서 확인` : '모델 목록에서 선택하거나 Hugging Face 링크를 입력하세요.')}
       </small>
-      {stage.id === 'logo_compare' && extraSimilarity && parsed?.model_id === 'vismatch/xfeat' && <div className="mt-title-help"><label className="mt-similarity-option">
+      {stage.id === 'logo_compare' && extraSimilarity && parsed?.model_id === 'vismatch/xfeat' && <div><label className="mt-similarity-option">
         <input type="checkbox" checked={!!value.imageSimilarity} disabled={disabled || !value.enabled} onChange={event => update({ ...value, imageSimilarity: event.target.checked })} />
         <span>SigLIP2 이미지 코사인 유사도도 계산<small>크롭과 원본 이미지를 추가 모델로 대조합니다.</small></span>
-      </label></div>}
-      {parsed?.model_id === SIGLIP2 && stage.id === 'visual_extract' && <div className="mt-model-options">
+      </label>{value.imageSimilarity && <label>추가 계산 모델<select className="mt-model-select" aria-label="XFeat 추가 유사도 모델" disabled={disabled || !value.enabled} value={value.imageSimilarityModel || SIGLIP2} onChange={event => update({ ...value, imageSimilarityModel: event.target.value })}>{SIGLIP2_MODELS.map(id => <option key={id} value={id}>{id}</option>)}</select></label>}</div>}
+      {SIGLIP2_MODELS.includes(parsed?.model_id) && stage.id === 'visual_extract' && <div className="mt-model-options">
         <div className="mt-title-help"><label htmlFor={`${id}-labels`}>비교할 후보 문구 <span>필수 · 한 줄에 하나</span></label></div>
         <textarea id={`${id}-labels`} rows={4} value={value.labels || ''} disabled={disabled || !value.enabled}
           maxLength={6432} placeholder={'a red background\na person holding a product\na blue logo'}
@@ -129,7 +136,7 @@ export default function ModelTestPage() {
   useEffect(() => { try { localStorage.setItem('creative-checker-modeltest-theme', theme); } catch { /* Theme switching still works without storage. */ } }, [theme]);
   const draft = useModeltestDraft();
   const { flow, setFlow, flows, setFlows } = draft;
-  const state = flows[flow]; const boardHistory = useRef({ image: [], video: [] }); const boardRedo = useRef({ image: [], video: [] });
+  const state = flows[flow]; const boardHistory = useRef({ image: [], video: [], similarity: [] }); const boardRedo = useRef({ image: [], video: [], similarity: [] });
   const [confirmation, setConfirmation] = useState(null);
   const confirmAction = (options, action) => setConfirmation({ ...(typeof options === 'string' ? { message: options, title: '작업 확인', confirmLabel: '확인', danger: true } : options), action });
   const update = patch => {
@@ -203,14 +210,15 @@ export default function ModelTestPage() {
   }, [flow, locked, libraryOpen, confirmation, state]);
   const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
-  const editorMode = state.agentWorkflow.enabled ? 'agents' : state.workflow.enabled ? 'graph' : 'sequential';
-  const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
+  const editorMode = flow === 'similarity' ? 'similarity' : state.agentWorkflow.enabled ? 'agents' : state.workflow.enabled ? 'graph' : 'sequential';
+  const selectedCount = flow === 'similarity' ? 2 : state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
   const completedStages = job?.stages.filter(stage => stage.status === 'completed') || [];
   const failedStages = job?.stages.filter(stage => stage.status === 'failed') || [];
   const activeStages = job?.stages.filter(stage => stage.status === 'running') || [];
   const completed = completedStages.length;
   const progressTotal = manifest ? manifest.stages.length + (manifest.flow === 'video' && manifest.purpose !== 'prepare' ? 1 : 0) : selectedCount + (flow === 'video' ? 1 : 0);
   const resultStage = job?.stages.find(stage => stage.id === selectedStage);
+  const resultSelectionKey = `${job?.id}:${manifest?.flow === 'similarity' ? 'similarity' : selectedStage}`;
   const runFileCount = manifest ? Number(!!manifest.files.media) + manifest.files.documents.length + manifest.files.references.length : Number(!!state.media) + state.documents.length + state.references.length;
   const runTitle = submitting ? '자료 전송·접수 중' : unknown ? '접수 여부 확인 필요' : paused && running ? '상태 조회 일시정지' : job?.status === 'queued' ? preparationLabel(job.preparation) : job ? STATUS_LABELS[job.status] : '실행 전';
 
@@ -409,7 +417,7 @@ export default function ModelTestPage() {
     return <ModelStage stage={stage} inInspector={inInspector} index={index + 1} value={state.stages[stage.id]} health={modelHealth} disabled={locked}
                 extraSimilarity={!state.workflow.enabled || !state.stages.logo_similarity?.enabled}
                 update={value => update({ stages: { ...state.stages, [stage.id]: value,
-                  ...(value.model !== state.stages[stage.id].model && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
+                  ...((value.model !== state.stages[stage.id].model || value.modelFingerprint !== state.stages[stage.id].modelFingerprint) && state.stages.candidate_filter ? { candidate_filter: { ...state.stages.candidate_filter, threshold: '' } } : {}),
                   ...(stage.id === 'logo_similarity' && value.enabled ? { logo_compare: { ...state.stages.logo_compare, imageSimilarity: false } } : {}) } })} />;
   }
 
@@ -417,7 +425,7 @@ export default function ModelTestPage() {
     if (locked || connecting || !health?.ready || connection.transport !== 'ssh') return;
     try {
       if (action === 'prepare') {
-        const config = { contract: CONTRACT, flow, purpose: 'prepare', stages: [model ? { id: 'model_prepare', model_id: model.model_id, registered_model: model.id, model_fingerprint: model.fingerprint } : { id: 'disk_lightglue_prepare' }], files: { media: null, documents: [], references: [] } };
+        const config = { contract: CONTRACT, flow: flow === 'similarity' ? 'image' : flow, purpose: 'prepare', stages: [model ? { id: 'model_prepare', model_id: model.model_id, registered_model: model.id, model_fingerprint: model.fingerprint } : { id: 'disk_lightglue_prepare' }], files: { media: null, documents: [], references: [] } };
         launch(config, { media: null, documents: [], references: [] });
       } else {
         if (errors.length) throw new Error(errors[0]);
@@ -480,7 +488,7 @@ export default function ModelTestPage() {
       </section>
       </details>
       <div className="mt-draft-status"><p role="status">{draft.saving ? '첨부·설정 저장 중… 저장 완료 후 새로고침해 주세요.' : draft.storage}</p>
-        <button type="button" className="text-btn" disabled={locked} onClick={() => confirmAction({ title: '저장 데이터 지우기', message: '이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.', confirmLabel: '지우기', danger: true }, () => { boardHistory.current = { image: [], video: [] }; boardRedo.current = { image: [], video: [] }; draft.clearDraft(); })}>저장된 첨부·설정 지우기</button>
+        <button type="button" className="text-btn" disabled={locked} onClick={() => confirmAction({ title: '저장 데이터 지우기', message: '이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.', confirmLabel: '지우기', danger: true }, () => { boardHistory.current = { image: [], video: [], similarity: [] }; boardRedo.current = { image: [], video: [], similarity: [] }; draft.clearDraft(); })}>저장된 첨부·설정 지우기</button>
       </div>
       {draft.savedRun && !job && <div className="mt-restore-run"><p>{restoring ? '이전 검수 작업 상태를 확인하고 있습니다.' : `이전 작업 ID: ${draft.savedRun.jobId}`}</p>
         <button type="button" className="btn secondary small" disabled={locked || connecting} onClick={() => restoreRun(draft.savedRun, connection)}>이전 작업 조회</button></div>}
@@ -490,9 +498,11 @@ export default function ModelTestPage() {
         <div className="mt-workspace-bar"><div className="mt-flow-switch" aria-label="검수 유형">
           <button type="button" aria-pressed={flow === 'image'} disabled={locked} onClick={() => { setFlow('image'); setShowErrors(false); }}><Icon name="image" />이미지 검수</button>
           <button type="button" aria-pressed={flow === 'video'} disabled={locked} onClick={() => { setFlow('video'); setShowErrors(false); }}><span aria-hidden="true">▶</span>영상 검수</button>
-        </div><p>{flow === 'image' ? '포스터 + 문서 필수' : '영상 필수 · 문서·원본 로고 선택'}<span>{selected.length}개 모델 단계 선택</span></p></div>
+          <button type="button" aria-pressed={flow === 'similarity'} disabled={locked} onClick={() => { setFlow('similarity'); setShowErrors(false); }}><Icon name="search" />유사도 테스트</button>
+        </div><p>{flow === 'similarity' ? '기준 이미지 1장 · 대조 이미지 최대 100장' : flow === 'image' ? '포스터 + 문서 필수' : '영상 필수 · 문서·원본 로고 선택'}<span>{selectedCount}개 모델 단계 선택</span></p></div>
 
-        <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식">{[['sequential', '순차'], ['graph', '그래프'], ['agents', '에이전트']].map(([mode, title]) => <button type="button" key={mode} aria-pressed={editorMode === mode} disabled={locked} onClick={() => changeEditor(mode)}>{title}</button>)}</div>
+        {flow !== 'similarity' && <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식">{[['sequential', '순차'], ['graph', '그래프'], ['agents', '에이전트']].map(([mode, title]) => <button type="button" key={mode} aria-pressed={editorMode === mode} disabled={locked} onClick={() => changeEditor(mode)}>{title}</button>)}</div>}
+        {flow === 'similarity' && <section className="mt-panel mt-similarity-plan" aria-label="유사도 테스트 모델"><div className="mt-panel-heading"><h2>이미지 전체 대조</h2><ModeltestHelp label="유사도 테스트 모델"><p>로고 추출 없이 기준 이미지와 각 대조 이미지 전체를 비교합니다. SigLIP2 이후 XFeat를 실행하며 모든 대조 이미지에 두 측정을 적용합니다.</p><p>두 모델의 기존 전처리는 유지됩니다. SigLIP2의 모델 입력 해상도와 XFeat의 크기 정규화는 다운사이징한 이미지에 적용됩니다.</p></ModeltestHelp></div><div className="mt-panel-body mt-similarity-models">{SIMILARITY_STAGES.map(stage => <div key={stage.id}><strong>{stage.title}</strong><small>{stage.id === 'logo_similarity' ? registration(state.stages.logo_similarity.model, modelHealth)?.model_id || state.stages.logo_similarity.model : stage.model}</small></div>)}</div></section>}
         {editorMode === 'agents' && <ModeltestAgents confirmAction={confirmAction} flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} />}
         {editorMode === 'graph' && <ModeltestWorkflow key={flow} flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} renderStage={renderStage} />}
           {editorMode === 'sequential' && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">
@@ -502,26 +512,36 @@ export default function ModelTestPage() {
             </div>
           </section>}
 
+        {flow === 'similarity' && <section className="mt-panel mt-similarity-plan"><div className="mt-panel-body"><label>이미지 유사도 모델<select className="mt-model-select" aria-label="유사도 테스트 모델 선택" disabled={locked} value={modelOptions(modelHealth).some(model => model.id === state.stages.logo_similarity.model) ? state.stages.logo_similarity.model : ''} onChange={event => update({ stages: { ...state.stages, logo_similarity: { ...state.stages.logo_similarity, ...modelChoice(event.target.value, modelHealth) } } })}><option value="">직접 입력 / 링크 붙여넣기</option>{modelOptions(modelHealth).filter(model => model.stages.includes('logo_similarity')).map(model => <option key={model.id} value={model.id}>{model.label || model.id}</option>)}</select></label><label>모델 ID 또는 Hugging Face 링크<input className="mt-model-select" aria-label="유사도 테스트 모델" maxLength={512} disabled={locked} value={registration(state.stages.logo_similarity.model, modelHealth)?.model_id || state.stages.logo_similarity.model} onChange={event => update({ stages: { ...state.stages, logo_similarity: { ...state.stages.logo_similarity, ...modelChoice(event.target.value, modelHealth) } } })} /></label></div></section>}
+
         <div className="mt-run-layout">
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
             <div className="mt-panel-body">
-              <Attachments key={flow} kind={flow} title={flow === 'image' ? '포스터 이미지' : '검수 영상'} required files={state.media ? [state.media] : []}
+              <Attachments key={flow} kind={flow === 'similarity' ? 'image' : flow} title={flow === 'similarity' ? '기준 이미지' : flow === 'image' ? '포스터 이미지' : '검수 영상'} required files={state.media ? [state.media] : []}
                 onChange={files => update({ media: files[0] || null })} disabled={locked} health={health} />
               {flow === 'video' && editorMode !== 'graph' && <FrameSampling sampling={state.sampling} onChange={sampling => update({ sampling })} disabled={locked} agentMode={state.agentWorkflow.enabled} />}
-              {preview && <div className="mt-preview">{flow === 'image'
-                ? <img src={preview} alt="첨부한 포스터" onError={() => setPreviewError('이 형식은 브라우저 미리보기를 지원하지 않을 수 있습니다. Pod 지원 형식을 확인해 주세요.')} />
+              {preview && <div className="mt-preview">{flow !== 'video'
+                ? <img src={preview} alt={flow === 'similarity' ? '첨부한 기준 이미지' : '첨부한 포스터'} onError={() => setPreviewError('이 형식은 브라우저 미리보기를 지원하지 않을 수 있습니다. Pod 지원 형식을 확인해 주세요.')} />
                 : <video ref={videoRef} src={preview} controls preload="metadata" onError={() => setPreviewError('브라우저에서 재생할 수 없는 코덱입니다. 영상 처리는 Pod의 지원 여부에 따릅니다.')} />}
                 {previewError && <p className="mt-hint">{previewError}</p>}</div>}
-              <Attachments kind="document" title="발주서·계약서" multiple required={flow === 'image'} files={state.documents}
-                onChange={documents => update({ documents })} disabled={locked} health={health} />
+              {flow === 'similarity' && <>
+                <fieldset className="mt-similarity-resize" disabled={locked || !state.media}><legend>기준 이미지 다운사이징</legend>
+                  <div className="mt-sampling-fields"><label>가로 (px)<input aria-label="기준 이미지 가로" type="number" min={1} max={8192} step={1} placeholder="원본" value={state.resize.width} onChange={event => update({ resize: { ...state.resize, width: event.target.value } })} /></label>
+                  <span aria-hidden="true">×</span><label>세로 (px)<input aria-label="기준 이미지 세로" type="number" min={1} max={8192} step={1} placeholder="원본" value={state.resize.height} onChange={event => update({ resize: { ...state.resize, height: event.target.value } })} /></label>
+                  <button type="button" className="btn secondary small" onClick={() => update({ resize: { width: '', height: '' } })}>원본 크기 사용</button></div>
+                </fieldset><p className="mt-hint">비워 두면 원본 크기를 사용합니다. 입력하면 실행 시 기준 이미지를 해당 크기로 실제 축소합니다. 원본보다 큰 크기는 사용할 수 없으며 가로·세로 비율은 입력값을 따릅니다.</p>
+                <Attachments kind="reference" title="대조 이미지" multiple required maxFiles={100} thumbnails files={state.references} onChange={references => update({ references })} disabled={locked} health={health} />
+              </>}
+              {flow !== 'similarity' && <Attachments kind="document" title="발주서·계약서" multiple required={flow === 'image'} files={state.documents}
+                onChange={documents => update({ documents })} disabled={locked} health={health} />}
               {flow === 'video' && <Attachments kind="reference" title="원본 로고·레퍼런스" multiple files={state.references}
                 onChange={references => update({ references })} disabled={locked} health={health} />}
-              <details key={`conditions-${flow}`} className="mt-conditions" open={state.requirementsOpen} onToggle={event => { if (event.currentTarget.open !== state.requirementsOpen) update({ requirementsOpen: event.currentTarget.open }); }}><summary>조건 직접 입력 <span>선택</span></summary>
+              {flow !== 'similarity' && <details key={`conditions-${flow}`} className="mt-conditions" open={state.requirementsOpen} onToggle={event => { if (event.currentTarget.open !== state.requirementsOpen) update({ requirementsOpen: event.currentTarget.open }); }}><summary>조건 직접 입력 <span>선택</span></summary>
                 <div className="mt-title-help"><label htmlFor="mt-requirements">추가 검수 조건</label><ModeltestHelp label="조건 직접 입력"><p>문서에서 추출한 조건과 함께 사용합니다. 문서가 없으면 대조할 조건을 직접 입력하세요.</p></ModeltestHelp></div><textarea id="mt-requirements" value={state.requirements} rows={4} maxLength={12000} disabled={locked}
                   placeholder={'예: 행사 날짜가 11월 5일로 표시되어야 합니다.\n브랜드 로고가 화면 오른쪽 위에 있어야 합니다.'}
                   onChange={event => update({ requirements: event.target.value })} />
-              </details>
+              </details>}
             </div>
           </section>
 
@@ -558,7 +578,7 @@ export default function ModelTestPage() {
                 {running && <><p className="mt-hint">현재 실행 중</p>
                 {activeStages.length ? activeStages.map(stage => <button type="button" className="mt-active-stage" key={stage.id} onClick={() => viewResults(stage.id)} aria-label={`${stageTitle(stage)} 실행 중 · 결과 보기`}>{stageTitle(stage)}</button>) : <p className="mt-hint">실행 중인 단계 없음</p>}</>}
               </div> : <ul className="mt-readiness">
-                {[[!!health?.ready, 'Pod 연결'], [!!state.media, flow === 'image' ? '이미지 첨부' : '영상 첨부'], [flow === 'video' || !!state.documents.length, flow === 'image' ? '문서 첨부' : '문서·레퍼런스 선택'], [!errors.length, '모델·실행 조건']].map(([ready, label]) => <li key={label}><span>{label}</span><span className={ready ? 'mt-ready' : ''}>{ready ? '준비됨' : '확인 필요'}</span></li>)}
+                {[[!!health?.ready, 'Pod 연결'], [!!state.media, flow === 'similarity' ? '기준 이미지 첨부' : flow === 'image' ? '이미지 첨부' : '영상 첨부'], [flow === 'similarity' ? state.references.length > 0 && state.references.length <= 100 : flow === 'video' || !!state.documents.length, flow === 'similarity' ? '대조 이미지 첨부' : flow === 'image' ? '문서 첨부' : '문서·레퍼런스 선택'], [!errors.length, '모델·실행 조건']].map(([ready, label]) => <li key={label}><span>{label}</span><span className={ready ? 'mt-ready' : ''}>{ready ? '준비됨' : '확인 필요'}</span></li>)}
               </ul>}
               {showErrors && errors.length > 0 && <ul className="mt-validation" role="alert">{errors.map((error, index) => <li key={index}>{error}</li>)}</ul>}
             </section>
@@ -583,8 +603,8 @@ export default function ModelTestPage() {
                     {typeof resultStage?.error === 'string' && <p className="mt-error">{resultStage.error}</p>}
                     {typeof resultStage?.detail === 'string' && <p className="mt-hint" role="status">{resultStage.detail}</p>}
                     {manifest && <ModeltestResults key={`${job.id}-${selectedStage}`} job={job} stage={resultStage} manifest={manifest} context={contextRef.current} cache={previewCache}
-                      selection={resultSelections[`${job.id}:${selectedStage}`] || {}}
-                      onSelect={patch => setResultSelections(previous => ({ ...previous, [`${job.id}:${selectedStage}`]: { ...previous[`${job.id}:${selectedStage}`], ...patch } }))}
+                      selection={resultSelections[resultSelectionKey] || {}}
+                      onSelect={patch => setResultSelections(previous => ({ ...previous, [resultSelectionKey]: { ...previous[resultSelectionKey], ...patch } }))}
                       onSeek={manifest.flow === 'video' && flow === 'video' && state.media === contextRef.current?.media ? seconds => {
                         if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = seconds; videoRef.current.scrollIntoView({ behavior: 'auto', block: 'center' }); }
                       } : null} />}

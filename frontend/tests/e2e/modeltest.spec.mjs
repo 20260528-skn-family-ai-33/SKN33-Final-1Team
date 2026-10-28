@@ -2,7 +2,98 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
-import { CONTRACT, FILE_LIMITS, FILE_TYPES, STAGES } from '../../src/pages/modeltest/modeltest.js';
+import { CONTRACT, FILE_LIMITS, FILE_TYPES, STAGES, FILTER_SCOPES } from '../../src/pages/modeltest/modeltest.js';
+
+test('similarity test preserves one hundred images and resize, then shows both metrics and selected previews', { timeout: 90000 }, async t => {
+  const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache', define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
+  await server.listen(); t.after(() => server.close()); const origin = 'http://127.0.0.1:5187';
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
+  const errors = []; const unexpected = []; let manifest; let png; let jpeg;
+  const health = { contract: CONTRACT, ready: true, similarity_test: 1, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
+    limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/*', route => {
+    const request = route.request(); const url = new URL(request.url());
+    if (url.origin !== origin) { unexpected.push(url.origin); return route.abort(); }
+    if (!url.pathname.startsWith('/api/')) return route.continue();
+    const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
+    if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname.endsWith('/models')) return json({ models: [], families: {} });
+    if (url.pathname.endsWith('/connections') || url.pathname.endsWith('/health')) return json({ ...health, connection_id: 'similarity-fixture' });
+    if (url.pathname.includes('/previews/')) return json({ mime: 'image/jpeg', data: jpeg });
+    if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
+      manifest = JSON.parse(request.postDataBuffer().toString().match(/name="config"\r\n\r\n([^\r]+)/)[1]);
+      return json({ contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'completed', media: { preview: 'preview-poster.jpg', original_width: 200, original_height: 100, width: 100, height: 50, resized: true },
+        references: manifest.files.references.map((_, index) => ({ index, preview: `preview-reference-${index}.jpg`, width: 200, height: 100 })),
+        stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity' ? { image_cosine_similarity: 0.9 } : { descriptor_similarity: 0.85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: 'candidate_match', image_sizes: [[100, 50], [200, 100]], matched_points: [{ crop: [25, 10], reference: [50, 20] }, { crop: [50, 25], reference: [100, 50] }] }) })) } })) });
+    }
+    unexpected.push(url.pathname); return route.abort();
+  });
+  await page.goto(`${origin}/modeltest`);
+  png = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 100; canvas.getContext('2d').fillRect(0, 0, 200, 100); return canvas.toDataURL('image/png').split(',')[1]; });
+  jpeg = await page.evaluate(() => { const canvas = document.createElement('canvas'); canvas.width = 100; canvas.height = 50; canvas.getContext('2d').fillRect(0, 0, 100, 50); return canvas.toDataURL('image/jpeg').split(',')[1]; });
+  const buffer = Buffer.from(png, 'base64'); const candidate = i => ({ name: `candidate-${i}.png`, mimeType: 'image/png', buffer });
+  await page.getByLabel('RunPod Connect의 SSH 명령', { exact: true }).fill('ssh root@203.0.113.10 -p 1234');
+  await page.getByRole('button', { name: '연결 확인', exact: true }).click(); await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '유사도 테스트', exact: true }).click();
+  await page.getByLabel('유사도 테스트 모델 선택', { exact: true }).selectOption('google/siglip2-so400m-patch14-384');
+  assert.equal(await page.getByRole('group', { name: '워크플로우 편집 방식' }).count(), 0);
+  await page.locator('input[type=file][aria-label="기준 이미지"]').setInputFiles({ name: 'base.png', mimeType: 'image/png', buffer });
+  await page.getByLabel('기준 이미지 가로', { exact: true }).fill('100'); await page.getByLabel('기준 이미지 세로', { exact: true }).fill('50');
+  const input = page.locator('input[type=file][aria-label="대조 이미지"]');
+  await input.setInputFiles(Array.from({ length: 101 }, (_, i) => candidate(i)));
+  await page.getByRole('alert').filter({ hasText: '최대 100개까지' }).waitFor(); assert.equal(await page.locator('.mt-file-gallery li').count(), 0);
+  await input.setInputFiles(Array.from({ length: 100 }, (_, i) => candidate(i)));
+  assert.equal(await page.locator('.mt-file-gallery li').count(), 100);
+  const gallery = page.getByRole('list', { name: '대조 이미지 미리보기 목록' });
+  assert.equal(await gallery.locator('strong, small').count(), 0);
+  assert.equal(await gallery.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length), 10);
+  const remove = gallery.getByRole('button', { name: 'candidate-99.png 삭제', exact: true }); await remove.focus(); await page.keyboard.press('Enter');
+  assert.equal(await gallery.locator('li').count(), 99); await input.setInputFiles(candidate(99));
+  const buttonInside = await gallery.locator('li').first().evaluate(element => { const a = element.getBoundingClientRect(); const b = element.querySelector('button').getBoundingClientRect(); return b.top >= a.top && b.top < a.top + 5 && b.right <= a.right && b.right > a.right - 5; });
+  assert.equal(buttonInside, true);
+  await page.setViewportSize({ width: 600, height: 900 });
+  assert.equal(await gallery.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length), 5);
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
+  await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: '유사도 테스트', exact: true }).getAttribute('aria-pressed'), 'true');
+  assert.equal(await page.locator('.mt-file-gallery li').count(), 100);
+  assert.equal(await page.getByLabel('기준 이미지 가로', { exact: true }).inputValue(), '100');
+  assert.equal(await page.getByLabel('기준 이미지 세로', { exact: true }).inputValue(), '50');
+  assert.equal(await page.getByLabel('유사도 테스트 모델 선택', { exact: true }).inputValue(), 'google/siglip2-so400m-patch14-384');
+  await page.getByRole('button', { name: '검수 실행', exact: true }).click();
+  await page.getByRole('region', { name: '이미지별 유사도 표', exact: true }).waitFor();
+  assert.equal(manifest.flow, 'similarity'); assert.equal(manifest.files.references.length, 100); assert.deepEqual(manifest.resize, { width: 100, height: 50 });
+  assert.deepEqual(manifest.stages.map(stage => stage.model_id), ['google/siglip2-so400m-patch14-384', 'vismatch/xfeat']);
+  await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).click();
+  const detail = page.locator('.mt-similarity-results');
+  await detail.getByRole('img', { name: '대조 이미지 100 미리보기', exact: true }).waitFor();
+  await detail.getByRole('img', { name: '측정에 사용한 기준 이미지', exact: true }).waitFor();
+  assert.match(await detail.innerText(), /원본 200 × 100px → 측정 100 × 50px/);
+  assert.match(await detail.locator('dl').innerText(), /0\.9000/); assert.match(await detail.locator('dl').innerText(), /0\.8500/); assert.match(await detail.locator('dl').innerText(), /111 \/ 10개/);
+  await detail.getByRole('img', { name: '기하 검증 대응점 2쌍', exact: true }).waitFor();
+  async function pointError() {
+    return detail.locator('.mt-match-overlay-frame').evaluate(element => {
+      const root = element.getBoundingClientRect(); const image = element.querySelector('img'); const box = image.getBoundingClientRect();
+      const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight); const width = image.naturalWidth * scale; const height = image.naturalHeight * scale;
+      const point = element.querySelector('circle');
+      return Math.abs(Number(point.getAttribute('cx')) - (box.x - root.x + (box.width - width) / 2 + width * .25)) + Math.abs(Number(point.getAttribute('cy')) - (box.y - root.y + (box.height - height) / 2 + height * .2));
+    });
+  }
+  assert.ok(await pointError() < 1);
+  await detail.getByRole('checkbox', { name: '기하 검증 대응점 표시' }).uncheck(); assert.equal(await detail.locator('.mt-match-overlay').count(), 0);
+  await detail.getByRole('checkbox', { name: '기하 검증 대응점 표시' }).check();
+  await page.setViewportSize({ width: 600, height: 900 });
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.ok(await pointError() < 1);
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  await page.getByRole('button', { name: '디버그', exact: true }).click(); await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
+  await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: 'XFeat 특징점 대조' }).click();
+  assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
+});
 
 test('HF registry persists, selects a compatible node, prepares separately and shows embedding results', { timeout: 90000 }, async t => {
   const server = await createServer({ configFile: false, envFile: false, root: process.cwd(), cacheDir: '../work/modeltest-vite-cache', define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify('legacy') }, server: { host: '127.0.0.1', port: 5187, strictPort: true, hmr: false } });
@@ -366,7 +457,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
   const errors = []; const unexpected = []; const previews = []; let manifest; let jpeg; let submissions = 0;
   page.on('pageerror', error => errors.push(error.message)); page.on('dialog', dialog => { if (dialog.type() === 'beforeunload') return dialog.accept(); errors.push(`Unexpected native ${dialog.type()}`); return dialog.dismiss(); });
-  const health = { contract: CONTRACT, ready: true, prompt_overrides: 1, workflow: { version: 1, max_parallel: 2, agents: true }, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
+  const health = { contract: CONTRACT, ready: true, candidate_filter_scopes: Object.keys(FILTER_SCOPES), prompt_overrides: 1, workflow: { version: 1, max_parallel: 2, agents: true }, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
   await page.route('**/*', async route => {
     const request = route.request(); const url = new URL(request.url());
@@ -389,7 +480,9 @@ test('workflow and agent boards edit connections, persist settings and submit dy
         if (stage.kind === 'logo_extract') row.logos = [{ logo_index: 0, bbox: [0, 0, 20, 20], preview: `logo-${stage.id}-0-0.png`, score: 0.8 }];
         else if (['logo_similarity', 'candidate_filter', 'logo_compare'].includes(stage.kind)) {
           row.matches = [{ logo_index: 0, reference_index: 0, image_cosine_similarity: 0.9, ...(stage.kind === 'logo_compare' ? { matches: 12, inliers: 9, decision: 'candidate_match' } : {}) }];
-          if (stage.kind !== 'logo_similarity') Object.assign(row, { candidate_count: 1, selected_count: 1 });
+          if (stage.kind !== 'logo_similarity') Object.assign(row, { candidate_count: 2, selected_count: 1,
+            filter: { scope: manifest.stages.find(item => item.kind === 'candidate_filter').scope, threshold: .85, top_k: 1, total_candidates: 2, total_selected: 1 },
+            excluded_matches: [{ logo_index: 1, reference_index: 0, image_cosine_similarity: .3, candidate_rank: 2, exclusion_reason: 'below_threshold' }] });
         } else row.text = 'fixture output';
         return { items: [row] };
       };
@@ -423,7 +516,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   assert.equal(await settings.locator('#mt-stage-logo_extract').count(), 1);
   assert.equal(await page.locator('#mt-stage-logo_extract').count(), 1, 'Only one editor for a stage');
   const fixedPrompt = page.locator('#mt-stage-logo_extract .mt-prompt');
-  await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16');
+  await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16-ensemble');
   assert.equal(await fixedPrompt.getAttribute('open'), null); await fixedPrompt.locator('summary').click();
   assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo');
   await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('sponsor logo');
@@ -453,6 +546,12 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await page.getByRole('button', { name: '그래프', exact: true }).click();
   await page.locator('[data-node="candidate_filter"]').getByRole('button', { name: '설정', exact: true }).click();
   assert.equal(await settings.getByLabel('필터 최소 코사인 유사도').inputValue(), '0.7');
+  await settings.getByLabel('필터 선정 기준').selectOption('crops_per_reference_frame');
+  await page.locator('[data-node="logo_similarity"]').getByRole('button', { name: '설정', exact: true }).click();
+  await settings.getByLabel('로고 이미지 유사도 등록 모델 선택', { exact: true }).selectOption('google/siglip2-so400m-patch14-384');
+  await page.locator('[data-node="candidate_filter"]').getByRole('button', { name: '설정', exact: true }).click();
+  assert.equal(await settings.getByLabel('필터 최소 코사인 유사도').inputValue(), '');
+  assert.equal(await settings.getByLabel('필터 선정 기준').inputValue(), 'crops_per_reference_frame');
   await page.getByRole('button', { name: '프레임 이미지 추출 노드 이동', exact: true }).press('Enter');
   assert.equal(await settings.getByLabel('기준', { exact: true }).isVisible(), true);
   const sampling = page.locator('#mt-stage-frames');
@@ -502,6 +601,14 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   await agents.getByRole('button', { name: 'A05 시각 요소 검수 노드 이동', exact: true }).press('Enter');
   await page.locator('.mt-agent-detail .mt-board').getByRole('button', { name: '후보 필터 노드 이동', exact: true }).press('Enter');
   await page.getByLabel('내부 필터 최소 유사도', { exact: true }).fill('0.85');
+  await page.locator('.mt-agent-detail .mt-board').getByRole('button', { name: '로고 이미지 유사도 노드 이동', exact: true }).press('Enter');
+  await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('google/siglip2-so400m-patch14-384');
+  await page.locator('.mt-agent-detail .mt-board').getByRole('button', { name: '로고 추출 노드 이동', exact: true }).press('Enter');
+  await page.getByLabel('내부 단계 등록 모델', { exact: true }).selectOption('google/owlv2-base-patch16-ensemble');
+  await page.locator('.mt-agent-detail .mt-board').getByRole('button', { name: '후보 필터 노드 이동', exact: true }).press('Enter');
+  assert.equal(await page.getByLabel('내부 필터 최소 유사도', { exact: true }).inputValue(), '');
+  await page.getByLabel('내부 필터 최소 유사도', { exact: true }).fill('0.85');
+  await page.getByLabel('내부 필터 선정 기준', { exact: true }).selectOption('crops_per_reference_video');
   await page.getByLabel('내부 필터 상위 후보 수', { exact: true }).fill('1');
   await page.getByLabel('에이전트 보드 동시 실행 수', { exact: true }).selectOption('2');
   await page.locator('input[type=file][aria-label="검수 영상"]').setInputFiles({ name: 'agent.mp4', mimeType: 'video/mp4', buffer: Buffer.from('fixture') });
@@ -547,9 +654,15 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   assert.equal(ocr.prompt_override, 'OCR: Read the headline only.');
   assert.equal(manifest.stages.find(stage => stage.kind === 'text_compare').inputs.text_extract, ocr.id);
   const filter = manifest.stages.find(stage => stage.kind === 'candidate_filter'); assert.equal(filter.threshold, 0.85); assert.equal(filter.top_k, 1);
+  assert.equal(filter.scope, 'crops_per_reference_video');
+  assert.equal(manifest.stages.find(stage => stage.kind === 'logo_extract').model_id, 'google/owlv2-base-patch16-ensemble');
+  assert.equal(manifest.stages.find(stage => stage.kind === 'logo_similarity').model_id, 'google/siglip2-so400m-patch14-384');
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: /원본 로고와 대조/ }).click();
   await page.getByRole('img', { name: '추출 로고 1', exact: true }).waitFor();
   await page.getByText('0.900', { exact: true }).waitFor(); await page.getByText('12 / 9개', { exact: true }).waitFor();
+  const audit = page.locator('.mt-candidate-audit'); await audit.locator('summary').click();
+  assert.match(await audit.innerText(), /영상 전체 크롭 상위 N개/);
+  await audit.getByRole('cell', { name: '제외 · 최소 유사도 미달', exact: true }).waitFor();
   assert.ok(previews.some(path => path.endsWith(`/logo-${manifest.stages.find(stage => stage.kind === 'logo_extract').id}-0-0.png`)));
   assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
 });

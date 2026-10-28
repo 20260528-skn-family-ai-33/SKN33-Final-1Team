@@ -29,10 +29,23 @@ export function preparationLabel(value) {
   return ({ connecting: 'SSH 연결 중', uploading: 'Pod에 파일 전송 중', starting: 'Pod 실행 준비 중', ready: '검수 시작 중' })[value?.phase] || '실행 준비 중';
 }
 export const SIGLIP2 = 'google/siglip2-base-patch16-224';
+export const SIGLIP2_SO400M = 'google/siglip2-so400m-patch14-384';
+export const SIGLIP2_MODELS = [SIGLIP2, SIGLIP2_SO400M];
+export const FILTER_SCOPES = {
+  references_per_crop: '검출 크롭별 → 원본 로고 상위 N개',
+  crops_per_reference_frame: '기준 로고별 → 프레임 내 크롭 상위 N개',
+  crops_per_reference_video: '기준 로고별 → 영상 전체 크롭 상위 N개',
+};
+export const SIMILARITY_STAGES = [
+  { id: 'logo_similarity', title: '이미지 코사인 유사도', model: SIGLIP2 },
+  { id: 'logo_compare', title: 'XFeat 특징점 대조', model: 'vismatch/xfeat' },
+];
 export const MODEL_OPTIONS = [
   { id: 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF', stages: ['text_extract'], description: 'OCR 문구 추출 전용. 첫 실행에 llama.cpp CUDA 빌드와 GGUF·mmproj 다운로드가 필요합니다. Pod에 git·C++ 컴파일러·nvcc가 있어야 합니다.' },
   { id: 'google/owlv2-base-patch16', stages: ['logo_extract'], description: '로고 영역을 찾아 좌표와 탐지 점수를 반환합니다.' },
+  { id: 'google/owlv2-base-patch16-ensemble', stages: ['logo_extract'], description: 'OWLv2 ensemble 저장소의 모델·processor로 로고 영역을 탐지합니다.' },
   { id: SIGLIP2, stages: ['visual_extract', 'logo_similarity'], description: '시각 요소에서는 후보 문구, 로고 유사도에서는 원본 이미지와 대조합니다.' },
+  { id: SIGLIP2_SO400M, stages: ['visual_extract', 'logo_similarity'], description: 'SO400M · 저장소의 384×384 전처리로 이미지·문구 유사도를 측정합니다.' },
   { id: 'vismatch/xfeat', stages: ['logo_compare'], description: '잘라낸 로고와 원본의 특징점을 대조합니다. 특징점이 부족하면 판단을 보류합니다.' },
   { id: 'Qwen/Qwen3.5-4B', stages: ['conditions', 'logo_extract', 'text_extract', 'visual_extract', 'logo_compare', 'text_compare', 'visual_compare', 'text_generate'], description: '문서·이미지를 읽고 문구, 시각 설명, 조건 대조 결과를 생성합니다.' },
 ];
@@ -41,16 +54,17 @@ export function modelOptions(health) {
   return [...MODEL_OPTIONS, ...(health?.models || []).filter(model => !MODEL_OPTIONS.some(known => known.id === model.id)), ...(health?.registered || []).map(model => ({ id: `registered:${model.id}`, label: `${model.name} · ${MODEL_STATUS[model.status]}`, stages: model.tasks, description: [model.model_id, model.family, ...model.reasons].join(' · ') }))];
 }
 
-export function stagesFor(flow) { return STAGES.filter(stage => !stage.agentOnly && (flow === 'video' || !stage.video)); }
+export function stagesFor(flow) { return flow === 'similarity' ? SIMILARITY_STAGES : STAGES.filter(stage => !stage.agentOnly && (flow === 'video' || !stage.video)); }
 export function stageTitle(stage) { return stage?.name || STAGES.find(item => item.id === (stage?.kind || stage?.id))?.title || (stage?.id === 'frames' ? '프레임 이미지 추출' : stage?.id || ''); }
 export function initialFlow(flow) {
   return {
     media: null, documents: [], references: [], requirements: '', requirementsOpen: false,
+    ...(flow === 'similarity' ? { resize: { width: '', height: '' } } : {}),
     sampling: { unit: 'frames', interval: '30', max_frames: '120' },
     workflow: { enabled: false, edges: [], maxParallel: 1, positions: {} },
     agentWorkflow: { enabled: false, agents: [], edges: [], positions: {}, maxParallel: 1 },
     stages: Object.fromEntries(stagesFor(flow).map(stage => [stage.id, {
-      enabled: flow === 'image' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, threshold: '', topK: '2', promptOverride: null,
+      enabled: flow === 'image' || flow === 'similarity' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: flow === 'similarity' ? stage.model : stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, imageSimilarityModel: SIGLIP2, threshold: '', topK: '2', filterScope: 'references_per_crop', promptOverride: null,
     }])),
   };
 }
@@ -96,7 +110,7 @@ export function workflowPreset(flow, state, preset = 'serial') {
   const stages = { ...state.stages };
   if (flow === 'video' && preset !== 'serial') {
     stages.logo_extract = { ...stages.logo_extract, enabled: true, model: stages.logo_extract.model || 'google/owlv2-base-patch16' };
-    stages.logo_similarity = { ...stages.logo_similarity, enabled: true, model: SIGLIP2 };
+    stages.logo_similarity = { ...stages.logo_similarity, enabled: true, model: stages.logo_similarity.model || SIGLIP2 };
     stages.candidate_filter = { ...stages.candidate_filter, enabled: preset === 'filtered', topK: stages.candidate_filter.topK || '2' };
     stages.logo_compare = { ...stages.logo_compare, enabled: true, model: 'vismatch/xfeat', imageSimilarity: false };
   }
@@ -147,12 +161,15 @@ export function parseStageModel(stageId, value, health) {
   };
   if (GENERAL.includes(stageId)) return {};
   if (stageId === 'candidate_filter') {
+    const scope = value.filterScope || 'references_per_crop';
+    if (!Object.hasOwn(FILTER_SCOPES, scope)) throw new Error('후보 선정 기준을 확인해 주세요.');
+    if (scope !== 'references_per_crop' && health?.ready && !health.candidate_filter_scopes?.includes(scope)) throw new Error('선택한 후보 선정 기준을 지원하는 실행기에 다시 연결해 주세요.');
     const threshold = value.threshold?.trim() ? Number(value.threshold) : null;
     const top_k = value.topK?.trim() ? Number(value.topK) : null;
     if (threshold === null && top_k === null) throw new Error('최소 유사도 또는 상위 후보 수를 입력해 주세요.');
     if (threshold !== null && (!Number.isFinite(threshold) || threshold < -1 || threshold > 1)) throw new Error('최소 코사인 유사도는 -1~1 사이여야 합니다.');
     if (top_k !== null && (!Number.isInteger(top_k) || top_k < 1 || top_k > 10)) throw new Error('상위 후보 수는 1~10 사이의 정수여야 합니다.');
-    return { ...(threshold !== null ? { threshold } : {}), ...(top_k !== null ? { top_k } : {}) };
+    return { ...(scope !== 'references_per_crop' ? { scope } : {}), ...(threshold !== null ? { threshold } : {}), ...(top_k !== null ? { top_k } : {}) };
   }
   if (value.model.startsWith('registered:')) {
     const model = registration(value.model, health);
@@ -164,20 +181,23 @@ export function parseStageModel(stageId, value, health) {
     return { model_id: model.model_id, revision: model.resolved_revision, registered_model: model.id, model_fingerprint: model.fingerprint, ...prompt(model.model_id, model) };
   }
   const parsed = parseModel(value.model);
-  if (stageId === 'logo_similarity' && parsed.model_id !== SIGLIP2) throw new Error('로고 이미지 유사도에는 SigLIP2를 선택해 주세요.');
+  if (stageId === 'logo_similarity' && !SIGLIP2_MODELS.includes(parsed.model_id)) throw new Error('로고 이미지 유사도에는 SigLIP2를 선택해 주세요.');
   const profile = modelOptions(health).find(model => model.id === parsed.model_id);
   if (!profile) throw new Error('Hugging Face 모델 추가에서 이 모델의 실행 계열을 먼저 등록해 주세요.');
   if (profile && !profile.stages.includes(stageId)) {
     const titles = profile.stages.map(id => STAGES.find(stage => stage.id === id)?.title || id);
     throw new Error(`이 모델은 ${titles.join(', ')} 단계에서 사용해 주세요.`);
   }
-  if (parsed.model_id === SIGLIP2 && stageId === 'visual_extract') {
+  if (SIGLIP2_MODELS.includes(parsed.model_id) && stageId === 'visual_extract') {
     const labels = (value.labels || '').split(/\r?\n/).map(label => label.trim()).filter(Boolean);
     if (!labels.length || labels.length > 32 || labels.some(label => label.length > 200)) throw new Error('비교할 후보 문구를 한 줄에 하나씩, 1~32개 입력해 주세요. 문구당 최대 200자입니다.');
     if (new Set(labels).size !== labels.length) throw new Error('후보 문구가 중복됐습니다.');
     return { ...parsed, labels };
   }
-  return { ...parsed, ...prompt(parsed.model_id), ...(stageId === 'logo_compare' && parsed.model_id === 'vismatch/xfeat' && value.imageSimilarity ? { image_similarity: true } : {}) };
+  const extra = stageId === 'logo_compare' && parsed.model_id === 'vismatch/xfeat' && value.imageSimilarity;
+  const similarityModel = value.imageSimilarityModel || SIGLIP2;
+  if (extra && !SIGLIP2_MODELS.includes(similarityModel)) throw new Error('추가 계산에 사용할 SigLIP2 모델을 선택해 주세요.');
+  return { ...parsed, ...prompt(parsed.model_id), ...(extra ? { image_similarity: true, ...(similarityModel !== SIGLIP2 ? { image_similarity_model: similarityModel } : {}) } : {}) };
 }
 
 export function parseEndpoint(value) {
@@ -231,12 +251,20 @@ export function validateRun(body, expectedId, manifest) {
 
 export function formErrors(flow, state, health) {
   const errors = [];
-  if (!state.media) errors.push(flow === 'image' ? '검수할 이미지를 첨부해 주세요.' : '검수할 영상을 첨부해 주세요.');
+  if (!state.media) errors.push(flow === 'similarity' ? '기준 이미지를 첨부해 주세요.' : flow === 'image' ? '검수할 이미지를 첨부해 주세요.' : '검수할 영상을 첨부해 주세요.');
   if (flow === 'image' && !state.documents.length) errors.push('이미지 검수에는 발주서·계약서 등 문서가 필요합니다.');
-  const files = [[state.media, flow], ...state.documents.map(file => [file, 'document']), ...state.references.map(file => [file, 'reference'])].filter(([file]) => file);
+  const files = [[state.media, flow === 'similarity' ? 'image' : flow], ...state.documents.map(file => [file, 'document']), ...state.references.map(file => [file, 'reference'])].filter(([file]) => file);
   files.forEach(([file, kind]) => { const error = fileError(file, kind, health); if (error) errors.push(error); });
-  if (state.documents.length > 10 || state.references.length > 10) errors.push('문서와 레퍼런스는 각각 최대 10개까지 첨부할 수 있습니다.');
+  if (flow !== 'similarity' && (state.documents.length > 10 || state.references.length > 10)) errors.push('문서와 레퍼런스는 각각 최대 10개까지 첨부할 수 있습니다.');
   if (health && files.reduce((sum, [file]) => sum + file.size, 0) > health.limits.total_bytes) errors.push(`첨부 파일 합계는 ${formatBytes(health.limits.total_bytes)} 이하여야 합니다.`);
+  if (flow === 'similarity') {
+    if (!state.references.length || state.references.length > 100) errors.push('대조 이미지는 1~100장 첨부해 주세요.');
+    try { parseStageModel('logo_similarity', state.stages.logo_similarity, health); } catch (error) { errors.push(error.message); }
+    const { width, height } = state.resize;
+    if ((width !== '' || height !== '') && ![width, height].every(value => value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 8192)) errors.push('다운사이징 가로·세로를 모두 1~8,192px 정수로 입력하거나 둘 다 비워 주세요.');
+    if (health && (health.similarity_test !== 1 || SIMILARITY_STAGES.some(stage => !health.stages.includes(stage.id)))) errors.push('현재 연결은 이미지 유사도 테스트를 지원하지 않습니다. 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
+    return errors;
+  }
   const agentMode = state.agentWorkflow?.enabled;
   if (agentMode) { try { compileAgents(flow, state, health); } catch (error) { errors.push(error.message); } }
   const enabled = agentMode ? [] : stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled));
@@ -266,6 +294,12 @@ export function formErrors(flow, state, health) {
 
 function fileInfo(file) { return { name: file.name, size: file.size, type: file.type }; }
 export function makeManifest(flow, state, health) {
+  if (flow === 'similarity') return {
+    contract: CONTRACT, flow,
+    stages: SIMILARITY_STAGES.map(stage => ({ id: stage.id, name: stage.title, ...(stage.id === 'logo_similarity' ? parseStageModel(stage.id, state.stages[stage.id], health) : { model_id: stage.model }) })),
+    resize: state.resize.width === '' && state.resize.height === '' ? null : { width: Number(state.resize.width), height: Number(state.resize.height) },
+    files: { media: fileInfo(state.media), documents: [], references: state.references.map(fileInfo) },
+  };
   const execution = state.agentWorkflow?.enabled ? compileAgents(flow, state, health) : {
     ...(state.workflow.enabled ? { workflow: { edges: state.workflow.edges, max_parallel: state.workflow.maxParallel } } : {}),
     stages: stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled)).map(stage => ({ id: stage.id, ...parseStageModel(stage.id, state.stages[stage.id], health) })),

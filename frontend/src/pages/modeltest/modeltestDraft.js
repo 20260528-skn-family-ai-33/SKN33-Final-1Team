@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { initialFlow } from './modeltest.js';
 
-const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages', 'workflow', 'agentWorkflow'];
+const FIELDS = ['media', 'documents', 'references', 'requirements', 'requirementsOpen', 'sampling', 'stages', 'workflow', 'agentWorkflow', 'resize'];
+const FLOWS = ['image', 'video', 'similarity'];
+const initialFlows = () => Object.fromEntries(FLOWS.map(flow => [flow, initialFlow(flow)]));
 let opening;
 export function openDraftDB() {
   if (!opening) opening = new Promise((resolve, reject) => {
@@ -28,7 +30,7 @@ export function writeDraft(db, entries) {
 export function readDraft(db) {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('draft', 'readonly'); const data = {};
-    const keys = ['flow', 'run', ...['image', 'video'].flatMap(flow => FIELDS.map(field => `${flow}.${field}`))];
+    const keys = ['flow', 'run', ...FLOWS.flatMap(flow => FIELDS.map(field => `${flow}.${field}`))];
     for (const key of keys) {
       const request = transaction.objectStore('draft').get(key);
       request.onsuccess = () => { data[key] = request.result; };
@@ -46,6 +48,7 @@ function restoredFlow(flow, data) {
     else if (['documents', 'references'].includes(field) && Array.isArray(value)) state[field] = value.filter(file => file instanceof File);
     else if (['requirements', 'requirementsOpen'].includes(field) && typeof value === typeof state[field]) state[field] = value;
     else if (field === 'sampling' && value && ['frames', 'seconds'].includes(value.unit)) state.sampling = { ...state.sampling, ...value };
+    else if (field === 'resize' && flow === 'similarity' && value && typeof value.width === 'string' && typeof value.height === 'string') state.resize = { width: value.width, height: value.height };
     else if (field === 'agentWorkflow' && value && Array.isArray(value.agents) && Array.isArray(value.edges) && [1, 2].includes(value.maxParallel)) state.agentWorkflow = { ...state.agentWorkflow, ...value };
     else if (field === 'workflow' && value && typeof value.enabled === 'boolean' && [1, 2].includes(value.maxParallel) && Array.isArray(value.edges)) {
       state.workflow = { enabled: value.enabled, maxParallel: value.maxParallel,
@@ -56,6 +59,8 @@ function restoredFlow(flow, data) {
         const stage = value[id];
         if (stage && typeof stage.enabled === 'boolean' && typeof stage.model === 'string') {
           state.stages[id] = { ...state.stages[id], enabled: stage.enabled, model: stage.model, modelFingerprint: typeof stage.modelFingerprint === 'string' ? stage.modelFingerprint : '', labels: typeof stage.labels === 'string' ? stage.labels : '', imageSimilarity: stage.imageSimilarity === true,
+            imageSimilarityModel: typeof stage.imageSimilarityModel === 'string' ? stage.imageSimilarityModel : state.stages[id].imageSimilarityModel,
+            filterScope: typeof stage.filterScope === 'string' ? stage.filterScope : 'references_per_crop',
             threshold: typeof stage.threshold === 'string' ? stage.threshold : '', topK: typeof stage.topK === 'string' ? stage.topK : '2', promptOverride: typeof stage.promptOverride === 'string' ? stage.promptOverride : null };
         }
       }
@@ -66,7 +71,7 @@ function restoredFlow(flow, data) {
 
 export function useModeltestDraft() {
   const [flow, setFlow] = useState('image');
-  const [flows, setFlows] = useState(() => ({ image: initialFlow('image'), video: initialFlow('video') }));
+  const [flows, setFlows] = useState(initialFlows);
   const [ready, setReady] = useState(false); const [savedRun, setSavedRun] = useState(null);
   const [storage, setStorage] = useState('저장된 첨부·설정을 불러오는 중입니다.');
   const [saving, setSaving] = useState(false);
@@ -77,8 +82,8 @@ export function useModeltestDraft() {
       const data = await readDraft(db);
       if (!live) return;
       dbRef.current = db;
-      const next = { image: restoredFlow('image', data), video: restoredFlow('video', data) };
-      const nextFlow = data.flow === 'video' ? 'video' : 'image';
+      const next = Object.fromEntries(FLOWS.map(flow => [flow, restoredFlow(flow, data)]));
+      const nextFlow = FLOWS.includes(data.flow) ? data.flow : 'image';
       previous.current = { flow: nextFlow, flows: next };
       setFlow(nextFlow); setFlows(next); setSavedRun(data.run || null); setReady(true);
       setStorage('첨부·모델 설정은 이 브라우저에 자동 저장됩니다.');
@@ -91,7 +96,7 @@ export function useModeltestDraft() {
     if (!ready || !dbRef.current) return;
     const old = previous.current; const entries = [];
     if (old?.flow !== flow) entries.push(['flow', flow]);
-    for (const name of ['image', 'video']) for (const field of FIELDS) {
+    for (const name of FLOWS) for (const field of FIELDS) {
       // Store large File objects only when attachments change, not on every keystroke.
       if (old?.flows[name][field] !== flows[name][field]) entries.push([`${name}.${field}`, flows[name][field]]);
     }
@@ -111,7 +116,7 @@ export function useModeltestDraft() {
     catch { setStorage('실행 ID를 저장하지 못했습니다. 결과를 내려받거나 요청 ID를 따로 기록해 주세요.'); }
   }
   function clearDraft() {
-    setFlows({ image: initialFlow('image'), video: initialFlow('video') }); setFlow('image');
+    setFlows(initialFlows()); setFlow('image');
   }
   return { flow, setFlow, flows, setFlows, ready, savedRun, storage, saving, rememberRun, clearDraft };
 }
