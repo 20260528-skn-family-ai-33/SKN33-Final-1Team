@@ -355,11 +355,10 @@ export default function ModelTestPage() {
       <div className="mt-theme-switch" role="group" aria-label="화면 테마">{[['light', '라이트'], ['dark', '다크']].map(([value, title]) => <button type="button" key={value} aria-pressed={theme === value} onClick={() => setTheme(value)}>{title}</button>)}</div>
       <button type="button" className="text-btn mt-home" disabled={locked} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
     <main className="mt-main">
-      <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div>
-        <span className={`mt-connection-state ${health?.ready ? 'is-ready' : ''}`}><i />{connecting ? 'Pod 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? 'Pod 연결됨' : health ? 'Pod 준비 필요' : 'Pod 연결 전'}</span></div>
+      <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
 
       <details className="mt-connection-wrap" open={connectionOpen} onToggle={event => setConnectionOpen(event.currentTarget.open)}>
-        <summary>RunPod 연결 <span>{connecting ? '연결 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? '연결됨' : '연결 필요'} · {connectionOpen ? '접기' : '펼치기'}</span></summary>
+        <summary>RunPod 연결 <span className={`mt-connection-state ${health?.ready ? 'is-ready' : ''}`}><i />{connecting ? 'Pod 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? 'Pod 연결됨' : health ? 'Pod 준비 필요' : 'Pod 연결 전'}</span></summary>
       <section className="mt-connection" aria-labelledby="mt-connection-title">
         <div className="mt-connection-method"><div className="mt-connection-label"><Icon name="grid" /><h2 id="mt-connection-title">RunPod 연결</h2></div>
           <div className="mt-method-buttons" aria-label="RunPod 연결 방식">{[['ssh', 'SSH 명령'], ['http', 'HTTP API']].map(([id, label]) => <button type="button" key={id} disabled={locked || connecting} aria-pressed={method === id}
