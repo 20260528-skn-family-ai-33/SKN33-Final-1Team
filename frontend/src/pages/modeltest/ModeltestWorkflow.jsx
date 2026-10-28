@@ -6,7 +6,7 @@ import './modeltestWorkflow.css';
 
 export { WorkflowGraph };
 
-export default function ModeltestWorkflow({ flow, state, update, disabled, onUndo, canUndo }) {
+export default function ModeltestWorkflow({ flow, state, update, disabled, onUndo, canUndo, onRedo, canRedo }) {
   const workflow = state.workflow;
   const nodes = workflowNodes(flow, state).map(node => ({ ...node, description: state.stages[node.id]?.model || node.description }));
   const change = patch => update({ workflow: { ...workflow, ...patch } });
@@ -30,7 +30,7 @@ export default function ModeltestWorkflow({ flow, state, update, disabled, onUnd
       </div>
       <p className="mt-hint">출력 점에서 입력 점으로 드래그하거나 두 점을 차례로 눌러 연결합니다. 노드·연결선·빈 배경을 우클릭하면 편집 메뉴가 열립니다.</p>
       {workflow.maxParallel === 2 && <p className="mt-hint">선행 단계가 끝난 노드를 최대 2개 동시에 실행합니다. 두 모델을 함께 올릴 GPU 메모리가 필요하며, 부족하면 실행이 실패할 수 있습니다.</p>}
-      <WorkflowGraph key={`${flow}-models`} boardId={`${flow}-models`} label="모델 단계 보드" nodes={nodes} edges={workflow.edges} positions={workflow.positions} onChange={change} disabled={disabled} error={error} onUndo={onUndo} canUndo={canUndo}
+      <WorkflowGraph key={`${flow}-models`} boardId={`${flow}-models`} label="모델 단계 보드" nodes={nodes} edges={workflow.edges} positions={workflow.positions} onChange={change} disabled={disabled} error={error} onUndo={onUndo} canUndo={canUndo} onRedo={onRedo} canRedo={canRedo}
         nodeActions={id => [{ label: id === 'frames' ? '필수 프레임 단계 · 제외 불가' : '이 단계 제외', danger: true, disabled: id === 'frames', run: () => update(excludeStage(state, id)) }]}
         addActions={stagesFor(flow).filter(stage => !state.stages[stage.id].enabled).map(stage => ({ label: `단계 추가: ${stage.title}`, run: point => add(stage.id, point) }))}
         onConfigure={id => document.getElementById(`mt-stage-${id}`)?.scrollIntoView({ behavior: 'auto', block: 'center' })} />

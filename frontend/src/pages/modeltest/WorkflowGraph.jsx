@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { boardPoint, boardView, DEFAULT_VIEW, fitBoard, nodePosition, zoomAt } from './modeltestBoard.js';
 
-export default function WorkflowGraph({ boardId, label, nodes, edges, positions, onChange, disabled, onConfigure, error = '', nodeActions = () => [], addActions = [], onUndo, canUndo }) {
+export default function WorkflowGraph({ boardId, label, nodes, edges, positions, onChange, disabled, onConfigure, error = '', nodeActions = () => [], addActions = [], onUndo, canUndo, onRedo, canRedo }) {
   const arrowId = useId().replace(/:/g, ''); const root = useRef(null); const viewport = useRef(null); const menuRef = useRef(null); const focusBeforeMenu = useRef(null);
   const storageKey = `creative-checker-board-${boardId}`;
   const [view, setView] = useState(() => { try { return boardView(JSON.parse(localStorage.getItem(storageKey))); } catch { return { ...DEFAULT_VIEW }; } });
@@ -109,7 +109,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
   function keyDown(event) {
     if (event.target.closest('input,textarea,select,[contenteditable=true]')) return;
     if (event.code === 'Space' && !menu && viewport.current.contains(event.target)) { event.preventDefault(); setSpace(true); }
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { setMenu(null); gesture.current = null; setDrag(null); setSource(''); setPoint(null); }
+    if ((event.ctrlKey || event.metaKey) && ['z', 'y'].includes(event.key.toLowerCase())) { setMenu(null); gesture.current = null; setDrag(null); setSource(''); setPoint(null); }
     if (event.key === 'Escape') { if (menu) { event.preventDefault(); event.stopPropagation(); closeMenu(); } setSource(''); setPoint(null); gesture.current = null; setDrag(null); }
   }
   function keyMove(event, id, pos) {
@@ -150,6 +150,7 @@ export default function WorkflowGraph({ boardId, label, nodes, edges, positions,
     {!fullscreen && <div className="mt-board-resize" tabIndex={0} role="separator" aria-label={`${label} 높이 조절`} aria-orientation="horizontal" aria-valuenow={Math.round(view.height)} aria-valuemin={280} aria-valuemax={1000}
       onPointerDown={event => { if (event.button === 0) begin(event, 'resize'); }} onKeyDown={event => { if (['ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); setView(current => boardView({ ...current, height: current.height + (event.key === 'ArrowUp' ? -20 : 20) })); } }} />}
     <div className="mt-board-controls"><span>휠 확대 · 배경 드래그 · Space 이동 · 우클릭 편집</span><button type="button" disabled={disabled || !canUndo} onClick={onUndo}>되돌리기 <kbd>Ctrl+Z</kbd></button>
+      <button type="button" disabled={disabled || !canRedo} onClick={onRedo} title="Ctrl+Shift+Z / Ctrl+Y">다시 실행 <kbd>Ctrl+Shift+Z</kbd></button>
       <button type="button" aria-label="보드 축소" onClick={() => zoom(view.zoom / 1.2)}>−</button><button type="button" aria-label="보드 100%로 보기" onClick={() => zoom(1)}>{Math.round(view.zoom * 100)}%</button><button type="button" aria-label="보드 확대" onClick={() => zoom(view.zoom * 1.2)}>+</button>
       <button type="button" onClick={fit}>전체 보기</button><button type="button" onClick={toggleFullscreen}>{fullscreen ? '전체화면 종료' : '전체화면'}</button></div>
     <ul className="mt-workflow-edges" aria-label="워크플로우 연결 목록">{edges.map(edge => <li key={`${edge.source}-${edge.target}`} className={hoveredEdge === edge || focusedEdge === edge ? 'is-highlighted' : undefined}><span>{title(edge.source)} → {title(edge.target)}</span><button type="button" disabled={disabled} aria-label={`${title(edge.source)}에서 ${title(edge.target)} 연결 삭제`} onClick={() => disconnect(edge)}>삭제</button></li>)}</ul>

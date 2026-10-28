@@ -4,7 +4,7 @@ import { MODEL_STATUS } from './modeltestCatalog.js';
 
 const base = '/api/modeltest/ssh/models';
 const pretty = value => JSON.stringify(value || {}, null, 2);
-export default function ModeltestLibrary({ catalog, reload, error, disabled, canRun, onAction }) {
+export default function ModeltestLibrary({ catalog, reload, error, disabled, canRun, onAction, confirmAction }) {
   const [value, setValue] = useState(''); const [revision, setRevision] = useState(''); const [draft, setDraft] = useState(null);
   const [options, setOptions] = useState('{}'); const [training, setTraining] = useState('{}'); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [confirmThresholds, setConfirmThresholds] = useState(false);
   const families = catalog.families || {};
@@ -19,9 +19,8 @@ export default function ModeltestLibrary({ catalog, reload, error, disabled, can
       await reload(); edit(saved); setMessage('등록 설정을 저장했습니다. 가중치 다운로드·추론은 수행하지 않았습니다.');
     });
   }
-  async function remove(model) {
-    if (!window.confirm(`${model.name} 등록을 삭제할까요? 연결된 노드는 다시 모델을 선택해야 합니다. Pod의 캐시와 기존 결과는 유지됩니다.`)) return;
-    await action(async () => { await request(`${base}/${model.id}`, 'DELETE'); if (draft?.id === model.id) setDraft(null); await reload(); });
+  function remove(model) {
+    confirmAction({ title: '모델 등록 삭제', message: `${model.name} 등록을 삭제할까요? 연결된 노드는 다시 모델을 선택해야 합니다. Pod의 캐시와 기존 결과는 유지됩니다.`, confirmLabel: '삭제', danger: true }, () => action(async () => { await request(`${base}/${model.id}`, 'DELETE'); if (draft?.id === model.id) setDraft(null); await reload(); }));
   }
   return <details className="mt-panel mt-library" open={!!draft}>
     <summary>Hugging Face 모델 추가 <span>{catalog.models?.length || 0}개 등록 · 메타데이터만 조회</span></summary>

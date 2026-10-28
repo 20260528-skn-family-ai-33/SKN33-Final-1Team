@@ -17,6 +17,7 @@ import ModeltestAgents from './ModeltestAgents.jsx';
 import ModeltestLibrary from './ModeltestLibrary.jsx';
 import ModeltestPrompt from './ModeltestPrompt.jsx';
 import ModeltestHelp from './ModeltestHelp.jsx';
+import ModeltestConfirm from './ModeltestConfirm.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
@@ -127,15 +128,24 @@ export default function ModelTestPage() {
   useEffect(() => { try { localStorage.setItem('creative-checker-modeltest-theme', theme); } catch { /* Theme switching still works without storage. */ } }, [theme]);
   const draft = useModeltestDraft();
   const { flow, setFlow, flows, setFlows } = draft;
-  const state = flows[flow]; const boardHistory = useRef({ image: [], video: [] });
+  const state = flows[flow]; const boardHistory = useRef({ image: [], video: [] }); const boardRedo = useRef({ image: [], video: [] });
+  const [confirmation, setConfirmation] = useState(null);
+  const confirmAction = (options, action) => setConfirmation({ ...(typeof options === 'string' ? { message: options, title: '작업 확인', confirmLabel: '확인', danger: true } : options), action });
   const update = patch => {
-    if (['stages', 'workflow', 'agentWorkflow'].some(key => patch[key] && patch[key] !== state[key])) rememberBoard(boardHistory.current[flow], state);
+    if (['stages', 'workflow', 'agentWorkflow'].some(key => patch[key] && patch[key] !== state[key])) {
+      rememberBoard(boardHistory.current[flow], state); boardRedo.current[flow] = [];
+    }
     setFlows(current => ({ ...current, [flow]: { ...current[flow], ...patch } }));
   };
   function undoBoard() {
     if (locked) return;
     const previous = boardHistory.current[flow].pop();
-    if (previous) setFlows(current => ({ ...current, [flow]: { ...current[flow], ...previous } }));
+    if (previous) { rememberBoard(boardRedo.current[flow], state); setFlows(current => ({ ...current, [flow]: { ...current[flow], ...previous } })); }
+  }
+  function redoBoard() {
+    if (locked) return;
+    const next = boardRedo.current[flow].pop();
+    if (next) { rememberBoard(boardHistory.current[flow], state); setFlows(current => ({ ...current, [flow]: { ...current[flow], ...next } })); }
   }
   const [endpoint, setEndpoint] = useState(''); const [token, setToken] = useState('');
   const [savedSSH] = useState(readSSH);
@@ -175,13 +185,18 @@ export default function ModelTestPage() {
   const preparing = health?.preparing === true;
   const terminal = job ? TERMINAL.includes(job.status) : false;
   const running = !!job && !terminal;
-  const locked = !draft.ready || restoring || submitting || unknown || running || preparing;
+  const lockReason = !draft.ready ? '저장된 설정을 불러오는 중이라 편집할 수 없습니다.' : restoring ? '이전 작업을 복원하는 중이라 편집할 수 없습니다.' : submitting ? '자료를 전송하고 작업을 접수하는 중이라 편집할 수 없습니다.' : unknown ? '작업 접수 여부를 확인해야 설정을 바꿀 수 있습니다.' : running ? '검수가 실행 중이라 설정을 바꿀 수 없습니다.' : preparing ? 'Pod 실행환경을 준비하는 중이라 편집할 수 없습니다.' : '';
+  const locked = !!lockReason;
   useEffect(() => {
     const keydown = event => {
-      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'z' && !event.target.closest('input,textarea,select,[contenteditable=true]')) { event.preventDefault(); undoBoard(); }
+      if (confirmation || event.defaultPrevented || event.target.closest('input,textarea,select,[contenteditable=true],[popover]')) return;
+      if ((event.ctrlKey || event.metaKey) && !event.altKey) {
+        const key = event.key.toLowerCase();
+        if (key === 'z' || (key === 'y' && !event.shiftKey)) { event.preventDefault(); if (event.shiftKey || key === 'y') redoBoard(); else undoBoard(); }
+      }
     };
     window.addEventListener('keydown', keydown); return () => window.removeEventListener('keydown', keydown);
-  }, [flow, locked]);
+  }, [flow, locked, confirmation, state]);
   const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
   const selectedCount = state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
@@ -365,7 +380,6 @@ export default function ModelTestPage() {
 
   async function cancel() {
     if (requestRef.current || !running) return;
-    if (!window.confirm('이 검수 작업을 강제로 중단할까요? 완료된 결과는 남고 Pod 자체는 계속 실행됩니다.')) return;
     const controller = new AbortController(); requestRef.current = controller; setCancelling(true); setRunError(''); setPaused(true);
     try {
       const context = contextRef.current;
@@ -382,9 +396,9 @@ export default function ModelTestPage() {
   }
 
   return <div className="mt-shell" data-theme={theme}>
-    <header className="mt-topbar"><Brand onClick={() => { if (!locked) window.location.assign('/'); }} /><span className="mt-product-label">모델 테스트</span>
+    <header className="mt-topbar"><Brand disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')} /><span className="mt-product-label">모델 테스트</span>
       <div className="mt-theme-switch" role="group" aria-label="화면 테마">{[['light', '라이트'], ['dark', '다크']].map(([value, title]) => <button type="button" key={value} aria-pressed={theme === value} onClick={() => setTheme(value)}>{title}</button>)}</div>
-      <button type="button" className="text-btn mt-home" disabled={locked} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
+      <button type="button" className="text-btn mt-home" disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
     <main className="mt-main">
       <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
 
@@ -413,12 +427,12 @@ export default function ModelTestPage() {
       </section>
       </details>
       <div className="mt-draft-status"><p role="status">{draft.saving ? '첨부·설정 저장 중… 저장 완료 후 새로고침해 주세요.' : draft.storage}</p>
-        <button type="button" className="text-btn" disabled={locked} onClick={() => { if (window.confirm('이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.')) { boardHistory.current = { image: [], video: [] }; draft.clearDraft(); } }}>저장된 첨부·설정 지우기</button>
+        <button type="button" className="text-btn" disabled={locked} onClick={() => confirmAction({ title: '저장 데이터 지우기', message: '이 브라우저에 저장한 첨부 파일과 모델 설정을 모두 지울까요? 실행 결과와 Pod 작업은 유지됩니다.', confirmLabel: '지우기', danger: true }, () => { boardHistory.current = { image: [], video: [] }; boardRedo.current = { image: [], video: [] }; draft.clearDraft(); })}>저장된 첨부·설정 지우기</button>
       </div>
       {draft.savedRun && !job && <div className="mt-restore-run"><p>{restoring ? '이전 검수 작업 상태를 확인하고 있습니다.' : `이전 작업 ID: ${draft.savedRun.jobId}`}</p>
         <button type="button" className="btn secondary small" disabled={locked || connecting} onClick={() => restoreRun(draft.savedRun, connection)}>이전 작업 조회</button></div>}
 
-      <ModeltestLibrary catalog={catalog} reload={reloadCatalog} error={catalogError} disabled={locked || connecting} canRun={health?.ready && connection?.transport === 'ssh'} onAction={modelAction} />
+      <ModeltestLibrary confirmAction={confirmAction} catalog={catalog} reload={reloadCatalog} error={catalogError} disabled={locked || connecting} canRun={health?.ready && connection?.transport === 'ssh'} onAction={modelAction} />
       <form onSubmit={start} noValidate>
         <div className="mt-workspace-bar"><div className="mt-flow-switch" aria-label="검수 유형">
           <button type="button" aria-pressed={flow === 'image'} disabled={locked} onClick={() => { setFlow('image'); setShowErrors(false); }}><Icon name="image" />이미지 검수</button>
@@ -427,7 +441,7 @@ export default function ModelTestPage() {
 
         <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식"><button type="button" aria-pressed={!state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: { ...state.agentWorkflow, enabled: false } })}>모델 단계 편집</button>
           <button type="button" aria-pressed={state.agentWorkflow.enabled} disabled={locked} onClick={() => update({ agentWorkflow: state.agentWorkflow.agents.length ? { ...state.agentWorkflow, enabled: true } : agentTemplate(flow) })}>에이전트 보드</button></div>
-        {state.agentWorkflow.enabled ? <ModeltestAgents flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} />}
+        {state.agentWorkflow.enabled ? <ModeltestAgents confirmAction={confirmAction} flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} /> : <ModeltestWorkflow flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} />}
         <div className={`mt-workspace ${state.agentWorkflow.enabled ? 'is-agents' : ''}`}>
           <section className="mt-panel mt-materials" aria-labelledby="mt-materials-title">
             <div className="mt-panel-heading"><h2 id="mt-materials-title">검수 자료</h2><Icon name="upload" /></div>
@@ -480,6 +494,7 @@ export default function ModelTestPage() {
           <aside className="mt-monitor" aria-label="실행 모니터">
             <section className="mt-run-card"><div className="mt-run-heading"><Icon name="grid" /><h2>실행 모니터</h2></div>
               <div className="mt-run-status" aria-live="polite"><span className={`mt-state-dot ${running ? 'is-running' : ''}`} />{runTitle}</div>
+              {locked && <p id="mt-lock-reason" className="mt-lock-reason" role="status">{lockReason}</p>}
               {job?.status === 'queued' && job.preparation?.total_bytes > 0 && <p className="mt-preparation-note">{formatBytes(job.preparation.bytes_sent || 0)} / {formatBytes(job.preparation.total_bytes)} 전송</p>}
               {job?.preparation?.phase === 'ready' && <p className="mt-preparation-note">실행 준비 {job.preparation.elapsed_seconds}초
                 {Number.isFinite(job.preparation.connection_seconds) && ` · 연결 ${job.preparation.connection_seconds}초`}
@@ -492,9 +507,9 @@ export default function ModelTestPage() {
               {!locked && <button type="submit" className="btn primary mt-run-button" disabled={connecting || !health?.ready}><Icon name="arrow" />검수 실행</button>}
               {submitting && <button className="btn primary mt-run-button" disabled>전송·접수 중…</button>}
               {unknown && !submitting && <><button type="button" className="btn primary mt-run-button" onClick={() => submit(contextRef.current)}>같은 요청으로 접수 확인</button>
-                <button type="button" className="mt-subtle-button" onClick={() => { if (window.confirm('Pod에 접수된 작업이 남아 있을 수 있습니다. Pod에서 요청 ID를 확인한 후 새 설정으로 돌아갈까요?')) { setUnknown(false); setRunError('접수 확인을 종료했습니다. Pod 작업은 취소하지 않았습니다.'); } }}>접수 확인 종료</button></>}
+                <button type="button" className="mt-subtle-button" onClick={() => confirmAction({ title: '접수 확인 종료', message: 'Pod에 접수된 작업이 남아 있을 수 있습니다. Pod에서 요청 ID를 확인한 후 새 설정으로 돌아갈까요?', confirmLabel: '종료', danger: false }, () => { setUnknown(false); setRunError('접수 확인을 종료했습니다. Pod 작업은 취소하지 않았습니다.'); })}>접수 확인 종료</button></>}
               {running && <div className="mt-run-actions"><button type="button" className="btn secondary" onClick={() => { setPaused(!paused); setRunError(''); }}>{paused ? '상태 조회 재개' : '상태 조회 일시정지'}</button>
-                {health?.cancel === true && <button type="button" className="btn mt-stop-button" onClick={cancel} disabled={cancelling || job.status === 'queued'}>{cancelling ? '중단 확인 중…' : '검수 강제 중단'}</button>}
+                {health?.cancel === true && <button type="button" className="btn mt-stop-button" onClick={() => confirmAction({ title: '검수 강제 중단', message: '이 검수 작업을 강제로 중단할까요? 완료된 결과는 남고 Pod 자체는 계속 실행됩니다.', confirmLabel: '중단', danger: true }, 'cancel')} disabled={cancelling || job.status === 'queued'}>{cancelling ? '중단 확인 중…' : '검수 강제 중단'}</button>}
                 {job.status === 'queued' && <small>자료 전송 후 Pod 실행이 시작되면 중단할 수 있습니다.</small>}</div>}
               <p className="mt-monitor-note">{running ? '조회 일시정지나 화면 닫기는 Pod의 계산을 중단하지 않습니다.' : method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p>
             </section>
@@ -541,5 +556,6 @@ export default function ModelTestPage() {
               : <><p>HTTP 방식은 전용 검수 API가 필요합니다. 기존 OCR 워커나 일반 채팅 API에는 직접 연결되지 않습니다.</p><p>GET /api/modeltest/health<br />POST /api/modeltest/runs<br />GET /api/modeltest/runs/:id</p><p>Pod에서 현재 화면의 출처({window.location.origin})를 CORS로 허용해야 합니다.</p><p>RunPod 계정 API 키가 아닌 Pod 검수 API 토큰을 입력하세요.</p></>}<h3>검수 자료와 결과</h3><p>필요한 단계를 선택하고 모델을 지정하세요.</p><p>소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p><p>{method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p><p>실행한 모델의 출력과 요청 설정을 확인합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p><p>실행 설정은 실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.</p><p>모델·revision·처리 설정이 같은 벡터만 비교합니다.</p><p>유사도, 재정렬 점수, 분류 점수는 서로 다른 지표입니다.</p><p>새 모델은 상단 모델 관리에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</p><p>입력한 모델의 로딩·추론은 Pod에서 처리합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></details>
       <footer className="mt-footer"><span>크리에이티브체커 · 모델 테스트</span><span>입력한 모델의 로딩·추론은 Pod에서 처리합니다.</span></footer>
     </main>
+    <ModeltestConfirm request={confirmation} onResolve={accepted => { setConfirmation(null); if (accepted) { if (confirmation.action === 'cancel') cancel(); else confirmation.action(); } }} />
   </div>;
 }
