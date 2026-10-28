@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Brand } from '../../components/Brand.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import {
-  CONTRACT, STAGES, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
+  CONTRACT, STAGES, MODEL_OPTIONS, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
   stagesFor, parseModel, parseEndpoint, validateHealth, validateRun, formErrors,
   makeManifest, makeFormData, podRequest, sshRequest, modeltestRequest, SIGLIP2, modelOptions, parseStageModel, preparationLabel, stageTitle,
 } from './modeltest.js';
@@ -16,6 +16,7 @@ import ModeltestWorkflow from './ModeltestWorkflow.jsx';
 import ModeltestAgents from './ModeltestAgents.jsx';
 import ModeltestLibrary from './ModeltestLibrary.jsx';
 import ModeltestPrompt from './ModeltestPrompt.jsx';
+import ModeltestHelp from './ModeltestHelp.jsx';
 import { registration, modelChoice } from './modeltestCatalog.js';
 import { agentTemplate } from './modeltestAgents.js';
 import { elapsedSeconds, formatDuration } from './modeltestResults.js';
@@ -51,8 +52,7 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
       onClick={() => input.current.click()} onDragOver={event => { event.preventDefault(); if (!disabled) setDragging(true); }}
       onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); select(event.dataTransfer.files); }}>
       <Icon name={kind === 'document' ? 'file' : 'upload'} /><strong>{files.length ? '파일 추가·변경' : '클릭하거나 파일을 놓으세요'}</strong>
-      <small>{types.length ? types.map(ext => ext.slice(1).toUpperCase()).join(', ') : 'Pod에서 지원하는 형식 없음'}</small>
-      <small>파일당 {formatBytes(fileLimit(kind, health))}{multiple ? ' · 최대 10개' : ''}</small>
+      <small>{types.length ? types.map(ext => ext.slice(1).toUpperCase()).join(', ') : 'Pod에서 지원하는 형식 없음'} · 파일당 {formatBytes(fileLimit(kind, health))}{multiple ? ' · 최대 10개' : ''}</small>
     </button>
     {files.length > 0 && <ul className="mt-file-list">{files.map((file, index) => <li key={`${file.name}-${index}`}>
       <div><strong title={file.name}>{file.name}</strong><small>{formatBytes(file.size)}</small></div>
@@ -70,17 +70,20 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
   const unsupported = health && !health.stages.includes(stage.id);
   const models = modelOptions(health).filter(model => model.stages.includes(stage.id));
   const profile = models.find(model => model.id === (registered ? value.model : parsed?.model_id));
+  const modelWarning = registered?.reasons?.join(' · ') || (profile && (!MODEL_OPTIONS.some(model => model.id === profile.id) || profile.id === 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF') ? profile.description : '');
   const id = `mt-model-${stage.id}`;
   return <div id={`mt-stage-${stage.id}`} className={`mt-stage ${value.enabled ? '' : 'is-off'}`}>
     <span className="mt-stage-number">{String(index).padStart(2, '0')}</span>
     <div className="mt-stage-content">
-      <div className="mt-stage-heading"><label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
-        onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label><Icon name={stage.icon} /></div>
-      <p>{stage.description}</p>
+      <div className="mt-stage-heading"><div className="mt-title-help"><label className="mt-toggle"><input type="checkbox" checked={value.enabled} disabled={disabled}
+        onChange={event => update({ ...value, enabled: event.target.checked })} /><span>{stage.title}</span></label><ModeltestHelp label={stage.title}>
+          <p>{stage.description}</p>
+          {stage.id === 'candidate_filter' ? <p>각 로고의 원본 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과한 후보가 없으면 해당 로고의 XFeat 호출은 생략합니다.</p>
+            : null}
+        </ModeltestHelp></div><Icon name={stage.icon} /></div>
       {stage.id === 'candidate_filter' ? <div className="mt-filter-fields">
         <label>최소 코사인 유사도<input aria-label="필터 최소 코사인 유사도" type="number" min={-1} max={1} step="any" value={value.threshold} disabled={disabled || !value.enabled} placeholder="비워두면 제한 없음" onChange={event => update({ ...value, threshold: event.target.value })} /></label>
         <label>상위 후보 수<input aria-label="필터 상위 후보 수" type="number" min={1} max={10} step={1} value={value.topK} disabled={disabled || !value.enabled} placeholder="비워두면 모두" onChange={event => update({ ...value, topK: event.target.value })} /></label>
-        <small>각 로고의 원본 후보에 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과한 후보가 없으면 해당 로고의 XFeat 호출은 생략합니다. 임계값은 검수 통과 확률이 아닙니다.</small>
       </div> : <>
       <label className="sr-only" htmlFor={`${id}-preset`}>{stage.title} 등록 모델 선택</label>
       <select id={`${id}-preset`} className="mt-model-select" value={profile?.id || ''} disabled={disabled || !value.enabled}
@@ -93,18 +96,18 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
         placeholder="소유자/모델명 또는 Hugging Face 링크" maxLength={512} aria-invalid={value.enabled && !!invalid}
         aria-describedby={`${id}-hint`} onChange={event => update({ ...value, ...modelChoice(event.target.value, health) })} />
       <small id={`${id}-hint`} className={value.enabled && (invalid || unsupported) ? 'mt-error' : ''}>
-        {unsupported ? '이 Pod에서 지원하지 않는 단계입니다.' : invalid || profile?.description || (parsed ? `${parsed.model_id}${parsed.revision ? ` @ ${parsed.revision}` : ''} · 입력 형식 확인, 실행 호환성은 Pod에서 확인` : '모델 목록에서 선택하거나 Hugging Face 링크를 입력하세요.')}
+        {unsupported ? '이 Pod에서 지원하지 않는 단계입니다.' : invalid || modelWarning || profile?.description || (parsed ? `${parsed.model_id}${parsed.revision ? ` @ ${parsed.revision}` : ''} · 입력 형식 확인, 실행 호환성은 Pod에서 확인` : '모델 목록에서 선택하거나 Hugging Face 링크를 입력하세요.')}
       </small>
-      {stage.id === 'logo_compare' && extraSimilarity && parsed?.model_id === 'vismatch/xfeat' && <label className="mt-similarity-option">
+      {stage.id === 'logo_compare' && extraSimilarity && parsed?.model_id === 'vismatch/xfeat' && <div className="mt-title-help"><label className="mt-similarity-option">
         <input type="checkbox" checked={!!value.imageSimilarity} disabled={disabled || !value.enabled} onChange={event => update({ ...value, imageSimilarity: event.target.checked })} />
         <span>SigLIP2 이미지 코사인 유사도도 계산<small>크롭과 원본 이미지를 추가 모델로 대조합니다.</small></span>
-      </label>}
+      </label></div>}
       {parsed?.model_id === SIGLIP2 && stage.id === 'visual_extract' && <div className="mt-model-options">
-        <label htmlFor={`${id}-labels`}>비교할 후보 문구 <span>필수 · 한 줄에 하나</span></label>
+        <div className="mt-title-help"><label htmlFor={`${id}-labels`}>비교할 후보 문구 <span>필수 · 한 줄에 하나</span></label></div>
         <textarea id={`${id}-labels`} rows={4} value={value.labels || ''} disabled={disabled || !value.enabled}
           maxLength={6432} placeholder={'a red background\na person holding a product\na blue logo'}
           aria-describedby={`${id}-labels-hint`} onChange={event => update({ ...value, labels: event.target.value })} />
-        <small id={`${id}-labels-hint`}>최대 32개, 문구당 200자. 각 문구의 유사도는 검수 통과 확률이 아닙니다.</small>
+        <small id={`${id}-labels-hint`}>최대 32개, 문구당 200자.</small>
       </div>}
       <ModeltestPrompt key={value.model} kind={stage.id} modelId={promptModel} profile={registered} value={value} disabled={disabled || !value.enabled}
         label={`${stage.title} 프롬프트`} onChange={patch => update({ ...value, ...patch })} />
@@ -524,6 +527,9 @@ export default function ModelTestPage() {
                   </div></div>}
         </div>
       </section>
+      <p className="mt-result-guidance">임계값·유사도는 검수 통과 확률이 아니며, 이미지 코사인 및 특징점 지표는 일치 확률이 아닙니다. 실행 성공은 품질 검증을 뜻하지 않습니다. 실행 환경과 품질은 별도 확인이 필요합니다.</p>
+      <details className="mt-api-help mt-page-help"><summary>페이지 도움말</summary><h3>Pod 연결과 작업 복원</h3>{method === 'ssh' ? <><p>노트북의 로컬 백엔드가 OpenSSH로 접속합니다. 최초 접속은 터미널에서 서버 지문을 확인하고, 암호화된 키는 ssh-agent에 등록해 주세요.</p><p>TCP SSH는 일반 데이터 통신을, 기본 SSH는 터미널을 통한 전송을 사용합니다. 큰 영상에는 TCP SSH를 권장합니다.</p><p>OWLv2는 로고 추출, SigLIP2는 후보 문구별 시각 유사도, XFeat는 로고 대조, Qwen3.5는 문서·이미지 분석에 연결됩니다. 기존 Transformers 생성 모델과 Grounding DINO도 지원 범위에서 사용할 수 있습니다.</p><p>실행 ID로 조회를 복원하며, 백엔드를 재시작했다면 같은 Pod에 연결 후 이전 작업을 조회하세요.</p></>
+              : <><p>HTTP 방식은 전용 검수 API가 필요합니다. 기존 OCR 워커나 일반 채팅 API에는 직접 연결되지 않습니다.</p><p>GET /api/modeltest/health<br />POST /api/modeltest/runs<br />GET /api/modeltest/runs/:id</p><p>Pod에서 현재 화면의 출처({window.location.origin})를 CORS로 허용해야 합니다.</p><p>RunPod 계정 API 키가 아닌 Pod 검수 API 토큰을 입력하세요.</p></>}<h3>검수 자료와 결과</h3><p>필요한 단계를 선택하고 모델을 지정하세요.</p><p>소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p><p>{method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p><p>실행한 모델의 출력과 요청 설정을 확인합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p><p>실행 설정은 실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.</p><p>모델·revision·처리 설정이 같은 벡터만 비교합니다.</p><p>유사도, 재정렬 점수, 분류 점수는 서로 다른 지표입니다.</p><p>새 모델은 상단 모델 관리에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</p><p>입력한 모델의 로딩·추론은 Pod에서 처리합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></details>
       <footer className="mt-footer"><span>크리에이티브체커 · 모델 테스트</span><span>입력한 모델의 로딩·추론은 Pod에서 처리합니다.</span></footer>
     </main>
   </div>;
