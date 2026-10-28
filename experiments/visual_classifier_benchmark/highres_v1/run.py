@@ -64,12 +64,20 @@ def model_identity(model_dir,reference):
     return dict(checkpoint=str(checkpoint),checkpoint_sha256=sha(checkpoint),selection_sha256=sha(selection_path),
                 model_files={n:recorded[n]['sha256'] for n in ('config.json','model.safetensors','preprocessor_config.json')},thresholds=thresholds)
 
+def supports_interpolation(module):
+    # Transformers 4.x exposes SiglipVisionTransformer; 5.x uses SiglipVisionModel.
+    for name in ('SiglipVisionTransformer','SiglipVisionModel'):
+        cls=getattr(module,name,None)
+        if cls is not None and 'interpolate_pos_encoding' in inspect.signature(cls.forward).parameters:
+            return True
+    return False
+
 def preflight(args):
     packet,rows,counts=check_packet(args.packet)
     import torch, transformers, safetensors, PIL, numpy
-    from transformers.models.siglip.modeling_siglip import SiglipVisionTransformer
     if 768 in args.sizes:
-        require('interpolate_pos_encoding' in inspect.signature(SiglipVisionTransformer.forward).parameters,'Installed Transformers does not expose position interpolation; stop or use --sizes 384')
+        from transformers.models.siglip import modeling_siglip
+        require(supports_interpolation(modeling_siglip),'Installed Transformers does not expose position interpolation; stop or use --sizes 384')
     require(torch.cuda.is_available(),'CUDA unavailable; no installation attempted')
     identity=model_identity(args.model_dir,args.reference)
     return dict(counts=counts,packet_sha256=sha(args.packet/'packet.json'),runner_sha256=sha(Path(__file__)),model=identity,device=torch.cuda.get_device_name(0),

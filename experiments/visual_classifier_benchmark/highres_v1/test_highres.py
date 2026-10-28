@@ -27,6 +27,20 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(m['per_label'][1]['known'],0)
         self.assertIsNone(m['per_label'][1]['f1'])
 
+    def test_interpolation_detection_across_transformers_versions(self):
+        class OldVision:
+            def forward(self, pixel_values, interpolate_pos_encoding=False): pass
+        class NewVision:
+            def forward(self, pixel_values, interpolate_pos_encoding=False): pass
+        class NoInterpolation:
+            def forward(self, pixel_values): pass
+        old=type('Module',(),{'SiglipVisionTransformer':OldVision})()
+        new=type('Module',(),{'SiglipVisionModel':NewVision})()
+        missing=type('Module',(),{'SiglipVisionModel':NoInterpolation})()
+        self.assertTrue(run.supports_interpolation(old))
+        self.assertTrue(run.supports_interpolation(new))
+        self.assertFalse(run.supports_interpolation(missing))
+
     def test_cache_letterbox_and_source_hash(self):
         from PIL import Image
         with tempfile.TemporaryDirectory() as d:
