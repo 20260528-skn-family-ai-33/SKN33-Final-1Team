@@ -25,8 +25,12 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   });
   await page.goto(`${origin}/modeltest`); await page.getByRole('button', { name: '영상 검수', exact: true }).click();
   const pipeline = page.locator('.mt-pipeline'); const stageList = page.getByRole('region', { name: '검수 단계 설정 목록', exact: true });
-  assert.ok(await pipeline.evaluate(element => element.getBoundingClientRect().height) <= 900);
+  assert.ok(await pipeline.evaluate(element => element.getBoundingClientRect().height) <= 1100 - 48);
   assert.equal(await stageList.evaluate(element => element.scrollHeight > element.clientHeight), true);
+  await page.setViewportSize({ width: 1440, height: 760 });
+  assert.ok(await pipeline.evaluate(element => element.getBoundingClientRect().height) <= 760 - 48);
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  assert.ok(await pipeline.evaluate(element => element.getBoundingClientRect().height) > 760 - 48);
   await stageList.locator('.mt-stage').last().scrollIntoViewIfNeeded(); assert.ok(await stageList.evaluate(element => element.scrollTop) > 0);
   await page.getByRole('checkbox', { name: '편집 사용', exact: true }).check();
   await page.getByRole('button', { name: 'SigLIP2 → 필터 → XFeat', exact: true }).click();
