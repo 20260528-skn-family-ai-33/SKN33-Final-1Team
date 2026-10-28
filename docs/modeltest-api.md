@@ -33,14 +33,15 @@ ssh pod-identifier@ssh.runpod.io -i ~/.ssh/id_ed25519
 
 ### SSH 실행기의 지원 범위
 
-아래 네 모델 ID는 전용 로더와 처리 함수로 연결한다. URL 입력도 같은 ID로 정규화된다. 목록에 있다고 Pod 추론 품질까지 검증된 것은 아니다.
+아래 다섯 모델 ID는 전용 로더와 처리 함수로 연결한다. URL 입력도 같은 ID로 정규화된다. 목록에 있다고 Pod 추론 품질까지 검증된 것은 아니다.
 
 | 모델 | 선택할 단계 | 결과 |
 | --- | --- | --- |
 | `google/owlv2-base-patch16` | 로고 추출 | `a brand logo` 질의로 탐지한 픽셀 좌표와 점수. 임계값 0.2 |
-| `google/siglip2-base-patch16-224` | 시각 요소 추출 | 입력한 후보 문구별 이미지 유사도 `label_scores` |
+| `google/siglip2-base-patch16-224` | 시각 요소 추출, 로고 이미지 유사도 | 후보 문구별 `label_scores` 또는 로고 크롭·원본 이미지의 코사인 유사도 |
 | `vismatch/xfeat` | 원본 로고와 대조 | 로고별·레퍼런스별 특징점 수, 매칭 수, 기하 검증 통과 수와 대응 좌표 |
-| `Qwen/Qwen3.5-4B` | 모든 모델 단계 | 조건·문구·시각 설명·대조 결과 생성. 로고 추출은 좌표 JSON 파싱 |
+| `Qwen/Qwen3.5-4B` | 조건·추출·대조·응답 생성 | 조건·문구·시각 설명·대조 결과 생성. 로고 추출은 좌표 JSON 파싱. SigLIP2 유사도와 후보 필터는 제외 |
+| `PaddlePaddle/PaddleOCR-VL-1.6-GGUF` | 문구 추출 | 이미지마다 `OCR:` 요청으로 텍스트 추출. 문구 좌표와 전체 문서 레이아웃 분석은 미포함 |
 
 SigLIP2를 선택하면 후보 문구 입력란이 표시된다. 한 줄에 하나씩 1~32개, 문구당 200자까지 입력한다. API에서는 해당 단계에 `"labels": ["a red background", "a person holding a product"]`를 보낸다. 공백을 제거한 중복은 받지 않는다. 각 logit에 sigmoid를 적용한 독립 점수이며 합계가 1인 분류 확률이나 검수 통과 확률이 아니다. 문구 OCR과 자유로운 설명 생성은 하지 않는다. 조건 대조도 필요하면 후속 시각 요소 대조 단계에 Qwen을 지정한다.
 
@@ -54,8 +55,53 @@ XFeat 가중치는 지정한 `vismatch/xfeat` revision의 `xfeat.pt`를 `weights
 - 로고 추출: Grounding DINO 계열 또는 정해진 JSON 좌표 형식을 반환하는 이미지 생성 응답 모델. 로고를 실제로 잘라낸 이미지와 원본 로고를 후속 대조 모델에 전달한다. Grounding DINO의 기본 임계값은 box 0.35, text 0.25이며 프로젝트 데이터로 보정된 성능 수치가 아니다.
 - 문서: PDF, DOCX, HWPX, UTF-8 TXT·MD. PDF는 문서당 40페이지까지 페이지 이미지로 처리한다. DOCX·HWPX는 본문 텍스트만 읽는다. 이미지·표의 시각 배치가 필요한 문서는 PDF로 변환한다. DOC·HWP 바이너리 형식은 이 실행기에서 받지 않는다.
 - 영상: PyAV로 실제 타임스탬프를 읽고 N프레임 또는 N초마다 추출한다. 긴 변 1,920px 이하의 프레임을 사용한다. 동일 장면도 설정한 간격의 표본을 유지한다.
-- 모델별 최대 생성 토큰은 호출당 1,536이다. 원문 출력과 단계 상태를 표시하며, 모델이 반환한 판단을 확정된 정답으로 취급하지 않는다. 한 번에 한 모델을 GPU에 올리고 모델 변경 시 이전 모델을 해제한다. 선택한 모델이 VRAM에 맞는지는 별도 확인이 필요하다.
-- Transformers 모델은 Safetensors 가중치와 `trust_remote_code=False`를 사용한다. XFeat에 한해 위의 고정된 코드와 텐서 가중치를 사용한다. 모든 Hugging Face 저장소를 지원하지 않으며, 알려진 네 모델의 단계 불일치는 실행 전에 차단한다. 그 외 모델의 로딩 호환성은 실행 시 확인한다. 비공개·접근 제한 모델은 Pod 자체의 Hugging Face 인증이 별도로 필요하다.
+- 모델별 최대 생성 토큰은 호출당 1,536이다. 원문 출력과 단계 상태를 표시하며, 모델이 반환한 판단을 확정된 정답으로 취급하지 않는다. 기본은 순차 실행이며, 워크플로우의 동시 실행 수를 2로 설정하면 작업자마다 별도 모델을 유지한다. 각 작업자는 모델 변경 시 이전 모델을 해제한다. 병렬 실행에서는 두 모델이 함께 VRAM에 들어가야 한다.
+- Transformers 모델은 Safetensors 가중치와 `trust_remote_code=False`를 사용한다. XFeat와 GGUF는 문서에 명시한 고정된 실행 코드를 사용한다. 모든 Hugging Face 저장소를 지원하지 않으며, 알려진 다섯 모델의 단계 불일치는 실행 전에 차단한다. 그 외 모델의 로딩 호환성은 실행 시 확인한다. 비공개·접근 제한 모델은 Pod 자체의 Hugging Face 인증이 별도로 필요하다.
+
+### PaddleOCR GGUF 실행
+
+일반 단계 편집과 에이전트 내부 단계의 `문구 추출`에서 모델을 선택하거나 [공식 Hugging Face 링크](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF)를 입력한다. Transformers로 읽지 않고 공식 모델 카드의 llama.cpp 이미지 OCR 방식을 사용한다.
+
+첫 실행 시 Pod의 전용 가상환경 아래 `modeltest-llama/620d2225cc436ab0b001e3200e590e3b286ef9ab`에 llama.cpp 소스를 받아 CUDA 서버를 빌드한다. Pod에 **git, C++ 컴파일러, CUDA nvcc**가 필요하다. 없으면 해당 도구를 안내하고 실패하며, 시스템 패키지를 자동 설치하지 않는다. CMake가 없으면 전용 가상환경에만 설치한다. 빌드는 동시 컴파일 2개, 최대 30분으로 제한하며 완료 표시가 있는 실행 파일은 재사용한다.
+
+지정한 모델 revision을 SHA로 해석한 뒤 GGUF와 mmproj를 같은 SHA에서 내려받는다. 서버는 Pod 내부 `127.0.0.1`의 임시 포트에만 바인딩하고 작업별 인증키를 사용한다. 공개 포트 설정은 필요하지 않다. 모델 전환·작업 종료 시 자신의 서버만 정리하며, 강제중단 시 기존 작업 프로세스 그룹에 포함된다. `/v1/chat/completions` 이미지 요청 형식은 [llama.cpp 서버 규격](https://github.com/ggml-org/llama.cpp/blob/620d2225cc436ab0b001e3200e590e3b286ef9ab/tools/server/README.md)을 따른다.
+
+첫 빌드·다운로드는 모델 로딩 시간에 포함된다. 실패한 빌드의 단계·출력 끝부분을 결과에 보존한다. 이 경로는 직접 이미지 OCR이며 PaddleOCR 전체 문서 분석 파이프라인은 아니다. 토큰 한도에 도달한 출력에는 잘림 안내를 표시한다. 실제 Pod CUDA 빌드·추론 품질과 속도는 별도 확인이 필요하다.
+
+### 모델 워크플로우와 에이전트 보드
+
+`모델 단계 편집`의 `워크플로우 → 편집 사용`을 켜면 현재 단계를 순차 연결하거나 `SigLIP2 → 필터 → XFeat`, `SigLIP2 · XFeat 병렬` 프리셋을 적용할 수 있다. 노드 제목을 드래그·방향키로 이동하고 출력 점과 입력 점을 연결한다. 연결은 삭제·추가할 수 있으며 순환·누락 입력은 실행 전에 차단한다.
+
+- 필터는 **각 프레임의 각 탐지 로고별로** 원본 로고 후보를 유사도 내림차순으로 정렬하고 최소 코사인 유사도를 적용한 뒤 상위 N개를 남긴다. 최소 유사도와 N 중 하나만 지정해도 된다. 동점은 레퍼런스 첨부 순서를 따른다.
+- 필터를 통과한 쌍만 후속 XFeat 모델에 전달한다. 전체 후보가 없으면 XFeat 로딩·호출도 생략한다. 후보 탈락은 불일치 판정이 아니며 결과 화면에 따로 표시한다.
+- 두 모델을 동시에 실행하려면 같은 로고 추출에서 SigLIP2와 XFeat로 분기하고 동시 실행 수를 2로 설정한다. 연결로 이어진 단계는 선행 단계 완료 후 실행한다. 필터가 선행하면 XFeat는 필터 완료를 기다린다.
+- 병렬 실행의 단계·모델 시간 합계는 전체 경과 시간보다 클 수 있다. 한 단계가 실패하면 새 단계 접수를 멈추고 이미 실행 중인 다른 단계는 종료될 때까지 기다린다. 그동안 강제중단을 사용할 수 있다.
+
+`에이전트 보드`에서는 바깥 에이전트와 각 에이전트 내부 모델·필터 노드를 별도로 편집한다. 에이전트 이름·활성 여부·연결, 내부 단계 추가·삭제·처리 유형·모델·모델 지시·필터 값·입력 결과 선택을 변경할 수 있다. 최대 32개 에이전트, 실행할 내부 단계 64개, 동시 실행 2개를 지원한다. 첨부·설정과 함께 보드 연결·노드 위치를 브라우저에 저장한다.
+
+활성 에이전트의 모든 내부 말단 단계가 끝나면 다음 에이전트의 시작 단계가 실행된다. 비활성 에이전트는 건너뛰어 의존성을 이어간다. 같은 종류의 선행 결과가 여러 개면 가장 가까운 결과를 선택하되, 후보가 여럿이면 사용자가 입력을 지정해야 한다. 필터와 로고 대조는 같은 탐지 결과를 사용해야 한다. 결과 화면과 소요 시간 표에는 에이전트·단계 이름이 표시된다.
+
+A01~A08 템플릿은 첨부 아키텍처를 참고한 수정 가능한 초안이다. A04 문구와 A05 시각 검수는 분기하고 A06에서 합류한다. 현재 에이전트는 지정한 모델·필터 단계의 실행 단위이며 자율 도구 선택 기능은 없다. 검색·MCP 호출, 사람 승인, 자동 재검사 반복은 미연동이다. A03 검색과 A08 수정·재검수는 기본 비활성이다. `모델 응답 생성`은 직접 연결된 선행 결과와 직접 입력 조건을 받아 요약·검증·보고서 초안을 만든다.
+
+워크플로우 API는 health에 `"workflow": {"version": 1, "max_parallel": 2, "agents": true}`를 선언해야 한다. 실행 요청의 선택 필드 `workflow`는 아래 형태다. 기존 요청에서 생략하면 기존 순차 실행을 유지한다. 사용자 정의 단계는 고유 `id`와 처리 유형 `kind`, 표시 이름 `name`, 소속 `agent_id`, 역할별 선행 단계 ID `inputs`를 갖는다. `frames`는 영상 실행기가 추가하는 예약 ID다.
+
+```json
+{
+  "stages": [
+    {"id": "detector", "kind": "logo_extract", "name": "로고 찾기", "agent_id": "visual", "model_id": "google/owlv2-base-patch16", "inputs": {}},
+    {"id": "similarity", "kind": "logo_similarity", "agent_id": "visual", "model_id": "google/siglip2-base-patch16-224", "inputs": {"logo_extract": "detector"}},
+    {"id": "gate", "kind": "candidate_filter", "agent_id": "visual", "threshold": 0.85, "top_k": 2, "inputs": {"logo_similarity": "similarity"}},
+    {"id": "match", "kind": "logo_compare", "agent_id": "visual", "model_id": "vismatch/xfeat", "inputs": {"logo_extract": "detector", "candidate_filter": "gate"}}
+  ],
+  "workflow": {
+    "max_parallel": 1,
+    "agents": [{"id": "visual", "name": "시각 요소 검수"}],
+    "edges": [{"source": "frames", "target": "detector"}, {"source": "detector", "target": "similarity"}, {"source": "similarity", "target": "gate"}, {"source": "gate", "target": "match"}]
+  }
+}
+```
+
+위는 영상 검수 요청에 넣을 단계·연결 예시이며 `contract`, `flow`, `sampling`, `files` 등 기존 필드도 필요하다. 임계값 0.85는 예시이며 데이터로 검증한 기준이 아니다. 결과 단계는 동일한 ID·종류·이름·소속·입력 정보를 유지한다. 사용자 정의 HTTP 서버도 이 입력·출력 규격을 구현해야 보드를 실행할 수 있다. 새 실행기 적용에는 **로컬 백엔드 재시작, Pod 재연결, 새 검수 실행**이 필요하다.
 
 `Pod 실행환경 준비`에서 설치하는 패키지는 `backend/app/modeltest_remote.py`의 `PACKAGES`에 정의한다. 실제 모델 설치·추론을 로컬 노트북에서 수행하지 않는다. 원격 작업 파일은 `/workspace/.creative-checker-modeltest/runs/<요청 ID>`에 남는다(`/workspace`가 없으면 원격 홈 아래). 자동 삭제하지 않는다.
 
