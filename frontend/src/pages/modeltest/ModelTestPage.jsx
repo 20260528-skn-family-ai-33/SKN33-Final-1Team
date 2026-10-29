@@ -39,7 +39,7 @@ function FileThumbnail({ file }) {
   return failed ? <small>브라우저 미리보기 불가</small> : <img className="mt-file-thumbnail" src={url || undefined} alt={`${file.name} 미리보기`} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
-function Attachments({ kind, title, files, onChange, required, multiple, disabled, health, maxFiles = 10, thumbnails = false }) {
+function Attachments({ kind, title, files, onChange, onClear, required, multiple, disabled, health, maxFiles = 10, thumbnails = false }) {
   const input = useRef(null); const [error, setError] = useState(''); const [dragging, setDragging] = useState(false);
   const types = allowedTypes(kind, health);
   function select(incoming) {
@@ -53,7 +53,7 @@ function Attachments({ kind, title, files, onChange, required, multiple, disable
     onChange(multiple ? [...files, ...next] : next); setError('');
   }
   return <section className="mt-attachment" aria-label={title}>
-    <div className="mt-label"><h3>{title}</h3><span>{required ? '필수' : '선택'}</span></div>
+    <div className="mt-label"><h3>{title}</h3>{onClear && <button type="button" className="text-btn" aria-label={`${title} 전체 해제`} disabled={disabled || !files.length} onClick={() => onClear(() => { onChange([]); setError(''); })}>전체 해제 ({files.length})</button>}<span>{required ? '필수' : '선택'}</span></div>
     <input ref={input} type="file" className="sr-only" tabIndex={-1} accept={types.join(',')} multiple={multiple} disabled={disabled || !types.length}
       aria-label={title} onChange={event => { select(event.target.files); event.target.value = ''; }} />
     <button type="button" className={`mt-drop ${dragging ? 'is-dragging' : ''}`} disabled={disabled || !types.length}
@@ -529,7 +529,8 @@ export default function ModelTestPage() {
               {flow === 'similarity' && <>
                 <ImageResize label="기준 이미지" value={state.resize} onChange={resize => update({ resize })} disabled={locked || !state.media} />
                 <ImageResize label="대조 이미지" value={state.referenceResize} onChange={referenceResize => update({ referenceResize })} disabled={locked} />
-                <Attachments kind="reference" title="대조 이미지" multiple required maxFiles={100} thumbnails files={state.references} onChange={references => update({ references })} disabled={locked} health={health} />
+                <Attachments kind="reference" title="대조 이미지" multiple required maxFiles={100} thumbnails files={state.references} onChange={references => update({ references })}
+                  onClear={clear => confirmAction({ title: '대조 이미지 전체 해제', message: `첨부한 대조 이미지 ${state.references.length}장을 모두 해제할까요? 기준 이미지와 실행 결과는 유지됩니다.`, confirmLabel: '전체 해제', danger: true }, clear)} disabled={locked} health={health} />
               </>}
               {flow !== 'similarity' && <Attachments kind="document" title="발주서·계약서" multiple required={flow === 'image'} files={state.documents}
                 onChange={documents => update({ documents })} disabled={locked} health={health} />}

@@ -89,6 +89,21 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
   assert.equal(await page.getByLabel('기준 이미지 세로', { exact: true }).inputValue(), '50');
   if (resizeMode === 'percent') await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).selectOption('percent');
   assert.equal(await page.getByLabel('유사도 테스트 모델 선택', { exact: true }).inputValue(), 'google/siglip2-so400m-patch14-384');
+  const clearAll = page.getByRole('button', { name: '대조 이미지 전체 해제', exact: true });
+  const clearDialog = page.getByRole('dialog', { name: '대조 이미지 전체 해제', exact: true });
+  await clearAll.focus(); await page.keyboard.press('Enter'); await clearDialog.waitFor();
+  await page.keyboard.press('Escape'); await clearDialog.waitFor({ state: 'hidden' });
+  assert.equal(await clearAll.evaluate(element => element === document.activeElement), true);
+  assert.equal(await gallery.locator('li').count(), 100);
+  await clearAll.click(); await clearDialog.getByRole('button', { name: '전체 해제', exact: true }).click();
+  assert.equal(await page.locator('.mt-file-gallery li').count(), 0); assert.equal(await clearAll.isDisabled(), true);
+  await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
+  await page.getByText('Pod 연결됨', { exact: true }).waitFor();
+  assert.equal(await page.locator('.mt-file-gallery li').count(), 0);
+  assert.equal(await page.getByRole('button', { name: 'base.png 삭제', exact: true }).count(), 1);
+  assert.equal(await page.getByLabel('기준 이미지 크기 입력 방식', { exact: true }).inputValue(), resizeMode);
+  assert.equal(await page.getByLabel('대조 이미지 크기 입력 방식', { exact: true }).inputValue(), resizeMode);
+  await input.setInputFiles(Array.from({ length: 100 }, (_, i) => candidate(i)));
   await page.getByRole('button', { name: '검수 실행', exact: true }).click();
   await page.getByRole('region', { name: '이미지별 유사도 표', exact: true }).waitFor();
   assert.equal(manifest.flow, 'similarity'); assert.equal(manifest.files.references.length, 100); assert.deepEqual(manifest.resize, resizeMode === 'percent' ? { percent: 50 } : { width: 100, height: 50 });
@@ -124,6 +139,11 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
   await page.getByRole('button', { name: '디버그', exact: true }).click(); await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: 'XFeat 특징점 대조' }).click();
   assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+  await clearAll.click(); await clearDialog.getByRole('button', { name: '전체 해제', exact: true }).click();
+  assert.equal(await page.locator('.mt-file-gallery li').count(), 0);
+  assert.equal(await page.getByRole('button', { name: 'base.png 삭제', exact: true }).count(), 1);
+  assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+  assert.match(await detail.locator('dl').innerText(), /111 \/ 10개/);
   assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
 });
 
