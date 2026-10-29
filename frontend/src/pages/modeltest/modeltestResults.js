@@ -19,6 +19,50 @@ export function decisionLabel(value) {
   return ({ candidate_match: '일치 후보', match: '일치', mismatch: '불일치', uncertain: '판단 보류', pass: '통과', fail: '미통과' })[value] || '모델 설명 확인';
 }
 
+export const SIMILARITY_COLUMNS = [
+  { key: 'cosine', label: '이미지 코사인' },
+  { key: 'descriptor', label: 'XFeat 특징점 유사도' },
+  { key: 'decision', label: 'XFeat 판정' },
+];
+
+export function nextSimilaritySort(sort, key) {
+  if (sort?.key !== key) return { key, direction: 'ascending' };
+  return sort.direction === 'ascending' ? { key, direction: 'descending' } : null;
+}
+
+// Keep attachment indices as identities, regardless of the displayed order/subset.
+export function similarityRows(files, cosine, matches, sort = null, filters = {}) {
+  const finite = value => Number.isFinite(value) ? value : null;
+  const all = files.map((file, index) => ({ file, index,
+    cosine: finite(cosine.get(index)?.image_cosine_similarity),
+    descriptor: finite(matches.get(index)?.descriptor_similarity),
+    decision: matches.has(index) ? decisionLabel(matches.get(index).decision) : null,
+  }));
+  const decisions = [...new Set([...all.map(row => row.decision ?? '미계산'), ...(filters.decision ? [filters.decision] : [])])];
+  const ranges = [];
+  for (const { key, label } of SIMILARITY_COLUMNS.filter(column => column.key !== 'decision')) {
+    const parse = value => value == null || String(value).trim() === '' ? null : Number(value);
+    const min = parse(filters[key]?.min); const max = parse(filters[key]?.max);
+    if ([min, max].some(value => value !== null && (!Number.isFinite(value) || value < -1 || value > 1))) {
+      return { rows: [], decisions, error: `${label}: 최솟값·최댓값은 -1~1 사이의 숫자로 입력해 주세요.` };
+    }
+    if (min !== null && max !== null && min > max) return { rows: [], decisions, error: `${label}: 최솟값은 최댓값보다 클 수 없습니다.` };
+    if (min !== null || max !== null) ranges.push({ key, min, max });
+  }
+  const rows = all.filter(row => (!filters.decision || (row.decision ?? '미계산') === filters.decision)
+    && ranges.every(({ key, min, max }) => row[key] !== null && (min === null || row[key] >= min) && (max === null || row[key] <= max)));
+  if (SIMILARITY_COLUMNS.some(column => column.key === sort?.key)) {
+    rows.sort((a, b) => {
+      const left = a[sort.key]; const right = b[sort.key];
+      // Missing measurements stay at the bottom in both directions.
+      if (left === null || right === null) return (left === null) - (right === null) || a.index - b.index;
+      const order = sort.key === 'decision' ? left.localeCompare(right, 'ko') : left - right;
+      return order * (sort.direction === 'descending' ? -1 : 1) || a.index - b.index;
+    });
+  }
+  return { rows, decisions, error: '' };
+}
+
 // Preview images use object-fit: contain; coordinates refer to measurement pixels.
 export function containedPoint(point, source, box, natural) {
   if (![point, source, natural].every(value => Array.isArray(value) && value.length === 2) || ![...point, ...source, ...natural, box.x, box.y, box.width, box.height].every(Number.isFinite)) return null;

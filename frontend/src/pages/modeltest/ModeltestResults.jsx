@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { modeltestRequest } from './modeltest.js';
-import { boxStyle, decisionLabel, frameLabel, previewURL, preferredReference } from './modeltestResults.js';
+import { boxStyle, decisionLabel, frameLabel, previewURL, preferredReference, SIMILARITY_COLUMNS, nextSimilaritySort, similarityRows } from './modeltestResults.js';
 import { EXTRA_STAGES } from './modeltestCatalog.js';
 import ModeltestHelp from './ModeltestHelp.jsx';
 import { MatchedImages, CandidateAudit, MatchingSettings } from './ModeltestMatches.jsx';
@@ -122,18 +122,45 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
   </section>;
 }
 
+function SimilaritySortHeader({ column, sort, onSort }) {
+  const direction = sort?.key === column.key ? sort.direction : 'none';
+  const next = direction === 'ascending' ? '내림차순' : direction === 'descending' ? '첨부 순서로 복귀' : '오름차순';
+  return <th scope="col" aria-sort={direction}><button type="button" className="text-btn" aria-label={`${column.label} 정렬`} title={`클릭: ${next}`} onClick={() => onSort(nextSimilaritySort(sort, column.key))}>
+    {column.label} <span aria-hidden="true">{direction === 'ascending' ? '↑' : direction === 'descending' ? '↓' : '↕'}</span>
+  </button></th>;
+}
+
 function SimilarityResults({ job, manifest, context, cache, selection, onSelect }) {
   const cosine = new Map((job.stages.find(stage => stage.id === 'logo_similarity')?.output?.items || []).map(row => [row.reference_index, row]));
   const matches = new Map((job.stages.find(stage => stage.id === 'logo_compare')?.output?.items || []).map(row => [row.reference_index, row]));
-  const index = Math.max(0, Math.min(selection.reference ?? 0, manifest.files.references.length - 1));
+  const { tableSort = null, tableFilters = {} } = selection;
+  const { rows, decisions, error } = similarityRows(manifest.files.references, cosine, matches, tableSort, tableFilters);
+  const index = rows.find(row => row.index === (selection.reference ?? 0))?.index ?? rows[0]?.index;
   const match = matches.get(index); const score = cosine.get(index);
   const reference = job.references?.find(item => item.index === index); const base = job.media;
   const metric = value => Number.isFinite(value) ? value.toFixed(4) : '미계산';
+  const setFilter = (key, value) => onSelect({ tableFilters: { ...tableFilters, [key]: value } });
+  const sortHeader = column => <SimilaritySortHeader key={column.key} column={column} sort={tableSort} onSort={sort => onSelect({ tableSort: sort })} />;
   return <div className="mt-similarity-results">
-    <div className="mt-title-help"><h3>이미지별 측정 결과 · {manifest.files.references.length}장</h3><ModeltestHelp label="이미지 유사도 결과"><p>표에서 이미지를 선택하면 기준 이미지와 나란히 볼 수 있습니다. 코사인 유사도와 특징점 유사도, 매칭 수, 기하 검증 통과율은 각각 다른 지표입니다.</p><p>양쪽 미리보기는 실제 측정에 사용한 이미지입니다. 표시용 미리보기는 최대 1,280px로 줄어들 수 있으며 측정 크기는 아래에 표시됩니다. 모델별 입력 전처리는 이후 적용됩니다.</p></ModeltestHelp></div>
-    <div className="mt-timing-scroll mt-similarity-table" tabIndex={0} role="region" aria-label="이미지별 유사도 표"><table className="mt-timing-table"><thead><tr><th scope="col">대조 이미지</th><th scope="col">이미지 코사인</th><th scope="col">XFeat 특징점 유사도</th><th scope="col">매칭 / 기하 검증 통과</th><th scope="col">XFeat 판정</th></tr></thead>
-      <tbody>{manifest.files.references.map((file, i) => { const x = matches.get(i); return <tr key={i} className={i === index ? 'is-selected' : ''}><th scope="row"><button type="button" className="text-btn" aria-pressed={i === index} onClick={() => onSelect({ reference: i })}>{i + 1}. {file.name}</button></th><td>{metric(cosine.get(i)?.image_cosine_similarity)}</td><td>{metric(x?.descriptor_similarity)}</td><td>{x ? `${x.matches ?? 0} / ${x.inliers ?? 0}` : '미계산'}</td><td>{x ? decisionLabel(x.decision) : '미계산'}</td></tr>; })}</tbody>
+    <div className="mt-title-help"><h3>이미지별 측정 결과 · {manifest.files.references.length}장</h3><ModeltestHelp label="이미지 유사도 결과"><p>표에서 이미지를 선택하면 기준 이미지와 나란히 볼 수 있습니다. 코사인 유사도와 특징점 유사도, 매칭 수, 기하 검증 통과율은 각각 다른 지표입니다.</p><p>항목 제목을 누르면 오름차순 → 내림차순 → 첨부 순서로 바뀝니다. 판정은 표시 문구순이며, 미계산 값은 양방향 모두 마지막에 표시됩니다. 필터 범위는 최솟값·최댓값을 포함하며 미계산 값은 숫자 필터에서 제외됩니다. 정렬·필터는 화면에만 적용하며 JSON에는 전체 결과를 유지합니다.</p><p>양쪽 미리보기는 실제 측정에 사용한 이미지입니다. 표시용 미리보기는 최대 1,280px로 줄어들 수 있으며 측정 크기는 아래에 표시됩니다. 모델별 입력 전처리는 이후 적용됩니다.</p></ModeltestHelp></div>
+    <details className="mt-result-filters" open={selection.filtersOpen || false} onToggle={event => { if (event.currentTarget.open !== Boolean(selection.filtersOpen)) onSelect({ filtersOpen: event.currentTarget.open }); }}>
+      <summary>결과 필터</summary>
+      <div className="mt-result-filter-fields">
+        {SIMILARITY_COLUMNS.filter(column => column.key !== 'decision').map(({ key, label }) => <fieldset key={key}><legend>{label}</legend>
+          {['min', 'max'].map(bound => <label key={bound}>{bound === 'min' ? '최솟값' : '최댓값'}<input type="number" min="-1" max="1" step="any" placeholder={bound === 'min' ? '-1' : '1'} aria-label={`${label} ${bound === 'min' ? '최솟값' : '최댓값'}`} value={tableFilters[key]?.[bound] ?? ''} onChange={event => setFilter(key, { ...tableFilters[key], [bound]: event.target.value })} /></label>)}
+        </fieldset>)}
+        <label>XFeat 판정<select aria-label="XFeat 판정 필터" value={tableFilters.decision || ''} onChange={event => setFilter('decision', event.target.value)}><option value="">전체</option>{decisions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <button type="button" className="btn secondary small" onClick={() => onSelect({ tableFilters: {} })}>필터 초기화</button>
+      </div>
+    </details>
+    {error && <p className="mt-error" role="alert">{error}</p>}
+    <p className="mt-hint" role="status">표시 {rows.length} / 전체 {manifest.files.references.length}장{tableSort ? ` · ${SIMILARITY_COLUMNS.find(column => column.key === tableSort.key)?.label} ${tableSort.direction === 'ascending' ? '오름차순' : '내림차순'}` : ' · 첨부 순서'}</p>
+    <div className="mt-timing-scroll mt-similarity-table" tabIndex={0} role="region" aria-label="이미지별 유사도 표"><table className="mt-timing-table"><thead><tr><th scope="col">대조 이미지</th>{SIMILARITY_COLUMNS.slice(0, 2).map(sortHeader)}<th scope="col">매칭 / 기하 검증 통과</th>{sortHeader(SIMILARITY_COLUMNS[2])}</tr></thead>
+      <tbody>{rows.map(row => { const { index: i, file } = row; const x = matches.get(i); return <tr key={i} className={i === index ? 'is-selected' : ''}><th scope="row"><button type="button" className="text-btn" aria-pressed={i === index} onClick={() => onSelect({ reference: i })}>{i + 1}. {file.name}</button></th><td>{metric(row.cosine)}</td><td>{metric(row.descriptor)}</td><td>{x ? `${x.matches ?? 0} / ${x.inliers ?? 0}` : '미계산'}</td><td>{row.decision ?? '미계산'}</td></tr>; })}
+        {!rows.length && <tr><td colSpan={5} className="mt-empty">{error ? '필터 입력값을 확인해 주세요.' : '필터에 맞는 대조 이미지가 없습니다.'}</td></tr>}
+      </tbody>
     </table></div>
+    {index !== undefined && <>
     <MatchedImages match={match} sizes={[[base?.width, base?.height], [reference?.width, reference?.height]]}>
       <figure><figcaption>기준 이미지 · {manifest.files.media.name}</figcaption><Preview context={context} jobId={job.id} name={base?.preview} cache={cache} alt="측정에 사용한 기준 이미지" />
         {base && <p className="mt-hint">원본 {base.original_width} × {base.original_height}px → 측정 {base.width} × {base.height}px{manifest.resize?.percent != null && ` · 원본의 ${manifest.resize.percent}%`}{base.resized ? ' · 다운사이징 적용' : ' · 원본 크기'}</p>}</figure>
@@ -150,6 +177,7 @@ function SimilarityResults({ job, manifest, context, cache, selection, onSelect 
     </dl>
     {match?.note && <p className="mt-hint">{match.note}</p>}
     <MatchingSettings match={match} />
+    </>}
   </div>;
 }
 

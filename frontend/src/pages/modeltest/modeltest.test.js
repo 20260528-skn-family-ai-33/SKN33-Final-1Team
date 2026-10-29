@@ -5,10 +5,63 @@ import {
   formErrors, fileError, makeManifest, makeFormData, validateHealth, validateRun, podRequest, sshRequest, modeltestRequest, workflowPreset, workflowError,
 } from './modeltest.js';
 import { agentTemplate, compileAgents, newAgent, newAgentStep } from './modeltestAgents.js';
-import { containedPoint, boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference, latestCompletedStage } from './modeltestResults.js';
+import { containedPoint, boxStyle, decisionLabel, frameLabel, previewURL, elapsedSeconds, formatDuration, modelTimings, preferredReference, latestCompletedStage, nextSimilaritySort, similarityRows } from './modeltestResults.js';
 import { modelChoice } from './modeltestCatalog.js';
 import { readSSH, writeSSH, connectionTarget } from './modeltestConnection.js';
 import { promptSpec, promptText, promptFields } from './modeltestPrompts.js';
+
+test('similarity sorting cycles ascending, descending and attachment order independently per column', () => {
+  for (const key of ['cosine', 'descriptor', 'decision']) {
+    const ascending = nextSimilaritySort(null, key);
+    assert.deepEqual(ascending, { key, direction: 'ascending' });
+    const descending = nextSimilaritySort(ascending, key);
+    assert.deepEqual(descending, { key, direction: 'descending' });
+    assert.equal(nextSimilaritySort(descending, key), null);
+  }
+  assert.deepEqual(nextSimilaritySort({ key: 'cosine', direction: 'descending' }, 'descriptor'), { key: 'descriptor', direction: 'ascending' });
+});
+
+function similarityFixture() {
+  return {
+    files: Array.from({ length: 6 }, () => ({ name: 'same-name.png' })),
+    cosine: new Map([0, .8, null, -.2, .8].map((image_cosine_similarity, index) => [index, { image_cosine_similarity }])),
+    matches: new Map([.7, .1, null, -.1, .7].map((descriptor_similarity, index) => [index, { descriptor_similarity, decision: ['uncertain', 'candidate_match', 'uncertain', 'mismatch', 'candidate_match'][index] }])),
+  };
+}
+
+test('similarity sorting keeps stable identities and ties, with missing scores last in either direction', () => {
+  const { files, cosine, matches } = similarityFixture(); const before = structuredClone({ files, cosine, matches });
+  const order = (key, direction) => similarityRows(files, cosine, matches, key ? { key, direction } : null).rows.map(row => row.index);
+  assert.deepEqual(order('cosine', 'ascending'), [3, 0, 1, 4, 2, 5]);
+  assert.deepEqual(order('cosine', 'descending'), [1, 4, 0, 3, 2, 5]);
+  assert.deepEqual(order('descriptor', 'ascending'), [3, 1, 0, 4, 2, 5]);
+  assert.deepEqual(order('descriptor', 'descending'), [0, 4, 1, 3, 2, 5]);
+  assert.deepEqual(order('decision', 'ascending'), [3, 1, 4, 0, 2, 5]);
+  assert.deepEqual(order('decision', 'descending'), [0, 2, 1, 4, 3, 5]);
+  assert.deepEqual(order(), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual({ files, cosine, matches }, before);
+  assert.equal(similarityRows(files, cosine, matches).rows[4].file, files[4]);
+});
+
+test('similarity filters combine inclusive numeric ranges and decisions without treating missing scores as zero', () => {
+  const { files, cosine, matches } = similarityFixture();
+  const filter = value => similarityRows(files, cosine, matches, null, value);
+  const indices = value => filter(value).rows.map(row => row.index);
+  assert.deepEqual(indices({ cosine: { min: '-1', max: '0' } }), [0, 3]);
+  assert.deepEqual(indices({ cosine: { min: '.8', max: '.8' }, descriptor: { max: '.5' }, decision: '일치 후보' }), [1]);
+  assert.deepEqual(indices({ descriptor: { min: '.7', max: '1' }, decision: '판단 보류' }), [0]);
+  assert.deepEqual(indices({ decision: '미계산' }), [5]);
+  assert.deepEqual(indices({ descriptor: { min: '-1' }, decision: '미계산' }), []);
+  assert.deepEqual(indices({ cosine: { min: '', max: ' ' }, descriptor: {} }), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(filter({ cosine: { min: '1', max: '-1' } }).rows, []);
+  assert.match(filter({ cosine: { min: '1', max: '-1' } }).error, /최솟값은 최댓값보다/);
+  for (const value of ['-1.1', '1.1', 'NaN', 'Infinity', 'invalid']) {
+    assert.match(filter({ descriptor: { min: value } }).error, /-1~1/);
+  }
+  assert.ok(filter({ decision: '미계산' }).decisions.includes('일치 후보'));
+  assert.deepEqual(similarityRows([], new Map(), new Map(), null, { decision: '미계산' }).decisions, ['미계산'], 'Active decision stays selectable when streaming results change');
+  assert.deepEqual(similarityRows([], new Map(), new Map()).rows, []);
+});
 
 test('image similarity sends one base and up to one hundred candidates with explicit resize and both models', () => {
   const state = initialFlow('similarity');

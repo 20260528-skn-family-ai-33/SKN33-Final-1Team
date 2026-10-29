@@ -26,7 +26,9 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
       manifest = JSON.parse(request.postDataBuffer().toString().match(/name="config"\r\n\r\n([^\r]+)/)[1]);
       return json({ contract: CONTRACT, id: request.headers()['idempotency-key'], status: 'completed', media: { preview: 'preview-poster.jpg', original_width: 200, original_height: 100, width: 100, height: 50, resized: true },
         references: manifest.files.references.map((_, index) => ({ index, preview: `preview-reference-${index}.jpg`, original_width: 200, original_height: 100, width: 50, height: 25, resized: true })),
-        stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity' ? { image_cosine_similarity: 0.9 } : { descriptor_similarity: 0.85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: 'candidate_match', image_sizes: [[100, 50], [50, 25]], matched_points: [{ crop: [25, 10], reference: [12.5, 5] }, { crop: [50, 25], reference: [25, 12.5] }] }) })) } })) });
+        stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity'
+          ? { image_cosine_similarity: reference_index === 1 ? -.25 : reference_index === 2 ? .99 : .9 }
+          : { descriptor_similarity: reference_index === 1 ? .1 : reference_index === 2 ? .95 : .85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: reference_index === 1 ? 'mismatch' : reference_index === 2 ? 'uncertain' : 'candidate_match', image_sizes: [[100, 50], [50, 25]], matched_points: [{ crop: [25, 10], reference: [12.5, 5] }, { crop: [50, 25], reference: [25, 12.5] }] }) })).filter(row => row.reference_index !== 3) } })) });
     }
     unexpected.push(url.pathname); return route.abort();
   });
@@ -139,6 +141,52 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
   await page.getByRole('button', { name: '디버그', exact: true }).click(); await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
   await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: 'XFeat 특징점 대조' }).click();
   assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+  const table = page.getByRole('region', { name: '이미지별 유사도 표', exact: true });
+  const rows = table.locator('tbody th button');
+  for (const name of ['이미지 코사인', 'XFeat 특징점 유사도', 'XFeat 판정']) {
+    const header = table.getByRole('button', { name: `${name} 정렬`, exact: true });
+    await header.focus(); await page.keyboard.press('Enter');
+    assert.equal(await header.evaluate(element => element.closest('th').getAttribute('aria-sort')), 'ascending');
+    assert.equal(await rows.first().innerText(), '2. candidate-1.png');
+    assert.equal(await rows.last().innerText(), '4. candidate-3.png');
+    await header.click();
+    assert.equal(await header.evaluate(element => element.closest('th').getAttribute('aria-sort')), 'descending');
+    assert.equal(await rows.first().innerText(), '3. candidate-2.png');
+    assert.equal(await rows.last().innerText(), '4. candidate-3.png');
+    assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+    await header.click();
+    assert.equal(await header.evaluate(element => element.closest('th').getAttribute('aria-sort')), 'none');
+    assert.equal(await rows.first().innerText(), '1. candidate-0.png');
+    assert.equal(await rows.last().innerText(), '100. candidate-99.png');
+  }
+  await page.locator('.mt-result-filters summary').focus(); await page.keyboard.press('Enter');
+  await page.getByLabel('이미지 코사인 최솟값', { exact: true }).fill('.95');
+  await page.getByLabel('이미지 코사인 최댓값', { exact: true }).fill('.99');
+  await page.getByLabel('XFeat 특징점 유사도 최솟값', { exact: true }).fill('.94');
+  await page.getByLabel('XFeat 특징점 유사도 최댓값', { exact: true }).fill('.96');
+  await page.getByLabel('XFeat 판정 필터', { exact: true }).selectOption('판단 보류');
+  assert.equal(await rows.count(), 1); assert.equal(await rows.first().innerText(), '3. candidate-2.png');
+  await detail.getByRole('img', { name: '대조 이미지 3 미리보기', exact: true }).waitFor();
+  assert.match(await detail.locator('dl').innerText(), /14 \/ 10개/);
+  await table.getByRole('button', { name: '이미지 코사인 정렬', exact: true }).click();
+  await page.getByRole('button', { name: '디버그', exact: true }).click(); await page.getByRole('button', { name: '단계별 결과', exact: true }).click();
+  await page.getByRole('navigation', { name: '결과 단계 선택' }).getByRole('button', { name: '이미지 코사인 유사도' }).click();
+  assert.equal(await page.getByLabel('이미지 코사인 최솟값', { exact: true }).inputValue(), '.95');
+  assert.equal(await page.getByLabel('XFeat 판정 필터', { exact: true }).inputValue(), '판단 보류');
+  assert.equal(await table.locator('th[aria-sort="ascending"]').count(), 1);
+  assert.equal(await rows.count(), 1);
+  await page.getByLabel('이미지 코사인 최댓값', { exact: true }).fill('.98');
+  assert.equal(await rows.count(), 0); await table.getByText('필터에 맞는 대조 이미지가 없습니다.', { exact: true }).waitFor();
+  assert.equal(await detail.getByRole('img', { name: '대조 이미지 3 미리보기', exact: true }).count(), 0);
+  await page.getByLabel('이미지 코사인 최댓값', { exact: true }).fill('.1');
+  await detail.getByRole('alert').filter({ hasText: '최솟값은 최댓값보다' }).waitFor();
+  await page.getByRole('button', { name: '필터 초기화', exact: true }).click();
+  assert.equal(await rows.count(), 100);
+  assert.equal(await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).getAttribute('aria-pressed'), 'true');
+  await page.getByLabel('XFeat 판정 필터', { exact: true }).selectOption('미계산');
+  assert.equal(await rows.count(), 1); assert.equal(await rows.first().innerText(), '4. candidate-3.png');
+  await page.getByRole('button', { name: '필터 초기화', exact: true }).click();
+  await detail.getByRole('img', { name: '대조 이미지 100 미리보기', exact: true }).waitFor();
   await clearAll.click(); await clearDialog.getByRole('button', { name: '전체 해제', exact: true }).click();
   assert.equal(await page.locator('.mt-file-gallery li').count(), 0);
   assert.equal(await page.getByRole('button', { name: 'base.png 삭제', exact: true }).count(), 1);
