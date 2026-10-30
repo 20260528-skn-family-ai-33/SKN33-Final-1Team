@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creative-checker:document-image:gold:v1",
+  "title": "Versioned condition labels",
+  "description": "Structural validation only. core.py and metrics.py additionally validate source contents, file hashes, identifiers, case/condition joins and packet binding.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "document-image-gold-v1"
+    },
+    "packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/label"
+      }
+    },
+    "qualification": {},
+    "source_audit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "packet_sha256",
+    "labels"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{64}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "case_id": {
+          "$ref": "#/$defs/text"
+        },
+        "condition_id": {
+          "$ref": "#/$defs/text"
+        },
+        "image_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "verdict": {
+          "enum": [
+            "pass",
+            "fail",
+            "review",
+            null
+          ]
+        },
+        "human_verified": {
+          "type": "boolean"
+        },
+        "verified_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "case_id",
+        "condition_id",
+        "image_sha256",
+        "verdict",
+        "human_verified"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "human_verified": {
+                "const": true
+              }
+            },
+            "required": [
+              "human_verified"
+            ]
+          },
+          "then": {
+            "required": [
+              "verified_by",
+              "verified_at"
+            ],
+            "properties": {
+              "verified_by": {
+                "$ref": "#/$defs/text"
+              },
+              "verified_at": {
+                "$ref": "#/$defs/text"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

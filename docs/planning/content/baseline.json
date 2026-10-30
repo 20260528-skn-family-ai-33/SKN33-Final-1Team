@@ -1,0 +1,49 @@
+{
+  "release": "2026.10.30-r2",
+  "reviewed_date": "2026-10-30",
+  "timezone": "Asia/Seoul",
+  "master_snapshot": "sources/Creative_Checker_통합초안_20261030.html",
+  "master_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459",
+  "source_original_name": "Creative_Checker_프로젝트_통합문서_20261030_초안.html",
+  "code_head": "3cbc129",
+  "code_state": "커밋되지 않은 로컬 변경 포함, 실행·배포 재검증 아님",
+  "decisions": [
+    {
+      "id": "U-DB-20261030",
+      "decision": "PostgreSQL + Neo4j를 현재 목표 구조로 반영",
+      "scope": "Qdrant 필수 경로 제외. 사용자 방향 확정, 팀 승인 별도",
+      "source": "2026-10-30 사용자 선택 답변"
+    }
+  ],
+  "code_evidence": {
+    "README.md": "4381db10c15c24d698fbe33420fb15a565ca75851800fe36a865790e0c44403b",
+    "docs/project-specification.md": "10c957513029a13db5f003061aac9f5b2c390d269447e68d0b6c0eb73fa6ae6f",
+    "start.py": "3812711b9b8737653cebd2f411b0158eb5e4064875e5bfff30647a3d9fab0df4",
+    "backend/app/api.py": "04e512cb445aef967968048c63eef9e147fd1bde19306612cac429552ea05da0",
+    "backend/app/main.py": "0277dec15420a644148cfe75efe7ea58f6cb20a1a78e9b9e8cdd8067a4b8cc42",
+    "backend/app/v1_config.py": "8ad4142db94d38f32a495e0fb9a34469830d13f8cd1bcae5bedd1dfcbd20f80e",
+    "backend/app/services/business.py": "14f177982693c9acbc32fb79e97aa7e968b157f143de8a54575786ac9a514d26",
+    "backend/app/services/reviews.py": "f420db77b9f595305319b7affc750b8f25993b568724f0793aab445589af1765",
+    "backend/app/persistence/schema/criteria.py": "d10f8569734566c4dea80ba11c00bd39d7893f9f0d82887630b94e0ce035c1d7",
+    "backend/app/execution/queue.py": "c1f725cabfa7642a0e78f94624dac815697f6bfd82f4d3c04056681d13d573fa",
+    "backend/app/worker.py": "6fb0867a6d6aa54ee3224cacba7337e7340a64755687426a3b048e7ed31c28cd",
+    "backend/app/requirements_pdf.py": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+    "backend/app/document_sources.py": "41030d710e5e000aa015db8ede9c3c3ec04009be9828dc95b7e4df6c1e556fb6",
+    "docs/pdf-requirements.md": "8a755d1acd4d19c1bf72678b2697638bdabd6447631040758c3f974bdd1f3051",
+    "docs/paddle-conditional-ocr-2026-10-29.md": "0163b03dccffff1b36907e48405ad7105064b023c7d1be50b308920388631147",
+    "docs/qwen35-pdf-verification-2026-10-29.md": "3d350dfd2ef6b793467bac49b89386a444389b29fd6c3c0c26aab8dc0318f9e9",
+    "compose.yaml": "3e44b468bba82ca2a4e608fb0046fb2c1941315f05f49b456fc6828c0a7db466",
+    "deploy/compose.v1.yaml": "1c2309fb835d81c0f083baed308ffbf1e28abb326ec83690c14df5889fba4873",
+    "frontend/src/App.jsx": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6",
+    "frontend/src/v1/App.jsx": "c2ad3288e29f213d48d08dbebd5282dc8c96d5bd3ad475b3707ef717d706b04f",
+    "frontend/src/v1/projectPages.jsx": "b0f2639e68e587952bbfff09797d60338e68f780404d7436e680a46e5e71d32c",
+    "frontend/src/v1/reviewPages.jsx": "89caf971754c6252ef41af78fbbe20188889950ba0778b24bbc8fab56f89f9a1",
+    "backend/app/services/authorization.py": "78c9ead669da65a9f8e2f19d82602aed8fe5f1f83b40b474bd56490b5f2f6480",
+    "frontend/src/main.jsx": "a449f7c5b1c1bd346dde872bfd5dfddbe924d8b2db87ab39cd1e86e0197ca061"
+  },
+  "archive": "archive/planning-before-20261030-r1.zip",
+  "archive_sha256": "627838e4139399a4465eaf746db506f2657f921fd15906b92ab5fe7d2f050c0d",
+  "source_original_rel_to_home": "SK_AI/최종프로젝트/Creative_Checker_프로젝트_통합문서_20261030_초안.html",
+  "meeting_date": "2026-10-30",
+  "meeting_content": "content/meeting-20261030.json"
+}

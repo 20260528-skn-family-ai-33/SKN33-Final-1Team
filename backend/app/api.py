@@ -15,23 +15,26 @@ import json
 import math
 import os
 from pathlib import Path
+import queue
 import threading
 from typing import Callable, Literal
 from uuid import UUID, uuid4
 import warnings
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from .review_rules import review_criteria
 from .sample import sample_image_path
 from .spa import ReviewStaticFiles
 from .local_auth import local_auth_router
 from .ocr_config import selected_pipeline
+from .requirements_pdf import DocumentError, MAX_PDF_BYTES, extract_document
+from .document_conditions import DocumentCondition, matches_condition_text
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -68,6 +71,13 @@ class Criterion(BaseModel):
     text: str = Field(min_length=1, max_length=500)
     type: Literal["information", "visual"]
     source: str = Field(default="user", min_length=1, max_length=500)
+    document_condition: DocumentCondition | None = None
+
+    @model_validator(mode='after')
+    def consistent_document_condition(self):
+        if self.document_condition and not matches_condition_text(self.document_condition.model_dump(), self.text):
+            raise ValueError('PDF 조건 기대값과 표시 문구가 다릅니다. 편집한 항목의 이전 문서 구조를 제거하세요.')
+        return self
 
 
 class CriteriaSnapshot(BaseModel):
@@ -135,6 +145,7 @@ def _normalise_image(data: bytes) -> tuple[Image.Image, dict]:
                 metadata = {
                     "actual_format": actual_format,
                     "original_mode": decoded.mode,
+                    "original_frames": getattr(decoded, 'n_frames', 1),
                     "original_dimensions": [width, height],
                     "original_sha256": hashlib.sha256(data).hexdigest(),
                     "original_bytes": len(data),
@@ -462,12 +473,19 @@ def create_app(
     recognizer: Callable[[Path], dict] | None = None,
     runtime_status: Callable[[], dict] | None = None,
     review_root: Path | None = None,
+    paddle_refiner: Callable | None = None,
+    postgres_store=None,
 ) -> FastAPI:
     # Retirement is explicit. The original development launcher keeps its default.
     readonly = os.getenv('LEGACY_READ_ONLY', '0')
     if readonly not in ('0', '1') or readonly == '1' and os.getenv('APP_ENV', 'development') not in ('development', 'test'):
         raise ValueError('Legacy read-only mode is restricted to explicit local development.')
     readonly = readonly == '1'
+    if postgres_store is None and review_root is None and not readonly:
+        configured=Path(os.environ.get('CC_WEB_POSTGRES_ENV_FILE',PROJECT_ROOT/'.runtime/postgres-web.env'))
+        if configured.exists() or os.environ.get('CC_WEB_POSTGRES_ENV_FILE'):
+            from .web_postgres import PostgresWebStore
+            postgres_store=PostgresWebStore.configured(PROJECT_ROOT)
     recognize = recognizer or _default_recognizer
     runtime_health = runtime_status or _default_runtime_status
     storage = review_root or PROJECT_ROOT / ".runtime" / "reviews"
@@ -476,9 +494,17 @@ def create_app(
     else:storage.mkdir(parents=True, exist_ok=True)
     lock = threading.RLock()
     inference_lock = threading.Lock()
+    requirements_lock = threading.Lock()
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
+        if postgres_store is not None:
+            try:
+                await run_in_threadpool(postgres_store.open,_app)
+                yield
+            finally:
+                await run_in_threadpool(postgres_store.close)
+            return
         # Background work is local to this process. Never present interrupted
         # persisted jobs as if inference were still running after a restart.
         for path in (() if readonly else storage.glob("*/result.json")):
@@ -499,6 +525,46 @@ def create_app(
     application = FastAPI(
         title="크리에이티브체커 API", version="1.0.0", lifespan=lifespan
     )
+    application.state.postgres_store=postgres_store
+    if postgres_store is not None:
+        from .routes.v1.auth import router as postgres_auth_router
+        from .security.errors import AuthError
+        from .persistence.database import PersistenceError
+        from starlette.responses import JSONResponse
+
+        @application.middleware('http')
+        async def postgres_boundary(request,call_next):
+            request.state.request_id=str(uuid4())
+            try:
+                if request.url.hostname not in postgres_store.settings.hosts:
+                    raise AuthError('RESOURCE_NOT_FOUND',404)
+                if request.url.path.startswith('/api/'):
+                    if request.url.path!='/api/health':
+                        from .management.maintenance import active
+                        if await run_in_threadpool(active,postgres_store.engine):
+                            raise AuthError('MAINTENANCE_ACTIVE',503)
+                    if request.method not in ('GET','HEAD','OPTIONS'):
+                        application.state.csrf.verify(request,postgres_store.settings)
+                    if request.url.path.startswith(('/api/reviews','/api/requirements')):
+                        from .routes.v1.business import subject
+                        request.state.web_subject=await run_in_threadpool(subject,request)
+                response=await call_next(request)
+            except (AuthError,PersistenceError) as error:
+                response=JSONResponse({'error':{'code':error.code,'message':str(error)}},
+                                      status_code=getattr(error,'status',503))
+            if request.url.path.startswith('/api/'):
+                response.headers['Cache-Control']='no-store'
+            return response
+
+        @application.exception_handler(AuthError)
+        async def postgres_auth_error(request,error):
+            return JSONResponse({'error':{'code':error.code,'message':str(error)}},status_code=error.status)
+
+        @application.exception_handler(PersistenceError)
+        async def postgres_database_error(request,error):
+            return JSONResponse({'error':{'code':'DATABASE_UNAVAILABLE','message':'DB 저장·조회에 실패했습니다. 연결 상태를 확인해 주세요.'}},status_code=503)
+
+        application.include_router(postgres_auth_router())
     if readonly:
         from .legacy_boundary import local_read_request, review_path, retired_response
         from starlette.responses import JSONResponse
@@ -512,7 +578,7 @@ def create_app(
             response.headers['Cache-Control'] = 'no-store'
             return response
     # localhost의 임시 admin 로그인은 환경 변수로 해제할 수 있다.
-    if os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
+    if postgres_store is None and os.getenv("LOCAL_ADMIN_LOGIN", "1") == "1":
         application.include_router(local_auth_router())
     allowed_origins = [
         value.strip()
@@ -530,7 +596,7 @@ def create_app(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", "X-CSRFToken"],
     )
 
     def directory(review_id: str) -> Path:
@@ -548,6 +614,8 @@ def create_app(
         with lock:
             result = _read_json(target / "result.json")
             result.update(changes, updated_at=_now())
+            if postgres_store is not None:
+                postgres_store.update(target.name,result)
             _write_json(target / "result.json", result)
 
     def _run_review(target: Path) -> None:
@@ -572,12 +640,26 @@ def create_app(
             if payload.get("pipeline") in MULTILINE_PIPELINES:
                 # 원시 후보와 시도 이력은 비공개 실행 폴더에 보존한다.
                 _write_json(target / "ocr.raw.json", payload)
+            snapshot = _read_json(target / 'snapshot.json')
+            conditional_retry = None
+            if (payload.get('pipeline') == 'paddle_full_v1' and os.getenv('OCR_CONDITION_RETRY', '1') == '1'
+                    and (recognizer is None or paddle_refiner is not None)):
+                update(target, progress=55, progress_message='조건별 후보 영역을 찾아 문구를 다시 읽고 있습니다.')
+                try:
+                    from .paddle_conditions import refine
+                    records, conditional_retry = (paddle_refiner or refine)(
+                        target/'normalized.png', records, snapshot['criteria'], snapshot['image_source'], target/'paddle-conditional')
+                except Exception as error:
+                    conditional_retry = {'version':'conditional_paddle_v1','status':'failed',
+                                         'error_type':type(error).__name__,'attempts':[]}
             ocr = {
                 "records": records,
                 "input_dimensions": [width * 2, height * 2],
                 "coordinate_space": "normalized_original_pixels",
                 "scale": 2,
             }
+            if conditional_retry is not None:
+                ocr['conditional_retry'] = conditional_retry
             multiline = payload.get("pipeline") in MULTILINE_PIPELINES
             if multiline:
                 from .event_layout import extract_event_multiline
@@ -585,8 +667,7 @@ def create_app(
                 ocr["event"] = extract_event_multiline(records)
             _write_json(target / "ocr.json", {**ocr, **runtime})
             stage = "review"
-            update(target, stage=stage, progress=80, ocr=ocr)
-            snapshot = _read_json(target / "snapshot.json")
+            update(target, stage=stage, progress=80, ocr=ocr, progress_message=None)
             results = review_criteria(
                 snapshot["criteria"], records, multiline=multiline
             )
@@ -644,14 +725,22 @@ def create_app(
         # Only one image is expanded/inferred at a time in this local process.
         # A job waiting for this lock remains truthfully queued.
         with inference_lock:
-            _run_review(target)
+            try:
+                if postgres_store is not None:postgres_store.claim(target.name)
+                _run_review(target)
+            finally:
+                if postgres_store is not None:postgres_store.claims.pop(target.name,None)
 
     @application.get("/api/health")
     def health():
         try:
+            if postgres_store is not None:
+                postgres_store.leader.check()
+                with postgres_store.engine.connect() as connection:connection.exec_driver_sql('SELECT 1')
             status = runtime_health()
             return {
                 "status": "ok",
+                "persistence": "postgres" if postgres_store is not None else "legacy_json",
                 "runtime": _safe_runtime(status),
                 "limits": {
                     "upload_bytes": MAX_UPLOAD_BYTES,
@@ -686,8 +775,89 @@ def create_app(
             reference, media_type=media_type, filename=f"gimcheon-2026.{extension}"
         )
 
+    async def read_requirements_upload(document):
+        if readonly:
+            await document.close()
+            raise HTTPException(410, "읽기 전용 모드에서는 문서를 분석할 수 없습니다.")
+        try:
+            data = await document.read(MAX_PDF_BYTES + 1)
+        finally:
+            await document.close()
+        if not data:
+            raise HTTPException(400, "빈 파일입니다. PDF 파일을 선택해 주세요.")
+        if len(data) > MAX_PDF_BYTES:
+            raise HTTPException(413, "PDF는 10MiB 이하로 올려 주세요.")
+        if not data.startswith(b"%PDF-"):
+            raise HTTPException(415, "PDF 파일만 읽을 수 있습니다. 파일의 실제 형식을 확인해 주세요.")
+        return data
+
+    def acquire_requirements_locks():
+        if not requirements_lock.acquire(blocking=False):
+            raise HTTPException(429, "다른 문서를 분석하고 있습니다. 잠시 후 다시 시도해 주세요.")
+        if not inference_lock.acquire(blocking=False):
+            requirements_lock.release()
+            raise HTTPException(429, "이미지 검수가 진행 중입니다. 완료된 뒤 PDF를 다시 올려 주세요.")
+
+    @application.post("/api/requirements/extract")
+    async def extract_requirements(document: UploadFile = File(...)):
+        data = await read_requirements_upload(document)
+        acquire_requirements_locks()
+        try:
+            return await run_in_threadpool(extract_document, data)
+        except DocumentError as error:
+            raise HTTPException(error.status, str(error)) from None
+        except Exception:
+            raise HTTPException(502, "PDF 조건 추출에 실패했습니다. 잠시 후 다시 시도해 주세요.") from None
+        finally:
+            inference_lock.release()
+            requirements_lock.release()
+
+    @application.post('/api/requirements/extract/stream')
+    async def stream_requirements(document: UploadFile = File(...)):
+        data = await read_requirements_upload(document)
+        acquire_requirements_locks()
+        events = queue.SimpleQueue()
+        events.put({'type': 'progress', 'stage': 'uploaded', 'percent': 2,
+                    'message': 'PDF 업로드를 마쳤습니다. 분석을 준비하고 있습니다.'})
+
+        def work():
+            try:
+                result = extract_document(data, progress=lambda update: events.put({'type': 'progress', **update}))
+                terminal = {'type': 'result', 'result': result}
+            except DocumentError as error:
+                terminal = {'type': 'error', 'message': str(error), 'status': error.status}
+            except Exception:
+                terminal = {'type': 'error', 'message': 'PDF 조건 추출에 실패했습니다. 잠시 후 다시 시도해 주세요.', 'status': 502}
+            finally:
+                # 브라우저가 닫혀도 실행 중인 추론이 끝나기 전에는 잠금을 풀지 않는다.
+                inference_lock.release()
+                requirements_lock.release()
+            events.put(terminal)
+
+        try:
+            threading.Thread(target=work, name='pdf-requirements-stream', daemon=True).start()
+        except Exception:
+            inference_lock.release()
+            requirements_lock.release()
+            raise HTTPException(503, 'PDF 분석을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.') from None
+
+        def stream():
+            while True:
+                try:
+                    event = events.get(timeout=1)
+                except queue.Empty:
+                    yield '\n'
+                    continue
+                yield json.dumps(event, ensure_ascii=False) + '\n'
+                if event['type'] in {'result', 'error'}:
+                    break
+
+        return StreamingResponse(stream(), media_type='application/x-ndjson',
+                                 headers={'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no'})
+
     @application.post("/api/reviews", status_code=202)
     async def submit(
+        request: Request,
         background_tasks: BackgroundTasks,
         image: UploadFile = File(...),
         criteria: str = Form(...),
@@ -719,15 +889,9 @@ def create_app(
         if not data:
             raise HTTPException(400, "빈 이미지 파일입니다.")
         rgb, source = await run_in_threadpool(_normalise_image, data)
+        source['original_extension'] = Path(image.filename or '').suffix.lower()[:16]
         review_id = str(uuid4())
-        target = storage / review_id
-        target.mkdir()
-        # Original bytes are retained exactly; user-controlled names are never
-        # used as paths or served directly. snapshots have no update endpoint.
-        (target / "original.bin").write_bytes(data)
-        rgb.save(target / "normalized.png")
-        snapshot = {**frozen.model_dump(), "image_source": source, "created_at": _now()}
-        _write_json(target / "snapshot.json", snapshot)
+        snapshot = {**frozen.model_dump(exclude_none=True), "image_source": source, "created_at": _now()}
         result = {
             "id": review_id,
             "status": "queued",
@@ -735,13 +899,16 @@ def create_app(
             "progress": 5,
             "criteria_version": frozen.criteria_version,
             "project_name": frozen.project_name,
-            "criteria": [item.model_dump() for item in frozen.criteria],
+            "criteria": [item.model_dump(exclude_none=True) for item in frozen.criteria],
             "image": {
                 "width": rgb.width,
                 "height": rgb.height,
                 "url": f"/api/reviews/{review_id}/image",
                 "sha256": source["original_sha256"],
                 "actual_format": source["actual_format"],
+                "original_mode": source['original_mode'],
+                "original_extension": source['original_extension'],
+                "original_frames": source['original_frames'],
             },
             "results": [],
             "runtime": None,
@@ -750,21 +917,51 @@ def create_app(
             "created_at": _now(),
             "updated_at": _now(),
         }
+        if postgres_store is not None:
+            try:
+                review_id=await run_in_threadpool(postgres_store.admit,*request.state.web_subject,data,snapshot,result,request.state.request_id)
+            except Exception:
+                rgb.close()
+                raise
+            result['id']=review_id
+            result['image']['url']=f'/api/reviews/{review_id}/image'
+        target = storage / review_id
+        target.mkdir()
+        # Diagnostic JSON copies and original bytes remain; PostgreSQL is primary.
+        (target / "original.bin").write_bytes(data)
+        rgb.save(target / "normalized.png")
+        _write_json(target / "snapshot.json", snapshot)
         _write_json(target / "result.json", result)
         rgb.close()
         background_tasks.add_task(run_review, target)
         return {"id": review_id, "status": "queued"}
 
     @application.get("/api/reviews/{review_id}")
-    def get_review(review_id: str):
+    def get_review(review_id: str, request: Request):
+        if postgres_store is not None:
+            value=postgres_store.read(review_id,*request.state.web_subject)
+            if value is not None:return value
+            if request.state.web_subject[0].account_kind!='developer':raise HTTPException(404,'검수 기록을 찾을 수 없습니다.')
         with lock:
             return _read_json(directory(review_id) / "result.json")
 
     @application.get("/api/reviews/{review_id}/image")
-    def review_image(review_id: str):
+    def review_image(review_id: str, request: Request):
+        if postgres_store is not None:
+            path=postgres_store.image(review_id,*request.state.web_subject)
+            if path is not None:return FileResponse(path,media_type='image/png')
+            if request.state.web_subject[0].account_kind!='developer':raise HTTPException(404,'검수 기록을 찾을 수 없습니다.')
         return FileResponse(
             directory(review_id) / "normalized.png", media_type="image/png"
         )
+
+    @application.get('/api/reviews/{review_id}/original')
+    def review_original(review_id: str,request: Request):
+        if postgres_store is not None:
+            path=postgres_store.image(review_id,*request.state.web_subject,original=True)
+            if path is not None:return FileResponse(path,media_type='application/octet-stream')
+            if request.state.web_subject[0].account_kind!='developer':raise HTTPException(404,'검수 기록을 찾을 수 없습니다.')
+        return FileResponse(directory(review_id)/'original.bin',media_type='application/octet-stream')
 
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"

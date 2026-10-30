@@ -1,42 +1,768 @@
-<!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="포스터의 8종 시각 요소 분류를 위한 Logistic Regression 분류층 학습과 ResNet18·EmbeddingGemma 2 본체 파인튜닝 결과"><title>크리에이티브체커 · 머신러닝/딥러닝 학습결과서</title><style>
-:root{--paper:#f4f3ee;--card:#fffefb;--ink:#203d34;--muted:#69746b;--line:#dbded3;--accent:#315b48;--soft:#e9eee3;--warm:#f4e9df;color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:22px}body{margin:0;background:var(--paper);color:var(--ink);font-size:15px;line-height:1.8;word-break:keep-all;overflow-wrap:break-word}a{color:var(--accent);text-underline-offset:4px}a:hover{color:#9b603c}button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #bf7543;outline-offset:4px}.skip{position:absolute;left:18px;top:-70px;padding:10px;background:var(--ink);color:white;z-index:5}.skip:focus{top:10px}
-.site-head,.hero,footer{max-width:1420px;margin:auto;padding:26px 36px 20px}.brand-row{display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{font-weight:750;text-decoration:none;letter-spacing:-.025em}.brand small{display:block;font-size:10px;letter-spacing:.14em;color:var(--muted)}.doc-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.doc-nav a{padding:7px 15px;border:1px solid var(--line);border-radius:50px;text-decoration:none;font-size:13px;background:var(--card)}.doc-nav a[aria-current=page]{background:var(--ink);color:white;border-color:var(--ink)}
-.hero{border-top:1px solid var(--line);padding-top:30px;padding-bottom:28px}.eyebrow{font-size:11px;letter-spacing:.12em;font-weight:750;color:#6d785d}.hero h1{font-size:clamp(30px,4.2vw,51px);line-height:1.25;letter-spacing:-.055em;margin:12px 0 16px}.hero p{max-width:980px;color:var(--muted);margin:0 0 14px}.badge{display:inline-block;padding:3px 10px;margin:2px 5px 2px 0;background:var(--soft);border:1px solid #d7dfcf;border-radius:99px;font-size:11px;font-weight:650}.badge.warm{background:var(--warm);border-color:#e9d8ca;color:#865b3c}.layout{max-width:1420px;margin:auto;display:grid;grid-template-columns:208px minmax(0,1fr);gap:24px;padding:0 36px 54px}.side{position:sticky;top:22px;align-self:start}.side .caption{font-size:11px;color:var(--muted);margin:4px 10px 12px;letter-spacing:.1em}.toc{display:flex;flex-direction:column;gap:4px}.toc a{text-decoration:none;padding:9px 12px;border-radius:9px;font-size:13px;line-height:1.5}.toc a:hover,.toc a.active{background:var(--ink);color:white}.toc span{font-family:ui-monospace,monospace;font-size:11px;opacity:.65;margin-right:8px}.side-note{padding:18px 12px;color:var(--muted);font-size:11px;line-height:1.8}.doc-panel{padding:30px 32px;background:var(--card);border:1px solid var(--line);border-radius:19px;min-width:0;margin-bottom:20px;scroll-margin-top:20px}.doc-panel h2{font-size:clamp(23px,2.4vw,30px);line-height:1.4;letter-spacing:-.04em;margin:6px 0 18px}.doc-panel h3{font-size:18px;letter-spacing:-.025em;margin:25px 0 10px}.doc-panel p{margin:10px 0 16px}.lead{font-size:18px}.muted,.meta{color:var(--muted);font-size:12px}.grid{display:grid;gap:14px;margin:20px 0}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:#fafbf7;min-width:0}.card .value{display:block;font-size:32px;font-weight:750;letter-spacing:-.045em;line-height:1.4}.card .label{font-size:12px;color:var(--muted)}.card strong{display:block;font-size:16px}.card p{font-size:13px;margin:8px 0 0}.note{border:1px solid #d9e2d0;border-left:4px solid #74906c;border-radius:10px;padding:15px 18px;background:#f0f4eb;margin:20px 0;font-size:13px}.note.warm{background:#fbf3eb;border-color:#e9d8ca;border-left-color:#ae7a4d}.note p:last-child{margin-bottom:0}.table-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:12px}table{border-collapse:collapse;width:100%;font-size:12px;line-height:1.7}caption{text-align:left;padding:12px 14px;font-weight:700;background:#f9faf6}th,td{padding:11px 13px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;overflow-wrap:anywhere;word-break:normal}th{background:#edf0e8;font-weight:750}thead th{min-width:68px}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#fcfcf8}.metrics td:not(:first-child),.metrics th:not(:first-child){font-variant-numeric:tabular-nums}.path{display:block;color:var(--muted);font-family:ui-monospace,monospace;font-size:10px;line-height:1.6;overflow-wrap:anywhere;word-break:break-all;margin-top:5px}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}p code,td code,li code{background:#eaf0e3;padding:2px 5px;border-radius:4px}pre{background:#edf1e8;border-radius:12px;padding:18px;overflow:auto;font-size:12px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all}details{border:1px solid var(--line);border-radius:12px;padding:0 17px;background:#fcfcf9;margin:14px 0}summary{cursor:pointer;padding:15px 0;font-weight:700;line-height:1.6}details[open]>summary{border-bottom:1px solid var(--line);margin-bottom:12px}details>:last-child:not(summary){margin-bottom:18px}ul,ol{padding-left:22px}li{margin:7px 0}.bar-row{display:grid;grid-template-columns:155px minmax(50px,1fr) 56px;gap:12px;align-items:center;margin:13px 0;font-size:12px}.bar-track{background:#e9ede4;border-radius:5px;height:12px;overflow:hidden}.bar{height:100%;background:#6b8861;border-radius:5px}.bar.dark{background:#234c40}.bar-row b{text-align:right;font-variant-numeric:tabular-nums}.model-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.model-id{font-size:11px;letter-spacing:.08em;color:#6d785d;font-weight:750}.flow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:20px 0}.flow span{padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--soft);font-size:12px}.flow i{font-style:normal;color:var(--muted)}.foot-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}footer{border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
-@media(max-width:1000px){.layout{grid-template-columns:170px minmax(0,1fr);gap:16px;padding-left:24px;padding-right:24px}.site-head,.hero,footer{padding-left:24px;padding-right:24px}.doc-panel{padding:25px}.grid.three{grid-template-columns:1fr}}
-@media(max-width:720px){body{font-size:14px}.layout{display:block;padding:0 16px 30px}.site-head,.hero,footer{padding-left:18px;padding-right:18px}.side{position:static;margin-bottom:16px}.toc{flex-direction:row;flex-wrap:wrap;gap:5px}.toc a{background:var(--soft);padding:7px 10px;font-size:11px}.side-note{display:none}.side .caption{margin-left:0}.doc-panel{padding:22px 18px}.grid.two{grid-template-columns:1fr}.bar-row{grid-template-columns:125px minmax(30px,1fr) 52px;gap:8px}.brand-row{gap:12px}.brand{font-size:14px}.brand-row button{font-size:12px;padding:7px 9px}th,td{padding:9px 10px}table{font-size:11px}.hero h1{font-size:30px}.flow i{display:none}}
-@page{size:A4;margin:14mm 12mm}
-@media print{html{scroll-behavior:auto}body{background:white;color:#162f27;font-size:10pt;line-height:1.65;-webkit-print-color-adjust:exact;print-color-adjust:exact}.site-head{padding:0 0 10px}.brand-row button,.doc-nav,.side,.skip{display:none}.hero{padding:14px 0 16px;max-width:none}.hero h1{font-size:27pt}.hero p{font-size:10pt}.layout{display:block;padding:0;max-width:none}.doc-panel{border:0;border-top:1px solid #cdd5c9;border-radius:0;padding:18px 0;margin:0;min-height:0}.doc-panel h2{font-size:18pt}.doc-panel h3{font-size:12pt}h1,h2,h3,caption,summary{break-after:avoid}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card,.note,.bar-row,tr{break-inside:avoid}.card .value{font-size:23pt}table{font-size:8pt}thead{display:table-header-group}.table-wrap{overflow:visible;border-radius:0}th,td{padding:7px 8px}details{border:0;padding:0;background:white}summary{font-size:10pt}details::details-content{display:contents}pre{font-size:8pt}.path{font-size:7pt}footer{max-width:none;padding:16px 0;font-size:8pt}a{color:inherit;text-decoration:none}}
-</style></head>
-<body><a class="skip" href="#main">본문 바로가기</a><header class="site-head"><div class="brand-row"><a class="brand" href="06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">Creative Checker<small>SK NETWORKS FAMILY AI · 33기 1팀</small></a><button id="print-document" type="button">인쇄 / PDF 저장</button></div><nav class="doc-nav" aria-label="관련 문서"><a href="06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">06 · DB 구축 결과서</a><a href="07_%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%94%A5%EB%9F%AC%EB%8B%9D_%ED%95%99%EC%8A%B5%EA%B2%B0%EA%B3%BC%EC%84%9C.html" aria-current="page">07 · ML/DL 학습결과서</a><a href="08_%ED%95%99%EC%8A%B5%ED%95%9C_ML_DL_%EB%AA%A8%EB%8D%B8.html">08 · 학습한 ML/DL 모델</a></nav></header>
-<div class="hero"><div class="eyebrow">MODELING &amp; EVALUATION · D04 · v1.0</div><h1>머신러닝/딥러닝 학습결과서</h1><p>포스터의 8종 시각 요소 분류를 위한 Logistic Regression 분류층 학습과 ResNet18·EmbeddingGemma 2 본체 파인튜닝 결과</p><span class="badge">학습·로컬 평가 완료</span><span class="badge warm">동일 평가셋 후속 비교</span><p class="meta">프로젝트: 크리에이티브 체커 · 작성: 33기 1팀 · 작성 기준일: 2026. 10. 22.</p></div>
-<div class="layout"><aside class="side"><div class="caption">CONTENTS</div><nav class="toc" aria-label="문서 목차"><a href="#overview"><span>01</span>과제 개요 및 결과 요약</a><a href="#data"><span>02</span>데이터 구성과 전처리</a><a href="#training"><span>03</span>모델 학습 및 선택 방법</a><a href="#quality"><span>04</span>학습·평가 결과</a><a href="#latency"><span>05</span>처리 속도와 실행 환경</a><a href="#analysis"><span>06</span>결과 분석과 개선 과제</a><a href="#evidence"><span>07</span>학습 산출물과 근거</a></nav><p class="side-note">로컬 실험 산출물 기준<br>187장 · 8개 라벨<br>학습 113 / 개발 37 / 평가 37<br><br>상단 버튼으로 전체 문서를 인쇄하거나 PDF로 저장할 수 있습니다.</p></aside><main id="main"><section id="overview" class="doc-panel"><div class="eyebrow">SECTION 01</div><h2>과제 개요 및 결과 요약</h2><p class="lead">디자인 납품 포스터에서 인물·사물 8종의 존재 여부를 판별하는 다중 라벨 분류 모델을 학습하고, 정확도와 이미지 처리 시간을 비교하였다.</p>
-<p>검수 기준의 시각 요소를 자동 점검하기 위한 보조 분류기를 만드는 것이 목적이다. 한 이미지에 여러 요소가 동시에 존재할 수 있어 8개의 이진 출력을 사용했다. 모델의 존재 판별 결과는 추후 OCR·기준 대조와 함께 활용할 수 있으며, 이번 실험에서 계약 준수 여부의 최종 판정까지 평가한 것은 아니다.</p>
-<div class="grid three"><div class="card"><span class="label">고유 포스터</span><span class="value">187장</span><p>197개 래스터 파일의 동일 RGB 픽셀 중복 10개 통합</p></div><div class="card"><span class="label">EG2 파인튜닝 · 라벨별 정확도</span><span class="value">80.50%</span><p>평가 282개 알려진 항목 중 227개 정답</p></div><div class="card"><span class="label">가장 높은 Macro F1</span><span class="value">0.7815</span><p>EG2 본체 고정 + LR 분류층</p></div></div>
-<div class="note warm"><strong>결과의 해석 범위</strong><p>사용자가 승인한 AI 보조 라벨 초안을 사용한 예비 실험이다. 본체 파인튜닝 비교는 이미 결과를 확인한 평가 37장을 재사용한 후속 회귀 평가이며, 새로운 독립 데이터에 대한 일반화 성능으로 해석하지 않는다. 90% 정확도 목표에는 미달했다.</p></div><div class="table-wrap"><table><thead><tr><th scope="col">구분</th><th scope="col">작성 내용</th></tr></thead><tbody><tr><td>산출물</td><td>D04 · 머신러닝/딥러닝 학습결과서</td></tr><tr><td>수행 범위</td><td>LR 분류층 2종 학습, ResNet18·EG2 본체 파인튜닝, 개발셋 선택, 평가·속도 비교</td></tr><tr><td>관련 모델 명세</td><td><a href="08_%ED%95%99%EC%8A%B5%ED%95%9C_ML_DL_%EB%AA%A8%EB%8D%B8.html">D05 · 학습한 ML/DL 모델</a>에 실제 가중치 경로·SHA256·임계값 수록</td></tr><tr><td>기준 자료</td><td>기존 DB 구축 결과서의 문서 형식, 승인 기록, 고정 분할, 학습 로그, 체크포인트, 예측·지연 산출물</td></tr></tbody></table></div></section><section id="data" class="doc-panel"><div class="eyebrow">SECTION 02</div><h2>데이터 구성과 전처리</h2><h3>2.1 수집·중복 제거·라벨 승인</h3><p>기존 포스터 래스터 197개에서 동일 RGB 픽셀 중복을 통합해 187장의 고유 이미지를 구성했다. 원본 파일명·해시와 이미지 ID를 유지했다. 사진·일러스트·명확한 실루엣을 시각 내용으로 판단하며, 행사명이나 OCR 문구만으로 대상이 있다고 추정하지 않았다. 작은 후원 로고·글자 획 장식은 대상에서 제외했다.</p>
-<p>2026. 10. 22. 사용자가 기존 AI 보조 라벨 초안과 그룹을 채팅에서 승인했다. 독립적인 이미지별 사람 재라벨링 결과를 의미하지 않는다. <code>모름(null)</code> 70개는 유지하고 해당 라벨의 학습·개발·평가 분모에서만 제외했다.</p><div class="table-wrap"><table><thead><tr><th scope="col">분할</th><th scope="col">이미지 수</th><th scope="col">알려진 라벨 항목</th><th scope="col">모름 · 제외 항목</th><th scope="col">사용 목적</th></tr></thead><tbody><tr><td>학습</td><td>113</td><td>861</td><td>43</td><td>LR 계수·DL 가중치 학습</td></tr><tr><td>개발</td><td>37</td><td>283</td><td>13</td><td>후보·체크포인트·라벨별 임계값 선택</td></tr><tr><td>평가</td><td>37</td><td>282</td><td>14</td><td>고정된 설정으로 최종 비교</td></tr><tr><td>합계</td><td>187</td><td>1,426</td><td>70</td><td>총 1,496개 이미지×라벨 항목</td></tr></tbody></table></div><h3>2.2 라벨 구성과 평가 표본</h3><div class="table-wrap"><table><thead><tr><th scope="col">라벨 ID</th><th scope="col">항목</th><th scope="col">있음</th><th scope="col">없음</th><th scope="col">모름</th></tr></thead><tbody><tr><td><code>person</code></td><td>인물</td><td>25</td><td>12</td><td>0</td></tr><tr><td><code>food_drink</code></td><td>음식·음료</td><td>11</td><td>24</td><td>2</td></tr><tr><td><code>animal</code></td><td>동물</td><td>14</td><td>21</td><td>2</td></tr><tr><td><code>plant_flower</code></td><td>식물·꽃</td><td>24</td><td>11</td><td>2</td></tr><tr><td><code>vehicle</code></td><td>탈것</td><td>9</td><td>27</td><td>1</td></tr><tr><td><code>building_structure</code></td><td>건물·구조물</td><td>24</td><td>12</td><td>1</td></tr><tr><td><code>musical_instrument</code></td><td>악기</td><td>7</td><td>27</td><td>3</td></tr><tr><td><code>fireworks</code></td><td>불꽃놀이</td><td>4</td><td>30</td><td>3</td></tr></tbody></table></div><h3>2.3 분할·전처리</h3><p>승인된 <code>group_id</code> 기준의 다중 라벨 그룹 분할을 사용했다. 난수 시드 20261022, 목표 비율 60:20:20으로 분할하고 동일 그룹의 분할 간 중복이 없음을 확인했다. 이번 파인튜닝에서도 기존 이미지 ID와 분할을 유지했다.</p><p>입력은 EXIF 방향 보정 → RGB → 전체 시야를 보존하는 448×448 비율 유지 리사이즈·중앙 패딩(RGB 128)이다. ResNet18 정규화와 EG2 processor는 각 구조에 맞게 적용했다. EG2 이미지 토큰 예산은 280이며 오디오 인코더는 로드하지 않았다.</p></section><section id="training" class="doc-panel"><div class="eyebrow">SECTION 03</div><h2>모델 학습 및 선택 방법</h2><div class="flow" aria-label="학습 절차"><span>승인 라벨 · 그룹 분할 고정</span><i>→</i><span>학습셋 학습</span><i>→</i><span>개발셋 후보·임계값 선택</span><i>→</i><span>체크포인트·설정 고정</span><i>→</i><span>평가·속도 측정</span></div>
-<h3>3.1 본체 고정 + 머신러닝 분류층</h3><p>ResNet18의 512차원 특징과 EG2의 768차원 특징을 각각 L2 정규화한 뒤, 라벨별 독립 이진 Logistic Regression을 학습했다. 본체는 고정했다. <code>C ∈ {0.01, 0.1, 1, 10}</code>, <code>class_weight ∈ {balanced, 없음}</code>을 탐색했으며 두 경로 모두 C=10, balanced가 선택됐다. solver는 lbfgs, max_iter는 2,000이다.</p>
-<h3>3.2 본체 파인튜닝</h3><p>기존 LR 계수와 절편을 Linear 분류층으로 복사해 초기화하고, 본체와 분류층을 함께 학습했다. 손실은 모름을 제외한 BCEWithLogitsLoss다. 체크포인트는 개발 Macro AP가 가장 높은 epoch에서 저장하고, 후보는 해당 체크포인트의 개발 Macro F1을 우선 비교해 선택했다.</p><div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">ResNet18 · DL-01</th><th scope="col">EG2 · DL-02</th></tr></thead><tbody><tr><td>학습 범위</td><td>전체 본체 + Linear(512, 8)<br>BatchNorm running 통계 고정</td><td>전체 활성 이미지·텍스트 본체 + Linear(768, 8)<br>오디오 제외</td></tr><tr><td>옵티마이저</td><td>AdamW · weight_decay 0.0001</td><td>AdamW · weight_decay 0.0001</td></tr><tr><td>본체 학습률 후보</td><td>1e-5 / 3e-5</td><td>1e-6 / 3e-6</td></tr><tr><td>분류층 학습률</td><td>0.001</td><td>0.001</td></tr><tr><td>양성 가중치 후보</td><td>없음 / 학습셋 양성·음성 비율</td><td>없음</td></tr><tr><td>후보 수</td><td>4</td><td>2</td></tr><tr><td>학습 batch</td><td>8</td><td>microbatch 1 · 8장 gradient accumulation</td></tr><tr><td>최대 epoch / patience</td><td>25 / 5</td><td>4 / 2</td></tr><tr><td>선택 결과</td><td>lr3e-05_none · best epoch 9<br>해당 후보 14 epoch · 210 optimizer steps</td><td>lr3e-06_none · best epoch 4<br>해당 후보 4 epoch · 60 optimizer steps</td></tr><tr><td>증강</td><td>밝기 ±0.08 · 대비 ±0.08 · 채도 ±0.05<br>crop·flip·이동 없음</td><td>밝기 ±0.08 · 대비 ±0.08 · 채도 ±0.05<br>기하 변환 없음</td></tr></tbody></table></div><p>라벨별 판정 임계값은 개발셋에서 0~1, 간격 0.05의 후보 중 F1이 가장 높은 값으로 고정했다. 동률일 때 0.5에 가까운 값, 그다음 큰 값을 선택했다. 후속 실행 안에서 평가 예측을 사용해 후보·임계값을 선택하지 않았으나, 평가셋 결과 자체는 이전 비교에서 이미 노출된 상태였다.</p>
-<div class="note"><strong>비교 조건</strong><p>입력 이미지·승인 라벨·분할·평가 방법은 같고, 본체 파인튜닝의 탐색 후보 수와 실제 학습 예산은 다르다. 표는 이번에 실행한 설정을 비교한 결과이며 각 모델의 최대 성능 비교가 아니다.</p></div></section><section id="quality" class="doc-panel"><div class="eyebrow">SECTION 04</div><h2>학습·평가 결과</h2><p>라벨별 정확도는 모름을 제외한 282개 항목의 정답률이다. Macro F1은 8개 라벨 F1의 단순 평균, Micro F1은 알려진 항목을 합쳐 계산한 F1이다. Macro AP는 임계값 이전 점수의 순위 품질을 평가한다. 완전 일치율은 모름이 없는 27장 중 8개 라벨을 모두 맞힌 비율이다.</p><div class="metrics"><div class="table-wrap"><table><thead><tr><th scope="col">학습 모델</th><th scope="col">라벨별 정확도</th><th scope="col">Macro F1</th><th scope="col">Micro F1</th><th scope="col">Macro AP</th><th scope="col">완전 일치율</th></tr></thead><tbody><tr><td><strong>ResNet18 고정 + LR</strong><br><span class="muted">ML-01</span></td><td>68.44%</td><td>0.5753</td><td>0.6740</td><td>0.6414</td><td>7.41%</td></tr><tr><td><strong>EG2 고정 + LR</strong><br><span class="muted">ML-02</span></td><td>78.72%</td><td>0.7815</td><td>0.7692</td><td>0.8358</td><td>25.93%</td></tr><tr><td><strong>ResNet18 파인튜닝</strong><br><span class="muted">DL-01</span></td><td>71.99%</td><td>0.6647</td><td>0.6973</td><td>0.6941</td><td>7.41%</td></tr><tr><td><strong>EG2 파인튜닝</strong><br><span class="muted">DL-02</span></td><td>80.50%</td><td>0.7798</td><td>0.7826</td><td>0.8803</td><td>22.22%</td></tr><tr><td>항상 없음 기준선</td><td>58.16%</td><td>0.0000</td><td>0.0000</td><td>—</td><td>3.70%</td></tr></tbody></table></div></div><p class="meta">ML-01은 최초 고정 본체 비교(E05), 나머지 세 행은 최신 EG2 후속 비교(E08)의 동일 평가 라벨·예측에 근거한다. 항상 없음 기준선의 AP는 모델 성능 비교에서 제외했다.</p>
-<h3>4.1 Macro F1 비교</h3><div class="bar-row"><span>ResNet18 고정 + LR</span><div class="bar-track"><div class="bar " style="width:57.527%"></div></div><b>0.5753</b></div><div class="bar-row"><span>EG2 고정 + LR</span><div class="bar-track"><div class="bar dark" style="width:78.154%"></div></div><b>0.7815</b></div><div class="bar-row"><span>ResNet18 파인튜닝</span><div class="bar-track"><div class="bar " style="width:66.470%"></div></div><b>0.6647</b></div><div class="bar-row"><span>EG2 파인튜닝</span><div class="bar-track"><div class="bar " style="width:77.984%"></div></div><b>0.7798</b></div><h3>4.2 항목별 F1 · 최신 3모델</h3><div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">평가 있음 / 없음</th><th scope="col">ResNet18 FT</th><th scope="col">EG2 고정 + LR</th><th scope="col">EG2 FT</th><th scope="col">EG2 FT 재현율</th></tr></thead><tbody><tr><td>인물</td><td>25 / 12</td><td>0.7391</td><td>0.8148</td><td>0.8679</td><td>0.9200</td></tr><tr><td>음식·음료</td><td>11 / 24</td><td>0.5556</td><td>0.6667</td><td>0.6667</td><td>0.8182</td></tr><tr><td>동물</td><td>14 / 21</td><td>0.6897</td><td>0.7143</td><td>0.6897</td><td>0.7143</td></tr><tr><td>식물·꽃</td><td>24 / 11</td><td>0.7755</td><td>0.8235</td><td>0.8235</td><td>0.8750</td></tr><tr><td>탈것</td><td>9 / 27</td><td>0.4828</td><td>0.6000</td><td>0.6000</td><td>1.0000</td></tr><tr><td>건물·구조물</td><td>24 / 12</td><td>0.8750</td><td>0.8095</td><td>0.8636</td><td>0.7917</td></tr><tr><td>악기</td><td>7 / 27</td><td>0.5333</td><td>0.8235</td><td>0.7273</td><td>0.5714</td></tr><tr><td>불꽃놀이</td><td>4 / 30</td><td>0.6667</td><td>1.0000</td><td>1.0000</td><td>1.0000</td></tr></tbody></table></div><div class="note"><strong>관찰된 변화</strong><p>EG2 파인튜닝의 정답은 222/282에서 227/282로 5개 증가(+1.77%p)했다. Macro AP도 0.8358에서 0.8803으로 상승했으나, Macro F1은 0.7815에서 0.7798로 소폭 하락했다. 악기 재현율은 1.0000에서 0.5714(4/7)로 낮아졌으며 평가셋에 맞춘 임계값 재조정은 수행하지 않았다.</p></div></section><section id="latency" class="doc-panel"><div class="eyebrow">SECTION 05</div><h2>처리 속도와 실행 환경</h2><p>Apple M4 Pro · 메모리 24GiB · MPS · FP32 · batch 1에서 같은 평가 37장을 같은 순서로 3회 측정했다. 모델별 warmup 3회 뒤 111회 요청을 기록했으며 MPS 동기화를 적용했다. 아래는 최신 3모델 비교의 같은 측정 회차다.</p><div class="table-wrap"><table><thead><tr><th scope="col">모델</th><th scope="col">평균 ms/장</th><th scope="col">중앙값 ms/장</th><th scope="col">P95 ms/장</th><th scope="col">측정 수</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>10.42</td><td>9.79</td><td>16.48</td><td>111</td></tr><tr><td>EG2 고정 + LR</td><td>601.37</td><td>598.63</td><td>623.93</td><td>111</td></tr><tr><td>EG2 파인튜닝</td><td>598.12</td><td>596.98</td><td>611.58</td><td>111</td></tr></tbody></table></div><div class="grid two"><div class="card"><strong>측정에 포함</strong><p>이미지 읽기·EXIF/RGB/448 전처리, 모델별 processor, 특징 추출, 분류층·임계값 처리, 필요한 장치 간 전송</p></div><div class="card"><strong>측정에서 제외</strong><p>OCR, 학습, 모델 다운로드·로딩, DB·네트워크·API 지연. 실제 서비스 전체 응답시간과 별도다.</p></div></div><p>ResNet18 FT는 이번 측정에서 EG2 FT보다 평균 약 57.4배 빠르다. EG2 FT 전후 평균 시간 차이는 약 0.54%다. FT 분류층은 MPS FP32 Linear, 고정 EG2 LR은 기존 CPU float64 계산 경로를 유지하므로 총 처리시간을 기준으로 해석한다.</p><h3>5.1 실행 환경</h3><div class="table-wrap"><table><thead><tr><th scope="col">항목</th><th scope="col">실행 기록</th></tr></thead><tbody><tr><td>장치</td><td>Apple M4 Pro · 24GiB · macOS arm64 · MPS</td></tr><tr><td>실행 조건</td><td>FP32 · torch threads 4 · seed 20261022</td></tr><tr><td>Python</td><td>3.12.14</td></tr><tr><td>주요 패키지</td><td>torch 2.10.0<br>torchvision 0.25.0<br>numpy 2.5.4<br>pillow 12.3.0<br>scikit-learn 1.9.1<br>transformers 5.20.2<br>sentence-transformers 6.2.0</td></tr></tbody></table></div></section><section id="analysis" class="doc-panel"><div class="eyebrow">SECTION 06</div><h2>결과 분석과 개선 과제</h2><h3>6.1 결과 판단</h3><ul>
-<li><strong>분류층 학습의 효과:</strong> EG2 고정 특징 + LR은 Macro F1 0.7815로 이번 네 경로 중 가장 높았다. 사전학습 본체 전체를 추가 학습해야만 유효한 분류가 가능한 것은 아니었다.</li>
-<li><strong>ResNet18 파인튜닝:</strong> 고정 특징 대비 정확도는 +3.55%p, Macro F1은 +0.0894다. 다만 F1 증가의 약 93%가 평가 양성 4개인 불꽃놀이 항목에서 나왔고, 다른 7개 항목 평균 F1 증가는 약 0.0070이었다.</li>
-<li><strong>EG2 파인튜닝:</strong> 라벨별 정확도는 높아졌지만 Macro F1·완전 일치율은 개선되지 않았다. 포스터 행 단위 paired bootstrap 10,000회의 정확도 차이 95% 구간은 −1.39~+5.00%p, Macro F1 차이는 −0.05668~+0.04841로 모두 0을 포함한다. 고정 EG2 대비 확실한 개선을 결론 내리기 어렵다.</li>
-<li><strong>활용 판단:</strong> 이번 분류 품질 기준선은 EG2 고정 + LR, 낮은 지연시간이 필요한 비교 후보는 ResNet18 FT로 기록한다. 운영 모델 선정과 90% 달성은 추가 검증 후 결정한다.</li></ul>
-<h3>6.2 한계와 후속 과제</h3><ol>
-<li>187장·단일 분할·AI 보조 초안의 사용자 일괄 승인에 근거한다. 독립 라벨 검토와 새 평가셋을 확보한다.</li>
-<li>평가 37장을 재사용한 회귀 비교다. 새로운 행사·디자인·출처의 데이터로 일반화 성능을 확인한다.</li>
-<li>악기 7개·불꽃놀이 4개 등 양성 표본이 적다. 항목별 누락·오탐을 확인하고 학습 표본을 보강한다.</li>
-<li>bootstrap은 포스터 행 재표집이며 그룹 군집·라벨 불확실성·학습 및 모델 선택 불확실성을 포함하지 않는다.</li>
-<li>후속 모델 추천은 별도 실험 후보이며 이번 학습 완료 모델에 포함하지 않는다. PaddleOCR는 유지했으며 이번 시각 분류 실험의 학습 대상이 아니다.</li>
-<li>새 모델 서비스 연동, RunPod 이식, 운영 배포 및 OCR 포함 실제 전체 지연시간 검증은 이번 결과서의 완료 범위에 포함되지 않는다.</li></ol></section><section id="evidence" class="doc-panel"><div class="eyebrow">SECTION 07</div><h2>학습 산출물과 근거</h2><p>모델 파라미터·체크포인트·선택 기록·평가 예측·지연 원자료가 보존되어 있다. 기존 검증 보고서의 ResNet18 1,689개, EG2 3,339개 항목 통과 기록을 확인했다. 이는 저장 산출물의 정합성 검증이며 별도 독립 데이터 평가가 아니다.</p><p>이번 문서 작성에서는 아래 결과 파일을 읽고 최종 모델 파일의 SHA256을 다시 계산해 선택 기록과 대조했다. 추가 학습·모델 재로딩·추론·배포는 실행하지 않았다.</p><div class="table-wrap"><table><thead><tr><th scope="col">산출물</th><th scope="col">모델 / 결과 경로</th></tr></thead><tbody><tr><td>ML-01</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/resnet18_frozen_linear/head_weights.json">ResNet18 특징 + Logistic Regression</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/resnet18_frozen_linear/head_weights.json</span></td></tr><tr><td>ML-02</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/eg2_image_frozen_linear/head_weights.json">EG2 특징 + Logistic Regression</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/eg2_image_frozen_linear/head_weights.json</span></td></tr><tr><td>DL-01</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/candidates/lr3e-05_none/best_checkpoint.pt">ResNet18 전체 본체 파인튜닝</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/candidates/lr3e-05_none/best_checkpoint.pt</span></td></tr><tr><td>DL-02</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/candidates/lr3e-06_none/best_checkpoint.pt">EmbeddingGemma 2 전체 활성 본체 파인튜닝</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/candidates/lr3e-06_none/best_checkpoint.pt</span></td></tr></tbody></table></div><details><summary>근거 파일 · 버전 · 실행 로그 확인</summary><div class="table-wrap"><table><thead><tr><th scope="col">근거</th><th scope="col">파일 / 확인 내용</th></tr></thead><tbody><tr><td>E01</td><td><a href="06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">기존 문서 형식 · 벡터DB·GraphDB 구축 결과서</a><span class="path">/Users/choejiheum/SK_AI/SKN33-Final-1Team/docs/planning/organized/06_벡터DB_GraphDB_구축결과서.html</span></td></tr><tr><td>E02</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/approval/approval_record.json">사용자 채팅 승인 기록 · 187장 / 모름 마스킹</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/approval/approval_record.json</span></td></tr><tr><td>E03</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/approval/user_chat_approved_2026-10-22.json">승인 라벨 내보내기</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/approval/user_chat_approved_2026-10-22.json</span></td></tr><tr><td>E04</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/split_frozen.json">그룹 분할 고정 · 113 / 37 / 37</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/split_frozen.json</span></td></tr><tr><td>E05</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/comparison_summary.json">고정 본체 + LR 최초 비교</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/comparison_summary.json</span></td></tr><tr><td>E06</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/result_summary.json">ResNet18 본체 파인튜닝 결과</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/result_summary.json</span></td></tr><tr><td>E07</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/result_summary.json">EG2 본체 파인튜닝 결과 · 최신 3모델 비교</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/result_summary.json</span></td></tr><tr><td>E08</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/comparison_summary.json">최신 수치 원본</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/comparison_summary.json</span></td></tr><tr><td>E09</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/protocol_frozen.json">ResNet18 학습·선택 규칙</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/protocol_frozen.json</span></td></tr><tr><td>E10</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/protocol_frozen.json">EG2 학습·선택 규칙</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/protocol_frozen.json</span></td></tr><tr><td>E11</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/finetune/audit/full-finetune-002_validation.json">ResNet18 산출물 검증 · 1,689개 항목 통과</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/finetune/audit/full-finetune-002_validation.json</span></td></tr><tr><td>E12</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/audit/full-eg2-001_validation.json">EG2 산출물 검증 · 3,339개 항목 통과</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/audit/full-eg2-001_validation.json</span></td></tr><tr><td>E13</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/environment.json">실행 환경과 패키지 버전</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/environment.json</span></td></tr><tr><td>E14</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/model_metadata.json">사전학습 모델·전처리 버전</a><span class="path">/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/model_metadata.json</span></td></tr></tbody></table></div><div class="table-wrap"><table><thead><tr><th scope="col">유형</th><th scope="col">파일</th></tr></thead><tbody><tr><td>ResNet18 epoch 학습 로그</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/finetune/runs/full-finetune-002/events.jsonl">events.jsonl</a></td></tr><tr><td>EG2 epoch·microbatch 학습 로그</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/events.jsonl">events.jsonl</a></td></tr><tr><td>최신 항목별 비교 CSV</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/per_label_comparison.csv">per_label_comparison.csv</a></td></tr><tr><td>모델 명세·해시 JSON</td><td><a href="../../../../../Documents/Codex/2026-09-25/x20-x20/outputs/%EB%AA%A8%EB%8B%9D%EC%BB%B5_%EA%B0%80%EC%83%81%EB%82%A9%ED%92%88%EA%B2%80%EC%88%98_%EC%98%88%EC%A0%9C/output/ml-dl-deliverables-2026-10-22/models-manifest.json">models-manifest.json</a></td></tr></tbody></table></div></details></section></main></div>
-<footer><div class="foot-row"><span>Creative Checker · D04 · 모델링 및 평가</span><span>2026. 10. 22. · v1.0</span></div><p>이 HTML은 표·수치·스타일을 포함한 단일 파일입니다. 근거·모델 링크는 현재 로컬 산출물을 가리키며, 다른 PC에서 열려면 해당 파일도 함께 전달해야 합니다.</p></footer>
-<script type="application/json" id="document-data">{"labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"], "models": [{"id": "ML-01", "name": "ResNet18 특징 + Logistic Regression", "metrics": {"metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"], "macro_f1": 0.5752706379698471, "micro_f1": 0.673992673992674, "macro_average_precision": 0.6414411158522486, "label_wise_accuracy": 0.6843971631205674, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.07407407407407407, "exact_match_fully_known_rows": 27, "per_label": {"person": {"support": {"positive": 25, "negative": 12, "unknown": 0, "missing_predictions": 0}, "precision": 0.8421052631578947, "recall": 0.64, "f1": 0.7272727272727273, "accuracy": 0.6756756756756757, "balanced_accuracy": 0.6950000000000001, "average_precision": 0.8031925781456069, "test_reliable_if_test": true}, "food_drink": {"support": {"positive": 11, "negative": 24, "unknown": 2, "missing_predictions": 0}, "precision": 0.4074074074074074, "recall": 1.0, "f1": 0.5789473684210527, "accuracy": 0.5428571428571428, "balanced_accuracy": 0.6666666666666666, "average_precision": 0.6304528804528805, "test_reliable_if_test": true}, "animal": {"support": {"positive": 14, "negative": 21, "unknown": 2, "missing_predictions": 0}, "precision": 0.5882352941176471, "recall": 0.7142857142857143, "f1": 0.6451612903225806, "accuracy": 0.6857142857142857, "balanced_accuracy": 0.6904761904761905, "average_precision": 0.6287623685837971, "test_reliable_if_test": true}, "plant_flower": {"support": {"positive": 24, "negative": 11, "unknown": 2, "missing_predictions": 0}, "precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.6647727272727273, "average_precision": 0.8670135603036017, "test_reliable_if_test": true}, "vehicle": {"support": {"positive": 9, "negative": 27, "unknown": 1, "missing_predictions": 0}, "precision": 0.3333333333333333, "recall": 1.0, "f1": 0.5, "accuracy": 0.5, "balanced_accuracy": 0.6666666666666666, "average_precision": 0.6097772597772597, "test_reliable_if_test": true}, "building_structure": {"support": {"positive": 24, "negative": 12, "unknown": 1, "missing_predictions": 0}, "precision": 0.8695652173913043, "recall": 0.8333333333333334, "f1": 0.851063829787234, "accuracy": 0.8055555555555556, "balanced_accuracy": 0.7916666666666667, "average_precision": 0.9385315533194809, "test_reliable_if_test": true}, "musical_instrument": {"support": {"positive": 7, "negative": 27, "unknown": 3, "missing_predictions": 0}, "precision": 0.35714285714285715, "recall": 0.7142857142857143, "f1": 0.47619047619047616, "accuracy": 0.6764705882352942, "balanced_accuracy": 0.6904761904761905, "average_precision": 0.43193027210884355, "test_reliable_if_test": true}, "fireworks": {"support": {"positive": 4, "negative": 30, "unknown": 3, "missing_predictions": 0}, "precision": 0.0, "recall": 0.0, "f1": 0.0, "accuracy": 0.8529411764705882, "balanced_accuracy": 0.48333333333333334, "average_precision": 0.22186845412651862, "test_reliable_if_test": true}}, "test_insufficient_support_labels": []}, "thresholds": [0.55, 0.25, 0.45, 0.35, 0.35, 0.45, 0.45, 0.55]}, {"id": "ML-02", "name": "EG2 특징 + Logistic Regression", "metrics": {"macro_f1": 0.7815437286025522, "micro_f1": 0.7692307692307693, "macro_average_precision": 0.8358493771632689, "label_wise_accuracy": 0.7872340425531915, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.25925925925925924, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.7586206896551724, "recall": 0.88, "f1": 0.8148148148148148, "accuracy": 0.7297297297297297, "balanced_accuracy": 0.6483333333333333, "average_precision": 0.9030035028817983, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.5263157894736842, "recall": 0.9090909090909091, "f1": 0.6666666666666666, "accuracy": 0.7142857142857143, "balanced_accuracy": 0.7670454545454546, "average_precision": 0.8521223945136989, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.7142857142857143, "recall": 0.7142857142857143, "f1": 0.7142857142857143, "accuracy": 0.7714285714285715, "balanced_accuracy": 0.7619047619047619, "average_precision": 0.7188959422152699, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.6647727272727273, "average_precision": 0.9385416298888924, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "balanced_accuracy": 0.7777777777777778, "average_precision": 0.5564817979291663, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.9444444444444444, "recall": 0.7083333333333334, "f1": 0.8095238095238095, "accuracy": 0.7777777777777778, "balanced_accuracy": 0.8125, "average_precision": 0.9609470287888899, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.9444444444444444, "average_precision": 0.7568027210884354, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "balanced_accuracy": 1.0, "average_precision": 1.0, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "thresholds": [0.45, 0.35, 0.5, 0.35, 0.35, 0.6, 0.45, 0.4]}, {"id": "DL-01", "name": "ResNet18 전체 본체 파인튜닝", "metrics": {"macro_f1": 0.6647012484404056, "micro_f1": 0.6973180076628352, "macro_average_precision": 0.6940785866626916, "label_wise_accuracy": 0.7198581560283688, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.07407407407407407, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8095238095238095, "recall": 0.68, "f1": 0.7391304347826086, "accuracy": 0.6756756756756757, "balanced_accuracy": 0.6733333333333333, "average_precision": 0.8195911843624026, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.4, "recall": 0.9090909090909091, "f1": 0.5555555555555556, "accuracy": 0.5428571428571428, "balanced_accuracy": 0.6420454545454546, "average_precision": 0.6315027985482531, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7380952380952381, "average_precision": 0.6947528102149951, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.76, "recall": 0.7916666666666666, "f1": 0.7755102040816326, "accuracy": 0.6857142857142857, "balanced_accuracy": 0.6231060606060606, "average_precision": 0.8811142752595086, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.35, "recall": 0.7777777777777778, "f1": 0.4827586206896552, "accuracy": 0.5833333333333334, "balanced_accuracy": 0.6481481481481481, "average_precision": 0.6023714589504063, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.875, "recall": 0.875, "f1": 0.875, "accuracy": 0.8333333333333334, "balanced_accuracy": 0.8125, "average_precision": 0.9544612259443914, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 0.5, "recall": 0.5714285714285714, "f1": 0.5333333333333333, "accuracy": 0.7941176470588235, "balanced_accuracy": 0.7116402116402116, "average_precision": 0.45741020883878025, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 0.6, "recall": 0.75, "f1": 0.6666666666666666, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.8416666666666667, "average_precision": 0.5114247311827956, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "thresholds": [0.7, 0.05, 0.2, 0.45, 0.1, 0.5, 0.3, 0.25]}, {"id": "DL-02", "name": "EmbeddingGemma 2 전체 활성 본체 파인튜닝", "metrics": {"macro_f1": 0.779835608757018, "micro_f1": 0.782608695652174, "macro_average_precision": 0.8803214052081499, "label_wise_accuracy": 0.8049645390070922, "known_evaluated_cells": 282, "masked_unknown_cells": 14, "exact_match_accuracy": 0.2222222222222222, "exact_match_fully_known_rows": 27, "per_label": {"person": {"precision": 0.8214285714285714, "recall": 0.92, "f1": 0.8679245283018868, "accuracy": 0.8108108108108109, "balanced_accuracy": 0.7516666666666667, "average_precision": 0.9503961043434729, "support": {"positive": 25, "negative": 12, "unknown": 0}}, "food_drink": {"precision": 0.5625, "recall": 0.8181818181818182, "f1": 0.6666666666666666, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7632575757575758, "average_precision": 0.8608520267611177, "support": {"positive": 11, "negative": 24, "unknown": 2}}, "animal": {"precision": 0.6666666666666666, "recall": 0.7142857142857143, "f1": 0.6896551724137931, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.7380952380952381, "average_precision": 0.6717916206886795, "support": {"positive": 14, "negative": 21, "unknown": 2}}, "plant_flower": {"precision": 0.7777777777777778, "recall": 0.875, "f1": 0.8235294117647058, "accuracy": 0.7428571428571429, "balanced_accuracy": 0.6647727272727273, "average_precision": 0.9329931311167095, "support": {"positive": 24, "negative": 11, "unknown": 2}}, "vehicle": {"precision": 0.42857142857142855, "recall": 1.0, "f1": 0.6, "accuracy": 0.6666666666666666, "balanced_accuracy": 0.7777777777777778, "average_precision": 0.7517917267917269, "support": {"positive": 9, "negative": 27, "unknown": 1}}, "building_structure": {"precision": 0.95, "recall": 0.7916666666666666, "f1": 0.8636363636363636, "accuracy": 0.8333333333333334, "balanced_accuracy": 0.8541666666666666, "average_precision": 0.9660164732333344, "support": {"positive": 24, "negative": 12, "unknown": 1}}, "musical_instrument": {"precision": 1.0, "recall": 0.5714285714285714, "f1": 0.7272727272727273, "accuracy": 0.9117647058823529, "balanced_accuracy": 0.7857142857142857, "average_precision": 0.9087301587301586, "support": {"positive": 7, "negative": 27, "unknown": 3}}, "fireworks": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "accuracy": 1.0, "balanced_accuracy": 1.0, "average_precision": 1.0, "support": {"positive": 4, "negative": 30, "unknown": 3}}}, "metric_labels": ["person", "food_drink", "animal", "plant_flower", "vehicle", "building_structure", "musical_instrument", "fireworks"]}, "thresholds": [0.55, 0.2, 0.4, 0.35, 0.15, 0.65, 0.45, 0.2]}]}</script><script>
-document.getElementById('print-document').addEventListener('click',()=>window.print());
-let previousDetails=[];
-window.addEventListener('beforeprint',()=>{previousDetails=[...document.querySelectorAll('details')].map(x=>[x,x.open]);previousDetails.forEach(([x])=>x.open=true)});
-window.addEventListener('afterprint',()=>{previousDetails.forEach(([x,o])=>x.open=o)});
-const sections=[...document.querySelectorAll('main section[id]')];
-if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){document.querySelectorAll('.toc a').forEach(a=>{const active=a.hash==='#'+entry.target.id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current')})}}},{rootMargin:'-8% 0px -65% 0px',threshold:0});sections.forEach(s=>observer.observe(s))}
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="planning-release" content="2026.10.30-r2"><title>크리에이티브체커 · 머신러닝·딥러닝 학습·평가 결과서</title><style>
+      :root {
+        --paper: #f4f3ee;
+        --card: #fffefb;
+        --ink: #203d34;
+        --muted: #69746b;
+        --line: #dbded3;
+        --accent: #315b48;
+        --soft: #e9eee3;
+        --warm: #f4e9df;
+        --radius: 19px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        color: #9b603c;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      summary {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #bf7543;
+        outline-offset: 4px;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      button,
+      .button {
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: var(--ink);
+      }
+      .skip {
+        position: absolute;
+        left: 18px;
+        top: -70px;
+        padding: 12px;
+        background: var(--ink);
+        color: white;
+        z-index: 5;
+      }
+      .skip:focus {
+        top: 10px;
+      }
+      .site-head {
+        max-width: 1420px;
+        margin: auto;
+        padding: 26px 36px 18px;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .brand {
+        font-weight: 750;
+        text-decoration: none;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 9px;
+        background: var(--ink);
+        color: #fcfaf3;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+      .doc-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .doc-nav a {
+        padding: 8px 15px;
+        border: 1px solid var(--line);
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 13px;
+        background: var(--card);
+      }
+      .doc-nav a[aria-current="page"] {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .hero {
+        max-width: 1420px;
+        margin: auto;
+        padding: 30px 36px 33px;
+        border-top: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 750;
+        color: #6d785d;
+      }
+      .hero h1 {
+        font-size: clamp(31px, 4.5vw, 54px);
+        line-height: 1.22;
+        letter-spacing: -0.065em;
+        margin: 12px 0;
+      }
+      .hero p {
+        max-width: 900px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        margin: 2px 5px 2px 0;
+        background: var(--soft);
+        border: 1px solid #d7dfcf;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 650;
+        color: #416348;
+      }
+      .badge.warm {
+        background: var(--warm);
+        border-color: #e9d8ca;
+        color: #865b3c;
+      }
+      .layout {
+        max-width: 1420px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 208px minmax(0, 1fr);
+        gap: 24px;
+        padding: 0 36px 54px;
+      }
+      .side {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+      }
+      .side .caption {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 4px 10px 12px;
+        letter-spacing: 0.1em;
+      }
+      .tablist {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tablist button {
+        display: flex;
+        gap: 11px;
+        text-align: left;
+        font-size: 13px;
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 11px 13px;
+        line-height: 1.5;
+      }
+      .tablist button span {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        opacity: 0.6;
+      }
+      .tablist button[aria-selected="true"] {
+        color: white;
+        background: var(--ink);
+        border-color: var(--ink);
+        box-shadow: 0 5px 14px #234c4015;
+      }
+      .side-note {
+        padding: 18px 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+      .doc-panel {
+        padding: 32px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        min-width: 0;
+        margin-bottom: 20px;
+      }
+      .doc-panel[hidden] {
+        display: none;
+      }
+      .doc-panel h2 {
+        font-size: clamp(24px, 2.6vw, 33px);
+        line-height: 1.4;
+        letter-spacing: -0.045em;
+        margin: 0 0 16px;
+      }
+      .doc-panel h3 {
+        font-size: 18px;
+        letter-spacing: -0.025em;
+        margin: 22px 0 10px;
+      }
+      .doc-panel h4 {
+        font-size: 15px;
+        margin: 20px 0 8px;
+      }
+      .lead {
+        font-size: 18px;
+        max-width: 820px;
+      }
+      .muted,
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .meta strong {
+        color: var(--ink);
+      }
+      .section-intro {
+        margin-bottom: 26px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card,
+      .link-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        background: #fafbf7;
+        min-width: 0;
+      }
+      .card h3,
+      .link-card h3 {
+        margin: 8px 0 10px;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .note {
+        border: 1px solid #d9e2d0;
+        border-left: 4px solid #74906c;
+        border-radius: 10px;
+        padding: 16px 19px;
+        background: #f0f4eb;
+        margin: 23px 0;
+        font-size: 13px;
+      }
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin: 20px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #edf0e8;
+        font-weight: 750;
+        white-space: normal;
+        min-width: 90px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:nth-child(even) {
+        background: #fcfcf8;
+      }
+      td p:first-child {
+        margin-top: 0;
+      }
+      td ul {
+        padding-left: 17px;
+      }
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      details {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0 19px;
+        background: #fcfcf9;
+        margin: 14px 0;
+      }
+      summary {
+        cursor: pointer;
+        padding: 16px 0;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+      details[open] > summary {
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 14px;
+      }
+      details > details {
+        background: white;
+      }
+      details .table-wrap {
+        margin: 15px 0;
+      }
+      details > :last-child:not(summary) {
+        margin-bottom: 20px;
+      }
+      input[type="search"],
+      input[data-search-input] {
+        width: 100%;
+        border: 1px solid #aabda1;
+        border-radius: 11px;
+        padding: 12px 15px;
+        background: white;
+        color: var(--ink);
+      }
+      [data-search][hidden] {
+        display: none;
+      }
+      pre {
+        background: #edf1e8;
+        border-radius: 12px;
+        padding: 20px;
+        overflow: auto;
+        font-size: 12px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.92em;
+      }
+      p code,
+      td code,
+      li code {
+        background: #eaf0e3;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px 20px;
+      }
+      dt {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+      footer {
+        max-width: 1420px;
+        margin: auto;
+        padding: 20px 36px 36px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 0;
+      }
+      .panel-footer span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .doc-cards .link-card {
+        display: block;
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--card);
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+      .doc-cards .link-card:hover {
+        transform: translateY(-3px);
+        border-color: #769267;
+      }
+      .link-card strong {
+        display: block;
+        font-size: 24px;
+        letter-spacing: -0.035em;
+        margin: 10px 0;
+      }
+      .link-card .arrow {
+        float: right;
+        font-size: 21px;
+      }
+      .index-main {
+        max-width: 1420px;
+        margin: auto;
+        padding: 0 36px 48px;
+      }
+      .index-main .doc-panel {
+        margin-top: 25px;
+      }
+      .feature-card:target,
+      details:target {
+        outline: 3px solid #c89568;
+        outline-offset: 4px;
+        scroll-margin-top: 25px;
+      }
+      .empty-search {
+        padding: 20px;
+        color: var(--muted);
+        background: var(--soft);
+        border-radius: 10px;
+      }
+      .source-tag {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 26px;
+      }
+      @media (max-width: 1000px) {
+        .layout {
+          grid-template-columns: 170px minmax(0, 1fr);
+          gap: 18px;
+        }
+        .doc-panel {
+          padding: 25px;
+        }
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 700px) {
+        .site-head,
+        .hero {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .hero {
+          padding-top: 23px;
+        }
+        .layout {
+          display: block;
+          padding: 0 18px 30px;
+        }
+        .side {
+          position: static;
+        }
+        .tablist {
+          flex-direction: row;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+          gap: 6px;
+        }
+        .tablist button {
+          font-size: 12px;
+          border: 1px solid var(--line);
+          padding: 8px 10px;
+          background: var(--card);
+        }
+        .tablist button span {
+          display: none;
+        }
+        .side-note,
+        .side .caption {
+          display: none;
+        }
+        .doc-panel {
+          padding: 22px 17px;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-nav {
+          gap: 6px;
+        }
+        .doc-nav a {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
+        .brand-row {
+          align-items: flex-start;
+        }
+        .brand-row .badge {
+          display: none;
+        }
+        .index-main {
+          padding: 0 18px 30px;
+        }
+        footer {
+          padding: 20px 18px;
+        }
+        dl {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        dd {
+          margin-bottom: 12px;
+        }
+        .lead {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        @page {
+          size: A4;
+          margin: 14mm;
+        }
+        body {
+          background: white;
+          font-size: 10pt;
+          color: #18251e;
+        }
+        .site-head,
+        .side,
+        .panel-footer,
+        .print-button,
+        .doc-nav,
+        .skip,
+        input[data-search-input],
+        [data-search-count],
+        .empty-search {
+          display: none !important;
+        }
+        .hero {
+          padding: 0 0 18px;
+          border: 0;
+        }
+        .hero h1 {
+          font-size: 26pt;
+        }
+        .layout,
+        .index-main {
+          display: block;
+          padding: 0;
+        }
+        .doc-panel,
+        .doc-panel[hidden] {
+          display: block !important;
+          min-height: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          break-before: page;
+        }
+        .doc-panel:first-child {
+          break-before: auto;
+        }
+        .doc-panel h2 {
+          font-size: 20pt;
+        }
+        details {
+          border: 0;
+          padding: 0;
+        }
+        summary {
+          font-size: 12pt;
+        }
+        details::details-content {
+          content-visibility: visible !important;
+          height: auto !important;
+        }
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .card,
+        .note {
+          break-inside: avoid;
+          padding: 12px;
+        }
+        .table-wrap {
+          overflow: visible;
+          border-radius: 0;
+        }
+        th,
+        td {
+          padding: 6px;
+          font-size: 9pt;
+          min-width: 0;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        pre {
+          font-size: 8pt;
+        }
+        footer {
+          padding: 15px 0;
+        }
+        .source-tag {
+          font-size: 8pt;
+        }
+        [data-search][hidden] {
+          display: revert !important;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .workflow-scroll {
+          overflow: visible !important;
+        }
+        .workflow-svg {
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+      }
+      @media print {
+        .workflow-source {
+          display: block !important;
+        }
+        .workflow-source pre {
+          max-height: none;
+          overflow: visible;
+          white-space: pre-wrap;
+          background: #f4f4f4;
+          color: #18251e;
+        }
+        .workflow-source code {
+          font-size: 8pt;
+        }
+      }
+    
+
+html{scroll-behavior:smooth}[hidden]{display:none!important}body{word-break:keep-all}caption{text-align:left;padding:12px 14px;background:#f5f7ef;color:var(--muted);border-bottom:1px solid var(--line);font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:25px 0}.metrics>div{padding:18px;border:1px solid var(--line);background:#f4f7ec;border-radius:14px}.metrics span,.metrics small{display:block;font-size:11px;color:var(--muted)}.metrics strong{display:block;font-size:21px;line-height:1.7;letter-spacing:-.6px;margin:5px 0}
+.actions,.switches{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.switches button{font-size:12px;padding:8px 12px}.switches [aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}
+.flow{display:flex;list-style:none;padding:0;gap:18px;margin:24px 0}.flow li{flex:1;position:relative;padding:14px 11px;border:1px solid #d4ddca;background:#edf2e6;border-radius:11px;min-width:0;font-size:12px;line-height:1.7;margin:0}.flow li:not(:last-child):after{content:'→';position:absolute;right:-17px;top:calc(50% - 11px);color:#6b806b}.flow b,.flow span{display:block}.flow span{font-size:10px;color:var(--muted);margin-top:6px}
+.diagram-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fcfdf8;padding:12px;margin:24px 0}.diagram-wrap svg{display:block;width:100%;min-width:760px;max-width:none}.wire{fill:none;stroke:#647b6e;stroke-width:2;marker-end:url(#arrow-code)}.wire.next{stroke:#b27648;stroke-dasharray:7 5;marker-end:url(#arrow-next)}.node rect{fill:#f5f8ef;stroke:#9db29f;stroke-width:1.5;rx:14px}.node.target rect,.node.graph rect{fill:#fbefe2;stroke:#b27648;stroke-dasharray:6 4}.node.source rect{fill:#e3eee1;stroke:#4d7157;stroke-width:2}.node.graph rect{fill:#f5e8d9;stroke-width:2}.node text{font-size:12px;fill:#42594c}.node text.state{font-size:10px;fill:#75836d;letter-spacing:.3px}.node text.name{font-size:18px;font-weight:750;fill:#244738}.edge-label{font-size:10px;fill:#75816e}.legend-text{font-size:12px;fill:#556c5a}
+.panel-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:30px;padding-top:18px}.phase-label{font-size:11px;text-transform:uppercase;color:var(--muted)}.audit{font:11px ui-monospace,monospace;overflow-wrap:anywhere}
+@media(max-width:1000px){.metrics{grid-template-columns:1fr}.flow{flex-wrap:wrap}.flow li{flex-basis:27%}.flow li:after{display:none}}
+@media(max-width:700px){.flow{display:grid;gap:10px}.flow li{padding:13px}.flow li:not(:last-child):after{display:block;content:'↓';top:auto;bottom:-16px;right:calc(50% - 5px)}.metrics strong{font-size:21px}.metrics>div{padding:15px}.diagram-wrap{padding:6px}.switches button{padding:7px 9px}.panel-footer{flex-wrap:wrap}}
+@media print{[hidden]{display:block!important}.switches,.actions,.panel-footer{display:none!important}.diagram-wrap{overflow:visible;padding:0;border:0}.diagram-wrap svg{min-width:0;width:100%}.flow{display:grid;grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(3,1fr)}.metrics strong{font-size:13px}}
+
+
+.doc-panel{display:block}.doc-panel[hidden]{display:none!important}
+.hero{padding-bottom:28px}.hero h1{font-size:clamp(30px,4.3vw,55px)}.hero p{max-width:940px}
+.doc-nav{gap:6px;flex-wrap:wrap}.doc-nav a{font-size:11px;padding:8px 12px}
+.release-strip{margin:16px 0 0;padding:14px 16px;background:#f0f3e8;border:1px solid var(--line);border-radius:12px;font-size:12px;line-height:1.8}
+.release-strip b{color:var(--ink)}.doc-meta{font-size:12px;color:var(--muted);margin:12px 0;line-height:1.8}
+.doc-panel p,.doc-panel li{line-height:1.85}.doc-panel h3{margin-top:30px}.doc-panel h4{margin-top:24px}
+.table-wrap{overflow:auto}table{min-width:580px}th{white-space:normal}td,th{overflow-wrap:anywhere}td:first-child{min-width:80px}
+.catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.catalog a{display:block;padding:18px;border:1px solid var(--line);border-radius:12px;background:#f6f8ef;text-decoration:none}.catalog b{display:block;margin-bottom:5px}.catalog small{display:block;color:var(--muted)}
+.review-note{border-left:4px solid #aa813f;background:#faf3e3;padding:15px 18px;margin:22px 0;border-radius:0 10px 10px 0}.review-note p{margin:7px 0}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:steps}.flow li{font-size:13px;padding:15px;counter-increment:steps}.flow li::before{content:counter(steps,decimal-leading-zero);display:block;font-weight:800;color:#647c59;margin-bottom:6px}.flow li:not(:last-child)::after{display:none}.flow span{font-size:12px}
+.workflow-flow li:nth-child(3),.workflow-flow li:nth-child(7),.workflow-flow li:nth-child(9){background:#faf0d9;border-color:#cfb775}
+.status-chip{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:20px;font-size:11px;background:#f2f5ed}.wireframe{padding:18px;border:1px dashed #9caf9c;border-radius:12px;background:#f7f9f3}.wireframe-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.wireframe-box{padding:15px;border:1px solid var(--line);background:#fffefb;border-radius:9px}
+.findbox{margin:0 0 18px;display:flex;gap:8px;flex-wrap:wrap}.findbox input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fffefb;color:var(--ink);font:inherit;font-size:13px}.find-results{display:grid;gap:6px;margin-bottom:16px}.find-results button{text-align:left;font-size:12px;padding:10px}.find-results:empty{display:none}.find-count{font-size:12px;color:var(--muted)}
+.doc-panel pre{white-space:pre-wrap;overflow-wrap:anywhere}.doc-panel code{overflow-wrap:anywhere}.doc-panel details{border:1px solid var(--line);border-radius:12px;margin:14px 0;padding:14px}.doc-panel summary{font-weight:700;cursor:pointer}.evidence-grid{font-size:12px}.muted{color:var(--muted)}
+@media(max-width:800px){.catalog,.wireframe-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.doc-nav a{font-size:10px}.hero{padding:28px 20px}.doc-panel{padding:22px}.release-strip{font-size:11px}}
+@media print{.doc-panel[hidden]{display:block!important}.findbox,.find-results,.find-count,.panel-footer{display:none!important}.doc-panel{break-before:page}.catalog{grid-template-columns:1fr 1fr}table{min-width:0}.flow{grid-template-columns:repeat(3,1fr)}}
+</style></head><body><a class="skip" href="#main">본문으로 바로가기</a>
+<header class="site-head"><div class="brand-row"><a class="brand" href="./01_기획서.html"><small>SKN33 FINAL · 1TEAM</small><span class="brand-mark">C</span>크리에이티브체커</a><span class="badge warm">통합 개정 · 2026.10.30-r2</span></div><nav class="doc-nav" aria-label="Planning 문서 전체"><a href="./01_%EA%B8%B0%ED%9A%8D%EC%84%9C.html">01 기획</a><a href="./02_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">02 기능</a><a href="./03_%ED%99%94%EB%A9%B4%EC%A0%95%EC%9D%98%EC%84%9C.html">03 화면</a><a href="./04_%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%8E%99%EC%A0%95%EC%9D%98%EC%84%9C.html">04 기술</a><a href="./05_%EC%82%AC%EC%9A%A9%EC%9E%90%EB%B3%84_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">05 사용자 역할</a><a href="./06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">06 DB 결과</a><a href="./07_%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%94%A5%EB%9F%AC%EB%8B%9D_%ED%95%99%EC%8A%B5%EA%B2%B0%EA%B3%BC%EC%84%9C.html" aria-current="page">07 학습 결과</a><a href="./08_%ED%95%99%EC%8A%B5%ED%95%9C_ML_DL_%EB%AA%A8%EB%8D%B8.html">08 모델 명세</a><a href="./09_RunPod_OCR_%EB%AA%A8%EB%8D%B8_%EB%B9%84%EA%B5%90%EA%B2%B0%EA%B3%BC%EC%84%9C.html">09 비교 결과</a><a href="./10_PostgreSQL_Neo4j_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_%EA%B0%9C%ED%8E%B8%EC%95%88.html">10 아키텍처</a><a href="./11_PostgreSQL_Neo4j_%ED%86%B5%ED%95%A9%EC%97%85%EB%AC%B4_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_v1.1.html">11 통합 계약</a></nav></header>
+<div class="hero"><span class="eyebrow">PROJECT PLANNING / 07</span><h1>머신러닝·딥러닝 학습·평가 결과서</h1><p>기존 학습 산출물과 최신 역할별 연구를 구분하고, 독립 평가·서비스 수용 기준으로 연결합니다.</p><span class="badge">PostgreSQL 원천 + Neo4j 관계 조회</span><span class="badge">포스터 · 숏폼</span><span class="badge warm">팀 승인 별도</span><div class="release-strip"><b>기준일 2026-10-30 KST</b> · 10/30 통합 초안 + 최신 사용자 DB 결정 반영<br>현재 코드 · 독립 실험 · 추가 구현을 구분합니다. 실험의 실행 날짜와 문서 개정일은 다릅니다.</div></div>
+<div class="layout"><aside class="side"><p class="caption">CONTENTS / 08</p><div class="tablist" role="tablist" aria-label="문서 목차" aria-orientation="vertical"><button type="button" role="tab" id="tab-research-status" aria-controls="research-status" data-panel="research-status" aria-selected="true" tabindex="0"><span>01</span>현재 연구 방향</button><button type="button" role="tab" id="tab-datasets" aria-controls="datasets" data-panel="datasets" aria-selected="false" tabindex="-1"><span>02</span>데이터 묶음과 정답 상태</button><button type="button" role="tab" id="tab-trained-history" aria-controls="trained-history" data-panel="trained-history" aria-selected="false" tabindex="-1"><span>03</span>기존 학습 수행 기록</button><button type="button" role="tab" id="tab-training-results" aria-controls="training-results" data-panel="training-results" aria-selected="false" tabindex="-1"><span>04</span>10/22 학습 비교 결과</button><button type="button" role="tab" id="tab-recent-research" aria-controls="recent-research" data-panel="recent-research" aria-selected="false" tabindex="-1"><span>05</span>최신 통합 초안의 연구 기록</button><button type="button" role="tab" id="tab-evaluation-plan" aria-controls="evaluation-plan" data-panel="evaluation-plan" aria-selected="false" tabindex="-1"><span>06</span>다음 평가와 채택 기준</button><button type="button" role="tab" id="tab-research-evidence" aria-controls="research-evidence" data-panel="research-evidence" aria-selected="false" tabindex="-1"><span>07</span>근거·업데이트 기준</button><button type="button" role="tab" id="tab-updates" aria-controls="updates" data-panel="updates" aria-selected="false" tabindex="-1"><span>08</span>버전·출처·업데이트</button></div><p class="side-note">이 폴더의 현재 기준 문서 묶음<br>2026.10.30-r2<br>변경 이력은 마지막 탭에서 확인합니다.</p></aside><main id="main"><div class="findbox"><input id="doc-search" type="search" aria-label="이 문서 전체 검색" placeholder="이 문서 전체 검색"><button type="button" id="clear-search">검색 초기화</button></div><p id="find-count" class="find-count" role="status" aria-live="polite"></p><div id="find-results" class="find-results"></div><section class="doc-panel" id="research-status" role="tabpanel" aria-labelledby="tab-research-status" tabindex="0"><h2>현재 연구 방향</h2><p><strong>Qwen3.5-4B를 중심 후보로 두되, 문서·텍스트·시각 역할마다 같은 평가 세트로 선택합니다.</strong> 과거 EG2의 높은 점수만으로 현재 서비스 모델을 확정하지 않습니다.</p><div class="note"><p><strong>2026-10-30 개정 범위</strong> · 기존 실험 결과와 통합 초안을 재정리했습니다. 추가 학습·추론·원격 환경 재측정은 수행하지 않았습니다. 과거 평가 수치는 당시 데이터·설정의 기록이며 현재 서비스 전체 성능과 다릅니다.</p></div><div class="table-wrap"><table><caption>통합 초안 7~13장 + 현재 DB 목표 결정</caption><thead><tr><th scope="col">영역</th><th scope="col">현재 후보·방향</th><th scope="col">선택에 필요한 근거</th><th scope="col">상태</th></tr></thead><tbody><tr><td>조건 추출 · A02</td><td>Qwen3.5-4B 중심 직접 해석 / 형식 파서+Qwen 비교</td><td>조건 누락·없는 조건 생성·원문 위치·부정/예외·사람 수정 시간</td><td>비교 후 결정</td></tr><tr><td>텍스트 검사 · A04</td><td>Qwen 중심 / OCR 혼합</td><td>CER·필드 일치·정확 문구·읽기 순서·오인식 이관</td><td>비교 후 결정</td></tr><tr><td>시각 검사 · A05</td><td>Qwen 중심, 기존 분류 모델, 로고 특징점 비교</td><td>항목별 오류 놓침·정상 오차단·미관측·근거 위치</td><td>역할·항목별 채택 미정</td></tr><tr><td>숏폼 · A05/A08</td><td>프레임 검사 + 시간 근거 + 재검수</td><td>관측 범위·누락 구간·시간 조건·프레임 실패/재개</td><td>최종 통합 필수, 세부 범위 미정</td></tr><tr><td>근거·관계</td><td>PostgreSQL 원천 + Neo4j 관계 조회</td><td>ID/버전/경로 일치·예외 오적용·변경 영향 누락</td><td>현재 목표 구조, 팀 승인 별도</td></tr></tbody></table></div><p>MCP는 도구 연결의 필수 목표입니다. 에이전트 수와 모델 수는 일대일이 아니며, 각 역할의 실제 입력·출력·도구 호출 이력으로 협업을 검증합니다. 모델 학습 여부와 모델 채택 여부도 별도로 결정합니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>1 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="datasets" role="tabpanel" aria-labelledby="tab-datasets" tabindex="0"><h2>데이터 묶음과 정답 상태</h2><p>서로 다른 시점의 데이터 묶음을 하나의 최신 표본 수로 합치지 않습니다. 각 실험은 dataset_id·분할·원본 그룹·정답 승인 상태를 고정해야 합니다.</p><div class="table-wrap"><table><caption>최신 통합 초안에 적힌 상태를 유지</caption><thead><tr><th scope="col">데이터 묶음</th><th scope="col">규모·분할</th><th scope="col">정답·사용 상태</th></tr></thead><tbody><tr><td>10/22 시각 분류 학습</td><td>187장 · 학습113 / 개발37 / 평가37</td><td>사용자 채팅 승인 AI 보조 라벨 초안. 독립 전수 재라벨링과 다름</td></tr><tr><td>통합 초안의 고해상도 자료</td><td>187파일에서 NEW017=NEW001 중복 제외, 활성186 · train130/dev26/test26/legacy dev3/test1</td><td>출처·권리 및 AI 라벨 독립 검토가 남은 기록</td></tr><tr><td>합성 자료</td><td>72건 · 에이전트 검토70 / H010·H032 보류2</td><td>human_verified=false, use_for_training=false, use_for_evaluation=false 기록. 사람 승인 대체 불가</td></tr><tr><td>후속 로고 수집</td><td>1,172기관·8,704로고 · 추천7,704/저해상도1,000</td><td>수집 산출물. 승인된 기준 로고·독립 평가 정답과 구분</td></tr></tbody></table></div><div class="table-wrap"><table><caption>10/22 학습 묶음의 알려진 라벨과 모름 수</caption><thead><tr><th scope="col">분할</th><th scope="col">이미지 수</th><th scope="col">알려진 라벨 항목</th><th scope="col">모름 · 제외 항목</th><th scope="col">사용 목적</th></tr></thead><tbody><tr><td>학습</td><td>113</td><td>861</td><td>43</td><td>LR 계수·DL 가중치 학습</td></tr><tr><td>개발</td><td>37</td><td>283</td><td>13</td><td>후보·체크포인트·라벨별 임계값 선택</td></tr><tr><td>평가</td><td>37</td><td>282</td><td>14</td><td>고정된 설정으로 최종 비교</td></tr><tr><td>합계</td><td>187</td><td>1,426</td><td>70</td><td>총 1,496개 이미지×라벨 항목</td></tr></tbody></table></div><details><summary>10/22 평가셋의 라벨별 양성·음성·모름</summary><div class="table-wrap"><table><caption>평가37장 · 8종 시각 라벨</caption><thead><tr><th scope="col">라벨 ID</th><th scope="col">항목</th><th scope="col">있음</th><th scope="col">없음</th><th scope="col">모름</th></tr></thead><tbody><tr><td>person</td><td>인물</td><td>25</td><td>12</td><td>0</td></tr><tr><td>food_drink</td><td>음식·음료</td><td>11</td><td>24</td><td>2</td></tr><tr><td>animal</td><td>동물</td><td>14</td><td>21</td><td>2</td></tr><tr><td>plant_flower</td><td>식물·꽃</td><td>24</td><td>11</td><td>2</td></tr><tr><td>vehicle</td><td>탈것</td><td>9</td><td>27</td><td>1</td></tr><tr><td>building_structure</td><td>건물·구조물</td><td>24</td><td>12</td><td>1</td></tr><tr><td>musical_instrument</td><td>악기</td><td>7</td><td>27</td><td>3</td></tr><tr><td>fireworks</td><td>불꽃놀이</td><td>4</td><td>30</td><td>3</td></tr></tbody></table></div></details><div class="note"><p>P130 악기 라벨은 자료 간 해석 충돌이 기록돼 있습니다. 독립 판정 없이 수정본을 정답으로 확정하지 않습니다. 동일 원본의 변형본을 학습·평가에 나누어 넣으면 일반화 성능이 과장될 수 있습니다.</p></div><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>2 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="trained-history" role="tabpanel" aria-labelledby="tab-trained-history" tabindex="0"><h2>기존 학습 수행 기록</h2><p>10/22에 기록된 학습 모델은 LR 분류층 2종과 본체 파인튜닝 2종입니다. 이 기록을 보존하되 최신 Qwen 문서·시각 연구까지 학습 완료로 합산하지 않습니다.</p><div class="table-wrap"><table><caption>실제로 학습한 부분과 보존 형식</caption><thead><tr><th scope="col">모델 ID</th><th scope="col">학습 모델</th><th scope="col">실제로 학습한 부분</th><th scope="col">보존 형식</th></tr></thead><tbody><tr><td>ML-01</td><td>ResNet18 특징 + Logistic Regression</td><td>ResNet18 본체 고정, 라벨별 독립 이진 Logistic Regression 8개 학습</td><td>JSON · 계수·절편·임계값</td></tr><tr><td>ML-02</td><td>EG2 특징 + Logistic Regression</td><td>EG2 본체 고정, 라벨별 독립 이진 Logistic Regression 8개 학습</td><td>JSON · 계수·절편·임계값</td></tr><tr><td>DL-01</td><td>ResNet18 전체 본체 파인튜닝</td><td>ResNet18 전체 본체와 Linear(512, 8) 공동 학습. BatchNorm 통계 고정, affine 파라미터 학습</td><td>PyTorch .pt · state_dict</td></tr><tr><td>DL-02</td><td>EmbeddingGemma 2 전체 활성 본체 파인튜닝</td><td>로드된 이미지·텍스트 본체, bridge·projection과 Linear(768, 8) 공동 학습. 오디오 경로 제외</td><td>PyTorch .pt · state_dict</td></tr></tbody></table></div><div class="table-wrap"><table><caption>10/22 본체 학습·선택 설정</caption><thead><tr><th scope="col">항목</th><th scope="col">ResNet18 · DL-01</th><th scope="col">EG2 · DL-02</th></tr></thead><tbody><tr><td>학습 범위</td><td>전체 본체 + Linear(512, 8)BatchNorm running 통계 고정</td><td>전체 활성 이미지·텍스트 본체 + Linear(768, 8)오디오 제외</td></tr><tr><td>옵티마이저</td><td>AdamW · weight_decay 0.0001</td><td>AdamW · weight_decay 0.0001</td></tr><tr><td>본체 학습률 후보</td><td>1e-5 / 3e-5</td><td>1e-6 / 3e-6</td></tr><tr><td>분류층 학습률</td><td>0.001</td><td>0.001</td></tr><tr><td>양성 가중치 후보</td><td>없음 / 학습셋 양성·음성 비율</td><td>없음</td></tr><tr><td>후보 수</td><td>4</td><td>2</td></tr><tr><td>학습 batch</td><td>8</td><td>microbatch 1 · 8장 gradient accumulation</td></tr><tr><td>최대 epoch / patience</td><td>25 / 5</td><td>4 / 2</td></tr><tr><td>선택 결과</td><td>lr3e-05_none · best epoch 9해당 후보 14 epoch · 210 optimizer steps</td><td>lr3e-06_none · best epoch 4해당 후보 4 epoch · 60 optimizer steps</td></tr><tr><td>증강</td><td>밝기 ±0.08 · 대비 ±0.08 · 채도 ±0.05crop·flip·이동 없음</td><td>밝기 ±0.08 · 대비 ±0.08 · 채도 ±0.05기하 변환 없음</td></tr></tbody></table></div><p>학습·개발·평가 분할과 모름 라벨 마스크를 유지하고, 개발셋에서 후보·체크포인트·임계값을 선택한 기록입니다. 같은 test37을 앞선 실험에서 이미 확인했으므로 후속 결과는 회귀 비교이며 새로운 독립 일반화 평가가 아닙니다.</p><p>Qwen에 대한 LoRA 등 추가 학습은 필요성 평가 후 검토할 항목입니다. 기존 모델 교체나 프롬프트 조정을 추가 학습으로 부르지 않습니다. 교육 과정의 학습 필수 요건과 제출 형식도 별도 확인 항목입니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>3 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="training-results" role="tabpanel" aria-labelledby="tab-training-results" tabindex="0"><h2>10/22 학습 비교 결과</h2><div class="table-wrap"><table><caption>동일 평가37장 · 알려진 라벨282개 · 모름14개 제외</caption><thead><tr><th scope="col">학습 모델</th><th scope="col">라벨별 정확도</th><th scope="col">Macro F1</th><th scope="col">Micro F1</th><th scope="col">Macro AP</th><th scope="col">완전 일치율</th></tr></thead><tbody><tr><td>ResNet18 고정 + LRML-01</td><td>68.44%</td><td>0.5753</td><td>0.6740</td><td>0.6414</td><td>7.41%</td></tr><tr><td>EG2 고정 + LRML-02</td><td>78.72%</td><td>0.7815</td><td>0.7692</td><td>0.8358</td><td>25.93%</td></tr><tr><td>ResNet18 파인튜닝DL-01</td><td>71.99%</td><td>0.6647</td><td>0.6973</td><td>0.6941</td><td>7.41%</td></tr><tr><td>EG2 파인튜닝DL-02</td><td>80.50%</td><td>0.7798</td><td>0.7826</td><td>0.8803</td><td>22.22%</td></tr><tr><td>항상 없음 기준선</td><td>58.16%</td><td>0.0000</td><td>0.0000</td><td>—</td><td>3.70%</td></tr></tbody></table></div><p>EG2 FT는 라벨 정확도 80.50%로 이 비교에서 높았으나, Macro F1은 EG2 고정+LR의 0.7815보다 낮은 0.7798입니다. 이미지 전체 완전 일치율도 22.22%로 고정+LR 25.93%보다 낮습니다. 좋은 지표 하나로 전체 품질 개선을 단정하지 않습니다.</p><div class="table-wrap"><table><caption>라벨별 F1과 EG2 FT 재현율 · 작은 양성 표본 주의</caption><thead><tr><th scope="col">항목</th><th scope="col">평가 있음 / 없음</th><th scope="col">ResNet18 FT</th><th scope="col">EG2 고정 + LR</th><th scope="col">EG2 FT</th><th scope="col">EG2 FT 재현율</th></tr></thead><tbody><tr><td>인물</td><td>25 / 12</td><td>0.7391</td><td>0.8148</td><td>0.8679</td><td>0.9200</td></tr><tr><td>음식·음료</td><td>11 / 24</td><td>0.5556</td><td>0.6667</td><td>0.6667</td><td>0.8182</td></tr><tr><td>동물</td><td>14 / 21</td><td>0.6897</td><td>0.7143</td><td>0.6897</td><td>0.7143</td></tr><tr><td>식물·꽃</td><td>24 / 11</td><td>0.7755</td><td>0.8235</td><td>0.8235</td><td>0.8750</td></tr><tr><td>탈것</td><td>9 / 27</td><td>0.4828</td><td>0.6000</td><td>0.6000</td><td>1.0000</td></tr><tr><td>건물·구조물</td><td>24 / 12</td><td>0.8750</td><td>0.8095</td><td>0.8636</td><td>0.7917</td></tr><tr><td>악기</td><td>7 / 27</td><td>0.5333</td><td>0.8235</td><td>0.7273</td><td>0.5714</td></tr><tr><td>불꽃놀이</td><td>4 / 30</td><td>0.6667</td><td>1.0000</td><td>1.0000</td><td>1.0000</td></tr></tbody></table></div><div class="table-wrap"><table><caption>로컬 MPS 시각 처리 · 각 모델111회 · OCR·API·DB 지연 제외</caption><thead><tr><th scope="col">모델</th><th scope="col">평균 ms/장</th><th scope="col">중앙값 ms/장</th><th scope="col">P95 ms/장</th><th scope="col">측정 수</th></tr></thead><tbody><tr><td>ResNet18 파인튜닝</td><td>10.42</td><td>9.79</td><td>16.48</td><td>111</td></tr><tr><td>EG2 고정 + LR</td><td>601.37</td><td>598.63</td><td>623.93</td><td>111</td></tr><tr><td>EG2 파인튜닝</td><td>598.12</td><td>596.98</td><td>611.58</td><td>111</td></tr></tbody></table></div><p>완전 일치율의 분모는 모름이 없는 27장입니다. 불꽃놀이의 만점은 양성 4건을 포함한 작은 표본의 결과입니다. 위 시간은 RunPod의 OCR 포함 시간과 다른 측정 구간이며 직접 합산하지 않습니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>4 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="recent-research" role="tabpanel" aria-labelledby="tab-recent-research" tabindex="0"><h2>최신 통합 초안의 연구 기록</h2><div class="table-wrap"><table><caption>통합 초안 12.3의 요약 · 해당 원시 실행을 이번에 재실행하지 않음</caption><thead><tr><th scope="col">시험·평가 단위</th><th scope="col">기록된 관찰</th><th scope="col">해석·미검증 범위</th></tr></thead><tbody><tr><td>282개 판정 비교</td><td>Qwen 245/282 = 86.88%, Macro F1 0.7950 / SigLIP 238/282 = 84.40%, 0.7744</td><td>SigLIP 대비 Qwen의 FP 27→7, FN 17→30. 정확도 상승과 놓침 증가가 공존</td></tr><tr><td>문서 셀 평가</td><td>550/555 = 99.10%, Macro F1 0.967</td><td>조건 완전성 50/67 = 74.63%, 후속 57/67 = 85.07%와 분모가 다름</td></tr><tr><td>26이미지·207조건 SigLIP</td><td>기존 90.34% / 0.6982, 신규 89.37% / 0.6765</td><td>정확도·Macro F1 목표 동시 충족으로 해석하지 않음</td></tr><tr><td>추가 10건 비교</td><td>85.11% / 0.7727 대 84.40% / 0.7744</td><td>정확도 상승·F1 하락. 서로 다른 장수·조건 단위를 혼합하지 않음</td></tr><tr><td>캐스케이드·오류 수정안</td><td>일부 실행 Qwen 호출 0, oracle 93.97%, 수정안 최대 247/282 = 87.59%</td><td>복합 모델 효과·실현 가능한 93.97%·90% 달성의 증거가 아님</td></tr><tr><td>영상 로고·YOLO</td><td>양성 영상 8개 중심 / 390프레임, train325·val65, mAP 0.644</td><td>음성 대조 부족·동일 영상 분할 누출 가능성. 일반 영상 성능 아님</td></tr></tbody></table></div><p>문서 셀 정답률이 높아도 원문 조건을 빠뜨릴 수 있습니다. 후속 계획에서는 문서 전체 조건 누락·없는 조건 생성·부정/예외·근거 위치를 따로 평가합니다. 로고 미세 비교와 OCR 개선 기록은 <a href="./09_RunPod_OCR_모델_비교결과서.html">09 OCR·모델·로고 비교</a>에서 확인합니다.</p><p>근거 추적·예외·변경 영향은 PostgreSQL/Neo4j 관계 평가입니다. 시각 분류 정확도나 문서 추출 성능으로 전용하지 않습니다. 검색 과제의 Hit@5 또는 세 과제 Top1 평균도 서비스 전체 정확도로 소개하지 않습니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>5 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="evaluation-plan" role="tabpanel" aria-labelledby="tab-evaluation-plan" tabindex="0"><h2>다음 평가와 채택 기준</h2><div class="table-wrap"><table><caption>향후 평가 계획 · 이번 개정에서 새 측정값을 만들지 않음</caption><thead><tr><th scope="col">지표</th><th scope="col">분모·계산</th><th scope="col">함께 남길 내용</th></tr></thead><tbody><tr><td>조건 완전성</td><td>정답 조건 중 빠짐없이 반영한 조건 수 / 정답 조건 전체</td><td>셀 값 정확도와 별도. 없는 조건 생성도 함께 집계</td></tr><tr><td>오류 자동 통과율</td><td>실제 위반인데 pass인 조건 / 실제 위반 조건</td><td>review는 자동 통과로 넣지 않고 별도 보고</td></tr><tr><td>정상 자동 오차단율</td><td>정상인데 fail인 조건 / 실제 정상 조건</td><td>검토로 넘긴 비율을 별도 공개</td></tr><tr><td>검사 완료율</td><td>실제 검사 완료 조건 / 승인 조건 전체</td><td>미지원·실패·미관측 수, 적용 제외 정책을 함께 공개</td></tr><tr><td>근거 정확성</td><td>올바른 출처·버전·위치에 연결된 판정 / 평가한 판정</td><td>판정 문장만 맞고 위치가 틀린 경우 구분</td></tr><tr><td>Macro F1</td><td>라벨별 F1을 동일 가중 평균</td><td>라벨 수·양성/음성 수·모름 제외 기준 필수</td></tr><tr><td>지연·실패·비용</td><td>평균·중앙값·p95, 실패 수/요청 수, 실제 비용</td><td>대기·모델·관계·저장·시각화 분리. 분모 0은 N/A</td></tr></tbody></table></div><ul><li>A02: 텍스트 PDF·DOCX·HWPX의 실제 지원 범위를 확인하고 Qwen 중심과 파서+Qwen을 같은 문서로 비교합니다. 표·본문·부정·예외·누락 사례를 포함합니다.</li><li>A04/A05: 정상·실제 위반·판독 불가·미지원 사례를 포함하고, 품질·시간·실패·사람 확인 비율을 함께 비교합니다.</li><li>로고: 기존 오류5건+정상변형10건을 회귀 세트로 유지하고, 새로운 기관·디자인의 독립 표본을 따로 구성합니다.</li><li>숏폼: 프레임 근거·시각·관측 범위·미관측 구간을 기록합니다. 연속 노출은 지원이 검증된 평가기에서만 판정하며 영상 전체 통과를 샘플링 결과로 대신하지 않습니다.</li><li>최종 평가는 원본 그룹을 분리한 사람 검토 정답으로 수행하는 안을 팀에서 확정합니다. 90%·Macro F1 0.89 같은 과거 목표를 모든 역할의 승인 기준으로 자동 적용하지 않습니다.</li></ul><p>역할별 평가 통과와 서비스 E2E는 별도입니다. 개발 환경과 AWS 배포 환경에서 문서·포스터/영상·세 승인·수정본 재검수를 실제 모델로 각각 확인해야 합니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>6 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="research-evidence" role="tabpanel" aria-labelledby="tab-research-evidence" tabindex="0"><h2>근거·업데이트 기준</h2><p>이번 개정에서 기존 07·08·09 HTML의 표와 최신 통합 초안을 대조하고, 아래 10/22 원자료 JSON의 평가 단위·분할·선택·비교 수치를 다시 읽었습니다. 가중치 재로딩·추론·체크포인트 파일 전체 해시 재계산은 수행하지 않았습니다.</p><div class="table-wrap"><table><caption>출력 경로는 연구 작업 폴더 기준</caption><thead><tr><th scope="col">근거</th><th scope="col">읽은 범위</th></tr></thead><tbody><tr><td>output/poster-visual-labels-2026-10-22/runs/approved-frozen-002/comparison_summary.json</td><td>분류층 학습 여부·187장·알려진 항목282·모름14·평가 지표</td></tr><tr><td>output/poster-visual-labels-2026-10-22/eg2_finetune/runs/full-eg2-001/comparison_summary.json</td><td>선택 후보·설정·임계값·노출된 test37 후속 회귀 성격</td></tr><tr><td>동일 실행의 result_summary.json</td><td>분할·정확도·F1·로컬 지연·수행 범위</td></tr><tr><td>통합 초안 10·12·21장</td><td>후속 문서/시각/로고 시험의 요약. libfile 식별자의 원시 파일을 새로 수신·재검증한 것은 아님</td></tr></tbody></table></div><p>새 실험을 반영할 때 날짜·dataset_id·모델/프롬프트/전처리·분할·정답 승인·실행 환경·원자료 경로·한계·이전 결과 대체 여부를 함께 남깁니다. 이전 결과는 삭제하지 않고 과거 기록으로 이동합니다. <a href="./08_학습한_ML_DL_모델.html">모델 명세</a>와 <a href="./09_RunPod_OCR_모델_비교결과서.html">실행 비교</a>도 함께 갱신합니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>7 / 8</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="updates" role="tabpanel" aria-labelledby="tab-updates" tabindex="0"><h2>버전·출처·업데이트</h2>
+<p class="lead">문서 개정일, 코드 확인일, 실험 실행일을 각각 기록합니다.</p>
+<p>문서 묶음 <strong>2026.10.30-r2</strong> · 검토 기준일 2026-10-30 KST. 서비스 상태 확인은 소스 열람 기준이며 이번 개정에서 DB·모델·배포 시험을 다시 실행하지 않았습니다.</p>
+<h3>적용 우선순위</h3><ol><li>2026-10-30 사용자 결정: PostgreSQL + Neo4j를 현재 목표 구조로 반영. 팀 승인 여부는 별도.</li><li>10/30 통합 초안의 범위·정책·미정 항목.</li><li>관련 소스의 현재 구현, 날짜·환경·표본이 명시된 실험 기록.</li><li>이전 planning 문서는 당시 기록으로 보존.</li></ol>
+<p>사용자 결정은 목표를 바꾸며, 과거 실험 사실이나 구현 완료 여부를 바꾸지 않습니다. Qdrant·BGE-M3 검색 실험은 역사 자료이며 현재 필수 흐름에 포함하지 않습니다.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">기준 자료</th><th scope="col">식별·확인 범위</th></tr></thead><tbody><tr><td>통합 초안</td><td><a href="../sources/Creative_Checker_통합초안_20261030.html">보존한 기준 문서 열기</a><br><code>b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459</code></td></tr><tr><td>추가 사용자 결정</td><td>U-DB-20261030 · PostgreSQL 원천 + Neo4j 관계 조회 · 팀 승인 별도</td></tr><tr><td>코드 확인</td><td>HEAD 3cbc129 + 로컬 변경 포함. legacy와 PostgreSQL v1 경로 분리</td></tr><tr><td>이전 문서 보관</td><td><a href="../archive/planning-before-20261030-r1.zip">기존 HTML 11개 원본 ZIP</a> · 변경 전 파일 해시 포함</td></tr><tr><td>이번 문서의 역할</td><td>머신러닝·딥러닝 학습·평가 결과서 · 통합 초안의 내용을 목적별로 재구성</td></tr></tbody></table></div>
+<h3>다음 업데이트 방법</h3><ol><li>통합 초안·사용자 결정·구현/실험 근거의 변경을 대조합니다.</li><li><code>content/planning-content.json</code>의 해당 문서와 공통 상태를 수정합니다. 수치는 표본·날짜·단위·원자료를 함께 갱신합니다.</li><li><code>content/baseline.json</code>의 검토일·개정 번호·근거 해시를 실제 재검토 후 갱신합니다.</li><li>생성 후 <code>python3 docs/planning/tools/build_planning.py --check</code>로 링크·버전·해시·문서 일치 여부를 확인합니다.</li></ol>
+<p>기준 파일이나 코드가 바뀌면 검사에서 갱신 필요를 알립니다. 날짜만 자동으로 새로 찍거나, 오래된 실험을 새 측정으로 바꾸지 않습니다. 외부 Google 문서·요구사항/WBS는 이번 로컬 개정의 자동 동기화 대상이 아닙니다.</p>
+<h3>이번 개정의 공통 변경</h3><ul><li>포스터와 숏폼을 필수 목표로 통일하고, 기준·수정 요청·최종 승인의 세 지점을 연결했습니다.</li><li>현재 코드·부분 연결·독립 실험·추가 구현·팀 미정 항목을 나누었습니다.</li><li>모델 후보와 과거 학습 산출물, OCR·검색·분류·조건 추출 지표를 구분했습니다.</li><li>문서 전반의 PostgreSQL + Neo4j 목표와 ID·버전·권한·재검수 의미를 맞췄습니다.</li></ul>
+<div class="panel-footer"><button type="button" data-prev>← 이전</button><span>8 / 8</span><button type="button" data-next>다음 →</button></div></section></main></div>
+<footer><p>Creative Checker · 머신러닝·딥러닝 학습·평가 결과서 · 2026.10.30-r2</p><p>기존 파일명은 링크 호환을 위해 유지합니다. 본문의 개정 번호가 현재 버전입니다.</p></footer><noscript><p>JavaScript 없이 모든 절을 순서대로 읽을 수 있습니다.</p></noscript><script type="application/json" id="planning-metadata">{"release": "2026.10.30-r2", "reviewed_date": "2026-10-30", "master_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459", "document": "07_머신러닝_딥러닝_학습결과서.html", "status": "사용자 목표 반영 · 팀 승인 별도"}</script><script>document.body.dataset.initialHash=location.hash;</script><script>
+(()=>{'use strict';const tabs=[...document.querySelectorAll('[role=tab]')],panels=tabs.map(t=>document.getElementById(t.dataset.panel));let active=0;
+function activate(i,focus=false,updateHash=true){active=(i+tabs.length)%tabs.length;tabs.forEach((t,j)=>{t.setAttribute('aria-selected',String(j===active));t.tabIndex=j===active?0:-1;panels[j].hidden=j!==active});if(updateHash)history.replaceState(null,'','#'+panels[active].id);if(focus)tabs[active].focus();}
+tabs.forEach((t,i)=>{t.onclick=()=>activate(i);t.onkeydown=e=>{const keys={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:tabs.length-1};if(Object.hasOwn(keys,e.key)){e.preventDefault();activate(keys[e.key],true)}}});
+document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{const i=panels.findIndex(p=>p.id===b.dataset.goto);if(i>=0)activate(i)});
+document.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>activate(active+1));document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=()=>activate(active-1));
+function route(){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}const e=document.getElementById(id);const p=e?.closest('[role=tabpanel]');const i=panels.indexOf(p);if(i>=0){activate(i,false,false);let parent=e;while(parent&&parent!==p){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}if(e!==p)e.scrollIntoView({block:'center'})}}activate(0,false,false);route();window.addEventListener('hashchange',route);
+const q=document.getElementById('doc-search'),res=document.getElementById('find-results'),count=document.getElementById('find-count');
+q.oninput=()=>{res.replaceChildren();const s=q.value.trim().toLocaleLowerCase();if(!s){count.textContent='';return}let n=0;panels.forEach((p,i)=>{const text=p.textContent.replace(/\s+/g,' '),pos=text.toLocaleLowerCase().indexOf(s);if(pos<0)return;n++;const b=document.createElement('button');b.type='button';b.textContent=tabs[i].textContent.trim()+' · '+text.slice(Math.max(0,pos-30),pos+110);b.onclick=()=>{activate(i);p.scrollIntoView({block:'start'})};res.append(b)});count.textContent=n+'개 절에서 찾았습니다.'};
+document.getElementById('clear-search').onclick=()=>{q.value='';q.oninput();q.focus()};
+let saved;window.addEventListener('beforeprint',()=>{saved={active,details:[...document.querySelectorAll('details')].map(d=>[d,d.open])};panels.forEach(p=>p.hidden=false);saved.details.forEach(([d])=>d.open=true)});window.addEventListener('afterprint',()=>{if(saved){activate(saved.active);saved.details.forEach(([d,o])=>d.open=o)}});
+})();
 </script></body></html>

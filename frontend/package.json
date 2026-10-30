@@ -10,7 +10,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test src/workflow.test.js src/auth/auth.test.js",
+    "test": "node --test src/workflow.test.js src/documentRequirements.test.js src/documentProgress.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js",
     "test:e2e": "node --test tests/e2e/login.spec.mjs",
     "test:e2e:local": "node --test tests/e2e/local-admin.spec.mjs",
     "dev:v1": "vite --mode v1 --host 127.0.0.1",

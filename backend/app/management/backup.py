@@ -15,6 +15,7 @@ from ..storage.local import LocalStorage
 from .io import Tree,OpsError,json_bytes,strict_json,verify_bytes
 from .maintenance import offline,frozen_database
 from .files import audit
+from .imports import projection_fields
 
 MAX_BACKUP_FILES=10000
 MAX_BACKUP_BYTES=4*1024**3
@@ -165,7 +166,7 @@ def graph_check(c,storage,app_user):
         plan=strict_json(plan_raw)
         if plan['resources']!=ids or plan['envelope']!=provenance['envelope']:raise OpsError('RESTORE_IMPORT_PLAN_MISMATCH')
         rows=c.execute(select(table('criteria_items')).where(table('criteria_items').c.criteria_version_id==version['criteria_version_id']).order_by(table('criteria_items').c.position)).mappings().all()
-        fields=('external_item_id','position','category','text','source_text','source_item_jsonb')
+        fields=projection_fields(provenance['envelope']['projection_profile']['version'])
         if [{key:row[key] for key in fields} for row in rows]!=validation['criteria_payload']['items']:raise OpsError('RESTORE_IMPORT_GRAPH_MISMATCH')
         actual_results=c.execute(select(table('item_results')).where(table('item_results').c.run_id==run['run_id'])).mappings().all()
         if {str(row['result_id']) for row in actual_results}!=set(ids['results'].values()):raise OpsError('RESTORE_IMPORT_GRAPH_MISMATCH')

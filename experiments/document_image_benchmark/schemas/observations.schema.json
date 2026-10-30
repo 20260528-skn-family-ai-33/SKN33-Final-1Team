@@ -1,0 +1,404 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creative-checker:document-image:observations:v1",
+  "title": "Image observations and explicit execution errors",
+  "description": "Structural validation only. core.py and metrics.py additionally validate source contents, file hashes, identifiers, case/condition joins and packet binding.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "document-image-observations-v1"
+    },
+    "packet_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "engine": {
+      "$ref": "#/$defs/text"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema",
+    "packet_sha256",
+    "cases"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{64}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/text"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "message"
+      ],
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "$ref": "#/$defs/text"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "original_mode": {
+          "$ref": "#/$defs/text"
+        },
+        "original_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "oriented_dimensions": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "exif_orientation": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "format",
+        "width",
+        "height"
+      ],
+      "additionalProperties": true
+    },
+    "ocrRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/text"
+        },
+        "text": {
+          "$ref": "#/$defs/text"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "bbox_xyxy": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "polygon": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "recognition_engine": {
+          "$ref": "#/$defs/text"
+        }
+      },
+      "required": [
+        "text",
+        "confidence",
+        "bbox_xyxy"
+      ],
+      "additionalProperties": true
+    },
+    "ocr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "success"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ocrRecord"
+              }
+            },
+            "error": {
+              "type": "null"
+            },
+            "engine_ms": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "raw_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          },
+          "required": [
+            "status",
+            "records"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "error"
+            },
+            "records": {
+              "type": "null"
+            },
+            "error": {
+              "$ref": "#/$defs/error"
+            }
+          },
+          "required": [
+            "status",
+            "records",
+            "error"
+          ],
+          "additionalProperties": true
+        }
+      ]
+    },
+    "labelScore": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "prediction": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "required": [
+        "score",
+        "threshold",
+        "prediction"
+      ],
+      "additionalProperties": true
+    },
+    "visual": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "success"
+            },
+            "labels": {
+              "type": "object",
+              "properties": {
+                "person": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "food_drink": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "animal": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "plant_flower": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "vehicle": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "building_structure": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "musical_instrument": {
+                  "$ref": "#/$defs/labelScore"
+                },
+                "fireworks": {
+                  "$ref": "#/$defs/labelScore"
+                }
+              },
+              "required": [
+                "person",
+                "food_drink",
+                "animal",
+                "plant_flower",
+                "vehicle",
+                "building_structure",
+                "musical_instrument",
+                "fireworks"
+              ],
+              "additionalProperties": false
+            },
+            "error": {
+              "type": "null"
+            },
+            "model_ms": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "status",
+            "labels"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "error"
+            },
+            "labels": {
+              "type": "null"
+            },
+            "error": {
+              "$ref": "#/$defs/error"
+            }
+          },
+          "required": [
+            "status",
+            "labels",
+            "error"
+          ],
+          "additionalProperties": true
+        }
+      ]
+    },
+    "case": {
+      "type": "object",
+      "properties": {
+        "case_id": {
+          "$ref": "#/$defs/text"
+        },
+        "image_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "normalized_image_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/metadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ocr": {
+          "$ref": "#/$defs/ocr"
+        },
+        "visual": {
+          "$ref": "#/$defs/visual"
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "case_id",
+        "image_sha256",
+        "metadata",
+        "ocr",
+        "visual"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "metadata": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "metadata"
+            ]
+          },
+          "then": {
+            "properties": {
+              "ocr": {
+                "properties": {
+                  "status": {
+                    "const": "error"
+                  }
+                }
+              },
+              "visual": {
+                "properties": {
+                  "status": {
+                    "const": "error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

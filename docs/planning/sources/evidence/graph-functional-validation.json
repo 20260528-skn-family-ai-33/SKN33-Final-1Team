@@ -1,0 +1,91 @@
+{
+  "passed": true,
+  "cases": 951,
+  "by_task": {
+    "trace": {
+      "cases": 70,
+      "negative": 28,
+      "positive": 42,
+      "engines": {
+        "PostgreSQL": {
+          "passed": 70,
+          "tp": 630,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "Neo4j": {
+          "passed": 70,
+          "tp": 630,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      }
+    },
+    "exceptions": {
+      "cases": 806,
+      "negative": 486,
+      "positive": 320,
+      "engines": {
+        "PostgreSQL": {
+          "passed": 806,
+          "tp": 960,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        "Neo4j": {
+          "passed": 806,
+          "tp": 960,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0
+        }
+      }
+    },
+    "impact": {
+      "cases": 75,
+      "negative": 9,
+      "positive": 66,
+      "engines": {
+        "PostgreSQL": {
+          "passed": 75,
+          "tp": 14399,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "impacted_runs": {
+            "tp": 6534,
+            "fp": 0,
+            "fn": 0
+          }
+        },
+        "Neo4j": {
+          "passed": 75,
+          "tp": 14399,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "impacted_runs": {
+            "tp": 6534,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      }
+    }
+  },
+  "manifest": {
+    "fixture.json": "e5a6eab2dfa86492bda686ebeaa92d155115a2f4775e90d5395f84d53fab864d",
+    "cases.json": "c87ca61d26b404872f8f31e8e3b3f485b3825cd22d6e022a8b87974b422e4d44",
+    "plan.json": "dc41b895e258e9aca35dfa8ba3565360aefc803bd7de0e6350191eb03ac578bd",
+    "schedule.json": "e6b19ee444228bd34041c93697b7c04e36b63fdc2a8b2341cf296410bc213c09"
+  }
+}

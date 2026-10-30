@@ -1,0 +1,31 @@
+{
+  "frozen_at": "2026-10-21T07:57:24.030380+00:00",
+  "seed": 20261021,
+  "cohorts": {
+    "base": 1,
+    "medium": 20,
+    "expanded": 100
+  },
+  "source": "frozen virtual unapproved contract: 20 criteria and 57 chunks",
+  "policy": {
+    "trace": "completed explicit run, 0..4 rule dependencies, source scope/version/hash matched, applied exception evidence retained historically",
+    "exceptions": "all ancestor states approved, scope matched, same medium, valid [start,end), proof required, 1..4 levels, no repeated nodes",
+    "impact": "changed source to direct/transitive rule or exception and latest completed run per asset, failed/newer and old completed excluded"
+  },
+  "measurement": {
+    "repetitions_per_cohort_task_engine": 100,
+    "warmups_per_cohort_task_engine": 10,
+    "concurrency": 1,
+    "balanced_positive_negative": true,
+    "connection": "reused",
+    "timer": "execute through full consumption; wire and decode included, connection and oracle outside",
+    "p95": "linear interpolation",
+    "engine_order": "alternated each paired request"
+  },
+  "limits": [
+    "synthetic workflow and exceptions; no production approvals",
+    "programmatic oracle with explicit canaries, not human adjudicated labels",
+    "query-only local Docker; no OCR LLM API UI or human labor timing"
+  ],
+  "canary_assertions": 18
+}

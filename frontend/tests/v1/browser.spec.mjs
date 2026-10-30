@@ -77,6 +77,16 @@ async function login(page, developer = false) {
 }
 async function capture(page, name) { if (!process.env.E2E_SCREENSHOT_DIR) return; await mkdir(process.env.E2E_SCREENSHOT_DIR, { recursive: true }); await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: `${process.env.E2E_SCREENSHOT_DIR}/${name}.png`, fullPage: true, animations: 'disabled' }); }
 
+// Result details live in one inspector; select the intended row before assertions.
+async function selectResult(page, criterion) {
+  const row = page.getByRole('region', { name: '검수 항목 목록', exact: true }).getByRole('button').filter({ hasText: criterion });
+  await row.click();
+  assert.equal(await row.getAttribute('aria-pressed'), 'true');
+  const inspector = page.getByRole('complementary', { name: '선택한 검수 항목', exact: true });
+  await inspector.getByRole('heading', { name: criterion, exact: true }).waitFor();
+  return inspector;
+}
+
 test('email login returns to exact UUID URL, keeps password private, logout clears pending', async t => {
   const { page, state } = await setup(t, { authenticated: false }); await page.goto(baseURL + draftPath); await page.waitForURL('**/login'); await login(page); await page.waitForURL('**' + draftPath); await page.getByLabel('요구사항 원문').waitFor();
   assert.deepEqual(JSON.parse(posts(state, '/login')[0].body), { email: 'reviewer@example.test', password: ' fixture-password ' }); assert.equal(posts(state, '/login')[0].headers['x-csrftoken'], 'fixture-csrf');
@@ -105,15 +115,30 @@ test('lost confirmation response survives refresh and manual replay reuses exact
   const { page, state } = await setup(t, { loseConfirm: true }); await page.goto(baseURL + draftPath); await page.getByRole('button', { name: '저장된 기준 확정', exact: true }).click(); await page.getByRole('alert').waitFor(); await page.getByRole('button', { name: '같은 요청으로 결과 확인', exact: true }).waitFor(); const first = posts(state, '/criteria-versions')[0];
   await page.reload(); await page.getByRole('button', { name: '같은 요청으로 결과 확인', exact: true }).waitFor(); assert.equal(posts(state, '/criteria-versions').length, 1); await page.getByRole('button', { name: '같은 요청으로 결과 확인', exact: true }).click(); await page.waitForURL('**' + criteriaPath); const second = posts(state, '/criteria-versions')[1]; assert.equal(second.headers['idempotency-key'], first.headers['idempotency-key']); assert.equal(second.body, first.body); assert.equal(await page.evaluate(() => sessionStorage.getItem('cc.v1.pending.v1')), null);
 });
-test('run deep link and refresh are GET-only; evidence and OCR load lazily in display coordinates', async t => {
-  const { page, state } = await setup(t); await page.goto(baseURL + runPath); await page.getByRole('heading', { name: '항목별 자동 판정', exact: true }).waitFor(); assert.equal(state.requests.some(row => row.path.endsWith('/evidence')), false);
-  await page.getByRole('button', { name: '근거 1개 조회', exact: true }).click(); await page.getByText('신뢰도: 미등록', { exact: true }).waitFor(); await page.getByRole('button', { name: '이미지에서 위치 보기', exact: true }).click(); assert.equal(await page.getByTestId('evidence-box').evaluate(node => node.style.left), '10%'); assert.equal(await page.getByTestId('evidence-box').evaluate(node => node.style.width), '80%');
-  await page.getByRole('button', { name: 'OCR 원문 조회', exact: true }).click(); await page.getByText('신뢰도: 96.0%', { exact: true }).waitFor(); assert.equal(await page.getByTestId('evidence-box').count(), 0); await page.reload(); await page.getByRole('heading', { name: '항목별 자동 판정', exact: true }).waitFor(); assert.equal(state.requests.filter(row => row.method !== 'GET').length, 0);
+test('run deep link and refresh are GET-only; selected evidence and OCR load lazily in display coordinates', async t => {
+  const f = fixtures();
+  const second = { ...f.run.results[0], result_id: uid(81), criteria_item_id: uid(82), criterion_id: 'requirement-2', criterion: '로고 배치 확인', type: 'visual', verdict: 'review', status: 'review', observed_text: '두 번째 항목의 관찰 값', observed_value: null, reason: '두 번째 항목은 사람이 확인해야 합니다.', evidence_count: 0 };
+  f.run.results.push(second); f.run.criteria.push({ ...f.run.criteria[0], criteria_item_id: second.criteria_item_id, id: second.criterion_id, position: 2, text: second.criterion, type: second.type }); f.run.overall_verdict = 'review';
+  const { page, state } = await setup(t, f); await page.goto(baseURL + runPath); await page.getByRole('heading', { name: '항목별 자동 판정', exact: true }).waitFor(); assert.equal(state.requests.some(row => row.path.endsWith('/evidence')), false);
+  let inspector = await selectResult(page, f.run.results[0].criterion);
+  assert.equal(await inspector.getByText(second.observed_text, { exact: true }).count(), 0);
+  assert.equal(state.requests.some(row => row.path.endsWith('/evidence')), false, 'Selecting a result must not fetch evidence automatically');
+  await inspector.getByRole('button', { name: '근거 1개 조회', exact: true }).click(); await inspector.getByText('신뢰도: 미등록', { exact: true }).waitFor(); await inspector.getByRole('button', { name: '이미지에서 위치 보기', exact: true }).click(); assert.equal(await page.getByTestId('evidence-box').evaluate(node => node.style.left), '10%'); assert.equal(await page.getByTestId('evidence-box').evaluate(node => node.style.width), '80%');
+  inspector = await selectResult(page, second.criterion);
+  await inspector.getByText(second.observed_text, { exact: true }).waitFor(); await inspector.getByText(second.reason, { exact: true }).waitFor(); assert.equal(await inspector.getByText('확인 필요', { exact: true }).count(), 1);
+  assert.equal(await inspector.getByText('신뢰도: 미등록', { exact: true }).count(), 0, 'The previous result evidence must not remain in the selected inspector');
+  assert.equal(await page.getByTestId('evidence-box').count(), 0, 'Changing the selected result clears its old image overlay');
+  assert.equal(state.requests.filter(row => row.path.endsWith('/evidence')).length, 1, 'Changing selection must not fetch another result evidence');
+  inspector = await selectResult(page, f.run.results[0].criterion); await inspector.getByRole('button', { name: '근거 1개 조회', exact: true }).click(); await inspector.getByRole('button', { name: '이미지에서 위치 보기', exact: true }).click(); await page.getByTestId('evidence-box').waitFor();
+  await page.getByRole('button', { name: 'OCR 원문 조회', exact: true }).click(); const ocrInspector = page.getByRole('complementary', { name: '문자 인식 원문', exact: true }); await ocrInspector.getByText('신뢰도: 96.0%', { exact: true }).waitFor(); assert.equal(await page.getByTestId('evidence-box').count(), 0);
+  assert.equal(await ocrInspector.getByRole('heading', { name: f.run.results[0].criterion, exact: true }).count(), 0);
+  await page.reload(); await page.getByRole('heading', { name: '항목별 자동 판정', exact: true }).waitFor(); assert.equal(state.requests.filter(row => row.method !== 'GET').length, 0);
   await page.setViewportSize({ width: 390, height: 844 }); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true); await capture(page, 'run-mobile');
 });
+
 test('wrong-frame evidence is text-only and imported records never get a retry or invented pass', async t => {
   const f = fixtures(); f.evidence.frame_id = uid(90); f.run.status = 'imported'; f.run.origin_kind = 'external_import'; f.run.overall_verdict = null; f.run.results_complete = false; f.run.results[0].processing_status = 'imported'; f.run.results[0].verdict = null;
-  const { page } = await setup(t, f); await page.goto(baseURL + runPath); await page.getByText('가져온 과거 이력입니다.', { exact: false }).waitFor(); assert.equal(await page.getByRole('button', { name: '같은 기준으로 재검수', exact: true }).isDisabled(), true); await page.getByRole('button', { name: '근거 1개 조회', exact: true }).click(); assert.equal(await page.getByRole('button', { name: '이미지에서 위치 보기', exact: true }).isDisabled(), true); assert.equal(await page.getByText('서버 자동 요약: 판정 없음', { exact: false }).count(), 1);
+  const { page } = await setup(t, f); await page.goto(baseURL + runPath); await page.getByText('가져온 과거 이력입니다.', { exact: false }).waitFor(); assert.equal(await page.getByRole('button', { name: '같은 기준으로 재검수', exact: true }).isDisabled(), true); const inspector = await selectResult(page, f.run.results[0].criterion); await inspector.getByRole('button', { name: '근거 1개 조회', exact: true }).click(); assert.equal(await inspector.getByRole('button', { name: '이미지에서 위치 보기', exact: true }).isDisabled(), true); assert.equal(await page.getByTestId('evidence-box').count(), 0); assert.equal(await page.getByText('서버 자동 요약: 판정 없음', { exact: false }).count(), 1);
 });
 test('network errors retain last running state and manual retry is a GET, never a new execution', async t => {
   const { page, state } = await setup(t, { poll: true }); await page.goto(baseURL + runPath); await page.getByText('문자 인식 · 25%', { exact: true }).waitFor(); state.runError = 1; await page.getByText('실행 상태를 다시 확인해야 합니다.', { exact: true }).waitFor(); assert.equal(await page.getByText('문자 인식 · 25%', { exact: true }).count(), 1); state.runError = 0; await page.getByRole('button', { name: '실행 상태 다시 조회', exact: true }).click(); await page.getByText('결과 저장 완료 · 100%', { exact: true }).waitFor(); assert.equal(posts(state, '/api/v1/reviews').length, 0);
@@ -141,6 +166,6 @@ test('history keyset pagination and filters survive reload/back without mutation
   await page.getByLabel('검수 상태 필터').selectOption('failed'); await page.waitForURL('**?status=failed'); await page.goBack(); await page.waitForURL('**?cursor=opaque-history-next'); assert.equal(state.requests.filter(row => row.method !== 'GET').length, 0);
 });
 test('evidence pagination completes lazily and mobile actions keep readable widths', async t => {
-  const f = fixtures(); f.run.results[0].evidence_count = 2; const { page, state } = await setup(t, { ...f, evidencePages: true }); await page.goto(baseURL + runPath); await page.getByRole('button', { name: '근거 2개 조회', exact: true }).click(); await page.getByText('1 / 2개 조회 · 일부 조회됨', { exact: true }).waitFor(); await page.getByRole('button', { name: '근거 더 불러오기', exact: true }).click(); await page.getByText('2 / 2개 조회 · 전체 조회됨', { exact: true }).waitFor(); assert.equal(state.requests.filter(row => row.path.endsWith('/evidence')).length, 2);
+  const f = fixtures(); f.run.results[0].evidence_count = 2; const { page, state } = await setup(t, { ...f, evidencePages: true }); await page.goto(baseURL + runPath); const inspector = await selectResult(page, f.run.results[0].criterion); await inspector.getByRole('button', { name: '근거 2개 조회', exact: true }).click(); await inspector.getByText('1 / 2개 조회 · 일부 조회됨', { exact: true }).waitFor(); await inspector.getByRole('button', { name: '근거 더 불러오기', exact: true }).click(); await inspector.getByText('2 / 2개 조회 · 전체 조회됨', { exact: true }).waitFor(); assert.equal(state.requests.filter(row => row.path.endsWith('/evidence')).length, 2);
   await capture(page, 'evidence-desktop'); await page.setViewportSize({ width: 390, height: 844 }); const button = page.getByRole('button', { name: '서버 결과 JSON 다운로드', exact: true }); const bounds = await button.boundingBox(); assert.ok(bounds.width > 250 && bounds.height < 80, 'Mobile action must not wrap into a vertical column of letters'); await capture(page, 'evidence-mobile');
 });

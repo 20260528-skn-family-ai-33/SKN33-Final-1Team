@@ -42,6 +42,13 @@ def test_conflicting_price_stays_review_with_observed_amount():
     assert '5,900' in actual['reason'] and '6,900' in actual['reason']
 
 
+def test_plain_fallback_keeps_existing_model_grounded_price_evidence():
+    criterion, result = review('가격: 5,900원', parsed('fee', '5,900원'))
+    actual=compare([criterion],[result],[record('price','6,900원',[0,0,60,10])],{})[0]
+    assert actual['status']=='review' and actual['observed_text']=='6,900원'
+    assert actual['check_method']=='ocr_unique_price'
+
+
 def test_original_mode_is_not_inferred_from_normalized_rgb():
     criterion, result = review('색상 모드: RGB', kind='visual')
     actual = compare([criterion], [result], [], {'oriented_dimensions':[100,100], 'actual_format':'PNG'})[0]

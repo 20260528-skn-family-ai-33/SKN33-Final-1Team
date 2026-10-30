@@ -83,6 +83,12 @@ class ReviewExecutor:
         except (ValueError,TypeError,RecursionError):raw=b'{"diagnostic":"raw_output_not_json"}'
         self.storage.write_new(path,raw)
 
+    def advance(self,run_id,attempt,token,stage,progress):
+        self.reviews.advance(run_id,attempt,token,stage,progress)
+
+    def augment_plan(self,plan):
+        """Adapters may preserve additional source JSON before the plan is frozen."""
+
     def prepare(self,run,attempt,token):
         with unit_of_work(self.engine) as c:
             image=one(c,'asset_versions','asset_version_id',run['asset_version_id'])
@@ -100,7 +106,7 @@ class ReviewExecutor:
         op=str(attempt);input_id=str(uuid4());stage='staging/'+op
         self.storage.write_new(stage+'/'+input_id,input_bytes)
         self.leader.check()
-        self.reviews.advance(run['run_id'],attempt,token,'ocr',30)
+        self.advance(run['run_id'],attempt,token,'ocr',30)
         # The path is built from anchored, exclusively created server IDs and private directories.
         input_path=self.storage.path/stage/input_id
         self.leader.check()
@@ -112,7 +118,7 @@ class ReviewExecutor:
         records=output.normalize(payload,width,height)
         if payload.get('pipeline')!=run['requested_config']['pipeline']:raise output.OutputError('Pipeline mismatch')
         self.leader.check()
-        self.reviews.advance(run['run_id'],attempt,token,'review',80)
+        self.advance(run['run_id'],attempt,token,'review',80)
         checker_records=[{k:v for k,v in record.items() if k in ('id','text','confidence','bbox_xyxy','polygon','recognition_engine','requires_review')}
                          for record in records]
         # Preserve candidates/provenance needed by the existing conservative checker.
@@ -150,6 +156,7 @@ class ReviewExecutor:
             display_file_id=str(file['file_id']),display_frame_id=frame_id,input_frame_id=input_frame_id,width=width,height=height,
             ocr_id=ocr_id,extraction_id=extraction_id,records=records,event=event,observations=observations,items=items,
             result_manifest_hash=result_hash,overall_verdict=overall,runtime=dict(engine=payload.get('engine'),pipeline=payload['pipeline'],device='cpu',execution_target='local',status='completed'))
+        self.augment_plan(plan)
         frozen=canonical(plan)
         if len(frozen)>48*1024*1024:raise output.OutputError('Prepared graph too large')
         self.storage.write_new(stage+'/plan.json',frozen)
@@ -183,7 +190,7 @@ class ReviewExecutor:
                         frame_id=UUID(plan['display_frame_id']),execution_status='completed',engine_name=plan['runtime']['engine'],device='cpu',
                         execution_target='local',pipeline_name=plan['runtime']['pipeline'],pipeline_version=run['workflow_version'],
                         reported_coordinate_space='ocr_input_pixels',coordinate_space='normalized_original_pixels',
-                        runtime_metadata={'input_dimensions':[plan['width']*2,plan['height']*2],'scale':2},started_at=func.clock_timestamp(),completed_at=func.clock_timestamp()))
+                        runtime_metadata={'input_dimensions':[plan['width']*2,plan['height']*2],'scale':2,**plan.get('ocr_metadata',{})},started_at=func.clock_timestamp(),completed_at=func.clock_timestamp()))
                     for record in plan['records']:
                         c.execute(insert(table('ocr_tokens')).values(token_id=UUID(record['token_id']),**common,ocr_run_id=ocr_id,
                             **{k:record[k] for k in ('external_token_id','external_token_type','token_order','text','confidence','bbox_xyxy','polygon','recognition_engine','requires_review')},source_record_jsonb=record['source_record']))
@@ -212,7 +219,7 @@ class ReviewExecutor:
                         c.execute(insert(table('item_results')).values(result_id=rid,**common,run_id=run['run_id'],attempt_id=attempt_id,
                             criteria_version_id=run['criteria_version_id'],criteria_item_id=criterion,ocr_run_id=ocr_id,extraction_id=extraction_id,
                             result_origin='service_execution',execution_status=item['execution_status'],verdict=item['verdict'],observed_value=item['observed_value'],
-                            reason=item['reason'],method_code=item['method_code'],checker_version=item['checker_version'],input_manifest_hash=run['input_manifest_hash'],limitations_jsonb=item['limitations']))
+                            reason=item['reason'],method_code=item['method_code'],checker_version=item['checker_version'],input_manifest_hash=run['input_manifest_hash'],limitations_jsonb=item['limitations'],source_result_jsonb=item.get('source_result_jsonb')))
                         for value in item['evidence']:evidence(value,result=rid)
                         c.execute(insert(table('run_item_selections')).values(run_id=run['run_id'],criteria_item_id=criterion,result_id=rid,**common,
                             criteria_version_id=run['criteria_version_id'],selection_kind='pipeline_final'))

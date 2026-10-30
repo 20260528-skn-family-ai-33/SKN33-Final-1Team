@@ -5,6 +5,7 @@ import App from './App.jsx';
 const V1App = React.lazy(() => import('./v1/App.jsx'));
 import { AuthProvider } from './auth/AuthProvider.jsx';
 import './styles.css';
+import './styles/fairweather.css';
 
 // 모든 페이지에 URL 라우팅과 서버 세션 상태를 공유한다.
 createRoot(document.getElementById('root')).render(

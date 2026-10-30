@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
-import { fetchJson } from '../../api/client.js';
+import { fetchJson, fetchResponse } from '../../api/client.js';
 import { initialState, workflowReducer, canConfirm, canRun, parseRequirements } from '../../workflow.js';
+import { mergeDocumentRequirements } from '../../documentRequirements.js';
+import { extractDocumentWithProgress } from '../../documentProgress.js';
 
 const ReviewContext = createContext(null);
 
@@ -36,6 +38,10 @@ export function ReviewProvider({ children }) {
   const [healthBusy, setHealthBusy] = useState(false);
   const [sampleBusy, setSampleBusy] = useState(false);
   const [fileBusy, setFileBusy] = useState(false);
+  const [documentBusy, setDocumentBusy] = useState(false);
+  const [documentProgress, setDocumentProgress] = useState(null);
+  const [documentNotice, setDocumentNotice] = useState('');
+  const [documentError, setDocumentError] = useState('');
   const [error, setError] = useState('');
   const [pollError, setPollError] = useState('');
   const [pollRetry, setPollRetry] = useState(0);
@@ -49,17 +55,53 @@ export function ReviewProvider({ children }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const fileInput = useRef(null);
+  const documentInput = useRef(null);
+  const documentRequest = useRef(null);
+  const currentState = useRef(state);
+  currentState.current = state;
   const generation = useRef(0);
   const fileValidation = useRef(0);
   const healthRequest = useRef(null);
   const sampleRequest = useRef(null);
   const runRequest = useRef(null);
   const wantsSample = location.pathname.replace(/\/$/, '') === '/review/new' && searchParams.get('sample') === '1';
+  const savedReviewId = searchParams.get('review');
   const busy = state.step === 'running' && ['queued', 'running', 'submitting'].includes(state.review?.status);
   const locked = Boolean(state.snapshot);
   const selected = state.criteria.filter(item => item.selected);
   const selectedInfo = selected.filter(item => item.type === 'information').length;
   const versionText = locked ? `v${state.snapshot.version} 확정` : state.version ? `재확정 필요 · 이전 v${state.version}` : '확정 전';
+
+  function clearSavedReview() {
+    setSearchParams(params => { const next = new URLSearchParams(params); next.delete('review'); return next; }, { replace: true });
+  }
+
+  // URL에 실행 ID만 보관하고, 새로고침 때 기준·원본·결과를 서버에서 복원한다.
+  useEffect(() => {
+    if (!savedReviewId || currentState.current.review?.id === savedReviewId) return;
+    const controller = new AbortController();
+    const epoch = ++generation.current;
+    setFileBusy(true);
+    async function restore() {
+      try {
+        const review = await fetchJson(`/api/reviews/${encodeURIComponent(savedReviewId)}`, { signal: controller.signal });
+        const response = await fetchResponse(`/api/reviews/${encodeURIComponent(savedReviewId)}/original`, { signal: controller.signal });
+        const blob = await response.blob();
+        const format = review.image.actual_format.toLowerCase();
+        const file = new File([blob], `검수원본.${format === 'jpeg' ? 'jpg' : format}`, { type: `image/${format}` });
+        if (controller.signal.aborted || epoch !== generation.current) return;
+        setDimensions({ width: review.image.width, height: review.image.height });
+        dispatch({ type: 'restore', review, file });
+        setError('');
+      } catch (err) {
+        if (!controller.signal.aborted) setError(`저장된 검수를 불러오지 못했습니다. ${err.message}`);
+      } finally {
+        if (!controller.signal.aborted) setFileBusy(false);
+      }
+    }
+    restore();
+    return () => controller.abort();
+  }, [savedReviewId]);
 
   // 이전 연결 조회를 취소해 가장 최근 서버 상태만 반영한다.
   const checkHealth = useCallback(async () => {
@@ -85,9 +127,59 @@ export function ReviewProvider({ children }) {
     setSampleBusy(false);
   }, []);
 
+  const cancelDocument = useCallback(() => {
+    documentRequest.current?.abort();
+    documentRequest.current = null;
+    setDocumentBusy(false);
+    setDocumentProgress(null);
+    setDocumentNotice('');
+    setDocumentError('');
+  }, []);
+
+  async function selectDocument(files) {
+    cancelDocument();
+    invalidateSample();
+    if (documentInput.current) documentInput.current.value = '';
+    if (files.length !== 1) { setDocumentError('PDF는 한 번에 1개만 선택해 주세요.'); return; }
+    const file = files[0];
+    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF를 선택해 주세요.'); return; }
+    const controller = new AbortController();
+    documentRequest.current = controller;
+    setDocumentBusy(true);
+    setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now() });
+    setDocumentNotice(`${file.name}에서 요구조건을 읽고 있어요. 페이지 수에 따라 몇 분 걸릴 수 있습니다.`);
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    try {
+      const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+      if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
+      if (controller.signal.aborted) return;
+      const result = await extractDocumentWithProgress(file, { signal: controller.signal, onProgress: update => {
+        if (!controller.signal.aborted && documentRequest.current === controller) {
+          setDocumentProgress(previous => ({ ...previous, ...update }));
+        }
+      } });
+      if (controller.signal.aborted || documentRequest.current !== controller) return;
+      const merged = mergeDocumentRequirements(currentState.current.requirements, result, file.name);
+      dispatch({ type: 'document', ...merged });
+      setDocumentProgress(previous => ({ ...previous, percent: 100, stage: 'completed', message: `${merged.addedCount}개 조건을 입력에 반영했습니다.` }));
+      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${merged.addedCount}개 조건을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
+    } catch (err) {
+      if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
+        setDocumentNotice('');
+        setDocumentProgress(null);
+        setDocumentError(timedOut ? '응답 대기 시간이 초과됐습니다. 기존 입력은 유지됩니다. 잠시 후 다시 시도해 주세요.' : err.message);
+      }
+    } finally {
+      clearTimeout(timer);
+      if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
+    }
+  }
+
   // 샘플 이미지와 요구사항을 함께 읽고 최신 요청일 때만 화면에 적용한다.
   const sample = useCallback(async () => {
     if (sampleRequest.current) return;
+    cancelDocument();
     const controller = new AbortController();
     sampleRequest.current = controller;
     const epoch = ++generation.current;
@@ -106,6 +198,7 @@ export function ReviewProvider({ children }) {
       const dims = await validateImage(file, health?.limits);
       if (controller.signal.aborted || epoch !== generation.current) return;
       dispatch({ type: 'sample', file, projectName: metadata.project_name, requirements: metadata.requirements });
+      setSearchParams(params => { const next = new URLSearchParams(params); next.delete('review'); return next; }, { replace: true });
       setDimensions(dims);
     } catch (err) {
       if (!controller.signal.aborted && epoch === generation.current) setError(err.message);
@@ -115,7 +208,7 @@ export function ReviewProvider({ children }) {
         setSampleBusy(false);
       }
     }
-  }, [health?.limits]);
+  }, [health?.limits, cancelDocument, setSearchParams]);
 
   // 로그아웃이나 계정 변경으로 제공자가 해제되면 요청과 파일 검증을 무효화한다.
   useEffect(() => {
@@ -126,6 +219,7 @@ export function ReviewProvider({ children }) {
       healthRequest.current?.abort();
       sampleRequest.current?.abort();
       runRequest.current?.abort();
+      documentRequest.current?.abort();
       sampleRequest.current = null;
       runRequest.current = null;
     };
@@ -179,7 +273,9 @@ export function ReviewProvider({ children }) {
 
   // 초안 입력이 바뀌면 이전 기준 확정과 샘플 요청을 무효화한다.
   function inputChange(field, value) {
+    clearSavedReview();
     invalidateSample();
+    if (field === 'requirements') cancelDocument();
     setError('');
     dispatch({ type: 'input', field, value });
   }
@@ -215,7 +311,7 @@ export function ReviewProvider({ children }) {
   // 입력을 검증한 뒤 줄마다 하나의 검수 항목을 준비한다.
   function prepare(event) {
     event?.preventDefault();
-    if (sampleBusy || fileBusy) return;
+    if (sampleBusy || fileBusy || documentBusy) return;
     setError('');
     if (!state.file) { setError('검수할 이미지를 먼저 선택해 주세요.'); return; }
     if (!state.requirements.trim()) { setError('검수 요구사항을 한 줄에 하나씩 입력해 주세요.'); return; }
@@ -234,6 +330,7 @@ export function ReviewProvider({ children }) {
 
   // 확정을 풀어 기존 동작대로 기준을 다시 편집할 수 있게 한다.
   function unlock() {
+    clearSavedReview();
     generation.current += 1;
     setError('');
     setPollError('');
@@ -256,7 +353,10 @@ export function ReviewProvider({ children }) {
     form.append('project_name', state.projectName || '새로운 검수');
     try {
       const review = await fetchJson('/api/reviews', { method: 'POST', body: form, signal: controller.signal });
-      if (!controller.signal.aborted && epoch === generation.current) dispatch({ type: 'run', review });
+      if (!controller.signal.aborted && epoch === generation.current) {
+        dispatch({ type: 'run', review });
+        setSearchParams(params => { const next = new URLSearchParams(params); next.set('review', review.id); return next; }, { replace: true });
+      }
     } catch (err) {
       if (!controller.signal.aborted && epoch === generation.current) {
         dispatch({ type: 'run', review: { status: 'failed', stage: 'failed', progress: 0, error: err.message } });
@@ -278,7 +378,7 @@ export function ReviewProvider({ children }) {
 
   // 기존 상태 전이 규칙을 통해 이동 가능한 검수 단계로 전환한다.
   function navigate(step) {
-    if (sampleBusy || fileBusy) return;
+    if (sampleBusy || fileBusy || documentBusy) return;
     setError('');
     dispatch({ type: 'navigate', step });
   }
@@ -288,7 +388,9 @@ export function ReviewProvider({ children }) {
 
   // 새 검수를 시작할 때 이전 요청과 화면 보조 상태를 모두 정리한다.
   function newReview() {
+    clearSavedReview();
     invalidateSample();
+    cancelDocument();
     fileValidation.current += 1;
     runRequest.current?.abort();
     runRequest.current = null;
@@ -308,6 +410,7 @@ export function ReviewProvider({ children }) {
   function changeFilter(value) { setFilter(value); setActiveEvidence(null); }
 
   const value = {
+    documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,

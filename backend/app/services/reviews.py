@@ -52,10 +52,11 @@ class Reviews:
         return dict(row)
 
     @safe_transaction
-    def admit(self,subject,dev,body,key,request_id,source_id=None):
+    def admit(self,subject,dev,body,key,request_id,source_id=None,*,source_snapshot=None):
         if key.version!=4:raise AuthError('INVALID_IDEMPOTENCY_KEY',422)
         operation='retry_review' if source_id else 'create_review'
         payload=dict(actor_user_id=str(subject.user_id),operation=operation,body=body)
+        if source_snapshot is not None:payload['source_snapshot']=source_snapshot
         if source_id:payload['source_run_id']=str(source_id)
         request_hash=digest(operation,payload,'cc-request-jcs-v1')
         with unit_of_work(self.engine) as c:
@@ -113,7 +114,7 @@ class Reviews:
                 c.execute(insert(runs).values(run_id=run_id,project_id=pid,asset_version_id=image_id,criteria_version_id=version_id,
                     retry_of_run_id=source_id,requested_by=subject.user_id,request_operation=operation,idempotency_key=key,
                     request_hash=request_hash,request_hash_version='cc-request-jcs-v1',origin_kind='service_execution',
-                    project_name_snapshot=project['name'],execution_status='queued',current_stage='queued',progress=0,
+                    project_name_snapshot=project['name'],source_snapshot_jsonb=source_snapshot,execution_status='queued',current_stage='queued',progress=0,
                     orchestration_mode='single_pipeline',executor_kind=self.executor_kind,workflow_version=self.workflow,
                     aggregation_policy_version=POLICY,execution_target='local',requested_config=config,input_manifest_hash=manifest,
                     manifest_hash_version='cc-manifest-jcs-v1',retry_policy_jsonb=self.retry,available_at=func.clock_timestamp()))

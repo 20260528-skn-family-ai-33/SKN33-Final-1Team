@@ -3,6 +3,7 @@
 Windows branches are simulated here; native Windows execution belongs to CI.
 """
 from pathlib import Path
+from contextlib import contextmanager, nullcontext
 from types import SimpleNamespace
 from unittest.mock import Mock, call
 import json
@@ -13,6 +14,11 @@ import pytest
 
 import setup_local
 import start
+
+
+@pytest.fixture(autouse=True)
+def no_real_requirements_server(monkeypatch):
+    monkeypatch.setattr(start, 'requirements_server', Mock(side_effect=nullcontext))
 
 
 @pytest.fixture
@@ -289,6 +295,26 @@ def ready_paddle_start(project, monkeypatch, *, ready=True):
     return uvicorn, modules, readiness
 
 
+def test_requirements_model_lifetime_wraps_server_even_when_server_fails(windows_project, monkeypatch):
+    uvicorn, _, _ = ready_paddle_start(windows_project, monkeypatch)
+    events = []
+    @contextmanager
+    def managed_model():
+        events.append('model started')
+        try:
+            yield
+        finally:
+            events.append('model stopped')
+    def failing_server(*args, **kwargs):
+        events.append('app started')
+        raise RuntimeError('port already used')
+    monkeypatch.setattr(start, 'requirements_server', managed_model)
+    uvicorn.run.side_effect = failing_server
+    with pytest.raises(RuntimeError, match='port already used'):
+        start.main()
+    assert events == ['model started', 'app started', 'model stopped']
+
+
 @pytest.mark.parametrize("check_only", [True, False])
 @pytest.mark.parametrize("explicit", [True, False])
 @pytest.mark.parametrize("windows", [True, False])
@@ -312,8 +338,10 @@ def test_paddle_only_starts_without_easyocr_packages_or_weights(windows_project,
     assert ("Remove-Item Env:OCR_PIPELINE" if windows else "env -u OCR_PIPELINE ./run.sh") in output
     if check_only:
         uvicorn.run.assert_not_called()
+        start.requirements_server.assert_not_called()
     else:
         uvicorn.run.assert_called_once_with("backend.app.api:app", host="127.0.0.1", port=8124)
+        start.requirements_server.assert_called_once_with()
     windows_project.run.assert_not_called()
     windows_project.popen.assert_not_called()
 

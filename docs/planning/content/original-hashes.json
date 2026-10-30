@@ -1,0 +1,13 @@
+{
+  "01_기획서.html": "effb03e1955d4b1dcaf599269133732e5be1a7c946519d350a1c79fca112e855",
+  "02_기능정의서.html": "9c147ce2f525df68c360e672819c86826f8c2a37bfbb86c7afa7e8adf1bb93f2",
+  "03_화면정의서.html": "cad6d8061656b264bd4f93244f123a1750d01ab580a7bc148eaa1fe270d9feb0",
+  "04_기술스펙정의서.html": "9574ad19d24fbf5ce93fcc5d40a8fc2542067b8f0393eaea1e870918b95809a0",
+  "05_사용자별_기능정의서.html": "39dc6c1c40ec4d4c774ef709e6ac40c52306cef7294a22213ea2841a792a2481",
+  "06_벡터DB_GraphDB_구축결과서.html": "2e4984154cd135e3641138bb46124382d7053113ede865511aa4e63e219d247d",
+  "07_머신러닝_딥러닝_학습결과서.html": "83ae4c7de83b38a7fbeb8a3985e12916b07506e57c773ed25bef71acac56d4bb",
+  "08_학습한_ML_DL_모델.html": "e7562a67c36dd5646f180dd58adb83b28fa57883b6fe423cdc33b1247565a8b5",
+  "09_RunPod_OCR_모델_비교결과서.html": "bf7855c6e6fc3f25549dc632ec1fb6a043831556afbc3c3349239f7c95f8f6fa",
+  "10_PostgreSQL_Neo4j_아키텍처_개편안.html": "d87b8a6ccac2ec63276f05cff7927b4dbff474ea0e309d000cb5aa659e9b8d3e",
+  "11_PostgreSQL_Neo4j_통합업무_아키텍처_v1.1.html": "3d637053f7feb36f8420b90a891520f99373b8d0adf5a29da12a1708252a4ef4"
+}

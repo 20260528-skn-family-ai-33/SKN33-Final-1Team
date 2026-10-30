@@ -87,6 +87,42 @@ def test_upload_freezes_criteria_preserves_bytes_and_maps_coordinates(tmp_path):
         assert client.get(f"/api/reviews/{identifier}/snapshot.json").status_code == 404
 
 
+def test_pdf_expectations_survive_snapshot_and_metadata_checks_need_no_remote_model(tmp_path, monkeypatch):
+    from backend.app.document_conditions import render_condition
+    monkeypatch.delenv('REVIEW_MODELS_URL', raising=False)
+    spec = {'label':'파일 형식과 색상','requirement':'정적 JPEG 이미지 1개, 확장자 .jpg, RGB 색상 모드',
+            'level':'필수','inspection':'원본 파일의 측정값을 확인한다.'}
+    criteria = [{**criterion(render_condition(spec)), 'document_condition':spec}]
+    with make_client(tmp_path, runtime([])) as client:
+        response = submit(client, criteria=criteria, image=image_bytes(image_format='JPEG'))
+        result = client.get('/api/reviews/'+response.json()['id']).json()
+        assert result['criteria'] == criteria
+        assert result['results'][0]['status'] == 'pass'
+        assert result['results'][0]['check_method'] == 'source_image_metadata'
+        assert result['image']['original_mode'] == 'RGB' and result['image']['original_frames'] == 1
+        assert result['image']['original_extension'] == '.jpg'
+
+
+def test_stale_document_expectations_are_rejected_before_ocr(tmp_path):
+    def unexpected(_path): pytest.fail('stale metadata must fail before OCR')
+    spec = {'label':'행사 시간','requirement':'17:30','level':'필수','inspection':''}
+    with make_client(tmp_path, unexpected) as client:
+        assert submit(client,criteria=[{**criterion('행사 시간: [필수] 18:30'), 'document_condition':spec}]).status_code == 422
+
+
+def test_merged_pdf_details_and_both_sources_survive_api_confirmation(tmp_path):
+    spec = {'label':'상품명','requirement':'테스트 라떼','level':'명시 없음',
+            'inspection':'원문 기준 ' + '가' * 210,
+            'sources':[{'page':1,'source_id':'p1-s1','source':'상품명 | 테스트 라떼'},
+                       {'page':2,'source_id':'p2-s3','source':'IMG-02 | 상품명 | 테스트 라떼'}]}
+    criteria = [{**criterion('상품명: 테스트 라떼'), 'document_condition':spec}]
+    with make_client(tmp_path, runtime([])) as client:
+        response = submit(client, criteria=criteria)
+        assert response.status_code == 202
+        result = client.get('/api/reviews/'+response.json()['id']).json()
+        assert result['criteria'][0]['document_condition'] == spec
+
+
 @pytest.mark.parametrize("criteria,version", [
     ([], "1"), ([criterion("  ")], "1"), ([criterion("x" * 501)], "1"),
     ([criterion(), criterion()], "1"), ([criterion()], "0"), ([criterion()], "-2"),

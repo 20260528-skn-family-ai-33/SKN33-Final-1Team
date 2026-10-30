@@ -1,0 +1,394 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:creative-checker:document-image:packet:v1",
+  "title": "Document and image condition packet",
+  "description": "Structural validation only. core.py and metrics.py additionally validate source contents, file hashes, identifiers, case/condition joins and packet binding.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "document-image-review-v1"
+    },
+    "qualification": {},
+    "files": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/relativePath"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/case"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema",
+    "files",
+    "cases"
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{64}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "locator": {
+          "$ref": "#/$defs/text"
+        },
+        "quote": {
+          "$ref": "#/$defs/text"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "locator",
+        "quote"
+      ],
+      "additionalProperties": true
+    },
+    "check": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "text_contains"
+            },
+            "expected": {
+              "$ref": "#/$defs/text"
+            },
+            "normalization": {
+              "enum": [
+                "space",
+                "price",
+                "time"
+              ]
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind",
+            "expected"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "image_size"
+            },
+            "expected": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind",
+            "expected"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "image_format"
+            },
+            "expected": {
+              "$ref": "#/$defs/text"
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind",
+            "expected"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "file_present"
+            },
+            "expected": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^/\\\\]+$"
+            },
+            "extensions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\.[^/\\\\.]+$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "role": {
+              "$ref": "#/$defs/text"
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "expected"
+              ],
+              "not": {
+                "required": [
+                  "extensions"
+                ]
+              }
+            },
+            {
+              "required": [
+                "extensions"
+              ],
+              "not": {
+                "required": [
+                  "expected"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "visual_class"
+            },
+            "label": {
+              "enum": [
+                "person",
+                "food_drink",
+                "animal",
+                "plant_flower",
+                "vehicle",
+                "building_structure",
+                "musical_instrument",
+                "fireworks"
+              ]
+            },
+            "expected": {
+              "type": "boolean"
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind",
+            "label",
+            "expected"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "unsupported"
+            },
+            "reason": {
+              "$ref": "#/$defs/text"
+            },
+            "provenance": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/text"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "requirement": {
+          "$ref": "#/$defs/text"
+        },
+        "level": {
+          "enum": [
+            "required",
+            "recommended",
+            "optional"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "approval_status": {
+          "enum": [
+            "draft",
+            "approved"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/check"
+          },
+          "minItems": 1
+        },
+        "resolved_expected": {},
+        "expected_locator": {
+          "$ref": "#/$defs/text"
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "requirement",
+        "level",
+        "source",
+        "approval_status",
+        "checks"
+      ],
+      "additionalProperties": true
+    },
+    "deliveryFile": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "name",
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": true
+    },
+    "case": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/text"
+        },
+        "group_id": {
+          "$ref": "#/$defs/text"
+        },
+        "image": {
+          "$ref": "#/$defs/file"
+        },
+        "delivery_files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deliveryFile"
+          }
+        },
+        "delivery_inventory_complete": {
+          "type": "boolean"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "minItems": 1
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "group_id",
+        "image",
+        "delivery_files",
+        "conditions"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,10 +1,12 @@
+> 현재 프로젝트의 공통 모델은 **Qwen3.5-4B**입니다. 아래 OCR 수치는 변경 전 비교 실험의 기록이며 현재 모델의 성능으로 다시 표시하지 않습니다.
+
 # 한국어 PaddleOCR·Qwen 4B 연결 및 실제 비교
 
 > 이 문서는 혼합 경로를 처음 연결했을 때의 실험 기록이다. 이후 추가된 Paddle 단독 탐지·인식과 항목별 판정 수정은 [후속 보고서](ocr-paddle-only-2026-10-13.md)에 기록한다. 아래 수치는 당시 코드와 결과를 그대로 보존한다.
 
 ## 적용 내용과 선택
 
-기존 EasyOCR의 자동 탐지 영역을 **한국어 `korean_PP-OCRv5_mobile_rec`** 또는 **Ollama `qwen3-vl:4b-instruct`**로 다시 읽는 경로를 연결했다. 여러 줄 결합, 원문·후보 보존, API 좌표 복원, 결과 화면의 모델 이름 표시까지 연결했다. 새 함수에는 간단한 한국어 주석을 추가했다.
+기존 EasyOCR의 자동 탐지 영역을 **한국어 `korean_PP-OCRv5_mobile_rec`** 또는 **당시 로컬 Qwen OCR 비교 모델**로 다시 읽는 경로를 연결했다. 여러 줄 결합, 원문·후보 보존, API 좌표 복원, 결과 화면의 모델 이름 표시까지 연결했다. 새 함수에는 간단한 한국어 주석을 추가했다.
 
 이 비교에서는 **Paddle 경로를 우선 시험할 수 있다.** 자동 판정 확대는 별도 검증이 필요하다. 사람 확인 전 초안 라벨 5장만 사용했으며 일반적인 포스터 정확도를 확정하지 않았다. 기존 `baseline` 기본값은 유지한다. 로고·잘림은 계속 담당자 확인 대상이다.
 
@@ -174,5 +176,5 @@ Paddle의 핵심 문자 오류는 44/199 → **12/199**로 줄었다. Qwen은 **
 - [한국어 PP-OCRv5 모델](https://huggingface.co/PaddlePaddle/korean_PP-OCRv5_mobile_rec)
 - [PaddleOCR 인식 모듈](https://www.paddleocr.ai/latest/en/version3.x/module_usage/text_recognition.html)
 - [PaddlePaddle macOS 설치](https://www.paddlepaddle.org.cn/documentation/docs/en/install/pip/macos-pip_en.html)
-- [Ollama Qwen3-VL 4B Instruct](https://ollama.com/library/qwen3-vl:4b-instruct)
+- [현재 공통 모델 Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B)
 - [Ollama 이미지 메시지 API](https://docs.ollama.com/api/chat)

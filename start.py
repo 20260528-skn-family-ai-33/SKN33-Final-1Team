@@ -13,6 +13,7 @@ from urllib.parse import unquote, urlsplit
 
 from backend.app.ocr_config import selected_pipeline
 from backend.app.ocr_runtime import MODEL_FILES
+from scripts.local_ollama import requirements_server
 
 ROOT = Path(__file__).resolve().parent
 SERVER_PACKAGES = (("uvicorn", "uvicorn"), ("fastapi", "fastapi"),
@@ -283,7 +284,8 @@ def main():
     print(f"\n브라우저 주소: http://{args.host}:{args.port}", flush=True)
     print("실행 중에는 터미널에 입력 프롬프트가 돌아오지 않는 것이 정상입니다.", flush=True)
     print("이 터미널을 유지하고 브라우저를 여세요. Ctrl+C는 서버 종료입니다.\n", flush=True)
-    uvicorn.run("backend.app.api:app", host=args.host, port=args.port)
+    with requirements_server():
+        uvicorn.run("backend.app.api:app", host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

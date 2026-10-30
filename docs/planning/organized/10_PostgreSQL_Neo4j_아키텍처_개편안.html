@@ -1,0 +1,813 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="planning-release" content="2026.10.30-r2"><title>크리에이티브체커 · 시스템 아키텍처</title><style>
+      :root {
+        --paper: #f4f3ee;
+        --card: #fffefb;
+        --ink: #203d34;
+        --muted: #69746b;
+        --line: #dbded3;
+        --accent: #315b48;
+        --soft: #e9eee3;
+        --warm: #f4e9df;
+        --radius: 19px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        color: #9b603c;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      summary {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #bf7543;
+        outline-offset: 4px;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      button,
+      .button {
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: var(--ink);
+      }
+      .skip {
+        position: absolute;
+        left: 18px;
+        top: -70px;
+        padding: 12px;
+        background: var(--ink);
+        color: white;
+        z-index: 5;
+      }
+      .skip:focus {
+        top: 10px;
+      }
+      .site-head {
+        max-width: 1420px;
+        margin: auto;
+        padding: 26px 36px 18px;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .brand {
+        font-weight: 750;
+        text-decoration: none;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 9px;
+        background: var(--ink);
+        color: #fcfaf3;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+      .doc-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .doc-nav a {
+        padding: 8px 15px;
+        border: 1px solid var(--line);
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 13px;
+        background: var(--card);
+      }
+      .doc-nav a[aria-current="page"] {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .hero {
+        max-width: 1420px;
+        margin: auto;
+        padding: 30px 36px 33px;
+        border-top: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 750;
+        color: #6d785d;
+      }
+      .hero h1 {
+        font-size: clamp(31px, 4.5vw, 54px);
+        line-height: 1.22;
+        letter-spacing: -0.065em;
+        margin: 12px 0;
+      }
+      .hero p {
+        max-width: 900px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        margin: 2px 5px 2px 0;
+        background: var(--soft);
+        border: 1px solid #d7dfcf;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 650;
+        color: #416348;
+      }
+      .badge.warm {
+        background: var(--warm);
+        border-color: #e9d8ca;
+        color: #865b3c;
+      }
+      .layout {
+        max-width: 1420px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 208px minmax(0, 1fr);
+        gap: 24px;
+        padding: 0 36px 54px;
+      }
+      .side {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+      }
+      .side .caption {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 4px 10px 12px;
+        letter-spacing: 0.1em;
+      }
+      .tablist {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tablist button {
+        display: flex;
+        gap: 11px;
+        text-align: left;
+        font-size: 13px;
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 11px 13px;
+        line-height: 1.5;
+      }
+      .tablist button span {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        opacity: 0.6;
+      }
+      .tablist button[aria-selected="true"] {
+        color: white;
+        background: var(--ink);
+        border-color: var(--ink);
+        box-shadow: 0 5px 14px #234c4015;
+      }
+      .side-note {
+        padding: 18px 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+      .doc-panel {
+        padding: 32px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        min-width: 0;
+        margin-bottom: 20px;
+      }
+      .doc-panel[hidden] {
+        display: none;
+      }
+      .doc-panel h2 {
+        font-size: clamp(24px, 2.6vw, 33px);
+        line-height: 1.4;
+        letter-spacing: -0.045em;
+        margin: 0 0 16px;
+      }
+      .doc-panel h3 {
+        font-size: 18px;
+        letter-spacing: -0.025em;
+        margin: 22px 0 10px;
+      }
+      .doc-panel h4 {
+        font-size: 15px;
+        margin: 20px 0 8px;
+      }
+      .lead {
+        font-size: 18px;
+        max-width: 820px;
+      }
+      .muted,
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .meta strong {
+        color: var(--ink);
+      }
+      .section-intro {
+        margin-bottom: 26px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card,
+      .link-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        background: #fafbf7;
+        min-width: 0;
+      }
+      .card h3,
+      .link-card h3 {
+        margin: 8px 0 10px;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .note {
+        border: 1px solid #d9e2d0;
+        border-left: 4px solid #74906c;
+        border-radius: 10px;
+        padding: 16px 19px;
+        background: #f0f4eb;
+        margin: 23px 0;
+        font-size: 13px;
+      }
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin: 20px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #edf0e8;
+        font-weight: 750;
+        white-space: normal;
+        min-width: 90px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:nth-child(even) {
+        background: #fcfcf8;
+      }
+      td p:first-child {
+        margin-top: 0;
+      }
+      td ul {
+        padding-left: 17px;
+      }
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      details {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0 19px;
+        background: #fcfcf9;
+        margin: 14px 0;
+      }
+      summary {
+        cursor: pointer;
+        padding: 16px 0;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+      details[open] > summary {
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 14px;
+      }
+      details > details {
+        background: white;
+      }
+      details .table-wrap {
+        margin: 15px 0;
+      }
+      details > :last-child:not(summary) {
+        margin-bottom: 20px;
+      }
+      input[type="search"],
+      input[data-search-input] {
+        width: 100%;
+        border: 1px solid #aabda1;
+        border-radius: 11px;
+        padding: 12px 15px;
+        background: white;
+        color: var(--ink);
+      }
+      [data-search][hidden] {
+        display: none;
+      }
+      pre {
+        background: #edf1e8;
+        border-radius: 12px;
+        padding: 20px;
+        overflow: auto;
+        font-size: 12px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.92em;
+      }
+      p code,
+      td code,
+      li code {
+        background: #eaf0e3;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px 20px;
+      }
+      dt {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+      footer {
+        max-width: 1420px;
+        margin: auto;
+        padding: 20px 36px 36px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 0;
+      }
+      .panel-footer span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .doc-cards .link-card {
+        display: block;
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--card);
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+      .doc-cards .link-card:hover {
+        transform: translateY(-3px);
+        border-color: #769267;
+      }
+      .link-card strong {
+        display: block;
+        font-size: 24px;
+        letter-spacing: -0.035em;
+        margin: 10px 0;
+      }
+      .link-card .arrow {
+        float: right;
+        font-size: 21px;
+      }
+      .index-main {
+        max-width: 1420px;
+        margin: auto;
+        padding: 0 36px 48px;
+      }
+      .index-main .doc-panel {
+        margin-top: 25px;
+      }
+      .feature-card:target,
+      details:target {
+        outline: 3px solid #c89568;
+        outline-offset: 4px;
+        scroll-margin-top: 25px;
+      }
+      .empty-search {
+        padding: 20px;
+        color: var(--muted);
+        background: var(--soft);
+        border-radius: 10px;
+      }
+      .source-tag {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 26px;
+      }
+      @media (max-width: 1000px) {
+        .layout {
+          grid-template-columns: 170px minmax(0, 1fr);
+          gap: 18px;
+        }
+        .doc-panel {
+          padding: 25px;
+        }
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 700px) {
+        .site-head,
+        .hero {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .hero {
+          padding-top: 23px;
+        }
+        .layout {
+          display: block;
+          padding: 0 18px 30px;
+        }
+        .side {
+          position: static;
+        }
+        .tablist {
+          flex-direction: row;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+          gap: 6px;
+        }
+        .tablist button {
+          font-size: 12px;
+          border: 1px solid var(--line);
+          padding: 8px 10px;
+          background: var(--card);
+        }
+        .tablist button span {
+          display: none;
+        }
+        .side-note,
+        .side .caption {
+          display: none;
+        }
+        .doc-panel {
+          padding: 22px 17px;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-nav {
+          gap: 6px;
+        }
+        .doc-nav a {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
+        .brand-row {
+          align-items: flex-start;
+        }
+        .brand-row .badge {
+          display: none;
+        }
+        .index-main {
+          padding: 0 18px 30px;
+        }
+        footer {
+          padding: 20px 18px;
+        }
+        dl {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        dd {
+          margin-bottom: 12px;
+        }
+        .lead {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        @page {
+          size: A4;
+          margin: 14mm;
+        }
+        body {
+          background: white;
+          font-size: 10pt;
+          color: #18251e;
+        }
+        .site-head,
+        .side,
+        .panel-footer,
+        .print-button,
+        .doc-nav,
+        .skip,
+        input[data-search-input],
+        [data-search-count],
+        .empty-search {
+          display: none !important;
+        }
+        .hero {
+          padding: 0 0 18px;
+          border: 0;
+        }
+        .hero h1 {
+          font-size: 26pt;
+        }
+        .layout,
+        .index-main {
+          display: block;
+          padding: 0;
+        }
+        .doc-panel,
+        .doc-panel[hidden] {
+          display: block !important;
+          min-height: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          break-before: page;
+        }
+        .doc-panel:first-child {
+          break-before: auto;
+        }
+        .doc-panel h2 {
+          font-size: 20pt;
+        }
+        details {
+          border: 0;
+          padding: 0;
+        }
+        summary {
+          font-size: 12pt;
+        }
+        details::details-content {
+          content-visibility: visible !important;
+          height: auto !important;
+        }
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .card,
+        .note {
+          break-inside: avoid;
+          padding: 12px;
+        }
+        .table-wrap {
+          overflow: visible;
+          border-radius: 0;
+        }
+        th,
+        td {
+          padding: 6px;
+          font-size: 9pt;
+          min-width: 0;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        pre {
+          font-size: 8pt;
+        }
+        footer {
+          padding: 15px 0;
+        }
+        .source-tag {
+          font-size: 8pt;
+        }
+        [data-search][hidden] {
+          display: revert !important;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .workflow-scroll {
+          overflow: visible !important;
+        }
+        .workflow-svg {
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+      }
+      @media print {
+        .workflow-source {
+          display: block !important;
+        }
+        .workflow-source pre {
+          max-height: none;
+          overflow: visible;
+          white-space: pre-wrap;
+          background: #f4f4f4;
+          color: #18251e;
+        }
+        .workflow-source code {
+          font-size: 8pt;
+        }
+      }
+    
+
+html{scroll-behavior:smooth}[hidden]{display:none!important}body{word-break:keep-all}caption{text-align:left;padding:12px 14px;background:#f5f7ef;color:var(--muted);border-bottom:1px solid var(--line);font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:25px 0}.metrics>div{padding:18px;border:1px solid var(--line);background:#f4f7ec;border-radius:14px}.metrics span,.metrics small{display:block;font-size:11px;color:var(--muted)}.metrics strong{display:block;font-size:21px;line-height:1.7;letter-spacing:-.6px;margin:5px 0}
+.actions,.switches{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.switches button{font-size:12px;padding:8px 12px}.switches [aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}
+.flow{display:flex;list-style:none;padding:0;gap:18px;margin:24px 0}.flow li{flex:1;position:relative;padding:14px 11px;border:1px solid #d4ddca;background:#edf2e6;border-radius:11px;min-width:0;font-size:12px;line-height:1.7;margin:0}.flow li:not(:last-child):after{content:'→';position:absolute;right:-17px;top:calc(50% - 11px);color:#6b806b}.flow b,.flow span{display:block}.flow span{font-size:10px;color:var(--muted);margin-top:6px}
+.diagram-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fcfdf8;padding:12px;margin:24px 0}.diagram-wrap svg{display:block;width:100%;min-width:760px;max-width:none}.wire{fill:none;stroke:#647b6e;stroke-width:2;marker-end:url(#arrow-code)}.wire.next{stroke:#b27648;stroke-dasharray:7 5;marker-end:url(#arrow-next)}.node rect{fill:#f5f8ef;stroke:#9db29f;stroke-width:1.5;rx:14px}.node.target rect,.node.graph rect{fill:#fbefe2;stroke:#b27648;stroke-dasharray:6 4}.node.source rect{fill:#e3eee1;stroke:#4d7157;stroke-width:2}.node.graph rect{fill:#f5e8d9;stroke-width:2}.node text{font-size:12px;fill:#42594c}.node text.state{font-size:10px;fill:#75836d;letter-spacing:.3px}.node text.name{font-size:18px;font-weight:750;fill:#244738}.edge-label{font-size:10px;fill:#75816e}.legend-text{font-size:12px;fill:#556c5a}
+.panel-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:30px;padding-top:18px}.phase-label{font-size:11px;text-transform:uppercase;color:var(--muted)}.audit{font:11px ui-monospace,monospace;overflow-wrap:anywhere}
+@media(max-width:1000px){.metrics{grid-template-columns:1fr}.flow{flex-wrap:wrap}.flow li{flex-basis:27%}.flow li:after{display:none}}
+@media(max-width:700px){.flow{display:grid;gap:10px}.flow li{padding:13px}.flow li:not(:last-child):after{display:block;content:'↓';top:auto;bottom:-16px;right:calc(50% - 5px)}.metrics strong{font-size:21px}.metrics>div{padding:15px}.diagram-wrap{padding:6px}.switches button{padding:7px 9px}.panel-footer{flex-wrap:wrap}}
+@media print{[hidden]{display:block!important}.switches,.actions,.panel-footer{display:none!important}.diagram-wrap{overflow:visible;padding:0;border:0}.diagram-wrap svg{min-width:0;width:100%}.flow{display:grid;grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(3,1fr)}.metrics strong{font-size:13px}}
+
+
+.doc-panel{display:block}.doc-panel[hidden]{display:none!important}
+.hero{padding-bottom:28px}.hero h1{font-size:clamp(30px,4.3vw,55px)}.hero p{max-width:940px}
+.doc-nav{gap:6px;flex-wrap:wrap}.doc-nav a{font-size:11px;padding:8px 12px}
+.release-strip{margin:16px 0 0;padding:14px 16px;background:#f0f3e8;border:1px solid var(--line);border-radius:12px;font-size:12px;line-height:1.8}
+.release-strip b{color:var(--ink)}.doc-meta{font-size:12px;color:var(--muted);margin:12px 0;line-height:1.8}
+.doc-panel p,.doc-panel li{line-height:1.85}.doc-panel h3{margin-top:30px}.doc-panel h4{margin-top:24px}
+.table-wrap{overflow:auto}table{min-width:580px}th{white-space:normal}td,th{overflow-wrap:anywhere}td:first-child{min-width:80px}
+.catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.catalog a{display:block;padding:18px;border:1px solid var(--line);border-radius:12px;background:#f6f8ef;text-decoration:none}.catalog b{display:block;margin-bottom:5px}.catalog small{display:block;color:var(--muted)}
+.review-note{border-left:4px solid #aa813f;background:#faf3e3;padding:15px 18px;margin:22px 0;border-radius:0 10px 10px 0}.review-note p{margin:7px 0}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:steps}.flow li{font-size:13px;padding:15px;counter-increment:steps}.flow li::before{content:counter(steps,decimal-leading-zero);display:block;font-weight:800;color:#647c59;margin-bottom:6px}.flow li:not(:last-child)::after{display:none}.flow span{font-size:12px}
+.workflow-flow li:nth-child(3),.workflow-flow li:nth-child(7),.workflow-flow li:nth-child(9){background:#faf0d9;border-color:#cfb775}
+.status-chip{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:20px;font-size:11px;background:#f2f5ed}.wireframe{padding:18px;border:1px dashed #9caf9c;border-radius:12px;background:#f7f9f3}.wireframe-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.wireframe-box{padding:15px;border:1px solid var(--line);background:#fffefb;border-radius:9px}
+.findbox{margin:0 0 18px;display:flex;gap:8px;flex-wrap:wrap}.findbox input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fffefb;color:var(--ink);font:inherit;font-size:13px}.find-results{display:grid;gap:6px;margin-bottom:16px}.find-results button{text-align:left;font-size:12px;padding:10px}.find-results:empty{display:none}.find-count{font-size:12px;color:var(--muted)}
+.doc-panel pre{white-space:pre-wrap;overflow-wrap:anywhere}.doc-panel code{overflow-wrap:anywhere}.doc-panel details{border:1px solid var(--line);border-radius:12px;margin:14px 0;padding:14px}.doc-panel summary{font-weight:700;cursor:pointer}.evidence-grid{font-size:12px}.muted{color:var(--muted)}
+@media(max-width:800px){.catalog,.wireframe-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.doc-nav a{font-size:10px}.hero{padding:28px 20px}.doc-panel{padding:22px}.release-strip{font-size:11px}}
+@media print{.doc-panel[hidden]{display:block!important}.findbox,.find-results,.find-count,.panel-footer{display:none!important}.doc-panel{break-before:page}.catalog{grid-template-columns:1fr 1fr}table{min-width:0}.flow{grid-template-columns:repeat(3,1fr)}}
+</style></head><body><a class="skip" href="#main">본문으로 바로가기</a>
+<header class="site-head"><div class="brand-row"><a class="brand" href="./01_기획서.html"><small>SKN33 FINAL · 1TEAM</small><span class="brand-mark">C</span>크리에이티브체커</a><span class="badge warm">통합 개정 · 2026.10.30-r2</span></div><nav class="doc-nav" aria-label="Planning 문서 전체"><a href="./01_%EA%B8%B0%ED%9A%8D%EC%84%9C.html">01 기획</a><a href="./02_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">02 기능</a><a href="./03_%ED%99%94%EB%A9%B4%EC%A0%95%EC%9D%98%EC%84%9C.html">03 화면</a><a href="./04_%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%8E%99%EC%A0%95%EC%9D%98%EC%84%9C.html">04 기술</a><a href="./05_%EC%82%AC%EC%9A%A9%EC%9E%90%EB%B3%84_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">05 사용자 역할</a><a href="./06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">06 DB 결과</a><a href="./07_%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%94%A5%EB%9F%AC%EB%8B%9D_%ED%95%99%EC%8A%B5%EA%B2%B0%EA%B3%BC%EC%84%9C.html">07 학습 결과</a><a href="./08_%ED%95%99%EC%8A%B5%ED%95%9C_ML_DL_%EB%AA%A8%EB%8D%B8.html">08 모델 명세</a><a href="./09_RunPod_OCR_%EB%AA%A8%EB%8D%B8_%EB%B9%84%EA%B5%90%EA%B2%B0%EA%B3%BC%EC%84%9C.html">09 비교 결과</a><a href="./10_PostgreSQL_Neo4j_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_%EA%B0%9C%ED%8E%B8%EC%95%88.html" aria-current="page">10 아키텍처</a><a href="./11_PostgreSQL_Neo4j_%ED%86%B5%ED%95%A9%EC%97%85%EB%AC%B4_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_v1.1.html">11 통합 계약</a></nav></header>
+<div class="hero"><span class="eyebrow">PROJECT PLANNING / 10</span><h1>시스템 아키텍처</h1><p>PostgreSQL 원천과 Neo4j 관계 조회를 연결하는 현재 목표 구조 · 코드·배포 상태와 구분</p><span class="badge">PostgreSQL 원천 + Neo4j 관계 조회</span><span class="badge">포스터 · 숏폼</span><span class="badge warm">팀 승인 별도</span><div class="release-strip"><b>기준일 2026-10-30 KST</b> · 10/30 통합 초안 + 최신 사용자 DB 결정 반영<br>현재 코드 · 독립 실험 · 추가 구현을 구분합니다. 실험의 실행 날짜와 문서 개정일은 다릅니다.</div></div>
+<div class="layout"><aside class="side"><p class="caption">CONTENTS / 06</p><div class="tablist" role="tablist" aria-label="문서 목차" aria-orientation="vertical"><button type="button" role="tab" id="tab-overview" aria-controls="overview" data-panel="overview" aria-selected="true" tabindex="0"><span>01</span>새 구조 요약</button><button type="button" role="tab" id="tab-changes" aria-controls="changes" data-panel="changes" aria-selected="false" tabindex="-1"><span>02</span>달라지는 흐름</button><button type="button" role="tab" id="tab-architecture" aria-controls="architecture" data-panel="architecture" aria-selected="false" tabindex="-1"><span>03</span>구성도·요청 흐름</button><button type="button" role="tab" id="tab-state" aria-controls="state" data-panel="state" aria-selected="false" tabindex="-1"><span>04</span>현재 구현 구분</button><button type="button" role="tab" id="tab-sync" aria-controls="sync" data-panel="sync" aria-selected="false" tabindex="-1"><span>05</span>동기화·장애</button><button type="button" role="tab" id="tab-updates" aria-controls="updates" data-panel="updates" aria-selected="false" tabindex="-1"><span>06</span>버전·출처·업데이트</button></div><p class="side-note">이 폴더의 현재 기준 문서 묶음<br>2026.10.30-r2<br>변경 이력은 마지막 탭에서 확인합니다.</p></aside><main id="main"><div class="findbox"><input id="doc-search" type="search" aria-label="이 문서 전체 검색" placeholder="이 문서 전체 검색"><button type="button" id="clear-search">검색 초기화</button></div><p id="find-count" class="find-count" role="status" aria-live="polite"></p><div id="find-results" class="find-results"></div><section class="doc-panel" id="overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"><h2>새 구조 요약</h2>
+<p class="lead">업무의 원천은 PostgreSQL, 관계·근거 조회는 Neo4j로 나눕니다.</p>
+<p>기존에 제안한 Qdrant 보조 검색을 필수 흐름에서 제외하고, 확정 기준과 직접 연결된 근거·유효 예외·변경 영향에 집중하는 <strong>현재 목표 아키텍처</strong>입니다.</p>
+<div class="metrics"><div><span>목표 데이터베이스</span><strong>PostgreSQL + Neo4j</strong><small>업무 원천 + 관계 조회</small></div><div><span>그래프 핵심 기능</span><strong>근거 · 예외 · 영향</strong><small>실제 API·worker·화면 연결이 목표</small></div><div><span>구현 적용 상태</span><strong>목표 반영 · 연결 미구현</strong><small>서비스 코드·DB 적용 전</small></div></div>
+<div class="grid three"><article class="card"><span class=eyebrow>KEEP</span><h3>유지하는 구성</h3><p>React·FastAPI, PostgreSQL v1 코드, 독립 검수 worker, 파일 저장소, OCR·규칙 및 PDF 조건 추출 모듈을 재사용합니다.</p></article><article class="card"><span class=eyebrow>ADD</span><h3>추가할 구성</h3><p>관계 원본의 확정·버전, PostgreSQL→Neo4j 반영, 고정 관계 조회 API, 검수 문맥·경로 스냅샷과 화면을 구현합니다.</p></article><article class="card"><span class=eyebrow>REMOVE FROM TARGET</span><h3>새 필수 흐름에서 제외</h3><p>Qdrant 컬렉션·BGE-M3 임베딩·BM25/RRF 후보 검색·벡터 재색인 경로를 제외합니다. 기존 실험 기록은 비교 자료로 보존합니다.</p></article></div><div class="note"><strong>현재 목표 설계의 경계</strong><p>Qdrant 서비스나 데이터를 실제로 삭제한 작업이 아닙니다. 확인한 서비스 코드에 Neo4j·Qdrant 연결이 없어, 기존 3저장소 <em>목표안</em>을 2저장소 목표안으로 바꾸는 문서입니다. Neo4j 벡터·전문 검색도 이번 필수 범위에 넣지 않습니다.</p></div>
+<p>자연어로 연결되지 않은 문서를 넓게 찾는 기능은 후속으로 남깁니다. 등록·확정되지 않은 근거는 ‘없음’으로 단정하지 않고 담당자의 추가 확인 대상으로 남깁니다.</p>
+<div class="actions"><a href="./10_PostgreSQL_Neo4j_아키텍처_개편안.html#changes">달라지는 흐름 보기 →</a><a href="./10_PostgreSQL_Neo4j_아키텍처_개편안.html#architecture">전체 구성도 보기 →</a></div>
+<h3>통합문서에서 반영한 내용</h3><div class="table-wrap"><table><caption>통합 초안 2·4·5·6·7·11·13·18장과 연결</caption><thead><tr><th scope="col">반영</th><th scope="col">이번 보완안의 적용</th><th scope="col">확정으로 바꾸지 않은 항목</th></tr></thead><tbody><tr><td>전체 업무</td><td>조건 초안 → 기준 확정 → 검사 → 수정 요청 확정 → 재제출·재검수 → 최종 승인</td><td>세 승인 지점의 상세 권한·예외 허용 정책은 팀 결정 필요</td></tr><tr><td>A01–A08·MCP</td><td>역할별 입력·출력과 그래프 조회 위치, MCP 도구 계약을 목표에 반영</td><td>역할마다 별도 모델·서버를 만들거나 8개 에이전트 구현 완료로 표시하지 않음</td></tr><tr><td>포스터·숏폼</td><td>동일 기준·승인 흐름에 프레임·시간·관측 범위를 추가</td><td>영상 길이·음성·연속 노출 판정·샘플링 간격은 미정</td></tr><tr><td>모델·DB 선택</td><td>이번 설계는 PostgreSQL 원천 + Neo4j 관계 조회, Qdrant 필수 경로 제외</td><td>Qwen/OCR 엔진·LangGraph 최종 선정과 팀 전체 도입 승인은 미확인</td></tr></tbody></table></div>
+<div class="note"><strong>설계 방향과 팀 결정의 차이</strong><p>사용자가 요청한 2DB 개편 방향을 구체화한 문서입니다. 첨부 통합 초안 13장에는 DB 선택이 미정으로 남아 있습니다. 최신 사용자 선택에 따라 이 planning 묶음은 PostgreSQL + Neo4j를 현재 목표로 반영합니다. 팀 승인이나 코드 적용 완료를 뜻하지 않습니다.</p></div>
+<p><a href="./11_PostgreSQL_Neo4j_통합업무_아키텍처_v1.1.html#workflow">통합 업무·역할과 공통 계약 보기 →</a></p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>1 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="changes" role="tabpanel" aria-labelledby="tab-changes" tabindex="0"><h2>달라지는 흐름</h2>
+<p>이전 목표안과 새 목표안을 비교합니다. 어느 쪽도 현재 서비스 전체의 실행 모습을 의미하지 않습니다.</p>
+
+<div id="flow-view" aria-live="polite"><h3>새 흐름 · 직접 연결된 근거와 관계 조회</h3><ol class="flow"><li><b>기준 전체 확보</b><span>PostgreSQL · 권한·버전</span></li><li><b>관계 준비 확인</b><span>해당 버전의 투영 상태</span></li><li><b>직접 관계 조회</b><span>Neo4j · 근거·예외·의존</span></li><li><b>전체 기준 검수</b><span>OCR·규칙·확인 필요</span></li><li><b>결과·경로 보존</b><span>PostgreSQL · 불변 스냅샷</span></li></ol><p>동일 기준 버전의 관계가 준비됐는지 확인한 뒤, 확정 기준 전체를 검사합니다. 관계 조회 실패·근거 누락은 별도 상태로 보존합니다.</p></div><div class="table-wrap"><table><caption>Qdrant 제외로 바뀌는 단계와 유지하는 기준</caption><thead><tr><th scope="col">업무 단계</th><th scope="col">이전 목표안</th><th scope="col">새 목표안</th></tr></thead><tbody><tr><td>문서 준비</td><td>원문 파싱 → 청킹·임베딩 → 검색 인덱스</td><td>원문·출처 구간 → 조건 구조화·사람 확정 → 관계 원본 기록</td></tr><tr><td>관련 근거 확보</td><td>Neo4j 직접 관계 + 필요 시 Qdrant 추가 후보</td><td>공통 ID로 Neo4j의 직접 근거·예외·의존 관계 조회</td></tr><tr><td>검수 기준 선정</td><td>PostgreSQL의 확정 기준 전체</td><td>동일하게 전체 유지. 그래프에 없는 항목도 검사 목록에서 유지</td></tr><tr><td>문서·기준 변경</td><td>관계 갱신 + 벡터 재임베딩·재색인 관리</td><td>새 원천 버전·정책 버전 기록 → 관계 재반영·영향 후보 조회</td></tr><tr><td>운영 관리</td><td>PG·Neo4j·Qdrant의 버전·범위·준비 상태</td><td>PG 원천과 Neo4j 투영 상태를 관리. 두 DB 동기화는 여전히 필요</td></tr><tr><td>찾지 못한 근거</td><td>직접 근거·검색 후보의 부족 구분</td><td>원문 미연결 / 정상 빈 결과 / 미준비 / 조회 오류를 구분</td></tr></tbody></table></div><h3>사용자에게 달라지는 점</h3><ul><li>검수 결과에서 해당 기준의 원문·페이지·적용 예외를 직접 따라갈 수 있습니다.</li><li>기준이 변경되면 영향을 받은 실행을 보고 재검수 후보를 확인합니다.</li><li>넓은 의미 검색 대신 등록·확정된 기준과 근거의 연결 범위가 중심이 됩니다.</li></ul><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>2 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="architecture" role="tabpanel" aria-labelledby="tab-architecture" tabindex="0"><h2>구성도·요청 흐름</h2>
+<p>아래는 PostgreSQL v1 코드를 확장할 목표 구성입니다. 현재 기본 실행기는 legacy 앱을 시작하며, v1 앱과 운영 배치 구성은 별도입니다.</p><div class="diagram-wrap"><svg viewBox="0 0 1050 655" role="img" aria-labelledby="arch-title arch-desc">
+<title id="arch-title">PostgreSQL 원천과 Neo4j 관계 조회를 결합하는 목표 아키텍처</title>
+<desc id="arch-desc">React에서 FastAPI를 호출하고 PostgreSQL에 권한·기준·실행을 저장한다. 기존 검수 worker는 OCR을 호출한다. 새 그래프 반영 worker와 Neo4j 조회 연결은 점선으로 구분한다. Qdrant는 새 목표 구성에 포함하지 않는다.</desc>
+<defs><marker id="arrow-code" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#647b6e"/></marker><marker id="arrow-next" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#b27648"/></marker></defs>
+<g class="wire"><path d="M208 112H276"/><path d="M480 112H554"/><path d="M600 175V205H518V290H480"/><path d="M372 348V414"/><path d="M276 310H205"/><path d="M330 175V198H116V235"/></g>
+<g class="wire next"><path d="M668 175V235"/><path d="M777 290H831"/><path d="M933 348V419"/><path d="M480 315H506V461H831"/><path d="M831 506H800V379H430V348"/></g>
+<text x="219" y="97" class="edge-label">업무 API</text><text x="488" y="97" class="edge-label">짧은 트랜잭션</text>
+<text x="682" y="210" class="edge-label">확정 + 반영 작업 원자적 기록</text><text x="496" y="273" class="edge-label">작업 인수</text>
+<text x="329" y="389" class="edge-label">모듈 호출</text><text x="543" y="444" class="edge-label">worker의 관계 조회 · ID·버전 고정</text>
+<g class="node code" transform="translate(28,55)"><rect width="180" height="120"/><text x="17" y="28" class="state">현재 코드</text><text x="17" y="58" class="name">React</text><text x="17" y="84">입력·기준 확정·결과</text><text x="17" y="104">legacy / v1 경로 구분</text></g>
+<g class="node code" transform="translate(276,55)"><rect width="204" height="120"/><text x="17" y="28" class="state">현재 v1 코드 기반</text><text x="17" y="58" class="name">FastAPI</text><text x="17" y="84">권한·기준·검수 API</text><text x="17" y="104">그래프 API 연결 추가</text></g>
+<g class="node source" transform="translate(554,55)"><rect width="223" height="120"/><text x="17" y="28" class="state">현재 v1 코드 · 원천</text><text x="17" y="58" class="name">PostgreSQL</text><text x="17" y="84">기준·실행·결과·권한</text><text x="17" y="104">관계 원본·반영 작업 추가</text></g>
+<g class="node code" transform="translate(28,235)"><rect width="177" height="113"/><text x="17" y="28" class="state">현재 코드</text><text x="17" y="58" class="name">파일 저장소</text><text x="17" y="84">원문·이미지·해시</text><text x="17" y="103">현재 로컬 보존</text></g>
+<g class="node code" transform="translate(276,235)"><rect width="204" height="113"/><text x="17" y="28" class="state">현재 v1 코드 기반</text><text x="17" y="58" class="name">검수 worker</text><text x="17" y="84">작업·시도·OCR·결과</text><text x="17" y="103">Neo4j 문맥 조회 추가</text></g>
+<g class="node target" transform="translate(554,235)"><rect width="223" height="113"/><text x="17" y="28" class="state">추가 구현</text><text x="17" y="58" class="name">반영 작업 기록</text><text x="17" y="84">outbox / 준비 버전</text><text x="17" y="103">기존 검수 큐와 구분</text></g>
+<g class="node target" transform="translate(831,235)"><rect width="194" height="113"/><text x="17" y="28" class="state">추가 구현</text><text x="17" y="58" class="name">그래프 반영 worker</text><text x="17" y="84">멱등 반영·재시도</text><text x="17" y="103">완료 후 ready 표시</text></g>
+<g class="node code" transform="translate(276,414)"><rect width="204" height="132"/><text x="17" y="28" class="state">현재 분석 모듈 재사용</text><text x="17" y="58" class="name">OCR·규칙·LLM</text><text x="17" y="84">문구·필드·출처 추출</text><text x="17" y="105">PDF 추출은 legacy 코드</text><text x="17" y="124">v1 원문 계약 연결 추가</text></g>
+<g class="node graph" transform="translate(831,419)"><rect width="194" height="127"/><text x="17" y="28" class="state">서비스 연결 추가</text><text x="17" y="58" class="name">Neo4j</text><text x="17" y="84">근거·예외·기준 의존</text><text x="17" y="105">변경 영향·경로 조회</text></g>
+<rect x="28" y="586" width="997" height="46" rx="10" fill="#f0f3e8"/><text x="45" y="615" class="legend-text">목표 구성도 · 실선 = 기존 코드 영역 / 점선 = 추가 연결 · 현재 실행·배포 확인을 뜻하지 않음</text>
+</svg></div><div class="table-wrap"><table><caption>구성 요소의 역할 · 신규 그래프 연결은 미구현</caption><thead><tr><th scope="col">구성</th><th scope="col">책임</th><th scope="col">연결 원칙</th></tr></thead><tbody><tr><td>React</td><td>문서·납품물 입력, 기준 확정, 관계 경로·재검수 후보 표시</td><td>FastAPI만 호출. 브라우저에서 DB 직접 접근 없음</td></tr><tr><td>FastAPI</td><td>현재 사용자 권한·프로젝트·불변 버전 검증, 작업 등록·결과 조회</td><td>업무 권한과 기준의 원천은 PostgreSQL</td></tr><tr><td>PostgreSQL</td><td>계정·기준·실행·결과 + 관계 원본·승인 이력·반영 작업</td><td>업무 확정과 반영 작업을 같은 PG 트랜잭션에 기록하는 구조 추가</td></tr><tr><td>Neo4j</td><td>직접 근거·유효 예외·기준 의존·변경 영향 경로 조회</td><td>PG 원천에서 재구축 가능한 파생 관계 저장소</td></tr><tr><td>검수 worker</td><td>확정 기준 전체 + 관계 문맥을 받아 OCR·규칙 검사</td><td>실행·판정·관계 조회 상태를 분리해 결과 저장</td></tr><tr><td>그래프 반영 worker</td><td>관계 반영·멱등 재시도·버전 준비 처리</td><td>기존 OCR 검수 작업 큐와 별도 작업 종류로 관리</td></tr><tr><td>OCR·LLM / 파일</td><td>이미지·PDF 정보 추출, 원문·이미지·해시 보존</td><td>현재 모듈 재사용. 자동 추출 관계는 사람 확인 후 확정</td></tr></tbody></table></div><h3>문서 등록 → 기준 확정</h3><ol class="flow"><li><b>원본 보존</b><span>파일·문서 버전·해시</span></li><li><b>조건 초안 추출</b><span>페이지·출처 위치</span></li><li><b>사람 확인</b><span>기준·출처·관계 확인</span></li><li><b>PG 확정</b><span>불변 기준 + 반영 작업</span></li><li><b>Neo4j 반영</b><span>대응 버전 ready</span></li></ol><h3>검수 요청 → 근거 표시</h3><ol class="flow"><li><b>권한·기준 확인</b><span>PG의 확정 목록 전체</span></li><li><b>관계 조회</b><span>준비 버전·매체·유효 시각</span></li><li><b>검사 수행</b><span>OCR·규칙·확인 필요</span></li><li><b>결과 보존</b><span>기준·경로·정책 스냅샷</span></li><li><b>사람 검토</b><span>원문 이동·승인 경계</span></li></ol><p class="muted">PDF 추출 로직은 현재 legacy API에 존재합니다. 이를 v1 파일·문서 버전·초안 계약으로 연결하는 작업은 추가 범위입니다. 통합 초안의 AWS A/B·S3·RunPod 배치는 별도 운영 목표입니다. 이 구성도는 현재 코드에 새 관계 기능이 들어갈 위치를 나타내며, 클라우드 연결 완료를 뜻하지 않습니다. LangGraph 채택은 미정이고 MCP 연결은 통합 목표로 추가합니다.</p><h3>업무 조정과 추론 실행의 위치</h3><p>배포 목표에서는 API가 사용자 접수·권한·조회를, 업무 worker가 단계 조정·PG 상태·관계 조회·결과 검증을 맡습니다. RunPod는 허용된 추론 작업, S3는 원본·파생 근거 파일의 저장 목표입니다. Neo4j 배치 위치·네트워크·메모리는 아직 확정하지 않았습니다. 브라우저나 GPU 모델이 DB 전권을 가지는 구조로 연결하지 않습니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>3 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="state" role="tabpanel" aria-labelledby="tab-state" tabindex="0"><h2>현재 구현 구분</h2>
+<p><strong>2026-10-30 작업 트리</strong>의 관련 소스를 읽어 확인했습니다. HEAD는 <code>3cbc129</code>이며 커밋되지 않은 로컬 변경도 포함합니다. 실제 DB 접속·마이그레이션·모델 추론·운영 배포를 실행한 검증은 아닙니다.</p>
+
+<div id="state-table"><div class="table-wrap"><table><caption>현재 코드 확인과 실험·계획의 구분</caption><thead><tr><th scope="col">영역</th><th scope="col">구분</th><th scope="col">확인 근거</th><th scope="col">해석·남은 범위</th></tr></thead><tbody><tr><td>legacy 실행·화면</td><td>현재 코드</td><td>start.py → backend.app.api:app, React 입력·기준 확인·검수·결과</td><td>JSON 파일·BackgroundTasks 경로이며 v1과 구분</td></tr><tr><td>PDF 조건·출처 추출</td><td>현재 코드</td><td>requirements_pdf.py, document_sources.py, /api/requirements/extract</td><td>새 v1 문서/파일·구조화 출처 계약으로 연결 필요</td></tr><tr><td>PostgreSQL v1 업무</td><td>현재 코드</td><td>main.py, business.py, services/auth.py, persistence/schema</td><td>인증·프로젝트·확정 기준·검수·파일 코드. 현재 DB 실행·운영 배포는 이번에 재검증하지 않음</td></tr><tr><td>영속 검수 worker</td><td>현재 코드</td><td>worker.py, execution/queue.py, postgres_worker 프로필</td><td>lease·인수·재시도 코드 존재. 그래프 조회는 미연결</td></tr><tr><td>출처·적용 조건 컬럼</td><td>부분 구현</td><td>criteria_items의 source_asset_version_id·source_locator·applicability_jsonb</td><td>확정 서비스 경로는 source_text·source_item_jsonb를 복사. 해당 구조화 컬럼 채우는 연동 추가</td></tr><tr><td>Neo4j 관계 비교</td><td>독립 실험</td><td>2026-10-21 동결 정답 951/951·근거/예외/영향 비교 기록</td><td>현재 앱 호출·실제 승인·재검수 실행과 별도</td></tr><tr><td>Qdrant 검색 비교</td><td>독립 실험</td><td>기존 06 결과서의 임베딩·BM25·Hybrid 기록</td><td>새 필수 서비스 경로에서 제외. 기존 기록은 유지</td></tr><tr><td>Neo4j 서비스·동기화·경로 화면</td><td>추가 구현</td><td>확인한 backend·frontend/src·의존성·Compose에 연결 코드 미확인</td><td>관계 원본·반영·API·worker·화면·E2E 신규 작업</td></tr></tbody></table></div></div><p id="state-count" class="muted" role="status">8개 영역</p>
+<div class="note"><strong>기존 문서의 시점 차이</strong><p>README 일부는 PostgreSQL을 도입 목표로 설명하지만, 별도 v1 앱에는 이미 DB 업무 코드가 있습니다. 이번 문서는 진입점·설정·서비스 소스를 함께 확인해 두 경로를 분리했습니다. 소스의 현재 구현과 문서의 목표 설명을 별도로 확인합니다.</p></div><div class="table-wrap"><table><caption>통합 초안에서 확장한 업무 목표 · 구현 완료 표시 없음</caption><thead><tr><th scope="col">추가로 구분할 목표</th><th scope="col">현재 확인 범위</th><th scope="col">추가 구현·검증</th></tr></thead><tbody><tr><td>세 승인·수정/재검수</td><td>기준 확정 서비스 코드는 확인. 세 승인 전체와 수정 버전 E2E는 이번에 확인하지 않음</td><td>수정 요청 확정·새 버전 연결·최종 승인 정책/화면·이력 검증</td></tr><tr><td>MCP·A01–A08</td><td>현재 v1 single_pipeline·worker 코드와 논리 역할 목표는 별개</td><td>도구 계약·권한·호출 추적·입출력 연결과 실제 모델 E2E</td></tr><tr><td>숏폼·시간 근거</td><td>첨부 문서의 필수 목표. 실제 영상 E2E 실행은 이번 작업 범위 밖</td><td>프레임·시각·관측 범위·실패 복구·재검수·시간 조건별 지원 상태</td></tr></tbody></table></div><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>4 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="sync" role="tabpanel" aria-labelledby="tab-sync" tabindex="0"><h2>동기화·장애</h2>
+<p>두 DB를 하나의 트랜잭션처럼 직접 이중 쓰기하지 않고, <strong>PG 원천 확정 → 반영 작업 → Neo4j 투영 → 준비 확인</strong>으로 분리하는 제안입니다.</p><ol class="flow"><li><b>PG 트랜잭션</b><span>기준/정책 확정 + outbox</span></li><li><b>반영 worker</b><span>ID·개정 순서·중복 확인</span></li><li><b>Neo4j 적용</b><span>대응 버전·관계 반영</span></li><li><b>완료 기록</b><span>해당 투영 ID ready</span></li><li><b>조회 허용</b><span>현재 권한·버전 재확인</span></li></ol><div class="table-wrap"><table><caption>장애와 빈 결과를 구분하는 조회 정책 · 추가 구현</caption><thead><tr><th scope="col">상황</th><th scope="col">제안 동작</th><th scope="col">사용자 표시·저장</th></tr></thead><tbody><tr><td>정상 반영·근거 존재</td><td>같은 버전의 경로와 정책을 조회</td><td>원문·예외·경로·투영 ID 표시 및 저장</td></tr><tr><td>정상 반영·예외 없음</td><td>해당 버전·정책 범위의 조회 완료를 확인</td><td>검증된 빈 예외 목록. 단순 연결 누락과 구분</td></tr><tr><td>투영 미준비·버전 불일치</td><td>구버전 관계로 대체하지 않음</td><td>미준비/확인 필요. OCR 관찰을 진행하더라도 관계 의존 판정은 보류</td></tr><tr><td>Neo4j 접속·조회 실패</td><td>시간 제한·오류 상태 기록·재시도 정책 적용</td><td>조회 실패와 근거 없음 구분. 자동 승인 없음</td></tr><tr><td>반영 작업 중복·역순</td><td>원천 ID·개정·멱등 키로 중복 방지, 오래된 반영 거절</td><td>실제 반영/실패·다음 재시도·마지막 준비 버전 기록</td></tr><tr><td>예외 취소·권한 회수</td><td>PG에서 현재 권한/정책을 먼저 검증, 관계 재반영</td><td>지연된 그래프나 캐시가 현재 권한을 허용하지 않게 차단</td></tr><tr><td>복원·재구축</td><td>PG 관계 원본·불변 파일·manifest로 다시 생성</td><td>건수·해시·대표 경로·누락 관계 검증 후 ready</td></tr></tbody></table></div><h3>판정·실행·관계 상태 분리</h3><pre><code>execution_status : 작업이 끝났는가 / 실패했는가
+verdict          : 충족 / 위반 / 확인 필요
+relation_status  : ready / not_ready / failed 등 신규 조회 상태 제안
+graph_projection_id · source_version · policy_revision : 사용한 근거의 재현 정보</code></pre>
+<p>조회 상태의 enum·오류 코드는 구현 전 API/DB 계약으로 확정합니다. <code>completed</code>인 실행에도 확인 필요 항목이 있을 수 있습니다. 과거 결과에는 당시 사용한 경로·정책을 보존하고, 현재 승인/권한과 혼동하지 않습니다.</p>
+<h3>변경 영향과 재검수</h3><p>변경된 원문·정책에서 관련 기준과 실행을 조회해 후보 목록을 만듭니다. 자산별 최신 실행 상태·기준 버전의 선택 정책을 고정하고, 새 run을 만들어 연결합니다. 과거 판정이나 사람 승인을 자동 승계하지 않습니다.</p>
+<h3>재처리와 승인 경합</h3>
+<p>Neo4j 반영 성공 후 PG의 완료 기록에 실패할 수 있으므로 같은 투영 작업을 다시 받아도 동일 원천 ID·개정의 효과가 중복되지 않아야 합니다. ready 표시는 실제 반영 버전·해시를 대조한 뒤 남깁니다. PG 확정은 성공했으나 관계 준비가 실패한 경우도 업무 확정과 관계 미준비 상태를 나누어 표시합니다.</p>
+<p>실행 중 기준·예외가 변경되면 그 run에 고정한 스냅샷을 보존하고 정책 변경에 따른 재검수/승인 가능 여부를 별도 확인합니다. 현재 권한 회수는 결과·파일 접근에서 즉시 재검사합니다. 사람의 최종 승인 요청도 대상 버전·실행 결과가 여전히 승인 가능한지 PG 트랜잭션에서 검증하도록 설계합니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>5 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="updates" role="tabpanel" aria-labelledby="tab-updates" tabindex="0"><h2>버전·출처·업데이트</h2>
+<p class="lead">문서 개정일, 코드 확인일, 실험 실행일을 각각 기록합니다.</p>
+<p>문서 묶음 <strong>2026.10.30-r2</strong> · 검토 기준일 2026-10-30 KST. 서비스 상태 확인은 소스 열람 기준이며 이번 개정에서 DB·모델·배포 시험을 다시 실행하지 않았습니다.</p>
+<h3>적용 우선순위</h3><ol><li>2026-10-30 사용자 결정: PostgreSQL + Neo4j를 현재 목표 구조로 반영. 팀 승인 여부는 별도.</li><li>10/30 통합 초안의 범위·정책·미정 항목.</li><li>관련 소스의 현재 구현, 날짜·환경·표본이 명시된 실험 기록.</li><li>이전 planning 문서는 당시 기록으로 보존.</li></ol>
+<p>사용자 결정은 목표를 바꾸며, 과거 실험 사실이나 구현 완료 여부를 바꾸지 않습니다. Qdrant·BGE-M3 검색 실험은 역사 자료이며 현재 필수 흐름에 포함하지 않습니다.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">기준 자료</th><th scope="col">식별·확인 범위</th></tr></thead><tbody><tr><td>통합 초안</td><td><a href="../sources/Creative_Checker_통합초안_20261030.html">보존한 기준 문서 열기</a><br><code>b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459</code></td></tr><tr><td>추가 사용자 결정</td><td>U-DB-20261030 · PostgreSQL 원천 + Neo4j 관계 조회 · 팀 승인 별도</td></tr><tr><td>코드 확인</td><td>HEAD 3cbc129 + 로컬 변경 포함. legacy와 PostgreSQL v1 경로 분리</td></tr><tr><td>이전 문서 보관</td><td><a href="../archive/planning-before-20261030-r1.zip">기존 HTML 11개 원본 ZIP</a> · 변경 전 파일 해시 포함</td></tr><tr><td>이번 문서의 역할</td><td>시스템 아키텍처 · 통합 초안의 내용을 목적별로 재구성</td></tr></tbody></table></div>
+<h3>다음 업데이트 방법</h3><ol><li>통합 초안·사용자 결정·구현/실험 근거의 변경을 대조합니다.</li><li><code>content/planning-content.json</code>의 해당 문서와 공통 상태를 수정합니다. 수치는 표본·날짜·단위·원자료를 함께 갱신합니다.</li><li><code>content/baseline.json</code>의 검토일·개정 번호·근거 해시를 실제 재검토 후 갱신합니다.</li><li>생성 후 <code>python3 docs/planning/tools/build_planning.py --check</code>로 링크·버전·해시·문서 일치 여부를 확인합니다.</li></ol>
+<p>기준 파일이나 코드가 바뀌면 검사에서 갱신 필요를 알립니다. 날짜만 자동으로 새로 찍거나, 오래된 실험을 새 측정으로 바꾸지 않습니다. 외부 Google 문서·요구사항/WBS는 이번 로컬 개정의 자동 동기화 대상이 아닙니다.</p>
+<h3>이번 개정의 공통 변경</h3><ul><li>포스터와 숏폼을 필수 목표로 통일하고, 기준·수정 요청·최종 승인의 세 지점을 연결했습니다.</li><li>현재 코드·부분 연결·독립 실험·추가 구현·팀 미정 항목을 나누었습니다.</li><li>모델 후보와 과거 학습 산출물, OCR·검색·분류·조건 추출 지표를 구분했습니다.</li><li>문서 전반의 PostgreSQL + Neo4j 목표와 ID·버전·권한·재검수 의미를 맞췄습니다.</li></ul>
+<div class="panel-footer"><button type="button" data-prev>← 이전</button><span>6 / 6</span><button type="button" data-next>다음 →</button></div></section></main></div>
+<footer><p>Creative Checker · 시스템 아키텍처 · 2026.10.30-r2</p><p>기존 파일명은 링크 호환을 위해 유지합니다. 본문의 개정 번호가 현재 버전입니다.</p></footer><noscript><p>JavaScript 없이 모든 절을 순서대로 읽을 수 있습니다.</p></noscript><script type="application/json" id="planning-metadata">{"release": "2026.10.30-r2", "reviewed_date": "2026-10-30", "master_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459", "document": "10_PostgreSQL_Neo4j_아키텍처_개편안.html", "status": "사용자 목표 반영 · 팀 승인 별도"}</script><script>document.body.dataset.initialHash=location.hash;</script><script>
+(()=>{'use strict';const tabs=[...document.querySelectorAll('[role=tab]')],panels=tabs.map(t=>document.getElementById(t.dataset.panel));let active=0;
+function activate(i,focus=false,updateHash=true){active=(i+tabs.length)%tabs.length;tabs.forEach((t,j)=>{t.setAttribute('aria-selected',String(j===active));t.tabIndex=j===active?0:-1;panels[j].hidden=j!==active});if(updateHash)history.replaceState(null,'','#'+panels[active].id);if(focus)tabs[active].focus();}
+tabs.forEach((t,i)=>{t.onclick=()=>activate(i);t.onkeydown=e=>{const keys={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:tabs.length-1};if(Object.hasOwn(keys,e.key)){e.preventDefault();activate(keys[e.key],true)}}});
+document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{const i=panels.findIndex(p=>p.id===b.dataset.goto);if(i>=0)activate(i)});
+document.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>activate(active+1));document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=()=>activate(active-1));
+function route(){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}const e=document.getElementById(id);const p=e?.closest('[role=tabpanel]');const i=panels.indexOf(p);if(i>=0){activate(i,false,false);let parent=e;while(parent&&parent!==p){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}if(e!==p)e.scrollIntoView({block:'center'})}}activate(0,false,false);route();window.addEventListener('hashchange',route);
+const q=document.getElementById('doc-search'),res=document.getElementById('find-results'),count=document.getElementById('find-count');
+q.oninput=()=>{res.replaceChildren();const s=q.value.trim().toLocaleLowerCase();if(!s){count.textContent='';return}let n=0;panels.forEach((p,i)=>{const text=p.textContent.replace(/\s+/g,' '),pos=text.toLocaleLowerCase().indexOf(s);if(pos<0)return;n++;const b=document.createElement('button');b.type='button';b.textContent=tabs[i].textContent.trim()+' · '+text.slice(Math.max(0,pos-30),pos+110);b.onclick=()=>{activate(i);p.scrollIntoView({block:'start'})};res.append(b)});count.textContent=n+'개 절에서 찾았습니다.'};
+document.getElementById('clear-search').onclick=()=>{q.value='';q.oninput();q.focus()};
+let saved;window.addEventListener('beforeprint',()=>{saved={active,details:[...document.querySelectorAll('details')].map(d=>[d,d.open])};panels.forEach(p=>p.hidden=false);saved.details.forEach(([d])=>d.open=true)});window.addEventListener('afterprint',()=>{if(saved){activate(saved.active);saved.details.forEach(([d,o])=>d.open=o)}});
+})();
+</script></body></html>

@@ -78,11 +78,14 @@ async function fixture(t, options = {}) {
     if (path === '/api/sample') return json({ project_name: '샘플 프로젝트', requirements: '행사명: 테스트 축제' });
     if (path === '/api/sample/image') return route.fulfill({ contentType: 'image/png', body: png });
     if (path === '/api/reviews' && request.method() === 'POST') return json({ id: 'test-review', status: 'queued' }, 202);
-    if (path === '/api/reviews/test-review/image') return route.fulfill({ contentType: 'image/png', body: png });
+    if (path === '/api/reviews/test-review/image') return route.fulfill({
+      contentType: state.reviewImage?.contentType || 'image/png', body: state.reviewImage?.body || png,
+    });
     if (path === '/api/reviews/test-review') return json({
       id: 'test-review', status: 'completed', stage: 'completed', progress: 100,
       project_name: '화면 통합 검증', criteria_version: 1,
-      image: { url: '/api/reviews/test-review/image', width: 1, height: 1 },
+      image: { url: '/api/reviews/test-review/image', width: state.reviewImage?.width || 1, height: state.reviewImage?.height || 1 },
+      criteria: state.reviewCriteria || [],
       results: state.reviewResults || [{ criterion_id: 'criterion-1', criterion: '행사명: 테스트 축제', type: 'information', status: 'pass',
         reason: '이미지 문구에서 행사명을 확인했습니다.', observed_text: '테스트 축제',
         evidence: [{ text: '테스트 축제', bbox_xyxy: [0, 0, 1, 1] }] }],
@@ -259,9 +262,12 @@ test('이미지 입력·기준 확정·검수·결과 근거와 서비스 소개
   assert.equal(await page.getByRole('button', { name: '검수 시작하기', exact: true }).isDisabled(), true);
   await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-  await page.getByRole('heading', { name: '항목별 검수 결과를 확인하세요.' }).waitFor();
-  await page.getByRole('button', { name: '위치 보기 · 1곳' }).click();
-  await page.getByLabel('근거 영역: 테스트 축제', { exact: true }).waitFor();
+  await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
+  const resultList = page.getByRole('list', { name: '검수 항목 목록', exact: true });
+  assert.equal(await resultList.getByRole('button', { name: /행사명: 테스트 축제/ }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('button', { name: '근거 영역: 테스트 축제', exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: '근거 영역: 테스트 축제', exact: true }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('complementary', { name: '선택 항목 상세', exact: true }).getByText('이미지 문구에서 행사명을 확인했습니다.', { exact: true }).waitFor();
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
   const downloadEvent = page.waitForEvent('download');
   await page.getByRole('button', { name: '결과 JSON 저장', exact: true }).click();
@@ -270,7 +276,8 @@ test('이미지 입력·기준 확정·검수·결과 근거와 서비스 소개
   await page.getByRole('button', { name: '서비스 메인으로', exact: true }).click();
   await page.waitForURL(`${baseURL}/`);
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).first().click();
-  await page.getByRole('heading', { name: '항목별 검수 결과를 확인하세요.' }).waitFor();
+  await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
+  assert.equal(await resultList.getByRole('button', { name: /행사명: 테스트 축제/ }).getAttribute('aria-pressed'), 'true');
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
 });
 
@@ -294,8 +301,95 @@ test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함�
   await page.getByLabel('재인식 비교', { exact: true }).waitFor();
   await page.getByText('처음 읽기: 친환경생대공원', { exact: true }).waitFor();
   await page.getByText('다시 읽기: Qwen: 친환경생태공원 / PaddleOCR: 친환경생태공원', { exact: true }).waitFor();
-  assert.equal(await page.locator('.result-item .status-badge').textContent(), '확인 필요');
-  await page.getByRole('button', { name: '위치 보기 · 1곳' }).click();
-  await page.getByLabel('근거 영역: 친환경생대공원', { exact: true }).waitFor();
+  const inspector = page.getByRole('complementary', { name: '선택 항목 상세', exact: true });
+  assert.equal(await inspector.locator('.rv-result-verdict .rv-result-status').textContent(), '확인 필요');
+  const evidence = page.getByRole('button', { name: '근거 영역: 친환경생대공원', exact: true });
+  await evidence.waitFor();
+  assert.equal(await evidence.getAttribute('aria-pressed'), 'true');
   await screenshot(page, 'reread-comparison.png');
+});
+
+test('결과 항목·이미지 영역·필터·검색은 기준 ID 하나로 선택과 빈 상태를 동기화한다', async t => {
+  const { page, state } = await fixture(t, {
+    authenticated: true,
+    // A real-size fixture keeps the three clickable regions apart. No external image request is made.
+    reviewImage: { width: 600, height: 800, contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="600" height="800" fill="#f4ede0"/><rect x="60" y="80" width="240" height="80" fill="#d9c7a5"/><rect x="60" y="240" width="240" height="80" fill="#bccdbf"/><rect x="360" y="480" width="180" height="160" fill="#b8c3d1"/></svg>' },
+    reviewCriteria: [{ id: 'criterion-date', document_condition: { level: '필수', inspection: '행사 종료일은 11월 1일까지입니다.' } }],
+    reviewResults: [
+      { criterion_id: 'criterion-date', criterion: '기간: 10월 30일~11월 1일', type: 'information', status: 'fail',
+        observed_text: '10월 30일~11월 2일', reason: '종료일이 확정한 기준과 다릅니다.',
+        evidence: [{ text: '날짜 근거 문구', bbox_xyxy: [60, 80, 300, 160] }] },
+      { criterion_id: 'criterion-name', criterion: '행사명: 테스트 축제', type: 'information', status: 'pass',
+        observed_text: '테스트 축제', reason: '행사명이 일치합니다.',
+        evidence: [{ text: '행사명 근거 문구', bbox_xyxy: [60, 240, 300, 320] }] },
+      { criterion_id: 'criterion-logo', criterion: '시 로고 포함', type: 'visual', status: 'review',
+        observed_text: '시 로고처럼 보이는 도형', reason: '원본 로고와 대조해 주세요.',
+        evidence: [{ text: '브랜드 심볼 영역', bbox_xyxy: [360, 480, 540, 640] }],
+        model_analysis: { status: 'success', conditions: [{ target: '시 로고', operator: 'required' }],
+          visual_candidates: [{ target: '시 로고', prediction: true }] } },
+    ],
+  });
+  await page.goto(`${baseURL}/review/new`);
+  await page.getByLabel('1. 프로젝트 이름').fill('선택 동기화 검증');
+  await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
+  await page.getByLabel('3. 검수 요구사항').fill('기간: 10월 30일~11월 1일\n행사명: 테스트 축제\n시 로고 포함');
+  await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).click();
+  await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
+  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+  await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
+
+  const list = page.getByRole('list', { name: '검수 항목 목록', exact: true });
+  const inspector = page.getByRole('complementary', { name: '선택 항목 상세', exact: true });
+  const filters = page.getByRole('group', { name: '검수 결과 상태 필터', exact: true });
+  const search = page.getByRole('searchbox', { name: '항목 검색', exact: true });
+  const selectedButtons = list.locator('button[aria-pressed="true"]');
+  async function assertSelection(criterion, evidenceText) {
+    await selectedButtons.filter({ hasText: criterion }).waitFor();
+    assert.equal(await selectedButtons.count(), 1);
+    await inspector.getByText(criterion, { exact: true }).waitFor();
+    const box = page.getByRole('button', { name: `근거 영역: ${evidenceText}`, exact: true });
+    await box.waitFor();
+    assert.equal(await box.getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-testid="evidence-box"][aria-pressed="true"]').count(), 1);
+  }
+
+  await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구');
+  assert.equal(await page.getByTestId('evidence-box').count(), 3);
+  const dateBox = page.getByRole('button', { name: '근거 영역: 날짜 근거 문구', exact: true });
+  assert.deepEqual(await dateBox.evaluate(node => ({ left: node.style.left, top: node.style.top, width: node.style.width, height: node.style.height })),
+    { left: '10%', top: '10%', width: '40%', height: '10%' });
+
+  await list.getByRole('button', { name: /시 로고 포함/ }).click();
+  await assertSelection('시 로고 포함', '브랜드 심볼 영역');
+  await inspector.getByLabel('모델 분석', { exact: true }).getByText('시 로고: 있음 가능성', { exact: true }).waitFor();
+  await dateBox.click();
+  await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구');
+  await inspector.getByText('필수 · 상세 기준', { exact: true }).click();
+  await inspector.getByText('행사 종료일은 11월 1일까지입니다.', { exact: true }).waitFor();
+  assert.equal(await inspector.getByLabel('모델 분석', { exact: true }).count(), 0);
+
+  // A hidden selection switches to the first result in the new filter.
+  await filters.getByRole('button', { name: /^충족/ }).click();
+  await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
+  assert.equal(await list.getByRole('button').count(), 1);
+  assert.equal(await page.getByTestId('evidence-box').count(), 1);
+  // Widening the filter preserves the criterion ID rather than the list position.
+  await filters.getByRole('button', { name: /^전체/ }).click();
+  await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
+  assert.equal(await list.getByRole('button').count(), 3);
+
+  await search.fill('심볼');
+  await assertSelection('시 로고 포함', '브랜드 심볼 영역');
+  assert.equal(await list.getByRole('button').count(), 1);
+  await search.fill('일치하는-항목-절대없음-xyz');
+  await inspector.getByText('표시할 항목이 없습니다.', { exact: true }).waitFor();
+  assert.equal(await selectedButtons.count(), 0);
+  assert.equal(await page.getByTestId('evidence-box').count(), 0);
+  assert.equal(await inspector.getByText('시 로고처럼 보이는 도형', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: '검색·필터 초기화', exact: true }).click();
+  await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구');
+  assert.equal(await search.inputValue(), '');
+  assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
+  assert.equal(await page.getByRole('button', { name: /최종 승인/ }).count(), 0);
 });

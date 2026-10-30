@@ -25,3 +25,25 @@
 .logout-button{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
 /* 작은 화면에서도 로그인 링크와 로그아웃 조작을 유지한다. */
 @media(max-width:650px){.nav-links{gap:12px}.nav-links .login-link{display:inline}.app-topbar{height:auto;min-height:51px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}.topbar-right{gap:10px;margin-left:auto}.user-label{display:none}.logout-button{font-size:11px}.logout-button .icon{width:15px;height:15px}}
+
+/* PDF 요구사항 첨부: 기존 입력과 구분되는 문서 상태 영역 */
+.document-input{margin:14px 0 18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.document-input-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.document-input-heading strong{font-size:15px}.document-input-heading p{font-size:13px;color:var(--muted);margin-top:4px}
+.document-input-heading .btn{flex-shrink:0}.document-input .help{font-size:12px}.document-notice{margin-top:12px;font-size:13px;overflow-wrap:anywhere}
+@media(max-width:650px){.document-input-heading{align-items:flex-start;flex-direction:column}.document-input-heading .btn{width:100%}}
+
+/* 짧은 조건문 밖에 보존한 PDF 수준·판단 기준 */
+.document-condition-details{margin:10px 0;color:var(--muted);font-size:12px}
+.document-condition-details summary{cursor:pointer;font-weight:600}
+.document-condition-details p{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+
+/* PDF 처리 단계와 실제 완료 페이지 수에 따라 갱신하는 진행률 */
+.document-progress{margin-top:16px;padding:14px 16px;border:1px solid #cbdcf6;border-radius:10px;background:#fff}
+.document-progress-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;font-size:13px;line-height:1.5}
+.document-progress-heading span{overflow-wrap:anywhere}.document-progress-heading strong{font-size:19px;color:var(--blue);white-space:nowrap;font-variant-numeric:tabular-nums}
+.document-progress-track{height:9px;overflow:hidden;border-radius:20px;background:#e7edf5;margin:10px 0}
+.document-progress-fill{height:100%;background:var(--blue);border-radius:inherit;transition:width .3s ease}
+.document-progress-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 14px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.document-progress.completed .document-progress-fill{background:#16815d}.document-progress.completed strong{color:#16815d}
+@media(prefers-reduced-motion:reduce){.document-progress-fill{transition:none}}

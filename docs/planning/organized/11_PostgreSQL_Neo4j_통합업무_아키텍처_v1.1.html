@@ -1,0 +1,813 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="planning-release" content="2026.10.30-r2"><title>크리에이티브체커 · 통합업무·데이터 계약</title><style>
+      :root {
+        --paper: #f4f3ee;
+        --card: #fffefb;
+        --ink: #203d34;
+        --muted: #69746b;
+        --line: #dbded3;
+        --accent: #315b48;
+        --soft: #e9eee3;
+        --warm: #f4e9df;
+        --radius: 19px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+          "Malgun Gothic", sans-serif;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        color: #9b603c;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      summary {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid #bf7543;
+        outline-offset: 4px;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+      }
+      button,
+      .button {
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: var(--ink);
+      }
+      .skip {
+        position: absolute;
+        left: 18px;
+        top: -70px;
+        padding: 12px;
+        background: var(--ink);
+        color: white;
+        z-index: 5;
+      }
+      .skip:focus {
+        top: 10px;
+      }
+      .site-head {
+        max-width: 1420px;
+        margin: auto;
+        padding: 26px 36px 18px;
+      }
+      .brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+      .brand {
+        font-weight: 750;
+        text-decoration: none;
+        color: var(--ink);
+        letter-spacing: -0.025em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 9px;
+        background: var(--ink);
+        color: #fcfaf3;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+      }
+      .doc-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .doc-nav a {
+        padding: 8px 15px;
+        border: 1px solid var(--line);
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 13px;
+        background: var(--card);
+      }
+      .doc-nav a[aria-current="page"] {
+        background: var(--ink);
+        color: white;
+        border-color: var(--ink);
+      }
+      .hero {
+        max-width: 1420px;
+        margin: auto;
+        padding: 30px 36px 33px;
+        border-top: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 750;
+        color: #6d785d;
+      }
+      .hero h1 {
+        font-size: clamp(31px, 4.5vw, 54px);
+        line-height: 1.22;
+        letter-spacing: -0.065em;
+        margin: 12px 0;
+      }
+      .hero p {
+        max-width: 900px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        margin: 2px 5px 2px 0;
+        background: var(--soft);
+        border: 1px solid #d7dfcf;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 650;
+        color: #416348;
+      }
+      .badge.warm {
+        background: var(--warm);
+        border-color: #e9d8ca;
+        color: #865b3c;
+      }
+      .layout {
+        max-width: 1420px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 208px minmax(0, 1fr);
+        gap: 24px;
+        padding: 0 36px 54px;
+      }
+      .side {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+      }
+      .side .caption {
+        font-size: 11px;
+        color: var(--muted);
+        margin: 4px 10px 12px;
+        letter-spacing: 0.1em;
+      }
+      .tablist {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tablist button {
+        display: flex;
+        gap: 11px;
+        text-align: left;
+        font-size: 13px;
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 11px 13px;
+        line-height: 1.5;
+      }
+      .tablist button span {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        opacity: 0.6;
+      }
+      .tablist button[aria-selected="true"] {
+        color: white;
+        background: var(--ink);
+        border-color: var(--ink);
+        box-shadow: 0 5px 14px #234c4015;
+      }
+      .side-note {
+        padding: 18px 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.8;
+      }
+      .doc-panel {
+        padding: 32px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        min-width: 0;
+        margin-bottom: 20px;
+      }
+      .doc-panel[hidden] {
+        display: none;
+      }
+      .doc-panel h2 {
+        font-size: clamp(24px, 2.6vw, 33px);
+        line-height: 1.4;
+        letter-spacing: -0.045em;
+        margin: 0 0 16px;
+      }
+      .doc-panel h3 {
+        font-size: 18px;
+        letter-spacing: -0.025em;
+        margin: 22px 0 10px;
+      }
+      .doc-panel h4 {
+        font-size: 15px;
+        margin: 20px 0 8px;
+      }
+      .lead {
+        font-size: 18px;
+        max-width: 820px;
+      }
+      .muted,
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .meta strong {
+        color: var(--ink);
+      }
+      .section-intro {
+        margin-bottom: 26px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card,
+      .link-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 22px;
+        background: #fafbf7;
+        min-width: 0;
+      }
+      .card h3,
+      .link-card h3 {
+        margin: 8px 0 10px;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .note {
+        border: 1px solid #d9e2d0;
+        border-left: 4px solid #74906c;
+        border-radius: 10px;
+        padding: 16px 19px;
+        background: #f0f4eb;
+        margin: 23px 0;
+        font-size: 13px;
+      }
+      .note p:last-child {
+        margin-bottom: 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin: 20px 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #edf0e8;
+        font-weight: 750;
+        white-space: normal;
+        min-width: 90px;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr:nth-child(even) {
+        background: #fcfcf8;
+      }
+      td p:first-child {
+        margin-top: 0;
+      }
+      td ul {
+        padding-left: 17px;
+      }
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+      li {
+        margin: 6px 0;
+      }
+      details {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0 19px;
+        background: #fcfcf9;
+        margin: 14px 0;
+      }
+      summary {
+        cursor: pointer;
+        padding: 16px 0;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+      details[open] > summary {
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 14px;
+      }
+      details > details {
+        background: white;
+      }
+      details .table-wrap {
+        margin: 15px 0;
+      }
+      details > :last-child:not(summary) {
+        margin-bottom: 20px;
+      }
+      input[type="search"],
+      input[data-search-input] {
+        width: 100%;
+        border: 1px solid #aabda1;
+        border-radius: 11px;
+        padding: 12px 15px;
+        background: white;
+        color: var(--ink);
+      }
+      [data-search][hidden] {
+        display: none;
+      }
+      pre {
+        background: #edf1e8;
+        border-radius: 12px;
+        padding: 20px;
+        overflow: auto;
+        font-size: 12px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.92em;
+      }
+      p code,
+      td code,
+      li code {
+        background: #eaf0e3;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 10px 20px;
+      }
+      dt {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+      }
+      footer {
+        max-width: 1420px;
+        margin: auto;
+        padding: 20px 36px 36px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .foot-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px 0;
+      }
+      .panel-footer span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .doc-cards .link-card {
+        display: block;
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--card);
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+      .doc-cards .link-card:hover {
+        transform: translateY(-3px);
+        border-color: #769267;
+      }
+      .link-card strong {
+        display: block;
+        font-size: 24px;
+        letter-spacing: -0.035em;
+        margin: 10px 0;
+      }
+      .link-card .arrow {
+        float: right;
+        font-size: 21px;
+      }
+      .index-main {
+        max-width: 1420px;
+        margin: auto;
+        padding: 0 36px 48px;
+      }
+      .index-main .doc-panel {
+        margin-top: 25px;
+      }
+      .feature-card:target,
+      details:target {
+        outline: 3px solid #c89568;
+        outline-offset: 4px;
+        scroll-margin-top: 25px;
+      }
+      .empty-search {
+        padding: 20px;
+        color: var(--muted);
+        background: var(--soft);
+        border-radius: 10px;
+      }
+      .source-tag {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 26px;
+      }
+      @media (max-width: 1000px) {
+        .layout {
+          grid-template-columns: 170px minmax(0, 1fr);
+          gap: 18px;
+        }
+        .doc-panel {
+          padding: 25px;
+        }
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 700px) {
+        .site-head,
+        .hero {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .hero {
+          padding-top: 23px;
+        }
+        .layout {
+          display: block;
+          padding: 0 18px 30px;
+        }
+        .side {
+          position: static;
+        }
+        .tablist {
+          flex-direction: row;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+          gap: 6px;
+        }
+        .tablist button {
+          font-size: 12px;
+          border: 1px solid var(--line);
+          padding: 8px 10px;
+          background: var(--card);
+        }
+        .tablist button span {
+          display: none;
+        }
+        .side-note,
+        .side .caption {
+          display: none;
+        }
+        .doc-panel {
+          padding: 22px 17px;
+        }
+        .doc-cards.grid.two {
+          grid-template-columns: 1fr;
+        }
+        .doc-nav {
+          gap: 6px;
+        }
+        .doc-nav a {
+          font-size: 12px;
+          padding: 6px 10px;
+        }
+        .brand-row {
+          align-items: flex-start;
+        }
+        .brand-row .badge {
+          display: none;
+        }
+        .index-main {
+          padding: 0 18px 30px;
+        }
+        footer {
+          padding: 20px 18px;
+        }
+        dl {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+        dd {
+          margin-bottom: 12px;
+        }
+        .lead {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        @page {
+          size: A4;
+          margin: 14mm;
+        }
+        body {
+          background: white;
+          font-size: 10pt;
+          color: #18251e;
+        }
+        .site-head,
+        .side,
+        .panel-footer,
+        .print-button,
+        .doc-nav,
+        .skip,
+        input[data-search-input],
+        [data-search-count],
+        .empty-search {
+          display: none !important;
+        }
+        .hero {
+          padding: 0 0 18px;
+          border: 0;
+        }
+        .hero h1 {
+          font-size: 26pt;
+        }
+        .layout,
+        .index-main {
+          display: block;
+          padding: 0;
+        }
+        .doc-panel,
+        .doc-panel[hidden] {
+          display: block !important;
+          min-height: 0;
+          padding: 0;
+          border: 0;
+          border-radius: 0;
+          break-before: page;
+        }
+        .doc-panel:first-child {
+          break-before: auto;
+        }
+        .doc-panel h2 {
+          font-size: 20pt;
+        }
+        details {
+          border: 0;
+          padding: 0;
+        }
+        summary {
+          font-size: 12pt;
+        }
+        details::details-content {
+          content-visibility: visible !important;
+          height: auto !important;
+        }
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+        .card,
+        .note {
+          break-inside: avoid;
+          padding: 12px;
+        }
+        .table-wrap {
+          overflow: visible;
+          border-radius: 0;
+        }
+        th,
+        td {
+          padding: 6px;
+          font-size: 9pt;
+          min-width: 0;
+        }
+        thead {
+          display: table-header-group;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        pre {
+          font-size: 8pt;
+        }
+        footer {
+          padding: 15px 0;
+        }
+        .source-tag {
+          font-size: 8pt;
+        }
+        [data-search][hidden] {
+          display: revert !important;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .workflow-scroll {
+          overflow: visible !important;
+        }
+        .workflow-svg {
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+      }
+      @media print {
+        .workflow-source {
+          display: block !important;
+        }
+        .workflow-source pre {
+          max-height: none;
+          overflow: visible;
+          white-space: pre-wrap;
+          background: #f4f4f4;
+          color: #18251e;
+        }
+        .workflow-source code {
+          font-size: 8pt;
+        }
+      }
+    
+
+html{scroll-behavior:smooth}[hidden]{display:none!important}body{word-break:keep-all}caption{text-align:left;padding:12px 14px;background:#f5f7ef;color:var(--muted);border-bottom:1px solid var(--line);font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:25px 0}.metrics>div{padding:18px;border:1px solid var(--line);background:#f4f7ec;border-radius:14px}.metrics span,.metrics small{display:block;font-size:11px;color:var(--muted)}.metrics strong{display:block;font-size:21px;line-height:1.7;letter-spacing:-.6px;margin:5px 0}
+.actions,.switches{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.switches button{font-size:12px;padding:8px 12px}.switches [aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}
+.flow{display:flex;list-style:none;padding:0;gap:18px;margin:24px 0}.flow li{flex:1;position:relative;padding:14px 11px;border:1px solid #d4ddca;background:#edf2e6;border-radius:11px;min-width:0;font-size:12px;line-height:1.7;margin:0}.flow li:not(:last-child):after{content:'→';position:absolute;right:-17px;top:calc(50% - 11px);color:#6b806b}.flow b,.flow span{display:block}.flow span{font-size:10px;color:var(--muted);margin-top:6px}
+.diagram-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fcfdf8;padding:12px;margin:24px 0}.diagram-wrap svg{display:block;width:100%;min-width:760px;max-width:none}.wire{fill:none;stroke:#647b6e;stroke-width:2;marker-end:url(#arrow-code)}.wire.next{stroke:#b27648;stroke-dasharray:7 5;marker-end:url(#arrow-next)}.node rect{fill:#f5f8ef;stroke:#9db29f;stroke-width:1.5;rx:14px}.node.target rect,.node.graph rect{fill:#fbefe2;stroke:#b27648;stroke-dasharray:6 4}.node.source rect{fill:#e3eee1;stroke:#4d7157;stroke-width:2}.node.graph rect{fill:#f5e8d9;stroke-width:2}.node text{font-size:12px;fill:#42594c}.node text.state{font-size:10px;fill:#75836d;letter-spacing:.3px}.node text.name{font-size:18px;font-weight:750;fill:#244738}.edge-label{font-size:10px;fill:#75816e}.legend-text{font-size:12px;fill:#556c5a}
+.panel-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:30px;padding-top:18px}.phase-label{font-size:11px;text-transform:uppercase;color:var(--muted)}.audit{font:11px ui-monospace,monospace;overflow-wrap:anywhere}
+@media(max-width:1000px){.metrics{grid-template-columns:1fr}.flow{flex-wrap:wrap}.flow li{flex-basis:27%}.flow li:after{display:none}}
+@media(max-width:700px){.flow{display:grid;gap:10px}.flow li{padding:13px}.flow li:not(:last-child):after{display:block;content:'↓';top:auto;bottom:-16px;right:calc(50% - 5px)}.metrics strong{font-size:21px}.metrics>div{padding:15px}.diagram-wrap{padding:6px}.switches button{padding:7px 9px}.panel-footer{flex-wrap:wrap}}
+@media print{[hidden]{display:block!important}.switches,.actions,.panel-footer{display:none!important}.diagram-wrap{overflow:visible;padding:0;border:0}.diagram-wrap svg{min-width:0;width:100%}.flow{display:grid;grid-template-columns:repeat(3,1fr)}.metrics{grid-template-columns:repeat(3,1fr)}.metrics strong{font-size:13px}}
+
+
+.doc-panel{display:block}.doc-panel[hidden]{display:none!important}
+.hero{padding-bottom:28px}.hero h1{font-size:clamp(30px,4.3vw,55px)}.hero p{max-width:940px}
+.doc-nav{gap:6px;flex-wrap:wrap}.doc-nav a{font-size:11px;padding:8px 12px}
+.release-strip{margin:16px 0 0;padding:14px 16px;background:#f0f3e8;border:1px solid var(--line);border-radius:12px;font-size:12px;line-height:1.8}
+.release-strip b{color:var(--ink)}.doc-meta{font-size:12px;color:var(--muted);margin:12px 0;line-height:1.8}
+.doc-panel p,.doc-panel li{line-height:1.85}.doc-panel h3{margin-top:30px}.doc-panel h4{margin-top:24px}
+.table-wrap{overflow:auto}table{min-width:580px}th{white-space:normal}td,th{overflow-wrap:anywhere}td:first-child{min-width:80px}
+.catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.catalog a{display:block;padding:18px;border:1px solid var(--line);border-radius:12px;background:#f6f8ef;text-decoration:none}.catalog b{display:block;margin-bottom:5px}.catalog small{display:block;color:var(--muted)}
+.review-note{border-left:4px solid #aa813f;background:#faf3e3;padding:15px 18px;margin:22px 0;border-radius:0 10px 10px 0}.review-note p{margin:7px 0}
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:steps}.flow li{font-size:13px;padding:15px;counter-increment:steps}.flow li::before{content:counter(steps,decimal-leading-zero);display:block;font-weight:800;color:#647c59;margin-bottom:6px}.flow li:not(:last-child)::after{display:none}.flow span{font-size:12px}
+.workflow-flow li:nth-child(3),.workflow-flow li:nth-child(7),.workflow-flow li:nth-child(9){background:#faf0d9;border-color:#cfb775}
+.status-chip{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:20px;font-size:11px;background:#f2f5ed}.wireframe{padding:18px;border:1px dashed #9caf9c;border-radius:12px;background:#f7f9f3}.wireframe-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.wireframe-box{padding:15px;border:1px solid var(--line);background:#fffefb;border-radius:9px}
+.findbox{margin:0 0 18px;display:flex;gap:8px;flex-wrap:wrap}.findbox input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fffefb;color:var(--ink);font:inherit;font-size:13px}.find-results{display:grid;gap:6px;margin-bottom:16px}.find-results button{text-align:left;font-size:12px;padding:10px}.find-results:empty{display:none}.find-count{font-size:12px;color:var(--muted)}
+.doc-panel pre{white-space:pre-wrap;overflow-wrap:anywhere}.doc-panel code{overflow-wrap:anywhere}.doc-panel details{border:1px solid var(--line);border-radius:12px;margin:14px 0;padding:14px}.doc-panel summary{font-weight:700;cursor:pointer}.evidence-grid{font-size:12px}.muted{color:var(--muted)}
+@media(max-width:800px){.catalog,.wireframe-grid{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.doc-nav a{font-size:10px}.hero{padding:28px 20px}.doc-panel{padding:22px}.release-strip{font-size:11px}}
+@media print{.doc-panel[hidden]{display:block!important}.findbox,.find-results,.find-count,.panel-footer{display:none!important}.doc-panel{break-before:page}.catalog{grid-template-columns:1fr 1fr}table{min-width:0}.flow{grid-template-columns:repeat(3,1fr)}}
+</style></head><body><a class="skip" href="#main">본문으로 바로가기</a>
+<header class="site-head"><div class="brand-row"><a class="brand" href="./01_기획서.html"><small>SKN33 FINAL · 1TEAM</small><span class="brand-mark">C</span>크리에이티브체커</a><span class="badge warm">통합 개정 · 2026.10.30-r2</span></div><nav class="doc-nav" aria-label="Planning 문서 전체"><a href="./01_%EA%B8%B0%ED%9A%8D%EC%84%9C.html">01 기획</a><a href="./02_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">02 기능</a><a href="./03_%ED%99%94%EB%A9%B4%EC%A0%95%EC%9D%98%EC%84%9C.html">03 화면</a><a href="./04_%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%8E%99%EC%A0%95%EC%9D%98%EC%84%9C.html">04 기술</a><a href="./05_%EC%82%AC%EC%9A%A9%EC%9E%90%EB%B3%84_%EA%B8%B0%EB%8A%A5%EC%A0%95%EC%9D%98%EC%84%9C.html">05 사용자 역할</a><a href="./06_%E1%84%87%E1%85%A6%E1%86%A8%E1%84%90%E1%85%A5DB_GraphDB_%E1%84%80%E1%85%AE%E1%84%8E%E1%85%AE%E1%86%A8%E1%84%80%E1%85%A7%E1%86%AF%E1%84%80%E1%85%AA%E1%84%89%E1%85%A5.html">06 DB 결과</a><a href="./07_%EB%A8%B8%EC%8B%A0%EB%9F%AC%EB%8B%9D_%EB%94%A5%EB%9F%AC%EB%8B%9D_%ED%95%99%EC%8A%B5%EA%B2%B0%EA%B3%BC%EC%84%9C.html">07 학습 결과</a><a href="./08_%ED%95%99%EC%8A%B5%ED%95%9C_ML_DL_%EB%AA%A8%EB%8D%B8.html">08 모델 명세</a><a href="./09_RunPod_OCR_%EB%AA%A8%EB%8D%B8_%EB%B9%84%EA%B5%90%EA%B2%B0%EA%B3%BC%EC%84%9C.html">09 비교 결과</a><a href="./10_PostgreSQL_Neo4j_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_%EA%B0%9C%ED%8E%B8%EC%95%88.html">10 아키텍처</a><a href="./11_PostgreSQL_Neo4j_%ED%86%B5%ED%95%A9%EC%97%85%EB%AC%B4_%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98_v1.1.html" aria-current="page">11 통합 계약</a></nav></header>
+<div class="hero"><span class="eyebrow">PROJECT PLANNING / 11</span><h1>통합업무·데이터 계약</h1><p>세 승인 지점·A01–A08·숏폼·관계 조회를 연결하는 구현 계약과 수용 기준</p><span class="badge">PostgreSQL 원천 + Neo4j 관계 조회</span><span class="badge">포스터 · 숏폼</span><span class="badge warm">팀 승인 별도</span><div class="release-strip"><b>기준일 2026-10-30 KST</b> · 10/30 통합 초안 + 최신 사용자 DB 결정 반영<br>현재 코드 · 독립 실험 · 추가 구현을 구분합니다. 실험의 실행 날짜와 문서 개정일은 다릅니다.</div></div>
+<div class="layout"><aside class="side"><p class="caption">CONTENTS / 06</p><div class="tablist" role="tablist" aria-label="문서 목차" aria-orientation="vertical"><button type="button" role="tab" id="tab-workflow" aria-controls="workflow" data-panel="workflow" aria-selected="true" tabindex="0"><span>01</span>통합 업무·역할</button><button type="button" role="tab" id="tab-contracts" aria-controls="contracts" data-panel="contracts" aria-selected="false" tabindex="-1"><span>02</span>공통 계약·숏폼</button><button type="button" role="tab" id="tab-relations" aria-controls="relations" data-panel="relations" aria-selected="false" tabindex="-1"><span>03</span>관계 모델·기능</button><button type="button" role="tab" id="tab-implementation" aria-controls="implementation" data-panel="implementation" aria-selected="false" tabindex="-1"><span>04</span>추가 구현</button><button type="button" role="tab" id="tab-validation" aria-controls="validation" data-panel="validation" aria-selected="false" tabindex="-1"><span>05</span>검증·전환 기준</button><button type="button" role="tab" id="tab-updates" aria-controls="updates" data-panel="updates" aria-selected="false" tabindex="-1"><span>06</span>버전·출처·업데이트</button></div><p class="side-note">이 폴더의 현재 기준 문서 묶음<br>2026.10.30-r2<br>변경 이력은 마지막 탭에서 확인합니다.</p></aside><main id="main"><div class="findbox"><input id="doc-search" type="search" aria-label="이 문서 전체 검색" placeholder="이 문서 전체 검색"><button type="button" id="clear-search">검색 초기화</button></div><p id="find-count" class="find-count" role="status" aria-live="polite"></p><div id="find-results" class="find-results"></div><section class="doc-panel" id="workflow" role="tabpanel" aria-labelledby="tab-workflow" tabindex="0"><h2>통합 업무·역할</h2>
+<p class="lead">Neo4j는 검사 기준의 출처와 적용 관계를 제공합니다. 기준·수정 요청·최종 승인은 사람이 확정합니다.</p>
+<p>첨부 통합 초안 4~6장의 업무 흐름을 2DB 구조에 연결했습니다. 아래 전체 흐름과 MCP 연결은 <strong>추가 구현 목표</strong>입니다. 현재 PDF·검수 모듈의 존재와 이 전체 흐름의 완료를 구분합니다.</p>
+<h3>업무 단계와 데이터가 확정되는 지점</h3><ol class="flow workflow-flow" aria-label="통합 업무 9단계"><li><b>자료 접수 · A01</b><span>문서·포스터/영상 원본과 버전·해시 보존</span></li><li><b>조건 초안 · A02</b><span>조건·출처·AND/OR·예외 후보 추출</span></li><li><b>승인 1 · 기준 확정</b><span>사람이 원문·누락·적용 조건 확인</span></li><li><b>PG 확정 → 그래프 준비</b><span>불변 기준·정책 + outbox → 버전별 ready</span></li><li><b>검사 · A04/A05</b><span>PG 기준 전체 + Neo4j 관계 문맥</span></li><li><b>검증·정리 · A06/A07</b><span>누락·버전·근거 점검 → 수정 요청 초안</span></li><li><b>승인 2 · 수정 요청 확정</b><span>사람이 위치·현재값·요구 수정 확인</span></li><li><b>재제출·재검수 · A08</b><span>새 산출물 버전·새 run → 전체 기준 재검사</span></li><li><b>승인 3 · 최종 승인</b><span>대상 산출물·기준·검수 결과 버전 고정</span></li></ol><div class="table-wrap"><table><caption>세 승인 지점 · 승인 모델과 상세 권한은 추가 설계</caption><thead><tr><th scope="col">승인 지점</th><th scope="col">PostgreSQL에 보존할 정보 · 설계</th><th scope="col">Neo4j의 역할과 한계</th></tr></thead><tbody><tr><td>① 기준 확정</td><td>확정자·시각·조건 전체·출처·criteria_version_id. 승인 예외는 허용 정책 결정 후 별도 기록</td><td>확정 관계만 투영. LLM의 관계 후보·검색 점수로 기준을 확정하지 않음</td></tr><tr><td>② 수정 요청 확정</td><td>요청 버전·대상 조건/위치·근거·요구 수정·확정자·원 run_id</td><td>조건→원문·결과 경로를 설명. 수정 요청을 자동 승인하지 않음</td></tr><tr><td>③ 최종 승인</td><td>특정 asset_version_id·criteria_version_id·run_id·승인자·시각</td><td>당시 사용한 경로/정책 스냅샷 제공. 새 기준/산출물로 승인을 자동 승계하지 않음</td></tr></tbody></table></div>
+<h3>A01–A08과 DB·MCP 책임</h3><div class="table-wrap"><table><caption>역할은 논리 책임이며 독립 모델·프로세스 수나 담당자 확정이 아님</caption><thead><tr><th scope="col">논리 역할</th><th scope="col">입력 → 출력</th><th scope="col">DB·도구 연결 · 목표</th></tr></thead><tbody><tr><td>A01 흐름 조정</td><td>접수·승인·실행 상태 → 다음 단계·실패/대기 상태</td><td>PG run/attempt·권한이 원천. MCP 호출과 결과 ID 연결. LangGraph 선정은 별도</td></tr><tr><td>A02 문서·조건</td><td>고정 문서 버전 → 조건·출처·관계 초안</td><td>초안은 PG에 저장. 사람 확인 뒤 확정 버전만 Neo4j 반영</td></tr><tr><td>A03 근거·관계 조회</td><td>기준 ID·버전·매체 → 경로·유효 예외·조회 상태</td><td>이번 안에서는 고정 관계 조회 도구로 시작. 별도 LLM·의미 검색 에이전트는 필수 아님</td></tr><tr><td>A04 텍스트 검사</td><td>확정 조건·이미지/프레임 → 관측값·판정·근거</td><td>Neo4j는 적용 문맥 제공. 실제 문구·날짜 비교는 규칙/평가된 모델이 수행</td></tr><tr><td>A05 시각·영상 검사</td><td>조건·승인 기준 자산·프레임 → 영역·시각·검사 결과</td><td>그래프 연결이나 이미지 유사도만으로 정상 판정하지 않음. 엔진 후보는 어댑터로 분리</td></tr><tr><td>A06 결과 검증</td><td>전체 조건 목록·단계 결과 → 누락·버전/스키마·근거 검증</td><td>다른 프로젝트·버전 혼입, 미지원/실패 누락 차단. 그래프 도달 가능성과 논리 충족을 구분</td></tr><tr><td>A07 보고·수정 요청</td><td>검증된 결과·원문 경로 → 설명·수정 요청 초안</td><td>사용한 결과·경로를 저장하고 사람 승인 ②에 전달</td></tr><tr><td>A08 재제출·재검수</td><td>수정 요청·새 산출물 버전 → 새 run·해결 여부</td><td>기존 요청/run과 연결. 최초 연결 단계에서는 전체 기준 재검수</td></tr></tbody></table></div>
+<h3>MCP로 노출할 관계 도구 3종</h3><div class="table-wrap"><table><caption>새 MCP 계약 제안 · 현재 구현된 도구 목록이 아님</caption><thead><tr><th scope="col">도구명 제안</th><th scope="col">입력·서버 검증</th><th scope="col">반환 · 읽기 전용</th></tr></thead><tbody><tr><td>trace_criterion_sources</td><td>인증된 사용자 + project_id·criteria_version_id·criteria_item_id</td><td>원문 버전·페이지/영역·해시·경로·projection_id</td></tr><tr><td>get_applicable_exceptions</td><td>동일 기준 + 매체·effective_at·policy_revision</td><td>적용/제외 사유·승인/취소·유효기간·근거·조회 완전성</td></tr><tr><td>find_change_impacts</td><td>변경 source_asset_version_id 또는 정책 개정 + 범위</td><td>영향 기준/run ID·연결 경로·중복 제거·정렬·잘림 여부</td></tr></tbody></table></div>
+<p>서버가 인증 정보로 PG의 현재 권한을 확인합니다. 요청의 project_id나 모델이 만든 권한 값을 신뢰하지 않습니다. 읽기 도구가 기준·예외·최종 승인을 변경하지 않으며, 향후 쓰기 도구도 별도 권한·멱등성·감사 이력이 필요합니다. 단순히 MCP 호출에 성공한 것을 업무 성공으로 집계하지 않습니다.</p>
+<div class="panel-footer"><button type="button" data-prev>← 이전</button><span>1 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="contracts" role="tabpanel" aria-labelledby="tab-contracts" tabindex="0"><h2>공통 계약·숏폼</h2>
+<p class="lead">같은 조건·문서·실행을 같은 ID로 연결하고, 미관측·실패·판정·사람 승인을 분리합니다.</p>
+<h3>통합 초안과 현재 v1 식별자 대응</h3><div class="table-wrap"><table><caption>통합 초안 5.2의 개념명과 v1 스키마·서비스의 대응</caption><thead><tr><th scope="col">통합 초안 표현</th><th scope="col">현재 코드·새 계약에 쓰는 기준</th><th scope="col">연결 시 지킬 의미</th></tr></thead><tbody><tr><td>criterion_id</td><td>현재 DB PK는 criteria_item_id</td><td>C-003 같은 표시값이나 rule_code는 PK 대체 불가. 초안용 ID와 확정 UUID 대응표 보존</td></tr><tr><td>document_version_id</td><td>현재 출처 자산 버전은 source_asset_version_id</td><td>독립 문서 버전 필드가 이미 있다는 뜻이 아님. 원본 asset_version_id와 역할·해시를 대응</td></tr><tr><td>asset_version_id</td><td>검사할 포스터/영상의 불변 버전</td><td>다른 버전의 crop·OCR·프레임 결과를 섞지 않음</td></tr><tr><td>criteria_version_id</td><td>사람이 확정·봉인한 조건 전체의 버전</td><td>변경은 새 버전. 봉인 후 기존 항목에 출처·적용 조건을 덧쓰지 않음</td></tr><tr><td>run_id / attempt_id</td><td>사용자가 요청한 실행 / worker 처리 시도</td><td>모델 재호출·worker 재시도와 사용자 명시 재검수를 분리</td></tr><tr><td>evidence_id / frame_id</td><td>연결할 신규 근거·영상 계약</td><td>원본 버전·시각·좌표·전처리 정보를 함께 저장. 현재 영상 계약 완료를 뜻하지 않음</td></tr></tbody></table></div>
+<h3>재전송·재시도·재검수는 서로 다른 요청입니다</h3><div class="table-wrap"><table><caption>현재 코드로 확인한 재시도 의미와 추가로 연결할 업무 흐름</caption><thead><tr><th scope="col">상황</th><th scope="col">ID·저장 동작</th><th scope="col">완료 판단</th></tr></thead><tbody><tr><td>동일 요청 재전송</td><td>동일 idempotency_key·동일 내용 → 기존 run 반환. 다른 내용 충돌은 거절</td><td>중복 실행을 만들지 않음. 업로드·초안 전체까지 보장됐다는 뜻은 아님</td></tr><tr><td>worker 장애 재시도</td><td>동일 run 안의 새 attempt. lease·token·실행 여부 정책 적용</td><td>현재 v1의 안전 재시도 범위는 not_dispatched_only_v1. GPU 호출을 무조건 반복하지 않음</td></tr><tr><td>사용자의 명시 재검수</td><td>새 run + retry_of_run_id로 기존 run 연결</td><td>현재 서비스 코드의 명시 재실행과 worker 재시도를 구분</td></tr><tr><td>수정본 재제출 / 기준 변경</td><td>새 asset/criteria 버전 + 새 run, 수정 요청·변경 사유 연결</td><td>새 산출물 버전 체계·요청 이력 연결은 추가 구현. 기존 승인 자동 승계 없음</td></tr></tbody></table></div>
+<h3>AND/OR·조건부·예외를 그래프로 옮길 때</h3>
+<p><strong>제안:</strong> PG에 조건식 원본과 개정 이력을 보존하고, 필요하면 <code>ConditionGroup(op=AND|OR)</code>와 순서가 있는 하위 조건을 Neo4j에 투영합니다. 조건부 적용·승인 예외는 각각의 대상·근거·유효기간을 유지합니다. 실제 테이블·라벨·enum은 계약 동결 때 확정합니다.</p>
+<p>‘A 또는 B, 단 C 상황은 제외’를 A·B·C 모두 필수인 세 조건으로 바꾸지 않습니다. 그래프의 연결 경로는 조건식의 참·거짓을 대신하지 않습니다. A06 또는 규칙 평가기가 정책 버전과 관측 결과로 식을 평가하며, 누락·판독 불가·미지원·적용 관계 미준비는 별도로 남깁니다. <code>review</code>의 AND/OR 전파·예외 우선순위는 승인된 진리표가 있어야 자동화합니다.</p>
+<h3>텍스트·시각 엔진과 관측 근거</h3>
+<p>Qwen 중심, 파서+Qwen, OCR 혼합을 최종 선택한 것으로 바꾸지 않았습니다. 어댑터 출력에는 원문 인식값·정규화값·검사 항목·모델/프롬프트/규칙 버전·오류·지원 여부를 연결합니다. 로고의 정렬 성공·유사도·차이율은 관측 근거이며, 승인 조건의 충족 여부나 사람 승인을 대신하지 않습니다.</p>
+<h3>포스터와 숏폼의 공통 계약·차이</h3><div class="table-wrap"><table><caption>숏폼은 통합 초안의 필수 목표 · 이번 HTML에서 영상 처리를 구현하지 않음</caption><thead><tr><th scope="col">영역</th><th scope="col">공통 보존</th><th scope="col">숏폼 추가 · 제안</th></tr></thead><tbody><tr><td>입력·버전</td><td>project_id·원본 파일·asset_version_id·SHA-256</td><td>원본 길이·해상도·시간 기준. 지원 형식/상한은 팀 결정</td></tr><tr><td>관측 근거</td><td>evidence_id·원본 연결·bbox_xyxy·좌표 체계·변환 정보</td><td>frame_id·실제 시각(timestamp_ms)·프레임 원본/추출 버전·sampling_policy_version</td></tr><tr><td>검사 범위</td><td>대상 조건 전체와 present / illegible / absent / not_checked 등의 관측 상태 제안</td><td>검사한 시각 목록·구간·실패 프레임·미관측 구간. 프레임 없음과 객체 없음 구분</td></tr><tr><td>시간 조건</td><td>기대값·관측값·단위·오차·미지원 사유</td><td>일부 프레임 검출만으로 연속 3초 노출을 통과시키지 않음. 검증된 시간 평가기 필요</td></tr><tr><td>재검수·승인</td><td>새 버전·새 run·이전 요청·사람 승인 연결</td><td>새 영상 버전은 프레임 근거를 재생성하거나 동일성/정책 검증 후 재사용</td></tr></tbody></table></div>
+<p>좌표는 이미지/프레임의 기준 크기·회전·crop·resize 정보를 포함해 역변환할 수 있어야 합니다. 시각은 프레임 번호나 추출 순번으로 대체하지 않습니다. 음성 포함 여부·샘플링 간격·연속 노출·최대 길이는 미정으로 유지합니다.</p>
+<div class="note"><strong>자동 통과를 막는 경계</strong><p>전체 승인 조건마다 결과 또는 미지원·실패·확인 필요를 남깁니다. 빈 예외 목록은 해당 버전의 조회가 정상 완료된 경우에만 유효합니다. 그래프 조회가 잘렸거나 시간 초과·미준비인 경우, 그리고 영상 일부만 관측한 경우를 통과 근거로 사용하지 않습니다.</p></div>
+<div class="panel-footer"><button type="button" data-prev>← 이전</button><span>2 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="relations" role="tabpanel" aria-labelledby="tab-relations" tabindex="0"><h2>관계 모델·기능</h2>
+<p>원문·기준·예외를 먼저 구조화하고, 확정된 관계를 조회합니다. 자유 문장으로 임의 Cypher를 실행하는 방식 대신 <strong>고정 쿼리 3종과 파라미터</strong>로 시작합니다.</p>
+<div class="grid three"><article class="card"><h3>근거 추적</h3><p>기준 UUID → 출처 구간 → 고정 문서 버전·해시·페이지</p></article><article class="card"><h3>예외 검증</h3><p>기준·매체 → 승인/취소·기간 → 유효 출처. 정책 확정 후 적용</p></article><article class="card"><h3>변경 영향</h3><p>변경 원문·정책 → 의존 기준 → 사용 실행 → 재검수 후보</p></article></div>
+<p class="muted">시나리오는 설계 예시입니다. 이 HTML에서 DB를 호출하거나 실제 예외 승인을 변경하지 않습니다.</p><div class="table-wrap"><table><caption>서비스 목표 논리 모델 · 실제 라벨·추가 PG 모델은 구현 전에 확정</caption><thead><tr><th scope="col">대상 노드</th><th scope="col">식별·버전</th><th scope="col">연결</th></tr></thead><tbody><tr><td>Project / CriteriaVersion</td><td>project_id / criteria_version_id</td><td>프로젝트의 확정 기준 버전과 항목</td></tr><tr><td>Criterion</td><td>criteria_item_id</td><td>근거 조항, 적용 매체, 승인 예외, 의존 기준</td></tr><tr><td>SourceSegment / SourceVersion</td><td>source_segment_id / source_asset_version_id·SHA-256</td><td>원문 페이지·영역·문서 버전</td></tr><tr><td>Exception / Media</td><td>exception_id·policy_revision / media_id</td><td>적용 대상·승인·시작/종료 시각·원문 근거</td></tr><tr><td>ReviewRun / AssetVersion</td><td>run_id / asset_version_id</td><td>실행이 사용한 기준·정책·근거 경로</td></tr></tbody></table></div><pre><code>(Project)-[:HAS_CRITERIA_VERSION]-&gt;(CriteriaVersion)
+(CriteriaVersion)-[:HAS_ITEM]-&gt;(Criterion)
+(Criterion)-[:SUPPORTED_BY]-&gt;(SourceSegment)-[:PART_OF]-&gt;(SourceVersion)
+(Criterion)-[:APPLIES_TO]-&gt;(Media)
+(Criterion)-[:HAS_EXCEPTION]-&gt;(Exception)-[:APPLIES_TO]-&gt;(Media)
+(Criterion)-[:DEPENDS_ON]-&gt;(Criterion)
+(ReviewRun)-[:USED_CRITERIA]-&gt;(CriteriaVersion)
+(ReviewRun)-[:USED_ITEM]-&gt;(Criterion)</code></pre>
+<p>실험의 <code>Rule / Chunk / Document</code> 명칭과 서비스의 UUID 계약을 명시적으로 대응합니다. 표시용 <code>rule_code</code>는 항목 PK로 사용하지 않습니다.</p>
+<h3>공통 요청·응답 계약 제안</h3><div class="table-wrap"><table><caption>신규 계약 초안 · 현재 API에 구현된 필드 목록을 뜻하지 않음</caption><thead><tr><th scope="col">공통 요청</th><th scope="col">필수 반환</th><th scope="col">확인할 조건</th></tr></thead><tbody><tr><td>project_id · criteria_version_id · criteria_item_id</td><td>입력 ID·원천 버전·projection_id</td><td>현재 권한, 같은 프로젝트·확정 버전, 요구 투영 준비</td></tr><tr><td>media_id · effective_at · policy_revision</td><td>근거 ID·문서 버전·해시·원문 위치</td><td>매체·유효기간·승인/취소·출처의 일치</td></tr><tr><td>run_id 또는 변경 source_version_id</td><td>적용 예외·경로 / 영향 실행 ID 목록</td><td>중복 제거·정렬·깊이 제한·순환 처리·범위 차단</td></tr></tbody></table></div><p class="note">확정 기준은 PostgreSQL의 전체 목록으로 고정합니다. Neo4j 경로가 없는 항목도 결과를 남기며, 근거 미연결·미준비·오류를 자동 통과로 처리하지 않습니다.</p>
+<h3>Neo4j 선택 근거를 적용하는 범위</h3>
+<p>간단한 조회에서는 PostgreSQL 평균이 더 짧았지만, <strong>근거 경로·유효 예외·변경 영향이라는 관계 기능을 일관된 모델로 구현하는 방향</strong>을 택합니다. 기존 합성 확장 변경 영향 시험에서는 Neo4j가 평균 22.8%·p95 38.8% 짧았고, 다른 8개 조건은 PG 평균이 짧았습니다. 이는 특정 조건의 실험 근거이며 관계 설명 편의·개발 공수·전체 서비스 성능의 실측을 대신하지 않습니다.</p>
+<p>깊이·반환량 제한에 닿은 조회는 <code>complete=false</code> 또는 명시적 오류로 반환하는 계약을 제안합니다. 부분 경로나 잘린 영향 목록을 완전한 정답으로 표시하지 않습니다. 현재 권한은 항상 PG에서 확인합니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>3 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="implementation" role="tabpanel" aria-labelledby="tab-implementation" tabindex="0"><h2>추가 구현</h2>
+<p>기존 업무 기능 전체를 다시 만들기보다, <strong>PostgreSQL v1을 기반으로 그래프 관계를 추가하는 순서</strong>입니다. 아래 작업은 이번 HTML 작성에서 구현·적용하지 않았습니다.</p><div class="table-wrap"><table><caption>제안 구현 순서 · 담당자/일정 확정 전</caption><thead><tr><th scope="col">순서</th><th scope="col">추가 작업</th><th scope="col">기반·선행</th><th scope="col">완료 기준</th></tr></thead><tbody><tr><td>N01</td><td>PDF·원문 계약을 v1에 연결</td><td>현재 PDF 추출·출처 로직과 파일/초안 API</td><td>원문 버전·페이지·구간·해시를 보존하고 확정 항목과 연결</td></tr><tr><td>N02</td><td>관계 원본·예외 승인 모델</td><td>기존 기준/파일 스키마 + 신규 마이그레이션</td><td>의존·매체·승인/취소·유효기간·출처를 PG에 보존. 자동 추출은 검토 전 초안</td></tr><tr><td>N03</td><td>Neo4j 접속·투영·반영 작업</td><td>신규 드라이버·설정·배치 구성·반영 worker</td><td>PG 커밋과 반영 작업 원자성, 중복 재처리·역순 이벤트·오류/재시도·버전 ready 검증</td></tr><tr><td>N04</td><td>관계 조회 서비스 3종</td><td>N02·N03 이후</td><td>근거·예외·변경 영향의 기대 ID/경로·정렬 일치, 권한/버전 범위 위반 0건</td></tr><tr><td>N05</td><td>검수 worker·결과 계약 연결</td><td>기존 큐·OCR·원자적 결과 저장 재사용</td><td>전체 기준별 관계 상태·사용 경로·정책/버전 스냅샷 저장</td></tr><tr><td>N06</td><td>원문·관계·영향 화면</td><td>기존 React 결과·이력 화면 재사용</td><td>기준→원문 이동, 적용 예외 설명, 변경 영향·재검수 후보 표시</td></tr><tr><td>N07</td><td>서비스 E2E·복원·전환</td><td>N01~N06 이후</td><td>승인/미승인·취소·기간 경계·권한 회수·미동기화·복원·재검수 검증</td></tr></tbody></table></div><div class="note"><strong>PostgreSQL에도 변경이 필요합니다.</strong><p>현재 기준·원문 필드만으로 모든 승인 예외·의존 관계·투영 상태를 재현할 수 있다고 가정하지 않습니다. 관계 원본, 정책 개정 이력, 반영 작업/준비 상태의 저장 모델과 마이그레이션을 추가 설계해야 합니다. 실제 추가 테이블 수는 아직 정하지 않았습니다.</p></div>
+<h3>불변 데이터 연결 시 주의할 지점</h3><p>현재 기준 확정 서비스는 항목을 저장한 뒤 버전을 봉인합니다. 구조화 출처·적용 조건은 <strong>봉인 전에</strong> 채우도록 확정 로직을 확장하거나 새 버전으로 재확정해야 합니다. 봉인된 기존 기준 항목을 뒤에서 수정하는 전제로 설계하지 않습니다.</p>
+<h3>이번 필수 범위에서 줄이는 작업</h3><ul><li>Qdrant 서비스 배치·컬렉션 수명·벡터 재색인·BGE-M3 문서/질의 임베딩 연결.</li><li>BM25·Dense·RRF 가중치의 서비스 운영·후보 채택 정책.</li><li>그래프 밖의 새 문서를 넓게 찾는 의미 검색. 필요하면 후속 요구사항으로 별도 평가.</li></ul><p class="muted">OCR·PDF 해석에 사용하는 모델은 관계 준비·검사 모듈로 계속 활용합니다. 검색 임베딩을 제외하는 것과 문서/이미지 분석 모델을 제외하는 것은 다른 변경입니다.</p>
+<h3>통합문서 반영으로 더 필요한 작업</h3><div class="table-wrap"><table><caption>개발 순서는 의존성 기준 · 번호 순으로만 직렬 구현한다는 뜻은 아님</caption><thead><tr><th scope="col">순서·선행</th><th scope="col">추가 작업</th><th scope="col">완료 증거</th></tr></thead><tbody><tr><td>N08 · N01/N04 + 공통 계약</td><td>MCP 관계 도구·A01/A03/A06 연결</td><td>도구 스키마·인증·실패 응답·호출/실행 ID 추적. 실제 데이터 전달 성공 기록</td></tr><tr><td>N09 · N05/N06 + 승인 정책</td><td>수정 요청 확정·새 버전·최종 승인 연결</td><td>세 승인 권한·대상 버전·중복 클릭·이전 승인 비승계·전체 재검수 E2E</td></tr><tr><td>N10 · 공통 계약 + 영상 범위 결정</td><td>영상 입력·프레임·시간 근거·A04/A05 연결</td><td>포스터와 별도 영상 E2E. 미관측·미지원 시간 조건 표시, 실패/재개 검증</td></tr><tr><td>통합 게이트 · N07~N10</td><td>실제 모델·사용자·배포 환경 검증</td><td>개발 환경 성공 뒤 배포 환경에서 재검증. 모의 응답 연결·모듈 시험과 분리</td></tr></tbody></table></div>
+<p>우선 공통 ID·출처·관측·승인·관계 계약을 정하고, PG 저장/그래프 투영/검사 어댑터/화면을 그 계약에 연결합니다. 담당자와 소요 시간은 미배정입니다. 11/6 기능 동결·11/20 제출은 통합 초안의 일정 가안이며, 본 문서에서 수행 기간이나 완료일을 새로 확약하지 않습니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>4 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="validation" role="tabpanel" aria-labelledby="tab-validation" tabindex="0"><h2>검증·전환 기준</h2>
+<h3>서비스 연결 후 확인할 통과 기준</h3><div class="table-wrap"><table><caption>신규 아키텍처 수용 기준 · 아직 실행하지 않은 계획</caption><thead><tr><th scope="col">검증 영역</th><th scope="col">기준</th><th scope="col">분리해서 기록할 내용</th></tr></thead><tbody><tr><td>데이터·근거 정합성</td><td>동결한 기준/원문 ID·버전·해시·경로가 기대 결과와 일치</td><td>직접 원문 / 합성 경계 사례 / 실제 승인 자료</td></tr><tr><td>예외 적용</td><td>승인·취소·기간 [시작, 종료)·매체·출처의 교집합 검증</td><td>오적용·미승인 예외 채택·근거 누락 건수</td></tr><tr><td>변경 영향</td><td>정책으로 고정한 대상 실행 ID 집합의 오탐·누락 0건</td><td>관계 조회 결과와 실제 재검수 실행 성공을 구분</td></tr><tr><td>권한·범위</td><td>다른 프로젝트·허용 밖 버전·현재 권한 회수 근거 노출 0건</td><td>API·worker·결과 조회·원문 이동 각각 확인</td></tr><tr><td>전체 기준 검사</td><td>PG 확정 목록의 모든 항목에 결과 또는 확인 필요 상태 보존</td><td>관계/검색 결과에 따라 항목을 누락하지 않음</td></tr><tr><td>동기화·복구</td><td>중복·역순·실패 재시도·삭제·권한 회수·재구축 통과</td><td>ready 전 조회 차단과 과거 경로 재현</td></tr><tr><td>성능·업무 효과</td><td>같은 입력·출력·반환량에서 평균·중앙값·p95 측정</td><td>첫 실행·준비 후·동시성·API 전체 지연·사람 확인 시간</td></tr></tbody></table></div><h3>기존 실험으로 확인된 범위</h3><div class="table-wrap"><table><caption>독립 실험은 가능성 증빙이며 새 서비스 통합의 완료 증빙은 아님</caption><thead><tr><th scope="col">2026-10-21 독립 실험</th><th scope="col">결과</th><th scope="col">새 구조에 그대로 주장할 수 없는 항목</th></tr></thead><tbody><tr><td>근거 추적</td><td>두 DB 각각 70/70 일치</td><td>현재 서비스의 원문 연결 완성</td></tr><tr><td>합성 예외 검증</td><td>두 DB 각각 806/806 일치</td><td>실제 업무 승인 예외의 정확도</td></tr><tr><td>합성 변경 영향</td><td>두 DB 각각 75/75 일치</td><td>실제 변경 이벤트·재검수 실행 완료</td></tr><tr><td>전체</td><td>951/951 일치, 오탐·누락 0건</td><td>운영 정확도·실제 사용자 분포·부하·배포 완료</td></tr><tr><td>확장 변경 영향 지연</td><td>평균 22.8%·p95 38.8% 단축</td><td>전체 조회 우위. 9조건 중 다른 8조건은 PG 평균이 짧았음</td></tr></tbody></table></div><h3>전환 순서 제안</h3><ol><li><strong>Shadow 조회:</strong> 기존 검수 결과를 유지한 채 새 관계 조회 결과·누락·지연을 별도 비교합니다.</li><li><strong>관계 문맥 연결:</strong> 동결한 승인 테스트 자료에서 기준 전체·예외·출처·실패 동작을 검증합니다.</li><li><strong>화면·재검수 연결:</strong> 근거 이동과 변경 영향 목록, 새 run 연결을 E2E로 확인합니다.</li><li><strong>전환 판단:</strong> 기록된 통과 결과로 적용 범위를 결정하고, 실패 시 관계 의존 판정을 확인 필요로 돌리는 복귀 절차를 둡니다.</li></ol>
+<p class="muted">이번 문서에서 새 지연·최종 검수 정확도·비용 절감 수치를 만들지 않았습니다. 기존 Qdrant 검색 수치도 새 관계 조회 성능으로 전용하지 않습니다.</p>
+<h3>팀이 계약 동결 후 실행할 수용 사례</h3><div class="table-wrap"><table><caption>모두 향후 실행할 사례 · 이번 보완 작업에서 통과시킨 테스트가 아님</caption><thead><tr><th scope="col">사례 ID · 종류</th><th scope="col">입력·상황</th><th scope="col">기대 결과 · 계획</th></tr></thead><tbody><tr><td>G01 · 근거</td><td>같은 기준 UUID, 다른 프로젝트/문서 버전</td><td>허용된 버전의 원문만 반환. 교차 프로젝트 요청 거절</td></tr><tr><td>G02 · 조건 관계</td><td>A OR B / A AND B / 조건부 C</td><td>승인된 진리표와 결과 일치. review·미지원 전파 검증</td></tr><tr><td>G03 · 합성 예외</td><td>승인 전·기간 시작/종료 경계·승인 취소·매체 불일치</td><td>허용 정책과 [시작, 종료) 기준 일치. 합성 결과로 따로 집계</td></tr><tr><td>G04 · 동기화</td><td>outbox 중복·역순·반영 후 PG 기록 실패</td><td>중복 효과/구버전 덮어쓰기 없음. 재처리 후 버전/해시 일치</td></tr><tr><td>G05 · 장애</td><td>Neo4j 중단·ready 미충족·조회 잘림</td><td>빈 정상 결과와 구분. 확인 필요/재시도 상태, 자동 통과 없음</td></tr><tr><td>G06 · 재구축</td><td>Neo4j 투영을 원천으로 재생성</td><td>PG/파일 manifest와 ID·경로·건수·해시 일치 후 ready</td></tr><tr><td>G07 · 변경 영향</td><td>직접/간접 의존·순환·중복·권한 밖 실행</td><td>동결 정답 ID 집합과 일치. 실제 새 run 생성은 별도 확인</td></tr><tr><td>G08 · 사람 승인</td><td>비승인자·중복 클릭·검사 후 기준/산출물 변경</td><td>무권한/오래된 대상 승인 거절, 대상 버전·감사 이력 보존</td></tr><tr><td>G09 · 재검수</td><td>같은 요청 재전송·worker 재시도·수정본 제출</td><td>각각 기존 run / 새 attempt / 새 버전·run 의미와 일치</td></tr><tr><td>V01 · 영상 근거</td><td>추출 간격 사이 오류·프레임 실패·잘못된 시각</td><td>관측 범위·실패 표시. 미관측 구간의 정상 단정 없음</td></tr><tr><td>V02 · 시간 조건</td><td>간헐적 검출 vs 연속 노출 요구</td><td>검증된 평가기 미지원 시 확인 필요. 샘플만으로 시간 충족 처리 금지</td></tr><tr><td>E01 · 실제 모델 E2E</td><td>비개발자가 문서→포스터/영상→3승인→수정본 재검수</td><td>수작업 데이터 복사 없이 연결. 포스터·영상·개발·배포 각각 결과 보존</td></tr></tbody></table></div>
+<h3>수치화할 때의 분모와 기록</h3><div class="table-wrap"><table><caption>원본/변형 그룹별 분할·사람 검토 라벨·고정 평가 세트 필요. 새 목표 수치는 팀 결정</caption><thead><tr><th scope="col">지표</th><th scope="col">계산·단위</th><th scope="col">함께 공개할 항목</th></tr></thead><tbody><tr><td>조건 처리 커버리지</td><td>완료/실패/미지원/확인 필요 등 명시 상태가 있는 항목 ÷ 확정 조건 전체</td><td>결과 누락 0건인지. 실제 검사 완료율은 별도로 계산</td></tr><tr><td>검사 완료율</td><td>실제로 검사를 완료한 조건 ÷ 확정 조건 전체</td><td>미지원·실패·미관측 수. 적용 제외 조건의 정책·별도 집계</td></tr><tr><td>오류 자동 통과율</td><td>사람 검토 정답상 위반인데 pass인 조건 ÷ 실제 위반 조건</td><td>원자료·조건 유형별 건수. review는 자동 통과에 포함하지 않음</td></tr><tr><td>정상 자동 오차단율</td><td>정답상 정상인데 fail인 조건 ÷ 실제 정상 조건</td><td>review 비율 별도 공개. 분모 0이면 N/A</td></tr><tr><td>관계 정합성</td><td>기대 ID/경로 집합의 FP·FN, 사례 완전 일치 수/전체</td><td>근거·예외·영향 별도, 실제 원문 연결과 합성 관계 구분</td></tr><tr><td>지연·비용</td><td>요청 전체와 단계별 평균·중앙값·p95, 실제 사용량/비용</td><td>대기·모델·관계·저장 구간, cold/warm·표본·동시성·반환량·실패율</td></tr><tr><td>업무 효과</td><td>근거 찾기·수정 요청 확정에 든 사람 시간, 성공 건수/시도 수</td><td>동일 과제/사용자 조건, 실험 설계·원시 기록. 현재는 미측정</td></tr></tbody></table></div>
+<h3>기존 지연 수치의 원자료 확인</h3><div class="table-wrap"><table><caption>2026-10-21 합성 확장군 · 각 DB n=100 · 양성 50/음성 50 · 준비 실행 후 단일 클라이언트</caption><thead><tr><th scope="col">확장 변경 영향 · ms</th><th scope="col">PostgreSQL</th><th scope="col">Neo4j</th></tr></thead><tbody><tr><td>평균</td><td>12.039</td><td>9.288</td></tr><tr><td>p95</td><td>40.789</td><td>24.949</td></tr></tbody></table></div>
+<p>단축률은 반올림 전 원자료로 <code>(PG − Neo4j) / PG × 100</code>을 계산했습니다. p95는 측정 지연 분포의 95백분위수입니다. 모든 질의가 그 시간 안에 완료된다는 보장이 아니며, 이 수치를 API 전체·GPU 검사·실제 운영 지연으로 소개하지 않습니다. 이번에는 기존 JSON을 확인했으며 DB 성능 시험을 새로 실행하지 않았습니다.</p><div class="panel-footer"><button type="button" data-prev>← 이전</button><span>5 / 6</span><button type="button" data-next>다음 →</button></div></section><section class="doc-panel" id="updates" role="tabpanel" aria-labelledby="tab-updates" tabindex="0"><h2>버전·출처·업데이트</h2>
+<p class="lead">문서 개정일, 코드 확인일, 실험 실행일을 각각 기록합니다.</p>
+<p>문서 묶음 <strong>2026.10.30-r2</strong> · 검토 기준일 2026-10-30 KST. 서비스 상태 확인은 소스 열람 기준이며 이번 개정에서 DB·모델·배포 시험을 다시 실행하지 않았습니다.</p>
+<h3>적용 우선순위</h3><ol><li>2026-10-30 사용자 결정: PostgreSQL + Neo4j를 현재 목표 구조로 반영. 팀 승인 여부는 별도.</li><li>10/30 통합 초안의 범위·정책·미정 항목.</li><li>관련 소스의 현재 구현, 날짜·환경·표본이 명시된 실험 기록.</li><li>이전 planning 문서는 당시 기록으로 보존.</li></ol>
+<p>사용자 결정은 목표를 바꾸며, 과거 실험 사실이나 구현 완료 여부를 바꾸지 않습니다. Qdrant·BGE-M3 검색 실험은 역사 자료이며 현재 필수 흐름에 포함하지 않습니다.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">기준 자료</th><th scope="col">식별·확인 범위</th></tr></thead><tbody><tr><td>통합 초안</td><td><a href="../sources/Creative_Checker_통합초안_20261030.html">보존한 기준 문서 열기</a><br><code>b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459</code></td></tr><tr><td>추가 사용자 결정</td><td>U-DB-20261030 · PostgreSQL 원천 + Neo4j 관계 조회 · 팀 승인 별도</td></tr><tr><td>코드 확인</td><td>HEAD 3cbc129 + 로컬 변경 포함. legacy와 PostgreSQL v1 경로 분리</td></tr><tr><td>이전 문서 보관</td><td><a href="../archive/planning-before-20261030-r1.zip">기존 HTML 11개 원본 ZIP</a> · 변경 전 파일 해시 포함</td></tr><tr><td>이번 문서의 역할</td><td>통합업무·데이터 계약 · 통합 초안의 내용을 목적별로 재구성</td></tr></tbody></table></div>
+<h3>다음 업데이트 방법</h3><ol><li>통합 초안·사용자 결정·구현/실험 근거의 변경을 대조합니다.</li><li><code>content/planning-content.json</code>의 해당 문서와 공통 상태를 수정합니다. 수치는 표본·날짜·단위·원자료를 함께 갱신합니다.</li><li><code>content/baseline.json</code>의 검토일·개정 번호·근거 해시를 실제 재검토 후 갱신합니다.</li><li>생성 후 <code>python3 docs/planning/tools/build_planning.py --check</code>로 링크·버전·해시·문서 일치 여부를 확인합니다.</li></ol>
+<p>기준 파일이나 코드가 바뀌면 검사에서 갱신 필요를 알립니다. 날짜만 자동으로 새로 찍거나, 오래된 실험을 새 측정으로 바꾸지 않습니다. 외부 Google 문서·요구사항/WBS는 이번 로컬 개정의 자동 동기화 대상이 아닙니다.</p>
+<h3>이번 개정의 공통 변경</h3><ul><li>포스터와 숏폼을 필수 목표로 통일하고, 기준·수정 요청·최종 승인의 세 지점을 연결했습니다.</li><li>현재 코드·부분 연결·독립 실험·추가 구현·팀 미정 항목을 나누었습니다.</li><li>모델 후보와 과거 학습 산출물, OCR·검색·분류·조건 추출 지표를 구분했습니다.</li><li>문서 전반의 PostgreSQL + Neo4j 목표와 ID·버전·권한·재검수 의미를 맞췄습니다.</li></ul>
+<div class="panel-footer"><button type="button" data-prev>← 이전</button><span>6 / 6</span><button type="button" data-next>다음 →</button></div></section></main></div>
+<footer><p>Creative Checker · 통합업무·데이터 계약 · 2026.10.30-r2</p><p>기존 파일명은 링크 호환을 위해 유지합니다. 본문의 개정 번호가 현재 버전입니다.</p></footer><noscript><p>JavaScript 없이 모든 절을 순서대로 읽을 수 있습니다.</p></noscript><script type="application/json" id="planning-metadata">{"release": "2026.10.30-r2", "reviewed_date": "2026-10-30", "master_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459", "document": "11_PostgreSQL_Neo4j_통합업무_아키텍처_v1.1.html", "status": "사용자 목표 반영 · 팀 승인 별도"}</script><script>document.body.dataset.initialHash=location.hash;</script><script>
+(()=>{'use strict';const tabs=[...document.querySelectorAll('[role=tab]')],panels=tabs.map(t=>document.getElementById(t.dataset.panel));let active=0;
+function activate(i,focus=false,updateHash=true){active=(i+tabs.length)%tabs.length;tabs.forEach((t,j)=>{t.setAttribute('aria-selected',String(j===active));t.tabIndex=j===active?0:-1;panels[j].hidden=j!==active});if(updateHash)history.replaceState(null,'','#'+panels[active].id);if(focus)tabs[active].focus();}
+tabs.forEach((t,i)=>{t.onclick=()=>activate(i);t.onkeydown=e=>{const keys={ArrowDown:i+1,ArrowRight:i+1,ArrowUp:i-1,ArrowLeft:i-1,Home:0,End:tabs.length-1};if(Object.hasOwn(keys,e.key)){e.preventDefault();activate(keys[e.key],true)}}});
+document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>{const i=panels.findIndex(p=>p.id===b.dataset.goto);if(i>=0)activate(i)});
+document.querySelectorAll('[data-next]').forEach(b=>b.onclick=()=>activate(active+1));document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=()=>activate(active-1));
+function route(){let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}const e=document.getElementById(id);const p=e?.closest('[role=tabpanel]');const i=panels.indexOf(p);if(i>=0){activate(i,false,false);let parent=e;while(parent&&parent!==p){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}if(e!==p)e.scrollIntoView({block:'center'})}}activate(0,false,false);route();window.addEventListener('hashchange',route);
+const q=document.getElementById('doc-search'),res=document.getElementById('find-results'),count=document.getElementById('find-count');
+q.oninput=()=>{res.replaceChildren();const s=q.value.trim().toLocaleLowerCase();if(!s){count.textContent='';return}let n=0;panels.forEach((p,i)=>{const text=p.textContent.replace(/\s+/g,' '),pos=text.toLocaleLowerCase().indexOf(s);if(pos<0)return;n++;const b=document.createElement('button');b.type='button';b.textContent=tabs[i].textContent.trim()+' · '+text.slice(Math.max(0,pos-30),pos+110);b.onclick=()=>{activate(i);p.scrollIntoView({block:'start'})};res.append(b)});count.textContent=n+'개 절에서 찾았습니다.'};
+document.getElementById('clear-search').onclick=()=>{q.value='';q.oninput();q.focus()};
+let saved;window.addEventListener('beforeprint',()=>{saved={active,details:[...document.querySelectorAll('details')].map(d=>[d,d.open])};panels.forEach(p=>p.hidden=false);saved.details.forEach(([d])=>d.open=true)});window.addEventListener('afterprint',()=>{if(saved){activate(saved.active);saved.details.forEach(([d,o])=>d.open=o)}});
+})();
+</script></body></html>
