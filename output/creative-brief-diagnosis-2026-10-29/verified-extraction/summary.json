@@ -1,0 +1,11 @@
+[
+  {
+    "document": "/Users/choejiheum/Downloads/1팀_테스트/01_image_test/creative_brief.pdf",
+    "sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+    "status": "success",
+    "elapsed_seconds": 67.791,
+    "result_file": "01-creative_brief.json",
+    "conditions": 15,
+    "image_count": 3
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "source_pdf_sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+  "code_sha256": {
+    "backend/app/requirements_pdf.py": "4d5b2bd0191a59d448cad1a897df63f6de3c8bdf530767863388063d82df0849",
+    "backend/app/document_conditions.py": "1cc63e2afddd7a3dfe8d556fe998154cf5dae0c4af6e5094658706e5ad7307a6",
+    "backend/app/structured_review.py": "1b4629079c6db66cb85b258b65ac39b5adfdef68909c282529ddce16d787061e",
+    "frontend/src/documentRequirements.js": "173d8d40ff092f810508ffa0aa11b5cfc26a6fa8a92c2d81e705be6621d17f5e",
+    "frontend/src/pages/review/DocumentConditionDetails.jsx": "8569723665e2d332080d50d1c1d56aaaa9ef7f9c4c7d46b89f8de3c4fd30a974"
+  },
+  "verification": "Latest code exercised through actual browser upload to http://127.0.0.1:8000, real isolated OCR/model worker, input application and criteria confirmation",
+  "backend_tests": {
+    "passed": 784,
+    "deselected": 1334,
+    "subtests_passed": 7
+  },
+  "frontend_tests": {
+    "passed": 33
+  },
+  "frontend_build": "passed"
+}

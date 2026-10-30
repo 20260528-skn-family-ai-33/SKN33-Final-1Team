@@ -1,0 +1,49 @@
+{
+  "model": "qwen3.5:4b",
+  "ollama": {
+    "version": "0.40.3"
+  },
+  "installed_model": {
+    "name": "qwen3.5:4b",
+    "model": "qwen3.5:4b",
+    "modified_at": "2026-10-29T11:45:26.181534734+09:00",
+    "size": 3973305013,
+    "digest": "7f3251fa6878a78a606bcb3c074283306e5ad2ea411a7774a9dd98a4bc7f2d13",
+    "details": {
+      "parent_model": "",
+      "format": "safetensors",
+      "family": "",
+      "families": null,
+      "parameter_size": "",
+      "quantization_level": "nvfp4",
+      "runner": "mlx"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "thinking",
+      "tools"
+    ]
+  },
+  "model_info": {
+    "details": {
+      "parent_model": "",
+      "format": "safetensors",
+      "family": "qwen3_5",
+      "families": null,
+      "parameter_size": "4.5B",
+      "quantization_level": "nvfp4",
+      "runner": "mlx"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "thinking",
+      "tools"
+    ],
+    "parameters": "top_k                          20\ntop_p                          0.95\nmin_p                          0\npresence_penalty               1.5\nrepeat_penalty                 1\ntemperature                    1"
+  },
+  "platform": "macOS-26.3.1-arm64-arm-64bit",
+  "python": "3.12.14",
+  "extractor_sha256": "4d5b2bd0191a59d448cad1a897df63f6de3c8bdf530767863388063d82df0849"
+}

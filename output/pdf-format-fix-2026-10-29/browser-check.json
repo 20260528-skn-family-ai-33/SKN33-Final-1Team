@@ -1,0 +1,31 @@
+{
+  "source": "Actual browser upload, real HTTP stream and real PaddleOCR + Qwen worker; no model stubs",
+  "conditions": 8,
+  "information": 7,
+  "visual": 1,
+  "uiCompleted": 100,
+  "uiProgress": [
+    10,
+    30,
+    30,
+    72
+  ],
+  "apiProgress": [
+    2,
+    10,
+    30,
+    50,
+    72
+  ],
+  "warning44Visible": true,
+  "commonRuleVisible": true,
+  "confirmed": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "timing": {
+    "ocr_seconds": 30.221,
+    "llm_seconds": 14.887,
+    "total_seconds": 45.107
+  },
+  "previewImage": "PDF page render only; no poster inspection executed"
+}

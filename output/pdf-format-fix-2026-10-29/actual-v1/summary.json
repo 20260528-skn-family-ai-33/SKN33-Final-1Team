@@ -1,0 +1,47 @@
+[
+  {
+    "document": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/pdf/highres30-synthetic-specs-2026-10-29-v1/documents/NEW103_spec_v1.pdf",
+    "sha256": "3b4b3f5702634b68beedc7d657f6b6729f0b1761732428888279d1587f610bff",
+    "status": "success",
+    "elapsed_seconds": 63.124,
+    "result_file": "01-NEW103_spec_v1.json",
+    "conditions": 9,
+    "image_count": 2
+  },
+  {
+    "document": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/pdf/highres30-synthetic-specs-2026-10-29-v1/documents/NEW114_spec_v1.pdf",
+    "sha256": "a34b349770d0cf9a2a5e92e4216dd9f2013c26f3d63894bb34e705f8c4c1546e",
+    "status": "success",
+    "elapsed_seconds": 51.559,
+    "result_file": "02-NEW114_spec_v1.json",
+    "conditions": 8,
+    "image_count": 2
+  },
+  {
+    "document": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/pdf/highres30-synthetic-specs-2026-10-29-v1/documents/NEW052_spec_v1.pdf",
+    "sha256": "826c216fe0c949019fcd1bbe50ae87883ff2f1f69912b63c6c30c278250e0474",
+    "status": "failed",
+    "elapsed_seconds": 44.461,
+    "result_file": "03-NEW052_spec_v1.json",
+    "conditions": 0,
+    "image_count": 1
+  },
+  {
+    "document": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/pdf/수원재즈페스티벌_고해상도_새테스트_2026-10-29/02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf",
+    "sha256": "61a6c2e82bd60f96f7dde6fd6f754ad9a72fbb7171d0c9276a5092e934854216",
+    "status": "success",
+    "elapsed_seconds": 97.351,
+    "result_file": "04-02_수원재즈페스티벌_디자인용역_가상계약서_v1.json",
+    "conditions": 16,
+    "image_count": 2
+  },
+  {
+    "document": "/Users/choejiheum/Downloads/1팀_테스트/01_image_test/creative_brief.pdf",
+    "sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+    "status": "failed",
+    "elapsed_seconds": 38.023,
+    "result_file": "05-creative_brief.json",
+    "conditions": 0,
+    "image_count": 1
+  }
+]

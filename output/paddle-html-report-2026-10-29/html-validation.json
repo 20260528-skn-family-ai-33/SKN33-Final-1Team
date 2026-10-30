@@ -1,0 +1,67 @@
+{
+  "file": "output/paddle-html-report-2026-10-29/paddleOCR_전처리*추론파이프라인*개선.html",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1536,
+      "height": 1152,
+      "sections": 16,
+      "h1": 1,
+      "horizontalOverflow": false,
+      "brokenAnchors": [],
+      "images": [
+        {
+          "width": 2012,
+          "height": 272
+        },
+        {
+          "width": 671,
+          "height": 220
+        },
+        {
+          "width": 2114,
+          "height": 240
+        },
+        {
+          "width": 2012,
+          "height": 272
+        }
+      ],
+      "filters": true,
+      "regionToggle": true,
+      "printSidebarHidden": true
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "sections": 16,
+      "h1": 1,
+      "horizontalOverflow": false,
+      "brokenAnchors": [],
+      "images": [
+        {
+          "width": 2012,
+          "height": 272
+        },
+        {
+          "width": 671,
+          "height": 220
+        },
+        {
+          "width": 2114,
+          "height": 240
+        },
+        {
+          "width": 2012,
+          "height": 272
+        }
+      ],
+      "filters": true,
+      "regionToggle": true,
+      "printSidebarHidden": true
+    }
+  ],
+  "errors": [],
+  "unexpectedRequests": []
+}

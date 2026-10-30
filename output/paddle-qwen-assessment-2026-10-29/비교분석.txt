@@ -1,0 +1,80 @@
+PaddleOCR·Qwen 비교 분석
+2026-10-29
+
+결론
+현재 프로젝트에서는 원문 글자와 좌표를 읽는 기본 엔진은 PaddleOCR, 페이지 이미지와 OCR을 요구조건 JSON으로 정리하는 모델은 Qwen3.5-4B로 분담하는 판단이 근거에 맞는다. 현재 Qwen3.5-4B와 PP-OCRv5를 같은 입력·정답·측정 방식으로 비교한 최신 OCR 실험이 없으므로 두 모델의 일반 문자 추출 정확도 순위를 확정할 수는 없다.
+
+확인 범위
+- 사용자 지정 채팅 '모델 최종 분석'(01a17c65-83b7-7392-b71d-9a7147075eef)의 최근 관련 대화 24개를 read_thread로 읽었다.
+- 채팅의 초기 인수인계 문서, 로컬 앱의 실제 health·설치 모델, 현재 코드, 기존 실제 OCR 벤치마크 JSON, 수원 재인식 기록과 PDF 회귀 기록을 대조했다.
+- 기존 RunPod의 관련 상태 파일을 읽기 전용으로 확인했다. 모델 실행·재시작·설치·학습·앱 코드 변경은 하지 않았다.
+
+현재 로컬 앱
+- /api/health: ready=true, engine=paddleocr, pipeline=paddle_full_v1, device=cpu.
+- 로컬 기본 OCR_PIPELINE=paddle-only: PP-OCRv5_server_det + korean_PP-OCRv5_mobile_rec.
+- PDF 조건 추출 모델: qwen3.5:4b, ready. 현재 로컬 모델은 MLX/nvfp4 형태로 설치돼 있다.
+- PDFium으로 페이지를 렌더링 → 실제 PaddleOCR 문구/좌표 → 같은 페이지 이미지와 OCR을 Qwen3.5에 전달 → 조건 JSON → 코드의 ID/근거·유형·중복·공통 규칙 검증 순서다.
+- Paddle에서 얻은 confidence는 정답 확률이 아니며 Qwen의 의미 해석 결과·문자 전사 정확도와 같은 지표가 아니다.
+- 현재 사용 중인 PP-OCRv5 탐지·인식 구성과 PaddleOCR-VL/PP-Structure 같은 별도 모델·파이프라인을 혼동하지 않는다.
+
+실제로 두 경로를 비교한 과거 결과
+2026-10-13 Mac의 tuning 포스터 5장, 같은 입력·초안 라벨, 19개 필드의 핵심 199자, RGB 2배, 각 1회 진단이다. 둘 다 EasyOCR 기반 영역 재인식 경로이고 Qwen 쪽에는 전체 이미지 검토도 있어 순수한 엔진 하나의 고립 비교가 아니다.
+
+경로 / 문자 오류율(CER) / 일치 필드 / 누락 필드 / 전체 처리 중앙값
+- EasyOCR + Paddle 재인식: 12/199 = 6.03% / 9/19 / 6 / 5.247초
+- EasyOCR + Qwen3-VL 4B Instruct: 119/199 = 59.80% / 9/19 / 9 / 20.487초
+
+이 설정에서는 Paddle 경로가 문자 충실도와 처리 시간에 유리했다. Qwen 쪽에서 제목 외 문구·반복 출력이 늘어 삽입 오류가 커졌다. 필드 일치 개수 자체는 둘 다 9/19였고 개별 포스터에서는 Qwen이 더 복원한 사례도 있었다.
+
+위 수치는 Qwen3.5-4B 결과가 아니다. 당시 코드 스냅샷과 현재 레거시 OCR 모듈 모두 QWEN_MODEL='qwen3-vl:4b-instruct'를 확인했다. 사람 승인 평가 0건, 5장 개발 자료, CPU/GPU·모델 로드/캐시 조건 차이가 있어 일반 정확도나 배포 성능으로 확장하지 않는다.
+
+별도 Paddle 단독 실험에서는 같은 5장 기준 핵심 CER 7/199=3.52%, 필드 일치 12/19, 중앙값 6.898초였다. 비교 정책·탐지 경로가 바뀐 별도 실험이며 새 Qwen3.5와의 직접 비교 결과로 쓰지 않는다.
+
+최근 수원 사례
+전체 Paddle OCR만으로 놓친 제목·연도·곡선 영문을 영역 선택, 흰 글자 마스크, 세로 비율 보정, 원호 펴기 및 영문 모델 재인식으로 각각 맞게 읽은 실제 기록이 있다. 전체 OCR+7회 영역 재인식의 1회 측정은 16.613초였고 LLM을 사용하지 않았다. 단일 포스터에 맞춘 개발 검증이므로 3개 전사가 맞았다는 것을 일반 포스터 정확도로 바꾸지 않는다.
+
+'모델 최종 분석' 채팅에서 구분해야 할 지표
+1. Qwen의 95~99%대 텍스트 라벨/조건 추출 실험은 이미 주어진 요구 문장을 구조화하는 합성 개발 평가다. 포스터 글자의 전사 정확도나 현재 PDF 전체 정확도가 아니다.
+2. PDF 30개·60쪽의 Paddle OCR 실행 완료는 60쪽에서 결과가 생성됐다는 뜻이다. 문자 정확도 100%를 측정한 결과가 아니다.
+3. 해당 이전 배치에서 Qwen 조건 추출은 50쪽 채택, 10쪽 오류, 221/253개 채택이었다. 이후 32개의 ID 근거 연결과 총 92개의 종류 보정 등을 코드로 복구해 253개를 검증했다. 요구 문장 변경 없이 저장 응답을 복구한 것이며 Qwen 단독 정확도 100%가 아니다.
+4. 파일 규격·해상도 60개 충족은 이미지 메타데이터 검사 결과다. Paddle/Qwen 우열이나 OCR 성능을 검증한 값이 아니다.
+5. 이번 채팅의 NEW103/114/052·수원·브리프 5개 추출 성공도 Paddle + Qwen + 코드 후처리의 회귀 검증이다. Qwen 단독 또는 Paddle 단독의 비교 결과가 아니다.
+
+RunPod 확인 시점의 실제 상태
+- /workspace/highres30-poster-ocr-vtf8wlvf
+  {"status": "poster_ocr_smoke_completed", "output": "/workspace/highres30-poster-ocr-vtf8wlvf", "image_id": "NEW103", "text_conditions": 5, "fulfilled": 3, "review": 2, "execution_errors": 0, "native_tiles": 6, "overview_ocr": 1, "native_tile_coverage_complete": true, "ocr_sources": 138, "qwen_execution": false, "training_execution": false, "human_verified_conditions": 0, "full_30_image_review_completed": false}
+  process: {"pid": 231264, "state": "not_running"}
+- /workspace/highres30-pdf-batch-tmu7qijj
+  {"status": "qwen_running", "current_page": "NEW061-page-2", "page_index": 36, "paddle_attempts_this_run": 59, "qwen_attempts_this_run": 34}
+  process: {"pid": 224435, "state": "R", "output_folder_matches": true, "script_names": ["run_highres30_pdf_batch_v1.py"]}
+  model: {"model_id": "Qwen/Qwen3.5-4B", "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"}
+
+NEW103은 포스터 한 장의 문구 조건 5개 점검이며 3개 충족·2개 확인 필요, 실행 오류 0개다. 전체 원본 보기+원본 조각 6개를 사용했다. Qwen은 이 점검에 사용하지 않았다. 이 결과를 OCR 정확도 60%로 환산하지 않는다. 같은 포스터에 대한 Qwen3.5 단독 결과와 사람 전사 정답이 없기 때문이다.
+
+별도 PDF 배치는 Qwen3.5 조건 추출 중이며, 상태 파일·실행 프로세스·출력 폴더 인자를 대조했다. 이 진행 중인 작업과 완료된 포스터 OCR 점검은 서로 다른 단계다. 현재 진행 위치는 계속 바뀌므로 runpod-status.json의 관측 시점을 기준으로 읽는다.
+
+현재 선택
+- 인쇄된 문구·숫자·위치 근거: PaddleOCR을 기본으로 유지.
+- 표/카드의 조건, 필수·권장·선택, 예외·OR, JSON 구성: Qwen3.5-4B + 원문 근거 검증.
+- JPEG/PNG, 원본 픽셀, 색상 모드: 파일 메타데이터 코드 검사.
+- 최종 승인: 사람의 기준 확인과 구분.
+
+확정적인 우열 비교를 위해 필요한 실험
+같은 고해상도 원본과 사람이 확인한 전사를 사용해 Paddle 단독, Qwen3.5 이미지 전사 단독, 조합을 비교한다. 입력 해상도·영역 선택·정규화와 캐시/로드 조건을 기록하고 CER·필드 누락·추가 생성·숫자/날짜 오류·처리 시간을 측정한다. 조건 JSON은 별도로 필드/조건 누락과 수준·예외·출처 연결 정확도를 본다. 같은 PDF에서 글자를 읽는 시간과 그 글자를 JSON으로 정리하는 시간을 모델 간 속도 순위로 사용하지 않는다.
+
+버전 주의
+현재 backend/app/model_ocr.py의 OCR_PIPELINE=qwen 경로는 여전히 qwen3-vl:4b-instruct다. PDF의 qwen3.5:4b와 다른 경로이며 현재 앱의 기본 포스터 OCR은 이 레거시 Qwen 경로를 사용하지 않는다. 새로운 Qwen3.5 OCR 평가를 이 경로로 실행했다고 잘못 표시하지 않아야 한다.
+
+주요 근거
+- backend/app/ocr_config.py / api.py / requirements_pdf.py / model_ocr.py
+- artifacts/ocr-benchmarks/20261013T082808Z-c08003c0/report.json
+- artifacts/ocr-benchmarks/20261013T082837Z-1ff370b5/report.json 및 code.snapshot/backend/app/model_ocr.py
+- artifacts/ocr-benchmarks/20261013T085522Z-a3fb9fad/report.json
+- docs/ocr-model-comparison-2026-10-13.md / docs/paddle-conditional-ocr-2026-10-29.md
+- output/paddle-conditional-2026-10-29/verification-final/transcription-checks.json
+- output/pdf-format-fix-2026-10-29/acceptance-checks.json
+- 참조 채팅 작업 폴더의 output/highres30-pdf-recovery-v1/source_snapshot/status.json 및 README.md
+- 같은 폴더의 output/highres30-file-condition-check-v1/status.json / highres30-poster-ocr-smoke-v1/README.md
+- 같은 폴더의 output/handoffs/추천_모델_조사_2026-10-27/추천_모델_조사_인수인계.md
+- 공식 PaddleOCR: https://github.com/PaddlePaddle/PaddleOCR
+- 공식 Qwen3.5-4B: https://huggingface.co/Qwen/Qwen3.5-4B

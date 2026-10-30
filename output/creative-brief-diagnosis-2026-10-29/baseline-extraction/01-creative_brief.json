@@ -1,0 +1,243 @@
+{
+  "document": "/Users/choejiheum/Downloads/1팀_테스트/01_image_test/creative_brief.pdf",
+  "sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+  "status": "failed",
+  "error": "같은 조건에 서로 다른 수준이나 판단 기준이 있습니다. PDF 원본의 중복·상충 조건을 확인해 주세요.",
+  "http_status": 502,
+  "elapsed_seconds": 50.719,
+  "calls": [
+    {
+      "pages": [
+        1
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        144495
+      ],
+      "ocr_source_count": 19,
+      "allowed_source_ids": [
+        "p1-s1",
+        "p1-s2",
+        "p1-s3",
+        "p1-s4",
+        "p1-s5",
+        "p1-s6",
+        "p1-s7",
+        "p1-s8",
+        "p1-s9",
+        "p1-s10",
+        "p1-s11",
+        "p1-s12",
+        "p1-s13",
+        "p1-s14",
+        "p1-s15",
+        "p1-s16",
+        "p1-s17",
+        "p1-s18",
+        "p1-s19"
+      ],
+      "seconds": 13.344,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "브랜드",
+            "requirement": "온결 또는 ONGYEOL",
+            "values": [
+              "온결 또는 ONGYEOL"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "캠페인",
+            "requirement": "가을을 담은 한 잔",
+            "values": [
+              "가을을 담은 한 잔"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "상품명",
+            "requirement": "배라떼",
+            "values": [
+              "배라떼"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "판매 가격",
+            "requirement": "5,900원",
+            "values": [
+              "5,900원"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "판매 기간",
+            "requirement": "2026.11.01 - 11.30",
+            "values": [
+              "2026.11.01 - 11.30"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "판매처",
+            "requirement": "온결 전 매장",
+            "values": [
+              "온결 전 매장"
+            ],
+            "level": "필수",
+            "inspection": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "type": "visual",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "필수 고지",
+            "requirement": "시즌 한정·재료 소진 시 조기 종료",
+            "values": [
+              "시즌 한정·재료 소진 시 조기 종료"
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p1-s1"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        2
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        195148
+      ],
+      "ocr_source_count": 21,
+      "allowed_source_ids": [
+        "p2-s1",
+        "p2-s2",
+        "p2-s3",
+        "p2-s4",
+        "p2-s5",
+        "p2-s6",
+        "p2-s7",
+        "p2-s8",
+        "p2-s9",
+        "p2-s10",
+        "p2-s11",
+        "p2-s12",
+        "p2-s13",
+        "p2-s14",
+        "p2-s15",
+        "p2-s16",
+        "p2-s17",
+        "p2-s18",
+        "p2-s19",
+        "p2-s20",
+        "p2-s21"
+      ],
+      "seconds": 14.216,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "브랜드",
+            "requirement": "온결 또는 ONGYEOL 표기",
+            "values": [
+              "온결",
+              "ONGYEOL"
+            ],
+            "level": "필수",
+            "inspection": "온결 또는 ONGYEOL 로 표기되어야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s13"
+          },
+          {
+            "label": "상품명",
+            "requirement": "배 라떼 한글 표기",
+            "values": [
+              "배 라떼"
+            ],
+            "level": "필수",
+            "inspection": "배 라떼 한글로 표기되어야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s14"
+          },
+          {
+            "label": "가격",
+            "requirement": "5,900원 표기, 가격 변경 불가",
+            "values": [
+              "5,900원"
+            ],
+            "level": "필수",
+            "inspection": "5,900원 표기 필수이며, 가격 변경은 허용되지 않습니다.",
+            "type": "visual",
+            "source_id": "p2-s15"
+          },
+          {
+            "label": "판매 기간",
+            "requirement": "2026.11.01- 11.30 에 해당하는 기간",
+            "values": [
+              "2026.11.01- 11.30"
+            ],
+            "level": "필수",
+            "inspection": "2026.11.01- 11.30 에 해당하는 기간으로 표기해야 하며, 기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용합니다. 캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기해야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s16"
+          },
+          {
+            "label": "판매처",
+            "requirement": "온결 전매장 표기",
+            "values": [
+              "온결 전매장"
+            ],
+            "level": "필수",
+            "inspection": "온결 전매장으로 표기되어야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s17"
+          },
+          {
+            "label": "필수 고지",
+            "requirement": "시즌 한정·재료 소진 시 조기 종료",
+            "values": [
+              "시즌 한정",
+              "재료 소진 시 조기 종료"
+            ],
+            "level": "필수",
+            "inspection": "시즌 한정·재료 소진 시 조기 종료 문구가 표기되어야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s18"
+          },
+          {
+            "label": "파일규격",
+            "requirement": "4:5 권장(±1px 허용), 폭 1024px 이상, PNG, RGB",
+            "values": [
+              "4:5",
+              "1024px",
+              "PNG",
+              "RGB"
+            ],
+            "level": "권장",
+            "inspection": "4:5 비율 권장 (±1px 허용), 폭 1024px 이상, PNG, RGB 형식이어야 합니다.",
+            "type": "visual",
+            "source_id": "p2-s19"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,6646 @@
+{
+  "mode": "Cached actual OCR + Qwen responses; PDF re-rendered; source scopes/schema/image byte lengths asserted unchanged. This is a postprocessing replay, not new inference.",
+  "source_pdf": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/pdf/수원재즈페스티벌_고해상도_새테스트_2026-10-29/02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf",
+  "source_sha256": "61a6c2e82bd60f96f7dde6fd6f754ad9a72fbb7171d0c9276a5092e934854216",
+  "native_result_file": "04-02_수원재즈페스티벌_디자인용역_가상계약서_v1.json",
+  "native_elapsed_seconds": 90.287,
+  "replay_seconds": 0.124,
+  "result": {
+    "requirements": "행사명: 2026 수원 재즈 페스티벌\n기간: 2026.09.18.(금)-2026.09.19.(토)\n시간: 17:30\n장소: 광교호수공원 재미난 밭\n18일 대표 출연진: 정동환(멜로망스) x Funk Messengers\n19일 대표 출연진: 이은미 x 민경인 trio\n영문 행사명: 2026 SUWON JAZZ FESTIVAL\n포스터 전반에 초록색 잔디 질감의 배경을 사용한다.\n하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.\n연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현한 관악기 연주자를 배치한다.\n상단 로고 배치: 왼쪽 위에 수원특례시, 오른쪽 위에 VISIT SUWON YEAR 및 2026-2027 수원 방문의 해 로고를 배치한다.\n장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지해 밝은 야외 음악 축제 분위기를 표현한다.\n문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.\n이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형\n파일 형식과 색상: 정적 JPEG 이미지 1개, 확장자 .jpg, RGB 색상 모드\n편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+    "conditions": [
+      {
+        "text": "행사명: 2026 수원 재즈 페스티벌",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사명과연도",
+        "requirement": "2026 수원 재즈 페스티벌",
+        "level": "필수",
+        "inspection": "제목의 줄바꿈·공백 차이는 허용한다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "제목의 줄바꿈·공백 차이는 허용한다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s5",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s5",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R01",
+        "source": "R01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s5",
+            "page": 2,
+            "source": "R01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s5",
+              "relinked": false
+            },
+            "requirement_id": "R01",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "제목의 줄바꿈·공백 차이는 허용한다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "기간: 2026.09.18.(금)-2026.09.19.(토)",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사 날짜와 요 일",
+        "requirement": "2026.09.18.(금)-2026.09.19.(토)",
+        "level": "필수",
+        "inspection": "시작일·종료일·요일이 일치해야 한다. / 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "시작일·종료일·요일이 일치해야 한다.",
+          "연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s6",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s6",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R02",
+        "source": "R02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s6",
+            "page": 2,
+            "source": "R02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s6",
+              "relinked": false
+            },
+            "requirement_id": "R02",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "시간: 17:30",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사 시간",
+        "requirement": "17:30",
+        "level": "필수",
+        "inspection": "17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은 불가하다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은 불가하다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s7",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s7",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R03",
+        "source": "R03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s7",
+            "page": 2,
+            "source": "R03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s7",
+              "relinked": false
+            },
+            "requirement_id": "R03",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은 불가하다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장소: 광교호수공원 재미난 밭",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사 장소",
+        "requirement": "광교호수공원 재미난 밭",
+        "level": "필수",
+        "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. / 재미난밭의 붙여쓰기와 줄바꿈 은 허용한다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "광교호수공원과 재미난 밭이 모두 있어야 한다.",
+          "재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R04",
+        "source": "R04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s8",
+            "page": 2,
+            "source": "R04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s8",
+              "relinked": false
+            },
+            "requirement_id": "R04",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. 재미난밭의 붙여쓰기와 줄바꿈 은 허용한다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+        "type": "information",
+        "model_type": "information",
+        "label": "18일 대표 출연진",
+        "requirement": "정동환(멜로망스) x Funk Messengers",
+        "level": "필수",
+        "inspection": "9 월 18 일 라인업 영역에 표기한다. / × 또는 ×, 대소문자·공백 차이는 허용한다. / 다른 출연진을 삭제하라는 조건은 아니다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "9 월 18 일 라인업 영역에 표기한다.",
+          "× 또는 ×, 대소문자·공백 차이는 허용한다.",
+          "다른 출연진을 삭제하라는 조건은 아니다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s9",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s9",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R05",
+        "source": "R05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "R05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s9",
+              "relinked": false
+            },
+            "requirement_id": "R05",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "9 월 18 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다. 다른 출연진을 삭제하라는 조건은 아니다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "19일 대표 출연진: 이은미 x 민경인 trio",
+        "type": "information",
+        "model_type": "information",
+        "label": "19일 대표 출연진",
+        "requirement": "이은미 x 민경인 trio",
+        "level": "필수",
+        "inspection": "9 월 19 일 라인업 영역에 표기한다. / × 또는 ×, 대소문자·공백 차이는 허용한다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "9 월 19 일 라인업 영역에 표기한다.",
+          "× 또는 ×, 대소문자·공백 차이는 허용한다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s10",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s10",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R06",
+        "source": "R06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s10",
+            "page": 2,
+            "source": "R06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s10",
+              "relinked": false
+            },
+            "requirement_id": "R06",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "9 월 19 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+        "type": "information",
+        "model_type": "information",
+        "label": "영문 행사명",
+        "requirement": "2026 SUWON JAZZ FESTIVAL",
+        "level": "필수",
+        "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. / 영문 단어와 연도를 모두 유지한다. / 문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "하단 레코드 주변의 곡선 배치를 허용한다.",
+          "영문 단어와 연도를 모두 유지한다.",
+          "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        ],
+        "source_id": "p2-s11",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s11",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R07",
+        "source": "R07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s11",
+            "page": 2,
+            "source": "R07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s11",
+              "relinked": false
+            },
+            "requirement_id": "R07",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. 영문 단어와 연도를 모두 유지한다."
+          },
+          {
+            "source_id": "p2-s12",
+            "page": 2,
+            "source": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+            "requirement_id": null,
+            "role": "common_rule",
+            "source_alignment": {
+              "method": "page_common_rule"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "잔디 배경",
+        "requirement": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+        "level": "필수",
+        "inspection": "잔디의 식물성 질감이 보이도록 한다. / 단색 초록 배경으로만 대체하지 않는다.",
+        "inspection_parts": [
+          "잔디의 식물성 질감이 보이도록 한다.",
+          "단색 초록 배경으로만 대체하지 않는다."
+        ],
+        "source_id": "p3-s5",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s5",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V01",
+        "source": "V01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s5",
+            "page": 3,
+            "source": "V01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s5",
+              "relinked": false
+            },
+            "requirement_id": "V01",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "레코드와 톤암",
+        "requirement": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+        "level": "필수",
+        "inspection": "원형 레코드와 톤암을 식별할 수 있어야 한다. / 레코드 외곽이 화면 아래로 의도적으로 잘리는 구성은 허용한다.",
+        "inspection_parts": [
+          "원형 레코드와 톤암을 식별할 수 있어야 한다.",
+          "레코드 외곽이 화면 아래로 의도적으로 잘리는 구성은 허용한다."
+        ],
+        "source_id": "p3-s6",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s6",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V02",
+        "source": "V02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s6",
+            "page": 3,
+            "source": "V02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s6",
+              "relinked": false
+            },
+            "requirement_id": "V02",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "원형 레코드와 톤암을 식별할 수 있어야 한다. 레코드 외곽이 화면 아래로 의도적으로 잘리는 구성은 허용한다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현한 관악기 연주자를 배치한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "연주자 선화",
+        "requirement": "왼쪽 아래와 오른쪽 아래에 흰 선으로 표현한 관악기 연주자를 배치한다.",
+        "level": "필수",
+        "inspection": "양쪽에 사람과 관악기 형태가 보이는지 확인한다. / 실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+        "inspection_parts": [
+          "양쪽에 사람과 관악기 형태가 보이는지 확인한다.",
+          "실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다."
+        ],
+        "source_id": "p3-s7",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s7",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V03",
+        "source": "V03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s7",
+            "page": 3,
+            "source": "V03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s7",
+              "relinked": false
+            },
+            "requirement_id": "V03",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "양쪽에 사람과 관악기 형태가 보이는지 확인한다. 실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "상단 로고 배치: 왼쪽 위에 수원특례시, 오른쪽 위에 VISIT SUWON YEAR 및 2026-2027 수원 방문의 해 로고를 배치한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "상단 로고 배치",
+        "requirement": "왼쪽 위에 수원특례시, 오른쪽 위에 VISIT SUWON YEAR 및 2026-2027 수원 방문의 해 로고를 배치한다.",
+        "level": "필수",
+        "inspection": "양쪽 로고가 잘리지 않고 읽혀야 한다. / 원본의 좌우 위치 관계를 유지한다.",
+        "inspection_parts": [
+          "양쪽 로고가 잘리지 않고 읽혀야 한다.",
+          "원본의 좌우 위치 관계를 유지한다."
+        ],
+        "source_id": "p3-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.977,
+          "model_source_id": "p3-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V04",
+        "source": "V04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s8",
+            "page": 3,
+            "source": "V04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.977,
+              "model_source_id": "p3-s8",
+              "relinked": false
+            },
+            "requirement_id": "V04",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지해 밝은 야외 음악 축제 분위기를 표현한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "장식과 분위기",
+        "requirement": "노란색 악기 선화와 작은 빛·별 장식을 유지해 밝은 야외 음악 축제 분위기를 표현한다.",
+        "level": "권장",
+        "inspection": "정성 검토 항목이다. / 장식의 정확한 개수는 지정하지 않으며, 이 항목만으로 필수 불합격을 결정하지 않는다.",
+        "inspection_parts": [
+          "정성 검토 항목이다.",
+          "장식의 정확한 개수는 지정하지 않으며, 이 항목만으로 필수 불합격을 결정하지 않는다."
+        ],
+        "source_id": "p3-s9",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.987,
+          "model_source_id": "p3-s9",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V05",
+        "source": "V05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s9",
+            "page": 3,
+            "source": "V05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.987,
+              "model_source_id": "p3-s9",
+              "relinked": false
+            },
+            "requirement_id": "V05",
+            "level": "권장",
+            "model_level": "권장",
+            "inspection": "정성 검토 항목이다. 장식의 정확한 개수는 지정하지 않으며, 이 항목만으로 필수 불합격을 결정하지 않는다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "문구 가독성",
+        "requirement": "행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+        "level": "권장",
+        "inspection": "확대 화면과 전체 화면에서 검토한다. / 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+        "inspection_parts": [
+          "확대 화면과 전체 화면에서 검토한다.",
+          "글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다."
+        ],
+        "source_id": "p3-s10",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s10",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "V06",
+        "source": "V06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s10",
+            "page": 3,
+            "source": "V06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s10",
+              "relinked": false
+            },
+            "requirement_id": "V06",
+            "level": "권장",
+            "model_level": "권장",
+            "inspection": "확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+        "type": "information",
+        "model_type": "information",
+        "label": "이미지 크기",
+        "requirement": "가로 2527 x 세로 3572픽셀, 세로형",
+        "level": "필수",
+        "inspection": "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다. / 임의 축소본을 원본 대신 제출하지 않는다.",
+        "inspection_parts": [
+          "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.",
+          "임의 축소본을 원본 대신 제출하지 않는다."
+        ],
+        "source_id": "p3-s11",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s11",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "T01",
+        "source": "T01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s11",
+            "page": 3,
+            "source": "T01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s11",
+              "relinked": false
+            },
+            "requirement_id": "T01",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다. 임의 축소본을 원본 대신 제출하지 않는다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "파일 형식과 색상: 정적 JPEG 이미지 1개, 확장자 .jpg, RGB 색상 모드",
+        "type": "information",
+        "model_type": "information",
+        "label": "파일 형식과 색상",
+        "requirement": "정적 JPEG 이미지 1개, 확장자 .jpg, RGB 색상 모드",
+        "level": "필수",
+        "inspection": "실제 파일 형식·전체 디코딩·색상 모드를 확인한다. / 파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는다.",
+        "inspection_parts": [
+          "실제 파일 형식·전체 디코딩·색상 모드를 확인한다.",
+          "파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는다."
+        ],
+        "source_id": "p3-s12",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.932,
+          "model_source_id": "p3-s12",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "T02",
+        "source": "T02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s12",
+            "page": 3,
+            "source": "T02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.932,
+              "model_source_id": "p3-s12",
+              "relinked": false
+            },
+            "requirement_id": "T02",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": "실제 파일 형식·전체 디코딩·색상 모드를 확인한다. 파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+        "type": "information",
+        "model_type": "information",
+        "label": "편집 가능한 원본",
+        "requirement": "PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+        "level": "선택",
+        "inspection": "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다. / 현재 테스트는 이미지와 이 PDF로 진행한다.",
+        "inspection_parts": [
+          "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.",
+          "현재 테스트는 이미지와 이 PDF로 진행한다."
+        ],
+        "source_id": "p3-s13",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p3-s13",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "T03",
+        "source": "T03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다.",
+        "page": 3,
+        "source_references": [
+          {
+            "source_id": "p3-s13",
+            "page": 3,
+            "source": "T03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p3-s13",
+              "relinked": false
+            },
+            "requirement_id": "T03",
+            "level": "선택",
+            "model_level": "선택",
+            "inspection": "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다. 현재 테스트는 이미지와 이 PDF로 진행한다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      }
+    ],
+    "page_count": 3,
+    "scanned_pages": [],
+    "model": "qwen3.5:4b",
+    "input_mode": "pdf_page_images+paddleocr_text",
+    "source_selection": {
+      "mode": "numbered_requirement_rows",
+      "extraction_pages": [
+        2,
+        3
+      ],
+      "primary_pages": [
+        2,
+        3
+      ],
+      "requirement_ids": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "T01",
+        "T02",
+        "T03",
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06"
+      ],
+      "supplemental_source_ids": []
+    },
+    "source_coverage": {
+      "supplemental_sources": 0,
+      "covered_supplemental_sources": 0,
+      "common_rules": 1,
+      "attached_common_rules": 1
+    },
+    "common_rules": [
+      {
+        "id": "p2-s12",
+        "page": 2,
+        "text": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+        "role": "common_rule"
+      }
+    ],
+    "document_notes": [],
+    "timing": {
+      "ocr_seconds": 0.113,
+      "llm_seconds": 0.009,
+      "total_seconds": 0.123
+    },
+    "vision": {
+      "max_edge": 1800,
+      "pages_per_call": 1,
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        },
+        {
+          "page": 2,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        },
+        {
+          "page": 3,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        }
+      ],
+      "call_count": 2
+    },
+    "ocr": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "coordinate_space": "rendered_page_pixels",
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "CREATIVE CHECKER/ NEW023/TEST-SJ2026-OO1 /v1.0",
+              "confidence": 0.9403042793273926,
+              "bbox_xyxy": [
+                70,
+                33,
+                537,
+                51
+              ],
+              "polygon": [
+                [
+                  70,
+                  33
+                ],
+                [
+                  537,
+                  33
+                ],
+                [
+                  537,
+                  51
+                ],
+                [
+                  70,
+                  51
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "고해상도 포스터로 새롭게 검수하기",
+              "confidence": 0.9280712604522705,
+              "bbox_xyxy": [
+                81,
+                100,
+                372,
+                122
+              ],
+              "polygon": [
+                [
+                  81,
+                  100
+                ],
+                [
+                  372,
+                  100
+                ],
+                [
+                  372,
+                  122
+                ],
+                [
+                  81,
+                  122
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "2",
+              "confidence": 0.06345083564519882,
+              "bbox_xyxy": [
+                828,
+                109,
+                844,
+                129
+              ],
+              "polygon": [
+                [
+                  828,
+                  109
+                ],
+                [
+                  844,
+                  109
+                ],
+                [
+                  844,
+                  129
+                ],
+                [
+                  828,
+                  129
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "임레A",
+              "confidence": 0.396292120218277,
+              "bbox_xyxy": [
+                849,
+                113,
+                872,
+                122
+              ],
+              "polygon": [
+                [
+                  849,
+                  113
+                ],
+                [
+                  872,
+                  113
+                ],
+                [
+                  872,
+                  122
+                ],
+                [
+                  849,
+                  122
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "2026",
+              "confidence": 0.8479315638542175,
+              "bbox_xyxy": [
+                911,
+                109,
+                996,
+                175
+              ],
+              "polygon": [
+                [
+                  911,
+                  109
+                ],
+                [
+                  996,
+                  109
+                ],
+                [
+                  996,
+                  175
+                ],
+                [
+                  911,
+                  175
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "Suwon",
+              "confidence": 0.8546782732009888,
+              "bbox_xyxy": [
+                1034,
+                107,
+                1082,
+                129
+              ],
+              "polygon": [
+                [
+                  1035,
+                  107
+                ],
+                [
+                  1082,
+                  111
+                ],
+                [
+                  1081,
+                  129
+                ],
+                [
+                  1034,
+                  126
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "수원재즈페스티벌",
+              "confidence": 0.9997251033782959,
+              "bbox_xyxy": [
+                80,
+                151,
+                468,
+                209
+              ],
+              "polygon": [
+                [
+                  80,
+                  155
+                ],
+                [
+                  467,
+                  151
+                ],
+                [
+                  468,
+                  205
+                ],
+                [
+                  80,
+                  209
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "수원시스페시비발",
+              "confidence": 0.582598090171814,
+              "bbox_xyxy": [
+                835,
+                149,
+                1067,
+                229
+              ],
+              "polygon": [
+                [
+                  835,
+                  149
+                ],
+                [
+                  1067,
+                  149
+                ],
+                [
+                  1067,
+                  229
+                ],
+                [
+                  835,
+                  229
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "포스터 디자인·납품",
+              "confidence": 0.9797773361206055,
+              "bbox_xyxy": [
+                82,
+                225,
+                494,
+                275
+              ],
+              "polygon": [
+                [
+                  82,
+                  225
+                ],
+                [
+                  494,
+                  225
+                ],
+                [
+                  494,
+                  275
+                ],
+                [
+                  82,
+                  275
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "9.18.(금)",
+              "confidence": 0.9809125661849976,
+              "bbox_xyxy": [
+                833,
+                228,
+                877,
+                246
+              ],
+              "polygon": [
+                [
+                  833,
+                  228
+                ],
+                [
+                  877,
+                  228
+                ],
+                [
+                  877,
+                  246
+                ],
+                [
+                  833,
+                  246
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "테스트 계약서",
+              "confidence": 0.9997630715370178,
+              "bbox_xyxy": [
+                81,
+                291,
+                388,
+                345
+              ],
+              "polygon": [
+                [
+                  81,
+                  291
+                ],
+                [
+                  388,
+                  291
+                ],
+                [
+                  388,
+                  345
+                ],
+                [
+                  81,
+                  345
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "17:30",
+              "confidence": 0.999356746673584,
+              "bbox_xyxy": [
+                933,
+                321,
+                960,
+                332
+              ],
+              "polygon": [
+                [
+                  933,
+                  321
+                ],
+                [
+                  960,
+                  321
+                ],
+                [
+                  960,
+                  332
+                ],
+                [
+                  933,
+                  332
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "2026년10월 29일 작성/신규 테스트 v1.0",
+              "confidence": 0.958480715751648,
+              "bbox_xyxy": [
+                84,
+                382,
+                432,
+                400
+              ],
+              "polygon": [
+                [
+                  84,
+                  382
+                ],
+                [
+                  432,
+                  382
+                ],
+                [
+                  432,
+                  400
+                ],
+                [
+                  84,
+                  400
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "기존에 다운로드한 포스터를 기준으로",
+              "confidence": 0.9866495728492737,
+              "bbox_xyxy": [
+                81,
+                417,
+                441,
+                439
+              ],
+              "polygon": [
+                [
+                  81,
+                  417
+                ],
+                [
+                  441,
+                  417
+                ],
+                [
+                  441,
+                  439
+                ],
+                [
+                  81,
+                  439
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "검수 조건을 새로 정의한 가상 문서입니다.",
+              "confidence": 0.9852723479270935,
+              "bbox_xyxy": [
+                81,
+                449,
+                480,
+                471
+              ],
+              "polygon": [
+                [
+                  81,
+                  449
+                ],
+                [
+                  480,
+                  449
+                ],
+                [
+                  480,
+                  471
+                ],
+                [
+                  81,
+                  471
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "발주자 A",
+              "confidence": 0.9335427284240723,
+              "bbox_xyxy": [
+                97,
+                528,
+                187,
+                557
+              ],
+              "polygon": [
+                [
+                  97,
+                  528
+                ],
+                [
+                  187,
+                  528
+                ],
+                [
+                  187,
+                  557
+                ],
+                [
+                  97,
+                  557
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "검수 테스트발주팀 A(가상)",
+              "confidence": 0.9293506741523743,
+              "bbox_xyxy": [
+                298,
+                528,
+                562,
+                555
+              ],
+              "polygon": [
+                [
+                  298,
+                  529
+                ],
+                [
+                  562,
+                  528
+                ],
+                [
+                  562,
+                  554
+                ],
+                [
+                  298,
+                  555
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "수급인 B",
+              "confidence": 0.9391436576843262,
+              "bbox_xyxy": [
+                97,
+                588,
+                186,
+                617
+              ],
+              "polygon": [
+                [
+                  97,
+                  588
+                ],
+                [
+                  186,
+                  588
+                ],
+                [
+                  186,
+                  617
+                ],
+                [
+                  97,
+                  617
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "검수 테스트 디자인팀 B(가상)",
+              "confidence": 0.9041613936424255,
+              "bbox_xyxy": [
+                299,
+                591,
+                580,
+                613
+              ],
+              "polygon": [
+                [
+                  299,
+                  591
+                ],
+                [
+                  580,
+                  591
+                ],
+                [
+                  580,
+                  613
+                ],
+                [
+                  299,
+                  613
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "계약 대상",
+              "confidence": 0.9457990527153015,
+              "bbox_xyxy": [
+                97,
+                647,
+                191,
+                676
+              ],
+              "polygon": [
+                [
+                  97,
+                  647
+                ],
+                [
+                  191,
+                  647
+                ],
+                [
+                  191,
+                  676
+                ],
+                [
+                  97,
+                  676
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "2026 수원재즈페스티벌 홍보 포스터 1종",
+              "confidence": 0.9720733761787415,
+              "bbox_xyxy": [
+                299,
+                651,
+                675,
+                674
+              ],
+              "polygon": [
+                [
+                  299,
+                  651
+                ],
+                [
+                  675,
+                  651
+                ],
+                [
+                  675,
+                  674
+                ],
+                [
+                  299,
+                  674
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "최종 납품물",
+              "confidence": 0.9569492936134338,
+              "bbox_xyxy": [
+                97,
+                709,
+                210,
+                737
+              ],
+              "polygon": [
+                [
+                  97,
+                  709
+                ],
+                [
+                  210,
+                  709
+                ],
+                [
+                  210,
+                  737
+                ],
+                [
+                  97,
+                  737
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "JPEG 이미|지 1개/2527 x 3572px /RGB",
+              "confidence": 0.9129577279090881,
+              "bbox_xyxy": [
+                298,
+                708,
+                699,
+                735
+              ],
+              "polygon": [
+                [
+                  298,
+                  708
+                ],
+                [
+                  699,
+                  709
+                ],
+                [
+                  699,
+                  735
+                ],
+                [
+                  298,
+                  734
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "기준 문서",
+              "confidence": 0.932843804359436,
+              "bbox_xyxy": [
+                96,
+                768,
+                191,
+                797
+              ],
+              "polygon": [
+                [
+                  96,
+                  768
+                ],
+                [
+                  191,
+                  768
+                ],
+                [
+                  191,
+                  797
+                ],
+                [
+                  96,
+                  797
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "TEST-SJ2026-001v1.0/별지의16개검수조건",
+              "confidence": 0.9848936200141907,
+              "bbox_xyxy": [
+                300,
+                771,
+                771,
+                793
+              ],
+              "polygon": [
+                [
+                  300,
+                  771
+                ],
+                [
+                  771,
+                  771
+                ],
+                [
+                  771,
+                  793
+                ],
+                [
+                  300,
+                  793
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "제1조 목적과 작업 범위",
+              "confidence": 0.962535560131073,
+              "bbox_xyxy": [
+                81,
+                842,
+                338,
+                868
+              ],
+              "polygon": [
+                [
+                  81,
+                  842
+                ],
+                [
+                  338,
+                  842
+                ],
+                [
+                  338,
+                  868
+                ],
+                [
+                  81,
+                  868
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "A는 별지의 문구·시각·파일 조건을 기준으로 B의 포스터 납품물을 검수한다.B는 원본 포스터의 정보를 유지",
+              "confidence": 0.9834282994270325,
+              "bbox_xyxy": [
+                81,
+                888,
+                1090,
+                910
+              ],
+              "polygon": [
+                [
+                  81,
+                  888
+                ],
+                [
+                  1090,
+                  888
+                ],
+                [
+                  1090,
+                  910
+                ],
+                [
+                  81,
+                  910
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "한 디지털 이미지 1개를 제출한다. 이 문서는 수동 업로드와 자동 조건 추출을 시험하기 위해 작성했다.",
+              "confidence": 0.9652449488639832,
+              "bbox_xyxy": [
+                81,
+                918,
+                1046,
+                945
+              ],
+              "polygon": [
+                [
+                  81,
+                  918
+                ],
+                [
+                  1046,
+                  918
+                ],
+                [
+                  1046,
+                  945
+                ],
+                [
+                  81,
+                  945
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "제2조 검수와 보완",
+              "confidence": 0.9806992411613464,
+              "bbox_xyxy": [
+                81,
+                978,
+                283,
+                1005
+              ],
+              "polygon": [
+                [
+                  81,
+                  978
+                ],
+                [
+                  283,
+                  978
+                ],
+                [
+                  283,
+                  1005
+                ],
+                [
+                  81,
+                  1005
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "필수 13개,권장 2개,선택 1개를 구분해 기록한다.필수 조건의 불일치는 해당 ID와 근거를 적어 보완 요청하",
+              "confidence": 0.9678460955619812,
+              "bbox_xyxy": [
+                81,
+                1022,
+                1106,
+                1049
+              ],
+              "polygon": [
+                [
+                  81,
+                  1022
+                ],
+                [
+                  1106,
+                  1022
+                ],
+                [
+                  1106,
+                  1049
+                ],
+                [
+                  81,
+                  1049
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "고,판독이 불확실하면 확인 필요로 남긴다.권장 조건은 개선 의견이며 선택 원본 파일의 미제출은 결함으로",
+              "confidence": 0.9712632298469543,
+              "bbox_xyxy": [
+                82,
+                1056,
+                1094,
+                1079
+              ],
+              "polygon": [
+                [
+                  82,
+                  1056
+                ],
+                [
+                  1094,
+                  1056
+                ],
+                [
+                  1094,
+                  1079
+                ],
+                [
+                  82,
+                  1079
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "보지 않는다.",
+              "confidence": 0.9795802235603333,
+              "bbox_xyxy": [
+                81,
+                1088,
+                202,
+                1112
+              ],
+              "polygon": [
+                [
+                  81,
+                  1088
+                ],
+                [
+                  202,
+                  1088
+                ],
+                [
+                  202,
+                  1112
+                ],
+                [
+                  81,
+                  1112
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "제3조 테스트 적용 범위",
+              "confidence": 0.9351502656936646,
+              "bbox_xyxy": [
+                81,
+                1146,
+                339,
+                1172
+              ],
+              "polygon": [
+                [
+                  81,
+                  1146
+                ],
+                [
+                  339,
+                  1146
+                ],
+                [
+                  339,
+                  1172
+                ],
+                [
+                  81,
+                  1172
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "대금·실제 납기·권리 이전 등 거래 조건은 이 테스트에서 정하지 않는다.입장료·연락처·QR 값은 검수 조건으",
+              "confidence": 0.9903867840766907,
+              "bbox_xyxy": [
+                82,
+                1192,
+                1087,
+                1214
+              ],
+              "polygon": [
+                [
+                  82,
+                  1192
+                ],
+                [
+                  1087,
+                  1192
+                ],
+                [
+                  1087,
+                  1214
+                ],
+                [
+                  82,
+                  1214
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_034",
+              "text": "로 추가하지 않는다.포스터는 이전에 받은 고해상도 파일이며,아래 계약 조건과 허용 범위는 이번 시험을 위",
+              "confidence": 0.9773808717727661,
+              "bbox_xyxy": [
+                82,
+                1224,
+                1101,
+                1246
+              ],
+              "polygon": [
+                [
+                  82,
+                  1224
+                ],
+                [
+                  1101,
+                  1224
+                ],
+                [
+                  1101,
+                  1246
+                ],
+                [
+                  82,
+                  1246
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_035",
+              "text": "해 새로 작성한 것이다.",
+              "confidence": 0.9380406141281128,
+              "bbox_xyxy": [
+                82,
+                1256,
+                298,
+                1279
+              ],
+              "polygon": [
+                [
+                  82,
+                  1256
+                ],
+                [
+                  298,
+                  1256
+                ],
+                [
+                  298,
+                  1279
+                ],
+                [
+                  82,
+                  1279
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_036",
+              "text": "참조 파일과 출처",
+              "confidence": 0.9979525804519653,
+              "bbox_xyxy": [
+                81,
+                1314,
+                265,
+                1341
+              ],
+              "polygon": [
+                [
+                  81,
+                  1314
+                ],
+                [
+                  265,
+                  1314
+                ],
+                [
+                  265,
+                  1341
+                ],
+                [
+                  81,
+                  1341
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_037",
+              "text": "REF-NEW023/2527 ×3572px/JPEG/기존 고해상도187장 묶음",
+              "confidence": 0.9520879983901978,
+              "bbox_xyxy": [
+                80,
+                1356,
+                633,
+                1380
+              ],
+              "polygon": [
+                [
+                  80,
+                  1356
+                ],
+                [
+                  633,
+                  1358
+                ],
+                [
+                  633,
+                  1380
+                ],
+                [
+                  80,
+                  1379
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_038",
+              "text": "출처 기록:수원시 문화행사 안내-2026 수원재즈페스티벌",
+              "confidence": 0.9750558137893677,
+              "bbox_xyxy": [
+                84,
+                1395,
+                541,
+                1413
+              ],
+              "polygon": [
+                [
+                  84,
+                  1395
+                ],
+                [
+                  541,
+                  1395
+                ],
+                [
+                  541,
+                  1413
+                ],
+                [
+                  84,
+                  1413
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_039",
+              "text": "SHA-256: e47812c5b322a5516b78618b2567e1c5",
+              "confidence": 0.9972264170646667,
+              "bbox_xyxy": [
+                82,
+                1430,
+                528,
+                1449
+              ],
+              "polygon": [
+                [
+                  82,
+                  1430
+                ],
+                [
+                  528,
+                  1430
+                ],
+                [
+                  528,
+                  1449
+                ],
+                [
+                  82,
+                  1449
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_040",
+              "text": "58b4bcca9f93006d599f8be89ba57c91",
+              "confidence": 0.9926192760467529,
+              "bbox_xyxy": [
+                82,
+                1455,
+                415,
+                1473
+              ],
+              "polygon": [
+                [
+                  82,
+                  1455
+                ],
+                [
+                  415,
+                  1455
+                ],
+                [
+                  415,
+                  1473
+                ],
+                [
+                  82,
+                  1473
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_041",
+              "text": "테스트용가상 계약-실제 발주·계약 체결을 의미하지 않음",
+              "confidence": 0.9334364533424377,
+              "bbox_xyxy": [
+                72,
+                1630,
+                492,
+                1648
+              ],
+              "polygon": [
+                [
+                  72,
+                  1630
+                ],
+                [
+                  492,
+                  1630
+                ],
+                [
+                  492,
+                  1648
+                ],
+                [
+                  72,
+                  1648
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_042",
+              "text": "1/3",
+              "confidence": 0.9947528839111328,
+              "bbox_xyxy": [
+                1075,
+                1627,
+                1122,
+                1651
+              ],
+              "polygon": [
+                [
+                  1075,
+                  1627
+                ],
+                [
+                  1122,
+                  1627
+                ],
+                [
+                  1122,
+                  1651
+                ],
+                [
+                  1075,
+                  1651
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "CREATIVE CHECKER/ NEW023 /TEST-SJ2026-OO1/v1.0",
+              "confidence": 0.9407663941383362,
+              "bbox_xyxy": [
+                70,
+                33,
+                538,
+                51
+              ],
+              "polygon": [
+                [
+                  70,
+                  33
+                ],
+                [
+                  538,
+                  33
+                ],
+                [
+                  538,
+                  51
+                ],
+                [
+                  70,
+                  51
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "별지1.필수 문구·일정",
+              "confidence": 0.9819324016571045,
+              "bbox_xyxy": [
+                86,
+                104,
+                469,
+                145
+              ],
+              "polygon": [
+                [
+                  86,
+                  104
+                ],
+                [
+                  469,
+                  104
+                ],
+                [
+                  469,
+                  145
+                ],
+                [
+                  86,
+                  145
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "연도·요일·시간·장소와 일자별 대표 출연진을 함께 비교합니다,아래 표는 이미지에서 관찰한 내용에 맞취 작성한 새 테스트 조건입니다",
+              "confidence": 0.9318177700042725,
+              "bbox_xyxy": [
+                84,
+                179,
+                1103,
+                197
+              ],
+              "polygon": [
+                [
+                  84,
+                  179
+                ],
+                [
+                  1103,
+                  179
+                ],
+                [
+                  1103,
+                  197
+                ],
+                [
+                  84,
+                  197
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "ID/",
+              "confidence": 0.9605650901794434,
+              "bbox_xyxy": [
+                90,
+                237,
+                138,
+                267
+              ],
+              "polygon": [
+                [
+                  90,
+                  237
+                ],
+                [
+                  138,
+                  237
+                ],
+                [
+                  138,
+                  267
+                ],
+                [
+                  90,
+                  267
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "검수 항목",
+              "confidence": 0.9886523485183716,
+              "bbox_xyxy": [
+                180,
+                235,
+                275,
+                267
+              ],
+              "polygon": [
+                [
+                  180,
+                  238
+                ],
+                [
+                  274,
+                  235
+                ],
+                [
+                  275,
+                  264
+                ],
+                [
+                  181,
+                  267
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "요구 내용",
+              "confidence": 0.9950343370437622,
+              "bbox_xyxy": [
+                348,
+                238,
+                441,
+                266
+              ],
+              "polygon": [
+                [
+                  348,
+                  238
+                ],
+                [
+                  441,
+                  238
+                ],
+                [
+                  441,
+                  266
+                ],
+                [
+                  348,
+                  266
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "판단 기준·허용 범위",
+              "confidence": 0.9621509909629822,
+              "bbox_xyxy": [
+                762,
+                239,
+                940,
+                262
+              ],
+              "polygon": [
+                [
+                  762,
+                  239
+                ],
+                [
+                  940,
+                  239
+                ],
+                [
+                  940,
+                  262
+                ],
+                [
+                  762,
+                  262
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "수준",
+              "confidence": 0.9994021654129028,
+              "bbox_xyxy": [
+                93,
+                264,
+                142,
+                296
+              ],
+              "polygon": [
+                [
+                  93,
+                  264
+                ],
+                [
+                  142,
+                  264
+                ],
+                [
+                  142,
+                  296
+                ],
+                [
+                  93,
+                  296
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "R01",
+              "confidence": 0.9349647164344788,
+              "bbox_xyxy": [
+                93,
+                326,
+                140,
+                353
+              ],
+              "polygon": [
+                [
+                  93,
+                  326
+                ],
+                [
+                  140,
+                  326
+                ],
+                [
+                  140,
+                  353
+                ],
+                [
+                  93,
+                  353
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "행사명과연도",
+              "confidence": 0.9997162818908691,
+              "bbox_xyxy": [
+                185,
+                328,
+                314,
+                351
+              ],
+              "polygon": [
+                [
+                  185,
+                  328
+                ],
+                [
+                  314,
+                  328
+                ],
+                [
+                  314,
+                  351
+                ],
+                [
+                  185,
+                  351
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "2026 수원 재즈 페스티벌",
+              "confidence": 0.9500378370285034,
+              "bbox_xyxy": [
+                351,
+                330,
+                584,
+                349
+              ],
+              "polygon": [
+                [
+                  351,
+                  330
+                ],
+                [
+                  584,
+                  330
+                ],
+                [
+                  584,
+                  349
+                ],
+                [
+                  351,
+                  349
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "행사명과 2026 연도를 모두 표기한다.",
+              "confidence": 0.9774942398071289,
+              "bbox_xyxy": [
+                763,
+                328,
+                1109,
+                350
+              ],
+              "polygon": [
+                [
+                  763,
+                  328
+                ],
+                [
+                  1109,
+                  328
+                ],
+                [
+                  1109,
+                  350
+                ],
+                [
+                  763,
+                  350
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "필수",
+              "confidence": 0.999165415763855,
+              "bbox_xyxy": [
+                90,
+                350,
+                145,
+                385
+              ],
+              "polygon": [
+                [
+                  90,
+                  350
+                ],
+                [
+                  145,
+                  350
+                ],
+                [
+                  145,
+                  385
+                ],
+                [
+                  90,
+                  385
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "제목의 줄바꿈·공백 차이는 허용한다.",
+              "confidence": 0.969648540019989,
+              "bbox_xyxy": [
+                768,
+                357,
+                1099,
+                379
+              ],
+              "polygon": [
+                [
+                  768,
+                  357
+                ],
+                [
+                  1099,
+                  357
+                ],
+                [
+                  1099,
+                  379
+                ],
+                [
+                  768,
+                  379
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "R02",
+              "confidence": 0.9846671223640442,
+              "bbox_xyxy": [
+                93,
+                414,
+                142,
+                439
+              ],
+              "polygon": [
+                [
+                  93,
+                  414
+                ],
+                [
+                  142,
+                  414
+                ],
+                [
+                  142,
+                  439
+                ],
+                [
+                  93,
+                  439
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "행사 날짜와 요",
+              "confidence": 0.9567109942436218,
+              "bbox_xyxy": [
+                183,
+                414,
+                320,
+                440
+              ],
+              "polygon": [
+                [
+                  183,
+                  416
+                ],
+                [
+                  320,
+                  414
+                ],
+                [
+                  320,
+                  438
+                ],
+                [
+                  184,
+                  440
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "2026.09.18.(금)-2026.09.19.(토)",
+              "confidence": 0.9868496656417847,
+              "bbox_xyxy": [
+                352,
+                417,
+                711,
+                435
+              ],
+              "polygon": [
+                [
+                  352,
+                  417
+                ],
+                [
+                  711,
+                  417
+                ],
+                [
+                  711,
+                  435
+                ],
+                [
+                  352,
+                  435
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "시작일·종료일·요일이 일치해야 한다.",
+              "confidence": 0.995202362537384,
+              "bbox_xyxy": [
+                762,
+                414,
+                1091,
+                438
+              ],
+              "polygon": [
+                [
+                  762,
+                  414
+                ],
+                [
+                  1091,
+                  416
+                ],
+                [
+                  1091,
+                  438
+                ],
+                [
+                  762,
+                  437
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "필수",
+              "confidence": 0.999698281288147,
+              "bbox_xyxy": [
+                92,
+                439,
+                144,
+                471
+              ],
+              "polygon": [
+                [
+                  92,
+                  439
+                ],
+                [
+                  144,
+                  439
+                ],
+                [
+                  144,
+                  471
+                ],
+                [
+                  92,
+                  471
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "일",
+              "confidence": 0.9996738433837891,
+              "bbox_xyxy": [
+                185,
+                443,
+                207,
+                468
+              ],
+              "polygon": [
+                [
+                  185,
+                  443
+                ],
+                [
+                  207,
+                  443
+                ],
+                [
+                  207,
+                  468
+                ],
+                [
+                  185,
+                  468
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "연도가 제목에 있으면 날짜 줄에서 생략",
+              "confidence": 0.9594364166259766,
+              "bbox_xyxy": [
+                764,
+                446,
+                1115,
+                464
+              ],
+              "polygon": [
+                [
+                  764,
+                  446
+                ],
+                [
+                  1115,
+                  446
+                ],
+                [
+                  1115,
+                  464
+                ],
+                [
+                  764,
+                  464
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "할 수 있다.앞자리 0과 구분자 차이는",
+              "confidence": 0.9697476625442505,
+              "bbox_xyxy": [
+                762,
+                471,
+                1102,
+                495
+              ],
+              "polygon": [
+                [
+                  762,
+                  471
+                ],
+                [
+                  1102,
+                  472
+                ],
+                [
+                  1102,
+                  495
+                ],
+                [
+                  762,
+                  493
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "허용한다.",
+              "confidence": 0.9976557493209839,
+              "bbox_xyxy": [
+                762,
+                500,
+                851,
+                524
+              ],
+              "polygon": [
+                [
+                  762,
+                  500
+                ],
+                [
+                  851,
+                  500
+                ],
+                [
+                  851,
+                  524
+                ],
+                [
+                  762,
+                  524
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "R03",
+              "confidence": 0.9851045608520508,
+              "bbox_xyxy": [
+                93,
+                559,
+                142,
+                584
+              ],
+              "polygon": [
+                [
+                  93,
+                  559
+                ],
+                [
+                  142,
+                  559
+                ],
+                [
+                  142,
+                  584
+                ],
+                [
+                  93,
+                  584
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "행사 시간",
+              "confidence": 0.9313787221908569,
+              "bbox_xyxy": [
+                185,
+                559,
+                274,
+                583
+              ],
+              "polygon": [
+                [
+                  185,
+                  559
+                ],
+                [
+                  274,
+                  559
+                ],
+                [
+                  274,
+                  583
+                ],
+                [
+                  185,
+                  583
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "17:30",
+              "confidence": 0.9987581372261047,
+              "bbox_xyxy": [
+                350,
+                559,
+                419,
+                583
+              ],
+              "polygon": [
+                [
+                  350,
+                  559
+                ],
+                [
+                  419,
+                  559
+                ],
+                [
+                  419,
+                  583
+                ],
+                [
+                  350,
+                  583
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "17:30을 읽을 수 있게 표기한다.공백",
+              "confidence": 0.9243960976600647,
+              "bbox_xyxy": [
+                763,
+                562,
+                1105,
+                580
+              ],
+              "polygon": [
+                [
+                  763,
+                  562
+                ],
+                [
+                  1105,
+                  562
+                ],
+                [
+                  1105,
+                  580
+                ],
+                [
+                  763,
+                  580
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "필수",
+              "confidence": 0.9993743896484375,
+              "bbox_xyxy": [
+                92,
+                584,
+                144,
+                614
+              ],
+              "polygon": [
+                [
+                  92,
+                  584
+                ],
+                [
+                  144,
+                  584
+                ],
+                [
+                  144,
+                  614
+                ],
+                [
+                  92,
+                  614
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "차이는 허용하되 시간 값 변경은불가하",
+              "confidence": 0.9076170921325684,
+              "bbox_xyxy": [
+                762,
+                588,
+                1117,
+                610
+              ],
+              "polygon": [
+                [
+                  762,
+                  588
+                ],
+                [
+                  1117,
+                  588
+                ],
+                [
+                  1117,
+                  610
+                ],
+                [
+                  762,
+                  610
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "다.",
+              "confidence": 0.9904440641403198,
+              "bbox_xyxy": [
+                762,
+                616,
+                792,
+                638
+              ],
+              "polygon": [
+                [
+                  762,
+                  616
+                ],
+                [
+                  792,
+                  616
+                ],
+                [
+                  792,
+                  638
+                ],
+                [
+                  762,
+                  638
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "R04",
+              "confidence": 0.9823286533355713,
+              "bbox_xyxy": [
+                93,
+                675,
+                142,
+                700
+              ],
+              "polygon": [
+                [
+                  93,
+                  675
+                ],
+                [
+                  142,
+                  675
+                ],
+                [
+                  142,
+                  700
+                ],
+                [
+                  93,
+                  700
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "행사 장소",
+              "confidence": 0.9937685132026672,
+              "bbox_xyxy": [
+                185,
+                676,
+                274,
+                699
+              ],
+              "polygon": [
+                [
+                  185,
+                  676
+                ],
+                [
+                  274,
+                  676
+                ],
+                [
+                  274,
+                  699
+                ],
+                [
+                  185,
+                  699
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "광교호수공원 재미난 밭",
+              "confidence": 0.9452036023139954,
+              "bbox_xyxy": [
+                351,
+                678,
+                564,
+                696
+              ],
+              "polygon": [
+                [
+                  351,
+                  678
+                ],
+                [
+                  564,
+                  678
+                ],
+                [
+                  564,
+                  696
+                ],
+                [
+                  351,
+                  696
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "광교호수공원과 재미난 밭이 모두 있어",
+              "confidence": 0.9790809750556946,
+              "bbox_xyxy": [
+                762,
+                676,
+                1111,
+                699
+              ],
+              "polygon": [
+                [
+                  762,
+                  676
+                ],
+                [
+                  1111,
+                  676
+                ],
+                [
+                  1111,
+                  699
+                ],
+                [
+                  762,
+                  699
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_034",
+              "text": "필수",
+              "confidence": 0.9996039271354675,
+              "bbox_xyxy": [
+                93,
+                703,
+                142,
+                729
+              ],
+              "polygon": [
+                [
+                  93,
+                  703
+                ],
+                [
+                  142,
+                  703
+                ],
+                [
+                  142,
+                  729
+                ],
+                [
+                  93,
+                  729
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_035",
+              "text": "야 한다.재미난밭의 붙여쓰기와 줄바꿈",
+              "confidence": 0.969664454460144,
+              "bbox_xyxy": [
+                763,
+                705,
+                1117,
+                728
+              ],
+              "polygon": [
+                [
+                  763,
+                  705
+                ],
+                [
+                  1117,
+                  705
+                ],
+                [
+                  1117,
+                  728
+                ],
+                [
+                  763,
+                  728
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_036",
+              "text": "은 허용한다.",
+              "confidence": 0.8740900158882141,
+              "bbox_xyxy": [
+                762,
+                731,
+                877,
+                754
+              ],
+              "polygon": [
+                [
+                  762,
+                  731
+                ],
+                [
+                  877,
+                  731
+                ],
+                [
+                  877,
+                  754
+                ],
+                [
+                  762,
+                  754
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_037",
+              "text": "R05",
+              "confidence": 0.9783926010131836,
+              "bbox_xyxy": [
+                93,
+                791,
+                142,
+                816
+              ],
+              "polygon": [
+                [
+                  93,
+                  791
+                ],
+                [
+                  142,
+                  791
+                ],
+                [
+                  142,
+                  816
+                ],
+                [
+                  93,
+                  816
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_038",
+              "text": "18일 대표 출",
+              "confidence": 0.9079185128211975,
+              "bbox_xyxy": [
+                185,
+                792,
+                307,
+                814
+              ],
+              "polygon": [
+                [
+                  185,
+                  792
+                ],
+                [
+                  307,
+                  792
+                ],
+                [
+                  307,
+                  814
+                ],
+                [
+                  185,
+                  814
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_039",
+              "text": "정동환(멜로망스)xFunk Messengers",
+              "confidence": 0.9796848893165588,
+              "bbox_xyxy": [
+                352,
+                795,
+                697,
+                813
+              ],
+              "polygon": [
+                [
+                  352,
+                  795
+                ],
+                [
+                  697,
+                  795
+                ],
+                [
+                  697,
+                  813
+                ],
+                [
+                  352,
+                  813
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_040",
+              "text": "9월18일 라인업 영역에 표기한다,×",
+              "confidence": 0.9147329330444336,
+              "bbox_xyxy": [
+                762,
+                792,
+                1097,
+                813
+              ],
+              "polygon": [
+                [
+                  762,
+                  792
+                ],
+                [
+                  1097,
+                  793
+                ],
+                [
+                  1097,
+                  813
+                ],
+                [
+                  762,
+                  812
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_041",
+              "text": "필수",
+              "confidence": 0.9995241165161133,
+              "bbox_xyxy": [
+                93,
+                818,
+                142,
+                845
+              ],
+              "polygon": [
+                [
+                  93,
+                  818
+                ],
+                [
+                  142,
+                  818
+                ],
+                [
+                  142,
+                  845
+                ],
+                [
+                  93,
+                  845
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_042",
+              "text": "연진",
+              "confidence": 0.9884519577026367,
+              "bbox_xyxy": [
+                179,
+                814,
+                232,
+                848
+              ],
+              "polygon": [
+                [
+                  179,
+                  818
+                ],
+                [
+                  230,
+                  814
+                ],
+                [
+                  232,
+                  844
+                ],
+                [
+                  181,
+                  848
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_043",
+              "text": "또는 ×, 대소문자·공백 차이는 허용한",
+              "confidence": 0.9286141395568848,
+              "bbox_xyxy": [
+                763,
+                822,
+                1099,
+                841
+              ],
+              "polygon": [
+                [
+                  763,
+                  822
+                ],
+                [
+                  1099,
+                  822
+                ],
+                [
+                  1099,
+                  841
+                ],
+                [
+                  763,
+                  841
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_044",
+              "text": "다.다른 출연진을 삭제하라는 조건은",
+              "confidence": 0.9489267468452454,
+              "bbox_xyxy": [
+                760,
+                846,
+                1098,
+                870
+              ],
+              "polygon": [
+                [
+                  760,
+                  846
+                ],
+                [
+                  1098,
+                  847
+                ],
+                [
+                  1098,
+                  870
+                ],
+                [
+                  760,
+                  868
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_045",
+              "text": "아니다.",
+              "confidence": 0.9572443962097168,
+              "bbox_xyxy": [
+                760,
+                875,
+                831,
+                899
+              ],
+              "polygon": [
+                [
+                  760,
+                  875
+                ],
+                [
+                  831,
+                  875
+                ],
+                [
+                  831,
+                  899
+                ],
+                [
+                  760,
+                  899
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_046",
+              "text": "R06",
+              "confidence": 0.9919037818908691,
+              "bbox_xyxy": [
+                93,
+                935,
+                144,
+                960
+              ],
+              "polygon": [
+                [
+                  93,
+                  935
+                ],
+                [
+                  144,
+                  935
+                ],
+                [
+                  144,
+                  960
+                ],
+                [
+                  93,
+                  960
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_047",
+              "text": "19일 대표 출",
+              "confidence": 0.9240736365318298,
+              "bbox_xyxy": [
+                185,
+                935,
+                307,
+                958
+              ],
+              "polygon": [
+                [
+                  185,
+                  935
+                ],
+                [
+                  307,
+                  935
+                ],
+                [
+                  307,
+                  958
+                ],
+                [
+                  185,
+                  958
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_048",
+              "text": "이은미 x 민경인 trio",
+              "confidence": 0.9242637753486633,
+              "bbox_xyxy": [
+                350,
+                934,
+                532,
+                958
+              ],
+              "polygon": [
+                [
+                  350,
+                  934
+                ],
+                [
+                  532,
+                  935
+                ],
+                [
+                  532,
+                  958
+                ],
+                [
+                  350,
+                  956
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_049",
+              "text": "9월 19일 라인업 영역에 표기한다.×",
+              "confidence": 0.9530314207077026,
+              "bbox_xyxy": [
+                760,
+                934,
+                1097,
+                958
+              ],
+              "polygon": [
+                [
+                  760,
+                  934
+                ],
+                [
+                  1097,
+                  935
+                ],
+                [
+                  1097,
+                  958
+                ],
+                [
+                  760,
+                  956
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_050",
+              "text": "필수",
+              "confidence": 0.9995189905166626,
+              "bbox_xyxy": [
+                92,
+                960,
+                144,
+                991
+              ],
+              "polygon": [
+                [
+                  92,
+                  960
+                ],
+                [
+                  144,
+                  960
+                ],
+                [
+                  144,
+                  991
+                ],
+                [
+                  92,
+                  991
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_051",
+              "text": "연진",
+              "confidence": 0.9970699548721313,
+              "bbox_xyxy": [
+                179,
+                960,
+                230,
+                991
+              ],
+              "polygon": [
+                [
+                  179,
+                  960
+                ],
+                [
+                  230,
+                  960
+                ],
+                [
+                  230,
+                  991
+                ],
+                [
+                  179,
+                  991
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_052",
+              "text": "또는 ×, 대소문자·공백 차이는 허용한",
+              "confidence": 0.935422420501709,
+              "bbox_xyxy": [
+                760,
+                963,
+                1101,
+                987
+              ],
+              "polygon": [
+                [
+                  760,
+                  963
+                ],
+                [
+                  1101,
+                  964
+                ],
+                [
+                  1101,
+                  987
+                ],
+                [
+                  760,
+                  985
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_053",
+              "text": "다.",
+              "confidence": 0.9609485864639282,
+              "bbox_xyxy": [
+                759,
+                989,
+                794,
+                1017
+              ],
+              "polygon": [
+                [
+                  759,
+                  989
+                ],
+                [
+                  794,
+                  989
+                ],
+                [
+                  794,
+                  1017
+                ],
+                [
+                  759,
+                  1017
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_054",
+              "text": "R07",
+              "confidence": 0.9879762530326843,
+              "bbox_xyxy": [
+                90,
+                1049,
+                144,
+                1077
+              ],
+              "polygon": [
+                [
+                  90,
+                  1049
+                ],
+                [
+                  144,
+                  1049
+                ],
+                [
+                  144,
+                  1077
+                ],
+                [
+                  90,
+                  1077
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_055",
+              "text": "영문 행사명",
+              "confidence": 0.9415974020957947,
+              "bbox_xyxy": [
+                183,
+                1051,
+                292,
+                1075
+              ],
+              "polygon": [
+                [
+                  183,
+                  1051
+                ],
+                [
+                  292,
+                  1051
+                ],
+                [
+                  292,
+                  1075
+                ],
+                [
+                  183,
+                  1075
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_056",
+              "text": "2026 SUWON JAZZ FESTIVAL",
+              "confidence": 0.943220317363739,
+              "bbox_xyxy": [
+                351,
+                1051,
+                647,
+                1072
+              ],
+              "polygon": [
+                [
+                  351,
+                  1053
+                ],
+                [
+                  647,
+                  1051
+                ],
+                [
+                  647,
+                  1071
+                ],
+                [
+                  351,
+                  1072
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_057",
+              "text": "하단 레코드 주변의 곡선 배치를 허용한",
+              "confidence": 0.9407876133918762,
+              "bbox_xyxy": [
+                762,
+                1052,
+                1115,
+                1075
+              ],
+              "polygon": [
+                [
+                  762,
+                  1052
+                ],
+                [
+                  1115,
+                  1052
+                ],
+                [
+                  1115,
+                  1075
+                ],
+                [
+                  762,
+                  1075
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_058",
+              "text": "필수",
+              "confidence": 0.9993743896484375,
+              "bbox_xyxy": [
+                92,
+                1076,
+                144,
+                1106
+              ],
+              "polygon": [
+                [
+                  92,
+                  1076
+                ],
+                [
+                  144,
+                  1076
+                ],
+                [
+                  144,
+                  1106
+                ],
+                [
+                  92,
+                  1106
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_059",
+              "text": "다.영문 단어와 연도를 모두 유지한다.",
+              "confidence": 0.9393981695175171,
+              "bbox_xyxy": [
+                762,
+                1080,
+                1109,
+                1102
+              ],
+              "polygon": [
+                [
+                  762,
+                  1080
+                ],
+                [
+                  1109,
+                  1080
+                ],
+                [
+                  1109,
+                  1102
+                ],
+                [
+                  762,
+                  1102
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_060",
+              "text": "문구 비교 원칙",
+              "confidence": 0.9090086221694946,
+              "bbox_xyxy": [
+                80,
+                1171,
+                245,
+                1205
+              ],
+              "polygon": [
+                [
+                  80,
+                  1174
+                ],
+                [
+                  244,
+                  1171
+                ],
+                [
+                  245,
+                  1202
+                ],
+                [
+                  80,
+                  1205
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_061",
+              "text": "날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출",
+              "confidence": 0.9901962876319885,
+              "bbox_xyxy": [
+                84,
+                1221,
+                1097,
+                1243
+              ],
+              "polygon": [
+                [
+                  84,
+                  1221
+                ],
+                [
+                  1097,
+                  1221
+                ],
+                [
+                  1097,
+                  1243
+                ],
+                [
+                  84,
+                  1243
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_062",
+              "text": "연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다.",
+              "confidence": 0.9695214033126831,
+              "bbox_xyxy": [
+                84,
+                1252,
+                946,
+                1275
+              ],
+              "polygon": [
+                [
+                  84,
+                  1252
+                ],
+                [
+                  946,
+                  1252
+                ],
+                [
+                  946,
+                  1275
+                ],
+                [
+                  84,
+                  1275
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_063",
+              "text": "테스트용 가상계약- 실제 발주·계약 체결을의미하지않음",
+              "confidence": 0.932259202003479,
+              "bbox_xyxy": [
+                73,
+                1629,
+                490,
+                1647
+              ],
+              "polygon": [
+                [
+                  73,
+                  1629
+                ],
+                [
+                  490,
+                  1629
+                ],
+                [
+                  490,
+                  1647
+                ],
+                [
+                  73,
+                  1647
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_064",
+              "text": "2/3",
+              "confidence": 0.9560751914978027,
+              "bbox_xyxy": [
+                1073,
+                1626,
+                1122,
+                1651
+              ],
+              "polygon": [
+                [
+                  1073,
+                  1626
+                ],
+                [
+                  1122,
+                  1626
+                ],
+                [
+                  1122,
+                  1651
+                ],
+                [
+                  1073,
+                  1651
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "page": 3,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "CREATIVE CHECKER/NEW023/TEST-SJ2026-OO1/v1.0",
+              "confidence": 0.9615575671195984,
+              "bbox_xyxy": [
+                70,
+                34,
+                538,
+                51
+              ],
+              "polygon": [
+                [
+                  70,
+                  34
+                ],
+                [
+                  538,
+                  34
+                ],
+                [
+                  538,
+                  51
+                ],
+                [
+                  70,
+                  51
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "별지 2.시각·파일 기준",
+              "confidence": 0.9817458391189575,
+              "bbox_xyxy": [
+                84,
+                101,
+                471,
+                143
+              ],
+              "polygon": [
+                [
+                  84,
+                  103
+                ],
+                [
+                  470,
+                  101
+                ],
+                [
+                  471,
+                  142
+                ],
+                [
+                  84,
+                  143
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "배치와 분위기는 이미지 근거를 보고 확인하고,픽셀 크기·형식·색상 모드는 실제 파일 메타데이터로 확인합니다.",
+              "confidence": 0.9649774432182312,
+              "bbox_xyxy": [
+                84,
+                180,
+                930,
+                199
+              ],
+              "polygon": [
+                [
+                  84,
+                  180
+                ],
+                [
+                  930,
+                  180
+                ],
+                [
+                  930,
+                  199
+                ],
+                [
+                  84,
+                  199
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "ID/",
+              "confidence": 0.9449794888496399,
+              "bbox_xyxy": [
+                88,
+                232,
+                140,
+                268
+              ],
+              "polygon": [
+                [
+                  91,
+                  232
+                ],
+                [
+                  140,
+                  236
+                ],
+                [
+                  138,
+                  268
+                ],
+                [
+                  88,
+                  264
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "검수 항목",
+              "confidence": 0.9981967210769653,
+              "bbox_xyxy": [
+                182,
+                237,
+                275,
+                266
+              ],
+              "polygon": [
+                [
+                  182,
+                  237
+                ],
+                [
+                  275,
+                  237
+                ],
+                [
+                  275,
+                  266
+                ],
+                [
+                  182,
+                  266
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "요구 내용",
+              "confidence": 0.9950343370437622,
+              "bbox_xyxy": [
+                348,
+                238,
+                441,
+                266
+              ],
+              "polygon": [
+                [
+                  348,
+                  238
+                ],
+                [
+                  441,
+                  238
+                ],
+                [
+                  441,
+                  266
+                ],
+                [
+                  348,
+                  266
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "판단 기준·허용 범위",
+              "confidence": 0.9989644885063171,
+              "bbox_xyxy": [
+                763,
+                241,
+                941,
+                263
+              ],
+              "polygon": [
+                [
+                  763,
+                  241
+                ],
+                [
+                  941,
+                  241
+                ],
+                [
+                  941,
+                  263
+                ],
+                [
+                  763,
+                  263
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "수준",
+              "confidence": 0.9992966651916504,
+              "bbox_xyxy": [
+                93,
+                263,
+                145,
+                297
+              ],
+              "polygon": [
+                [
+                  93,
+                  263
+                ],
+                [
+                  145,
+                  263
+                ],
+                [
+                  145,
+                  297
+                ],
+                [
+                  93,
+                  297
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "V01",
+              "confidence": 0.8399354815483093,
+              "bbox_xyxy": [
+                93,
+                326,
+                142,
+                353
+              ],
+              "polygon": [
+                [
+                  93,
+                  326
+                ],
+                [
+                  142,
+                  326
+                ],
+                [
+                  142,
+                  353
+                ],
+                [
+                  93,
+                  353
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "잔디 배경",
+              "confidence": 0.9225212335586548,
+              "bbox_xyxy": [
+                183,
+                328,
+                274,
+                351
+              ],
+              "polygon": [
+                [
+                  183,
+                  328
+                ],
+                [
+                  274,
+                  328
+                ],
+                [
+                  274,
+                  351
+                ],
+                [
+                  183,
+                  351
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "포스터 전반에 초록색 잔디 질감의 배경을",
+              "confidence": 0.98065584897995,
+              "bbox_xyxy": [
+                351,
+                330,
+                723,
+                349
+              ],
+              "polygon": [
+                [
+                  351,
+                  330
+                ],
+                [
+                  723,
+                  330
+                ],
+                [
+                  723,
+                  349
+                ],
+                [
+                  351,
+                  349
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "잔디의 식물성 질감이 보이도록 한다.",
+              "confidence": 0.9165522456169128,
+              "bbox_xyxy": [
+                760,
+                325,
+                1097,
+                353
+              ],
+              "polygon": [
+                [
+                  760,
+                  325
+                ],
+                [
+                  1097,
+                  326
+                ],
+                [
+                  1097,
+                  353
+                ],
+                [
+                  760,
+                  351
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "필수",
+              "confidence": 0.999165415763855,
+              "bbox_xyxy": [
+                90,
+                350,
+                145,
+                385
+              ],
+              "polygon": [
+                [
+                  90,
+                  350
+                ],
+                [
+                  145,
+                  350
+                ],
+                [
+                  145,
+                  385
+                ],
+                [
+                  90,
+                  385
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "사용한다.",
+              "confidence": 0.9795989990234375,
+              "bbox_xyxy": [
+                348,
+                355,
+                439,
+                379
+              ],
+              "polygon": [
+                [
+                  348,
+                  355
+                ],
+                [
+                  439,
+                  355
+                ],
+                [
+                  439,
+                  379
+                ],
+                [
+                  348,
+                  379
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "단색 초록 배경으로만 대체하지 않는다.",
+              "confidence": 0.966049075126648,
+              "bbox_xyxy": [
+                762,
+                355,
+                1115,
+                382
+              ],
+              "polygon": [
+                [
+                  762,
+                  355
+                ],
+                [
+                  1115,
+                  355
+                ],
+                [
+                  1115,
+                  382
+                ],
+                [
+                  762,
+                  382
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "V02",
+              "confidence": 0.9354603886604309,
+              "bbox_xyxy": [
+                93,
+                414,
+                145,
+                439
+              ],
+              "polygon": [
+                [
+                  93,
+                  414
+                ],
+                [
+                  145,
+                  414
+                ],
+                [
+                  145,
+                  439
+                ],
+                [
+                  93,
+                  439
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "레코드와 톤암",
+              "confidence": 0.991439163684845,
+              "bbox_xyxy": [
+                183,
+                414,
+                312,
+                438
+              ],
+              "polygon": [
+                [
+                  183,
+                  414
+                ],
+                [
+                  312,
+                  414
+                ],
+                [
+                  312,
+                  438
+                ],
+                [
+                  183,
+                  438
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "하단의 큰 원형 레코드와 오른쪽 아래 바늘",
+              "confidence": 0.9926527142524719,
+              "bbox_xyxy": [
+                352,
+                418,
+                732,
+                437
+              ],
+              "polygon": [
+                [
+                  352,
+                  418
+                ],
+                [
+                  732,
+                  418
+                ],
+                [
+                  732,
+                  437
+                ],
+                [
+                  352,
+                  437
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "원형 레코드와 톤암을 식별할 수 있어야",
+              "confidence": 0.964402973651886,
+              "bbox_xyxy": [
+                763,
+                417,
+                1117,
+                439
+              ],
+              "polygon": [
+                [
+                  763,
+                  417
+                ],
+                [
+                  1117,
+                  417
+                ],
+                [
+                  1117,
+                  439
+                ],
+                [
+                  763,
+                  439
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "필수",
+              "confidence": 0.9996856451034546,
+              "bbox_xyxy": [
+                92,
+                441,
+                144,
+                471
+              ],
+              "polygon": [
+                [
+                  92,
+                  441
+                ],
+                [
+                  144,
+                  441
+                ],
+                [
+                  144,
+                  471
+                ],
+                [
+                  92,
+                  471
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "톤암 형태를 포함한다.",
+              "confidence": 0.9874957203865051,
+              "bbox_xyxy": [
+                351,
+                446,
+                549,
+                464
+              ],
+              "polygon": [
+                [
+                  351,
+                  446
+                ],
+                [
+                  549,
+                  446
+                ],
+                [
+                  549,
+                  464
+                ],
+                [
+                  351,
+                  464
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "한다.레코드 외곽이 화면 아래로 의도",
+              "confidence": 0.9973783493041992,
+              "bbox_xyxy": [
+                763,
+                445,
+                1103,
+                467
+              ],
+              "polygon": [
+                [
+                  763,
+                  445
+                ],
+                [
+                  1103,
+                  445
+                ],
+                [
+                  1103,
+                  467
+                ],
+                [
+                  763,
+                  467
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "적으로 잘리는 구성은 허용한다.",
+              "confidence": 0.9897395968437195,
+              "bbox_xyxy": [
+                760,
+                470,
+                1050,
+                496
+              ],
+              "polygon": [
+                [
+                  760,
+                  470
+                ],
+                [
+                  1050,
+                  470
+                ],
+                [
+                  1050,
+                  496
+                ],
+                [
+                  760,
+                  496
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "V03",
+              "confidence": 0.9055003523826599,
+              "bbox_xyxy": [
+                92,
+                529,
+                145,
+                558
+              ],
+              "polygon": [
+                [
+                  92,
+                  529
+                ],
+                [
+                  145,
+                  529
+                ],
+                [
+                  145,
+                  558
+                ],
+                [
+                  92,
+                  558
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "연주자 선화",
+              "confidence": 0.9670947194099426,
+              "bbox_xyxy": [
+                185,
+                532,
+                294,
+                555
+              ],
+              "polygon": [
+                [
+                  185,
+                  532
+                ],
+                [
+                  294,
+                  532
+                ],
+                [
+                  294,
+                  555
+                ],
+                [
+                  185,
+                  555
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "왼쪽 아래와 오른쪽 아래에 흰 선으로 표현",
+              "confidence": 0.9237335920333862,
+              "bbox_xyxy": [
+                352,
+                534,
+                730,
+                553
+              ],
+              "polygon": [
+                [
+                  352,
+                  534
+                ],
+                [
+                  730,
+                  534
+                ],
+                [
+                  730,
+                  553
+                ],
+                [
+                  352,
+                  553
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "양쪽에 사람과 관악기 형태가 보이는지",
+              "confidence": 0.9949862360954285,
+              "bbox_xyxy": [
+                763,
+                533,
+                1110,
+                555
+              ],
+              "polygon": [
+                [
+                  763,
+                  533
+                ],
+                [
+                  1110,
+                  533
+                ],
+                [
+                  1110,
+                  555
+                ],
+                [
+                  763,
+                  555
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "필수",
+              "confidence": 0.9993093609809875,
+              "bbox_xyxy": [
+                93,
+                557,
+                144,
+                588
+              ],
+              "polygon": [
+                [
+                  93,
+                  557
+                ],
+                [
+                  144,
+                  557
+                ],
+                [
+                  144,
+                  588
+                ],
+                [
+                  93,
+                  588
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "한 관악기 연주자를 배치한다.",
+              "confidence": 0.9336073398590088,
+              "bbox_xyxy": [
+                352,
+                562,
+                615,
+                580
+              ],
+              "polygon": [
+                [
+                  352,
+                  562
+                ],
+                [
+                  615,
+                  562
+                ],
+                [
+                  615,
+                  580
+                ],
+                [
+                  352,
+                  580
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "확인한다.실제 인물의 신원이나 악기",
+              "confidence": 0.9515806436538696,
+              "bbox_xyxy": [
+                760,
+                556,
+                1098,
+                584
+              ],
+              "polygon": [
+                [
+                  760,
+                  556
+                ],
+                [
+                  1098,
+                  558
+                ],
+                [
+                  1098,
+                  584
+                ],
+                [
+                  760,
+                  583
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "세부 모델은 판단하지 않는다.",
+              "confidence": 0.9440351724624634,
+              "bbox_xyxy": [
+                763,
+                588,
+                1029,
+                610
+              ],
+              "polygon": [
+                [
+                  763,
+                  588
+                ],
+                [
+                  1029,
+                  588
+                ],
+                [
+                  1029,
+                  610
+                ],
+                [
+                  763,
+                  610
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "V04",
+              "confidence": 0.9169157147407532,
+              "bbox_xyxy": [
+                92,
+                645,
+                146,
+                674
+              ],
+              "polygon": [
+                [
+                  92,
+                  645
+                ],
+                [
+                  146,
+                  645
+                ],
+                [
+                  146,
+                  674
+                ],
+                [
+                  92,
+                  674
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "상단 로고 배치",
+              "confidence": 0.9973280429840088,
+              "bbox_xyxy": [
+                185,
+                649,
+                319,
+                671
+              ],
+              "polygon": [
+                [
+                  185,
+                  649
+                ],
+                [
+                  319,
+                  649
+                ],
+                [
+                  319,
+                  671
+                ],
+                [
+                  185,
+                  671
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "왼쪽 위에 수원특례시,오른쪽 위에 VIST",
+              "confidence": 0.9191945791244507,
+              "bbox_xyxy": [
+                352,
+                650,
+                719,
+                668
+              ],
+              "polygon": [
+                [
+                  352,
+                  650
+                ],
+                [
+                  719,
+                  650
+                ],
+                [
+                  719,
+                  668
+                ],
+                [
+                  352,
+                  668
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_034",
+              "text": "양쪽 로고가 잘리지 않고 읽혀야 한다.",
+              "confidence": 0.945478618144989,
+              "bbox_xyxy": [
+                762,
+                649,
+                1101,
+                671
+              ],
+              "polygon": [
+                [
+                  762,
+                  649
+                ],
+                [
+                  1101,
+                  649
+                ],
+                [
+                  1101,
+                  671
+                ],
+                [
+                  762,
+                  671
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_035",
+              "text": "필수",
+              "confidence": 0.9995923042297363,
+              "bbox_xyxy": [
+                92,
+                672,
+                144,
+                704
+              ],
+              "polygon": [
+                [
+                  92,
+                  672
+                ],
+                [
+                  144,
+                  672
+                ],
+                [
+                  144,
+                  704
+                ],
+                [
+                  92,
+                  704
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_036",
+              "text": "SUWON YEAR 및 2026-2027 수원 방문",
+              "confidence": 0.9725269079208374,
+              "bbox_xyxy": [
+                348,
+                675,
+                735,
+                699
+              ],
+              "polygon": [
+                [
+                  348,
+                  675
+                ],
+                [
+                  735,
+                  676
+                ],
+                [
+                  735,
+                  699
+                ],
+                [
+                  348,
+                  697
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_037",
+              "text": "원본의 좌우 위치 관계를 유지한다.",
+              "confidence": 0.9942007660865784,
+              "bbox_xyxy": [
+                763,
+                676,
+                1075,
+                699
+              ],
+              "polygon": [
+                [
+                  763,
+                  676
+                ],
+                [
+                  1075,
+                  676
+                ],
+                [
+                  1075,
+                  699
+                ],
+                [
+                  763,
+                  699
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_038",
+              "text": "의 해 로고를 배치한다.",
+              "confidence": 0.9658472537994385,
+              "bbox_xyxy": [
+                351,
+                704,
+                557,
+                726
+              ],
+              "polygon": [
+                [
+                  351,
+                  704
+                ],
+                [
+                  557,
+                  704
+                ],
+                [
+                  557,
+                  726
+                ],
+                [
+                  351,
+                  726
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_039",
+              "text": "V05",
+              "confidence": 0.9173668026924133,
+              "bbox_xyxy": [
+                92,
+                760,
+                145,
+                789
+              ],
+              "polygon": [
+                [
+                  92,
+                  760
+                ],
+                [
+                  145,
+                  760
+                ],
+                [
+                  145,
+                  789
+                ],
+                [
+                  92,
+                  789
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_040",
+              "text": "장식과 분위기",
+              "confidence": 0.9990993738174438,
+              "bbox_xyxy": [
+                185,
+                764,
+                314,
+                787
+              ],
+              "polygon": [
+                [
+                  185,
+                  764
+                ],
+                [
+                  314,
+                  764
+                ],
+                [
+                  314,
+                  787
+                ],
+                [
+                  185,
+                  787
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_041",
+              "text": "노란색 악기 선화와 작은 빛·별 장식을 유지",
+              "confidence": 0.9889917373657227,
+              "bbox_xyxy": [
+                352,
+                766,
+                734,
+                784
+              ],
+              "polygon": [
+                [
+                  352,
+                  766
+                ],
+                [
+                  734,
+                  766
+                ],
+                [
+                  734,
+                  784
+                ],
+                [
+                  352,
+                  784
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_042",
+              "text": "정성 검토 항목이다.장식의 정활한 개",
+              "confidence": 0.9394890666007996,
+              "bbox_xyxy": [
+                763,
+                764,
+                1101,
+                783
+              ],
+              "polygon": [
+                [
+                  763,
+                  764
+                ],
+                [
+                  1101,
+                  764
+                ],
+                [
+                  1101,
+                  783
+                ],
+                [
+                  763,
+                  783
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_043",
+              "text": "권장",
+              "confidence": 0.9995706677436829,
+              "bbox_xyxy": [
+                93,
+                788,
+                144,
+                818
+              ],
+              "polygon": [
+                [
+                  93,
+                  788
+                ],
+                [
+                  144,
+                  788
+                ],
+                [
+                  144,
+                  818
+                ],
+                [
+                  93,
+                  818
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_044",
+              "text": "해 밝은 야외 음악 축제 분위기를 표현한다.",
+              "confidence": 0.9804425239562988,
+              "bbox_xyxy": [
+                352,
+                795,
+                734,
+                813
+              ],
+              "polygon": [
+                [
+                  352,
+                  795
+                ],
+                [
+                  734,
+                  795
+                ],
+                [
+                  734,
+                  813
+                ],
+                [
+                  352,
+                  813
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_045",
+              "text": "수는 지정하지 않으며,이 항목만으로",
+              "confidence": 0.9785332679748535,
+              "bbox_xyxy": [
+                764,
+                795,
+                1094,
+                813
+              ],
+              "polygon": [
+                [
+                  764,
+                  795
+                ],
+                [
+                  1094,
+                  795
+                ],
+                [
+                  1094,
+                  813
+                ],
+                [
+                  764,
+                  813
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_046",
+              "text": "필수 불합격을 결정하지 않는다.",
+              "confidence": 0.9758314490318298,
+              "bbox_xyxy": [
+                763,
+                821,
+                1049,
+                843
+              ],
+              "polygon": [
+                [
+                  763,
+                  821
+                ],
+                [
+                  1049,
+                  821
+                ],
+                [
+                  1049,
+                  843
+                ],
+                [
+                  763,
+                  843
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_047",
+              "text": "V06",
+              "confidence": 0.9070823788642883,
+              "bbox_xyxy": [
+                93,
+                879,
+                145,
+                904
+              ],
+              "polygon": [
+                [
+                  93,
+                  879
+                ],
+                [
+                  145,
+                  879
+                ],
+                [
+                  145,
+                  904
+                ],
+                [
+                  93,
+                  904
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_048",
+              "text": "문구 가독성",
+              "confidence": 0.9560866355895996,
+              "bbox_xyxy": [
+                185,
+                880,
+                292,
+                903
+              ],
+              "polygon": [
+                [
+                  185,
+                  880
+                ],
+                [
+                  292,
+                  880
+                ],
+                [
+                  292,
+                  903
+                ],
+                [
+                  185,
+                  903
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_049",
+              "text": "행사명·날짜·시간·장소·대표 출연진을 초록",
+              "confidence": 0.9863813519477844,
+              "bbox_xyxy": [
+                352,
+                883,
+                722,
+                900
+              ],
+              "polygon": [
+                [
+                  352,
+                  883
+                ],
+                [
+                  722,
+                  883
+                ],
+                [
+                  722,
+                  900
+                ],
+                [
+                  352,
+                  900
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_050",
+              "text": "확대 화면과 전체 화면에서 검토한다.",
+              "confidence": 0.946258544921875,
+              "bbox_xyxy": [
+                764,
+                883,
+                1094,
+                901
+              ],
+              "polygon": [
+                [
+                  764,
+                  883
+                ],
+                [
+                  1094,
+                  883
+                ],
+                [
+                  1094,
+                  901
+                ],
+                [
+                  764,
+                  901
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_051",
+              "text": "권장",
+              "confidence": 0.9998030662536621,
+              "bbox_xyxy": [
+                92,
+                904,
+                144,
+                934
+              ],
+              "polygon": [
+                [
+                  92,
+                  904
+                ],
+                [
+                  144,
+                  904
+                ],
+                [
+                  144,
+                  934
+                ],
+                [
+                  92,
+                  934
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_052",
+              "text": "배경과 구별되는 대비로 표시한다.",
+              "confidence": 0.9699521660804749,
+              "bbox_xyxy": [
+                351,
+                909,
+                657,
+                929
+              ],
+              "polygon": [
+                [
+                  351,
+                  909
+                ],
+                [
+                  657,
+                  910
+                ],
+                [
+                  657,
+                  929
+                ],
+                [
+                  351,
+                  927
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_053",
+              "text": "글자 크기의 수치 기준은 정하지 않으며",
+              "confidence": 0.9736829400062561,
+              "bbox_xyxy": [
+                764,
+                910,
+                1114,
+                929
+              ],
+              "polygon": [
+                [
+                  764,
+                  910
+                ],
+                [
+                  1114,
+                  910
+                ],
+                [
+                  1114,
+                  929
+                ],
+                [
+                  764,
+                  929
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_054",
+              "text": "개선 의견으로 기록한다.",
+              "confidence": 0.988457441329956,
+              "bbox_xyxy": [
+                770,
+                938,
+                988,
+                956
+              ],
+              "polygon": [
+                [
+                  770,
+                  938
+                ],
+                [
+                  988,
+                  938
+                ],
+                [
+                  988,
+                  956
+                ],
+                [
+                  770,
+                  956
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_055",
+              "text": "T01",
+              "confidence": 0.9942957758903503,
+              "bbox_xyxy": [
+                93,
+                995,
+                142,
+                1020
+              ],
+              "polygon": [
+                [
+                  93,
+                  995
+                ],
+                [
+                  142,
+                  995
+                ],
+                [
+                  142,
+                  1020
+                ],
+                [
+                  93,
+                  1020
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_056",
+              "text": "이미지 크기",
+              "confidence": 0.9666409492492676,
+              "bbox_xyxy": [
+                185,
+                996,
+                294,
+                1018
+              ],
+              "polygon": [
+                [
+                  185,
+                  996
+                ],
+                [
+                  294,
+                  996
+                ],
+                [
+                  294,
+                  1018
+                ],
+                [
+                  185,
+                  1018
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_057",
+              "text": "가로 2527 x 세로 3572픽셀, 세로형",
+              "confidence": 0.9122022986412048,
+              "bbox_xyxy": [
+                351,
+                999,
+                687,
+                1016
+              ],
+              "polygon": [
+                [
+                  351,
+                  999
+                ],
+                [
+                  687,
+                  999
+                ],
+                [
+                  687,
+                  1016
+                ],
+                [
+                  351,
+                  1016
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_058",
+              "text": "실제 이미지 메타데이터로 정확한 픽셀",
+              "confidence": 0.9442907571792603,
+              "bbox_xyxy": [
+                762,
+                995,
+                1110,
+                1018
+              ],
+              "polygon": [
+                [
+                  762,
+                  995
+                ],
+                [
+                  1110,
+                  996
+                ],
+                [
+                  1110,
+                  1018
+                ],
+                [
+                  762,
+                  1017
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_059",
+              "text": "필수",
+              "confidence": 0.999637246131897,
+              "bbox_xyxy": [
+                94,
+                1022,
+                142,
+                1049
+              ],
+              "polygon": [
+                [
+                  94,
+                  1022
+                ],
+                [
+                  142,
+                  1022
+                ],
+                [
+                  142,
+                  1049
+                ],
+                [
+                  94,
+                  1049
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_060",
+              "text": "수를 확인한다.임의 축소본을 원본 대",
+              "confidence": 0.9639245271682739,
+              "bbox_xyxy": [
+                763,
+                1025,
+                1103,
+                1047
+              ],
+              "polygon": [
+                [
+                  763,
+                  1025
+                ],
+                [
+                  1103,
+                  1025
+                ],
+                [
+                  1103,
+                  1047
+                ],
+                [
+                  763,
+                  1047
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_061",
+              "text": "신 제출하지 않는다.",
+              "confidence": 0.9422208666801453,
+              "bbox_xyxy": [
+                763,
+                1052,
+                942,
+                1075
+              ],
+              "polygon": [
+                [
+                  763,
+                  1052
+                ],
+                [
+                  942,
+                  1052
+                ],
+                [
+                  942,
+                  1075
+                ],
+                [
+                  763,
+                  1075
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_062",
+              "text": "T02",
+              "confidence": 0.9970319271087646,
+              "bbox_xyxy": [
+                93,
+                1110,
+                144,
+                1135
+              ],
+              "polygon": [
+                [
+                  93,
+                  1110
+                ],
+                [
+                  144,
+                  1110
+                ],
+                [
+                  144,
+                  1135
+                ],
+                [
+                  93,
+                  1135
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_063",
+              "text": "파일 형식과 색",
+              "confidence": 0.9961330890655518,
+              "bbox_xyxy": [
+                185,
+                1112,
+                320,
+                1134
+              ],
+              "polygon": [
+                [
+                  185,
+                  1112
+                ],
+                [
+                  320,
+                  1112
+                ],
+                [
+                  320,
+                  1134
+                ],
+                [
+                  185,
+                  1134
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_064",
+              "text": "정적 JPEG 이미지 1개,확장자,ipq,RGB",
+              "confidence": 0.9113731980323792,
+              "bbox_xyxy": [
+                351,
+                1114,
+                718,
+                1133
+              ],
+              "polygon": [
+                [
+                  351,
+                  1114
+                ],
+                [
+                  718,
+                  1114
+                ],
+                [
+                  718,
+                  1133
+                ],
+                [
+                  351,
+                  1133
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_065",
+              "text": "실제 파일 형식·전체 디코딩·색상 모드",
+              "confidence": 0.9889788627624512,
+              "bbox_xyxy": [
+                764,
+                1114,
+                1098,
+                1133
+              ],
+              "polygon": [
+                [
+                  764,
+                  1114
+                ],
+                [
+                  1098,
+                  1114
+                ],
+                [
+                  1098,
+                  1133
+                ],
+                [
+                  764,
+                  1133
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_066",
+              "text": "필수",
+              "confidence": 0.9997202157974243,
+              "bbox_xyxy": [
+                93,
+                1135,
+                144,
+                1167
+              ],
+              "polygon": [
+                [
+                  93,
+                  1135
+                ],
+                [
+                  144,
+                  1135
+                ],
+                [
+                  144,
+                  1167
+                ],
+                [
+                  93,
+                  1167
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_067",
+              "text": "상",
+              "confidence": 0.9941389560699463,
+              "bbox_xyxy": [
+                182,
+                1138,
+                210,
+                1166
+              ],
+              "polygon": [
+                [
+                  182,
+                  1138
+                ],
+                [
+                  210,
+                  1138
+                ],
+                [
+                  210,
+                  1166
+                ],
+                [
+                  182,
+                  1166
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_068",
+              "text": "색상 모드",
+              "confidence": 0.989124596118927,
+              "bbox_xyxy": [
+                348,
+                1139,
+                439,
+                1162
+              ],
+              "polygon": [
+                [
+                  348,
+                  1139
+                ],
+                [
+                  439,
+                  1139
+                ],
+                [
+                  439,
+                  1162
+                ],
+                [
+                  348,
+                  1162
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_069",
+              "text": "를 확인한다.파일명은 자유이며 원본",
+              "confidence": 0.9881706237792969,
+              "bbox_xyxy": [
+                763,
+                1141,
+                1097,
+                1163
+              ],
+              "polygon": [
+                [
+                  763,
+                  1141
+                ],
+                [
+                  1097,
+                  1141
+                ],
+                [
+                  1097,
+                  1163
+                ],
+                [
+                  763,
+                  1163
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_070",
+              "text": "해시와 같아야 한다는 조건은 두지 않는",
+              "confidence": 0.9984549283981323,
+              "bbox_xyxy": [
+                762,
+                1167,
+                1117,
+                1192
+              ],
+              "polygon": [
+                [
+                  762,
+                  1167
+                ],
+                [
+                  1117,
+                  1170
+                ],
+                [
+                  1116,
+                  1192
+                ],
+                [
+                  762,
+                  1189
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_071",
+              "text": "다.",
+              "confidence": 0.9948077201843262,
+              "bbox_xyxy": [
+                759,
+                1195,
+                794,
+                1221
+              ],
+              "polygon": [
+                [
+                  759,
+                  1195
+                ],
+                [
+                  794,
+                  1195
+                ],
+                [
+                  794,
+                  1221
+                ],
+                [
+                  759,
+                  1221
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_072",
+              "text": "T03",
+              "confidence": 0.9980023503303528,
+              "bbox_xyxy": [
+                93,
+                1254,
+                142,
+                1280
+              ],
+              "polygon": [
+                [
+                  93,
+                  1254
+                ],
+                [
+                  142,
+                  1254
+                ],
+                [
+                  142,
+                  1280
+                ],
+                [
+                  93,
+                  1280
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_073",
+              "text": "편집가능한원",
+              "confidence": 0.9965052008628845,
+              "bbox_xyxy": [
+                183,
+                1256,
+                320,
+                1279
+              ],
+              "polygon": [
+                [
+                  183,
+                  1256
+                ],
+                [
+                  320,
+                  1256
+                ],
+                [
+                  320,
+                  1279
+                ],
+                [
+                  183,
+                  1279
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_074",
+              "text": "PSD-AI 등 편집 원본은 이번 납품 범위에",
+              "confidence": 0.9134388566017151,
+              "bbox_xyxy": [
+                350,
+                1258,
+                711,
+                1276
+              ],
+              "polygon": [
+                [
+                  350,
+                  1258
+                ],
+                [
+                  711,
+                  1258
+                ],
+                [
+                  711,
+                  1276
+                ],
+                [
+                  350,
+                  1276
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_075",
+              "text": "별도 합의 전에는 편집 원본이 없다는",
+              "confidence": 0.9417983889579773,
+              "bbox_xyxy": [
+                763,
+                1256,
+                1097,
+                1279
+              ],
+              "polygon": [
+                [
+                  763,
+                  1256
+                ],
+                [
+                  1097,
+                  1256
+                ],
+                [
+                  1097,
+                  1279
+                ],
+                [
+                  763,
+                  1279
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_076",
+              "text": "선택",
+              "confidence": 0.9994128942489624,
+              "bbox_xyxy": [
+                92,
+                1280,
+                144,
+                1310
+              ],
+              "polygon": [
+                [
+                  92,
+                  1280
+                ],
+                [
+                  144,
+                  1280
+                ],
+                [
+                  144,
+                  1310
+                ],
+                [
+                  92,
+                  1310
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_077",
+              "text": "본",
+              "confidence": 0.9990123510360718,
+              "bbox_xyxy": [
+                182,
+                1283,
+                210,
+                1310
+              ],
+              "polygon": [
+                [
+                  182,
+                  1283
+                ],
+                [
+                  210,
+                  1283
+                ],
+                [
+                  210,
+                  1310
+                ],
+                [
+                  182,
+                  1310
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_078",
+              "text": "포함하지 않는다.",
+              "confidence": 0.9328418374061584,
+              "bbox_xyxy": [
+                351,
+                1284,
+                502,
+                1306
+              ],
+              "polygon": [
+                [
+                  351,
+                  1284
+                ],
+                [
+                  502,
+                  1284
+                ],
+                [
+                  502,
+                  1306
+                ],
+                [
+                  351,
+                  1306
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_079",
+              "text": "이유로 불합격 처리하지 않는다.현재",
+              "confidence": 0.9476356506347656,
+              "bbox_xyxy": [
+                763,
+                1284,
+                1097,
+                1306
+              ],
+              "polygon": [
+                [
+                  763,
+                  1284
+                ],
+                [
+                  1097,
+                  1284
+                ],
+                [
+                  1097,
+                  1306
+                ],
+                [
+                  763,
+                  1306
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_080",
+              "text": "테스트는 이미지와 이PDF로 진행한다.",
+              "confidence": 0.9279875159263611,
+              "bbox_xyxy": [
+                760,
+                1309,
+                1114,
+                1337
+              ],
+              "polygon": [
+                [
+                  760,
+                  1309
+                ],
+                [
+                  1114,
+                  1310
+                ],
+                [
+                  1114,
+                  1337
+                ],
+                [
+                  760,
+                  1335
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_081",
+              "text": "기록:조건 ID/관찰내용/근거영역/충족·불일치·확인 필요/보완의견.자동 검수결과는검토 전 초안으로 취급한다.",
+              "confidence": 0.9454237818717957,
+              "bbox_xyxy": [
+                84,
+                1376,
+                1005,
+                1395
+              ],
+              "polygon": [
+                [
+                  84,
+                  1376
+                ],
+                [
+                  1005,
+                  1376
+                ],
+                [
+                  1005,
+                  1395
+                ],
+                [
+                  84,
+                  1395
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_082",
+              "text": "테스트용가상계약-실제발주·계약체결을의미하지않음",
+              "confidence": 0.9789355397224426,
+              "bbox_xyxy": [
+                72,
+                1626,
+                492,
+                1650
+              ],
+              "polygon": [
+                [
+                  72,
+                  1626
+                ],
+                [
+                  492,
+                  1627
+                ],
+                [
+                  492,
+                  1650
+                ],
+                [
+                  72,
+                  1648
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_083",
+              "text": "3/3",
+              "confidence": 0.9796045422554016,
+              "bbox_xyxy": [
+                1073,
+                1626,
+                1122,
+                1651
+              ],
+              "polygon": [
+                [
+                  1073,
+                  1626
+                ],
+                [
+                  1122,
+                  1626
+                ],
+                [
+                  1122,
+                  1651
+                ],
+                [
+                  1073,
+                  1651
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        }
+      ]
+    },
+    "warnings": [
+      "PDF 페이지 이미지와 OCR 판독문을 함께 읽은 초안입니다. 출처 문구는 교정하지 않은 OCR입니다. 숫자·날짜·조건 누락 여부를 PDF 원본과 대조해 주세요.",
+      "ID가 표시된 조건 16개 항목을 추출했습니다. 표 밖 조건·공통 규칙과 확인 메모도 원본에서 확인해 주세요."
+    ]
+  },
+  "code_sha256": {
+    "backend/app/requirements_pdf.py": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+    "backend/app/document_sources.py": "41030d710e5e000aa015db8ede9c3c3ec04009be9828dc95b7e4df6c1e556fb6",
+    "backend/app/document_conditions.py": "820cc320366c8cd0d12c170d1fde2812cbb7a208b930415055b449921a6d70c7"
+  }
+}

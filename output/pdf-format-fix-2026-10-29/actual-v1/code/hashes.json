@@ -1,0 +1,5 @@
+{
+  "backend/app/requirements_pdf.py": "073236fc7da64e64e23415aa4c1c238bf9fc3c8ca172a2f21c7e0ac9a2bccedd",
+  "backend/app/document_sources.py": "9d656cad3903d419e192dcfecaf5b7c5ff98b8211865b537445a8fcbed7af8a3",
+  "backend/app/document_conditions.py": "a5181b3f84a47b3b743efc829d55691094b3b1aca9d6ab036378354dc1460538"
+}

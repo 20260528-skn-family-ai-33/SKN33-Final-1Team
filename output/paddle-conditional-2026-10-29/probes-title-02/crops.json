@@ -1,0 +1,34 @@
+[
+  {
+    "id": "0-rgb-d0-0.4",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/0-rgb-d0-0.4.png"
+  },
+  {
+    "id": "1-rgb-d0-0.6",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/1-rgb-d0-0.6.png"
+  },
+  {
+    "id": "2-mask-d0-0.4",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/2-mask-d0-0.4.png"
+  },
+  {
+    "id": "3-mask-d0-0.6",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/3-mask-d0-0.6.png"
+  },
+  {
+    "id": "4-mask-d5-0.4",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/4-mask-d5-0.4.png"
+  },
+  {
+    "id": "5-mask-d9-0.4",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/5-mask-d9-0.4.png"
+  },
+  {
+    "id": "6-mask-d5-0.6",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/6-mask-d5-0.6.png"
+  },
+  {
+    "id": "7-white-d5-0.4",
+    "path": "output/paddle-conditional-2026-10-29/probes-title-02/7-white-d5-0.4.png"
+  }
+]

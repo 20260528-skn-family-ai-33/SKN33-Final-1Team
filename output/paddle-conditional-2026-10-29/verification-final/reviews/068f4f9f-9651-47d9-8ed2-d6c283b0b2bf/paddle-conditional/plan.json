@@ -1,0 +1,500 @@
+[
+  {
+    "id": "condition-crop-00",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-00.png",
+    "language": "ko",
+    "transform": {
+      "kind": "title",
+      "language": "ko",
+      "source_ocr_id": "paddle_007",
+      "source_box": [
+        242,
+        619,
+        2254,
+        1073
+      ],
+      "mode": "mask",
+      "vertical_dilation": 1,
+      "vertical_scale": 0.4,
+      "bbox_xyxy": [
+        254.0,
+        572.0,
+        2242.0,
+        1122.0
+      ],
+      "polygon": [
+        [
+          254.0,
+          572.0
+        ],
+        [
+          2242.0,
+          572.0
+        ],
+        [
+          2242.0,
+          1122.0
+        ],
+        [
+          254.0,
+          1122.0
+        ]
+      ]
+    },
+    "dimensions": [
+      2012,
+      182
+    ],
+    "image_sha256": "96314928917f959704d48bb5382a14aea78e8ebc4ec991ec506048f7d5353712"
+  },
+  {
+    "id": "condition-crop-01",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-01.png",
+    "language": "ko",
+    "transform": {
+      "kind": "title",
+      "language": "ko",
+      "source_ocr_id": "paddle_007",
+      "source_box": [
+        242,
+        619,
+        2254,
+        1073
+      ],
+      "mode": "mask",
+      "vertical_dilation": 5,
+      "vertical_scale": 0.6,
+      "bbox_xyxy": [
+        254.0,
+        572.0,
+        2242.0,
+        1122.0
+      ],
+      "polygon": [
+        [
+          254.0,
+          572.0
+        ],
+        [
+          2242.0,
+          572.0
+        ],
+        [
+          2242.0,
+          1122.0
+        ],
+        [
+          254.0,
+          1122.0
+        ]
+      ]
+    },
+    "dimensions": [
+      2012,
+      272
+    ],
+    "image_sha256": "72277391f3b4df41b5fbb6518da8bc9974a0bd04d305644c7f1e71c19a30edee"
+  },
+  {
+    "id": "condition-crop-02",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-02.png",
+    "language": "ko",
+    "transform": {
+      "kind": "title",
+      "language": "ko",
+      "source_ocr_id": "paddle_007",
+      "source_box": [
+        242,
+        619,
+        2254,
+        1073
+      ],
+      "mode": "mask",
+      "vertical_dilation": 9,
+      "vertical_scale": 0.4,
+      "bbox_xyxy": [
+        254.0,
+        572.0,
+        2242.0,
+        1122.0
+      ],
+      "polygon": [
+        [
+          254.0,
+          572.0
+        ],
+        [
+          2242.0,
+          572.0
+        ],
+        [
+          2242.0,
+          1122.0
+        ],
+        [
+          254.0,
+          1122.0
+        ]
+      ]
+    },
+    "dimensions": [
+      2012,
+      182
+    ],
+    "image_sha256": "ff42bf57b918763652a1ca202e85f2c57bb57e873857ccdb1c4287ac946dd43c"
+  },
+  {
+    "id": "condition-crop-03",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-03.png",
+    "language": "ko",
+    "transform": {
+      "kind": "year",
+      "language": "ko",
+      "source_ocr_id": "paddle_004",
+      "source_box": [
+        904,
+        119,
+        1575,
+        668
+      ],
+      "mode": "rgb",
+      "vertical_dilation": 1,
+      "vertical_scale": 0.6,
+      "bbox_xyxy": [
+        916.5,
+        131.0,
+        1562.5,
+        656.0
+      ],
+      "polygon": [
+        [
+          916.5,
+          131.0
+        ],
+        [
+          1562.5,
+          131.0
+        ],
+        [
+          1562.5,
+          656.0
+        ],
+        [
+          916.5,
+          656.0
+        ]
+      ]
+    },
+    "dimensions": [
+      671,
+      329
+    ],
+    "image_sha256": "4319f2bb52c492a298a9112cede79aea9f5b2286b7a18fcba50dfa02e12bc201"
+  },
+  {
+    "id": "condition-crop-04",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-04.png",
+    "language": "ko",
+    "transform": {
+      "kind": "year",
+      "language": "ko",
+      "source_ocr_id": "paddle_004",
+      "source_box": [
+        904,
+        119,
+        1575,
+        668
+      ],
+      "mode": "rgb",
+      "vertical_dilation": 1,
+      "vertical_scale": 0.4,
+      "bbox_xyxy": [
+        916.5,
+        131.0,
+        1562.5,
+        656.0
+      ],
+      "polygon": [
+        [
+          916.5,
+          131.0
+        ],
+        [
+          1562.5,
+          131.0
+        ],
+        [
+          1562.5,
+          656.0
+        ],
+        [
+          916.5,
+          656.0
+        ]
+      ]
+    },
+    "dimensions": [
+      671,
+      220
+    ],
+    "image_sha256": "ada540e501770df40e334b891b89f8123119c1c3f245a80a7002ff2adf619ab6"
+  },
+  {
+    "id": "condition-crop-05",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-05.png",
+    "language": "en",
+    "transform": {
+      "kind": "arc",
+      "language": "en",
+      "source_ocr_id": null,
+      "center": [
+        1251.4115344415645,
+        3333.5116715503386
+      ],
+      "radius": 878.4943405281571,
+      "angle_range": [
+        -2.7887930969858834,
+        -0.38202630197522225
+      ],
+      "band": 240,
+      "bbox_xyxy": [
+        314.4153878404204,
+        2339.4993196270675,
+        2177.9255489653206,
+        3071.4319380771194
+      ],
+      "polygon": [
+        [
+          314.4153878404204,
+          2988.5056291085193
+        ],
+        [
+          411.63949231485265,
+          2793.350709124238
+        ],
+        [
+          548.9051414215305,
+          2623.951444485193
+        ],
+        [
+          719.6673106306301,
+          2488.3850369502534
+        ],
+        [
+          915.7838129236737,
+          2393.1154887553057
+        ],
+        [
+          1127.9035300379,
+          2342.685389644684
+        ],
+        [
+          1345.9122872995513,
+          2339.4993196270675
+        ],
+        [
+          1559.4151120896222,
+          2383.7091951254997
+        ],
+        [
+          1758.2318811614618,
+          2473.2070253827833
+        ],
+        [
+          1932.88272362979,
+          2603.7254245073123
+        ],
+        [
+          2075.040034915102,
+          2769.041086599739
+        ],
+        [
+          2177.9255489653206,
+          2961.2715219723646
+        ],
+        [
+          1955.2268771149807,
+          3050.743872763515
+        ],
+        [
+          1877.071121031133,
+          2904.7183106854413
+        ],
+        [
+          1769.0830116367686,
+          2779.1382357583816
+        ],
+        [
+          1636.411578055452,
+          2679.991487446933
+        ],
+        [
+          1485.3827859810606,
+          2612.00552600043
+        ],
+        [
+          1323.197906491023,
+          2578.422020315983
+        ],
+        [
+          1157.590149033858,
+          2580.8422804805127
+        ],
+        [
+          996.4559308264014,
+          2619.150904991542
+        ],
+        [
+          847.4783642687712,
+          2691.521283267616
+        ],
+        [
+          717.7609150412646,
+          2794.502691080699
+        ],
+        [
+          613.4886985945828,
+          2923.1848260744564
+        ],
+        [
+          539.6335649062254,
+          3071.4319380771194
+        ]
+      ]
+    },
+    "dimensions": [
+      2114,
+      240
+    ],
+    "image_sha256": "52f39508204042ab4c97df3c23580d07d18da7dbea4fd149065cc9fd15e2e5e7"
+  },
+  {
+    "id": "condition-crop-06",
+    "path": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/paddle-conditional-2026-10-29/verification-final/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/paddle-conditional/condition-crop-06.png",
+    "language": "en",
+    "transform": {
+      "kind": "arc",
+      "language": "en",
+      "source_ocr_id": null,
+      "center": [
+        1251.4115344415645,
+        3333.5116715503386
+      ],
+      "radius": 878.4943405281571,
+      "angle_range": [
+        -2.7887930969858834,
+        -0.38202630197522225
+      ],
+      "band": 320,
+      "bbox_xyxy": [
+        276.8790249961197,
+        2299.6788695122486,
+        2215.0419942737103,
+        3085.2529895718862
+      ],
+      "polygon": [
+        [
+          276.8790249961197,
+          2974.6845776137525
+        ],
+        [
+          377.9979579348977,
+          2771.711689632535
+        ],
+        [
+          520.7625124849083,
+          2595.5262367192754
+        ],
+        [
+          698.3654683576068,
+          2454.5289958973594
+        ],
+        [
+          902.3384599398858,
+          2355.4429193826
+        ],
+        [
+          1122.9557602052405,
+          2302.9925745053797
+        ],
+        [
+          1349.698017434306,
+          2299.6788695122486
+        ],
+        [
+          1571.7538331077158,
+          2345.659806646345
+        ],
+        [
+          1778.5352650124632,
+          2438.7429483720916
+        ],
+        [
+          1960.1826756286268,
+          2574.4899559654673
+        ],
+        [
+          2108.0348538957633,
+          2746.4282159187887
+        ],
+        [
+          2215.0419942737103,
+          2946.3594635071727
+        ],
+        [
+          1918.110431806591,
+          3065.655931228707
+        ],
+        [
+          1844.0763020504717,
+          2927.331181366392
+        ],
+        [
+          1741.7830596379317,
+          2808.3737043002266
+        ],
+        [
+          1616.1081942044505,
+          2714.4555644576253
+        ],
+        [
+          1473.044064962967,
+          2650.054914479585
+        ],
+        [
+          1319.4121763562684,
+          2618.2424704308023
+        ],
+        [
+          1162.5379188665177,
+          2620.5350956198176
+        ],
+        [
+          1009.9012838101894,
+          2656.823474364248
+        ],
+        [
+          868.7802065417945,
+          2725.3773243205096
+        ],
+        [
+          745.903543977887,
+          2822.9278988466167
+        ],
+        [
+          647.1302329745378,
+          2944.8238455661594
+        ],
+        [
+          577.1699277505262,
+          3085.2529895718862
+        ]
+      ]
+    },
+    "dimensions": [
+      2114,
+      320
+    ],
+    "image_sha256": "7c3388a07f189f1c11f147766e4cd720c1752b0dde02c059ef664d80a9ef96c9"
+  }
+]

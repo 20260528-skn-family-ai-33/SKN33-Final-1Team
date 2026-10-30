@@ -1,0 +1,547 @@
+{
+  "document": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/pdf/highres30-synthetic-specs-2026-10-29-v1/documents/NEW114_spec_v1.pdf",
+  "sha256": "a34b349770d0cf9a2a5e92e4216dd9f2013c26f3d63894bb34e705f8c4c1546e",
+  "status": "failed",
+  "error": "추출 조건과 OCR 근거의 연결을 확인하지 못했습니다. PDF 원본과 조건을 확인해 주세요.",
+  "http_status": 502,
+  "elapsed_seconds": 91.601,
+  "calls": [
+    {
+      "pages": [
+        1
+      ],
+      "phase": "primary",
+      "sources": [
+        {
+          "id": "p1-s1",
+          "page": 1,
+          "text": "CREATIVE CHECKER/HIGHRES 3O | 2026-10-29 | v1.0"
+        },
+        {
+          "id": "p1-s2",
+          "page": 1,
+          "text": "가상 테스트 명세서 ㅣ 실제 발주 문서 아님 | NEW114"
+        },
+        {
+          "id": "p1-s3",
+          "page": 1,
+          "text": "제45회 수원시 장애인의 날 기념식 및 복지 박람회"
+        },
+        {
+          "id": "p1-s4",
+          "page": 1,
+          "text": "대상 이미지 NEW114.jpg|문서 ID SYN-NEW114-V1|미승인 초안"
+        },
+        {
+          "id": "p1-s5",
+          "page": 1,
+          "text": "01 | 제작 목적과 범위"
+        },
+        {
+          "id": "p1-s6",
+          "page": 1,
+          "text": "아래 조건을 만족하는 행사 홍보 포스터를 검수하는 테스트에 사용합니다,조건은 제공된 고해상도 포스터에서 관찰 하여 역작성했습니다. 실제 발주·납품 계약이나 원래 제작 요구사항을 입증하지 않습니다."
+        },
+        {
+          "id": "p1-s7",
+          "page": 1,
+          "text": "02 | 필수 문구 및 행사 정보"
+        },
+        {
+          "id": "p1-s8",
+          "page": 1,
+          "text": "NEW114-C01 | 행사 제목"
+        },
+        {
+          "id": "p1-s9",
+          "page": 1,
+          "text": "행사 제목에 다음 문구를 포함해야 합니다: 제45회 수원시 장애인의 날 기념식 및 복지 박람회"
+        },
+        {
+          "id": "p1-s10",
+          "page": 1,
+          "text": "NEW114-C02 | 행사 날짜"
+        },
+        {
+          "id": "p1-s11",
+          "page": 1,
+          "text": "행사 날짜에 다음 문구를 포함해야 합니다: 2025년 4월 17일(목)"
+        },
+        {
+          "id": "p1-s12",
+          "page": 1,
+          "text": "NEW114-C03 | 행사 장소"
+        },
+        {
+          "id": "p1-s13",
+          "page": 1,
+          "text": "행사 장소에 다음 문구를 포함해야 합니다: 수원종합운동장 실내체육관 및 주차장"
+        },
+        {
+          "id": "p1-s14",
+          "page": 1,
+          "text": "NEW114-C04 | 기념식 시간"
+        },
+        {
+          "id": "p1-s15",
+          "page": 1,
+          "text": "기념식 시간에 다음 문구를 포함해야 합니다:11:00~12:00"
+        },
+        {
+          "id": "p1-s16",
+          "page": 1,
+          "text": "NEW114-C05 | 박람회시간"
+        },
+        {
+          "id": "p1-s17",
+          "page": 1,
+          "text": "박람회 시간에 다음 문구를 포함해야 합니다: 13:00~16:30"
+        },
+        {
+          "id": "p1-s18",
+          "page": 1,
+          "text": "문구판정:줄바꿈·연속공백은 정규화할 수있습니다.날짜·시간·인명·장소의 의미가 달라지는 변경은일치로 보지 않습니다.판독할수 없는 글자는 추정하지 말고 확인 필요로 남깁니다"
+        },
+        {
+          "id": "p1-s19",
+          "page": 1,
+          "text": "포스터관찰기반A역작성초안|사람승인없음 | 1/2"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        202824
+      ],
+      "ocr_source_count": 19,
+      "allowed_source_ids": [
+        "p1-s1",
+        "p1-s2",
+        "p1-s3",
+        "p1-s4",
+        "p1-s5",
+        "p1-s6",
+        "p1-s7",
+        "p1-s8",
+        "p1-s9",
+        "p1-s10",
+        "p1-s11",
+        "p1-s12",
+        "p1-s13",
+        "p1-s14",
+        "p1-s15",
+        "p1-s16",
+        "p1-s17",
+        "p1-s18",
+        "p1-s19"
+      ],
+      "seconds": 17.851,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "행사 제목",
+            "requirement": "제45회 수원시 장애인의 날 기념식 및 복지 박람회",
+            "values": [
+              "제45회 수원시 장애인의 날 기념식 및 복지 박람회"
+            ],
+            "level": "필수",
+            "inspection": "줄바꿈·연속공백은 정규화할 수 있습니다. 판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "행사 날짜",
+            "requirement": "2025년 4월 17일(목)",
+            "values": [
+              "2025년 4월 17일(목)"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "행사 장소",
+            "requirement": "수원종합운동장 실내체육관 및 주차장",
+            "values": [
+              "수원종합운동장 실내체육관 및 주차장"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "기념식 시간",
+            "requirement": "11:00~12:00",
+            "values": [
+              "11:00~12:00"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s1"
+          },
+          {
+            "label": "박람회 시간",
+            "requirement": "13:00~16:30",
+            "values": [
+              "13:00~16:30"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s1"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        2
+      ],
+      "phase": "primary",
+      "sources": [
+        {
+          "id": "p2-s1",
+          "page": 2,
+          "text": "CREATIVE CHECKER/HIGHRES 3O | 2026-10-29 | v1.0"
+        },
+        {
+          "id": "p2-s2",
+          "page": 2,
+          "text": "가상 테스트 명세서 / 실제 발주 문서 아님 | NEW114"
+        },
+        {
+          "id": "p2-s3",
+          "page": 2,
+          "text": "03 | 필수 시각 요소"
+        },
+        {
+          "id": "p2-s4",
+          "page": 2,
+          "text": "NEW114-C06 | 인물일러스트"
+        },
+        {
+          "id": "p2-s5",
+          "page": 2,
+          "text": "인물 일러스트에 다음 시각 요소가 있어야 합니다: 휠체어를 탄 인물"
+        },
+        {
+          "id": "p2-s6",
+          "page": 2,
+          "text": "04 | 납품 파일기준"
+        },
+        {
+          "id": "p2-s7",
+          "page": 2,
+          "text": "NEW114-C07 | 파일 형식"
+        },
+        {
+          "id": "p2-s8",
+          "page": 2,
+          "text": "납품 포스터 파일의 형식은 JPEG여야 합니다."
+        },
+        {
+          "id": "p2-s9",
+          "page": 2,
+          "text": "NEW114-C08 | 원본 가로·세로"
+        },
+        {
+          "id": "p2-s10",
+          "page": 2,
+          "text": "납품 포스터의 원본 크기는 가로 2041 px, 세로 2041 px여야 합니다."
+        },
+        {
+          "id": "p2-s11",
+          "page": 2,
+          "text": "판정과 확인 필요 사항"
+        },
+        {
+          "id": "p2-s12",
+          "page": 2,
+          "text": "판정은 조건별 충족/위반/확인 필요로 구분하고,근거 문구 또는 이미지 영역을함께 기록합니다,실행 오류는 세 판정과 별도 상태로 기록합니다.원본을임의로 축소한 결과를원본전체 검수결과로 보고하지않습니다."
+        },
+        {
+          "id": "p2-s13",
+          "page": 2,
+          "text": "확인 필요: 상단 제목은 제45회이나행사내용의 세부 문구에는 제44회라고 적혀 있습니다. 상단 제목 기준 조건으로 작성했고,회 차 충돌은 확인 필요사항으로 남겼습니다"
+        },
+        {
+          "id": "p2-s14",
+          "page": 2,
+          "text": "06 | 출처와 자료 구분"
+        },
+        {
+          "id": "p2-s15",
+          "page": 2,
+          "text": "작성 근거:선정된 포스터 이미지직접관찰.공개행사 게시물은파일출처입니다.사람 확정 정답 및독립적인위반 사례는 포함하지않 습니다, 조건 JSON은 PDF 추출 대조용 초안이며 기존 8개 이미지 분류 라벨과 구분합니다"
+        },
+        {
+          "id": "p2-s16",
+          "page": 2,
+          "text": "0|0|ㅈ| SHA-256: 9dfddcf20f6de7415e8b30e4131383921caa514d51858b78e9e9cf76f728bdda 공개 게시물: https:/mayor.suwon.go.kr/culture/ingCultureView.do?ctrSeqNo=1863&listType=main"
+        },
+        {
+          "id": "p2-s17",
+          "page": 2,
+          "text": "포스터 관찰기반A역작성초안사람승인없음 | 2/2"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        187657
+      ],
+      "ocr_source_count": 17,
+      "allowed_source_ids": [
+        "p2-s1",
+        "p2-s2",
+        "p2-s3",
+        "p2-s4",
+        "p2-s5",
+        "p2-s6",
+        "p2-s7",
+        "p2-s8",
+        "p2-s9",
+        "p2-s10",
+        "p2-s11",
+        "p2-s12",
+        "p2-s13",
+        "p2-s14",
+        "p2-s15",
+        "p2-s16",
+        "p2-s17"
+      ],
+      "seconds": 13.533,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "인물 일러스트",
+            "requirement": "휠체어를 탄 인물이 포함되어야 합니다.",
+            "values": [
+              "휠체어를 탄 인물"
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s1"
+          },
+          {
+            "label": "파일 형식",
+            "requirement": "JPEG 형식이어야 합니다.",
+            "values": [
+              "JPEG"
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s2"
+          },
+          {
+            "label": "원본 가로·세로",
+            "requirement": "가로 2041 px, 세로 2041 px이어야 합니다.",
+            "values": [
+              "가로 2041 px",
+              "세로 2041 px"
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s3"
+          },
+          {
+            "label": "상단 제목",
+            "requirement": "제 45 회",
+            "values": [
+              "제 45 회"
+            ],
+            "level": "명시 없음",
+            "inspection": "행사내용의 세부 문구에 제 44 회라고 적혀 있을 수 있음",
+            "type": "information",
+            "source_id": "p2-s4"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        1
+      ],
+      "phase": "supplement",
+      "sources": [
+        {
+          "id": "p1-s6",
+          "page": 1,
+          "text": "아래 조건을 만족하는 행사 홍보 포스터를 검수하는 테스트에 사용합니다,조건은 제공된 고해상도 포스터에서 관찰 하여 역작성했습니다. 실제 발주·납품 계약이나 원래 제작 요구사항을 입증하지 않습니다."
+        },
+        {
+          "id": "p1-s9",
+          "page": 1,
+          "text": "행사 제목에 다음 문구를 포함해야 합니다: 제45회 수원시 장애인의 날 기념식 및 복지 박람회"
+        },
+        {
+          "id": "p1-s11",
+          "page": 1,
+          "text": "행사 날짜에 다음 문구를 포함해야 합니다: 2025년 4월 17일(목)"
+        },
+        {
+          "id": "p1-s13",
+          "page": 1,
+          "text": "행사 장소에 다음 문구를 포함해야 합니다: 수원종합운동장 실내체육관 및 주차장"
+        },
+        {
+          "id": "p1-s15",
+          "page": 1,
+          "text": "기념식 시간에 다음 문구를 포함해야 합니다:11:00~12:00"
+        },
+        {
+          "id": "p1-s17",
+          "page": 1,
+          "text": "박람회 시간에 다음 문구를 포함해야 합니다: 13:00~16:30"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        202824
+      ],
+      "ocr_source_count": 6,
+      "allowed_source_ids": [
+        "p1-s6",
+        "p1-s9",
+        "p1-s11",
+        "p1-s13",
+        "p1-s15",
+        "p1-s17"
+      ],
+      "seconds": 17.29,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "행사 제목",
+            "requirement": "제45회 수원시 장애인의 날 기념식 및 복지 박람회",
+            "values": [
+              "제45회 수원시 장애인의 날 기념식 및 복지 박람회"
+            ],
+            "level": "필수",
+            "inspection": "줄바꿈·연속 공백은 정규화할 수 있습니다. 판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s9"
+          },
+          {
+            "label": "행사 날짜",
+            "requirement": "2025년 4월 17일(목)",
+            "values": [
+              "2025년 4월 17일(목)"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s11"
+          },
+          {
+            "label": "행사 장소",
+            "requirement": "수원종합운동장 실내체육관 및 주차장",
+            "values": [
+              "수원종합운동장 실내체육관 및 주차장"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s13"
+          },
+          {
+            "label": "기념식 시간",
+            "requirement": "11:00~12:00",
+            "values": [
+              "11:00~12:00"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s15"
+          },
+          {
+            "label": "박람회 시간",
+            "requirement": "13:00~16:30",
+            "values": [
+              "13:00~16:30"
+            ],
+            "level": "필수",
+            "inspection": "판독할 수 없는 글자는 추정하지 말고 확인 필요로 남깁니다.",
+            "type": "information",
+            "source_id": "p1-s17"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        2
+      ],
+      "phase": "supplement",
+      "sources": [
+        {
+          "id": "p2-s15",
+          "page": 2,
+          "text": "작성 근거:선정된 포스터 이미지직접관찰.공개행사 게시물은파일출처입니다.사람 확정 정답 및독립적인위반 사례는 포함하지않 습니다, 조건 JSON은 PDF 추출 대조용 초안이며 기존 8개 이미지 분류 라벨과 구분합니다"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        187657
+      ],
+      "ocr_source_count": 1,
+      "allowed_source_ids": [
+        "p2-s15"
+      ],
+      "seconds": 12.771,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "인물 일러스트",
+            "requirement": "휠체어를 탄 인물이 포함되어야 합니다.",
+            "values": [
+              "휠체어를 탄 인물이 포함되어야 합니다."
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s15"
+          },
+          {
+            "label": "파일 형식",
+            "requirement": "JPEG 형식이어야 합니다.",
+            "values": [
+              "JPEG 형식이어야 합니다."
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s15"
+          },
+          {
+            "label": "원본 가로·세로",
+            "requirement": "가로 2041 px, 세로 2041 px이어야 합니다.",
+            "values": [
+              "가로 2041 px, 세로 2041 px이어야 합니다."
+            ],
+            "level": "필수",
+            "inspection": "",
+            "type": "visual",
+            "source_id": "p2-s15"
+          },
+          {
+            "label": "상단 제목",
+            "requirement": "제 45 회",
+            "values": [
+              "제 45 회"
+            ],
+            "level": "명시 없음",
+            "inspection": "행사내용의 세부 문구에 제 44 회라고 적혀 있을 수 있음",
+            "type": "information",
+            "source_id": "p2-s15"
+          }
+        ]
+      }
+    }
+  ]
+}

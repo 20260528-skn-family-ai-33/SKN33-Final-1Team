@@ -1,0 +1,134 @@
+{
+  "outputs": [
+    {
+      "id": "title-1",
+      "text": "수원재스페시벌",
+      "confidence": 0.7840208411216736,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/title-1.png",
+          "page_index": null,
+          "rec_text": "수원재스페시벌",
+          "rec_score": 0.7840208411216736
+        }
+      },
+      "elapsed_seconds": 0.09479899999860208
+    },
+    {
+      "id": "title-0.6",
+      "text": "수원재스페시니벌",
+      "confidence": 0.9137818813323975,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/title-0.6.png",
+          "page_index": null,
+          "rec_text": "수원재스페시니벌",
+          "rec_score": 0.9137818813323975
+        }
+      },
+      "elapsed_seconds": 0.06122754199896008
+    },
+    {
+      "id": "title-0.4",
+      "text": "수원재스페시니벌",
+      "confidence": 0.970528781414032,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/title-0.4.png",
+          "page_index": null,
+          "rec_text": "수원재스페시니벌",
+          "rec_score": 0.970528781414032
+        }
+      },
+      "elapsed_seconds": 0.07264579099137336
+    },
+    {
+      "id": "title-0.3",
+      "text": "수원시스페스니벌",
+      "confidence": 0.9346071481704712,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/title-0.3.png",
+          "page_index": null,
+          "rec_text": "수원시스페스니벌",
+          "rec_score": 0.9346071481704712
+        }
+      },
+      "elapsed_seconds": 0.08993258299597073
+    },
+    {
+      "id": "year-1",
+      "text": "2026",
+      "confidence": 0.8565746545791626,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/year-1.png",
+          "page_index": null,
+          "rec_text": "2026",
+          "rec_score": 0.8565746545791626
+        }
+      },
+      "elapsed_seconds": 0.0564948329993058
+    },
+    {
+      "id": "year-0.6",
+      "text": "2026",
+      "confidence": 0.9155291318893433,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/year-0.6.png",
+          "page_index": null,
+          "rec_text": "2026",
+          "rec_score": 0.9155291318893433
+        }
+      },
+      "elapsed_seconds": 0.05512337498657871
+    },
+    {
+      "id": "year-0.4",
+      "text": "2026",
+      "confidence": 0.9809848070144653,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/year-0.4.png",
+          "page_index": null,
+          "rec_text": "2026",
+          "rec_score": 0.9809848070144653
+        }
+      },
+      "elapsed_seconds": 0.053952500005834736
+    },
+    {
+      "id": "year-0.3",
+      "text": "20126",
+      "confidence": 0.8616283535957336,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-01/year-0.3.png",
+          "page_index": null,
+          "rec_text": "20126",
+          "rec_score": 0.8616283535957336
+        }
+      },
+      "elapsed_seconds": 0.05329804199573118
+    }
+  ],
+  "device": "cpu",
+  "model_identity": {
+    "model": "korean_PP-OCRv5_mobile_rec",
+    "repository": "PaddlePaddle/korean_PP-OCRv5_mobile_rec",
+    "revision": "c02ecaf1f22bfd1c618cce154fd19185b47e663a",
+    "sha256": {
+      "inference.json": "562404e3c590c50c93778d5f0a94df21b47b5ab8f3ea6d47c7f8a7930c3bc844",
+      "inference.pdiparams": "cac3e5f12cf04aaa77f6a5bc704e4e736ef2908476551891d84b41b4e9090462",
+      "inference.yml": "f757fa1c40e99edcf27e9cce879b93eb2a51fa46f5ef39095689b8c37dd75998"
+    },
+    "engine": "paddleocr",
+    "paddleocr_version": "3.7.0",
+    "paddle_version": "3.3.1",
+    "paddlex_version": "3.7.2"
+  },
+  "load_seconds": 2.1452160000044387,
+  "inference_seconds": 0.5386532499978784,
+  "peak_rss_bytes": 924073984
+}

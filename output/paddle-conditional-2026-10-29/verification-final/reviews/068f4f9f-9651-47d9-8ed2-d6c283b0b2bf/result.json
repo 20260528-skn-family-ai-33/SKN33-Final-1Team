@@ -1,0 +1,2435 @@
+{
+  "id": "068f4f9f-9651-47d9-8ed2-d6c283b0b2bf",
+  "status": "completed",
+  "stage": "completed",
+  "progress": 100,
+  "criteria_version": 1,
+  "project_name": "실제 Paddle 조건별 재인식 검증",
+  "criteria": [
+    {
+      "id": "criterion-1",
+      "text": "행사명: 2026 수원 재즈 페스티벌",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다."
+    },
+    {
+      "id": "criterion-2",
+      "text": "기간: 2026.09.18.(금)-2026.09.19.(토)",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다."
+    },
+    {
+      "id": "criterion-3",
+      "text": "시간: 17:30",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다."
+    },
+    {
+      "id": "criterion-4",
+      "text": "장소: 광교호수공원 재미난 밭",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다."
+    },
+    {
+      "id": "criterion-5",
+      "text": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다."
+    },
+    {
+      "id": "criterion-6",
+      "text": "19일 대표 출연진: 이은미 x 민경인 trio",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다."
+    },
+    {
+      "id": "criterion-7",
+      "text": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다."
+    },
+    {
+      "id": "criterion-8",
+      "text": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다."
+    },
+    {
+      "id": "criterion-9",
+      "text": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다."
+    },
+    {
+      "id": "criterion-10",
+      "text": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다."
+    },
+    {
+      "id": "criterion-11",
+      "text": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다."
+    },
+    {
+      "id": "criterion-12",
+      "text": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다."
+    },
+    {
+      "id": "criterion-13",
+      "text": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+      "type": "visual",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다."
+    },
+    {
+      "id": "criterion-14",
+      "text": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다."
+    },
+    {
+      "id": "criterion-15",
+      "text": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다."
+    },
+    {
+      "id": "criterion-16",
+      "text": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+      "type": "information",
+      "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다."
+    }
+  ],
+  "image": {
+    "width": 2527,
+    "height": 3572,
+    "url": "/api/reviews/068f4f9f-9651-47d9-8ed2-d6c283b0b2bf/image",
+    "sha256": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+    "actual_format": "JPEG",
+    "original_mode": "RGB",
+    "original_extension": ".jpg",
+    "original_frames": 1
+  },
+  "results": [
+    {
+      "criterion_id": "criterion-1",
+      "criterion": "행사명: 2026 수원 재즈 페스티벌",
+      "type": "information",
+      "status": "review",
+      "observed_text": "2026 수원재즈페스티벌",
+      "reason": "입력한 기대 문구를 인접한 OCR 근거와 비교했습니다. 영역 재인식으로 얻은 후보는 원본 대조 전 자동 확정하지 않았습니다.",
+      "evidence": [
+        {
+          "text": "2026",
+          "bbox_xyxy": [
+            916.5,
+            131.0,
+            1562.5,
+            656.0
+          ],
+          "ocr_id": "paddle_004",
+          "confidence": 0.9619708061218262,
+          "recognition_engine": "paddleocr",
+          "baseline_text": "2021",
+          "alternatives": [
+            {
+              "text": "2026",
+              "confidence": 0.9581078290939331,
+              "bbox_xyxy": [
+                916.5,
+                131.0,
+                1562.5,
+                656.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-03"
+            },
+            {
+              "text": "2026",
+              "confidence": 0.9619708061218262,
+              "bbox_xyxy": [
+                916.5,
+                131.0,
+                1562.5,
+                656.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-04"
+            }
+          ],
+          "requires_review": true,
+          "baseline_confidence": 0.7896192669868469,
+          "baseline_recognition_engine": "paddleocr",
+          "baseline_requires_review": false,
+          "selection_reason": "new_model_candidate_unverified"
+        },
+        {
+          "text": "수원재즈페스티벌",
+          "bbox_xyxy": [
+            254.0,
+            572.0,
+            2242.0,
+            1122.0
+          ],
+          "ocr_id": "paddle_007",
+          "confidence": 0.9795600175857544,
+          "recognition_engine": "paddleocr",
+          "baseline_text": "수원재시게시밀",
+          "alternatives": [
+            {
+              "text": "수원재즈페스티벌",
+              "confidence": 0.8341183662414551,
+              "bbox_xyxy": [
+                254.0,
+                572.0,
+                2242.0,
+                1122.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-00"
+            },
+            {
+              "text": "수원재즈페스티벌",
+              "confidence": 0.9795600175857544,
+              "bbox_xyxy": [
+                254.0,
+                572.0,
+                2242.0,
+                1122.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-01"
+            },
+            {
+              "text": "수원재즈페스티벌",
+              "confidence": 0.8972839713096619,
+              "bbox_xyxy": [
+                254.0,
+                572.0,
+                2242.0,
+                1122.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-02"
+            }
+          ],
+          "requires_review": true,
+          "baseline_confidence": 0.7056036591529846,
+          "baseline_recognition_engine": "paddleocr",
+          "baseline_requires_review": false,
+          "selection_reason": "new_model_candidate_unverified"
+        }
+      ],
+      "check_method": "plain_expected_text"
+    },
+    {
+      "criterion_id": "criterion-2",
+      "criterion": "기간: 2026.09.18.(금)-2026.09.19.(토)",
+      "type": "information",
+      "status": "review",
+      "observed_text": "9.18.(금) / 9.19.(토) / 9.18.() ~ 9.19.(토) / 2026",
+      "reason": "월·일과 연도 재인식 후보를 읽었지만 후보 검증과 전체 기간 대조를 위해 원본 확인이 필요합니다.",
+      "evidence": [
+        {
+          "text": "9.18.(금)",
+          "bbox_xyxy": [
+            161.0,
+            1225.0,
+            507.5,
+            1334.0
+          ],
+          "ocr_id": "paddle_010",
+          "confidence": 0.9763772487640381,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "9.19.(토)",
+          "bbox_xyxy": [
+            2013.5,
+            1222.5,
+            2346.5,
+            1331.0
+          ],
+          "ocr_id": "paddle_011",
+          "confidence": 0.992190957069397,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "9.18.() ~ 9.19.(토)",
+          "bbox_xyxy": [
+            386.5,
+            2026.5,
+            1057.5,
+            2452.5
+          ],
+          "ocr_id": "paddle_028",
+          "confidence": 0.8516571521759033,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "2026",
+          "bbox_xyxy": [
+            916.5,
+            131.0,
+            1562.5,
+            656.0
+          ],
+          "ocr_id": "paddle_004",
+          "confidence": 0.9619708061218262,
+          "recognition_engine": "paddleocr",
+          "baseline_text": "2021",
+          "alternatives": [
+            {
+              "text": "2026",
+              "confidence": 0.9581078290939331,
+              "bbox_xyxy": [
+                916.5,
+                131.0,
+                1562.5,
+                656.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-03"
+            },
+            {
+              "text": "2026",
+              "confidence": 0.9619708061218262,
+              "bbox_xyxy": [
+                916.5,
+                131.0,
+                1562.5,
+                656.0
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-04"
+            }
+          ],
+          "requires_review": true,
+          "baseline_confidence": 0.7896192669868469,
+          "baseline_recognition_engine": "paddleocr",
+          "baseline_requires_review": false,
+          "selection_reason": "new_model_candidate_unverified"
+        }
+      ],
+      "check_method": "plain_date_fragments"
+    },
+    {
+      "criterion_id": "criterion-3",
+      "criterion": "시간: 17:30",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "17:30",
+      "reason": "기준에 지정된 문구가 OCR 근거에서 확인됐습니다. 공백과 유니코드 표현만 정규화했습니다.",
+      "evidence": [
+        {
+          "text": "17:30",
+          "bbox_xyxy": [
+            1036.5,
+            2034.5,
+            1304.5,
+            2159.5
+          ],
+          "ocr_id": "paddle_024",
+          "confidence": 0.9992848634719849,
+          "recognition_engine": "paddleocr"
+        }
+      ]
+    },
+    {
+      "criterion_id": "criterion-4",
+      "criterion": "장소: 광교호수공원 재미난 밭",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "광교호수공원 재미난밭",
+      "reason": "입력한 기대 문구를 인접한 OCR 근거와 비교했습니다.",
+      "evidence": [
+        {
+          "text": "광교호수공원",
+          "bbox_xyxy": [
+            1356.0,
+            2015.5,
+            1852.5,
+            2274.0
+          ],
+          "ocr_id": "paddle_023",
+          "confidence": 0.9997026324272156,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "재미난밭",
+          "bbox_xyxy": [
+            1791.5,
+            2161.0,
+            2142.0,
+            2434.5
+          ],
+          "ocr_id": "paddle_025",
+          "confidence": 0.9989449977874756,
+          "recognition_engine": "paddleocr"
+        }
+      ],
+      "check_method": "plain_expected_text"
+    },
+    {
+      "criterion_id": "criterion-5",
+      "criterion": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "정동환(멜로망스)× Funk Messengers / 9.18.(금)",
+      "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+      "evidence": [
+        {
+          "text": "정동환(멜로망스)× Funk Messengers",
+          "bbox_xyxy": [
+            152.0,
+            1772.0,
+            1390.5,
+            1906.5
+          ],
+          "ocr_id": "paddle_021",
+          "confidence": 0.9381519556045532,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "9.18.(금)",
+          "bbox_xyxy": [
+            161.0,
+            1225.0,
+            507.5,
+            1334.0
+          ],
+          "ocr_id": "paddle_010",
+          "confidence": 0.9763772487640381,
+          "recognition_engine": "paddleocr"
+        }
+      ],
+      "check_method": "plain_text_and_date_column"
+    },
+    {
+      "criterion_id": "criterion-6",
+      "criterion": "19일 대표 출연진: 이은미 x 민경인 trio",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "이은미 / ×민경인trio / 9.19.(토)",
+      "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+      "evidence": [
+        {
+          "text": "이은미",
+          "bbox_xyxy": [
+            1620.5,
+            1760.0,
+            1930.0,
+            1901.5
+          ],
+          "ocr_id": "paddle_020",
+          "confidence": 0.9993224143981934,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "×민경인trio",
+          "bbox_xyxy": [
+            1926.5,
+            1786.0,
+            2360.5,
+            1895.0
+          ],
+          "ocr_id": "paddle_022",
+          "confidence": 0.9392268657684326,
+          "recognition_engine": "paddleocr"
+        },
+        {
+          "text": "9.19.(토)",
+          "bbox_xyxy": [
+            2013.5,
+            1222.5,
+            2346.5,
+            1331.0
+          ],
+          "ocr_id": "paddle_011",
+          "confidence": 0.992190957069397,
+          "recognition_engine": "paddleocr"
+        }
+      ],
+      "check_method": "plain_text_and_date_column"
+    },
+    {
+      "criterion_id": "criterion-7",
+      "criterion": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+      "type": "information",
+      "status": "review",
+      "observed_text": "2026 SUWON JAZZ FESTIVAL",
+      "reason": "입력한 기대 문구를 인접한 OCR 근거와 비교했습니다. 영역 재인식으로 얻은 후보는 원본 대조 전 자동 확정하지 않았습니다.",
+      "evidence": [
+        {
+          "text": "2026 SUWON JAZZ FESTIVAL",
+          "bbox_xyxy": [
+            314.4153878404204,
+            2339.4993196270675,
+            2177.9255489653206,
+            3071.4319380771194
+          ],
+          "ocr_id": "conditional-arc",
+          "confidence": 0.9699798226356506,
+          "recognition_engine": "paddleocr",
+          "baseline_text": "",
+          "alternatives": [
+            {
+              "text": "2026 SUWON JAZZ FESTIVAL",
+              "confidence": 0.9699798226356506,
+              "bbox_xyxy": [
+                314.4153878404204,
+                2339.4993196270675,
+                2177.9255489653206,
+                3071.4319380771194
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-05"
+            },
+            {
+              "text": "2026 SUWON JAZZ. FESTIVAL.",
+              "confidence": 0.9440476298332214,
+              "bbox_xyxy": [
+                276.8790249961197,
+                2299.6788695122486,
+                2215.0419942737103,
+                3085.2529895718862
+              ],
+              "engine": "paddleocr",
+              "attempt_id": "condition-crop-06"
+            }
+          ],
+          "requires_review": true,
+          "baseline_confidence": null,
+          "baseline_recognition_engine": "paddleocr",
+          "baseline_requires_review": true,
+          "selection_reason": "new_model_candidate_unverified"
+        }
+      ],
+      "check_method": "plain_expected_text"
+    },
+    {
+      "criterion_id": "criterion-8",
+      "criterion": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-9",
+      "criterion": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-10",
+      "criterion": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-11",
+      "criterion": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-12",
+      "criterion": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-13",
+      "criterion": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+      "type": "visual",
+      "status": "review",
+      "observed_text": "",
+      "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+      "evidence": []
+    },
+    {
+      "criterion_id": "criterion-14",
+      "criterion": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "dimensions: [2527, 3572] / orientation: [2527, 3572]",
+      "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+      "evidence": [],
+      "check_method": "source_image_metadata",
+      "metadata_checks": [
+        {
+          "name": "dimensions",
+          "expected": [
+            2527,
+            3572
+          ],
+          "observed": [
+            2527,
+            3572
+          ],
+          "status": "pass"
+        },
+        {
+          "name": "orientation",
+          "expected": "세로형",
+          "observed": [
+            2527,
+            3572
+          ],
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "criterion_id": "criterion-15",
+      "criterion": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+      "type": "information",
+      "status": "pass",
+      "observed_text": "format: JPEG / extension: .jpg / color_mode: RGB / frames: 1",
+      "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+      "evidence": [],
+      "check_method": "source_image_metadata",
+      "metadata_checks": [
+        {
+          "name": "format",
+          "expected": "JPEG",
+          "observed": "JPEG",
+          "status": "pass"
+        },
+        {
+          "name": "extension",
+          "expected": ".jpg",
+          "observed": ".jpg",
+          "status": "pass"
+        },
+        {
+          "name": "color_mode",
+          "expected": "RGB",
+          "observed": "RGB",
+          "status": "pass"
+        },
+        {
+          "name": "frames",
+          "expected": 1,
+          "observed": 1,
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "criterion_id": "criterion-16",
+      "criterion": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+      "type": "information",
+      "status": "review",
+      "observed_text": "",
+      "reason": "금지·제외·부재 조건은 문구 포함 여부만으로 확정할 수 없습니다. 담당자의 확인이 필요합니다.",
+      "evidence": []
+    }
+  ],
+  "runtime": {
+    "engine": "paddleocr",
+    "execution_target": "local",
+    "device": "cpu",
+    "status": "success",
+    "pipeline": "paddle_full_v1",
+    "attempts": [
+      {
+        "device": "cpu",
+        "status": "success"
+      }
+    ]
+  },
+  "ocr": {
+    "records": [
+      {
+        "id": "paddle_001",
+        "text": "↓",
+        "confidence": 0.7522202134132385,
+        "bbox_xyxy": [
+          93.0,
+          89.5,
+          220.0,
+          256.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            93.0,
+            89.5
+          ],
+          [
+            220.0,
+            89.5
+          ],
+          [
+            220.0,
+            256.5
+          ],
+          [
+            93.0,
+            256.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_002",
+        "text": "Sewon",
+        "confidence": 0.6065975427627563,
+        "bbox_xyxy": [
+          2036.5,
+          97.5,
+          2422.5,
+          215.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2036.5,
+            97.5
+          ],
+          [
+            2422.5,
+            97.5
+          ],
+          [
+            2422.5,
+            215.0
+          ],
+          [
+            2036.5,
+            215.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_003",
+        "text": "수원특례시",
+        "confidence": 0.9980207681655884,
+        "bbox_xyxy": [
+          216.5,
+          125.0,
+          505.5,
+          207.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            216.5,
+            131.5
+          ],
+          [
+            503.5,
+            125.0
+          ],
+          [
+            505.5,
+            200.5
+          ],
+          [
+            218.5,
+            207.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_004",
+        "text": "2026",
+        "confidence": 0.9619708061218262,
+        "bbox_xyxy": [
+          916.5,
+          131.0,
+          1562.5,
+          656.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            916.5,
+            131.0
+          ],
+          [
+            1562.5,
+            131.0
+          ],
+          [
+            1562.5,
+            656.0
+          ],
+          [
+            916.5,
+            656.0
+          ]
+        ],
+        "baseline_text": "2021",
+        "baseline_confidence": 0.7896192669868469,
+        "baseline_recognition_engine": "paddleocr",
+        "baseline_requires_review": false,
+        "requires_review": true,
+        "selection_reason": "new_model_candidate_unverified",
+        "alternatives": [
+          {
+            "text": "2026",
+            "confidence": 0.9581078290939331,
+            "bbox_xyxy": [
+              916.5,
+              131.0,
+              1562.5,
+              656.0
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-03"
+          },
+          {
+            "text": "2026",
+            "confidence": 0.9619708061218262,
+            "bbox_xyxy": [
+              916.5,
+              131.0,
+              1562.5,
+              656.0
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-04"
+          }
+        ]
+      },
+      {
+        "id": "paddle_006",
+        "text": "2026-2027 수원 방문의 해",
+        "confidence": 0.9554659724235535,
+        "bbox_xyxy": [
+          2039.0,
+          203.5,
+          2414.0,
+          251.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2039.0,
+            203.5
+          ],
+          [
+            2414.0,
+            203.5
+          ],
+          [
+            2414.0,
+            251.0
+          ],
+          [
+            2039.0,
+            251.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_007",
+        "text": "수원재즈페스티벌",
+        "confidence": 0.9795600175857544,
+        "bbox_xyxy": [
+          254.0,
+          572.0,
+          2242.0,
+          1122.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            254.0,
+            572.0
+          ],
+          [
+            2242.0,
+            572.0
+          ],
+          [
+            2242.0,
+            1122.0
+          ],
+          [
+            254.0,
+            1122.0
+          ]
+        ],
+        "baseline_text": "수원재시게시밀",
+        "baseline_confidence": 0.7056036591529846,
+        "baseline_recognition_engine": "paddleocr",
+        "baseline_requires_review": false,
+        "requires_review": true,
+        "selection_reason": "new_model_candidate_unverified",
+        "alternatives": [
+          {
+            "text": "수원재즈페스티벌",
+            "confidence": 0.8341183662414551,
+            "bbox_xyxy": [
+              254.0,
+              572.0,
+              2242.0,
+              1122.0
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-00"
+          },
+          {
+            "text": "수원재즈페스티벌",
+            "confidence": 0.9795600175857544,
+            "bbox_xyxy": [
+              254.0,
+              572.0,
+              2242.0,
+              1122.0
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-01"
+          },
+          {
+            "text": "수원재즈페스티벌",
+            "confidence": 0.8972839713096619,
+            "bbox_xyxy": [
+              254.0,
+              572.0,
+              2242.0,
+              1122.0
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-02"
+          }
+        ]
+      },
+      {
+        "id": "paddle_008",
+        "text": "9",
+        "confidence": 0.1534079760313034,
+        "bbox_xyxy": [
+          242.5,
+          577.5,
+          276.5,
+          616.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            242.5,
+            577.5
+          ],
+          [
+            276.5,
+            577.5
+          ],
+          [
+            276.5,
+            616.5
+          ],
+          [
+            242.5,
+            616.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_009",
+        "text": "C",
+        "confidence": 0.3234301805496216,
+        "bbox_xyxy": [
+          2270.5,
+          1124.5,
+          2298.5,
+          1147.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2270.5,
+            1124.5
+          ],
+          [
+            2298.5,
+            1124.5
+          ],
+          [
+            2298.5,
+            1147.0
+          ],
+          [
+            2270.5,
+            1147.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_010",
+        "text": "9.18.(금)",
+        "confidence": 0.9763772487640381,
+        "bbox_xyxy": [
+          161.0,
+          1225.0,
+          507.5,
+          1334.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            161.0,
+            1225.0
+          ],
+          [
+            507.5,
+            1225.0
+          ],
+          [
+            507.5,
+            1334.0
+          ],
+          [
+            161.0,
+            1334.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_011",
+        "text": "9.19.(토)",
+        "confidence": 0.992190957069397,
+        "bbox_xyxy": [
+          2013.5,
+          1222.5,
+          2346.5,
+          1331.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2013.5,
+            1222.5
+          ],
+          [
+            2346.5,
+            1222.5
+          ],
+          [
+            2346.5,
+            1331.0
+          ],
+          [
+            2013.5,
+            1331.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_013",
+        "text": "문미향 퀄텐",
+        "confidence": 0.9329059720039368,
+        "bbox_xyxy": [
+          1977.0,
+          1395.5,
+          2363.5,
+          1501.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1977.0,
+            1395.5
+          ],
+          [
+            2363.5,
+            1395.5
+          ],
+          [
+            2363.5,
+            1501.5
+          ],
+          [
+            1977.0,
+            1501.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_014",
+        "text": "커먼스텔라",
+        "confidence": 0.9997991323471069,
+        "bbox_xyxy": [
+          169.0,
+          1403.5,
+          522.0,
+          1501.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            169.0,
+            1403.5
+          ],
+          [
+            522.0,
+            1403.5
+          ],
+          [
+            522.0,
+            1501.5
+          ],
+          [
+            169.0,
+            1501.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_015",
+        "text": "난아진",
+        "confidence": 0.9994929432868958,
+        "bbox_xyxy": [
+          169.0,
+          1523.5,
+          389.0,
+          1627.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            169.0,
+            1523.5
+          ],
+          [
+            389.0,
+            1523.5
+          ],
+          [
+            389.0,
+            1627.0
+          ],
+          [
+            169.0,
+            1627.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_016",
+        "text": "조재범라틴유닛",
+        "confidence": 0.9995962381362915,
+        "bbox_xyxy": [
+          1866.5,
+          1523.5,
+          2364.0,
+          1624.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1868.0,
+            1523.5
+          ],
+          [
+            2364.0,
+            1529.5
+          ],
+          [
+            2362.5,
+            1624.5
+          ],
+          [
+            1866.5,
+            1618.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_017",
+        "text": "*",
+        "confidence": 0.5536057353019714,
+        "bbox_xyxy": [
+          1636.0,
+          1603.0,
+          1707.5,
+          1674.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1671.0,
+            1603.0
+          ],
+          [
+            1707.5,
+            1639.5
+          ],
+          [
+            1672.5,
+            1674.5
+          ],
+          [
+            1636.0,
+            1638.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_018",
+        "text": "gOnny (거니)",
+        "confidence": 0.9721038937568665,
+        "bbox_xyxy": [
+          163.0,
+          1643.0,
+          604.0,
+          1756.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            163.0,
+            1649.5
+          ],
+          [
+            602.5,
+            1643.0
+          ],
+          [
+            604.0,
+            1749.5
+          ],
+          [
+            164.5,
+            1756.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_019",
+        "text": "펑키투나잇",
+        "confidence": 0.8821781873703003,
+        "bbox_xyxy": [
+          2008.0,
+          1652.0,
+          2363.5,
+          1752.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2008.0,
+            1652.0
+          ],
+          [
+            2363.5,
+            1652.0
+          ],
+          [
+            2363.5,
+            1752.5
+          ],
+          [
+            2008.0,
+            1752.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_020",
+        "text": "이은미",
+        "confidence": 0.9993224143981934,
+        "bbox_xyxy": [
+          1620.5,
+          1760.0,
+          1930.0,
+          1901.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1624.0,
+            1760.0
+          ],
+          [
+            1930.0,
+            1767.5
+          ],
+          [
+            1926.5,
+            1901.5
+          ],
+          [
+            1620.5,
+            1894.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_021",
+        "text": "정동환(멜로망스)× Funk Messengers",
+        "confidence": 0.9381519556045532,
+        "bbox_xyxy": [
+          152.0,
+          1772.0,
+          1390.5,
+          1906.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            153.0,
+            1772.0
+          ],
+          [
+            1390.5,
+            1780.5
+          ],
+          [
+            1390.0,
+            1906.5
+          ],
+          [
+            152.0,
+            1897.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_022",
+        "text": "×민경인trio",
+        "confidence": 0.9392268657684326,
+        "bbox_xyxy": [
+          1926.5,
+          1786.0,
+          2360.5,
+          1895.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1926.5,
+            1786.0
+          ],
+          [
+            2360.5,
+            1786.0
+          ],
+          [
+            2360.5,
+            1895.0
+          ],
+          [
+            1926.5,
+            1895.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_023",
+        "text": "광교호수공원",
+        "confidence": 0.9997026324272156,
+        "bbox_xyxy": [
+          1356.0,
+          2015.5,
+          1852.5,
+          2274.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1393.0,
+            2015.5
+          ],
+          [
+            1852.5,
+            2145.0
+          ],
+          [
+            1815.5,
+            2274.0
+          ],
+          [
+            1356.0,
+            2144.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_024",
+        "text": "17:30",
+        "confidence": 0.9992848634719849,
+        "bbox_xyxy": [
+          1036.5,
+          2034.5,
+          1304.5,
+          2159.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1036.5,
+            2056.5
+          ],
+          [
+            1295.5,
+            2034.5
+          ],
+          [
+            1304.5,
+            2138.0
+          ],
+          [
+            1045.5,
+            2159.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_025",
+        "text": "재미난밭",
+        "confidence": 0.9989449977874756,
+        "bbox_xyxy": [
+          1791.5,
+          2161.0,
+          2142.0,
+          2434.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1851.5,
+            2161.0
+          ],
+          [
+            2142.0,
+            2338.0
+          ],
+          [
+            2081.5,
+            2434.5
+          ],
+          [
+            1791.5,
+            2257.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_026",
+        "text": "S0",
+        "confidence": 0.3016887605190277,
+        "bbox_xyxy": [
+          2442.5,
+          2282.5,
+          2462.0,
+          2338.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            2442.5,
+            2282.5
+          ],
+          [
+            2462.0,
+            2282.5
+          ],
+          [
+            2462.0,
+            2338.5
+          ],
+          [
+            2442.5,
+            2338.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_027",
+        "text": "TESTIVA",
+        "confidence": 0.6374889612197876,
+        "bbox_xyxy": [
+          1464.0,
+          2310.5,
+          2256.0,
+          3145.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1778.0,
+            2310.5
+          ],
+          [
+            2256.0,
+            2892.5
+          ],
+          [
+            1942.0,
+            3145.0
+          ],
+          [
+            1464.0,
+            2563.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_028",
+        "text": "9.18.() ~ 9.19.(토)",
+        "confidence": 0.8516571521759033,
+        "bbox_xyxy": [
+          386.5,
+          2026.5,
+          1057.5,
+          2452.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            386.5,
+            2315.5
+          ],
+          [
+            990.5,
+            2026.5
+          ],
+          [
+            1057.5,
+            2163.5
+          ],
+          [
+            453.5,
+            2452.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_029",
+        "text": "JAZ?",
+        "confidence": 0.7098581790924072,
+        "bbox_xyxy": [
+          1170.5,
+          2324.0,
+          1587.5,
+          2623.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            1204.0,
+            2324.0
+          ],
+          [
+            1587.5,
+            2374.5
+          ],
+          [
+            1554.0,
+            2623.0
+          ],
+          [
+            1170.5,
+            2572.5
+          ]
+        ]
+      },
+      {
+        "id": "paddle_030",
+        "text": "*",
+        "confidence": 0.9926055669784546,
+        "bbox_xyxy": [
+          603.5,
+          3410.0,
+          629.0,
+          3441.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            603.5,
+            3410.0
+          ],
+          [
+            629.0,
+            3410.0
+          ],
+          [
+            629.0,
+            3441.0
+          ],
+          [
+            603.5,
+            3441.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_031",
+        "text": "*",
+        "confidence": 0.836986780166626,
+        "bbox_xyxy": [
+          11.5,
+          3435.5,
+          51.0,
+          3477.0
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            11.5,
+            3435.5
+          ],
+          [
+            51.0,
+            3435.5
+          ],
+          [
+            51.0,
+            3477.0
+          ],
+          [
+            11.5,
+            3477.0
+          ]
+        ]
+      },
+      {
+        "id": "paddle_032",
+        "text": "*",
+        "confidence": 0.38197842240333557,
+        "bbox_xyxy": [
+          519.0,
+          3457.5,
+          547.0,
+          3482.5
+        ],
+        "recognition_engine": "paddleocr",
+        "polygon": [
+          [
+            519.0,
+            3457.5
+          ],
+          [
+            547.0,
+            3457.5
+          ],
+          [
+            547.0,
+            3482.5
+          ],
+          [
+            519.0,
+            3482.5
+          ]
+        ]
+      },
+      {
+        "id": "conditional-arc",
+        "baseline_text": "",
+        "baseline_confidence": null,
+        "baseline_recognition_engine": "paddleocr",
+        "baseline_requires_review": true,
+        "text": "2026 SUWON JAZZ FESTIVAL",
+        "confidence": 0.9699798226356506,
+        "bbox_xyxy": [
+          314.4153878404204,
+          2339.4993196270675,
+          2177.9255489653206,
+          3071.4319380771194
+        ],
+        "polygon": [
+          [
+            314.4153878404204,
+            2988.5056291085193
+          ],
+          [
+            411.63949231485265,
+            2793.350709124238
+          ],
+          [
+            548.9051414215305,
+            2623.951444485193
+          ],
+          [
+            719.6673106306301,
+            2488.3850369502534
+          ],
+          [
+            915.7838129236737,
+            2393.1154887553057
+          ],
+          [
+            1127.9035300379,
+            2342.685389644684
+          ],
+          [
+            1345.9122872995513,
+            2339.4993196270675
+          ],
+          [
+            1559.4151120896222,
+            2383.7091951254997
+          ],
+          [
+            1758.2318811614618,
+            2473.2070253827833
+          ],
+          [
+            1932.88272362979,
+            2603.7254245073123
+          ],
+          [
+            2075.040034915102,
+            2769.041086599739
+          ],
+          [
+            2177.9255489653206,
+            2961.2715219723646
+          ],
+          [
+            1955.2268771149807,
+            3050.743872763515
+          ],
+          [
+            1877.071121031133,
+            2904.7183106854413
+          ],
+          [
+            1769.0830116367686,
+            2779.1382357583816
+          ],
+          [
+            1636.411578055452,
+            2679.991487446933
+          ],
+          [
+            1485.3827859810606,
+            2612.00552600043
+          ],
+          [
+            1323.197906491023,
+            2578.422020315983
+          ],
+          [
+            1157.590149033858,
+            2580.8422804805127
+          ],
+          [
+            996.4559308264014,
+            2619.150904991542
+          ],
+          [
+            847.4783642687712,
+            2691.521283267616
+          ],
+          [
+            717.7609150412646,
+            2794.502691080699
+          ],
+          [
+            613.4886985945828,
+            2923.1848260744564
+          ],
+          [
+            539.6335649062254,
+            3071.4319380771194
+          ]
+        ],
+        "recognition_engine": "paddleocr",
+        "requires_review": true,
+        "selection_reason": "new_model_candidate_unverified",
+        "alternatives": [
+          {
+            "text": "2026 SUWON JAZZ FESTIVAL",
+            "confidence": 0.9699798226356506,
+            "bbox_xyxy": [
+              314.4153878404204,
+              2339.4993196270675,
+              2177.9255489653206,
+              3071.4319380771194
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-05"
+          },
+          {
+            "text": "2026 SUWON JAZZ. FESTIVAL.",
+            "confidence": 0.9440476298332214,
+            "bbox_xyxy": [
+              276.8790249961197,
+              2299.6788695122486,
+              2215.0419942737103,
+              3085.2529895718862
+            ],
+            "engine": "paddleocr",
+            "attempt_id": "condition-crop-06"
+          }
+        ]
+      }
+    ],
+    "input_dimensions": [
+      5054,
+      7144
+    ],
+    "coordinate_space": "normalized_original_pixels",
+    "scale": 2,
+    "conditional_retry": {
+      "version": "conditional_paddle_v1",
+      "status": "success",
+      "discovery": {
+        "condition_ids": [
+          "criterion-1",
+          "criterion-2",
+          "criterion-7",
+          "criterion-16"
+        ],
+        "arc_discovery": {
+          "status": "found",
+          "anchor_ids": [
+            "paddle_027",
+            "paddle_029"
+          ],
+          "component_inliers": 17
+        }
+      },
+      "skipped": [],
+      "attempts": [
+        {
+          "id": "condition-crop-00",
+          "text": "수원재즈페스티벌",
+          "confidence": 0.8341183662414551,
+          "language": "ko",
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "kind": "title",
+          "source_ocr_id": "paddle_007",
+          "source_box": [
+            242,
+            619,
+            2254,
+            1073
+          ],
+          "mode": "mask",
+          "vertical_dilation": 1,
+          "vertical_scale": 0.4,
+          "bbox_xyxy": [
+            254.0,
+            572.0,
+            2242.0,
+            1122.0
+          ],
+          "polygon": [
+            [
+              254.0,
+              572.0
+            ],
+            [
+              2242.0,
+              572.0
+            ],
+            [
+              2242.0,
+              1122.0
+            ],
+            [
+              254.0,
+              1122.0
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-01",
+          "text": "수원재즈페스티벌",
+          "confidence": 0.9795600175857544,
+          "language": "ko",
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "kind": "title",
+          "source_ocr_id": "paddle_007",
+          "source_box": [
+            242,
+            619,
+            2254,
+            1073
+          ],
+          "mode": "mask",
+          "vertical_dilation": 5,
+          "vertical_scale": 0.6,
+          "bbox_xyxy": [
+            254.0,
+            572.0,
+            2242.0,
+            1122.0
+          ],
+          "polygon": [
+            [
+              254.0,
+              572.0
+            ],
+            [
+              2242.0,
+              572.0
+            ],
+            [
+              2242.0,
+              1122.0
+            ],
+            [
+              254.0,
+              1122.0
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-02",
+          "text": "수원재즈페스티벌",
+          "confidence": 0.8972839713096619,
+          "language": "ko",
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "kind": "title",
+          "source_ocr_id": "paddle_007",
+          "source_box": [
+            242,
+            619,
+            2254,
+            1073
+          ],
+          "mode": "mask",
+          "vertical_dilation": 9,
+          "vertical_scale": 0.4,
+          "bbox_xyxy": [
+            254.0,
+            572.0,
+            2242.0,
+            1122.0
+          ],
+          "polygon": [
+            [
+              254.0,
+              572.0
+            ],
+            [
+              2242.0,
+              572.0
+            ],
+            [
+              2242.0,
+              1122.0
+            ],
+            [
+              254.0,
+              1122.0
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-03",
+          "text": "2026",
+          "confidence": 0.9581078290939331,
+          "language": "ko",
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "kind": "year",
+          "source_ocr_id": "paddle_004",
+          "source_box": [
+            904,
+            119,
+            1575,
+            668
+          ],
+          "mode": "rgb",
+          "vertical_dilation": 1,
+          "vertical_scale": 0.6,
+          "bbox_xyxy": [
+            916.5,
+            131.0,
+            1562.5,
+            656.0
+          ],
+          "polygon": [
+            [
+              916.5,
+              131.0
+            ],
+            [
+              1562.5,
+              131.0
+            ],
+            [
+              1562.5,
+              656.0
+            ],
+            [
+              916.5,
+              656.0
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-04",
+          "text": "2026",
+          "confidence": 0.9619708061218262,
+          "language": "ko",
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "kind": "year",
+          "source_ocr_id": "paddle_004",
+          "source_box": [
+            904,
+            119,
+            1575,
+            668
+          ],
+          "mode": "rgb",
+          "vertical_dilation": 1,
+          "vertical_scale": 0.4,
+          "bbox_xyxy": [
+            916.5,
+            131.0,
+            1562.5,
+            656.0
+          ],
+          "polygon": [
+            [
+              916.5,
+              131.0
+            ],
+            [
+              1562.5,
+              131.0
+            ],
+            [
+              1562.5,
+              656.0
+            ],
+            [
+              916.5,
+              656.0
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-05",
+          "text": "2026 SUWON JAZZ FESTIVAL",
+          "confidence": 0.9699798226356506,
+          "language": "en",
+          "model": "en_PP-OCRv5_mobile_rec",
+          "kind": "arc",
+          "source_ocr_id": null,
+          "center": [
+            1251.4115344415645,
+            3333.5116715503386
+          ],
+          "radius": 878.4943405281571,
+          "angle_range": [
+            -2.7887930969858834,
+            -0.38202630197522225
+          ],
+          "band": 240,
+          "bbox_xyxy": [
+            314.4153878404204,
+            2339.4993196270675,
+            2177.9255489653206,
+            3071.4319380771194
+          ],
+          "polygon": [
+            [
+              314.4153878404204,
+              2988.5056291085193
+            ],
+            [
+              411.63949231485265,
+              2793.350709124238
+            ],
+            [
+              548.9051414215305,
+              2623.951444485193
+            ],
+            [
+              719.6673106306301,
+              2488.3850369502534
+            ],
+            [
+              915.7838129236737,
+              2393.1154887553057
+            ],
+            [
+              1127.9035300379,
+              2342.685389644684
+            ],
+            [
+              1345.9122872995513,
+              2339.4993196270675
+            ],
+            [
+              1559.4151120896222,
+              2383.7091951254997
+            ],
+            [
+              1758.2318811614618,
+              2473.2070253827833
+            ],
+            [
+              1932.88272362979,
+              2603.7254245073123
+            ],
+            [
+              2075.040034915102,
+              2769.041086599739
+            ],
+            [
+              2177.9255489653206,
+              2961.2715219723646
+            ],
+            [
+              1955.2268771149807,
+              3050.743872763515
+            ],
+            [
+              1877.071121031133,
+              2904.7183106854413
+            ],
+            [
+              1769.0830116367686,
+              2779.1382357583816
+            ],
+            [
+              1636.411578055452,
+              2679.991487446933
+            ],
+            [
+              1485.3827859810606,
+              2612.00552600043
+            ],
+            [
+              1323.197906491023,
+              2578.422020315983
+            ],
+            [
+              1157.590149033858,
+              2580.8422804805127
+            ],
+            [
+              996.4559308264014,
+              2619.150904991542
+            ],
+            [
+              847.4783642687712,
+              2691.521283267616
+            ],
+            [
+              717.7609150412646,
+              2794.502691080699
+            ],
+            [
+              613.4886985945828,
+              2923.1848260744564
+            ],
+            [
+              539.6335649062254,
+              3071.4319380771194
+            ]
+          ]
+        },
+        {
+          "id": "condition-crop-06",
+          "text": "2026 SUWON JAZZ. FESTIVAL.",
+          "confidence": 0.9440476298332214,
+          "language": "en",
+          "model": "en_PP-OCRv5_mobile_rec",
+          "kind": "arc",
+          "source_ocr_id": null,
+          "center": [
+            1251.4115344415645,
+            3333.5116715503386
+          ],
+          "radius": 878.4943405281571,
+          "angle_range": [
+            -2.7887930969858834,
+            -0.38202630197522225
+          ],
+          "band": 320,
+          "bbox_xyxy": [
+            276.8790249961197,
+            2299.6788695122486,
+            2215.0419942737103,
+            3085.2529895718862
+          ],
+          "polygon": [
+            [
+              276.8790249961197,
+              2974.6845776137525
+            ],
+            [
+              377.9979579348977,
+              2771.711689632535
+            ],
+            [
+              520.7625124849083,
+              2595.5262367192754
+            ],
+            [
+              698.3654683576068,
+              2454.5289958973594
+            ],
+            [
+              902.3384599398858,
+              2355.4429193826
+            ],
+            [
+              1122.9557602052405,
+              2302.9925745053797
+            ],
+            [
+              1349.698017434306,
+              2299.6788695122486
+            ],
+            [
+              1571.7538331077158,
+              2345.659806646345
+            ],
+            [
+              1778.5352650124632,
+              2438.7429483720916
+            ],
+            [
+              1960.1826756286268,
+              2574.4899559654673
+            ],
+            [
+              2108.0348538957633,
+              2746.4282159187887
+            ],
+            [
+              2215.0419942737103,
+              2946.3594635071727
+            ],
+            [
+              1918.110431806591,
+              3065.655931228707
+            ],
+            [
+              1844.0763020504717,
+              2927.331181366392
+            ],
+            [
+              1741.7830596379317,
+              2808.3737043002266
+            ],
+            [
+              1616.1081942044505,
+              2714.4555644576253
+            ],
+            [
+              1473.044064962967,
+              2650.054914479585
+            ],
+            [
+              1319.4121763562684,
+              2618.2424704308023
+            ],
+            [
+              1162.5379188665177,
+              2620.5350956198176
+            ],
+            [
+              1009.9012838101894,
+              2656.823474364248
+            ],
+            [
+              868.7802065417945,
+              2725.3773243205096
+            ],
+            [
+              745.903543977887,
+              2822.9278988466167
+            ],
+            [
+              647.1302329745378,
+              2944.8238455661594
+            ],
+            [
+              577.1699277505262,
+              3085.2529895718862
+            ]
+          ]
+        }
+      ],
+      "original_records": 30,
+      "model_identity": {
+        "ko": {
+          "model": "korean_PP-OCRv5_mobile_rec",
+          "repository": "PaddlePaddle/korean_PP-OCRv5_mobile_rec",
+          "revision": "c02ecaf1f22bfd1c618cce154fd19185b47e663a",
+          "sha256": {
+            "inference.json": "562404e3c590c50c93778d5f0a94df21b47b5ab8f3ea6d47c7f8a7930c3bc844",
+            "inference.pdiparams": "cac3e5f12cf04aaa77f6a5bc704e4e736ef2908476551891d84b41b4e9090462",
+            "inference.yml": "f757fa1c40e99edcf27e9cce879b93eb2a51fa46f5ef39095689b8c37dd75998"
+          }
+        },
+        "en": {
+          "model": "en_PP-OCRv5_mobile_rec",
+          "repository": "PaddlePaddle/en_PP-OCRv5_mobile_rec",
+          "revision": "267c36e24c331595590fe7bd72bde2436fd286f2",
+          "sha256": {
+            "inference.json": "fd1b6ec722ea841a72d3ba43e527df1d1066d5d7808e0503ee3eec7265188753",
+            "inference.pdiparams": "3ec8a97ed6cefe8568d3e2ee90bb193299b566a7661aa4fd52d224b96b59f66b",
+            "inference.yml": "27e91d0582f40168aa218303c76e184bc78fa7a5d105aad0cfbad8458b441067"
+          }
+        }
+      },
+      "elapsed_seconds": 2.906
+    },
+    "event": {
+      "method": "geometry_line_rules_v2",
+      "fields": {
+        "event_name": {
+          "value": "수원재즈페스티벌",
+          "source_ocr_ids": [
+            "paddle_007"
+          ],
+          "status": "extracted",
+          "normalization": [
+            "Geometry-linked OCR lines; no character correction"
+          ],
+          "reason": null
+        },
+        "location_raw": {
+          "value": "광교호수공원",
+          "source_ocr_ids": [
+            "paddle_023"
+          ],
+          "status": "extracted",
+          "normalization": []
+        },
+        "start_date": {
+          "value": null,
+          "source_ocr_ids": [
+            "paddle_006"
+          ],
+          "status": "needs_review",
+          "normalization": [
+            "Geometry-linked OCR lines; no character correction"
+          ],
+          "reason": "날짜 범위·요일 또는 후보 충돌을 확인해야 합니다."
+        },
+        "end_date": {
+          "value": null,
+          "source_ocr_ids": [
+            "paddle_006"
+          ],
+          "status": "needs_review",
+          "normalization": [
+            "Geometry-linked OCR lines; no character correction"
+          ],
+          "reason": "날짜 범위·요일 또는 후보 충돌을 확인해야 합니다."
+        },
+        "organizer": {
+          "value": null,
+          "source_ocr_ids": [],
+          "status": "needs_review",
+          "normalization": [],
+          "reason": "No matching OCR evidence; this does not establish that the poster omits this field"
+        },
+        "opening_hours": {
+          "value": null,
+          "source_ocr_ids": [
+            "paddle_024"
+          ],
+          "status": "needs_review",
+          "normalization": [],
+          "reason": "Keyword observed, but extraction of this optional field is outside this parser's scope"
+        },
+        "admission_fee": {
+          "value": null,
+          "source_ocr_ids": [],
+          "status": "needs_review",
+          "normalization": [],
+          "reason": "No matching OCR evidence; this does not establish that the poster omits this field"
+        },
+        "contact": {
+          "value": null,
+          "source_ocr_ids": [
+            "paddle_006"
+          ],
+          "status": "needs_review",
+          "normalization": [],
+          "reason": "Keyword observed, but extraction of this optional field is outside this parser's scope"
+        },
+        "website": {
+          "value": null,
+          "source_ocr_ids": [],
+          "status": "needs_review",
+          "normalization": [],
+          "reason": "No matching OCR evidence; this does not establish that the poster omits this field"
+        }
+      },
+      "warnings": [
+        {
+          "code": "opening_hours_requires_manual_extraction",
+          "message": "Keyword observed, but extraction of this optional field is outside this parser's scope",
+          "source_ocr_ids": [
+            "paddle_024"
+          ]
+        },
+        {
+          "code": "contact_requires_manual_extraction",
+          "message": "Keyword observed, but extraction of this optional field is outside this parser's scope",
+          "source_ocr_ids": [
+            "paddle_006"
+          ]
+        },
+        {
+          "code": "rule_match_is_not_verified_truth",
+          "message": "Extracted values are unverified OCR-based rule matches. OCR confidence is not a correctness probability; review against the image before use.",
+          "source_ocr_ids": []
+        },
+        {
+          "code": "start_date_needs_review",
+          "message": "날짜 범위·요일 또는 후보 충돌을 확인해야 합니다.",
+          "source_ocr_ids": [
+            "paddle_006"
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "kind": "title",
+          "source_ocr_ids": [
+            "paddle_007"
+          ],
+          "text": "수원재즈페스티벌",
+          "source_boxes": [
+            [
+              254.0,
+              572.0,
+              2242.0,
+              1122.0
+            ]
+          ],
+          "bbox_xyxy": [
+            254.0,
+            572.0,
+            2242.0,
+            1122.0
+          ],
+          "value": "수원재즈페스티벌",
+          "ambiguous": false
+        }
+      ]
+    }
+  },
+  "error": null,
+  "created_at": "2026-10-29T06:10:22.039058+00:00",
+  "updated_at": "2026-10-29T06:10:38.220077+00:00",
+  "progress_message": null,
+  "model_runtime": {
+    "status": "not_configured"
+  }
+}

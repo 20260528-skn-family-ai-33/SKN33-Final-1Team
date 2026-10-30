@@ -1,0 +1,1239 @@
+{
+  "schema": "plain-criteria-matching-audit-v1",
+  "ocr_model_identity_same_for_all": true,
+  "suwon_ocr_records_exactly_identical": true,
+  "ocr_inference_executed": false,
+  "model_inference_executed": false,
+  "isolated_api_execution": true,
+  "reviews": [
+    {
+      "source_review_id": "fb0f9054-9237-4f76-bbf3-c93ef76cb5cc",
+      "structured_conditions": 0,
+      "before": {
+        "review": 15,
+        "pass": 1
+      },
+      "after": {
+        "review": 10,
+        "pass": 6
+      },
+      "criteria": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 2026 수원 재즈 페스티벌",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다."
+        },
+        {
+          "id": "criterion-2",
+          "text": "기간: 2026.09.18.(금)-2026.09.19.(토)",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다."
+        },
+        {
+          "id": "criterion-3",
+          "text": "시간: 17:30",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다."
+        },
+        {
+          "id": "criterion-4",
+          "text": "장소: 광교호수공원 재미난 밭",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다."
+        },
+        {
+          "id": "criterion-5",
+          "text": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다."
+        },
+        {
+          "id": "criterion-6",
+          "text": "19일 대표 출연진: 이은미 x 민경인 trio",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다."
+        },
+        {
+          "id": "criterion-7",
+          "text": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다."
+        },
+        {
+          "id": "criterion-8",
+          "text": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다."
+        },
+        {
+          "id": "criterion-9",
+          "text": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다."
+        },
+        {
+          "id": "criterion-10",
+          "text": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다."
+        },
+        {
+          "id": "criterion-11",
+          "text": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다."
+        },
+        {
+          "id": "criterion-12",
+          "text": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다."
+        },
+        {
+          "id": "criterion-13",
+          "text": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다."
+        },
+        {
+          "id": "criterion-14",
+          "text": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다."
+        },
+        {
+          "id": "criterion-15",
+          "text": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다."
+        },
+        {
+          "id": "criterion-16",
+          "text": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다."
+        }
+      ],
+      "results": [
+        {
+          "criterion_id": "criterion-1",
+          "criterion": "행사명: 2026 수원 재즈 페스티벌",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "입력한 기대 문구 전체를 OCR에서 확인하지 못했습니다. 인식 누락일 수 있어 이미지에서 없다고 판정하지 않았습니다.",
+          "evidence": [],
+          "check_method": "plain_expected_text"
+        },
+        {
+          "criterion_id": "criterion-2",
+          "criterion": "기간: 2026.09.18.(금)-2026.09.19.(토)",
+          "type": "information",
+          "status": "review",
+          "observed_text": "9.18.(금) / 9.19.(토) / 9.18.() ~ 9.19.(토)",
+          "reason": "월·일 날짜 조각은 읽었지만 요구한 연도·전체 기간을 독립적으로 확인하지 못했습니다. 입력한 연도를 이미지의 관찰값으로 대신하지 않았습니다.",
+          "evidence": [
+            {
+              "text": "9.18.(금)",
+              "bbox_xyxy": [
+                161.0,
+                1225.0,
+                507.5,
+                1334.0
+              ],
+              "ocr_id": "paddle_010",
+              "confidence": 0.9763772487640381,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.19.(토)",
+              "bbox_xyxy": [
+                2013.5,
+                1222.5,
+                2346.5,
+                1331.0
+              ],
+              "ocr_id": "paddle_011",
+              "confidence": 0.992190957069397,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.18.() ~ 9.19.(토)",
+              "bbox_xyxy": [
+                386.5,
+                2026.5,
+                1057.5,
+                2452.5
+              ],
+              "ocr_id": "paddle_028",
+              "confidence": 0.8516571521759033,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "plain_date_fragments"
+        },
+        {
+          "criterion_id": "criterion-3",
+          "criterion": "시간: 17:30",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "17:30",
+          "reason": "기준에 지정된 문구가 OCR 근거에서 확인됐습니다. 공백과 유니코드 표현만 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "17:30",
+              "bbox_xyxy": [
+                1036.5,
+                2034.5,
+                1304.5,
+                2159.5
+              ],
+              "ocr_id": "paddle_024",
+              "confidence": 0.9992848634719849,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-4",
+          "criterion": "장소: 광교호수공원 재미난 밭",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "광교호수공원 재미난밭",
+          "reason": "입력한 기대 문구를 인접한 OCR 근거와 비교했습니다.",
+          "evidence": [
+            {
+              "text": "광교호수공원",
+              "bbox_xyxy": [
+                1356.0,
+                2015.5,
+                1852.5,
+                2274.0
+              ],
+              "ocr_id": "paddle_023",
+              "confidence": 0.9997026324272156,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "재미난밭",
+              "bbox_xyxy": [
+                1791.5,
+                2161.0,
+                2142.0,
+                2434.5
+              ],
+              "ocr_id": "paddle_025",
+              "confidence": 0.9989449977874756,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "plain_expected_text"
+        },
+        {
+          "criterion_id": "criterion-5",
+          "criterion": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "정동환(멜로망스)× Funk Messengers / 9.18.(금)",
+          "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+          "evidence": [
+            {
+              "text": "정동환(멜로망스)× Funk Messengers",
+              "bbox_xyxy": [
+                152.0,
+                1772.0,
+                1390.5,
+                1906.5
+              ],
+              "ocr_id": "paddle_021",
+              "confidence": 0.9381519556045532,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.18.(금)",
+              "bbox_xyxy": [
+                161.0,
+                1225.0,
+                507.5,
+                1334.0
+              ],
+              "ocr_id": "paddle_010",
+              "confidence": 0.9763772487640381,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "plain_text_and_date_column"
+        },
+        {
+          "criterion_id": "criterion-6",
+          "criterion": "19일 대표 출연진: 이은미 x 민경인 trio",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "이은미 / ×민경인trio / 9.19.(토)",
+          "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+          "evidence": [
+            {
+              "text": "이은미",
+              "bbox_xyxy": [
+                1620.5,
+                1760.0,
+                1930.0,
+                1901.5
+              ],
+              "ocr_id": "paddle_020",
+              "confidence": 0.9993224143981934,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "×민경인trio",
+              "bbox_xyxy": [
+                1926.5,
+                1786.0,
+                2360.5,
+                1895.0
+              ],
+              "ocr_id": "paddle_022",
+              "confidence": 0.9392268657684326,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.19.(토)",
+              "bbox_xyxy": [
+                2013.5,
+                1222.5,
+                2346.5,
+                1331.0
+              ],
+              "ocr_id": "paddle_011",
+              "confidence": 0.992190957069397,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "plain_text_and_date_column"
+        },
+        {
+          "criterion_id": "criterion-7",
+          "criterion": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "입력한 기대 문구 전체를 OCR에서 확인하지 못했습니다. 인식 누락일 수 있어 이미지에서 없다고 판정하지 않았습니다.",
+          "evidence": [],
+          "check_method": "plain_expected_text"
+        },
+        {
+          "criterion_id": "criterion-8",
+          "criterion": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-9",
+          "criterion": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-10",
+          "criterion": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-11",
+          "criterion": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-12",
+          "criterion": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-13",
+          "criterion": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-14",
+          "criterion": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "dimensions: [2527, 3572] / orientation: [2527, 3572]",
+          "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+          "evidence": [],
+          "check_method": "source_image_metadata",
+          "metadata_checks": [
+            {
+              "name": "dimensions",
+              "expected": [
+                2527,
+                3572
+              ],
+              "observed": [
+                2527,
+                3572
+              ],
+              "status": "pass"
+            },
+            {
+              "name": "orientation",
+              "expected": "세로형",
+              "observed": [
+                2527,
+                3572
+              ],
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-15",
+          "criterion": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "format: JPEG / extension: .jpg / color_mode: RGB / frames: 1",
+          "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+          "evidence": [],
+          "check_method": "source_image_metadata",
+          "metadata_checks": [
+            {
+              "name": "format",
+              "expected": "JPEG",
+              "observed": "JPEG",
+              "status": "pass"
+            },
+            {
+              "name": "extension",
+              "expected": ".jpg",
+              "observed": ".jpg",
+              "status": "pass"
+            },
+            {
+              "name": "color_mode",
+              "expected": "RGB",
+              "observed": "RGB",
+              "status": "pass"
+            },
+            {
+              "name": "frames",
+              "expected": 1,
+              "observed": 1,
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-16",
+          "criterion": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "금지·제외·부재 조건은 문구 포함 여부만으로 확정할 수 없습니다. 담당자의 확인이 필요합니다.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "source_review_id": "71d0de99-6feb-4d1a-aa16-88b80f921c18",
+      "structured_conditions": 16,
+      "before": {
+        "review": 10,
+        "pass": 6
+      },
+      "after": {
+        "review": 10,
+        "pass": 6
+      },
+      "criteria": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 2026 수원 재즈 페스티벌",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+          "document_condition": {
+            "label": "행사명",
+            "requirement": "2026 수원 재즈 페스티벌",
+            "level": "필수",
+            "inspection": "제목의 줄바꿈·공백 차이는 허용한다."
+          }
+        },
+        {
+          "id": "criterion-2",
+          "text": "기간: 2026.09.18.(금) ~ 2026.09.19.(토)",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+          "document_condition": {
+            "label": "행사 날짜",
+            "requirement": "2026.09.18.(금) ~ 2026.09.19.(토)",
+            "level": "필수",
+            "inspection": "시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략할 수 있다. 앞자리 0 과 구분자 차이는 허용한다."
+          }
+        },
+        {
+          "id": "criterion-3",
+          "text": "시간: 17:30",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다.",
+          "document_condition": {
+            "label": "행사 시간",
+            "requirement": "17:30",
+            "level": "필수",
+            "inspection": "17:30 을 읽을 수 있게 표기한다. 공백 차이는 허용하되 시간 값 변경은 불가하다."
+          }
+        },
+        {
+          "id": "criterion-4",
+          "text": "장소: 광교호수공원 재미난 밭",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+          "document_condition": {
+            "label": "행사 장소",
+            "requirement": "광교호수공원 재미난 밭",
+            "level": "필수",
+            "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. 재미난 밭의 붙여쓰기와 줄바꿈 은 허용한다."
+          }
+        },
+        {
+          "id": "criterion-5",
+          "text": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다.",
+          "document_condition": {
+            "label": "18일 대표 출연진",
+            "requirement": "정동환(멜로망스) x Funk Messengers",
+            "level": "필수",
+            "inspection": "9 월 18 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다. 다른 출연진을 삭제하라는 조건은 아니다."
+          }
+        },
+        {
+          "id": "criterion-6",
+          "text": "19일 대표 출연진: 이은미 x 민경인 trio",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다.",
+          "document_condition": {
+            "label": "19일 대표 출연진",
+            "requirement": "이은미 x 민경인 trio",
+            "level": "필수",
+            "inspection": "9 월 19 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다."
+          }
+        },
+        {
+          "id": "criterion-7",
+          "text": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nR07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다.",
+          "document_condition": {
+            "label": "영문 행사명",
+            "requirement": "2026 SUWON JAZZ FESTIVAL",
+            "level": "필수",
+            "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. 영문 단어와 연도를 모두 유지한다."
+          }
+        },
+        {
+          "id": "criterion-8",
+          "text": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+          "document_condition": {
+            "label": "잔디 배경",
+            "requirement": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+            "level": "필수",
+            "inspection": "잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다."
+          }
+        },
+        {
+          "id": "criterion-9",
+          "text": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다.",
+          "document_condition": {
+            "label": "레코드와 톤암",
+            "requirement": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+            "level": "필수",
+            "inspection": "원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다."
+          }
+        },
+        {
+          "id": "criterion-10",
+          "text": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+          "document_condition": {
+            "label": "연주자 선화",
+            "requirement": "왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+            "level": "필수",
+            "inspection": "양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다."
+          }
+        },
+        {
+          "id": "criterion-11",
+          "text": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+          "document_condition": {
+            "label": "상단 로고 배치",
+            "requirement": "왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+            "level": "필수",
+            "inspection": "양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다."
+          }
+        },
+        {
+          "id": "criterion-12",
+          "text": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다.",
+          "document_condition": {
+            "label": "장식과 분위기",
+            "requirement": "노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+            "level": "권장",
+            "inspection": "정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다."
+          }
+        },
+        {
+          "id": "criterion-13",
+          "text": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+          "type": "visual",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nV06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+          "document_condition": {
+            "label": "문구 가독성",
+            "requirement": "행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+            "level": "권장",
+            "inspection": "확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다."
+          }
+        },
+        {
+          "id": "criterion-14",
+          "text": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다.",
+          "document_condition": {
+            "label": "이미지 크기",
+            "requirement": "가로 2527 x 세로 3572픽셀, 세로형",
+            "level": "필수",
+            "inspection": "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다."
+          }
+        },
+        {
+          "id": "criterion-15",
+          "text": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다.",
+          "document_condition": {
+            "label": "파일 형식과 색 상",
+            "requirement": "정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+            "level": "필수",
+            "inspection": "실제 파일 형식·전체 디코딩·색상 모드를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다."
+          }
+        },
+        {
+          "id": "criterion-16",
+          "text": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+          "type": "information",
+          "source": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf · 3페이지 · PDF 이미지 + OCR 판독문\nT03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다.",
+          "document_condition": {
+            "label": "편집 가능한 원본",
+            "requirement": "PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+            "level": "선택",
+            "inspection": "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다."
+          }
+        }
+      ],
+      "results": [
+        {
+          "criterion_id": "criterion-1",
+          "criterion": "행사명: 2026 수원 재즈 페스티벌",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "입력한 기대 문구 전체를 OCR에서 확인하지 못했습니다. 인식 누락일 수 있어 이미지에서 없다고 판정하지 않았습니다.",
+          "evidence": [],
+          "check_method": "document_expected_text"
+        },
+        {
+          "criterion_id": "criterion-2",
+          "criterion": "기간: 2026.09.18.(금) ~ 2026.09.19.(토)",
+          "type": "information",
+          "status": "review",
+          "observed_text": "9.18.(금) / 9.19.(토) / 9.18.() ~ 9.19.(토)",
+          "reason": "월·일 날짜 조각은 읽었지만 요구한 연도·전체 기간을 독립적으로 확인하지 못했습니다. 입력한 연도를 이미지의 관찰값으로 대신하지 않았습니다.",
+          "evidence": [
+            {
+              "text": "9.18.(금)",
+              "bbox_xyxy": [
+                161.0,
+                1225.0,
+                507.5,
+                1334.0
+              ],
+              "ocr_id": "paddle_010",
+              "confidence": 0.9763772487640381,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.19.(토)",
+              "bbox_xyxy": [
+                2013.5,
+                1222.5,
+                2346.5,
+                1331.0
+              ],
+              "ocr_id": "paddle_011",
+              "confidence": 0.992190957069397,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.18.() ~ 9.19.(토)",
+              "bbox_xyxy": [
+                386.5,
+                2026.5,
+                1057.5,
+                2452.5
+              ],
+              "ocr_id": "paddle_028",
+              "confidence": 0.8516571521759033,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "document_date_fragments"
+        },
+        {
+          "criterion_id": "criterion-3",
+          "criterion": "시간: 17:30",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "17:30",
+          "reason": "PDF의 기대 문구를 OCR 근거와 비교했습니다. 필수·권장 표시와 판단 설명은 검색 문구에서 분리했습니다.",
+          "evidence": [
+            {
+              "text": "17:30",
+              "bbox_xyxy": [
+                1036.5,
+                2034.5,
+                1304.5,
+                2159.5
+              ],
+              "ocr_id": "paddle_024",
+              "confidence": 0.9992848634719849,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "document_expected_text"
+        },
+        {
+          "criterion_id": "criterion-4",
+          "criterion": "장소: 광교호수공원 재미난 밭",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "광교호수공원 재미난밭",
+          "reason": "PDF의 기대 문구를 OCR 근거와 비교했습니다. 필수·권장 표시와 판단 설명은 검색 문구에서 분리했습니다.",
+          "evidence": [
+            {
+              "text": "광교호수공원",
+              "bbox_xyxy": [
+                1356.0,
+                2015.5,
+                1852.5,
+                2274.0
+              ],
+              "ocr_id": "paddle_023",
+              "confidence": 0.9997026324272156,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "재미난밭",
+              "bbox_xyxy": [
+                1791.5,
+                2161.0,
+                2142.0,
+                2434.5
+              ],
+              "ocr_id": "paddle_025",
+              "confidence": 0.9989449977874756,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "document_expected_text"
+        },
+        {
+          "criterion_id": "criterion-5",
+          "criterion": "18일 대표 출연진: 정동환(멜로망스) x Funk Messengers",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "정동환(멜로망스)× Funk Messengers / 9.18.(금)",
+          "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+          "evidence": [
+            {
+              "text": "정동환(멜로망스)× Funk Messengers",
+              "bbox_xyxy": [
+                152.0,
+                1772.0,
+                1390.5,
+                1906.5
+              ],
+              "ocr_id": "paddle_021",
+              "confidence": 0.9381519556045532,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.18.(금)",
+              "bbox_xyxy": [
+                161.0,
+                1225.0,
+                507.5,
+                1334.0
+              ],
+              "ocr_id": "paddle_010",
+              "confidence": 0.9763772487640381,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "document_text_and_date_column"
+        },
+        {
+          "criterion_id": "criterion-6",
+          "criterion": "19일 대표 출연진: 이은미 x 민경인 trio",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "이은미 / ×민경인trio / 9.19.(토)",
+          "reason": "출연진 문구와 그 위 같은 열에 있는 날짜를 OCR 좌표·문구로 확인했습니다.",
+          "evidence": [
+            {
+              "text": "이은미",
+              "bbox_xyxy": [
+                1620.5,
+                1760.0,
+                1930.0,
+                1901.5
+              ],
+              "ocr_id": "paddle_020",
+              "confidence": 0.9993224143981934,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "×민경인trio",
+              "bbox_xyxy": [
+                1926.5,
+                1786.0,
+                2360.5,
+                1895.0
+              ],
+              "ocr_id": "paddle_022",
+              "confidence": 0.9392268657684326,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "9.19.(토)",
+              "bbox_xyxy": [
+                2013.5,
+                1222.5,
+                2346.5,
+                1331.0
+              ],
+              "ocr_id": "paddle_011",
+              "confidence": 0.992190957069397,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "document_text_and_date_column"
+        },
+        {
+          "criterion_id": "criterion-7",
+          "criterion": "영문 행사명: 2026 SUWON JAZZ FESTIVAL",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "입력한 기대 문구 전체를 OCR에서 확인하지 못했습니다. 인식 누락일 수 있어 이미지에서 없다고 판정하지 않았습니다.",
+          "evidence": [],
+          "check_method": "document_expected_text"
+        },
+        {
+          "criterion_id": "criterion-8",
+          "criterion": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-9",
+          "criterion": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-10",
+          "criterion": "연주자 선화: 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-11",
+          "criterion": "상단 로고 배치: 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-12",
+          "criterion": "장식과 분위기: 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-13",
+          "criterion": "문구 가독성: 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        },
+        {
+          "criterion_id": "criterion-14",
+          "criterion": "이미지 크기: 가로 2527 x 세로 3572픽셀, 세로형",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "dimensions: [2527, 3572] / orientation: [2527, 3572]",
+          "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+          "evidence": [],
+          "check_method": "source_image_metadata",
+          "metadata_checks": [
+            {
+              "name": "dimensions",
+              "expected": [
+                2527,
+                3572
+              ],
+              "observed": [
+                2527,
+                3572
+              ],
+              "status": "pass"
+            },
+            {
+              "name": "orientation",
+              "expected": "세로형",
+              "observed": [
+                2527,
+                3572
+              ],
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-15",
+          "criterion": "파일 형식과 색 상: 정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "format: JPEG / extension: .jpg / color_mode: RGB / frames: 1",
+          "reason": "입력한 파일 조건을 업로드 원본의 측정값과 비교했습니다.",
+          "evidence": [],
+          "check_method": "source_image_metadata",
+          "metadata_checks": [
+            {
+              "name": "format",
+              "expected": "JPEG",
+              "observed": "JPEG",
+              "status": "pass"
+            },
+            {
+              "name": "extension",
+              "expected": ".jpg",
+              "observed": ".jpg",
+              "status": "pass"
+            },
+            {
+              "name": "color_mode",
+              "expected": "RGB",
+              "observed": "RGB",
+              "status": "pass"
+            },
+            {
+              "name": "frames",
+              "expected": 1,
+              "observed": 1,
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-16",
+          "criterion": "편집 가능한 원본: PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+          "type": "information",
+          "status": "review",
+          "observed_text": "",
+          "reason": "선택 제출 항목입니다. 미제출을 필수 불합격으로 판단하지 않으며, 별도 합의 여부를 확인해 주세요.",
+          "evidence": [],
+          "check_method": "optional_delivery"
+        }
+      ]
+    },
+    {
+      "source_review_id": "10f5da22-8a3c-4ac5-9ca3-00bf377f6066",
+      "structured_conditions": 0,
+      "before": {
+        "pass": 6,
+        "review": 1
+      },
+      "after": {
+        "pass": 6,
+        "review": 1
+      },
+      "criteria": [
+        {
+          "id": "criterion-1",
+          "text": "행사명: 김천김밥축제",
+          "type": "information",
+          "source": "행사명: 김천김밥축제"
+        },
+        {
+          "id": "criterion-2",
+          "text": "기간: 2026.10.23 ~ 10.25",
+          "type": "information",
+          "source": "기간: 2026.10.23 ~ 10.25"
+        },
+        {
+          "id": "criterion-3",
+          "text": "장소: 직지문화공원",
+          "type": "information",
+          "source": "장소: 직지문화공원"
+        },
+        {
+          "id": "criterion-4",
+          "text": "장소: 사명대사공원",
+          "type": "information",
+          "source": "장소: 사명대사공원"
+        },
+        {
+          "id": "criterion-5",
+          "text": "장소: 친환경생태공원",
+          "type": "information",
+          "source": "장소: 친환경생태공원"
+        },
+        {
+          "id": "criterion-6",
+          "text": "김천시 로고가 표시되어 있어야 합니다.",
+          "type": "visual",
+          "source": "김천시 로고가 표시되어 있어야 합니다."
+        },
+        {
+          "id": "criterion-7",
+          "text": "문구와 이미지가 잘리지 않아야 합니다.",
+          "type": "visual",
+          "source": "문구와 이미지가 잘리지 않아야 합니다."
+        }
+      ],
+      "results": [
+        {
+          "criterion_id": "criterion-1",
+          "criterion": "행사명: 김천김밥축제",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "김천김밥축제",
+          "reason": "OCR에서 추출한 행사명이 기준과 일치합니다. 선행 연도와 공백은 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "김천김밥축제",
+              "bbox_xyxy": [
+                109.5,
+                120.0,
+                493.5,
+                193.5
+              ],
+              "ocr_id": "paddle_005",
+              "confidence": 0.9979009628295898,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-2",
+          "criterion": "기간: 2026.10.23 ~ 10.25",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "2026.10.23금 ~ 10.25일",
+          "reason": "OCR에서 추출한 시작일·종료일이 기준과 일치합니다. 날짜 구분 기호와 공백은 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "2026.10.23금 ~ 10.25일",
+              "bbox_xyxy": [
+                136.5,
+                226.5,
+                469.5,
+                260.5
+              ],
+              "ocr_id": "paddle_006",
+              "confidence": 0.9652186632156372,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-3",
+          "criterion": "장소: 직지문화공원",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+          "reason": "기준에 지정된 문구가 OCR 근거에서 확인됐습니다. 공백과 유니코드 표현만 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+              "bbox_xyxy": [
+                106.5,
+                281.5,
+                464.0,
+                297.5
+              ],
+              "ocr_id": "paddle_007",
+              "confidence": 0.9966204166412354,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-4",
+          "criterion": "장소: 사명대사공원",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+          "reason": "기준에 지정된 문구가 OCR 근거에서 확인됐습니다. 공백과 유니코드 표현만 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+              "bbox_xyxy": [
+                106.5,
+                281.5,
+                464.0,
+                297.5
+              ],
+              "ocr_id": "paddle_007",
+              "confidence": 0.9966204166412354,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-5",
+          "criterion": "장소: 친환경생태공원",
+          "type": "information",
+          "status": "pass",
+          "observed_text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+          "reason": "기준에 지정된 문구가 OCR 근거에서 확인됐습니다. 공백과 유니코드 표현만 정규화했습니다.",
+          "evidence": [
+            {
+              "text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+              "bbox_xyxy": [
+                106.5,
+                281.5,
+                464.0,
+                297.5
+              ],
+              "ocr_id": "paddle_007",
+              "confidence": 0.9966204166412354,
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "criterion_id": "criterion-6",
+          "criterion": "김천시 로고가 표시되어 있어야 합니다.",
+          "type": "visual",
+          "status": "pass",
+          "observed_text": "김천시 / 김천시 직지문화공원,사명대사공원,친환경생태공원",
+          "reason": "OCR에서 “김천시” 문구를 확인하여 충족으로 처리했습니다. 로고 원본 대조 전 임시 문구 기준이며, 심벌의 형태는 검증하지 않았습니다.",
+          "evidence": [
+            {
+              "text": "김천시",
+              "bbox_xyxy": [
+                70.5,
+                23.0,
+                126.5,
+                41.5
+              ],
+              "ocr_id": "paddle_000",
+              "confidence": 0.9998030066490173,
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "text": "김천시 직지문화공원,사명대사공원,친환경생태공원",
+              "bbox_xyxy": [
+                106.5,
+                281.5,
+                464.0,
+                297.5
+              ],
+              "ocr_id": "paddle_007",
+              "confidence": 0.9966204166412354,
+              "recognition_engine": "paddleocr"
+            }
+          ],
+          "check_method": "logo_text_proxy"
+        },
+        {
+          "criterion_id": "criterion-7",
+          "criterion": "문구와 이미지가 잘리지 않아야 합니다.",
+          "type": "visual",
+          "status": "review",
+          "observed_text": "",
+          "reason": "로고·색상·배치·잘림 등 시각 조건은 OCR로 판정할 수 없습니다. 이미지와 기준을 담당자가 확인해야 합니다.",
+          "evidence": []
+        }
+      ]
+    }
+  ],
+  "original_records_unchanged": true,
+  "original_sha256": {
+    ".runtime/reviews/fb0f9054-9237-4f76-bbf3-c93ef76cb5cc/result.json": "5bcb00ed5f0b1b90ad479cc51a73043fa46625efdbfdd53d0b1f0a21b1f74e16",
+    ".runtime/reviews/fb0f9054-9237-4f76-bbf3-c93ef76cb5cc/snapshot.json": "dcb35bb068ab78f13ddf89edbf1357ae354a106b849ce4bfb332e24c94c70416",
+    ".runtime/reviews/fb0f9054-9237-4f76-bbf3-c93ef76cb5cc/ocr.json": "2f409c3abb68c60a156caf57c8d9ccf9aa8053daa3c60f0b8c0343214c55554e",
+    ".runtime/reviews/fb0f9054-9237-4f76-bbf3-c93ef76cb5cc/original.bin": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+    ".runtime/reviews/71d0de99-6feb-4d1a-aa16-88b80f921c18/result.json": "f342a84c2eb2827d4b052a64d73f7b511076a7f214a483c364108ffd79a315bc",
+    ".runtime/reviews/71d0de99-6feb-4d1a-aa16-88b80f921c18/snapshot.json": "2995c1805400fbce7be6ca8004f488c6cdd8095d1ffd667e59636eea8e3f4f12",
+    ".runtime/reviews/71d0de99-6feb-4d1a-aa16-88b80f921c18/ocr.json": "2f409c3abb68c60a156caf57c8d9ccf9aa8053daa3c60f0b8c0343214c55554e",
+    ".runtime/reviews/71d0de99-6feb-4d1a-aa16-88b80f921c18/original.bin": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+    ".runtime/reviews/10f5da22-8a3c-4ac5-9ca3-00bf377f6066/result.json": "7ab16611d93796e357305299ae3ba938a5b2ecbb619f600bdca44dcafc407b88",
+    ".runtime/reviews/10f5da22-8a3c-4ac5-9ca3-00bf377f6066/snapshot.json": "2794056a4c4031e13926b5a3b26df7b952246e71123678fb146ed33bb039ddc8",
+    ".runtime/reviews/10f5da22-8a3c-4ac5-9ca3-00bf377f6066/ocr.json": "4c9dcd51430610d9b9db9900215cd97a524f4ef73d9dd9e40c87541e32a524e4",
+    ".runtime/reviews/10f5da22-8a3c-4ac5-9ca3-00bf377f6066/original.bin": "505650744b32f644c6820a817506a7d9e4ecc67c7468fc01fff840f4be050924"
+  },
+  "comparison_code_sha256": {
+    "backend/app/document_conditions.py": "8114e1e8f46deea857b36eed260bc92caf3bf1e139d51581caaa0ed7d1d79d99",
+    "backend/app/structured_review.py": "bde1341626d2483ae3290ba1341ab71ef1ff016848355b8a968f31ec518ca63a"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "schema": "manual-poster-contract-fixture-v1",
+  "document_id": "TEST-SJ2026-001",
+  "version": "1.0",
+  "status": "new_test_specification_not_model_output",
+  "requirements": [
+    {
+      "id": "R01",
+      "level": "필수",
+      "label": "행사명과 연도",
+      "requirement": "2026 수원 재즈 페스티벌",
+      "inspection": "행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+      "type": "information"
+    },
+    {
+      "id": "R02",
+      "level": "필수",
+      "label": "행사 날짜와 요일",
+      "requirement": "2026.09.18.(금) - 2026.09.19.(토)",
+      "inspection": "시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략할 수 있다. 앞자리 0과 구분자 차이는 허용한다.",
+      "type": "information"
+    },
+    {
+      "id": "R03",
+      "level": "필수",
+      "label": "행사 시간",
+      "requirement": "17:30",
+      "inspection": "17:30을 읽을 수 있게 표기한다. 공백 차이는 허용하되 시간 값 변경은 불가하다.",
+      "type": "information"
+    },
+    {
+      "id": "R04",
+      "level": "필수",
+      "label": "행사 장소",
+      "requirement": "광교호수공원 재미난 밭",
+      "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. 재미난밭의 붙여쓰기와 줄바꿈은 허용한다.",
+      "type": "information"
+    },
+    {
+      "id": "R05",
+      "level": "필수",
+      "label": "18일 대표 출연진",
+      "requirement": "정동환(멜로망스) x Funk Messengers",
+      "inspection": "9월 18일 라인업 영역에 표기한다. x 또는 ×, 대소문자·공백 차이는 허용한다. 다른 출연진을 삭제하라는 조건은 아니다.",
+      "type": "information"
+    },
+    {
+      "id": "R06",
+      "level": "필수",
+      "label": "19일 대표 출연진",
+      "requirement": "이은미 x 민경인 trio",
+      "inspection": "9월 19일 라인업 영역에 표기한다. x 또는 ×, 대소문자·공백 차이는 허용한다.",
+      "type": "information"
+    },
+    {
+      "id": "R07",
+      "level": "필수",
+      "label": "영문 행사명",
+      "requirement": "2026 SUWON JAZZ FESTIVAL",
+      "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. 영문 단어와 연도를 모두 유지한다.",
+      "type": "information"
+    },
+    {
+      "id": "V01",
+      "level": "필수",
+      "label": "잔디 배경",
+      "requirement": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+      "inspection": "잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+      "type": "visual"
+    },
+    {
+      "id": "V02",
+      "level": "필수",
+      "label": "레코드와 톤암",
+      "requirement": "하단의 큰 원형 레코드와 오른쪽 아래 바늘·톤암 형태를 포함한다.",
+      "inspection": "원형 레코드와 톤암을 식별할 수 있어야 한다. 레코드 외곽이 화면 아래로 의도적으로 잘리는 구성은 허용한다.",
+      "type": "visual"
+    },
+    {
+      "id": "V03",
+      "level": "필수",
+      "label": "연주자 선화",
+      "requirement": "왼쪽 아래와 오른쪽 아래에 흰 선으로 표현한 관악기 연주자를 배치한다.",
+      "inspection": "양쪽에 사람과 관악기 형태가 보이는지 확인한다. 실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+      "type": "visual"
+    },
+    {
+      "id": "V04",
+      "level": "필수",
+      "label": "상단 로고 배치",
+      "requirement": "왼쪽 위에 수원특례시, 오른쪽 위에 VISIT SUWON YEAR 및 2026-2027 수원 방문의 해 로고를 배치한다.",
+      "inspection": "양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+      "type": "visual"
+    },
+    {
+      "id": "V05",
+      "level": "권장",
+      "label": "장식과 분위기",
+      "requirement": "노란색 악기 선화와 작은 빛·별 장식을 유지해 밝은 야외 음악 축제 분위기를 표현한다.",
+      "inspection": "정성 검토 항목이다. 장식의 정확한 개수는 지정하지 않으며, 이 항목만으로 필수 불합격을 결정하지 않는다.",
+      "type": "visual"
+    },
+    {
+      "id": "V06",
+      "level": "권장",
+      "label": "문구 가독성",
+      "requirement": "행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+      "inspection": "확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+      "type": "visual"
+    },
+    {
+      "id": "T01",
+      "level": "필수",
+      "label": "이미지 크기",
+      "requirement": "가로 2527 x 세로 3572픽셀, 세로형",
+      "inspection": "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다. 임의 축소본을 원본 대신 제출하지 않는다.",
+      "type": "information"
+    },
+    {
+      "id": "T02",
+      "level": "필수",
+      "label": "파일 형식과 색상",
+      "requirement": "정적 JPEG 이미지 1개, 확장자 .jpg, RGB 색상 모드",
+      "inspection": "실제 파일 형식·전체 디코딩·색상 모드를 확인한다. 파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는다.",
+      "type": "information"
+    },
+    {
+      "id": "T03",
+      "level": "선택",
+      "label": "편집 가능한 원본",
+      "requirement": "PSD·AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+      "inspection": "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다. 현재 테스트는 이미지와 이 PDF로 진행한다.",
+      "type": "information"
+    }
+  ]
+}

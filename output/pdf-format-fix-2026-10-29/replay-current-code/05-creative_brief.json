@@ -1,0 +1,3267 @@
+{
+  "mode": "Cached actual OCR + Qwen responses; PDF re-rendered; source scopes/schema/image byte lengths asserted unchanged. This is a postprocessing replay, not new inference.",
+  "source_pdf": "/Users/choejiheum/Downloads/1팀_테스트/01_image_test/creative_brief.pdf",
+  "source_sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+  "native_result_file": "05-creative_brief.json",
+  "native_elapsed_seconds": 97.109,
+  "replay_seconds": 0.045,
+  "result": {
+    "requirements": "브랜드: 온결 또는 ONGYEOL\n상품명: 배 라떼\n가격: 5,900원\n기간: 2026.11.01- 11.30\n장소: 온결 전매장\n필수 고지: 시즌 한정·재료 소진 시 조기 종료\n이미지 비율: 4:5\n최소 이미지 폭: 1024px 이상\n파일 형식: PNG\n색상 모드: RGB\n캠페인 문구: 가을을 담은 한 잔\n모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보해야 합니다.\n제작 방향: 크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.\n상품 배치: 배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.\n가독성: 배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+    "conditions": [
+      {
+        "text": "브랜드: 온결 또는 ONGYEOL",
+        "type": "information",
+        "model_type": "visual",
+        "label": "브랜드",
+        "requirement": "온결 또는 ONGYEOL",
+        "level": "명시 없음",
+        "inspection": "온결 또는 ONGYEOL 이 표기되어 있어야 합니다.",
+        "inspection_parts": [
+          "온결 또는 ONGYEOL 이 표기되어 있어야 합니다."
+        ],
+        "source_id": "p2-s13",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.852,
+          "model_source_id": "p2-s13",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-01",
+        "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s13",
+            "page": 2,
+            "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.852,
+              "model_source_id": "p2-s13",
+              "relinked": false
+            },
+            "requirement_id": "IMG-01",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "온결 또는 ONGYEOL 이 표기되어 있어야 합니다. 가격 변경 불가."
+          },
+          {
+            "source_id": "p1-s8",
+            "page": 1,
+            "source": "브랜드 | 온결 또는 ONGYEOL",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s8",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s13",
+            "page": 2,
+            "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.881,
+              "model_source_id": "p2-s13",
+              "relinked": false
+            },
+            "requirement_id": "IMG-01",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "온결 또는 ONGYEOL 이 표기되어 있어야 합니다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "상품명: 배 라떼",
+        "type": "information",
+        "model_type": "visual",
+        "label": "상품명",
+        "requirement": "배 라떼",
+        "level": "명시 없음",
+        "inspection": "배 라떼 한글 표기해야 합니다.",
+        "inspection_parts": [
+          "배 라떼 한글 표기해야 합니다."
+        ],
+        "source_id": "p2-s14",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.8,
+          "model_source_id": "p2-s14",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-02",
+        "source": "IMG-02 | 상품명 | 배 라떼 한글 표기",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s14",
+            "page": 2,
+            "source": "IMG-02 | 상품명 | 배 라떼 한글 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.8,
+              "model_source_id": "p2-s14",
+              "relinked": false
+            },
+            "requirement_id": "IMG-02",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "배 라떼 한글 표기해야 합니다. 캠페인 문구 '가을을 담은 한 잔'도 누락 없이 표기합니다."
+          },
+          {
+            "source_id": "p1-s10",
+            "page": 1,
+            "source": "상품명 | 배라떼",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s10",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "가격: 5,900원",
+        "type": "information",
+        "model_type": "visual",
+        "label": "가격",
+        "requirement": "5,900원",
+        "level": "명시 없음",
+        "inspection": "가격 변경 불가.",
+        "inspection_parts": [
+          "가격 변경 불가."
+        ],
+        "source_id": "p2-s15",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s15",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-03",
+        "source": "IMG-03 | 가격 | 5,900원 표기,가격변경 불가",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s15",
+            "page": 2,
+            "source": "IMG-03 | 가격 | 5,900원 표기,가격변경 불가",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s15",
+              "relinked": false
+            },
+            "requirement_id": "IMG-03",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "가격 변경 불가."
+          },
+          {
+            "source_id": "p1-s11",
+            "page": 1,
+            "source": "판매 가격 | 5,900원",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s11",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s13",
+            "page": 2,
+            "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.852,
+              "model_source_id": "p2-s13",
+              "relinked": false
+            },
+            "requirement_id": "IMG-01",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "온결 또는 ONGYEOL 이 표기되어 있어야 합니다. 가격 변경 불가."
+          },
+          {
+            "source_id": "p1-s8",
+            "page": 1,
+            "source": "브랜드 | 온결 또는 ONGYEOL",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s8",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s13",
+            "page": 2,
+            "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.881,
+              "model_source_id": "p2-s13",
+              "relinked": false
+            },
+            "requirement_id": "IMG-01",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "온결 또는 ONGYEOL 이 표기되어 있어야 합니다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "기간: 2026.11.01- 11.30",
+        "type": "information",
+        "model_type": "information",
+        "label": "판매 기간",
+        "requirement": "2026.11.01- 11.30",
+        "level": "명시 없음",
+        "inspection": "기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용합니다.",
+        "inspection_parts": [
+          "기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용합니다."
+        ],
+        "source_id": "p2-s16",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.758,
+          "model_source_id": "p2-s16",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-04",
+        "source": "IMG-04 | 판매 기간 | 2026.11.01- 11.30에 해당하는 기간",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s16",
+            "page": 2,
+            "source": "IMG-04 | 판매 기간 | 2026.11.01- 11.30에 해당하는 기간",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.758,
+              "model_source_id": "p2-s16",
+              "relinked": false
+            },
+            "requirement_id": "IMG-04",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용합니다."
+          },
+          {
+            "source_id": "p1-s12",
+            "page": 1,
+            "source": "판매기간 | 2026.11.01- 11.30",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s12",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s20",
+            "page": 2,
+            "source": "기간의 ㅇ 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다. 캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.839,
+              "model_source_id": "p2-s16",
+              "relinked": true
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용합니다."
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장소: 온결 전매장",
+        "type": "information",
+        "model_type": "visual",
+        "label": "판매처",
+        "requirement": "온결 전매장",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s17",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s17",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-05",
+        "source": "IMG-05 | 판매처 | 온결 전매장 표기",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s17",
+            "page": 2,
+            "source": "IMG-05 | 판매처 | 온결 전매장 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s17",
+              "relinked": false
+            },
+            "requirement_id": "IMG-05",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p1-s13",
+            "page": 1,
+            "source": "판매처 | 온결 전 매장",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s13",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "필수 고지: 시즌 한정·재료 소진 시 조기 종료",
+        "type": "information",
+        "model_type": "visual",
+        "label": "필수 고지",
+        "requirement": "시즌 한정·재료 소진 시 조기 종료",
+        "level": "필수",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s18",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s18",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-06",
+        "source": "IMG-06 | 필수 고지 | 시즌 한정·재료 소진 시 조기 종료",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s18",
+            "page": 2,
+            "source": "IMG-06 | 필수 고지 | 시즌 한정·재료 소진 시 조기 종료",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s18",
+              "relinked": false
+            },
+            "requirement_id": "IMG-06",
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p1-s14",
+            "page": 1,
+            "source": "필수 고지 | 시즌 한정·재료 소진 시 조기 종료",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s14",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "필수",
+            "model_level": "필수",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "이미지 비율: 4:5",
+        "type": "information",
+        "model_type": "visual",
+        "label": "이미지 비율",
+        "requirement": "4:5",
+        "level": "권장",
+        "inspection": "4:5 비율의 픽셀 반올림 차이는 ±1px까지 허용합니다.",
+        "inspection_parts": [
+          "4:5 비율의 픽셀 반올림 차이는 ±1px까지 허용합니다."
+        ],
+        "source_id": "p2-s19",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.545,
+          "model_source_id": "p2-s19",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-07",
+        "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.545,
+              "model_source_id": "p2-s19",
+              "relinked": false
+            },
+            "requirement_id": "IMG-07",
+            "level": "권장",
+            "model_level": "권장",
+            "inspection": "4:5 비율의 픽셀 반올림 차이는 ±1px까지 허용합니다."
+          },
+          {
+            "source_id": "p2-s10",
+            "page": 2,
+            "source": "4:5 비율의 픽셀 반올림 차이는 ± 1px까지 허용한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.778,
+              "model_source_id": "p2-s19",
+              "relinked": true
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "권장",
+            "inspection": "4:5 비율의 픽셀 반올림 차이는 ±1px까지 허용합니다."
+          },
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB",
+            "requirement_id": null,
+            "level": "권장",
+            "inspection": "",
+            "source_alignment": {
+              "method": "exact_specification_values"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "최소 이미지 폭: 1024px 이상",
+        "type": "information",
+        "model_type": "visual",
+        "label": "최소 이미지 폭",
+        "requirement": "1024px 이상",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s19",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.667,
+          "model_source_id": "p2-s19",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-07",
+        "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.667,
+              "model_source_id": "p2-s19",
+              "relinked": false
+            },
+            "requirement_id": "IMG-07",
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB",
+            "requirement_id": null,
+            "level": "명시 없음",
+            "inspection": "",
+            "source_alignment": {
+              "method": "exact_specification_values"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "파일 형식: PNG",
+        "type": "information",
+        "model_type": "visual",
+        "label": "파일 형식",
+        "requirement": "PNG",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s19",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.778,
+          "model_source_id": "p2-s19",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-07",
+        "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.778,
+              "model_source_id": "p2-s19",
+              "relinked": false
+            },
+            "requirement_id": "IMG-07",
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB",
+            "requirement_id": null,
+            "level": "명시 없음",
+            "inspection": "",
+            "source_alignment": {
+              "method": "exact_specification_values"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "색상 모드: RGB",
+        "type": "information",
+        "model_type": "visual",
+        "label": "색상 모드",
+        "requirement": "RGB",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s19",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.667,
+          "model_source_id": "p2-s19",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "IMG-07",
+        "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.667,
+              "model_source_id": "p2-s19",
+              "relinked": false
+            },
+            "requirement_id": "IMG-07",
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB",
+            "requirement_id": null,
+            "level": "명시 없음",
+            "inspection": "",
+            "source_alignment": {
+              "method": "exact_specification_values"
+            }
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "캠페인 문구: 가을을 담은 한 잔",
+        "type": "information",
+        "model_type": "information",
+        "label": "캠페인 문구",
+        "requirement": "가을을 담은 한 잔",
+        "level": "명시 없음",
+        "inspection": "누락 없이 표기한다. / 캠페인 문구 '가을을 담은 한 잔'도 누락 없이 표기합니다.",
+        "inspection_parts": [
+          "누락 없이 표기한다.",
+          "캠페인 문구 '가을을 담은 한 잔'도 누락 없이 표기합니다."
+        ],
+        "source_id": "p1-s9",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.833,
+          "model_source_id": "p1-s9",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": null,
+        "source": "캠페인 | 가을을 담은 한 잔",
+        "page": 1,
+        "source_references": [
+          {
+            "source_id": "p1-s9",
+            "page": 1,
+            "source": "캠페인 | 가을을 담은 한 잔",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.833,
+              "model_source_id": "p1-s9",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          },
+          {
+            "source_id": "p2-s20",
+            "page": 2,
+            "source": "기간의 ㅇ 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다. 캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s20",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "누락 없이 표기한다."
+          },
+          {
+            "source_id": "p2-s14",
+            "page": 2,
+            "source": "IMG-02 | 상품명 | 배 라떼 한글 표기",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.8,
+              "model_source_id": "p2-s14",
+              "relinked": false
+            },
+            "requirement_id": "IMG-02",
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": "배 라떼 한글 표기해야 합니다. 캠페인 문구 '가을을 담은 한 잔'도 누락 없이 표기합니다."
+          },
+          {
+            "source_id": "p1-s10",
+            "page": 1,
+            "source": "상품명 | 배라떼",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p1-s10",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보해야 합니다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "표기 가독성",
+        "requirement": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보해야 합니다.",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p1-s15",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.631,
+          "model_source_id": "p1-s15",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": null,
+        "source": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+        "page": 1,
+        "source_references": [
+          {
+            "source_id": "p1-s15",
+            "page": 1,
+            "source": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.631,
+              "model_source_id": "p1-s15",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "필수",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "제작 방향: 크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "제작 방향",
+        "requirement": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s6",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.667,
+          "model_source_id": "p2-s6",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": null,
+        "source": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s6",
+            "page": 2,
+            "source": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.667,
+              "model_source_id": "p2-s6",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "상품 배치: 배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "상품 배치",
+        "requirement": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s7",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.778,
+          "model_source_id": "p2-s7",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": null,
+        "source": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s7",
+            "page": 2,
+            "source": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 0.778,
+              "model_source_id": "p2-s7",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "가독성: 배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "가독성",
+        "requirement": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+        "level": "명시 없음",
+        "inspection": "",
+        "inspection_parts": [],
+        "source_id": "p2-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p2-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": null,
+        "source": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+        "page": 2,
+        "source_references": [
+          {
+            "source_id": "p2-s8",
+            "page": 2,
+            "source": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+            "source_alignment": {
+              "method": "character_bigram_overlap",
+              "overlap_ratio": 1.0,
+              "model_source_id": "p2-s8",
+              "relinked": false
+            },
+            "requirement_id": null,
+            "level": "명시 없음",
+            "model_level": "명시 없음",
+            "inspection": ""
+          }
+        ],
+        "source_kind": "pdf_page+paddleocr"
+      }
+    ],
+    "page_count": 2,
+    "scanned_pages": [],
+    "model": "qwen3.5:4b",
+    "input_mode": "pdf_page_images+paddleocr_text",
+    "source_selection": {
+      "mode": "numbered_requirement_rows",
+      "extraction_pages": [
+        1,
+        2
+      ],
+      "primary_pages": [
+        2
+      ],
+      "requirement_ids": [
+        "IMG-01",
+        "IMG-02",
+        "IMG-03",
+        "IMG-04",
+        "IMG-05",
+        "IMG-06",
+        "IMG-07"
+      ],
+      "supplemental_source_ids": [
+        "p1-s8",
+        "p1-s9",
+        "p1-s10",
+        "p1-s11",
+        "p1-s12",
+        "p1-s13",
+        "p1-s14",
+        "p1-s15",
+        "p2-s6",
+        "p2-s7",
+        "p2-s8",
+        "p2-s9",
+        "p2-s10",
+        "p2-s20"
+      ]
+    },
+    "source_coverage": {
+      "supplemental_sources": 14,
+      "covered_supplemental_sources": 14,
+      "common_rules": 0,
+      "attached_common_rules": 0
+    },
+    "common_rules": [],
+    "document_notes": [],
+    "timing": {
+      "ocr_seconds": 0.036,
+      "llm_seconds": 0.009,
+      "total_seconds": 0.045
+    },
+    "vision": {
+      "max_edge": 1800,
+      "pages_per_call": 1,
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        },
+        {
+          "page": 2,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        }
+      ],
+      "call_count": 3
+    },
+    "ocr": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "coordinate_space": "rendered_page_pixels",
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "ONGYEOL / BRAND MARKETING",
+              "confidence": 0.9789025783538818,
+              "bbox_xyxy": [
+                86,
+                72,
+                380,
+                95
+              ],
+              "polygon": [
+                [
+                  86,
+                  72
+                ],
+                [
+                  380,
+                  72
+                ],
+                [
+                  380,
+                  95
+                ],
+                [
+                  86,
+                  95
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "CREATIVE STANDARD",
+              "confidence": 0.9895932674407959,
+              "bbox_xyxy": [
+                911,
+                74,
+                1102,
+                92
+              ],
+              "polygon": [
+                [
+                  911,
+                  74
+                ],
+                [
+                  1102,
+                  74
+                ],
+                [
+                  1102,
+                  92
+                ],
+                [
+                  911,
+                  92
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "CAMPAIGN BRIEF",
+              "confidence": 0.9958742260932922,
+              "bbox_xyxy": [
+                85,
+                180,
+                254,
+                203
+              ],
+              "polygon": [
+                [
+                  85,
+                  180
+                ],
+                [
+                  254,
+                  180
+                ],
+                [
+                  254,
+                  203
+                ],
+                [
+                  85,
+                  203
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "가을 캠페인 광고 제작 기준서",
+              "confidence": 0.9423950910568237,
+              "bbox_xyxy": [
+                80,
+                238,
+                701,
+                296
+              ],
+              "polygon": [
+                [
+                  80,
+                  238
+                ],
+                [
+                  701,
+                  238
+                ],
+                [
+                  701,
+                  296
+                ],
+                [
+                  80,
+                  296
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "온결/ONGYEOL",
+              "confidence": 0.9983437657356262,
+              "bbox_xyxy": [
+                82,
+                302,
+                298,
+                337
+              ],
+              "polygon": [
+                [
+                  82,
+                  305
+                ],
+                [
+                  297,
+                  302
+                ],
+                [
+                  298,
+                  334
+                ],
+                [
+                  83,
+                  337
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "제작 기준 확정",
+              "confidence": 0.9990026950836182,
+              "bbox_xyxy": [
+                110,
+                392,
+                261,
+                420
+              ],
+              "polygon": [
+                [
+                  110,
+                  392
+                ],
+                [
+                  261,
+                  392
+                ],
+                [
+                  261,
+                  420
+                ],
+                [
+                  110,
+                  420
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "확정일 2026.10.27",
+              "confidence": 0.967532217502594,
+              "bbox_xyxy": [
+                879,
+                393,
+                1079,
+                421
+              ],
+              "polygon": [
+                [
+                  879,
+                  393
+                ],
+                [
+                  1079,
+                  393
+                ],
+                [
+                  1079,
+                  421
+                ],
+                [
+                  879,
+                  421
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "01",
+              "confidence": 0.9983580708503723,
+              "bbox_xyxy": [
+                82,
+                493,
+                114,
+                521
+              ],
+              "polygon": [
+                [
+                  82,
+                  493
+                ],
+                [
+                  114,
+                  493
+                ],
+                [
+                  114,
+                  521
+                ],
+                [
+                  82,
+                  521
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "캠페인 개요",
+              "confidence": 0.9982612729072571,
+              "bbox_xyxy": [
+                152,
+                485,
+                307,
+                522
+              ],
+              "polygon": [
+                [
+                  152,
+                  485
+                ],
+                [
+                  307,
+                  485
+                ],
+                [
+                  307,
+                  522
+                ],
+                [
+                  152,
+                  522
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "가을을 담은 한 잔",
+              "confidence": 0.9584495425224304,
+              "bbox_xyxy": [
+                152,
+                539,
+                443,
+                580
+              ],
+              "polygon": [
+                [
+                  152,
+                  539
+                ],
+                [
+                  443,
+                  539
+                ],
+                [
+                  443,
+                  580
+                ],
+                [
+                  152,
+                  580
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "제철 과일 배의 부드러운 풍미를 담은 시즌 음료를 소개한다.",
+              "confidence": 0.9773638248443604,
+              "bbox_xyxy": [
+                154,
+                600,
+                691,
+                622
+              ],
+              "polygon": [
+                [
+                  154,
+                  600
+                ],
+                [
+                  691,
+                  600
+                ],
+                [
+                  691,
+                  622
+                ],
+                [
+                  154,
+                  622
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "02",
+              "confidence": 0.9986450672149658,
+              "bbox_xyxy": [
+                82,
+                697,
+                117,
+                725
+              ],
+              "polygon": [
+                [
+                  82,
+                  697
+                ],
+                [
+                  117,
+                  697
+                ],
+                [
+                  117,
+                  725
+                ],
+                [
+                  82,
+                  725
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "광고 표기 기준",
+              "confidence": 0.9612947702407837,
+              "bbox_xyxy": [
+                152,
+                692,
+                343,
+                728
+              ],
+              "polygon": [
+                [
+                  152,
+                  692
+                ],
+                [
+                  343,
+                  692
+                ],
+                [
+                  343,
+                  728
+                ],
+                [
+                  152,
+                  728
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "브랜드",
+              "confidence": 0.9986341595649719,
+              "bbox_xyxy": [
+                173,
+                753,
+                238,
+                781
+              ],
+              "polygon": [
+                [
+                  173,
+                  753
+                ],
+                [
+                  238,
+                  753
+                ],
+                [
+                  238,
+                  781
+                ],
+                [
+                  173,
+                  781
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "온결 또는 ONGYEOL",
+              "confidence": 0.981791079044342,
+              "bbox_xyxy": [
+                378,
+                753,
+                590,
+                780
+              ],
+              "polygon": [
+                [
+                  378,
+                  753
+                ],
+                [
+                  590,
+                  753
+                ],
+                [
+                  590,
+                  780
+                ],
+                [
+                  378,
+                  780
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "캠페인",
+              "confidence": 0.9999783039093018,
+              "bbox_xyxy": [
+                174,
+                816,
+                238,
+                845
+              ],
+              "polygon": [
+                [
+                  174,
+                  816
+                ],
+                [
+                  238,
+                  816
+                ],
+                [
+                  238,
+                  845
+                ],
+                [
+                  174,
+                  845
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "가을을 담은 한 잔",
+              "confidence": 0.9230207204818726,
+              "bbox_xyxy": [
+                376,
+                814,
+                556,
+                842
+              ],
+              "polygon": [
+                [
+                  376,
+                  814
+                ],
+                [
+                  556,
+                  814
+                ],
+                [
+                  556,
+                  842
+                ],
+                [
+                  376,
+                  842
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "상품명",
+              "confidence": 0.9987644553184509,
+              "bbox_xyxy": [
+                174,
+                876,
+                238,
+                906
+              ],
+              "polygon": [
+                [
+                  174,
+                  876
+                ],
+                [
+                  238,
+                  876
+                ],
+                [
+                  238,
+                  906
+                ],
+                [
+                  174,
+                  906
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "배라떼",
+              "confidence": 0.9925937652587891,
+              "bbox_xyxy": [
+                374,
+                874,
+                456,
+                906
+              ],
+              "polygon": [
+                [
+                  374,
+                  874
+                ],
+                [
+                  456,
+                  874
+                ],
+                [
+                  456,
+                  906
+                ],
+                [
+                  374,
+                  906
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "판매 가격",
+              "confidence": 0.9944254159927368,
+              "bbox_xyxy": [
+                175,
+                939,
+                259,
+                967
+              ],
+              "polygon": [
+                [
+                  175,
+                  939
+                ],
+                [
+                  259,
+                  939
+                ],
+                [
+                  259,
+                  967
+                ],
+                [
+                  175,
+                  967
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "5,900원",
+              "confidence": 0.9996797442436218,
+              "bbox_xyxy": [
+                375,
+                938,
+                469,
+                967
+              ],
+              "polygon": [
+                [
+                  375,
+                  938
+                ],
+                [
+                  469,
+                  938
+                ],
+                [
+                  469,
+                  967
+                ],
+                [
+                  375,
+                  967
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "판매기간",
+              "confidence": 0.9935914278030396,
+              "bbox_xyxy": [
+                175,
+                1001,
+                261,
+                1029
+              ],
+              "polygon": [
+                [
+                  175,
+                  1001
+                ],
+                [
+                  261,
+                  1001
+                ],
+                [
+                  261,
+                  1029
+                ],
+                [
+                  175,
+                  1029
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "2026.11.01- 11.30",
+              "confidence": 0.9773062467575073,
+              "bbox_xyxy": [
+                376,
+                1000,
+                609,
+                1026
+              ],
+              "polygon": [
+                [
+                  376,
+                  1000
+                ],
+                [
+                  609,
+                  1000
+                ],
+                [
+                  609,
+                  1026
+                ],
+                [
+                  376,
+                  1026
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "판매처",
+              "confidence": 0.9974051117897034,
+              "bbox_xyxy": [
+                174,
+                1060,
+                238,
+                1092
+              ],
+              "polygon": [
+                [
+                  174,
+                  1064
+                ],
+                [
+                  237,
+                  1060
+                ],
+                [
+                  238,
+                  1089
+                ],
+                [
+                  175,
+                  1092
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "온결 전 매장",
+              "confidence": 0.9940735101699829,
+              "bbox_xyxy": [
+                375,
+                1062,
+                504,
+                1089
+              ],
+              "polygon": [
+                [
+                  375,
+                  1062
+                ],
+                [
+                  504,
+                  1062
+                ],
+                [
+                  504,
+                  1089
+                ],
+                [
+                  375,
+                  1089
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "필수 고지",
+              "confidence": 0.9072715044021606,
+              "bbox_xyxy": [
+                175,
+                1125,
+                261,
+                1152
+              ],
+              "polygon": [
+                [
+                  175,
+                  1125
+                ],
+                [
+                  261,
+                  1125
+                ],
+                [
+                  261,
+                  1152
+                ],
+                [
+                  175,
+                  1152
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "시즌 한정·재료 소진 시 조기 종료",
+              "confidence": 0.974958598613739,
+              "bbox_xyxy": [
+                379,
+                1126,
+                719,
+                1149
+              ],
+              "polygon": [
+                [
+                  379,
+                  1126
+                ],
+                [
+                  719,
+                  1126
+                ],
+                [
+                  719,
+                  1149
+                ],
+                [
+                  379,
+                  1149
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+              "confidence": 0.9962047934532166,
+              "bbox_xyxy": [
+                156,
+                1214,
+                679,
+                1233
+              ],
+              "polygon": [
+                [
+                  156,
+                  1214
+                ],
+                [
+                  679,
+                  1214
+                ],
+                [
+                  679,
+                  1233
+                ],
+                [
+                  156,
+                  1233
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "DOCUMENT CONTROL",
+              "confidence": 0.9856259822845459,
+              "bbox_xyxy": [
+                85,
+                1401,
+                261,
+                1420
+              ],
+              "polygon": [
+                [
+                  85,
+                  1401
+                ],
+                [
+                  261,
+                  1401
+                ],
+                [
+                  261,
+                  1420
+                ],
+                [
+                  85,
+                  1420
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "발주 및 기준 관리 마케팅팀",
+              "confidence": 0.9350230097770691,
+              "bbox_xyxy": [
+                85,
+                1441,
+                340,
+                1467
+              ],
+              "polygon": [
+                [
+                  85,
+                  1441
+                ],
+                [
+                  340,
+                  1441
+                ],
+                [
+                  340,
+                  1467
+                ],
+                [
+                  85,
+                  1467
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "제작 및 납품 제작팀",
+              "confidence": 0.9539299011230469,
+              "bbox_xyxy": [
+                581,
+                1442,
+                770,
+                1468
+              ],
+              "polygon": [
+                [
+                  581,
+                  1442
+                ],
+                [
+                  770,
+                  1442
+                ],
+                [
+                  770,
+                  1468
+                ],
+                [
+                  581,
+                  1468
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "기준 문서 ID OG-2026-AUT-001",
+              "confidence": 0.9703690409660339,
+              "bbox_xyxy": [
+                85,
+                1488,
+                376,
+                1510
+              ],
+              "polygon": [
+                [
+                  85,
+                  1488
+                ],
+                [
+                  376,
+                  1488
+                ],
+                [
+                  376,
+                  1510
+                ],
+                [
+                  85,
+                  1510
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "OG-2026-AUT-001 | v1.0",
+              "confidence": 0.9653911590576172,
+              "bbox_xyxy": [
+                86,
+                1605,
+                311,
+                1623
+              ],
+              "polygon": [
+                [
+                  86,
+                  1605
+                ],
+                [
+                  311,
+                  1605
+                ],
+                [
+                  311,
+                  1623
+                ],
+                [
+                  86,
+                  1623
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "ONGYEOL / 01",
+              "confidence": 0.9570625424385071,
+              "bbox_xyxy": [
+                972,
+                1604,
+                1105,
+                1626
+              ],
+              "polygon": [
+                [
+                  972,
+                  1604
+                ],
+                [
+                  1105,
+                  1604
+                ],
+                [
+                  1105,
+                  1626
+                ],
+                [
+                  972,
+                  1626
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "ONGYEOL / BRAND MARKETING",
+              "confidence": 0.9791519641876221,
+              "bbox_xyxy": [
+                86,
+                72,
+                380,
+                95
+              ],
+              "polygon": [
+                [
+                  86,
+                  72
+                ],
+                [
+                  380,
+                  72
+                ],
+                [
+                  380,
+                  95
+                ],
+                [
+                  86,
+                  95
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "CREATIVE STANDARD",
+              "confidence": 0.9938116669654846,
+              "bbox_xyxy": [
+                912,
+                74,
+                1102,
+                92
+              ],
+              "polygon": [
+                [
+                  912,
+                  74
+                ],
+                [
+                  1102,
+                  74
+                ],
+                [
+                  1102,
+                  92
+                ],
+                [
+                  912,
+                  92
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "DELIVERY & REVIEW",
+              "confidence": 0.9570963382720947,
+              "bbox_xyxy": [
+                88,
+                186,
+                286,
+                204
+              ],
+              "polygon": [
+                [
+                  88,
+                  186
+                ],
+                [
+                  286,
+                  186
+                ],
+                [
+                  286,
+                  204
+                ],
+                [
+                  88,
+                  204
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "제작 사양 및 확인 항목",
+              "confidence": 0.9639341831207275,
+              "bbox_xyxy": [
+                86,
+                235,
+                520,
+                280
+              ],
+              "polygon": [
+                [
+                  86,
+                  235
+                ],
+                [
+                  520,
+                  235
+                ],
+                [
+                  520,
+                  280
+                ],
+                [
+                  86,
+                  280
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "승인된 내용과 최종 납품 파일을 함께 확인한다.",
+              "confidence": 0.9865077137947083,
+              "bbox_xyxy": [
+                88,
+                297,
+                510,
+                320
+              ],
+              "polygon": [
+                [
+                  88,
+                  297
+                ],
+                [
+                  510,
+                  297
+                ],
+                [
+                  510,
+                  320
+                ],
+                [
+                  88,
+                  320
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "03",
+              "confidence": 0.9997234344482422,
+              "bbox_xyxy": [
+                85,
+                383,
+                114,
+                405
+              ],
+              "polygon": [
+                [
+                  85,
+                  383
+                ],
+                [
+                  114,
+                  383
+                ],
+                [
+                  114,
+                  405
+                ],
+                [
+                  85,
+                  405
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "제작 방향",
+              "confidence": 0.9735525250434875,
+              "bbox_xyxy": [
+                152,
+                374,
+                280,
+                410
+              ],
+              "polygon": [
+                [
+                  152,
+                  374
+                ],
+                [
+                  280,
+                  374
+                ],
+                [
+                  280,
+                  410
+                ],
+                [
+                  152,
+                  410
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+              "confidence": 0.9725968241691589,
+              "bbox_xyxy": [
+                154,
+                435,
+                766,
+                458
+              ],
+              "polygon": [
+                [
+                  154,
+                  435
+                ],
+                [
+                  766,
+                  435
+                ],
+                [
+                  766,
+                  458
+                ],
+                [
+                  154,
+                  458
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+              "confidence": 0.9888629913330078,
+              "bbox_xyxy": [
+                156,
+                478,
+                804,
+                500
+              ],
+              "polygon": [
+                [
+                  156,
+                  478
+                ],
+                [
+                  804,
+                  478
+                ],
+                [
+                  804,
+                  500
+                ],
+                [
+                  156,
+                  500
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+              "confidence": 0.994049072265625,
+              "bbox_xyxy": [
+                156,
+                520,
+                706,
+                542
+              ],
+              "polygon": [
+                [
+                  156,
+                  520
+                ],
+                [
+                  706,
+                  520
+                ],
+                [
+                  706,
+                  542
+                ],
+                [
+                  156,
+                  542
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB",
+              "confidence": 0.9467527866363525,
+              "bbox_xyxy": [
+                178,
+                601,
+                704,
+                624
+              ],
+              "polygon": [
+                [
+                  178,
+                  601
+                ],
+                [
+                  704,
+                  601
+                ],
+                [
+                  704,
+                  624
+                ],
+                [
+                  178,
+                  624
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "4:5 비율의 픽셀 반올림 차이는 ± 1px까지 허용한다.",
+              "confidence": 0.9774118661880493,
+              "bbox_xyxy": [
+                178,
+                654,
+                609,
+                676
+              ],
+              "polygon": [
+                [
+                  178,
+                  654
+                ],
+                [
+                  609,
+                  654
+                ],
+                [
+                  609,
+                  676
+                ],
+                [
+                  178,
+                  676
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "04",
+              "confidence": 0.9993206262588501,
+              "bbox_xyxy": [
+                82,
+                726,
+                117,
+                754
+              ],
+              "polygon": [
+                [
+                  82,
+                  726
+                ],
+                [
+                  117,
+                  726
+                ],
+                [
+                  117,
+                  754
+                ],
+                [
+                  82,
+                  754
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "납품 전 확인표",
+              "confidence": 0.9348887801170349,
+              "bbox_xyxy": [
+                154,
+                722,
+                343,
+                754
+              ],
+              "polygon": [
+                [
+                  154,
+                  722
+                ],
+                [
+                  343,
+                  722
+                ],
+                [
+                  343,
+                  754
+                ],
+                [
+                  154,
+                  754
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "ID",
+              "confidence": 0.9966248273849487,
+              "bbox_xyxy": [
+                98,
+                800,
+                124,
+                824
+              ],
+              "polygon": [
+                [
+                  98,
+                  800
+                ],
+                [
+                  124,
+                  800
+                ],
+                [
+                  124,
+                  824
+                ],
+                [
+                  98,
+                  824
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "확인 항목",
+              "confidence": 0.9923362731933594,
+              "bbox_xyxy": [
+                218,
+                797,
+                303,
+                825
+              ],
+              "polygon": [
+                [
+                  218,
+                  797
+                ],
+                [
+                  303,
+                  797
+                ],
+                [
+                  303,
+                  825
+                ],
+                [
+                  218,
+                  825
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "판정 기준",
+              "confidence": 0.998986542224884,
+              "bbox_xyxy": [
+                427,
+                799,
+                512,
+                826
+              ],
+              "polygon": [
+                [
+                  427,
+                  799
+                ],
+                [
+                  512,
+                  799
+                ],
+                [
+                  512,
+                  826
+                ],
+                [
+                  427,
+                  826
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "IMG-01",
+              "confidence": 0.9930815100669861,
+              "bbox_xyxy": [
+                97,
+                851,
+                174,
+                879
+              ],
+              "polygon": [
+                [
+                  97,
+                  851
+                ],
+                [
+                  174,
+                  851
+                ],
+                [
+                  174,
+                  879
+                ],
+                [
+                  97,
+                  879
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "브랜드",
+              "confidence": 0.997283399105072,
+              "bbox_xyxy": [
+                215,
+                848,
+                281,
+                881
+              ],
+              "polygon": [
+                [
+                  216,
+                  848
+                ],
+                [
+                  281,
+                  852
+                ],
+                [
+                  279,
+                  881
+                ],
+                [
+                  215,
+                  877
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "온결 또는 ONGYEOL 표기",
+              "confidence": 0.9488041400909424,
+              "bbox_xyxy": [
+                432,
+                856,
+                643,
+                875
+              ],
+              "polygon": [
+                [
+                  432,
+                  856
+                ],
+                [
+                  643,
+                  856
+                ],
+                [
+                  643,
+                  875
+                ],
+                [
+                  432,
+                  875
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "IMG-02",
+              "confidence": 0.9982495903968811,
+              "bbox_xyxy": [
+                100,
+                912,
+                174,
+                935
+              ],
+              "polygon": [
+                [
+                  100,
+                  912
+                ],
+                [
+                  174,
+                  912
+                ],
+                [
+                  174,
+                  935
+                ],
+                [
+                  100,
+                  935
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "상품명",
+              "confidence": 0.9995555877685547,
+              "bbox_xyxy": [
+                217,
+                909,
+                280,
+                938
+              ],
+              "polygon": [
+                [
+                  217,
+                  909
+                ],
+                [
+                  280,
+                  909
+                ],
+                [
+                  280,
+                  938
+                ],
+                [
+                  217,
+                  938
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "배 라떼 한글 표기",
+              "confidence": 0.9743596911430359,
+              "bbox_xyxy": [
+                429,
+                913,
+                576,
+                935
+              ],
+              "polygon": [
+                [
+                  429,
+                  913
+                ],
+                [
+                  576,
+                  913
+                ],
+                [
+                  576,
+                  935
+                ],
+                [
+                  429,
+                  935
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "IMG-03",
+              "confidence": 0.9961634278297424,
+              "bbox_xyxy": [
+                97,
+                968,
+                174,
+                996
+              ],
+              "polygon": [
+                [
+                  97,
+                  968
+                ],
+                [
+                  174,
+                  968
+                ],
+                [
+                  174,
+                  996
+                ],
+                [
+                  97,
+                  996
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "가격",
+              "confidence": 0.9995489716529846,
+              "bbox_xyxy": [
+                215,
+                966,
+                263,
+                996
+              ],
+              "polygon": [
+                [
+                  215,
+                  966
+                ],
+                [
+                  263,
+                  966
+                ],
+                [
+                  263,
+                  996
+                ],
+                [
+                  215,
+                  996
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "5,900원 표기,가격변경 불가",
+              "confidence": 0.9382203221321106,
+              "bbox_xyxy": [
+                429,
+                971,
+                678,
+                993
+              ],
+              "polygon": [
+                [
+                  429,
+                  971
+                ],
+                [
+                  678,
+                  971
+                ],
+                [
+                  678,
+                  993
+                ],
+                [
+                  429,
+                  993
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "IMG-04",
+              "confidence": 0.9983081817626953,
+              "bbox_xyxy": [
+                100,
+                1028,
+                173,
+                1051
+              ],
+              "polygon": [
+                [
+                  100,
+                  1028
+                ],
+                [
+                  173,
+                  1028
+                ],
+                [
+                  173,
+                  1051
+                ],
+                [
+                  100,
+                  1051
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "판매 기간",
+              "confidence": 0.9706031680107117,
+              "bbox_xyxy": [
+                219,
+                1028,
+                302,
+                1051
+              ],
+              "polygon": [
+                [
+                  219,
+                  1028
+                ],
+                [
+                  302,
+                  1028
+                ],
+                [
+                  302,
+                  1051
+                ],
+                [
+                  219,
+                  1051
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "2026.11.01- 11.30에 해당하는 기간",
+              "confidence": 0.9601605534553528,
+              "bbox_xyxy": [
+                431,
+                1029,
+                755,
+                1051
+              ],
+              "polygon": [
+                [
+                  431,
+                  1029
+                ],
+                [
+                  755,
+                  1029
+                ],
+                [
+                  755,
+                  1051
+                ],
+                [
+                  431,
+                  1051
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "IMG-05",
+              "confidence": 0.9963080883026123,
+              "bbox_xyxy": [
+                98,
+                1085,
+                173,
+                1109
+              ],
+              "polygon": [
+                [
+                  98,
+                  1085
+                ],
+                [
+                  173,
+                  1085
+                ],
+                [
+                  173,
+                  1109
+                ],
+                [
+                  98,
+                  1109
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "판매처",
+              "confidence": 0.9845377802848816,
+              "bbox_xyxy": [
+                218,
+                1085,
+                279,
+                1110
+              ],
+              "polygon": [
+                [
+                  218,
+                  1085
+                ],
+                [
+                  279,
+                  1085
+                ],
+                [
+                  279,
+                  1110
+                ],
+                [
+                  218,
+                  1110
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "온결 전매장 표기",
+              "confidence": 0.9128122329711914,
+              "bbox_xyxy": [
+                428,
+                1087,
+                573,
+                1109
+              ],
+              "polygon": [
+                [
+                  428,
+                  1087
+                ],
+                [
+                  573,
+                  1087
+                ],
+                [
+                  573,
+                  1109
+                ],
+                [
+                  428,
+                  1109
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "IMG-06",
+              "confidence": 0.9965312480926514,
+              "bbox_xyxy": [
+                98,
+                1143,
+                174,
+                1167
+              ],
+              "polygon": [
+                [
+                  98,
+                  1143
+                ],
+                [
+                  174,
+                  1143
+                ],
+                [
+                  174,
+                  1167
+                ],
+                [
+                  98,
+                  1167
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "필수 고지",
+              "confidence": 0.960850715637207,
+              "bbox_xyxy": [
+                218,
+                1142,
+                303,
+                1170
+              ],
+              "polygon": [
+                [
+                  218,
+                  1142
+                ],
+                [
+                  303,
+                  1142
+                ],
+                [
+                  303,
+                  1170
+                ],
+                [
+                  218,
+                  1170
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_034",
+              "text": "시즌 한정·재료 소진 시 조기 종료",
+              "confidence": 0.9713419079780579,
+              "bbox_xyxy": [
+                432,
+                1146,
+                708,
+                1164
+              ],
+              "polygon": [
+                [
+                  432,
+                  1146
+                ],
+                [
+                  708,
+                  1146
+                ],
+                [
+                  708,
+                  1164
+                ],
+                [
+                  432,
+                  1164
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_035",
+              "text": "IMG-07",
+              "confidence": 0.9931232333183289,
+              "bbox_xyxy": [
+                96,
+                1200,
+                175,
+                1227
+              ],
+              "polygon": [
+                [
+                  96,
+                  1200
+                ],
+                [
+                  175,
+                  1200
+                ],
+                [
+                  175,
+                  1227
+                ],
+                [
+                  96,
+                  1227
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_036",
+              "text": "파일규격",
+              "confidence": 0.9986870288848877,
+              "bbox_xyxy": [
+                217,
+                1200,
+                303,
+                1227
+              ],
+              "polygon": [
+                [
+                  217,
+                  1200
+                ],
+                [
+                  303,
+                  1200
+                ],
+                [
+                  303,
+                  1227
+                ],
+                [
+                  217,
+                  1227
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_037",
+              "text": "4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+              "confidence": 0.9387604594230652,
+              "bbox_xyxy": [
+                429,
+                1202,
+                857,
+                1225
+              ],
+              "polygon": [
+                [
+                  429,
+                  1202
+                ],
+                [
+                  857,
+                  1202
+                ],
+                [
+                  857,
+                  1225
+                ],
+                [
+                  429,
+                  1225
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_038",
+              "text": "기간의 ㅇ 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다.",
+              "confidence": 0.9767062067985535,
+              "bbox_xyxy": [
+                86,
+                1268,
+                702,
+                1291
+              ],
+              "polygon": [
+                [
+                  86,
+                  1268
+                ],
+                [
+                  702,
+                  1268
+                ],
+                [
+                  702,
+                  1291
+                ],
+                [
+                  86,
+                  1291
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_039",
+              "text": "캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기한다.",
+              "confidence": 0.9587513208389282,
+              "bbox_xyxy": [
+                88,
+                1305,
+                528,
+                1324
+              ],
+              "polygon": [
+                [
+                  88,
+                  1305
+                ],
+                [
+                  528,
+                  1305
+                ],
+                [
+                  528,
+                  1324
+                ],
+                [
+                  88,
+                  1324
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_040",
+              "text": "OG-2026-AUT-001 | v1.0",
+              "confidence": 0.9646585583686829,
+              "bbox_xyxy": [
+                88,
+                1605,
+                311,
+                1623
+              ],
+              "polygon": [
+                [
+                  88,
+                  1605
+                ],
+                [
+                  311,
+                  1605
+                ],
+                [
+                  311,
+                  1623
+                ],
+                [
+                  88,
+                  1623
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_041",
+              "text": "ONGYEOL / 02",
+              "confidence": 0.9568132758140564,
+              "bbox_xyxy": [
+                972,
+                1604,
+                1106,
+                1626
+              ],
+              "polygon": [
+                [
+                  972,
+                  1604
+                ],
+                [
+                  1106,
+                  1604
+                ],
+                [
+                  1106,
+                  1626
+                ],
+                [
+                  972,
+                  1626
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        }
+      ]
+    },
+    "warnings": [
+      "PDF 페이지 이미지와 OCR 판독문을 함께 읽은 초안입니다. 출처 문구는 교정하지 않은 OCR입니다. 숫자·날짜·조건 누락 여부를 PDF 원본과 대조해 주세요.",
+      "ID가 표시된 조건 7개 항목을 추출했습니다. 표 밖 조건·공통 규칙과 확인 메모도 원본에서 확인해 주세요."
+    ]
+  },
+  "code_sha256": {
+    "backend/app/requirements_pdf.py": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+    "backend/app/document_sources.py": "41030d710e5e000aa015db8ede9c3c3ec04009be9828dc95b7e4df6c1e556fb6",
+    "backend/app/document_conditions.py": "820cc320366c8cd0d12c170d1fde2812cbb7a208b930415055b449921a6d70c7"
+  }
+}

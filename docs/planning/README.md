@@ -46,3 +46,5 @@ python3 docs/planning/tools/build_planning.py --check --reference '/실제/최�
 기준 파일·관련 코드가 바뀌면 검사는 갱신 필요로 종료한다. 검토 없이 날짜만 갱신하지 않는다. 생성된 HTML을 직접 편집하면 다음 생성에서 덮어쓰기를 중단하므로 수정 내용을 `planning-content.json`에 먼저 반영한다. 검사 통과는 문서와 근거 파일의 일치를 뜻하며, 서비스 동작·모델 품질·배포 완료를 보증하지 않는다.
 
 마지막으로 브라우저에서 문서 간 이동, 탭·검색, 기능/화면 앵커, 표·그림을 확인한다. 자동 감시·외부 Google Docs/Sheets 동기화는 설정하지 않았다.
+
+현재 저장·조회 실측은 기본 M008 웹 프로필 기준이다. 별도 `backend/creative_checker` 재구축 코드·`start.py api/worker/projection/mcp`의 존재와 실행 구성은 구분하며 해당 DB·실험 수치를 이 집계에 합산하지 않는다.

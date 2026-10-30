@@ -1,0 +1,212 @@
+
+> baro-review-workspace@1.0.0 test
+> node --test src/workflow.test.js src/documentRequirements.test.js src/documentProgress.test.js src/auth/auth.test.js
+
+TAP version 13
+# Subtest: 외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용하지 않는다
+ok 1 - 외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용하지 않는다
+  ---
+  duration_ms: 0.432625
+  type: 'test'
+  ...
+# Subtest: 세션 만료와 일반 권한·CSRF·통신 오류를 구분한다
+ok 2 - 세션 만료와 일반 권한·CSRF·통신 오류를 구분한다
+  ---
+  duration_ms: 0.169958
+  type: 'test'
+  ...
+# Subtest: 명시적 익명과 확인된 사용자만 세션 응답으로 처리한다
+ok 3 - 명시적 익명과 확인된 사용자만 세션 응답으로 처리한다
+  ---
+  duration_ms: 0.115416
+  type: 'test'
+  ...
+# Subtest: CSRF 응답 토큰과 표준 쿠키를 읽되 손상된 쿠키는 거절한다
+ok 4 - CSRF 응답 토큰과 표준 쿠키를 읽되 손상된 쿠키는 거절한다
+  ---
+  duration_ms: 0.187834
+  type: 'test'
+  ...
+# Subtest: Django 오류 코드를 보존하고 FastAPI 문자열 오류도 전달한다
+ok 5 - Django 오류 코드를 보존하고 FastAPI 문자열 오류도 전달한다
+  ---
+  duration_ms: 17.145209
+  type: 'test'
+  ...
+# Subtest: 401은 익명으로 처리하고 미구현·통신 오류는 그대로 전달한다
+ok 6 - 401은 익명으로 처리하고 미구현·통신 오류는 그대로 전달한다
+  ---
+  duration_ms: 0.36975
+  type: 'test'
+  ...
+# Subtest: 로그인은 CSRF 확인 후 자격 증명을 제출하고 me의 사용자로 완료한다
+ok 7 - 로그인은 CSRF 확인 후 자격 증명을 제출하고 me의 사용자로 완료한다
+  ---
+  duration_ms: 0.702291
+  type: 'test'
+  ...
+# Subtest: CSRF 토큰 누락과 로그인 후 익명 세션은 성공으로 처리하지 않는다
+ok 8 - CSRF 토큰 누락과 로그인 후 익명 세션은 성공으로 처리하지 않는다
+  ---
+  duration_ms: 1.073209
+  type: 'test'
+  ...
+# Subtest: 로그아웃은 최신 CSRF 토큰을 사용하고 204 응답을 허용한다
+ok 9 - 로그아웃은 최신 CSRF 토큰을 사용하고 204 응답을 허용한다
+  ---
+  duration_ms: 0.421709
+  type: 'test'
+  ...
+# Subtest: 업무 API의 명시적 세션 만료만 알리고 인증 요청과 일반 403은 제외한다
+ok 10 - 업무 API의 명시적 세션 만료만 알리고 인증 요청과 일반 403은 제외한다
+  ---
+  duration_ms: 0.910917
+  type: 'test'
+  ...
+# Subtest: 한글·JSON 청크 분할과 heartbeat를 처리하고 완료 응답 전에는 결과를 반환하지 않는다
+ok 11 - 한글·JSON 청크 분할과 heartbeat를 처리하고 완료 응답 전에는 결과를 반환하지 않는다
+  ---
+  duration_ms: 20.027084
+  type: 'test'
+  ...
+# Subtest: 이전 진행률이 늦게 와도 퍼센트가 내려가지 않는다
+ok 12 - 이전 진행률이 늦게 와도 퍼센트가 내려가지 않는다
+  ---
+  duration_ms: 0.25525
+  type: 'test'
+  ...
+# Subtest: 서버 실패를 성공으로 처리하지 않는다
+ok 13 - 서버 실패를 성공으로 처리하지 않는다
+  ---
+  duration_ms: 0.43775
+  type: 'test'
+  ...
+# Subtest: 결과 없는 연결 종료를 성공으로 처리하지 않는다
+ok 14 - 결과 없는 연결 종료를 성공으로 처리하지 않는다
+  ---
+  duration_ms: 0.191
+  type: 'test'
+  ...
+# Subtest: 잘못된 JSON를 성공으로 처리하지 않는다
+ok 15 - 잘못된 JSON를 성공으로 처리하지 않는다
+  ---
+  duration_ms: 0.189209
+  type: 'test'
+  ...
+# Subtest: 반영 전 100%를 성공으로 처리하지 않는다
+ok 16 - 반영 전 100%를 성공으로 처리하지 않는다
+  ---
+  duration_ms: 0.15625
+  type: 'test'
+  ...
+# Subtest: 취소한 청크에 완료 응답이 함께 있어도 반영하지 않는다
+ok 17 - 취소한 청크에 완료 응답이 함께 있어도 반영하지 않는다
+  ---
+  duration_ms: 0.283708
+  type: 'test'
+  ...
+# Subtest: 스트림 시작 전 HTTP 오류도 기존 오류 메시지를 유지한다
+ok 18 - 스트림 시작 전 HTTP 오류도 기존 오류 메시지를 유지한다
+  ---
+  duration_ms: 0.652833
+  type: 'test'
+  ...
+# Subtest: 기존 입력을 유지하고 동일 조건은 중복 추가하지 않는다
+ok 19 - 기존 입력을 유지하고 동일 조건은 중복 추가하지 않는다
+  ---
+  duration_ms: 0.783208
+  type: 'test'
+  ...
+# Subtest: PDF 출처와 LLM 유형이 기준 확정까지 유지되고 기존 확정은 해제된다
+ok 20 - PDF 출처와 LLM 유형이 기준 확정까지 유지되고 기존 확정은 해제된다
+  ---
+  duration_ms: 0.954333
+  type: 'test'
+  ...
+# Subtest: 한도 초과와 잘못된 응답은 기존 입력을 대체하지 않는다
+ok 21 - 한도 초과와 잘못된 응답은 기존 입력을 대체하지 않는다
+  ---
+  duration_ms: 0.27775
+  type: 'test'
+  ...
+# Subtest: Paddle로 읽은 출처를 PDF 내장 원문과 구분한다
+ok 22 - Paddle로 읽은 출처를 PDF 내장 원문과 구분한다
+  ---
+  duration_ms: 0.184042
+  type: 'test'
+  ...
+# Subtest: 페이지 이미지와 OCR을 함께 읽은 출처를 기준 확인 화면까지 보존한다
+ok 23 - 페이지 이미지와 OCR을 함께 읽은 출처를 기준 확인 화면까지 보존한다
+  ---
+  duration_ms: 0.082417
+  type: 'test'
+  ...
+# Subtest: PDF 기대값과 판단 설명은 확정 요청까지 분리해 보존하고 편집 시 이전 구조를 제거한다
+ok 24 - PDF 기대값과 판단 설명은 확정 요청까지 분리해 보존하고 편집 시 이전 구조를 제거한다
+  ---
+  duration_ms: 0.104458
+  type: 'test'
+  ...
+# Subtest: 병합한 PDF 조건의 모든 페이지 근거와 긴 보완 설명을 확정까지 보존한다
+ok 25 - 병합한 PDF 조건의 모든 페이지 근거와 긴 보완 설명을 확정까지 보존한다
+  ---
+  duration_ms: 0.189375
+  type: 'test'
+  ...
+# Subtest: confirmed snapshot contains selected criteria only and remains locked
+ok 26 - confirmed snapshot contains selected criteria only and remains locked
+  ---
+  duration_ms: 0.604167
+  type: 'test'
+  ...
+# Subtest: editing clears old results, locks execution, and reconfirmation increments version
+ok 27 - editing clears old results, locks execution, and reconfirmation increments version
+  ---
+  duration_ms: 0.091584
+  type: 'test'
+  ...
+# Subtest: new image or requirements invalidate all prior confirmation and results
+ok 28 - new image or requirements invalidate all prior confirmation and results
+  ---
+  duration_ms: 0.844083
+  type: 'test'
+  ...
+# Subtest: empty or all-excluded criteria cannot be confirmed
+ok 29 - empty or all-excluded criteria cannot be confirmed
+  ---
+  duration_ms: 0.113958
+  type: 'test'
+  ...
+# Subtest: late poll cannot replace a different running review
+ok 30 - late poll cannot replace a different running review
+  ---
+  duration_ms: 0.056458
+  type: 'test'
+  ...
+# Subtest: evidence uses original image coordinates and clamps out-of-bounds regions
+ok 31 - evidence uses original image coordinates and clamps out-of-bounds regions
+  ---
+  duration_ms: 0.108
+  type: 'test'
+  ...
+# Subtest: 500-character original requirement remains intact in the confirmed source
+ok 32 - 500-character original requirement remains intact in the confirmed source
+  ---
+  duration_ms: 0.104292
+  type: 'test'
+  ...
+# Subtest: overlong criteria cannot bypass confirmation validation
+ok 33 - overlong criteria cannot bypass confirmation validation
+  ---
+  duration_ms: 0.046792
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63.7215

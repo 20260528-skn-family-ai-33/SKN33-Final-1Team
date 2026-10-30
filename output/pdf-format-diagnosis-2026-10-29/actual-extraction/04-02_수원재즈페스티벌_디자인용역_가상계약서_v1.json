@@ -1,0 +1,503 @@
+{
+  "document": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/pdf/수원재즈페스티벌_고해상도_새테스트_2026-10-29/02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf",
+  "sha256": "61a6c2e82bd60f96f7dde6fd6f754ad9a72fbb7171d0c9276a5092e934854216",
+  "status": "failed",
+  "error": "표 밖의 제작 지시 1개 문단의 추출 근거가 누락됐습니다. PDF 원본과 조건을 확인해 주세요.",
+  "http_status": 502,
+  "elapsed_seconds": 97.849,
+  "calls": [
+    {
+      "pages": [
+        2
+      ],
+      "phase": "primary",
+      "sources": [
+        {
+          "id": "p2-s5",
+          "page": 2,
+          "text": "R01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+          "requirement_id": "R01"
+        },
+        {
+          "id": "p2-s6",
+          "page": 2,
+          "text": "R02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+          "requirement_id": "R02"
+        },
+        {
+          "id": "p2-s7",
+          "page": 2,
+          "text": "R03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다.",
+          "requirement_id": "R03"
+        },
+        {
+          "id": "p2-s8",
+          "page": 2,
+          "text": "R04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+          "requirement_id": "R04"
+        },
+        {
+          "id": "p2-s9",
+          "page": 2,
+          "text": "R05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다.",
+          "requirement_id": "R05"
+        },
+        {
+          "id": "p2-s10",
+          "page": 2,
+          "text": "R06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다.",
+          "requirement_id": "R06"
+        },
+        {
+          "id": "p2-s11",
+          "page": 2,
+          "text": "R07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다.",
+          "requirement_id": "R07"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        291233
+      ],
+      "ocr_source_count": 7,
+      "allowed_source_ids": [
+        "p2-s5",
+        "p2-s6",
+        "p2-s7",
+        "p2-s8",
+        "p2-s9",
+        "p2-s10",
+        "p2-s11"
+      ],
+      "seconds": 14.877,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "행사명",
+            "requirement": "2026 수원 재즈 페스티벌",
+            "values": [
+              "2026 수원 재즈 페스티벌"
+            ],
+            "level": "필수",
+            "inspection": "제목의 줄바꿈·공백 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s5"
+          },
+          {
+            "label": "행사 날짜",
+            "requirement": "2026.09.18.(금) ~ 2026.09.19.(토)",
+            "values": [
+              "2026.09.18.(금) ~ 2026.09.19.(토)"
+            ],
+            "level": "필수",
+            "inspection": "시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략할 수 있다. 앞자리 0 과 구분자 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s6"
+          },
+          {
+            "label": "행사 시간",
+            "requirement": "17:30",
+            "values": [
+              "17:30"
+            ],
+            "level": "필수",
+            "inspection": "17:30 을 읽을 수 있게 표기한다. 공백 차이는 허용하되 시간 값 변경은 불가하다.",
+            "type": "information",
+            "source_id": "p2-s7"
+          },
+          {
+            "label": "행사 장소",
+            "requirement": "광교호수공원 재미난 밭",
+            "values": [
+              "광교호수공원",
+              "재미난 밭"
+            ],
+            "level": "필수",
+            "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. 재미난 밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+            "type": "information",
+            "source_id": "p2-s8"
+          },
+          {
+            "label": "18일 대표 출연진",
+            "requirement": "정동환(멜로망스) x Funk Messengers",
+            "values": [
+              "정동환(멜로망스) x Funk Messengers"
+            ],
+            "level": "필수",
+            "inspection": "9 월 18 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다. 다른 출연진을 삭제하라는 조건은 아니다.",
+            "type": "information",
+            "source_id": "p2-s9"
+          },
+          {
+            "label": "19일 대표 출연진",
+            "requirement": "이은미 x 민경인 trio",
+            "values": [
+              "이은미 x 민경인 trio"
+            ],
+            "level": "필수",
+            "inspection": "9 월 19 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s10"
+          },
+          {
+            "label": "영문 행사명",
+            "requirement": "2026 SUWON JAZZ FESTIVAL",
+            "values": [
+              "2026 SUWON JAZZ FESTIVAL"
+            ],
+            "level": "필수",
+            "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. 영문 단어와 연도를 모두 유지한다.",
+            "type": "information",
+            "source_id": "p2-s11"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        3
+      ],
+      "phase": "primary",
+      "sources": [
+        {
+          "id": "p3-s5",
+          "page": 3,
+          "text": "V01 필수 | 잔디 배경 | 포스터 전반에 초록색 잔디 질감의 배경을 사용한다. | 잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+          "requirement_id": "V01"
+        },
+        {
+          "id": "p3-s6",
+          "page": 3,
+          "text": "V02 필수 | 레코드와 톤암 | 하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다. | 원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다.",
+          "requirement_id": "V02"
+        },
+        {
+          "id": "p3-s7",
+          "page": 3,
+          "text": "V03 필수 | 연주자 선화 | 왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다. | 양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+          "requirement_id": "V03"
+        },
+        {
+          "id": "p3-s8",
+          "page": 3,
+          "text": "V04 필수 | 상단 로고 배치 | 왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다. | 양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+          "requirement_id": "V04"
+        },
+        {
+          "id": "p3-s9",
+          "page": 3,
+          "text": "V05 권장 | 장식과 분위기 | 노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다. | 정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다.",
+          "requirement_id": "V05"
+        },
+        {
+          "id": "p3-s10",
+          "page": 3,
+          "text": "V06 권장 | 문구 가독성 | 행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다. | 확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+          "requirement_id": "V06"
+        },
+        {
+          "id": "p3-s11",
+          "page": 3,
+          "text": "T01 필수 | 이미지 크기 | 가로 2527 x 세로 3572픽셀, 세로형 | 실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다.",
+          "requirement_id": "T01"
+        },
+        {
+          "id": "p3-s12",
+          "page": 3,
+          "text": "T02 필수 | 파일 형식과 색 상 | 정적 JPEG 이미지 1개,확장자,ipq,RGB 색상 모드 | 실제 파일 형식·전체 디코딩·색상 모드 를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다.",
+          "requirement_id": "T02"
+        },
+        {
+          "id": "p3-s13",
+          "page": 3,
+          "text": "T03 선택 | 편집가능한원 본 | PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다. | 별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이PDF로 진행한다.",
+          "requirement_id": "T03"
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        393889
+      ],
+      "ocr_source_count": 9,
+      "allowed_source_ids": [
+        "p3-s5",
+        "p3-s6",
+        "p3-s7",
+        "p3-s8",
+        "p3-s9",
+        "p3-s10",
+        "p3-s11",
+        "p3-s12",
+        "p3-s13"
+      ],
+      "seconds": 21.047,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "잔디 배경",
+            "requirement": "포스터 전반에 초록색 잔디 질감의 배경을 사용한다.",
+            "values": [
+              "초록색 잔디 질감의 배경"
+            ],
+            "level": "필수",
+            "inspection": "잔디의 식물성 질감이 보이도록 한다. 단색 초록 배경으로만 대체하지 않는다.",
+            "type": "visual",
+            "source_id": "p3-s5"
+          },
+          {
+            "label": "레코드와 톤암",
+            "requirement": "하단의 큰 원형 레코드와 오른쪽 아래 바늘 톤암 형태를 포함한다.",
+            "values": [
+              "원형 레코드",
+              "바늘 톤암"
+            ],
+            "level": "필수",
+            "inspection": "원형 레코드와 톤암을 식별할 수 있어야 한다.레코드 외곽이 화면 아래로 의도 적으로 잘리는 구성은 허용한다.",
+            "type": "visual",
+            "source_id": "p3-s6"
+          },
+          {
+            "label": "연주자 선화",
+            "requirement": "왼쪽 아래와 오른쪽 아래에 흰 선으로 표현 한 관악기 연주자를 배치한다.",
+            "values": [
+              "왼쪽 아래",
+              "오른쪽 아래"
+            ],
+            "level": "필수",
+            "inspection": "양쪽에 사람과 관악기 형태가 보이는지 확인한다.실제 인물의 신원이나 악기 세부 모델은 판단하지 않는다.",
+            "type": "visual",
+            "source_id": "p3-s7"
+          },
+          {
+            "label": "상단 로고 배치",
+            "requirement": "왼쪽 위에 수원특례시,오른쪽 위에 VIST SUWON YEAR 및 2026-2027 수원 방문 의 해 로고를 배치한다.",
+            "values": [
+              "왼쪽 위에 수원특례시",
+              "오른쪽 위에 VIST SUWON YEAR",
+              "2026-2027 수원 방문 의 해 로고"
+            ],
+            "level": "필수",
+            "inspection": "양쪽 로고가 잘리지 않고 읽혀야 한다. 원본의 좌우 위치 관계를 유지한다.",
+            "type": "visual",
+            "source_id": "p3-s8"
+          },
+          {
+            "label": "장식과 분위기",
+            "requirement": "노란색 악기 선화와 작은 빛·별 장식을 유지 해 밝은 야외 음악 축제 분위기를 표현한다.",
+            "values": [
+              "노란색 악기 선화",
+              "작은 빛·별 장식"
+            ],
+            "level": "권장",
+            "inspection": "정성 검토 항목이다.장식의 정활한 개 수는 지정하지 않으며,이 항목만으로 필수 불합격을 결정하지 않는다.",
+            "type": "visual",
+            "source_id": "p3-s9"
+          },
+          {
+            "label": "문구 가독성",
+            "requirement": "행사명·날짜·시간·장소·대표 출연진을 초록 배경과 구별되는 대비로 표시한다.",
+            "values": [
+              "행사명",
+              "날짜",
+              "시간",
+              "장소",
+              "대표 출연진"
+            ],
+            "level": "권장",
+            "inspection": "확대 화면과 전체 화면에서 검토한다. 글자 크기의 수치 기준은 정하지 않으며 개선 의견으로 기록한다.",
+            "type": "visual",
+            "source_id": "p3-s10"
+          },
+          {
+            "label": "이미지 크기",
+            "requirement": "가로 2527 x 세로 3572픽셀, 세로형",
+            "values": [
+              "가로 2527 x 세로 3572픽셀",
+              "세로형"
+            ],
+            "level": "필수",
+            "inspection": "실제 이미지 메타데이터로 정확한 픽셀 수를 확인한다.임의 축소본을 원본 대 신 제출하지 않는다.",
+            "type": "information",
+            "source_id": "p3-s11"
+          },
+          {
+            "label": "파일 형식과 색 상",
+            "requirement": "정적 JPEG 이미지 1개,확장자 .jpg, RGB 색상 모드",
+            "values": [
+              "정적 JPEG 이미지 1개",
+              "확장자 .jpg",
+              "RGB 색상 모드"
+            ],
+            "level": "필수",
+            "inspection": "실제 파일 형식·전체 디코딩·색상 모드를 확인한다.파일명은 자유이며 원본 해시와 같아야 한다는 조건은 두지 않는 다.",
+            "type": "information",
+            "source_id": "p3-s12"
+          },
+          {
+            "label": "편집 가능한 원본",
+            "requirement": "PSD-AI 등 편집 원본은 이번 납품 범위에 포함하지 않는다.",
+            "values": [
+              "PSD-AI 등 편집 원본"
+            ],
+            "level": "선택",
+            "inspection": "별도 합의 전에는 편집 원본이 없다는 이유로 불합격 처리하지 않는다.현재 테스트는 이미지와 이 PDF로 진행한다.",
+            "type": "information",
+            "source_id": "p3-s13"
+          }
+        ]
+      }
+    },
+    {
+      "pages": [
+        2
+      ],
+      "phase": "supplement",
+      "sources": [
+        {
+          "id": "p2-s5",
+          "page": 2,
+          "text": "R01 필수 | 행사명과연도 | 2026 수원 재즈 페스티벌 | 행사명과 2026 연도를 모두 표기한다. 제목의 줄바꿈·공백 차이는 허용한다.",
+          "requirement_id": "R01"
+        },
+        {
+          "id": "p2-s6",
+          "page": 2,
+          "text": "R02 필수 | 행사 날짜와 요 일 | 2026.09.18.(금)-2026.09.19.(토) | 시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략 할 수 있다.앞자리 0과 구분자 차이는 허용한다.",
+          "requirement_id": "R02"
+        },
+        {
+          "id": "p2-s7",
+          "page": 2,
+          "text": "R03 필수 | 행사 시간 | 17:30 | 17:30을 읽을 수 있게 표기한다.공백 차이는 허용하되 시간 값 변경은불가하 다.",
+          "requirement_id": "R03"
+        },
+        {
+          "id": "p2-s8",
+          "page": 2,
+          "text": "R04 필수 | 행사 장소 | 광교호수공원 재미난 밭 | 광교호수공원과 재미난 밭이 모두 있어 야 한다.재미난밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+          "requirement_id": "R04"
+        },
+        {
+          "id": "p2-s9",
+          "page": 2,
+          "text": "R05 필수 | 18일 대표 출 연진 | 정동환(멜로망스)xFunk Messengers | 9월18일 라인업 영역에 표기한다,× 또는 ×, 대소문자·공백 차이는 허용한 다.다른 출연진을 삭제하라는 조건은 아니다.",
+          "requirement_id": "R05"
+        },
+        {
+          "id": "p2-s10",
+          "page": 2,
+          "text": "R06 필수 | 19일 대표 출 연진 | 이은미 x 민경인 trio | 9월 19일 라인업 영역에 표기한다.× 또는 ×, 대소문자·공백 차이는 허용한 다.",
+          "requirement_id": "R06"
+        },
+        {
+          "id": "p2-s11",
+          "page": 2,
+          "text": "R07 필수 | 영문 행사명 | 2026 SUWON JAZZ FESTIVAL | 하단 레코드 주변의 곡선 배치를 허용한 다.영문 단어와 연도를 모두 유지한다.",
+          "requirement_id": "R07"
+        },
+        {
+          "id": "p2-s12",
+          "page": 2,
+          "text": "문구 비교 원칙 날짜를 정규화해 비교하고,허용한 공백·줄바꿈·대소문자 차이는 오류로 취급하지 않는다.18일과 19일의 출 연진 연결은 유지해야 한다.인쇄된 다른 출연진을 삭제하거나 금지하는 조건은 두지 않는다."
+        }
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        291233
+      ],
+      "ocr_source_count": 8,
+      "allowed_source_ids": [
+        "p2-s5",
+        "p2-s6",
+        "p2-s7",
+        "p2-s8",
+        "p2-s9",
+        "p2-s10",
+        "p2-s11",
+        "p2-s12"
+      ],
+      "seconds": 15.369,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "행사명",
+            "requirement": "2026 수원 재즈 페스티벌",
+            "values": [
+              "2026 수원 재즈 페스티벌"
+            ],
+            "level": "필수",
+            "inspection": "제목의 줄바꿈·공백 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s5"
+          },
+          {
+            "label": "행사 날짜",
+            "requirement": "2026.09.18.(금) ~ 2026.09.19.(토)",
+            "values": [
+              "2026.09.18.(금) ~ 2026.09.19.(토)"
+            ],
+            "level": "필수",
+            "inspection": "시작일·종료일·요일이 일치해야 한다. 연도가 제목에 있으면 날짜 줄에서 생략할 수 있다. 앞자리 0 과 구분자 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s6"
+          },
+          {
+            "label": "행사 시간",
+            "requirement": "17:30",
+            "values": [
+              "17:30"
+            ],
+            "level": "필수",
+            "inspection": "17:30 을 읽을 수 있게 표기한다. 공백 차이는 허용하되 시간 값 변경은 불가하다.",
+            "type": "information",
+            "source_id": "p2-s7"
+          },
+          {
+            "label": "행사 장소",
+            "requirement": "광교호수공원 재미난 밭",
+            "values": [
+              "광교호수공원 재미난 밭"
+            ],
+            "level": "필수",
+            "inspection": "광교호수공원과 재미난 밭이 모두 있어야 한다. 재미난 밭의 붙여쓰기와 줄바꿈 은 허용한다.",
+            "type": "information",
+            "source_id": "p2-s8"
+          },
+          {
+            "label": "18일 대표 출연진",
+            "requirement": "정동환(멜로망스) x Funk Messengers",
+            "values": [
+              "정동환(멜로망스) x Funk Messengers"
+            ],
+            "level": "필수",
+            "inspection": "9 월 18 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다. 다른 출연진을 삭제하라는 조건은 아니다.",
+            "type": "information",
+            "source_id": "p2-s9"
+          },
+          {
+            "label": "19일 대표 출연진",
+            "requirement": "이은미 x 민경인 trio",
+            "values": [
+              "이은미 x 민경인 trio"
+            ],
+            "level": "필수",
+            "inspection": "9 월 19 일 라인업 영역에 표기한다. × 또는 ×, 대소문자·공백 차이는 허용한다.",
+            "type": "information",
+            "source_id": "p2-s10"
+          },
+          {
+            "label": "영문 행사명",
+            "requirement": "2026 SUWON JAZZ FESTIVAL",
+            "values": [
+              "2026 SUWON JAZZ FESTIVAL"
+            ],
+            "level": "필수",
+            "inspection": "하단 레코드 주변의 곡선 배치를 허용한다. 영문 단어와 연도를 모두 유지한다.",
+            "type": "information",
+            "source_id": "p2-s11"
+          }
+        ]
+      }
+    }
+  ]
+}

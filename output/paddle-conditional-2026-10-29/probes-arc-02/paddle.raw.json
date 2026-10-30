@@ -1,0 +1,134 @@
+{
+  "outputs": [
+    {
+      "id": "arc-240-squash-0.65",
+      "text": "2026 SUW0N JA7.7 TESHVAL.",
+      "confidence": 0.8399391174316406,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/arc-240-squash-0.65.png",
+          "page_index": null,
+          "rec_text": "2026 SUW0N JA7.7 TESHVAL.",
+          "rec_score": 0.8399391174316406
+        }
+      },
+      "elapsed_seconds": 0.11764991699601524
+    },
+    {
+      "id": "arc-240-squash-0.45",
+      "text": "2026 SU W0N JAZ./. HHSHVAL.",
+      "confidence": 0.8103626370429993,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/arc-240-squash-0.45.png",
+          "page_index": null,
+          "rec_text": "2026 SU W0N JAZ./. HHSHVAL.",
+          "rec_score": 0.8103626370429993
+        }
+      },
+      "elapsed_seconds": 0.14589204199728556
+    },
+    {
+      "id": "arc-320-squash-0.65",
+      "text": "2026 SUWON JAZ.Z. FESTVAL.",
+      "confidence": 0.8351320624351501,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/arc-320-squash-0.65.png",
+          "page_index": null,
+          "rec_text": "2026 SUWON JAZ.Z. FESTVAL.",
+          "rec_score": 0.8351320624351501
+        }
+      },
+      "elapsed_seconds": 0.0841067919973284
+    },
+    {
+      "id": "arc-320-squash-0.45",
+      "text": "2026 SUW0N .IAZ7. FHSTVAL.",
+      "confidence": 0.8424685597419739,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/arc-320-squash-0.45.png",
+          "page_index": null,
+          "rec_text": "2026 SUW0N .IAZ7. FHSTVAL.",
+          "rec_score": 0.8424685597419739
+        }
+      },
+      "elapsed_seconds": 0.11514195799827576
+    },
+    {
+      "id": "word-0",
+      "text": "2026",
+      "confidence": 0.9994506239891052,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-0.png",
+          "page_index": null,
+          "rec_text": "2026",
+          "rec_score": 0.9994506239891052
+        }
+      },
+      "elapsed_seconds": 0.05556595799862407
+    },
+    {
+      "id": "word-1",
+      "text": "SUWON",
+      "confidence": 0.9336602091789246,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-1.png",
+          "page_index": null,
+          "rec_text": "SUWON",
+          "rec_score": 0.9336602091789246
+        }
+      },
+      "elapsed_seconds": 0.05444966700451914
+    },
+    {
+      "id": "word-2",
+      "text": "JA7.7",
+      "confidence": 0.7768821716308594,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-2.png",
+          "page_index": null,
+          "rec_text": "JA7.7",
+          "rec_score": 0.7768821716308594
+        }
+      },
+      "elapsed_seconds": 0.05309712499729358
+    },
+    {
+      "id": "word-3",
+      "text": "THSHVAL.",
+      "confidence": 0.8445547223091125,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-3.png",
+          "page_index": null,
+          "rec_text": "THSHVAL.",
+          "rec_score": 0.8445547223091125
+        }
+      },
+      "elapsed_seconds": 0.05259858300269116
+    }
+  ],
+  "device": "cpu",
+  "model_identity": {
+    "model": "korean_PP-OCRv5_mobile_rec",
+    "repository": "PaddlePaddle/korean_PP-OCRv5_mobile_rec",
+    "revision": "c02ecaf1f22bfd1c618cce154fd19185b47e663a",
+    "sha256": {
+      "inference.json": "562404e3c590c50c93778d5f0a94df21b47b5ab8f3ea6d47c7f8a7930c3bc844",
+      "inference.pdiparams": "cac3e5f12cf04aaa77f6a5bc704e4e736ef2908476551891d84b41b4e9090462",
+      "inference.yml": "f757fa1c40e99edcf27e9cce879b93eb2a51fa46f5ef39095689b8c37dd75998"
+    },
+    "engine": "paddleocr",
+    "paddleocr_version": "3.7.0",
+    "paddle_version": "3.3.1",
+    "paddlex_version": "3.7.2"
+  },
+  "load_seconds": 0.9861538339901017,
+  "inference_seconds": 0.6797163750015898,
+  "peak_rss_bytes": 939130880
+}

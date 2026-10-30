@@ -1,0 +1,38 @@
+{
+  "source": "real browser upload → actual HTTP NDJSON → isolated PaddleOCR + Qwen worker; no model stubs",
+  "pageCount": 2,
+  "conditions": 15,
+  "information": 11,
+  "visual": 4,
+  "apiProgress": [
+    2,
+    10,
+    30,
+    50,
+    65,
+    80
+  ],
+  "uiProgress": [
+    10,
+    30,
+    50,
+    65,
+    80,
+    80,
+    80
+  ],
+  "uiCompleted": 100,
+  "mergedNoticePages": [
+    2,
+    1
+  ],
+  "confirmed": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "previewImage": "PDF page-1 render used only to enable the criteria screen; no poster inspection executed",
+  "timing": {
+    "ocr_seconds": 22.512,
+    "llm_seconds": 52.06,
+    "total_seconds": 74.571
+  }
+}
