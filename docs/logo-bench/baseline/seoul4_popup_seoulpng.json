@@ -1,0 +1,756 @@
+{
+  "video": "/workspace/videos/seoul4_popup.mp4",
+  "mode": "guided",
+  "query_logo": "/workspace/query_logos/seoul_city.png",
+  "fps": 0.5,
+  "frames": 25,
+  "device": "cuda",
+  "min_cosine": 0.55,
+  "found_frames": 0,
+  "found_times": [],
+  "best_cosine": 0.0,
+  "per_frame": [
+    {
+      "time_s": 0.0,
+      "top_cosine": 0.1937,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1214.4,
+            535.5,
+            1294.7,
+            572.3
+          ],
+          "detect_score": 0.1735,
+          "cosine": 0.1937
+        },
+        {
+          "xyxy": [
+            69.7,
+            496.5,
+            930.7,
+            645.8
+          ],
+          "detect_score": 0.1029,
+          "cosine": 0.1009
+        },
+        {
+          "xyxy": [
+            1273.0,
+            615.6,
+            1522.2,
+            942.3
+          ],
+          "detect_score": 0.1423,
+          "cosine": 0.0656
+        }
+      ]
+    },
+    {
+      "time_s": 2.0,
+      "top_cosine": 0.2108,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1594.9,
+            399.2,
+            1696.6,
+            432.1
+          ],
+          "detect_score": 0.1374,
+          "cosine": 0.2108
+        },
+        {
+          "xyxy": [
+            1010.7,
+            254.0,
+            1054.7,
+            303.8
+          ],
+          "detect_score": 0.224,
+          "cosine": 0.1955
+        },
+        {
+          "xyxy": [
+            1578.0,
+            431.7,
+            1615.8,
+            456.7
+          ],
+          "detect_score": 0.1664,
+          "cosine": 0.1481
+        }
+      ]
+    },
+    {
+      "time_s": 4.0,
+      "top_cosine": 0.1037,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            407.8,
+            795.9,
+            745.2,
+            890.5
+          ],
+          "detect_score": 0.1532,
+          "cosine": 0.1037
+        },
+        {
+          "xyxy": [
+            1017.9,
+            794.9,
+            1339.7,
+            885.2
+          ],
+          "detect_score": 0.1421,
+          "cosine": 0.0784
+        },
+        {
+          "xyxy": [
+            1140.8,
+            960.2,
+            1173.2,
+            1006.2
+          ],
+          "detect_score": 0.1019,
+          "cosine": 0.0545
+        }
+      ]
+    },
+    {
+      "time_s": 6.0,
+      "top_cosine": 0.425,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            298.1,
+            660.8,
+            329.7,
+            687.3
+          ],
+          "detect_score": 0.1384,
+          "cosine": 0.425
+        },
+        {
+          "xyxy": [
+            1407.9,
+            1039.9,
+            1452.3,
+            1079.2
+          ],
+          "detect_score": 0.1642,
+          "cosine": 0.1007
+        }
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "top_cosine": 0.1657,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            62.0,
+            499.5,
+            472.9,
+            605.7
+          ],
+          "detect_score": 0.1188,
+          "cosine": 0.1657
+        },
+        {
+          "xyxy": [
+            1806.4,
+            564.5,
+            1875.0,
+            606.1
+          ],
+          "detect_score": 0.2269,
+          "cosine": 0.0868
+        },
+        {
+          "xyxy": [
+            780.5,
+            483.5,
+            1072.2,
+            805.2
+          ],
+          "detect_score": 0.1163,
+          "cosine": 0.0756
+        }
+      ]
+    },
+    {
+      "time_s": 10.0,
+      "top_cosine": 0.1842,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1497.1,
+            333.4,
+            1753.3,
+            379.0
+          ],
+          "detect_score": 0.1005,
+          "cosine": 0.1842
+        },
+        {
+          "xyxy": [
+            33.9,
+            499.9,
+            415.4,
+            614.7
+          ],
+          "detect_score": 0.1456,
+          "cosine": 0.1044
+        },
+        {
+          "xyxy": [
+            1498.4,
+            296.4,
+            1745.8,
+            376.5
+          ],
+          "detect_score": 0.1766,
+          "cosine": 0.0958
+        }
+      ]
+    },
+    {
+      "time_s": 12.0,
+      "top_cosine": 0.1565,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            56.8,
+            497.0,
+            425.0,
+            618.9
+          ],
+          "detect_score": 0.1097,
+          "cosine": 0.1565
+        },
+        {
+          "xyxy": [
+            1549.4,
+            343.6,
+            1789.0,
+            433.2
+          ],
+          "detect_score": 0.1461,
+          "cosine": 0.0882
+        },
+        {
+          "xyxy": [
+            1533.5,
+            161.1,
+            1886.5,
+            265.7
+          ],
+          "detect_score": 0.1445,
+          "cosine": 0.06
+        }
+      ]
+    },
+    {
+      "time_s": 14.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 16.0,
+      "top_cosine": 0.2915,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            69.6,
+            493.2,
+            403.3,
+            615.9
+          ],
+          "detect_score": 0.1355,
+          "cosine": 0.2915
+        }
+      ]
+    },
+    {
+      "time_s": 18.0,
+      "top_cosine": 0.2797,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1616.0,
+            1.3,
+            1911.9,
+            271.1
+          ],
+          "detect_score": 0.1072,
+          "cosine": 0.2797
+        },
+        {
+          "xyxy": [
+            1126.4,
+            2.9,
+            1363.5,
+            282.3
+          ],
+          "detect_score": 0.118,
+          "cosine": 0.1601
+        },
+        {
+          "xyxy": [
+            708.1,
+            746.9,
+            760.3,
+            776.4
+          ],
+          "detect_score": 0.2222,
+          "cosine": 0.1555
+        }
+      ]
+    },
+    {
+      "time_s": 20.0,
+      "top_cosine": 0.1242,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            998.2,
+            90.0,
+            1356.3,
+            329.4
+          ],
+          "detect_score": 0.1017,
+          "cosine": 0.1242
+        },
+        {
+          "xyxy": [
+            1111.7,
+            851.8,
+            1231.6,
+            899.6
+          ],
+          "detect_score": 0.1593,
+          "cosine": 0.0969
+        },
+        {
+          "xyxy": [
+            369.4,
+            0.2,
+            859.6,
+            198.2
+          ],
+          "detect_score": 0.1666,
+          "cosine": 0.0855
+        }
+      ]
+    },
+    {
+      "time_s": 22.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    },
+    {
+      "time_s": 24.0,
+      "top_cosine": 0.23,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1203.9,
+            376.4,
+            1497.2,
+            615.3
+          ],
+          "detect_score": 0.1932,
+          "cosine": 0.23
+        },
+        {
+          "xyxy": [
+            1056.8,
+            376.5,
+            1117.1,
+            404.9
+          ],
+          "detect_score": 0.1103,
+          "cosine": 0.1143
+        },
+        {
+          "xyxy": [
+            401.4,
+            440.5,
+            472.4,
+            472.2
+          ],
+          "detect_score": 0.1121,
+          "cosine": 0.0821
+        }
+      ]
+    },
+    {
+      "time_s": 26.0,
+      "top_cosine": 0.1707,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            999.2,
+            957.4,
+            1289.6,
+            1080.6
+          ],
+          "detect_score": 0.1101,
+          "cosine": 0.1707
+        },
+        {
+          "xyxy": [
+            322.4,
+            78.2,
+            767.4,
+            209.6
+          ],
+          "detect_score": 0.1781,
+          "cosine": 0.0048
+        }
+      ]
+    },
+    {
+      "time_s": 28.0,
+      "top_cosine": 0.2069,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            833.0,
+            343.0,
+            927.3,
+            380.6
+          ],
+          "detect_score": 0.1185,
+          "cosine": 0.2069
+        },
+        {
+          "xyxy": [
+            404.3,
+            328.9,
+            801.5,
+            571.5
+          ],
+          "detect_score": 0.1353,
+          "cosine": 0.1899
+        }
+      ]
+    },
+    {
+      "time_s": 30.0,
+      "top_cosine": 0.2627,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1518.7,
+            1016.7,
+            1870.8,
+            1049.0
+          ],
+          "detect_score": 0.2662,
+          "cosine": 0.2627
+        },
+        {
+          "xyxy": [
+            838.3,
+            401.3,
+            975.5,
+            559.5
+          ],
+          "detect_score": 0.1233,
+          "cosine": 0.1582
+        },
+        {
+          "xyxy": [
+            5.5,
+            5.0,
+            232.3,
+            133.4
+          ],
+          "detect_score": 0.116,
+          "cosine": 0.1413
+        }
+      ]
+    },
+    {
+      "time_s": 32.0,
+      "top_cosine": 0.2789,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1516.8,
+            1015.9,
+            1868.1,
+            1049.8
+          ],
+          "detect_score": 0.1695,
+          "cosine": 0.2789
+        },
+        {
+          "xyxy": [
+            7.5,
+            472.8,
+            89.8,
+            566.3
+          ],
+          "detect_score": 0.2325,
+          "cosine": 0.1948
+        },
+        {
+          "xyxy": [
+            159.1,
+            604.7,
+            1491.7,
+            700.2
+          ],
+          "detect_score": 0.1398,
+          "cosine": 0.1464
+        }
+      ]
+    },
+    {
+      "time_s": 34.0,
+      "top_cosine": 0.287,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            568.6,
+            628.6,
+            1406.6,
+            769.7
+          ],
+          "detect_score": 0.1269,
+          "cosine": 0.287
+        },
+        {
+          "xyxy": [
+            570.2,
+            440.8,
+            1402.6,
+            765.5
+          ],
+          "detect_score": 0.2538,
+          "cosine": 0.2809
+        },
+        {
+          "xyxy": [
+            7.2,
+            618.1,
+            1912.6,
+            1079.8
+          ],
+          "detect_score": 0.1032,
+          "cosine": 0.1588
+        }
+      ]
+    },
+    {
+      "time_s": 36.0,
+      "top_cosine": 0.4345,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            730.4,
+            484.9,
+            1176.6,
+            652.3
+          ],
+          "detect_score": 0.1323,
+          "cosine": 0.4345
+        },
+        {
+          "xyxy": [
+            613.0,
+            995.3,
+            1292.7,
+            1038.9
+          ],
+          "detect_score": 0.4854,
+          "cosine": 0.3465
+        },
+        {
+          "xyxy": [
+            240.1,
+            66.5,
+            542.9,
+            155.6
+          ],
+          "detect_score": 0.1434,
+          "cosine": 0.3247
+        }
+      ]
+    },
+    {
+      "time_s": 38.0,
+      "top_cosine": 0.3639,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            615.6,
+            989.6,
+            1301.8,
+            1038.5
+          ],
+          "detect_score": 0.1566,
+          "cosine": 0.3639
+        },
+        {
+          "xyxy": [
+            609.5,
+            994.6,
+            1294.8,
+            1038.9
+          ],
+          "detect_score": 0.6895,
+          "cosine": 0.3342
+        },
+        {
+          "xyxy": [
+            733.6,
+            488.6,
+            1178.1,
+            645.5
+          ],
+          "detect_score": 0.1655,
+          "cosine": 0.1496
+        }
+      ]
+    },
+    {
+      "time_s": 40.0,
+      "top_cosine": 0.3288,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            612.6,
+            993.6,
+            1279.7,
+            1038.8
+          ],
+          "detect_score": 0.2078,
+          "cosine": 0.3288
+        }
+      ]
+    },
+    {
+      "time_s": 42.0,
+      "top_cosine": 0.1039,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            283.4,
+            502.8,
+            1610.7,
+            640.6
+          ],
+          "detect_score": 0.1188,
+          "cosine": 0.1039
+        }
+      ]
+    },
+    {
+      "time_s": 44.0,
+      "top_cosine": 0.265,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            209.4,
+            230.1,
+            1712.4,
+            718.2
+          ],
+          "detect_score": 0.1934,
+          "cosine": 0.265
+        },
+        {
+          "xyxy": [
+            556.7,
+            167.4,
+            1346.7,
+            208.9
+          ],
+          "detect_score": 0.1609,
+          "cosine": 0.2382
+        },
+        {
+          "xyxy": [
+            406.9,
+            878.7,
+            746.9,
+            975.8
+          ],
+          "detect_score": 0.1652,
+          "cosine": 0.1491
+        }
+      ]
+    },
+    {
+      "time_s": 46.0,
+      "top_cosine": 0.3295,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            554.2,
+            167.1,
+            1286.0,
+            210.1
+          ],
+          "detect_score": 0.1159,
+          "cosine": 0.3295
+        },
+        {
+          "xyxy": [
+            668.1,
+            662.1,
+            712.2,
+            695.3
+          ],
+          "detect_score": 0.1148,
+          "cosine": 0.1681
+        },
+        {
+          "xyxy": [
+            190.2,
+            234.0,
+            1614.3,
+            717.5
+          ],
+          "detect_score": 0.1789,
+          "cosine": 0.1559
+        }
+      ]
+    },
+    {
+      "time_s": 48.0,
+      "top_cosine": 0.0,
+      "found": 0,
+      "detections": []
+    }
+  ]
+}

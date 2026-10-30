@@ -230,6 +230,9 @@ def startup_checks(windows):
 
 # 올바른 프로젝트 Python에서만 검사하고, 준비가 끝난 경우에만 서버를 시작한다.
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] in {"api", "worker", "projection", "mcp"}:
+        from scripts.run_rebuild import main as rebuild_main
+        return rebuild_main(sys.argv[1:])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)

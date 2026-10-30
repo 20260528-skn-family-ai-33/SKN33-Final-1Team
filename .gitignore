@@ -59,3 +59,14 @@ Desktop.ini
 /experiments/poster_benchmark/.ocr-venv/
 /experiments/poster_benchmark/*.tar*
 *.gpu_owner.lock
+# 로고 시드: 추출한 PNG만 추적한다. 큰 다운로드 아카이브·incoming 스테이징은 제외
+data/logos/**/*.zip
+data/logos/_incoming*/
+
+# 관광 동영상 시드: 큰 영상 파일은 git 제외, 매니페스트(CSV)·README만 추적
+data/videos/*.mp4
+data/videos/*.mov
+data/videos/*.webm
+data/videos/*.m3u8
+data/videos/*.ts
+data/videos/_incoming*/

@@ -1,0 +1,344 @@
+{
+  "video": "/workspace/videos/seoul6_gongyeon.mp4",
+  "mode": "guided",
+  "query_logo": "data/logos/regions_logos/lg__서울특별시/logo.png",
+  "fps": 0.5,
+  "frames": 10,
+  "device": "cuda",
+  "min_cosine": 0.7,
+  "found_frames": 0,
+  "found_times": [],
+  "best_cosine": 0.0,
+  "per_frame": [
+    {
+      "time_s": 0.0,
+      "top_cosine": 0.2381,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1860.8,
+            31.7,
+            1892.8,
+            61.6
+          ],
+          "detect_score": 0.1126,
+          "cosine": 0.2381
+        },
+        {
+          "xyxy": [
+            290.9,
+            511.9,
+            1617.3,
+            611.4
+          ],
+          "detect_score": 0.1839,
+          "cosine": 0.07
+        }
+      ]
+    },
+    {
+      "time_s": 2.0,
+      "top_cosine": 0.2459,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            690.6,
+            115.5,
+            732.5,
+            135.1
+          ],
+          "detect_score": 0.1131,
+          "cosine": 0.2459
+        },
+        {
+          "xyxy": [
+            963.4,
+            918.7,
+            1762.1,
+            1012.2
+          ],
+          "detect_score": 0.1323,
+          "cosine": 0.1439
+        },
+        {
+          "xyxy": [
+            1006.1,
+            135.8,
+            1291.3,
+            209.7
+          ],
+          "detect_score": 0.1847,
+          "cosine": 0.068
+        }
+      ]
+    },
+    {
+      "time_s": 4.0,
+      "top_cosine": 0.1073,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1486.5,
+            312.1,
+            1527.7,
+            339.2
+          ],
+          "detect_score": 0.1013,
+          "cosine": 0.1073
+        },
+        {
+          "xyxy": [
+            1394.9,
+            33.8,
+            1521.9,
+            168.1
+          ],
+          "detect_score": 0.1791,
+          "cosine": 0.085
+        },
+        {
+          "xyxy": [
+            121.0,
+            912.0,
+            1600.5,
+            1004.9
+          ],
+          "detect_score": 0.1103,
+          "cosine": 0.0749
+        }
+      ]
+    },
+    {
+      "time_s": 6.0,
+      "top_cosine": 0.1017,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1064.2,
+            568.7,
+            1096.7,
+            602.2
+          ],
+          "detect_score": 0.3175,
+          "cosine": 0.1017
+        },
+        {
+          "xyxy": [
+            1556.5,
+            333.2,
+            1605.6,
+            411.8
+          ],
+          "detect_score": 0.1694,
+          "cosine": 0.0734
+        },
+        {
+          "xyxy": [
+            1571.3,
+            376.6,
+            1591.2,
+            395.6
+          ],
+          "detect_score": 0.1959,
+          "cosine": 0.0683
+        }
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "top_cosine": 0.0396,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            247.2,
+            59.9,
+            310.6,
+            75.2
+          ],
+          "detect_score": 0.1097,
+          "cosine": 0.0396
+        },
+        {
+          "xyxy": [
+            932.4,
+            2.7,
+            991.5,
+            50.8
+          ],
+          "detect_score": 0.1422,
+          "cosine": 0.0116
+        },
+        {
+          "xyxy": [
+            228.4,
+            30.8,
+            419.0,
+            115.9
+          ],
+          "detect_score": 0.1242,
+          "cosine": -0.0057
+        }
+      ]
+    },
+    {
+      "time_s": 10.0,
+      "top_cosine": 0.0254,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            255.4,
+            488.7,
+            1619.5,
+            598.7
+          ],
+          "detect_score": 0.2646,
+          "cosine": 0.0254
+        }
+      ]
+    },
+    {
+      "time_s": 12.0,
+      "top_cosine": 0.2834,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1500.9,
+            899.8,
+            1618.3,
+            1028.6
+          ],
+          "detect_score": 0.1793,
+          "cosine": 0.2834
+        },
+        {
+          "xyxy": [
+            1688.6,
+            78.5,
+            1793.1,
+            184.0
+          ],
+          "detect_score": 0.2024,
+          "cosine": 0.2614
+        },
+        {
+          "xyxy": [
+            873.2,
+            879.6,
+            945.8,
+            945.4
+          ],
+          "detect_score": 0.1031,
+          "cosine": 0.2608
+        }
+      ]
+    },
+    {
+      "time_s": 14.0,
+      "top_cosine": 0.3037,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1691.0,
+            78.3,
+            1794.7,
+            185.3
+          ],
+          "detect_score": 0.2158,
+          "cosine": 0.3037
+        },
+        {
+          "xyxy": [
+            1443.8,
+            834.5,
+            1616.0,
+            1021.9
+          ],
+          "detect_score": 0.1514,
+          "cosine": 0.258
+        },
+        {
+          "xyxy": [
+            171.7,
+            744.3,
+            679.8,
+            989.4
+          ],
+          "detect_score": 0.1175,
+          "cosine": 0.1232
+        }
+      ]
+    },
+    {
+      "time_s": 16.0,
+      "top_cosine": 0.3998,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            551.9,
+            472.0,
+            1414.0,
+            573.9
+          ],
+          "detect_score": 0.1676,
+          "cosine": 0.3998
+        },
+        {
+          "xyxy": [
+            496.9,
+            344.6,
+            1372.8,
+            575.2
+          ],
+          "detect_score": 0.1806,
+          "cosine": 0.1353
+        }
+      ]
+    },
+    {
+      "time_s": 18.0,
+      "top_cosine": 0.6507,
+      "found": 0,
+      "detections": [
+        {
+          "xyxy": [
+            1426.6,
+            541.1,
+            1459.8,
+            591.6
+          ],
+          "detect_score": 0.1027,
+          "cosine": 0.6507
+        },
+        {
+          "xyxy": [
+            1389.4,
+            482.9,
+            1569.4,
+            597.3
+          ],
+          "detect_score": 0.2548,
+          "cosine": 0.4701
+        },
+        {
+          "xyxy": [
+            633.4,
+            460.0,
+            1290.9,
+            613.6
+          ],
+          "detect_score": 0.2594,
+          "cosine": 0.3768
+        }
+      ]
+    }
+  ]
+}

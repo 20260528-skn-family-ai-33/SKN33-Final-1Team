@@ -100,4 +100,6 @@ def local_auth_router() -> APIRouter:
         response.delete_cookie(CSRF_COOKIE, path="/", samesite="strict")
         no_cache(response)
 
+    # 같은 앱의 다른 로컬 API(동영상 검수)가 이 세션으로 접근을 확인한다.
+    router.session_user = session_user
     return router

@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import ReviewPage from './pages/review/ReviewPage.jsx';
 import { ReviewProvider } from './pages/review/ReviewProvider.jsx';
+import VideoReviewPage from './pages/video/VideoReviewPage.jsx';
 
 // 인증된 사용자와 로그아웃 동작을 기존 검수 화면에 연결한다.
 function ReviewRoute() {
@@ -39,6 +40,7 @@ function AppRoutes() {
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/review/new" element={<RequireAuth><ReviewRoute /></RequireAuth>} />
+    <Route path="/video" element={<RequireAuth><VideoReviewPage /></RequireAuth>} />
     <Route path="*" element={<main className="landing-section"><h1>페이지를 찾을 수 없습니다.</h1>
       <p>주소를 확인하거나 서비스 소개에서 다시 시작해 주세요.</p>
       <Link className="btn primary" to="/">서비스 소개로 이동</Link></main>} />

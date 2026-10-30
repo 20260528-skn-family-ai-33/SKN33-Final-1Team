@@ -1,14 +1,14 @@
 """Opt-in actual Compose/Linux/TLS/DB/browser plus isolated backup/restore cutover rehearsal.
 
-The ONLY override mounts a test-only synthetic worker. The production web,
-proxy, volumes, permissions and queue worker loop use the deployment bundle.
+Test-only overrides mount a synthetic worker and add the generated TLS key's
+group to the proxy. Production capabilities and read-only mounts stay intact.
 This is not actual Paddle inference or approval to publish a production service.
 """
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
-import json,os,ssl,subprocess,time
+import json,os,ssl,subprocess
 import httpx,pytest
 from backend.tests.test_db_integration import database
 from backend.tests.test_v1_auth_integration import auth_database,email_user
@@ -17,6 +17,8 @@ from backend.tests.auth_fixtures import PASSWORD
 from backend.tests.c12_helpers import ROOT,browser_flow,artifact
 from backend.tests.c14_helpers import owner_values,private_env
 from backend.tests.c15_helpers import production_values,worker_values,RehearsalPipeline
+from backend.tests.c15_tls import prepare_test_tls
+from backend.tests.c15_diagnostics import capture,redact,wait_ready
 from backend.app.execution.worker_config import write_config
 from backend.app.management.backup import Backups,PgTools,snapshot
 from backend.app.management.release import check
@@ -28,9 +30,9 @@ from backend.migrations.configuration import load_migration_settings
 pytestmark=[pytest.mark.db_integration,pytest.mark.parametrize('auth_database',[False],indirect=True)]
 
 
-def command(args,*,check=True,timeout=60):
+def command(args,*,check=True,timeout=60,secrets=()):
     result=subprocess.run(args,capture_output=True,text=True,timeout=timeout)
-    assert not check or result.returncode==0,'Owned C15 operation failed: '+result.stderr[-1800:]
+    assert not check or result.returncode==0,'Owned C15 operation failed: '+redact(result.stderr,secrets)[-1800:]
     return result.stdout.strip()
 
 
@@ -38,10 +40,11 @@ class Bundle:
     def __init__(self,db,tmp):
         assert os.environ.get('C15_RUN_DEPLOYMENT')=='1' and os.environ.get('C15_API_IMAGE'),'Explicit C15 deployment/image opt-in required.'
         self.db=db;self.tmp=tmp.resolve();self.tmp.mkdir();self.tag='cc-c15-'+uuid4().hex[:12]
-        self.image=os.environ['C15_API_IMAGE'];self.helper=self.tag+'-copy';self.started=False
+        self.image=os.environ['C15_API_IMAGE'];self.helper=self.tag+'-copy';self.started=False;self.last_health={}
         tls=self.tmp/'tls';tls.mkdir();self.cert=tls/'cert.pem';self.models=self.tmp/'models';self.models.mkdir()
         command(['openssl','req','-x509','-newkey','rsa:2048','-nodes','-days','1','-subj','/CN=localhost',
             '-addext','subjectAltName=DNS:localhost,IP:127.0.0.1','-keyout',str(tls/'key.pem'),'-out',str(self.cert)])
+        self.tls_group=prepare_test_tls(tls)
         self.config=self.tmp/'worker.json';write_config(self.config,RehearsalPipeline().describe());self.config.chmod(0o644)
         self.webfile=private_env(self.tmp/'web.env',{});self.workerfile=private_env(self.tmp/'worker.env',{})
         # Ephemeral subnet is explicitly test-owned; Docker rejects any collision.
@@ -50,14 +53,25 @@ class Bundle:
             CC_FRONTEND_DIST=str(ROOT/'frontend/dist-v1'),CC_WORKER_CONFIG=str(self.config),CC_MODELS_DIR=str(self.models),CC_TLS_DIR=str(tls),
             CC_SERVER_NAME='localhost',CC_HTTPS_PORT='0',CC_BIND_IP='127.0.0.1',CC_SUBNET=f'172.29.{octet}.0/24',CC_PROXY_IP=self.proxy_ip)
         self.selection=private_env(self.tmp/'deployment.env',mapping)
-        self.override=self.tmp/'test-only.override.json';self.override.write_text(json.dumps({'services':{'worker':{
+        self.override=self.tmp/'test-only.override.json';self.override.write_text(json.dumps({'services':{
+            'proxy':{'group_add':[self.tls_group]},'worker':{
             'command':['python','-m','backend.tests.c15_worker_process','--env-file','/opt/creative/app.env'],
             'environment':{'APP_ENV':'test'},'volumes':[str(ROOT/'backend/tests')+':/opt/creative/backend/tests:ro']}}}))
         self.prefix=['docker','compose','--env-file',str(self.selection),'-p',self.tag,'-f',str(ROOT/'deploy/compose.v1.yaml'),'-f',str(self.override)]
-    def compose(self,*args,**kwargs):return command([*self.prefix,*args],**kwargs)
+    def secrets(self):
+        return [PASSWORD,*[value for values in (self.db.environment,getattr(self,'web',{})) for key,value in values.items()
+            if any(word in key.upper() for word in ('PASSWORD','SECRET','TOKEN'))]]
+    def compose(self,*args,**kwargs):return command([*self.prefix,*args],secrets=self.secrets(),**kwargs)
     def prepare(self,*,database_name=None,keys=None):
         self.started=True
         self.compose('up','-d','--no-deps','proxy')
+        # Verify the running proxy's real credentials and mounted key metadata;
+        # host runner and nginx UIDs/GIDs are deliberately not hard-coded.
+        probe=self.compose('exec','-T','proxy','sh','-ec',
+            "awk '/^(Uid|Gid|Groups):/ {print}' /proc/1/status; stat -c 'Key %u %g %a' /run/tls/key.pem; head -c 1 /run/tls/key.pem >/dev/null")
+        identity={parts[0].rstrip(':'):parts[1:] for line in probe.splitlines() if (parts:=line.split())}
+        assert self.tls_group in identity['Groups'] and identity['Key'][1:]==[self.tls_group,'640']
+        self.proxy_identity=identity
         port=self.compose('port','proxy','443').rsplit(':',1)[1];self.url='https://localhost:'+port
         self.web=production_values(self.db,Path('/data/storage'),Path('/run/worker-config.json'))
         self.web.update(DB_HOST=os.environ.get('C12_CONTAINER_DB_HOST','host.docker.internal'),AUTH_ALLOWED_ORIGINS=self.url,FRONTEND_DIST='/web',TRUSTED_PROXY_IPS=self.proxy_ip)
@@ -72,15 +86,9 @@ class Bundle:
         return self
     def initialize(self):self.compose('run','--rm','--no-deps','api','python','-m','backend.app.storage','--root','/data/storage','init')
     def start(self):
+        self.last_health.clear()
         self.compose('up','-d','api','worker')
-        deadline=time.monotonic()+35
-        while time.monotonic()<deadline:
-            try:
-                response=httpx.get(self.url+'/api/v1/health',verify=ssl.create_default_context(cafile=str(self.cert)),trust_env=False,timeout=1)
-                if response.status_code==200:return
-            except httpx.HTTPError:pass
-            time.sleep(.1)
-        raise AssertionError('C15 API readiness timeout; inspect private owned logs')
+        wait_ready(self.url,self.cert,self.last_health,self.secrets())
     def stop(self):self.compose('stop','-t','180','worker','api','proxy',timeout=60)
     def copy(self,path,*,into=False):
         code="import pathlib,time;pathlib.Path('/data/storage').mkdir(mode=0o700,exist_ok=True);time.sleep(180)"
@@ -101,14 +109,20 @@ class Bundle:
 def bundle(db,tmp):
     value=Bundle(db,tmp)
     try:yield value
+    except BaseException:
+        if value.started:
+            try:capture(value.prefix,value.tmp,value.last_health,value.secrets())
+            except Exception as error:print('C15 diagnostics unavailable: '+type(error).__name__)
+        raise
     finally:value.close()
 
 
-def test_linux_compose_https_queue_pre_cutover_backup_restore_and_single_writer(auth_database,tmp_path):
+def test_linux_compose_https_queue_pre_cutover_backup_restore_and_single_writer(auth_database,tmp_path,request):
     db,owner=auth_database[:2];user=email_user(auth_database);settings=load_migration_settings(owner_values(db))
     tools=PgTools(settings,owner_values(db));state=tmp_path/'source-browser-state.json'
     with bundle(db,tmp_path/'source') as source:
         source.prepare();source.initialize();source.start()
+        request.node.user_properties.append(('c15_source_proxy_identity',json.dumps(source.proxy_identity)))
         flow=browser_flow(dict(url=source.url,https=True,email=user['email'],password=PASSWORD,image=str(ROOT/'frontend/tests/v1/poster.png'),stateFile=str(state)),timeout=120)
         assert flow['secure_cookie_verified'] and flow['model_config']['model_name']=='SYNTHETIC_REHEARSAL_NOT_A_MODEL'
         for service in ('api','worker'):
@@ -141,6 +155,7 @@ def test_linux_compose_https_queue_pre_cutover_backup_restore_and_single_writer(
             assert preflight['state']=='preflight_passed' and not preflight['worker_runtime_verified']
             with bundle(db,tmp_path/'target') as target:
                 target.prepare(database_name=name,keys=keys);target.copy(restored_root,into=True);target.start()
+                request.node.user_properties.append(('c15_target_proxy_identity',json.dumps(target.proxy_identity)))
                 cookies={v['name']:v['value'] for v in json.loads(state.read_text())['cookies']}
                 with httpx.Client(base_url=target.url,verify=ssl.create_default_context(cafile=str(target.cert)),trust_env=False,cookies=cookies) as client:
                     assert not client.get('/api/v1/auth/me').json()['authenticated']
@@ -159,6 +174,7 @@ def test_linux_compose_https_queue_pre_cutover_backup_restore_and_single_writer(
         with unit_of_work(owner) as c:assert snapshot(c)==original
         artifact(tmp_path/'c15-linux-rehearsal.json',dict(scope='local_linux_compose_rehearsal_only',
             synthetic_worker=True,actual_paddle_inference=False,remote_paid_calls=0,https_cookie_verified=True,
+            proxy_identity=source.proxy_identity,
             api_worker_uid=10001,read_only_containers=True,api_worker_public_ports=False,legacy_write_status=410,legacy_read_status=404,
             original_source_database_preserved=True,preflight=preflight,restored_schema=restored['checks']['schema'],
             sessions_revoked=restored['sessions_revoked'],fresh_keys=True,old_cookie_rejected=True,

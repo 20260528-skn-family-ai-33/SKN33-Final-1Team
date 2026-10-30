@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로고 검수 모델 비교</title>
+<style>
+  :root{
+    --bg:#f3f5f7; --paper:#fff; --ink:#16202b; --muted:#5b6876; --line:#d9dfe5; --soft:#eef1f4;
+    --accent:#1f5f8b; --ok:#1d7a4f; --ok-bg:#e1f2e9; --warn:#a1620a; --warn-bg:#fbefd9;
+    --bad:#b4322a; --bad-bg:#f9e1df; --hit:#e4eef6;
+    --sans:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0f151b; --paper:#151d25; --ink:#e3e9ef; --muted:#93a1ae; --line:#2a3642; --soft:#1b2530;
+    --accent:#7fb6dc; --ok:#5fcf98; --ok-bg:#163126; --warn:#e8ad52; --warn-bg:#33270f;
+    --bad:#f08178; --bad-bg:#3a1c1a; --hit:#1b2c3a; color-scheme:dark;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7;
+       word-break:keep-all;padding:32px max(16px,env(safe-area-inset-left)) 72px}
+  .wrap{max-width:1060px;margin:0 auto}
+  header.doc{background:linear-gradient(135deg,#13324e,var(--accent));color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:24px}
+  header.doc h1{margin:0 0 8px;font-size:25px;letter-spacing:-.3px}
+  header.doc .sub{opacity:.93;font-size:13.5px;line-height:1.9}
+  .chip{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:2px 10px;border-radius:999px;font-size:12px;margin:0 6px 4px 0}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:0 0 18px}
+  h2{font-size:18px;margin:2px 0 14px;color:var(--accent);border-bottom:2px solid var(--soft);padding-bottom:8px}
+  h3{font-size:15px;margin:16px 0 8px}
+  p{margin:8px 0} .muted{color:var(--muted)}
+  code{font-family:var(--mono);font-size:.84em;background:var(--soft);padding:1px 6px;border-radius:5px}
+  ul{margin:8px 0;padding-left:20px} li{margin:4px 0}
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.8px}
+  th,td{border:1px solid var(--line);padding:7px 8px;text-align:center;vertical-align:middle}
+  th{background:var(--soft);font-weight:700;white-space:nowrap}
+  td.l,th.l{text-align:left}
+  tbody tr:nth-child(odd){background:color-mix(in srgb,var(--soft) 45%,transparent)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .win{background:var(--ok-bg);color:var(--ok);font-weight:700}
+  .low{color:var(--bad)} .mid{color:var(--warn)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .t-ok{background:var(--ok-bg);color:var(--ok)} .t-mid{background:var(--warn-bg);color:var(--warn)}
+  .t-bad{background:var(--bad-bg);color:var(--bad)} .t-na{background:var(--soft);color:var(--muted)}
+  .concl{background:var(--hit);border:1px solid var(--accent);border-radius:12px;padding:14px 16px}
+  .concl b{color:var(--accent)}
+  .note{background:var(--warn-bg);border-radius:10px;padding:12px 14px;font-size:13.5px}
+  footer{color:var(--muted);font-size:12px;text-align:center;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <h1>로고 검수 모델 비교 — 탐지기·매처·조합</h1>
+  <div class="sub">
+    <span class="chip">크리에이티브체커 · 로고 검수</span>
+    <span class="chip">매처 6종 · 탐지기 2종 · 조합 A~E</span><br>
+    작성 <b>2026-10-26</b> · 장비 <b>RunPod RTX A5000</b> · 측정 영상 <b>로고 확인된 8편</b> ·
+    지표 <b>프레임 최고 점수(지정 로고 1:1)</b>
+  </div>
+</header>
+
+<section>
+  <h2>1. 결론</h2>
+  <div class="concl">
+    <p>• <b>매처: SigLIP2 ≈ CLIP ≈ EVA-CLIP(딥러닝 임베딩)이 최상.</b> 지정 로고에서 대부분 0.9 안팎.
+       DINOv2는 임베딩 중 약함, <b>pHash·ORB(베이스라인)은 사실상 실패</b>(변별 없음).</p>
+    <p>• <b>조합 B(LightGlue 기하 검증)는 유효.</b> 매칭 38~223개로 ORB(거의 0)와 차원이 다릅니다 — 구조·위치가 맞아야 매칭되므로 위조·오탐 방어에 쓸 수 있습니다.</p>
+    <p>• <b>탐지기: OWLv2 &gt; YOLO-World.</b> YOLO-World(조합 C)는 빠르고 많이 탐지하지만 로고 영역을 덜 정확히 잡아 매칭 점수가 낮습니다.</p>
+    <p>• <b>권장: OWLv2(탐지) + SigLIP2/CLIP(매칭), 오탐 민감하면 +LightGlue(조합 B).</b></p>
+    <p>• <b>운영 방식 = guided(지정 로고 1:1) + 이중검수.</b> 검수할 로고를 쿼리로 지정해 OWLv2 탐지 → CLIP/SigLIP2 대조(1차), 애매한 구간만 LightGlue 기하검증(2차)으로 확인합니다. blind(자동 식별)는 노이즈라 쓰지 않습니다. (자세히 §6)</p>
+    <p>• <b>조합 D(YOLO11 학습)도 완료.</b> OWLv2+SigLIP2로 자동 라벨 390장(11클래스)을 만들어 YOLO11n을 학습 → <b>mAP50 0.64 · 정밀도 0.86</b>. 약지도(auto-label) 부트스트랩 치고 양호하나, 라벨이 사람 검증본이 아니고 같은 영상에서 나눈 val이라 낙관적입니다(§5).</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. 매처 비교 — 지정 로고 최고 점수 (탐지기 OWLv2 공통)</h2>
+  <p class="muted">각 영상에서 "지정 로고와 가장 닮은 프레임"의 점수. 임베딩 3종·EVA-CLIP은 코사인(0~1), pHash는 해시 유사도(0~1),
+     ORB는 RANSAC 인라이어 비율(0~1), LightGlue는 매칭 개수(절대값). 색 <span class="win">진함</span>=그 행 임베딩 최고.</p>
+  <div class="scroll"><table>
+    <thead><tr><th class="l">영상</th><th class="l">지정 로고</th><th>SigLIP2</th><th>CLIP</th><th>EVA-CLIP</th><th>pHash</th><th>ORB</th><th>LightGlue</th></tr></thead>
+    <tbody>
+      <tr><td class="l">공공누리</td><td class="l">한국문화정보원</td><td class="num win">0.949</td><td class="num">0.940</td><td class="num">0.870</td><td class="num low">0.594</td><td class="num low">0.033</td><td class="num">136</td></tr>
+      <tr><td class="l">낭만과학도시 대전</td><td class="l">대전광역시</td><td class="num win">0.972</td><td class="num">0.952</td><td class="num">0.913</td><td class="num low">0.641</td><td class="num low">0.062</td><td class="num">223</td></tr>
+      <tr><td class="l">서울문화재단</td><td class="l">서울문화재단</td><td class="num">0.936</td><td class="num win">0.944</td><td class="num">0.904</td><td class="num low">0.586</td><td class="num low">0.184</td><td class="num">135</td></tr>
+      <tr><td class="l">마약이 온다</td><td class="l">서울마이소울</td><td class="num">0.913</td><td class="num">0.896</td><td class="num win">0.956</td><td class="num low">0.609</td><td class="num low">0.110</td><td class="num">195</td></tr>
+      <tr><td class="l">서울시향</td><td class="l">서울시립교향악당</td><td class="num win">0.946</td><td class="num">0.910</td><td class="num low">0.601</td><td class="num low">0.578</td><td class="num low">0.116</td><td class="num">107</td></tr>
+      <tr><td class="l">새해 해맞이</td><td class="l">JCI</td><td class="num">0.896</td><td class="num win">0.919</td><td class="num">0.820</td><td class="num low">0.563</td><td class="num low">0.026</td><td class="num">78</td></tr>
+      <tr><td class="l">이몽룡 선발대회</td><td class="l">봉화군</td><td class="num">0.759</td><td class="num win">0.906</td><td class="num">0.893</td><td class="num low">0.563</td><td class="num low">0.021</td><td class="num">50</td></tr>
+      <tr><td class="l">상주 모자페스티벌</td><td class="l">상주시</td><td class="num mid">0.657</td><td class="num low">0.561</td><td class="num low">0.583</td><td class="num low">0.578</td><td class="num low">0.006</td><td class="num">38</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>베이스라인(조합 E) 판정.</b> pHash는 모든 영상에서 0.56~0.64로 <b>변별이 전혀 없고</b>(정답이든 아니든 비슷), ORB는 0.006~0.18로 <b>거의 실패</b>합니다. 계획서의 "크기·배경·회전에 매우 약함" 예측대로, 딥러닝 임베딩이 압도적입니다.</div>
+</section>
+
+<section>
+  <h2>3. 탐지기 비교 — OWLv2 vs YOLO-World (매처 SigLIP2 공통)</h2>
+  <p class="muted">탐지기만 바꿔 같은 매처(SigLIP2)로 지정 로고 최고 코사인을 비교. 탐지기가 로고 영역을 정확히 잡을수록 매칭 점수가 높습니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th class="l">영상</th><th>OWLv2 (조합 A)</th><th>YOLO-World (조합 C)</th><th class="l">차이</th></tr></thead>
+    <tbody>
+      <tr><td class="l">공공누리</td><td class="num win">0.949</td><td class="num">0.696</td><td class="l">OWLv2 우세</td></tr>
+      <tr><td class="l">낭만과학도시 대전</td><td class="num win">0.972</td><td class="num">0.700</td><td class="l">OWLv2 우세</td></tr>
+      <tr><td class="l">서울문화재단</td><td class="num win">0.936</td><td class="num">0.818</td><td class="l">OWLv2 우세</td></tr>
+      <tr><td class="l">마약이 온다</td><td class="num">0.913</td><td class="num win">0.919</td><td class="l">비슷</td></tr>
+      <tr><td class="l">서울시향</td><td class="num win">0.946</td><td class="num">0.736</td><td class="l">OWLv2 우세</td></tr>
+      <tr><td class="l">새해 해맞이</td><td class="num win">0.896</td><td class="num low">0.499</td><td class="l">OWLv2 크게 우세</td></tr>
+      <tr><td class="l">이몽룡</td><td class="num win">0.759</td><td class="num">0.742</td><td class="l">비슷</td></tr>
+      <tr><td class="l">상주</td><td class="num win">0.657</td><td class="num">0.635</td><td class="l">비슷</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">YOLO-World는 프레임당 12~42개를 탐지(빠름)하지만, "특정 로고 영역"을 OWLv2만큼 좁게 잡지 못해 매칭 점수가 평균적으로 낮습니다.</p>
+</section>
+
+<section>
+  <h2>4. 조합(A~E) 측정 현황</h2>
+  <div class="scroll"><table>
+    <thead><tr><th class="l">조합</th><th class="l">구성</th><th>측정</th><th class="l">결과</th></tr></thead>
+    <tbody>
+      <tr><td class="l"><b>A (주력)</b></td><td class="l">OWLv2 + DINOv2/SigLIP2/CLIP</td><td><span class="tag t-ok">완료</span></td><td class="l">SigLIP2·CLIP 최상(0.9±). 검수 기본 경로.</td></tr>
+      <tr><td class="l"><b>B (강건)</b></td><td class="l">OWLv2 + 매처 + <b>LightGlue</b></td><td><span class="tag t-ok">완료</span></td><td class="l">LightGlue 매칭 38~223개 — 기하 검증 유효(ORB는 실패).</td></tr>
+      <tr><td class="l"><b>C (속도)</b></td><td class="l">YOLO-World + SigLIP2</td><td><span class="tag t-ok">완료</span></td><td class="l">빠르나 탐지 정확도↓ → 매칭 점수 OWLv2보다 낮음.</td></tr>
+      <tr><td class="l"><b>D (장기)</b></td><td class="l">YOLO11 학습 탐지기</td><td><span class="tag t-ok">완료</span></td><td class="l">자동 라벨 390장·11클래스 학습 → <b>mAP50 0.64</b> · 정밀도 0.86 · 재현율 0.61.</td></tr>
+      <tr><td class="l"><b>E (베이스라인)</b></td><td class="l">pHash · ORB/SIFT</td><td><span class="tag t-ok">완료</span></td><td class="l">변별 거의 없음 — 딥러닝 대비 하한 확인.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">추가 매처: <b>EVA-CLIP</b>(open_clip, §2)도 측정 — SigLIP2·CLIP급. DINOv3는 게이트 모델(HF 토큰 필요)이라 제외.</p>
+</section>
+
+<section>
+  <h2>5. 조합 D(YOLO11 학습) 상세 · 다음 단계</h2>
+  <h3>자동 라벨 → YOLO11 학습</h3>
+  <ul>
+    <li><b>자동 라벨링</b>: OWLv2 탐지 + SigLIP2(코사인≥0.72)로 영상별 지정 로고 박스를 생성 → <b>390장(train 325 · val 65), 11클래스</b>. 매칭이 약한 상주·성안이즈백, 로고 없는 원도심은 라벨 품질을 위해 제외.</li>
+    <li><b>학습(YOLO11n, 40 epoch)</b>: mAP50 <b>0.644</b> · mAP50-95 0.533 · 정밀도 0.859 · 재현율 0.611. 스크립트 <code>scripts/train_yolo_logos.py</code>, 가중치 <code>yolo_runs/logos/weights/best.pt</code>.</li>
+  </ul>
+  <div class="note"><b>한계.</b> 라벨이 <b>사람 검증본이 아니라 자동 생성</b>(OWLv2+SigLIP2)이고, val이 학습과 <b>같은 영상</b>에서 나뉘어(held-out 영상 아님) 수치가 낙관적입니다. 재현율 0.61은 작은 로고·저신뢰 프레임을 놓친 결과입니다. 실전에는 사람 라벨 + 별도 영상 평가셋으로 다시 재야 합니다.</div>
+  <h3>다음 단계</h3>
+  <ul>
+    <li>정식 성능검토(계획서 S1~S4): 라벨링된 평가셋·FAR/FRR·임계값 보정은 별도 — 본 측정은 실제 영상에 지정 로고를 넣어 <b>최고 점수를 본 간이 비교</b>입니다.</li>
+    <li>DINOv3(HF 토큰 확보 시), GroundingDINO, 쿼리별 보정 기준(매처 간 공정 비교), YOLO11 사람 라벨 재학습.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>6. 검수 운영 방식 — guided + 이중검수 (결론)</h2>
+  <p>실무 검수는 <b>"들어가야 할 로고가 정해져 있다"</b>(발주처가 CI를 지정)는 전제이므로,
+     그 로고를 쿼리로 지정해 1:1로 대조하는 <b>guided 방식</b>으로 합니다. 영상 속 로고를 학습셋에서 자동으로
+     맞히는 <b>blind는 노이즈가 커서 쓰지 않습니다</b>(무관한 로고가 코사인 0.9+로 반복 오탐).</p>
+  <h3>파이프라인</h3>
+  <div class="scroll"><table>
+    <thead><tr><th class="l">단계</th><th class="l">하는 일</th><th class="l">모델</th></tr></thead>
+    <tbody>
+      <tr><td class="l">입력</td><td class="l">영상 + <b>검사할 로고 1장(쿼리)</b></td><td class="l">—</td></tr>
+      <tr><td class="l">① 탐지</td><td class="l">프레임에서 '로고 같은' 영역 찾기</td><td class="l">OWLv2</td></tr>
+      <tr><td class="l">② 1차 대조</td><td class="l">각 영역을 지정 로고와 코사인 대조(의미 유사도)</td><td class="l">CLIP / SigLIP2</td></tr>
+      <tr><td class="l">③ 2차 이중검수</td><td class="l"><b>애매한 구간만</b> 구조·위치 일치 확인(기하 검증)</td><td class="l">LightGlue</td></tr>
+      <tr><td class="l">④ 판정</td><td class="l">확실 / 확인필요 / 미검출 + 시각·위치 표시</td><td class="l">—</td></tr>
+    </tbody>
+  </table></div>
+  <h3>왜 이중검수인가 · 임계값</h3>
+  <p>로고 매칭은 '같다/다르다'가 아니라 <b>유사도 점수</b>라, "비슷한데 다른 로고"가 애매하게 나오는 회색지대가 있습니다.
+     이를 서로 다른 원리로 교차 확인(① 의미 임베딩 + ③ 기하 매칭)해 오탐을 줄입니다. 전 프레임을 이중으로 돌리지 않고
+     <b>애매한 것만</b> 2차로 보냅니다.</p>
+  <div class="scroll"><table>
+    <thead><tr><th class="l">코사인(1차)</th><th class="l">처리</th></tr></thead>
+    <tbody>
+      <tr><td class="l">≥ 0.85 (확실)</td><td class="l">자동 검출 — 단일로 종결</td></tr>
+      <tr><td class="l">0.6 ~ 0.85 (애매)</td><td class="l"><b>이중검수</b>: LightGlue 2차, 그래도 애매하면 사람/VLM 확인('확인 필요')</td></tr>
+      <tr><td class="l">&lt; 0.6 (낮음)</td><td class="l">미검출</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">팀 검수 원칙("위반은 확실할 때만, 애매하면 사람 확인")과 동일한 철학입니다. 임계값(0.85·0.6)은 추후 라벨링된 평가셋으로 정밀 보정합니다.</p>
+</section>
+
+<section style="border:2px solid var(--accent)">
+  <h2 style="border:none;margin-bottom:6px">⭐ 최종 결론 (한 줄 요약)</h2>
+  <p style="font-size:17px;margin:0"><b>guided(지정 로고 1:1) + 이중검수</b> — 베이스 모델 <b>OWLv2 + CLIP</b>(정확도 최우선이면 SigLIP2), 이중검수 모델 <b>LightGlue</b>(애매 구간 기하 검증).</p>
+</section>
+
+<footer>로고 검수 모델 비교 · 2026-10-26 · RunPod RTX A5000 · 매처 6종 + LightGlue + OWLv2/YOLO-World · 운영: guided+이중검수</footer>
+</div>
+</body>
+</html>
