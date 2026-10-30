@@ -10,7 +10,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test src/workflow.test.js src/documentRequirements.test.js src/documentProgress.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js",
+    "test": "node --test src/workflow.test.js src/documentRequirements.test.js src/documentProgress.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js src/pages/video/videoFormat.test.js src/pages/modeltest/modeltest.test.js src/pages/modeltest/modeltestBoard.test.js",
     "test:e2e": "node --test tests/e2e/login.spec.mjs",
     "test:e2e:local": "node --test tests/e2e/local-admin.spec.mjs",
     "dev:v1": "vite --mode v1 --host 127.0.0.1",
@@ -21,7 +21,8 @@
     "dev:rebuild": "vite --mode rebuild --host 127.0.0.1",
     "build:rebuild": "tsc --noEmit && vite build --mode rebuild --outDir dist-rebuild",
     "preview:rebuild": "vite preview --mode rebuild --outDir dist-rebuild --host 127.0.0.1",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:modeltest:ui": "node --test --test-concurrency=1 tests/e2e/modeltest.spec.mjs tests/e2e/modeltest-board.spec.mjs"
   },
   "dependencies": {
     "react": "^19.1.1",

@@ -21,7 +21,7 @@ class ReviewStaticFiles(StaticFiles):
         accepts_html = b"text/html" in headers.get(b"accept", b"").lower()
         # Windows 내부 경로도 화면 URL과 비교할 때는 슬래시로 통일한다.
         page_path = "/" + path.replace("\\", "/").strip("/")
-        if scope["method"] in {"GET", "HEAD"} and accepts_html and page_path in {"/login", "/review/new", "/video"}:
+        if scope["method"] in {"GET", "HEAD"} and accepts_html and page_path in {"/login", "/review/new", "/video", "/modeltest"}:
             return await super().get_response("index.html", scope)
         if response is not None:
             return response

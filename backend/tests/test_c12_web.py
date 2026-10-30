@@ -42,7 +42,7 @@ def test_incomplete_or_linked_build_refused(tmp_path,corrupt):
 def test_html_fallback_only_for_known_uuid_pages(path):assert PAGE.fullmatch(path) is None
 
 
-@pytest.mark.parametrize('path',('/', '/login','/projects','/review/new','/projects/10000000-0000-4000-8000-000000000001/reviews/10000000-0000-4000-8000-000000000002'))
+@pytest.mark.parametrize('path',('/', '/login','/modeltest','/modeltest/','/projects','/review/new','/projects/10000000-0000-4000-8000-000000000001/reviews/10000000-0000-4000-8000-000000000002'))
 def test_known_pages_are_refreshable(path):assert PAGE.fullmatch(path)
 
 
@@ -64,6 +64,16 @@ def test_security_headers_do_not_claim_https_in_development():
     assert 'strict-transport-security' not in response.headers
     headers(response,secure=True);assert response.headers['strict-transport-security']=='max-age=31536000'
     assert "frame-ancestors 'none'" in response.headers['content-security-policy']
+
+
+def test_modeltest_alone_allows_pod_connections_and_local_media():
+    response=Response();headers(response,secure=False,modeltest=True)
+    policy=response.headers['content-security-policy']
+    assert "https://*.proxy.runpod.net" in policy
+    assert "media-src 'self' blob:" in policy
+    assert "script-src 'self'" in policy
+    headers(response,secure=False)
+    assert "proxy.runpod.net" not in response.headers['content-security-policy']
 
 
 def test_real_multiline_date_ranges_are_json_without_losing_sources():
