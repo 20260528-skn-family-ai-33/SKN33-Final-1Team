@@ -500,17 +500,30 @@ test('aborted requests preserve the cancellation signal', async t => {
 
 test('SSH requests stay on the local backend and preserve the multipart request key', async t => {
   const calls = [];
-  t.mock.method(globalThis, 'fetch', async (url, options) => { calls.push({ url, options }); return Response.json({ ok: true }); });
+  t.mock.method(globalThis, 'fetch', async (url, options) => { calls.push({ url, options }); return Response.json(url === '/api/v1/auth/csrf' ? { csrf_token: 'test-session-token' } : { ok: true }); });
   const command = 'ssh root@203.0.113.10 -p 12345';
   await sshRequest('/api/modeltest/ssh/connections', { method: 'POST', body: JSON.stringify({ command }), headers: { 'Content-Type': 'application/json' } });
   const body = makeFormData(makeManifest('image', fixture('image')), fixture('image'));
   await modeltestRequest({ transport: 'ssh', endpoint: '/api/modeltest/ssh/connections/test-id' }, '/runs', { method: 'POST', body, headers: { 'Idempotency-Key': 'request-1' } });
-  assert.equal(calls[0].options.headers['X-Modeltest-Local'], '1'); assert.equal(calls[0].options.credentials, 'same-origin');
-  assert.equal(calls[1].url, '/api/modeltest/ssh/connections/test-id/runs'); assert.equal(calls[1].options.body, body);
-  assert.equal(calls[1].options.headers['Idempotency-Key'], 'request-1'); assert.equal(calls[1].options.headers['Content-Type'], undefined);
+  assert.equal(calls[0].url, '/api/v1/auth/csrf');
+  assert.equal(calls[1].options.headers['X-Modeltest-Local'], '1'); assert.equal(calls[1].options.credentials, 'same-origin');
+  assert.equal(calls[1].options.headers['X-CSRFToken'], 'test-session-token');
+  assert.equal(calls[2].url, '/api/v1/auth/csrf');
+  assert.equal(calls[3].url, '/api/modeltest/ssh/connections/test-id/runs'); assert.equal(calls[3].options.body, body);
+  assert.equal(calls[3].options.headers['Idempotency-Key'], 'request-1'); assert.equal(calls[3].options.headers['Content-Type'], undefined);
+  assert.equal(calls[3].options.headers['X-CSRFToken'], 'test-session-token');
   await assert.rejects(sshRequest('https://example.com/connections'), /경로/);
   await assert.rejects(sshRequest('/api/modeltest/ssh/connections/../../secrets'), /경로/);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 4);
+});
+
+test('SSH writes stop before transmission if CSRF preparation fails', async t => {
+  const calls = [];
+  const mocked = t.mock.method(globalThis, 'fetch', async url => { calls.push(url); return Response.json({ csrf_token: null }); });
+  await assert.rejects(sshRequest('/api/modeltest/ssh/connections', { method: 'POST', body: '{}' }), /보안 확인/);
+  mocked.mock.mockImplementation(async url => { calls.push(url); return Response.json({ detail: 'denied' }, { status: 403 }); });
+  await assert.rejects(sshRequest('/api/modeltest/ssh/connections', { method: 'POST', body: '{}' }));
+  assert.deepEqual(calls, ['/api/v1/auth/csrf', '/api/v1/auth/csrf']);
 });
 
 test('local SSH failures keep actionable messages without silently using an HTTP Pod endpoint', async t => {

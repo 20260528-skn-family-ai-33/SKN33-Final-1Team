@@ -1,6 +1,7 @@
 import { compileAgents } from './modeltestAgents.js';
 import { EXTRA_STAGES, GENERAL, registration, MODEL_STATUS } from './modeltestCatalog.js';
 import { promptFields } from './modeltestPrompts.js';
+import { fetchJson } from '../../api/client.js';
 
 export const CONTRACT = 'modeltest.v1';
 export const FILE_TYPES = {
@@ -353,9 +354,10 @@ export async function sshRequest(path, { signal, timeout = 20000, ...options } =
   if (!/^\/api\/modeltest\/ssh\/(?:connections(?:\/[\w-]+(?:\/(?:health|prepare|runs)(?:\/[\w-]+(?:\/cancel|\/previews\/[\w.-]+)?)?)?)?|models(?:\/(?:inspect|[\w-]+))?)$/.test(path)) throw new Error('SSH 요청 경로가 올바르지 않습니다.');
   const deadline = AbortSignal.timeout(timeout); const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
   const headers = { Accept: 'application/json', 'X-Modeltest-Local': '1', ...options.headers };
-  if (['POST', 'PUT', 'DELETE'].includes(options.method) && import.meta.env && import.meta.env.VITE_API_PROFILE === 'v1') {
-    const { csrf } = await import('../../v1/api.js');
-    headers['X-CSRFToken'] = (await csrf(combined)).csrf_token;
+  if (!['GET', 'HEAD', 'OPTIONS'].includes((options.method || 'GET').toUpperCase())) {
+    const prepared = await fetchJson('/api/v1/auth/csrf', { signal: combined });
+    if (typeof prepared.csrf_token !== 'string' || !prepared.csrf_token) throw new Error('보안 확인을 준비하지 못했습니다. 다시 시도해 주세요.');
+    headers['X-CSRFToken'] = prepared.csrf_token;
   }
   let response;
   try { response = await fetch(path, { ...options, headers, credentials: 'same-origin', signal: combined, redirect: 'error', cache: 'no-store' }); }
