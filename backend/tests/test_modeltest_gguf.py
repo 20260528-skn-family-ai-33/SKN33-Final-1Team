@@ -58,6 +58,12 @@ def test_gguf_build_is_pinned_scoped_and_reused(tmp_path, monkeypatch):
 @pytest.mark.parametrize('ready', [True, False])
 def test_gguf_process_uses_matching_weights_loopback_and_owned_cleanup(tmp_path, monkeypatch, ready):
     downloads = []; processes = []
+    class Address:
+        def __enter__(self): return self
+        def __exit__(self, *_): return None
+        def bind(self, value): assert value == ('127.0.0.1', 0)
+        def getsockname(self): return ('127.0.0.1', 43210)
+    monkeypatch.setattr(remote.socket, 'socket', Address)
     monkeypatch.setitem(sys.modules, 'huggingface_hub', SimpleNamespace(model_info=lambda *args, **kwargs: SimpleNamespace(sha='fixture-revision'),
         hf_hub_download=lambda repo, name, revision: downloads.append((name, revision)) or str(tmp_path / name)))
     monkeypatch.setattr(remote, 'ensure_llama_server', lambda: tmp_path / 'llama-server')

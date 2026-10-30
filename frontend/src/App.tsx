@@ -7,10 +7,11 @@ import { Runs, RunDetail } from './Runs';
 import { Approvals } from './Approvals';
 import { History, Relations } from './Relations';
 import { Report } from './Report';
+import LandingPage from './pages/LandingPage.jsx';
 
 export default function App() {
-  return <Routes><Route path="/login" element={<LoginPage />} /><Route element={<RequireAuth />}><Route element={<AppFrame />}>
-    <Route index element={<Navigate to="/projects" replace />} /><Route path="/projects" element={<ProjectList />} />
+  return <Routes><Route path="/" element={<LandingPage profile="rebuild" />} /><Route path="/login" element={<LoginPage />} /><Route element={<RequireAuth />}><Route element={<AppFrame />}>
+    <Route path="/projects" element={<ProjectList />} />
     <Route path="/account" element={<Account />} /><Route path="/admin/users" element={<AdminUsers />} />
     <Route path="/projects/:projectId" element={<Workspace />}><Route index element={<Navigate to="documents" replace />} />
       <Route path="documents" element={<DocumentsCriteria />} /><Route path="criteria" element={<DocumentsCriteria />} />

@@ -129,27 +129,37 @@ export function ResultsExplorer({ run, criteria, asset }: { run: Run; criteria: 
   const assetKind = asset?.kind ?? run.snapshot?.asset?.kind;
   const originalMedia = evidence?.file_id === assetVersion?.file_id;
   const previewKind = evidence ? originalMedia ? assetKind : 'image' : assetKind;
-  return <div className={`results-grid density-${density}`}><section className="sheet result-table-pane"><PanelHeading title="조건별 결과"><label className="density-control">표시 밀도<select value={density} onChange={event => setDensity(event.target.value)}><option value="comfortable">보통</option><option value="compact">촘촘하게</option></select></label></PanelHeading>
-    <div className="toolbar"><label>기계 판정<select value={filter} onChange={event => { setFilter(event.target.value); setEvidenceIndex(0); }}><option value="all">전체</option><option value="fail">위반</option><option value="review">확인 필요</option><option value="pass">충족</option></select></label>
-      <label>중요도<select value={priority} onChange={event => { setPriority(event.target.value); setEvidenceIndex(0); }}><option value="all">필수·권장 전체</option><option value="required">필수</option><option value="recommended">권장</option></select></label><span className="muted">{visible.length}개 결과</span></div>
-    {!results.length ? <Empty title="아직 검사 결과가 없습니다">실행 상태와 오류를 확인해 주세요. 결과가 없는 상태를 충족으로 처리하지 않습니다.</Empty> : !visible.length ? <Empty title="필터에 맞는 결과가 없습니다" /> : <div className="table-scroll"><table className="results-table"><thead><tr><th>조건</th><th>관측값</th><th>기계 판정</th><th>검사 상태</th></tr></thead><tbody>{visible.map(result => {
-      const criterion = criteria.find(item => item.id === result.criterion_id);
-      return <tr key={result.criterion_id} className={selected?.criterion_id === result.criterion_id ? 'selected-row' : ''}><td><button className="table-button" aria-pressed={selected?.criterion_id === result.criterion_id} onClick={() => { setSelectedId(result.criterion_id); setEvidenceIndex(0); }}>{criterion?.text ?? result.criterion_id}</button><small className="block muted">{criterion ? criterion.required ? '필수' : '권장' : '조건 상세 조회 필요'}</small></td>
-        <td className="observed-cell">{formatValue(result.observed)}</td><td><Status value={result.verdict} /></td><td><Status value={result.execution_status} /></td></tr>;
-    })}</tbody></table></div>}
-    {missing.length > 0 && <div className="padded missing-criteria"><h3>미검사 적용 조건</h3><p className="hint">아래 조건에는 검사 결과가 기록되지 않았습니다. 충족으로 간주하지 않습니다.</p><ul>{missing.map(criterion => <li key={criterion.id}><strong>{criterion.text}</strong><span className="status caution">미검사</span><small className="block muted">{criterion.required ? '필수' : '권장'} · 기대값: {formatValue(criterion.expected)}</small></li>)}</ul></div>}
-    {selected && <div className="result-explanation padded"><h3>{selectedCriterion?.text ?? '선택한 조건'}</h3><dl className="comparison-values"><div><dt>기대값</dt><dd>{formatValue(selected.expected)}</dd></div><div><dt>관측값</dt><dd>{formatValue(selected.observed)}</dd></div></dl>
-      <p>{selected.reason || '판정 사유 기록이 없습니다.'}</p>{selected.limitations?.length > 0 && <div className="notice caution"><strong>판정 제한</strong><ul>{selected.limitations.map((value, index) => <li key={index}>{value}</li>)}</ul></div>}
-      {selectedCriterion?.source.quote && <blockquote className="evidence-quote">원문: {selectedCriterion.source.quote}{selectedCriterion.source.page != null && <span> · {selectedCriterion.source.page}페이지</span>}</blockquote>}
-    </div>}
-  </section><section className="sheet evidence-pane"><PanelHeading title="근거 위치·영상 시점" />
-    {selected ? <div className="padded"><EvidenceSelector result={selected} index={evidenceIndex} setIndex={setEvidenceIndex} />
+  return <div className={`rebuild-result-workbench density-${density}`}>
+    <section className="sheet rebuild-result-list"><PanelHeading title="검수 항목"><span className="muted">{visible.length}개</span></PanelHeading>
+      <div className="toolbar"><label>기계 판정<select value={filter} onChange={event => { setFilter(event.target.value); setEvidenceIndex(0); }}><option value="all">전체</option><option value="fail">위반</option><option value="review">확인 필요</option><option value="pass">충족</option></select></label>
+      <label>중요도<select value={priority} onChange={event => { setPriority(event.target.value); setEvidenceIndex(0); }}><option value="all">필수·권장</option><option value="required">필수</option><option value="recommended">권장</option></select></label></div>
+      <div className="rebuild-result-items">{!results.length ? <Empty title="아직 검사 결과가 없습니다">실행 상태와 오류를 확인해 주세요. 결과가 없는 상태를 충족으로 처리하지 않습니다.</Empty> : !visible.length ? <Empty title="필터에 맞는 결과가 없습니다" /> : visible.map(result => {
+        const criterion = criteria.find(item => item.id === result.criterion_id);
+        return <button type="button" className="rebuild-result-item" key={result.criterion_id} aria-pressed={selected?.criterion_id === result.criterion_id} onClick={() => { setSelectedId(result.criterion_id); setEvidenceIndex(0); }}>
+          <span><Status value={result.verdict} />{String(results.indexOf(result) + 1).padStart(2, '0')}</span><strong>{criterion?.text ?? result.criterion_id}</strong><span>{criterion ? criterion.required ? '필수' : '권장' : '조건 상세 조회 필요'}<Status value={result.execution_status} /></span>
+        </button>;
+      })}
+      {missing.length > 0 && <div className="padded missing-criteria"><h3>미검사 적용 조건</h3><p className="hint">결과가 없는 조건을 충족으로 간주하지 않습니다.</p><ul>{missing.map(criterion => <li key={criterion.id}>{criterion.text}<span className="status caution">미검사</span></li>)}</ul></div>}</div>
+    </section>
+    <section className="rebuild-result-canvas" aria-label="검수 이미지와 근거">
+      {selected && <EvidenceSelector result={selected} index={evidenceIndex} setIndex={setEvidenceIndex} />}
       {evidence?.file_id ? <FilePreview fileId={evidence.file_id} kind={previewKind} title={`${selectedCriterion?.text ?? '검사'} 근거`} evidence={evidence} />
-        : <><Empty title="검증된 근거 파일이 없습니다">근거가 없는 결과는 원문·관측값·제한 사항을 확인해 주세요.</Empty>{assetVersion && <details><summary>검사한 원본 산출물 보기</summary><FilePreview fileId={assetVersion.file_id} kind={assetKind} title={assetVersion.filename} /></details>}</>}
-      {evidence?.bbox && <p className="hint">근거 좌표 (x, y, 너비, 높이): {evidence.bbox.map(value => String(value)).join(', ')}</p>}
-    </div> : <Empty title="확인할 결과를 선택해 주세요">결과 표에서 조건을 선택하면 근거 파일과 영상 시점을 표시합니다.</Empty>}
-  </section></div>;
+        : assetVersion ? <FilePreview fileId={assetVersion.file_id} kind={assetKind} title={assetVersion.filename} /> : <Empty title="검사한 산출물을 확인해 주세요" />}
+    </section>
+    <section className="sheet rebuild-result-inspector"><PanelHeading title="선택 항목 상세" />
+      {selected ? <div className="rebuild-result-detail"><Status value={selected.verdict} /><h3>{selectedCriterion?.text ?? '선택한 조건'}</h3>
+        <dl className="comparison-values"><div><dt>기대값</dt><dd>{formatValue(selected.expected)}</dd></div><div><dt>관측값</dt><dd>{formatValue(selected.observed)}</dd></div><div><dt>검사 상태</dt><dd><Status value={selected.execution_status} /></dd></div></dl>
+        <p>{selected.reason || '판정 사유 기록이 없습니다.'}</p>
+        {selected.limitations?.length > 0 && <div className="notice caution"><strong>판정 제한</strong><ul>{selected.limitations.map((value, index) => <li key={index}>{value}</li>)}</ul></div>}
+        {!selected.evidence?.length && <p className="hint">검증된 근거 파일이 없습니다. 원문·관측값·제한 사항을 함께 확인해 주세요.</p>}
+        {selectedCriterion?.source.quote && <blockquote className="evidence-quote">원문: {selectedCriterion.source.quote}{selectedCriterion.source.page != null && <span> · {selectedCriterion.source.page}페이지</span>}</blockquote>}
+        {evidence?.bbox && <p className="hint">서버 근거 좌표 (x, y, 너비, 높이): {evidence.bbox.join(', ')}</p>}
+        <p className="hint">자동 판정과 담당자의 최종 승인은 별도로 기록됩니다.</p>
+      </div> : <Empty title="확인할 결과를 선택해 주세요" />}
+    </section>
+  </div>;
 }
+
 function EvidenceSelector({ result, index, setIndex }: { result: Result; index: number; setIndex: (value: number) => void }) {
   if (!result.evidence?.length) return null;
   return <div className="evidence-selector" role="group" aria-label="조건의 근거 선택">{result.evidence.map((evidence, itemIndex) => <button className={`button small${index === itemIndex ? ' selected' : ''}`} key={`${evidence.file_id}-${itemIndex}`} aria-pressed={index === itemIndex} onClick={() => setIndex(itemIndex)}>근거 {itemIndex + 1}{evidence.frame_ms != null ? ` · ${frameTime(evidence.frame_ms)}` : ''}</button>)}</div>;

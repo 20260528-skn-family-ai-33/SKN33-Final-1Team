@@ -35,7 +35,7 @@ def test_generated_logo_parser_receives_only_the_replacement_instruction(monkeyp
     assert result['logos'][0]['bbox'] == [0, 0, 100, 50]
 
 
-@pytest.mark.parametrize('value', [[], 3, 'x' * 8001])
+@pytest.mark.parametrize('value', [[], 3, 'x' * 8001], ids=['list', 'number', 'too-long'])
 def test_invalid_override_rejected_before_model_load(value):
     with pytest.raises(ValueError, match='8,000'):
         remote.validate_model_stage({'id': 'text_extract', 'model_id': remote.QWEN, 'prompt_override': value})

@@ -6,6 +6,20 @@
 
 > **2026-10-15 기준:** React·FastAPI 시제품과 로컬 OCR이 구현되어 있으며, 앞으로도 **React + FastAPI**를 기본 구성으로 사용합니다. **PostgreSQL은 업무 DB의 도입 목표**입니다. 프로젝트와 화면의 서비스명은 **크리에이티브체커**입니다. 설치·실행·문제 해결은 [실행가이드](실행가이드.md)를 참고하세요.
 
+## 2026-10-30 front-v2 통합 상태
+
+현재 브랜치는 `main`, `feat/29-rebuild-workflow`, `feat/modeltest-runpod`를 통합합니다. front-v2의 데스크톱 디자인과 기존 이미지·PDF·영상·모델 테스트 화면을 보존하고, 재구축 업무 화면에도 같은 디자인과 이미지 확대 도구를 적용했습니다.
+
+| 화면/API | 프론트 실행 | 백엔드 실행 |
+| --- | --- | --- |
+| 기존 이미지·PDF·영상·모델 테스트 | `cd frontend && npm run dev` | 기존 `./run.sh` 또는 `python start.py` |
+| 기존 PostgreSQL v1 | `cd frontend && npm run dev:v1` | 기존 `python -m scripts.run_v1` |
+| 재구축 문서·수정·승인 업무 | `cd frontend && npm run dev:rebuild` | `UV_PROJECT_ENVIRONMENT=.venv-rebuild uv run --no-sync --env-file .env.rebuild python start.py api` |
+
+API 계약이 다른 화면은 해당 프로필의 백엔드와 함께 사용합니다. 재구축 업무는 PostgreSQL·별도 worker·필요 시 Neo4j 및 모델 엔드포인트를 준비해야 합니다. 자동 검사 판정과 사람의 최종 승인은 별도 기록입니다. [통합 실행·검증 안내](docs/front-v2-integration-2026-10-30.md)를 참고하세요.
+
+아래 기존 시제품·실험 설명과 수치는 작성 당시의 범위를 설명합니다. 재구축 업무의 최신 구조는 [재구축 문서](docs/rebuild/architecture.md)를 기준으로 확인하세요.
+
 ## 목차
 
 - [RunPod 포스터 모델 학습·평가](experiments/poster_benchmark/README.md)

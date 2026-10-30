@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-rebuild/
 # Keep the previous local environment excluded during migration.
 .venv-review/
 venv/
@@ -70,3 +71,7 @@ data/videos/*.webm
 data/videos/*.m3u8
 data/videos/*.ts
 data/videos/_incoming*/
+
+# Alternate frontend profiles are rebuilt from the shared source.
+/frontend/dist-v1/
+/frontend/dist-rebuild/

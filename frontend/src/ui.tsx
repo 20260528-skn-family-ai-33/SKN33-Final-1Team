@@ -1,3 +1,4 @@
+import ImageStage from './components/ImageStage.jsx';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { ApiError, fileUrl } from './api';
@@ -89,6 +90,14 @@ export function FilePreview({ fileId, kind, title, evidence }: { fileId: string;
   const [error, setError] = useState<unknown>(null);
   const [revision, setRevision] = useState(0);
   const video = useRef<HTMLVideoElement>(null);
+  const [imageShape, setImageShape] = useState<{ url: string; width: number; height: number } | null>(null);
+  useEffect(() => {
+    if (!resource?.mime.startsWith('image/')) return;
+    let active = true; const image = new Image();
+    image.onload = () => { if (active) setImageShape({ url: resource.url, width: image.naturalWidth, height: image.naturalHeight }); };
+    image.src = resource.url;
+    return () => { active = false; image.onload = null; };
+  }, [resource]);
   useEffect(() => {
     const controller = new AbortController();
     let objectUrl = '';
@@ -120,6 +129,9 @@ export function FilePreview({ fileId, kind, title, evidence }: { fileId: string;
     <ErrorNotice error={error} retry={() => setRevision(value => value + 1)} />
     {!resource && !error && <Loading label="파일 권한과 내용을 확인하고 있습니다." />}
     {resource && <>
+      {resource.mime.startsWith('image/') ? <ImageStage src={resource.url} alt={title} title={title} subtitle="원본과 선택한 근거를 함께 확인하세요."
+        overlays={validBox && imageShape?.url === resource.url ? [{ id: 'selected', bbox_xyxy: [box[0] * imageShape.width, box[1] * imageShape.height, (box[0] + box[2]) * imageShape.width, (box[1] + box[3]) * imageShape.height], text: evidence?.text || title, label: '선택 근거' }] : []}
+        selectedOverlayId="selected" /> : <>
       <div className="media-stage">
         {kind === 'video' ? <video ref={video} controls preload="metadata" src={resource.url}
           onLoadedMetadata={() => { if (video.current && evidence?.frame_ms != null) video.current.currentTime = evidence.frame_ms / 1000; }}
@@ -129,6 +141,7 @@ export function FilePreview({ fileId, kind, title, evidence }: { fileId: string;
           : <p className="preview-unavailable">이 파일 형식은 브라우저에서 미리 볼 수 없습니다. 파일을 내려받거나 아래 추출 원문을 대조해 주세요.</p>}
         {validBox && <span className="evidence-box" aria-label="서버가 제공한 근거 위치" style={{ left: `${box[0] * 100}%`, top: `${box[1] * 100}%`, width: `${box[2] * 100}%`, height: `${box[3] * 100}%` }} />}
       </div>
+      </>}
       <div className="preview-toolbar"><a className="text-link" href={resource.url} download={title}>파일 내려받기</a>
         {evidence?.frame_ms != null && <span>영상 시점 {frameTime(evidence.frame_ms)}</span>}</div>
       {box && !validBox && <p className="notice info">근거 좌표가 유효하지 않아 위치를 표시하지 않았습니다.</p>}

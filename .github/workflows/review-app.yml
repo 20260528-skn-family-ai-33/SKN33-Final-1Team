@@ -1,7 +1,7 @@
-name: Rebuild checks
+name: Integrated review checks
 on:
   pull_request:
-    paths: ["backend/**", "frontend/**", "tests/rebuild/**", "pyproject.toml", "uv.lock", "start.py", "deploy/**", ".github/workflows/**"]
+    paths: ["backend/**", "frontend/**", "tests/**", "scripts/**", "requirements*.txt", "pyproject.toml", "uv.lock", "start.py", "deploy/**", ".github/workflows/**"]
   push:
     branches: [main]
 permissions:
@@ -21,8 +21,11 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: uv sync --locked --group dev
-      - run: uv run pytest tests/rebuild -m "not integration and not live_model" -q
+      - run: uv pip install --python .venv/bin/python -r requirements-test.txt -r requirements-v1.txt
+      - run: .venv/bin/python -m pytest -q
       - run: npm ci
         working-directory: frontend
-      - run: npm run build
+      - run: npm test && npm run test:v1 && npm run typecheck
+        working-directory: frontend
+      - run: npm run build && npm run build:v1 && npm run build:rebuild
         working-directory: frontend
