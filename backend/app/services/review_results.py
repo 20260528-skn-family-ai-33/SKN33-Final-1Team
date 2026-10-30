@@ -219,7 +219,7 @@ class ReviewExecutor:
                         c.execute(insert(table('item_results')).values(result_id=rid,**common,run_id=run['run_id'],attempt_id=attempt_id,
                             criteria_version_id=run['criteria_version_id'],criteria_item_id=criterion,ocr_run_id=ocr_id,extraction_id=extraction_id,
                             result_origin='service_execution',execution_status=item['execution_status'],verdict=item['verdict'],observed_value=item['observed_value'],
-                            reason=item['reason'],method_code=item['method_code'],checker_version=item['checker_version'],input_manifest_hash=run['input_manifest_hash'],limitations_jsonb=item['limitations'],source_result_jsonb=item.get('source_result_jsonb')))
+                            reason=item['reason'],method_code=item['method_code'],checker_version=item['checker_version'],input_manifest_hash=run['input_manifest_hash'],limitations_jsonb=item['limitations'],source_result_jsonb=plan.get('web_source_results',{}).get(item['criteria_item_id'],item.get('source_result_jsonb'))))
                         for value in item['evidence']:evidence(value,result=rid)
                         c.execute(insert(table('run_item_selections')).values(run_id=run['run_id'],criteria_item_id=criterion,result_id=rid,**common,
                             criteria_version_id=run['criteria_version_id'],selection_kind='pipeline_final'))

@@ -1,22 +1,22 @@
 {
-  "release": "2026.10.30-r2",
+  "release": "2026.10.30-r3",
   "files": {
-    "01_기획서.html": "8a15a498dfedcc2c1a17c1acd5ceaf7d2ff083464d8a7e31818b79398408369a",
-    "02_기능정의서.html": "56cf01930f78562268e6af610daf59216c567755be0056ef192cd9963d442c83",
-    "03_화면정의서.html": "d2d9ab77fb188c1a1e0a56912fc181272051a07e93359fc0bad3b31c7a88ee1c",
-    "04_기술스펙정의서.html": "a6218b713e9167d9f06bc16c264167f9c1c7729b733c3876adf3cc9d6f0ed22e",
-    "05_사용자별_기능정의서.html": "5ea843ae20f88fbad295864f64796fdf839dc88e8ef1738be2cd8ce69308216d",
-    "06_벡터DB_GraphDB_구축결과서.html": "2a4373bee3776506078c440f93b12bbbb75cedd139b9b23b5c0ffeeb769607aa",
-    "07_머신러닝_딥러닝_학습결과서.html": "35a3714844e7ed9c56c65c767f39662b936f3c857a77a5d3803a877591e9843f",
-    "08_학습한_ML_DL_모델.html": "c7faf9b784d752d48ddc9254317906e21725609b9dffdda58efc0823af6c6111",
-    "09_RunPod_OCR_모델_비교결과서.html": "b97d35a0b7c49306e7bcf554c9280bf0e34d52437dd666d0ad34c3d849eb8a98",
-    "10_PostgreSQL_Neo4j_아키텍처_개편안.html": "636b6530bab3ef41ca9ec9621c24baa71dd4ac9c73fc2831402c158101d19591",
-    "11_PostgreSQL_Neo4j_통합업무_아키텍처_v1.1.html": "41124e0b915e74faafe566c5bf8ad867bd893bee46442a01877900baf075ab74"
+    "01_기획서.html": "32da9821b4376db6a92a879e7b9876d05435383da263cae2c2158afd7292f31e",
+    "02_기능정의서.html": "69126dcd20cfa40032012e5426d8a47def2a83ba523db40c0604ed0d2c1df74d",
+    "03_화면정의서.html": "6dfa440adb938ea105be92238c10411646259d8154c8fd6400b83d4cda80d7e3",
+    "04_기술스펙정의서.html": "05460b1b934aed3f7b33fb7fdc012059585fb040b88772290c6d1be1c41c9617",
+    "05_사용자별_기능정의서.html": "a98cf3857471a8f5777168980694771acc7607a0212a890568efebeb38eb1acd",
+    "06_벡터DB_GraphDB_구축결과서.html": "6959c04bbe7f9e50c1c4f9f0d9696734ab52b6a9695f3c1b85c337e954584467",
+    "07_머신러닝_딥러닝_학습결과서.html": "11f80f14ed29dce7a42ff61c98b569475b55a053cb1acd4320e090181b5e3d91",
+    "08_학습한_ML_DL_모델.html": "46a75681224633d02757ef8a696eefd42645524d88e8eadccabbfed2437fe90f",
+    "09_RunPod_OCR_모델_비교결과서.html": "1bad0d852c8f5a73733003b61f66e0887f03d3af63cbbbe88e3906d03e8dbb10",
+    "10_PostgreSQL_Neo4j_아키텍처_개편안.html": "7f93cbe6505b389ea17c11301723edc80f699af9459b8e3854ab3a407b164bc0",
+    "11_PostgreSQL_Neo4j_통합업무_아키텍처_v1.1.html": "d89e11c9d8f890a4e81b4a12786aeaf68862e8e76b13847f1b2d8a24f8577b35"
   },
   "source_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459",
   "documents": 11,
   "single_file": {
     "path": "Creative_Checker_Planning.html",
-    "sha256": "d233a80895c1f961f9450ca83f204cfc2b00793cc2dee4d67f52b455d34df751"
+    "sha256": "a4766f2ec6eddb97e0e4a57036b626a2d2e8f2fabe3e49a8cdefa19e823e3550"
   }
 }

@@ -83,6 +83,9 @@ def test_completed_review_is_normalized_in_pg_and_readable_without_json_and_afte
             assert row['expected_value']=='합성 축제' and row['source_locator']['sources'][0]['page']==1
             assert c.execute(select(func.count()).select_from(table('item_results')).where(table('item_results').c.run_id==run['run_id'])).scalar_one()==2
             assert c.execute(select(func.count()).select_from(table('ocr_runs')).where(table('ocr_runs').c.attempt_id==run['selected_attempt_id'])).scalar_one()==1
+            from backend.app.management.backup import graph_check
+            checked=graph_check(c,store.storage,ctx['db'].settings.database.username)
+            assert checked['service_manifests_checked']>=1
         (ctx['history']/identifier).rename(ctx['history']/(identifier+'-preserved'))
         assert client.get('/api/reviews/'+identifier).json()==detail
         assert client.get('/api/reviews/'+identifier+'/image').status_code==200
