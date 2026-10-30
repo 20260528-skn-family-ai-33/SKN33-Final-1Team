@@ -1,70 +1,41 @@
-name: V1 PostgreSQL and browser integration
+name: Rebuild PostgreSQL and Neo4j integration
 on:
   pull_request:
-    paths: ["backend/**", "frontend/**", "scripts/**", "deploy/**", "requirements*.txt", "pyproject.toml", ".env.*.example", ".github/workflows/**"]
+    paths: ["backend/**", "tests/rebuild/**", "pyproject.toml", "uv.lock", ".github/workflows/**"]
   push:
     branches: [main]
 permissions:
   contents: read
 jobs:
-  v1:
+  persistence:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     services:
       postgres:
-        image: postgres:17.11-bookworm
+        image: postgres:17
         env:
-          POSTGRES_PASSWORD: ci-only-disposable-admin
-        ports: ["5432:5432"]
+          POSTGRES_USER: checker
+          POSTGRES_PASSWORD: ci-only-disposable
+          POSTGRES_DB: checker_rebuild
+        ports: ["25429:5432"]
         options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+          --health-cmd "pg_isready -U checker" --health-interval 5s --health-timeout 5s --health-retries 10
+      neo4j:
+        image: neo4j:5.26-community
+        env:
+          NEO4J_AUTH: neo4j/ci-only-disposable
+          NEO4J_server_memory_heap_initial__size: 256m
+          NEO4J_server_memory_heap_max__size: 512m
+          NEO4J_server_memory_pagecache_size: 256m
+        ports: ["57629:7687"]
     env:
-      C12_CI_DISPOSABLE_POSTGRES: "1"
-      TEST_DB_ALLOW_CREATE: "1"
-      TEST_DB_HOST: 127.0.0.1
-      TEST_DB_PORT: "5432"
-      TEST_DB_ADMIN_USER: postgres
-      TEST_DB_ADMIN_PASSWORD: ci-only-disposable-admin
-      TEST_DB_OWNER_USER: creative_checker_owner
-      TEST_DB_OWNER_PASSWORD: ci-only-disposable-owner
-      TEST_DB_APP_USER: creative_checker_app
-      TEST_DB_APP_PASSWORD: ci-only-disposable-app
-      C12_RUN_HTTPS: "1"
-      C12_API_IMAGE: creative-checker-ci:test
-      C15_RUN_DEPLOYMENT: "1"
-      C15_API_IMAGE: creative-checker-ci:test
+      CC_INTEGRATION_DATABASE_URL: postgresql+psycopg://checker:ci-only-disposable@127.0.0.1:25429/checker_rebuild
+      CC_TEST_NEO4J_URI: bolt://127.0.0.1:57629
+      CC_TEST_NEO4J_PASSWORD: ci-only-disposable
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: python -m pip install -r requirements-test.txt -r requirements-v1.txt
-      - run: python -m backend.tests.c12_ci
-      - working-directory: frontend
-        run: npm ci
-      - working-directory: frontend
-        run: npx playwright install --with-deps chromium --only-shell
-      - working-directory: frontend
-        run: npm test && npm run test:v1 && npm run build:v1
-      - name: Restricted DB API, worker recovery, import GC and actual backup restore
-        run: python -m scripts.verify_v1 --suite core --output artifacts/ci-v1/core
-      - run: python -m scripts.verify_v1 --suite browser --output artifacts/ci-v1/browser
-      - run: docker build -f deploy/Dockerfile.v1 -t creative-checker-ci:test .
-      - name: HTTPS proxy, Secure cookies and Linux storage
-        run: python -m scripts.verify_v1 --suite https --output artifacts/ci-v1/https
-      - name: Linux Compose cutover rehearsal with explicit synthetic test worker
-        run: python -m scripts.verify_v1 --suite deployment --output artifacts/ci-v1/deployment
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: v1-junit-and-safe-summary
-          path: |
-            artifacts/ci-v1/**/pytest.xml
-            artifacts/ci-v1/**/summary.json
-            artifacts/ci-v1/deployment/**/c15-diagnostics.json
-          retention-days: 7
+          version: "0.12.10"
+      - run: uv sync --locked --group dev
+      - run: uv run pytest tests/rebuild -m integration -q
