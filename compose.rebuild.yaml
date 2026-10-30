@@ -1,0 +1,27 @@
+name: creative-checker-rebuild
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: checker
+      POSTGRES_PASSWORD: ${CC_LOCAL_DB_PASSWORD:-local-development-password}
+      POSTGRES_DB: checker_rebuild
+    ports: ["127.0.0.1:${CC_POSTGRES_PORT:-25429}:5432"]
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checker -d checker_rebuild"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  neo4j:
+    image: neo4j:5.26-community
+    environment:
+      NEO4J_AUTH: neo4j/${CC_LOCAL_GRAPH_PASSWORD:-local-development-password}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    ports: ["127.0.0.1:57429:7474", "127.0.0.1:57629:7687"]
+    volumes: ["neo4j:/data"]
+volumes:
+  postgres:
+  neo4j:

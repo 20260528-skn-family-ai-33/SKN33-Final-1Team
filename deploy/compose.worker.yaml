@@ -1,0 +1,32 @@
+# EC2 B. Use the image built on A; DATABASE_URL points to the same PostgreSQL source of truth.
+name: creative-checker-worker
+services:
+  mcp:
+    image: creative-checker:rebuild
+    command: ["/app/.venv/bin/uvicorn", "backend.creative_checker.tools:create_app", "--factory", "--host", "0.0.0.0", "--port", "8129", "--no-access-log", "--no-proxy-headers"]
+    env_file: ../.env.rebuild
+    environment:
+      CC_MCP_URL: http://mcp:8129/mcp
+    expose: ["8129"]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=512m"]
+    security_opt: ["no-new-privileges:true"]
+  worker:
+    image: creative-checker:rebuild
+    command: ["/app/.venv/bin/python", "-m", "backend.creative_checker.worker"]
+    env_file: ../.env.rebuild
+    environment:
+      CC_MCP_URL: http://mcp:8129/mcp
+    depends_on: [mcp]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=256m"]
+    security_opt: ["no-new-privileges:true"]
+  projection:
+    image: creative-checker:rebuild
+    command: ["/app/.venv/bin/python", "-m", "backend.creative_checker.worker", "--projection-only"]
+    env_file: ../.env.rebuild
+    restart: unless-stopped
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
