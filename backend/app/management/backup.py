@@ -104,7 +104,7 @@ def restore_check_rendering(c,app_user):
     return len(changes)
 
 
-def graph_check(c,storage,app_user):
+def graph_check(c,storage,app_user,*,project_id=None):
     """Recheck every existing FK, lineage, seal, selected graph and service/import hash."""
     schema=validate_schema(c,app_user=app_user);quote=c.dialect.identifier_preparer.quote
     for child in metadata.tables.values():
@@ -121,6 +121,7 @@ def graph_check(c,storage,app_user):
         for identifier in c.execute(select(table(name).c[column])).scalars():c.exec_driver_sql('SELECT public.cc_check_lineage(%s,%s)',(name,identifier))
     checked_service=checked_import=0
     for version in c.execute(select(table('criteria_versions'))).mappings():
+        if project_id is not None and version['project_id']!=project_id:continue
         if version['origin_kind']!='service_confirmation':continue
         rows=c.execute(select(table('criteria_items')).where(table('criteria_items').c.criteria_version_id==version['criteria_version_id']).order_by(table('criteria_items').c.position)).mappings().all()
         normalized=[dict(external_item_id=row['external_item_id'],position=row['position'],category=row['category'],text=row['text'],source_text=row['source_text'],rule_code=row['rule_code'],field_code=row['field_code'],expected_value=row['expected_value'],
@@ -128,6 +129,7 @@ def graph_check(c,storage,app_user):
         payload=dict(project_id=str(version['project_id']),criteria_set_id=str(version['criteria_set_id']),image_id=str(version['target_asset_version_id']),raw_requirements=version['source_requirements_text'],source_documents=version['source_documents_jsonb'],items=normalized)
         if digest('criteria_snapshot',payload)!=version['criteria_hash']:raise OpsError('RESTORE_CRITERIA_HASH_MISMATCH')
     for run in c.execute(select(table('review_runs'))).mappings():
+        if project_id is not None and run['project_id']!=project_id:continue
         if run['origin_kind']!='service_execution':continue
         image=one(c,'asset_versions','asset_version_id',run['asset_version_id']);display=one(c,'stored_files','file_id',image['display_file_id']);version=one(c,'criteria_versions','criteria_version_id',run['criteria_version_id'])
         if digest('review_input',input_payload(run['project_id'],image,display,version,run['requested_config'],workflow=run['workflow_version'],retry=run['retry_policy_jsonb']),'cc-manifest-jcs-v1')!=run['input_manifest_hash']:raise OpsError('RESTORE_INPUT_HASH_MISMATCH')
@@ -137,9 +139,23 @@ def graph_check(c,storage,app_user):
         with storage.read('staging/'+op+'/plan.json') as stream:raw=stream.read(48*1024*1024+1)
         if hashlib.sha256(raw).hexdigest()!=intent['plan_sha256']:raise OpsError('RESTORE_RESULT_PLAN_MISMATCH')
         plan=strict_json(raw,max_bytes=48*1024*1024)
+        manifest_items=plan['items']
+        if run['requested_config'].get('pipeline')=='cc-current-web-v1':
+            # Source JSON is independently covered by checker_source_sha256.
+            # Early web plans kept its duplicate on each item after hashing.
+            manifest_items=[{k:v for k,v in item.items() if k!='source_result_jsonb'} for item in plan['items']]
+            raw_items=plan.get('web_source_results',{})
+            with storage.read(plan['files'][3]['storage_key']) as stream:checker=strict_json(verify_bytes(stream.read(16*1024*1024+1),plan['files'][3]))
+            checker_by_id={str(value['criterion_id']):value for value in checker}
+            for item in plan['items']:
+                row=one(c,'item_results','result_id',UUID(item['result_id']))
+                criterion=one(c,'criteria_items','criteria_item_id',UUID(item['criteria_item_id']))
+                original=raw_items.get(item['criteria_item_id'],item.get('source_result_jsonb'))
+                if row['source_result_jsonb']!=original or original!=checker_by_id[criterion['external_item_id']]:
+                    raise OpsError('RESTORE_RESULT_GRAPH_MISMATCH')
         manifest=dict(run_id=str(run['run_id']),selected_attempt_id=op,execution_status='completed',overall_verdict=plan['overall_verdict'],aggregation_policy_version=run['aggregation_policy_version'],input_manifest_hash=run['input_manifest_hash'],
             ocr=dict(ocr_run_id=plan['ocr_id'],ocr_input_sha256=plan['files'][0]['sha256'],source_json_sha256=plan['files'][1]['sha256'],records=plan['records']),
-            extraction=dict(extraction_id=plan['extraction_id'],source_json_sha256=plan['files'][2]['sha256'],observations=plan['observations']),checker_source_sha256=plan['files'][3]['sha256'],items=plan['items'])
+            extraction=dict(extraction_id=plan['extraction_id'],source_json_sha256=plan['files'][2]['sha256'],observations=plan['observations']),checker_source_sha256=plan['files'][3]['sha256'],items=manifest_items)
         if digest('review_result',manifest,'cc-manifest-jcs-v1')!=run['result_manifest_hash']:raise OpsError('RESTORE_RESULT_HASH_MISMATCH')
         if plan['overall_verdict']!=run['overall_verdict'] or plan['attempt_id']!=op:raise OpsError('RESTORE_RESULT_GRAPH_MISMATCH')
         def compare(name,pk,values,fields):
@@ -156,6 +172,7 @@ def graph_check(c,storage,app_user):
             if [str(identifier) for identifier in links]!=value['token_ids']:raise OpsError('RESTORE_EVIDENCE_MISMATCH')
         checked_service+=1
     for package in c.execute(select(table('import_packages')).where(table('import_packages').c.import_state=='completed')).mappings():
+        if project_id is not None and package['project_id']!=project_id:continue
         provenance=package['provenance_jsonb'] or {};validation=package['local_validation_jsonb'] or {}
         if 'envelope' not in provenance:raise OpsError('IMPORT_PROVENANCE_UNAVAILABLE')
         if digest('import_package',provenance['envelope'],'cc-import-envelope-v1')!=package['package_fingerprint']:raise OpsError('RESTORE_IMPORT_HASH_MISMATCH')

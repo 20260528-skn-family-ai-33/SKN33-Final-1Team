@@ -1,29 +1,35 @@
 {
-  "release": "2026.10.30-r2",
+  "release": "2026.10.30-r3",
   "reviewed_date": "2026-10-30",
   "timezone": "Asia/Seoul",
   "master_snapshot": "sources/Creative_Checker_통합초안_20261030.html",
   "master_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459",
   "source_original_name": "Creative_Checker_프로젝트_통합문서_20261030_초안.html",
-  "code_head": "3cbc129",
-  "code_state": "커밋되지 않은 로컬 변경 포함, 실행·배포 재검증 아님",
+  "code_head": "ef5d775",
+  "code_state": "로컬 변경 포함. 10/30 PG 웹 저장·조회 2건 실측 및 17:11 KST 읽기 전용 집계 반영. Neo4j·운영 배포는 후속",
   "decisions": [
     {
       "id": "U-DB-20261030",
       "decision": "PostgreSQL + Neo4j를 현재 목표 구조로 반영",
       "scope": "Qdrant 필수 경로 제외. 사용자 방향 확정, 팀 승인 별도",
       "source": "2026-10-30 사용자 선택 답변"
+    },
+    {
+      "id": "U-PG-WEB-20261030",
+      "decision": "신규 검수의 PG 자동 저장·조회 연결 결과를 현재 구현으로 반영",
+      "scope": "로컬 CPU·BackgroundTasks 경로 실측. Neo4j·outbox·MCP·영상·최종 승인·운영 배포는 후속",
+      "source": "사용자 요청 및 10/30 실행 검증·읽기 전용 집계"
     }
   ],
   "code_evidence": {
     "README.md": "4381db10c15c24d698fbe33420fb15a565ca75851800fe36a865790e0c44403b",
     "docs/project-specification.md": "10c957513029a13db5f003061aac9f5b2c390d269447e68d0b6c0eb73fa6ae6f",
     "start.py": "3812711b9b8737653cebd2f411b0158eb5e4064875e5bfff30647a3d9fab0df4",
-    "backend/app/api.py": "04e512cb445aef967968048c63eef9e147fd1bde19306612cac429552ea05da0",
+    "backend/app/api.py": "a9b363a4ecca004d57c44c1d9a4db5cc1f5d8f13c5c08605dd9e69774dda74d8",
     "backend/app/main.py": "0277dec15420a644148cfe75efe7ea58f6cb20a1a78e9b9e8cdd8067a4b8cc42",
     "backend/app/v1_config.py": "8ad4142db94d38f32a495e0fb9a34469830d13f8cd1bcae5bedd1dfcbd20f80e",
-    "backend/app/services/business.py": "14f177982693c9acbc32fb79e97aa7e968b157f143de8a54575786ac9a514d26",
-    "backend/app/services/reviews.py": "f420db77b9f595305319b7affc750b8f25993b568724f0793aab445589af1765",
+    "backend/app/services/business.py": "43711e9ab66078be985091e55e8767d44715be069f4469de97cfcc780b58e484",
+    "backend/app/services/reviews.py": "a86dac6a2d89fa666c84c873545cf8e610ff0b61328c6ad3a01da58b7697efec",
     "backend/app/persistence/schema/criteria.py": "d10f8569734566c4dea80ba11c00bd39d7893f9f0d82887630b94e0ce035c1d7",
     "backend/app/execution/queue.py": "c1f725cabfa7642a0e78f94624dac815697f6bfd82f4d3c04056681d13d573fa",
     "backend/app/worker.py": "6fb0867a6d6aa54ee3224cacba7337e7340a64755687426a3b048e7ed31c28cd",
@@ -35,15 +41,28 @@
     "compose.yaml": "3e44b468bba82ca2a4e608fb0046fb2c1941315f05f49b456fc6828c0a7db466",
     "deploy/compose.v1.yaml": "1c2309fb835d81c0f083baed308ffbf1e28abb326ec83690c14df5889fba4873",
     "frontend/src/App.jsx": "91906449d647bef1c5527ab77e07b7760e909b424f87fd131cbad524f8ecd7e6",
-    "frontend/src/v1/App.jsx": "c2ad3288e29f213d48d08dbebd5282dc8c96d5bd3ad475b3707ef717d706b04f",
-    "frontend/src/v1/projectPages.jsx": "b0f2639e68e587952bbfff09797d60338e68f780404d7436e680a46e5e71d32c",
-    "frontend/src/v1/reviewPages.jsx": "89caf971754c6252ef41af78fbbe20188889950ba0778b24bbc8fab56f89f9a1",
+    "frontend/src/v1/App.jsx": "97345c66727d13d54202fe2739674218fd59fb9d545d9eb5d5d59bce17a66664",
+    "frontend/src/v1/projectPages.jsx": "5a9076e782cf0eb26acf9c8f43c4ac9085b9ce1ba40ab0d5621d8292115f633e",
+    "frontend/src/v1/reviewPages.jsx": "074686ec614d11735eb55f6577a21faad31f6a97e5ce82d17ae08d9a37340397",
     "backend/app/services/authorization.py": "78c9ead669da65a9f8e2f19d82602aed8fe5f1f83b40b474bd56490b5f2f6480",
-    "frontend/src/main.jsx": "a449f7c5b1c1bd346dde872bfd5dfddbe924d8b2db87ab39cd1e86e0197ca061"
+    "frontend/src/main.jsx": "01cfe729c3ce8e086cbde01dbf6dc8eae41e19e403c40a499ac46f9f438ce546",
+    "backend/app/web_postgres.py": "73d92a36975026782cc9a138007c68a3fc9aa11518d9597af26d3eb2362381e2",
+    "backend/app/services/review_results.py": "a236902e330e0c016b0dc5d9ab5b0930d547b4dcdc71ed94b951c82d60470844",
+    "backend/app/contracts/business.py": "776f9efe1baa6610c686cb801132639f03e5795ac8b2ab37bb52e1f65a17d449",
+    "backend/app/management/backup.py": "c1bcf090ec387d6bff422753dfb4bbf90810af7b60acb77b0eb8eebbd86c27ab",
+    "backend/tests/test_web_postgres_integration.py": "3493f851e1ca0c90750f6893b0da8043d93065319c97101c3077b2ffa1810596",
+    "frontend/src/api/client.js": "394a2d7d89b0d293bb5e28c210695fc44d901d6bc886907fad1b72c8d59595fb",
+    "frontend/src/pages/review/ReviewProvider.jsx": "23dc1f44a52caae26fd4575124a252933f2f147f4cc4140d949a1fb4d8fdd863",
+    "frontend/src/workflow.js": "4ca37c00f800f46149cf0ff9220f64db32cc0fd39629c95dbdbcadce1044456f",
+    "docs/postgresql-web-integration-2026-10-30.md": "d072ada1c41bdca19ef198949975859e0c8179eb7a55dd321fc5db80d543b8bb"
   },
   "archive": "archive/planning-before-20261030-r1.zip",
   "archive_sha256": "627838e4139399a4465eaf746db506f2657f921fd15906b92ab5fe7d2f050c0d",
   "source_original_rel_to_home": "SK_AI/최종프로젝트/Creative_Checker_프로젝트_통합문서_20261030_초안.html",
   "meeting_date": "2026-10-30",
-  "meeting_content": "content/meeting-20261030.json"
+  "meeting_content": "content/meeting-20261030.json",
+  "postgres_web_archive": "archive/planning-before-postgres-web-20261030-r2.zip",
+  "postgres_web_archive_sha256": "c036541fa8379fd4a9020d201b4f2202300ee761f80594049ee2d3347ca0f191",
+  "implementation_evidence": "sources/evidence/postgresql-web-verification.json",
+  "current_counts_evidence": "sources/evidence/postgresql-current-counts.json"
 }

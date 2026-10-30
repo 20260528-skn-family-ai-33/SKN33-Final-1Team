@@ -71,7 +71,7 @@ class CompletedWebExecutor(ReviewExecutor):
         with unit_of_work(self.engine) as c:
             criteria=c.execute(select(table('criteria_items')).where(table('criteria_items').c.criteria_version_id==UUID(plan['criteria_version_id']))).mappings().all()
         external={str(row['criteria_item_id']):row['external_item_id'] for row in criteria}
-        for item in plan['items']:item['source_result_jsonb']=raw[external[item['criteria_item_id']]]
+        plan['web_source_results']={item['criteria_item_id']:raw[external[item['criteria_item_id']]] for item in plan['items']}
 
 
 class PostgresWebStore:
