@@ -622,7 +622,12 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   const fixedPrompt = page.locator('#mt-stage-logo_extract .mt-prompt');
   await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16-ensemble');
   assert.equal(await fixedPrompt.getAttribute('open'), null); await fixedPrompt.locator('summary').click();
-  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo');
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo
+a logo
+an emblem
+a brand symbol
+a watermark
+a logo mark');
   await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('sponsor logo');
   await fixedPrompt.locator('summary').click(); await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
   await page.locator('[data-board="video-models"]').waitFor();
@@ -636,7 +641,12 @@ test('workflow and agent boards edit connections, persist settings and submit dy
     return selectors.every((selector, i) => !i || (document.querySelector(selectors[i - 1]).compareDocumentPosition(document.querySelector(selector)) & Node.DOCUMENT_POSITION_FOLLOWING));
   }), true, 'Connection, mode, board/settings, materials/monitor and results follow the reading order');
   await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();
-  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo');
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo
+a logo
+an emblem
+a brand symbol
+a watermark
+a logo mark');
   await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('logo\nlogo');
   assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).isVisible(), true);
   await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();

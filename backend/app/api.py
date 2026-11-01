@@ -781,6 +781,14 @@ def create_app(
         authenticate=auth_router.session_user if auth_router else None,
     ))
 
+    # 영상 로고 확정·정밀 대조: 후보 찾기 → 사용자가 위치 확정 → 묶음별 근거. 같은 추론 잠금을 쓴다.
+    from .video_logo_flow import video_logo_router
+
+    application.include_router(video_logo_router(
+        root=PROJECT_ROOT / ".runtime" / "video-logos", inference_lock=inference_lock, readonly=readonly,
+        authenticate=auth_router.session_user if auth_router else None,
+    ))
+
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"
     if frontend.is_dir():

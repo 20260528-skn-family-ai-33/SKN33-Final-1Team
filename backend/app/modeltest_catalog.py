@@ -47,13 +47,14 @@ FAMILIES = {
 GENERAL = {
     'text_input': ('text', []), 'vector_compare': ('similarity', ['left', 'right']),
     'phash': ('hash_distance', ['logo_extract']), 'orb': ('matches', ['logo_extract']), 'sift': ('matches', ['logo_extract']),
-    'disk_lightglue': ('matches', ['logo_extract']), 'bm25': ('ranking', ['text']), 'rrf': ('ranking', ['left', 'right']),
+    'disk_lightglue': ('matches', ['logo_extract']), 'logo_diff': ('logo_diff', ['logo_extract', 'logo_compare']),
+    'bm25': ('ranking', ['text']), 'rrf': ('ranking', ['left', 'right']),
     'tfidf_lr': ('classification', ['text']),
 }
 GENERAL['disk_lightglue_prepare'] = ('preparation', [])
 EXTRA_STAGES = ('image_embed', 'text_embed', 'multimodal_embed', 'rerank', 'image_classify', 'text_classify', 'document_classify', 'model_prepare', *GENERAL)
 OUTPUTS = {'conditions': 'text', 'text_extract': 'text', 'visual_extract': 'text', 'text_generate': 'text', 'text_compare': 'text', 'visual_compare': 'text', 'logo_extract': 'detections', 'logo_compare': 'matches', 'logo_similarity': 'similarity', 'candidate_filter': 'similarity', 'frames': 'images', 'image_embed': 'vectors', 'text_embed': 'vectors', 'multimodal_embed': 'vectors', 'rerank': 'ranking', 'image_classify': 'classification', 'text_classify': 'classification', 'document_classify': 'classification', **{key: value[0] for key, value in GENERAL.items()}}
-INPUTS = {'image_embed': {'images': ['detections']}, 'multimodal_embed': {'text': ['text'], 'images': ['detections']}, 'text_embed': {'text': ['text']}, 'rerank': {'text': ['text'], 'candidates': ['ranking']}, 'text_classify': {'text': ['text']}, 'document_classify': {'ocr': ['text']}, 'vector_compare': {'left': ['vectors'], 'right': ['vectors']}, 'bm25': {'text': ['text']}, 'tfidf_lr': {'text': ['text']}, 'rrf': {'left': ['ranking'], 'right': ['ranking']}, **{key: {'logo_extract': ['detections'], 'candidate_filter': ['similarity']} for key in ('phash', 'orb', 'sift', 'disk_lightglue')}}
+INPUTS = {'image_embed': {'images': ['detections']}, 'multimodal_embed': {'text': ['text'], 'images': ['detections']}, 'text_embed': {'text': ['text']}, 'rerank': {'text': ['text'], 'candidates': ['ranking']}, 'text_classify': {'text': ['text']}, 'document_classify': {'ocr': ['text']}, 'vector_compare': {'left': ['vectors'], 'right': ['vectors']}, 'bm25': {'text': ['text']}, 'tfidf_lr': {'text': ['text']}, 'rrf': {'left': ['ranking'], 'right': ['ranking']}, 'logo_diff': {'logo_extract': ['detections'], 'logo_compare': ['matches'], 'logo_similarity': ['similarity'], 'text_extract': ['text']}, **{key: {'logo_extract': ['detections'], 'candidate_filter': ['similarity']} for key in ('phash', 'orb', 'sift', 'disk_lightglue')}}
 OUTPUTS['vector_compare'] = 'ranking'
 INPUTS['image_classify'] = {'images': ['detections']}
 INPUTS['rerank']['images'] = ['detections']

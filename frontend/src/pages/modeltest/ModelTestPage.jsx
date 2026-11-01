@@ -90,7 +90,15 @@ function ModelStage({ stage, index, value, update, health, disabled, extraSimila
           {stage.id === 'candidate_filter' ? <p>선정 기준별로 최소 유사도를 적용한 뒤 상위 N개를 선택합니다. 조건을 통과하지 못한 쌍은 XFeat에 전달하지 않습니다. 팀원 실험의 프레임별·영상 전체 범위는 별도 확인이 필요합니다.</p>
             : null}
         </ModeltestHelp></div><Icon name={stage.icon} /></div>
-      {stage.id === 'candidate_filter' ? <div className="mt-filter-fields">
+      {stage.id === 'logo_diff' ? <div className="mt-model-options mt-logo-diff-info">
+        <p>RunPod 실험에서 원본을 탈락시키지 않은 극단 기준만 자동 오답으로 제외합니다. 나머지는 모두 검토 필요로 남기며, 통과를 정답으로 자동 승인하지 않습니다. 모든 기준 로고를 검사하고 SigLIP2는 순위만 정합니다.</p>
+        <p>문자 영역은 PaddleOCR가 기준 로고에서 찾은 단어 상자로 자동 지정하고, 심볼 영역은 로고 전경에서 문자 영역을 뺀 부분으로 계산합니다.</p>
+        <p>문자는 한글만 비교합니다. 원본과 대조의 한글 글자 수가 같고 내용이 다를 때만 OCR로 오답 처리합니다. 신뢰도는 판정 조건으로 쓰지 않으며, 글자 수가 다르거나 읽지 못하면 검토로 남깁니다.</p>
+        <p>단색화·극성 반전은 기본적으로 검토로 보냅니다. 이때 색상과 마스크 기반 형태·추가 요소 차이로 자동 제외하지 않습니다. 저해상도·정렬 실패도 검토 대상입니다.</p>
+        <label className="mt-settings-wide">단색 로고 정책<select aria-label="단색 로고 정책" value={value.monochromePolicy || 'review'} disabled={disabled || !value.enabled} onChange={event => update({ ...value, monochromePolicy: event.target.value })}>
+          <option value="review">사람 검토</option><option value="allow_monochrome">색상 차이만 허용</option>
+        </select><small>허용을 선택하면 색상 차이는 제외하고 나머지 실험 기반 안전 기준만 적용합니다.</small></label>
+      </div> : stage.id === 'candidate_filter' ? <div className="mt-filter-fields">
         <label className="mt-settings-wide">선정 기준<select aria-label="필터 선정 기준" value={value.filterScope || 'references_per_crop'} disabled={disabled || !value.enabled} onChange={event => update({ ...value, filterScope: event.target.value })}>{Object.entries(FILTER_SCOPES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
         <label>최소 코사인 유사도<input aria-label="필터 최소 코사인 유사도" type="number" min={-1} max={1} step="any" value={value.threshold} disabled={disabled || !value.enabled} placeholder="비워두면 제한 없음" onChange={event => update({ ...value, threshold: event.target.value })} /></label>
         <label>상위 후보 수<input aria-label="필터 상위 후보 수" type="number" min={1} max={10} step={1} value={value.topK} disabled={disabled || !value.enabled} placeholder="비워두면 모두" onChange={event => update({ ...value, topK: event.target.value })} /></label>
@@ -212,7 +220,7 @@ export default function ModelTestPage() {
   const errors = formErrors(flow, state, modelHealth);
   const stages = stagesFor(flow).filter(stage => !stage.workflowOnly || state.workflow.enabled); const selected = stages.filter(stage => state.stages[stage.id].enabled);
   const editorMode = flow === 'similarity' ? 'similarity' : state.agentWorkflow.enabled ? 'agents' : state.workflow.enabled ? 'graph' : 'sequential';
-  const selectedCount = flow === 'similarity' ? 2 : state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
+  const selectedCount = flow === 'similarity' ? SIMILARITY_STAGES.length : state.agentWorkflow.enabled ? state.agentWorkflow.agents.filter(agent => agent.enabled).reduce((sum, agent) => sum + agent.nodes.length, 0) : selected.length;
   const completedStages = job?.stages.filter(stage => stage.status === 'completed') || [];
   const failedStages = job?.stages.filter(stage => stage.status === 'failed') || [];
   const activeStages = job?.stages.filter(stage => stage.status === 'running') || [];
@@ -451,7 +459,10 @@ export default function ModelTestPage() {
   }
 
   function download() {
-    const blob = new Blob([JSON.stringify({ request_id: contextRef.current?.requestId, config: manifest, result: job }, null, 2)], { type: 'application/json' });
+    const logoDiffStage = job?.stages.find(stage => (stage.kind || stage.id) === 'logo_diff');
+    const humanReviews = Object.values(resultSelections[`${job?.id}:${logoDiffStage?.id}`]?.humanReviews || {});
+    const blob = new Blob([JSON.stringify({ request_id: contextRef.current?.requestId, config: manifest, result: job,
+      ...(humanReviews.length ? { human_review_decisions: humanReviews } : {}) }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
     anchor.href = url; anchor.download = `modeltest-${job?.id || 'request'}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -503,7 +514,7 @@ export default function ModelTestPage() {
         </div><p>{flow === 'similarity' ? '기준 이미지 1장 · 대조 이미지 최대 100장' : flow === 'image' ? '포스터 + 문서 필수' : '영상 필수 · 문서·원본 로고 선택'}<span>{selectedCount}개 모델 단계 선택</span></p></div>
 
         {flow !== 'similarity' && <div className="mt-editor-mode" role="group" aria-label="워크플로우 편집 방식">{[['sequential', '순차'], ['graph', '그래프'], ['agents', '에이전트']].map(([mode, title]) => <button type="button" key={mode} aria-pressed={editorMode === mode} disabled={locked} onClick={() => changeEditor(mode)}>{title}</button>)}</div>}
-        {flow === 'similarity' && <section className="mt-panel mt-similarity-plan" aria-label="유사도 테스트 모델"><div className="mt-panel-heading"><h2>이미지 전체 대조</h2><ModeltestHelp label="유사도 테스트 모델"><p>로고 추출 없이 기준 이미지와 각 대조 이미지 전체를 비교합니다. SigLIP2 이후 XFeat를 실행하며 모든 대조 이미지에 두 측정을 적용합니다.</p><p>두 모델의 기존 전처리는 유지됩니다. SigLIP2의 모델 입력 해상도와 XFeat의 크기 정규화는 다운사이징한 이미지에 적용됩니다.</p></ModeltestHelp></div><div className="mt-panel-body mt-similarity-models">{SIMILARITY_STAGES.map(stage => <div key={stage.id}><strong>{stage.title}</strong><small>{stage.id === 'logo_similarity' ? registration(state.stages.logo_similarity.model, modelHealth)?.model_id || state.stages.logo_similarity.model : stage.model}</small></div>)}</div></section>}
+        {flow === 'similarity' && <section className="mt-panel mt-similarity-plan" aria-label="유사도 테스트 모델"><div className="mt-panel-heading"><h2>이미지 전체 대조</h2><ModeltestHelp label="유사도 테스트 모델"><p>로고 추출 없이 기준 이미지와 각 대조 이미지 전체를 비교합니다. SigLIP2와 XFeat를 실행한 뒤, XFeat homography로 정렬해 로고 차이(비율·잘림·색상·추가 요소)를 판정합니다. OCR은 실행하지 않아 문자 변경은 형태 차이로 집계됩니다.</p><p>두 모델의 기존 전처리는 유지됩니다. SigLIP2의 모델 입력 해상도와 XFeat의 크기 정규화는 다운사이징한 이미지에 적용됩니다.</p></ModeltestHelp></div><div className="mt-panel-body mt-similarity-models">{SIMILARITY_STAGES.map(stage => <div key={stage.id}><strong>{stage.title}</strong><small>{stage.id === 'logo_similarity' ? registration(state.stages.logo_similarity.model, modelHealth)?.model_id || state.stages.logo_similarity.model : stage.model}</small></div>)}</div></section>}
         {editorMode === 'agents' && <ModeltestAgents confirmAction={confirmAction} flow={flow} state={state} update={update} disabled={locked} health={modelHealth} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} />}
         {editorMode === 'graph' && <ModeltestWorkflow key={flow} flow={flow} state={state} update={update} disabled={locked} onUndo={undoBoard} canUndo={!!boardHistory.current[flow].length} onRedo={redoBoard} canRedo={!!boardRedo.current[flow].length} renderStage={renderStage} />}
           {editorMode === 'sequential' && <section className="mt-panel mt-pipeline" aria-labelledby="mt-pipeline-title">

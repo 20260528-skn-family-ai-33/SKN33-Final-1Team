@@ -4,8 +4,10 @@ import { boxStyle, decisionLabel, frameLabel, previewURL, preferredReference, SI
 import { EXTRA_STAGES } from './modeltestCatalog.js';
 import ModeltestHelp from './ModeltestHelp.jsx';
 import { MatchedImages, CandidateAudit, MatchingSettings } from './ModeltestMatches.jsx';
+import './logoDiffResults.css';
 
-const PAIRS = ['logo_compare', 'logo_similarity', 'candidate_filter', 'phash', 'orb', 'sift', 'disk_lightglue'];
+const PAIRS = ['logo_compare', 'logo_similarity', 'candidate_filter', 'phash', 'orb', 'sift', 'disk_lightglue', 'logo_diff'];
+const LOGO_DIFF_LABELS = { TEXT: '문자 차이', COLOR: '색상 차이', RATIO: '기하 왜곡', SHAPE: '형태 차이', CROP: '잘림', ADDED: '추가 요소', LOW_RESOLUTION: '저해상도', ALIGNMENT_FAILED: '정렬 실패', ALIGNMENT_UNCERTAIN: '정렬 보류', NO_LOGO: '로고 미검출' };
 function Metrics({ row }) {
   return <>
     {row.vector && <><dl className="mt-match-metrics"><div><dt>임베딩 차원</dt><dd>{row.dimension}</dd></div><div><dt>벡터 공간 ID </dt><dd className="mt-space-id" title={row.space_id}>{row.space_id?.slice(0, 16)}</dd></div></dl><p className="mt-hint">{row.model_id} @ {row.revision?.slice(0, 10)}</p><details className="mt-hint"><summary>벡터 값</summary><p className="mt-vector">{row.vector.map(value => Number(value).toPrecision(5)).join(', ')}</p></details></>}
@@ -70,7 +72,34 @@ function sourceStage(job, stage, kind, visited = new Set()) {
   return null;
 }
 
-function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLogo, setSelectedLogo, referenceIndex, setReferenceIndex }) {
+function LogoDiffRegions({ match, job, context, cache }) {
+  return <>
+    {match.regions && <div className="mt-logo-diff-regions">{[['whole', '전체 구조'], ['text', '문자'], ['symbol', '심볼'], ['color', '색상'], ['margin', '여백']].map(([id, title]) => {
+      const region = match.regions[id]; if (!region) return null;
+      const detail = id === 'whole' ? `비율 왜곡 ${region.anisotropy_percent ?? '—'}% · shear ${region.shear_degrees ?? '—'}° · 형태 정밀도 ${region.shape_precision ?? '—'} · 로고 영역 포함 ${region.crop_coverage ?? '—'}`
+        : id === 'text' ? `정렬 ${region.alignment?.status || '—'} · 이동 ${region.alignment?.translation_px?.join(', ') || '—'}px · 한글 ${region.hangul_reference_text || '미검출'} → ${region.hangul_candidate_text || '미검출'} (${region.hangul_character_count ?? 0}자) · ${region.reference_text || '문자 미검출'} → ${region.candidate_text || '문자 미검출'} · 한글 편집 거리 ${region.edit_distance ?? '—'} · ΔE2000 ${region.delta_e2000 ?? '—'}`
+          : id === 'symbol' ? `정렬 ${region.alignment?.status || '—'} · 이동 ${region.alignment?.translation_px?.join(', ') || '—'}px · 윤곽 IoU ${region.edge_iou ?? '—'} · 픽셀 차이 ${region.pixel_diff_ratio ?? '—'} · ΔE2000 ${region.delta_e2000 ?? '—'} · 색상 변경 픽셀 ${region.color_diff_ratio ?? '—'}`
+            : id === 'color' ? `평균 ΔE2000 ${region.mean_delta_e2000 ?? '—'} · 자동 제외 컷 ${region.threshold ?? '—'} 초과 시 · 단색 ${region.candidate_is_monochrome ? '감지' : '미감지'} · 극성 ${region.polarity_alignment || '미계산'}`
+              : `추가 연결 영역 ${region.added_component_areas?.length ?? 0}개 · 면적 ${region.added_component_areas?.join(', ') || '없음'} · 로고 대비 ${region.added_component_area_ratios?.join(', ') || '—'} · 전체 추가 면적 비율 ${region.added_area_ratio ?? '—'}`;
+      const near = region.uncertain_reason_codes?.length ? ` · 경계 구간 ${region.uncertain_reason_codes.map(code => LOGO_DIFF_LABELS[code] || code).join(', ')}` : '';
+      return <article key={id}><h5>{title} · {decisionLabel(region.decision)}</h5><p>{detail}{near}</p></article>;
+    })}</div>}
+    {match.overlay_preview && <figure className="mt-diff-overlay"><figcaption>정렬 중첩 이미지 · 두 이미지의 위치 차이는 경계로 보입니다.</figcaption><Preview context={context} jobId={job.id} name={match.overlay_preview} cache={cache} alt="기준 로고와 정렬된 대조 로고를 반투명 중첩한 근거" /></figure>}
+    {match.region_overlay_preview && <figure className="mt-diff-overlay"><figcaption>검수 영역 · 파랑은 PaddleOCR 문자 영역, 초록은 나머지 로고 심볼 영역입니다.</figcaption><Preview context={context} jobId={job.id} name={match.region_overlay_preview} cache={cache} alt="PaddleOCR 문자 영역과 심볼 영역을 색으로 표시한 근거" /></figure>}
+  </>;
+}
+
+function LogoDiffReasons({ match }) {
+  const override = match.metrics?.monochrome_color_override_applied; const color = match.metrics?.color;
+  return <>
+    {!!match.reason_codes?.length && <p className={override ? 'mt-hint' : 'mt-error'}>사유: {match.reason_codes.map(code => LOGO_DIFF_LABELS[code] || code).join(' · ')}{override && ' · COLOR는 단색 허용 정책으로 통과'}</p>}
+    {!!match.uncertain_reason_codes?.length && <p className="mt-hint">경계 구간(판정 보류): {match.uncertain_reason_codes.map(code => LOGO_DIFF_LABELS[code] || code).join(' · ')}</p>}
+    {(match.human_review_required || override) && <p className={match.human_review_required ? 'mt-review-required' : 'mt-hint'}><strong>{match.human_review_required ? '사람 검토 필요 · 자동 제외 기준 미충족' : '단색 허용 적용 · 색상 차이 제외'}</strong>
+      {color && <><br />기준 채도 {color.reference_mean_saturation ?? '—'} / 대조 채도 {color.candidate_mean_saturation ?? '—'} · 전경-배경 명도 대비 {color.reference_foreground_background_contrast ?? '—'} / {color.candidate_foreground_background_contrast ?? '—'} · ΔE2000 {match.metrics?.mean_delta_e2000 ?? '—'} · 회색 상관 {color.grayscale_correlation ?? '—'} · 반전 상관 {color.inverse_grayscale_correlation ?? '—'} · 극성 {color.polarity_alignment || '미계산'}</>}</p>}
+  </>;
+}
+
+function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLogo, setSelectedLogo, referenceIndex, setReferenceIndex, selection, onSelect }) {
   const detector = sourceStage(job, stage, 'logo_extract');
   const extracted = detector?.output?.items?.find(item => item.index === frame.index);
   const logos = extracted?.logos || [];
@@ -85,12 +114,17 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
   const selectedReference = preferredReference(matches, manifest.files.references.length, referenceIndex);
   const reference = job.references?.find(item => item.index === selectedReference);
   const match = matches.find(item => item.reference_index === selectedReference);
+  const humanReviewKey = `${frame.index}:${logo?.logo_index ?? selectedLogo}:${selectedReference}`;
+  const humanReview = selection?.humanReviews?.[humanReviewKey];
+  const setHumanReview = decision => onSelect({ humanReviews: { ...(selection?.humanReviews || {}), [humanReviewKey]: {
+    frame_index: frame.index, logo_index: logo?.logo_index ?? selectedLogo, reference_index: selectedReference, decision,
+  } } });
   if (!logos.length) return <p className="mt-empty">{extracted ? '이 프레임에서 탐지한 로고가 없습니다.' : job.stages.some(stage => stage.id === 'logo_extract') ? '로고 추출 결과를 기다리고 있습니다.' : '로고 추출 단계를 선택하지 않았습니다.'}</p>;
   return <section className="mt-logo-evidence" aria-label="로고 대조 결과">
     <div className="mt-logo-picker">{logos.map((item, index) => <button type="button" key={index} aria-pressed={selectedLogo === index} onClick={() => setSelectedLogo(index)}>로고 {index + 1}</button>)}</div>
-    <p className="mt-hint">위치 (x1, y1) → (x2, y2): {logo?.bbox?.join(', ')} px · 분석 프레임 {frame.width || extracted?.width} × {frame.height || extracted?.height} px
+    <p className="mt-hint">위치 (x1, y1) → (x2, y2): {logo?.bbox?.join(', ')} px · 검수 크롭 {logo?.crop_size?.join(' × ') || '—'} px · 로고 해상도 {logo?.resolution_status === 'uncertain' ? '하한 미달 · 판정 보류' : '충분'} · 분석 프레임 {frame.width || extracted?.width} × {frame.height || extracted?.height} px
       {Number.isFinite(logo?.score) && ` · 탐지 점수 ${logo.score.toFixed(3)}`}</p>
-    <MatchedImages match={match} sizes={[[logo?.bbox?.[2] - logo?.bbox?.[0], logo?.bbox?.[3] - logo?.bbox?.[1]], [reference?.width, reference?.height]]}>
+    <MatchedImages match={kind === 'logo_diff' ? match?.xfeat : match} sizes={[[logo?.crop_size?.[0] || logo?.bbox?.[2] - logo?.bbox?.[0], logo?.crop_size?.[1] || logo?.bbox?.[3] - logo?.bbox?.[1]], [reference?.width, reference?.height]]}>
       <figure><figcaption>추출 로고 {selectedLogo + 1}</figcaption><Preview context={context} jobId={job.id} name={logo?.preview} cache={cache} alt={`추출 로고 ${selectedLogo + 1}`} /></figure>
       <span className="mt-pair-arrow" aria-hidden="true">↔</span>
       <figure><figcaption><div className="mt-title-help"><label htmlFor="mt-result-reference">원본 로고</label>{PAIRS.includes(kind) && <ModeltestHelp label="원본 로고 선택"><p>원본 로고는 이미지 코사인 유사도가 가장 높은 대조 후보를 우선 표시합니다. 유사도 미계산 시 첫 대조 후보를 표시하며, 직접 바꾼 선택은 유지합니다.</p></ModeltestHelp>}</div>
@@ -102,8 +136,8 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
       </figure>
     </MatchedImages>
     {match ? <div className="mt-match-result">
-      <div className="mt-title-help"><h4>{kind === 'candidate_filter' ? '후보 필터 결과' : kind === 'logo_similarity' ? '로고 이미지 유사도' : stage.model_id === 'vismatch/xfeat' ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4><ModeltestHelp label="로고 대조 지표"><p>특징점 유사도는 매칭된 점들의 평균입니다.</p><p>이미지 코사인 값도 보려면 같은 로고 추출 결과에 임베딩 모델의 로고 이미지 유사도 단계를 연결하세요.</p></ModeltestHelp></div>
-      <strong className={`mt-decision mt-decision-${['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{kind === 'candidate_filter' ? '필터 통과 후보' : kind === 'logo_similarity' ? '유사도 측정' : decisionLabel(match.decision)}</strong>
+      <div className="mt-title-help"><h4>{kind === 'logo_diff' ? '영역별 정밀 검수' : kind === 'candidate_filter' ? '후보 필터 결과' : kind === 'logo_similarity' ? '로고 이미지 유사도' : stage.model_id === 'vismatch/xfeat' ? 'XFeat 대조 결과' : '로고 대조 결과'}</h4><ModeltestHelp label="로고 대조 지표"><p>SigLIP2는 기준 로고 후보의 순위만 정하고, logo_diff는 모든 후보를 검사합니다.</p><p>XFeat homography는 정렬 근거입니다. logo_diff는 RunPod 실험의 보수 컷에 해당하는 확실한 오답만 제외하며, 나머지는 정답 승인 없이 사람 검토로 남깁니다.</p></ModeltestHelp></div>
+      <strong className={`mt-decision mt-decision-${match.decision === 'mismatch' ? 'mismatch' : ['match', 'candidate_match', 'pass'].includes(match.decision) ? 'candidate' : 'uncertain'}`}>{kind === 'candidate_filter' ? '필터 통과 후보' : kind === 'logo_similarity' ? '유사도 측정' : decisionLabel(match.decision)}</strong>
       <dl className="mt-match-metrics">
         <div><dt>이미지 코사인 유사도 · {match.similarity_model || '임베딩 모델'}</dt><dd>{Number.isFinite(match.image_cosine_similarity) ? match.image_cosine_similarity.toFixed(3) : '미계산'}</dd></div>
         {Number.isFinite(match.hash_distance) && <div><dt>pHash 해밍 거리 / 비트 수</dt><dd>{match.hash_distance} / {match.hash_bits}</dd></div>}
@@ -113,9 +147,23 @@ function LogoEvidence({ job, stage, manifest, frame, context, cache, selectedLog
         {Number.isFinite(match.matches) && <div><dt>매칭 / 검증 통과</dt><dd>{match.matches} / {match.inliers ?? 0}개</dd></div>}
         {Array.isArray(match.keypoints) && <div><dt>특징점 · 크롭 / 원본</dt><dd>{match.keypoints.join(' / ')}개</dd></div>}
       </dl>
+      {kind === 'logo_diff' && match.xfeat && <dl className="mt-match-metrics"><div><dt>XFeat 매칭 / RANSAC inlier</dt><dd>{match.xfeat.matches ?? '—'} / {match.xfeat.inliers ?? '—'}</dd></div><div><dt>RANSAC inlier 비율</dt><dd>{Number.isFinite(match.xfeat.inlier_ratio) ? `${(match.xfeat.inlier_ratio * 100).toFixed(1)}%` : '미계산'}</dd></div><div><dt>inlier 분포 · 크롭 / 기준</dt><dd>{match.xfeat.inlier_coverage ? `${match.xfeat.inlier_coverage.crop} / ${match.xfeat.inlier_coverage.reference}` : '미계산'}</dd></div></dl>}
       {typeof match.text === 'string' && <p className="mt-readable-output">{match.text}</p>}
       {typeof match.note === 'string' && <p className="mt-hint">{match.note}</p>}
-      <MatchingSettings match={match} />
+        {kind === 'logo_diff' && match.metrics?.safe_reject_policy && <p className="mt-hint">자동 오답 제외는 logo_diff 지표로 측정한 원본 최악값보다 50% 바깥의 기준만 사용합니다. 그 밖의 결과는 정답으로 자동 승인하지 않고 검토 필요로 남깁니다.</p>}
+        {kind === 'logo_diff' && match.metrics?.thresholds_calibrated === false && <p className="mt-hint">기준을 정한 원본은 logo_diff까지 도달한 30개뿐이고, 처음 보는 영상으로는 아직 검증하지 않았습니다.</p>}
+        {kind === 'logo_diff' && match.metrics?.monochrome_color_override_applied && <p className="mt-hint">이 결과는 단색 허용 정책으로 COLOR만 판정에서 제외했습니다. 다른 차이 사유는 그대로 반영했습니다.</p>}
+      {kind === 'logo_diff' && <>
+        <p className="mt-hint">검출 순위 {match.similarity_rank ?? '미계산'} · SigLIP2 {Number.isFinite(match.image_cosine_similarity) ? match.image_cosine_similarity.toFixed(4) : '미계산'} · XFeat homography {match.homography_available ? '확보' : '없음'}</p>
+        <LogoDiffReasons match={match} />
+        {match.human_review_required && <section className="mt-human-review" aria-label="사람 검토 판정">
+          <strong>사람 판정</strong><p>안전한 자동 제외 기준에 해당하지 않았습니다. 기준 로고와 표시된 차이 근거를 확인해 이 프레임의 판단을 기록하세요.</p>
+          <div>{[['match', '정답 로고'], ['mismatch', '오답 로고'], ['uncertain', '아직 판단 못함']].map(([value, label]) => <button type="button" key={value} className="btn secondary small" aria-pressed={humanReview?.decision === value} onClick={() => setHumanReview(value)}>{label}</button>)}</div>
+          {humanReview && <p className="mt-hint">화면 판정: {humanReview.decision === 'match' ? '정답 로고' : humanReview.decision === 'mismatch' ? '오답 로고' : '아직 판단 못함'} · JSON 내려받기에 포함됩니다.</p>}
+        </section>}
+        <LogoDiffRegions match={match} job={job} context={context} cache={cache} />
+      </>}
+      <MatchingSettings match={kind === 'logo_diff' ? match.xfeat : match} />
     </div> : <p className="mt-hint">{compared ? Number.isFinite(compared.selected_count) ? '이 후보는 필터에서 제외되어 대조하지 않았습니다.' : '선택한 로고와 레퍼런스의 대조 결과가 없습니다.' : '결과를 확인할 로고 대조 단계를 선택해 주세요.'}</p>}
     {Number.isFinite(compared?.selected_count) && <p className="mt-hint">이 프레임의 전체 후보 {compared.candidate_count}개 중 {compared.selected_count}개 선택</p>}
     <CandidateAudit row={compared} references={manifest.files.references} />
@@ -134,9 +182,13 @@ function SimilarityResults({ job, manifest, context, cache, selection, onSelect 
   const cosine = new Map((job.stages.find(stage => stage.id === 'logo_similarity')?.output?.items || []).map(row => [row.reference_index, row]));
   const matches = new Map((job.stages.find(stage => stage.id === 'logo_compare')?.output?.items || []).map(row => [row.reference_index, row]));
   const { tableSort = null, tableFilters = {} } = selection;
-  const { rows, decisions, error } = similarityRows(manifest.files.references, cosine, matches, tableSort, tableFilters);
+  const diffs = new Map((job.stages.find(stage => stage.id === 'logo_diff')?.output?.items || []).map(row => [row.reference_index, row]));
+  const diffLabel = i => diffs.has(i) ? decisionLabel(diffs.get(i).decision) : '미계산';
+  const { rows: measured, decisions, error } = similarityRows(manifest.files.references, cosine, matches, tableSort, tableFilters);
+  const rows = tableFilters.diffDecision ? measured.filter(row => diffLabel(row.index) === tableFilters.diffDecision) : measured;
+  const diffDecisions = [...new Set([...manifest.files.references.map((_, i) => diffLabel(i)), ...(tableFilters.diffDecision ? [tableFilters.diffDecision] : [])])];
   const index = rows.find(row => row.index === (selection.reference ?? 0))?.index ?? rows[0]?.index;
-  const match = matches.get(index); const score = cosine.get(index);
+  const match = matches.get(index); const score = cosine.get(index); const diff = diffs.get(index);
   const reference = job.references?.find(item => item.index === index); const base = job.media;
   const metric = value => Number.isFinite(value) ? value.toFixed(4) : '미계산';
   const setFilter = (key, value) => onSelect({ tableFilters: { ...tableFilters, [key]: value } });
@@ -150,14 +202,15 @@ function SimilarityResults({ job, manifest, context, cache, selection, onSelect 
           {['min', 'max'].map(bound => <label key={bound}>{bound === 'min' ? '최솟값' : '최댓값'}<input type="number" min="-1" max="1" step="any" placeholder={bound === 'min' ? '-1' : '1'} aria-label={`${label} ${bound === 'min' ? '최솟값' : '최댓값'}`} value={tableFilters[key]?.[bound] ?? ''} onChange={event => setFilter(key, { ...tableFilters[key], [bound]: event.target.value })} /></label>)}
         </fieldset>)}
         <label>XFeat 판정<select aria-label="XFeat 판정 필터" value={tableFilters.decision || ''} onChange={event => setFilter('decision', event.target.value)}><option value="">전체</option>{decisions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        {diffs.size > 0 && <label>로고 차이 판정<select aria-label="로고 차이 판정 필터" value={tableFilters.diffDecision || ''} onChange={event => setFilter('diffDecision', event.target.value)}><option value="">전체</option>{diffDecisions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>}
         <button type="button" className="btn secondary small" onClick={() => onSelect({ tableFilters: {} })}>필터 초기화</button>
       </div>
     </details>
     {error && <p className="mt-error" role="alert">{error}</p>}
     <p className="mt-hint" role="status">표시 {rows.length} / 전체 {manifest.files.references.length}장{tableSort ? ` · ${SIMILARITY_COLUMNS.find(column => column.key === tableSort.key)?.label} ${tableSort.direction === 'ascending' ? '오름차순' : '내림차순'}` : ' · 첨부 순서'}</p>
-    <div className="mt-timing-scroll mt-similarity-table" tabIndex={0} role="region" aria-label="이미지별 유사도 표"><table className="mt-timing-table"><thead><tr><th scope="col">대조 이미지</th>{SIMILARITY_COLUMNS.slice(0, 2).map(sortHeader)}<th scope="col">매칭 / 기하 검증 통과</th>{sortHeader(SIMILARITY_COLUMNS[2])}</tr></thead>
-      <tbody>{rows.map(row => { const { index: i, file } = row; const x = matches.get(i); return <tr key={i} className={i === index ? 'is-selected' : ''}><th scope="row"><button type="button" className="text-btn" aria-pressed={i === index} onClick={() => onSelect({ reference: i })}>{i + 1}. {file.name}</button></th><td>{metric(row.cosine)}</td><td>{metric(row.descriptor)}</td><td>{x ? `${x.matches ?? 0} / ${x.inliers ?? 0}` : '미계산'}</td><td>{row.decision ?? '미계산'}</td></tr>; })}
-        {!rows.length && <tr><td colSpan={5} className="mt-empty">{error ? '필터 입력값을 확인해 주세요.' : '필터에 맞는 대조 이미지가 없습니다.'}</td></tr>}
+    <div className="mt-timing-scroll mt-similarity-table" tabIndex={0} role="region" aria-label="이미지별 유사도 표"><table className="mt-timing-table"><thead><tr><th scope="col">대조 이미지</th>{SIMILARITY_COLUMNS.slice(0, 2).map(sortHeader)}<th scope="col">매칭 / 기하 검증 통과</th>{sortHeader(SIMILARITY_COLUMNS[2])}{diffs.size > 0 && <th scope="col">로고 차이 판정</th>}</tr></thead>
+      <tbody>{rows.map(row => { const { index: i, file } = row; const x = matches.get(i); return <tr key={i} className={i === index ? 'is-selected' : ''}><th scope="row"><button type="button" className="text-btn" aria-pressed={i === index} onClick={() => onSelect({ reference: i })}>{i + 1}. {file.name}</button></th><td>{metric(row.cosine)}</td><td>{metric(row.descriptor)}</td><td>{x ? `${x.matches ?? 0} / ${x.inliers ?? 0}` : '미계산'}</td><td>{row.decision ?? '미계산'}</td>{diffs.size > 0 && <td>{diffLabel(i)}{diffs.get(i)?.reason_codes?.length ? ` · ${diffs.get(i).reason_codes.map(code => LOGO_DIFF_LABELS[code] || code).join(', ')}` : ''}</td>}</tr>; })}
+        {!rows.length && <tr><td colSpan={diffs.size > 0 ? 6 : 5} className="mt-empty">{error ? '필터 입력값을 확인해 주세요.' : '필터에 맞는 대조 이미지가 없습니다.'}</td></tr>}
       </tbody>
     </table></div>
     {index !== undefined && <>
@@ -177,6 +230,13 @@ function SimilarityResults({ job, manifest, context, cache, selection, onSelect 
     </dl>
     {match?.note && <p className="mt-hint">{match.note}</p>}
     <MatchingSettings match={match} />
+    {diff && <section className="mt-match-result" aria-label="로고 차이 판정">
+      <h4>로고 차이 판정</h4>
+      <strong className={`mt-decision mt-decision-${diff.decision === 'mismatch' ? 'mismatch' : diff.decision === 'match' ? 'candidate' : 'uncertain'}`}>{decisionLabel(diff.decision)}</strong>
+      <LogoDiffReasons match={diff} />
+      {typeof diff.note === 'string' && <p className="mt-hint">{diff.note}</p>}
+      <LogoDiffRegions match={diff} job={job} context={context} cache={cache} />
+    </section>}
     </>}
   </div>;
 }
@@ -200,6 +260,7 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
   const logos = sourceStage(job, stage, 'logo_extract')?.output?.items?.find(item => item.index === frame.index)?.logos || [];
   const referenceKey = `${sample.index}:${logos[selectedLogo]?.logo_index ?? selectedLogo}`;
   return <div className="mt-sample-results">
+    {kind === 'logo_diff' && stage.output?.video_verdict && <aside className={`mt-video-verdict mt-decision-${stage.output.video_verdict.decision}`}><strong>영상 단위 판정 · {decisionLabel(stage.output.video_verdict.decision)}</strong><p>{stage.output.video_verdict.reason}</p><div>{stage.output.video_verdict.evidence_frames?.map(index => { const position = rows.findIndex(row => row.index === index); return position < 0 ? null : <button type="button" key={index} className="btn secondary small" onClick={() => onSelect({ frame: position, logo: 0 })}>{frameLabel(rows[position])} 근거</button>; })}</div></aside>}
     {manifest.flow === 'video' && <nav className="mt-frame-picker" aria-label="분석 프레임 선택"><div className="mt-title-help"><span>{rows.length}개 프레임</span><span> · 첫 프레임 0번</span></div>
       {rows.map((row, index) => <button type="button" key={index} aria-pressed={selectedFrame === index} onClick={() => onSelect({ frame: index, logo: 0 })}>{frameLabel(row)}</button>)}
     </nav>}
@@ -207,6 +268,7 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
       <div className="mt-sample-title"><h3>{manifest.flow === 'video' ? frameLabel(sample) : '검수 이미지'}</h3>
         {onSeek && Number.isFinite(sample.timestamp_seconds) && <button type="button" className="btn secondary small" onClick={() => onSeek(sample.timestamp_seconds)}>원본 영상에서 보기</button>}
       </div>
+      {kind === 'logo_diff' && <p><strong className={`mt-decision mt-decision-${sample.frame_decision === 'mismatch' ? 'mismatch' : sample.frame_decision === 'match' ? 'candidate' : 'uncertain'}`}>프레임 판정 · {decisionLabel(sample.frame_decision)}</strong></p>}
       <Preview context={context} jobId={job.id} name={sample.preview} cache={cache} alt={manifest.flow === 'video' ? `${frameLabel(sample)} 분석 이미지` : '검수 이미지'}>
         {logos.map((logo, index) => {
           const style = boxStyle(logo.bbox, sample.width, sample.height);
@@ -214,7 +276,7 @@ export default function ModeltestResults({ job, stage, manifest, context, onSeek
         })}
       </Preview>
       {['logo_extract', 'frames', ...PAIRS].includes(kind) && <LogoEvidence key={sample.index} job={job} stage={stage} manifest={manifest} frame={sample} context={context} cache={cache} selectedLogo={selectedLogo} setSelectedLogo={setSelectedLogo}
-        referenceIndex={selection.references?.[referenceKey]} setReferenceIndex={reference => onSelect({ references: { ...selection.references, [referenceKey]: reference } })} />}
+        selection={selection} onSelect={onSelect} referenceIndex={selection.references?.[referenceKey]} setReferenceIndex={reference => onSelect({ references: { ...selection.references, [referenceKey]: reference } })} />}
       {typeof frame.text === 'string' && <p className="mt-readable-output">{frame.text}</p>}
       {Array.isArray(frame.label_scores) && <Scores rows={frame.label_scores} />}
       <Metrics row={frame} />

@@ -92,22 +92,28 @@ class Batch(dict):
 
 
 @pytest.mark.parametrize('custom', [None, 'sponsor logo\nbrand mark'])
-def test_owlv2_uses_image_dimensions_and_returns_pixel_boxes(tmp_path, custom):
+def test_owlv2_detects_frame_and_tiles_and_returns_pixel_boxes(tmp_path, custom):
     torch = pytest.importorskip('torch')
     path = tmp_path / 'frame.png'; Image.new('RGB', (80, 40)).save(path)
     model = lambda **inputs: 'detector output'
     model.device = 'cpu'
+    labels = custom.splitlines() if custom else ['a brand logo', 'a logo', 'an emblem', 'a brand symbol', 'a watermark', 'a logo mark']
+    regions = [(0, 0, 80, 40)] + remote.owlv2_tiles(80, 40)
     class Processor:
         def __call__(self, **kwargs):
-            assert kwargs['text'] == [custom.splitlines() if custom else ['a brand logo']]
-            assert kwargs['images'].size == (80, 40)
+            assert kwargs['text'] == [labels] * 11 and len(kwargs['images']) == 11
+            assert kwargs['images'][0].size == (80, 40)
             return Batch()
         def post_process_grounded_object_detection(self, output, **kwargs):
             assert output == 'detector output'
-            assert kwargs['target_sizes'] == [(40, 80)] and kwargs['threshold'] == 0.2
-            return [{'boxes': torch.tensor([[2., 3., 12., 13.]]), 'scores': torch.tensor([0.75])}]
+            assert kwargs['target_sizes'][0] == (40, 80) and kwargs['threshold'] == 0.1
+            empty = {'boxes': torch.zeros((0, 4)), 'scores': torch.zeros(0)}
+            # The same logo found in the frame and in the top-left tile collapses to one box; a scene-sized box is dropped.
+            return [{'boxes': torch.tensor([[2., 3., 12., 13.], [0., 0., 80., 40.]]), 'scores': torch.tensor([0.75, 0.9])},
+                    {'boxes': torch.tensor([[2., 3., 12., 13.]]), 'scores': torch.tensor([0.5])}] + [empty] * 9
     output = remote.run_model(SimpleNamespace(model=model, processor=Processor()),
         {'id': 'logo_extract', 'model_id': remote.OWLV2, **({'prompt_override': custom} if custom else {})}, images=[path])
+    assert regions[1][:2] == (0, 0)
     assert output == {'logos': [{'bbox': [2, 3, 12, 13], 'score': 0.75}]}
 
 
@@ -263,3 +269,42 @@ def test_model_variants_load_matching_processor_and_pinned_revision(monkeypatch,
     size = 384 if model_id == remote.SIGLIP2_SO400M else 224
     assert execution['preprocessing']['size'] == {'width': size, 'height': size}
     assert remote.MODEL_HANDLERS[model_id] is (remote.run_owlv2 if role == 'logo_extract' else remote.run_siglip2)
+
+
+def _logo_fixture(tmp_path):
+    from PIL import ImageDraw
+    image = Image.new('RGB', (320, 120), 'white'); draw = ImageDraw.Draw(image)
+    draw.ellipse((10, 10, 100, 100), fill=(20, 150, 60)); draw.rectangle((130, 35, 300, 85), fill=(20, 40, 140))
+    path = tmp_path / 'reference.png'; image.save(path)
+    return path
+
+
+def _ocr(text):
+    return {'text': text, 'ocr_words': [{'text': text, 'polygon': [[130, 35], [300, 35], [300, 85], [130, 85]], 'score': 0.99}]}
+
+
+def test_logo_diff_never_rejects_identical_logo(tmp_path):
+    pytest.importorskip('cv2')
+    from backend.app import modeltest_adapters as adapters
+    reference = _logo_fixture(tmp_path)
+    result = adapters.logo_diff_pair(reference, reference, [[1, 0, 0], [0, 1, 0], [0, 0, 1]], ocr_query=_ocr('대전광역시'), ocr_reference=_ocr('대전광역시'))
+    assert result['decision'] == 'uncertain' and result['reason_codes'] == [] and result['human_review_required']
+    assert result['metrics']['safe_reject_policy'] == adapters.LOGO_DIFF_SAFE_REJECT_POLICY['safe_reject_policy']
+
+
+@pytest.mark.parametrize('candidate, rejected', [('데전광역시', True), ('대전광역', False)])
+def test_logo_diff_rejects_only_same_length_hangul_typo(tmp_path, candidate, rejected):
+    pytest.importorskip('cv2')
+    from backend.app import modeltest_adapters as adapters
+    reference = _logo_fixture(tmp_path)
+    result = adapters.logo_diff_pair(reference, reference, [[1, 0, 0], [0, 1, 0], [0, 0, 1]], ocr_query=_ocr(candidate), ocr_reference=_ocr('대전광역시'))
+    assert ('TEXT' in result['reason_codes']) is rejected
+    assert result['decision'] == ('mismatch' if rejected else 'uncertain')
+    if not rejected: assert 'TEXT' in result['uncertain_reason_codes']
+
+
+def test_paddle_model_name_prefers_inference_config(tmp_path):
+    from backend.app import modeltest_adapters as adapters
+    (tmp_path / 'inference.yml').write_text('Global:\n  model_name: korean_PP-OCRv5_mobile_rec\n', encoding='utf-8')
+    assert adapters._paddle_model_name(tmp_path, 'someone/renamed-rec') == 'korean_PP-OCRv5_mobile_rec'
+    assert adapters._paddle_model_name(tmp_path / 'missing', 'PaddlePaddle/PP-OCRv5_server_det') == 'PP-OCRv5_server_det'

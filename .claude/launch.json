@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5173", "--strictPort"],
+      "port": 5173
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "backend.app.api:app", "--host", "127.0.0.1", "--port", "8000"],
+      "env": { "VIDEO_LOGO_WORKER_URL": "http://127.0.0.1:8791" },
+      "port": 8000
+    }
+  ]
+}
