@@ -134,9 +134,11 @@ def _run_ocr_frames(job_id: str, body: dict) -> dict:
 
 
 def _free_gpu() -> None:
-    """실패한 작업이 잡아 둔 GPU 캐시를 돌려줘 다음 작업이 OOM을 이어받지 않게 한다."""
+    """작업이 잡아 둔 GPU 캐시를 돌려줘 실패한 작업의 메모리를 다음 작업이 OOM으로 이어받지 않게 한다."""
     try:
+        import gc
         import torch
+        gc.collect()  # traceback·프레임의 순환 참조에 남은 텐서까지 풀어 준다
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
     except Exception:
@@ -160,8 +162,9 @@ def _loop() -> None:
             _set(job_id, status="completed", progress=100, result=_plain(result))
         except Exception as exc:  # 실패 원인 종류만 돌려준다(경로·값은 응답에 싣지 않는다). 자세한 내용은 Pod 로그에만 남긴다
             traceback.print_exc()
-            _free_gpu()
             _set(job_id, status="failed", error=f"{exc.__class__.__name__}: {exc}" if isinstance(exc, ValueError) else exc.__class__.__name__)
+        # except 안에서는 traceback이 실패 지점의 텐서를 잡고 있어 비워지지 않으므로 블록을 벗어난 뒤에 정리한다
+        _free_gpu()
 
 
 threading.Thread(target=_loop, daemon=True, name="video-logo-worker").start()
