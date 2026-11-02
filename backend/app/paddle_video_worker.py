@@ -16,6 +16,12 @@ from scripts.prepare_paddle import DETECTION_MODEL, MODEL, verify_model
 def build_model(detection_dir, recognition_dir, *, threads=4, device="cpu"):
     """자막 검사 OCR 모델(탐지·한국어 인식)과 설정. 영상 로고 검수(video_logo_models)도 같은 모델을 쓴다.
     device="gpu"는 RunPod Pod 워커(GPU용 Paddle 환경)에서만 쓴다. 모델·설정은 CPU와 같다."""
+    import paddle
+    # CPU 빌드에 gpu를 넘기면 모델은 올라가도 프레임마다 NotImplementedError가 나므로 바로 멈춘다.
+    # 자막 검사(run)와 상주 OCR 프로세스(paddle_ocr_server: 로고 후보 찾기·정밀 대조)가 모두 여기를 거친다.
+    if device == "gpu" and not paddle.is_compiled_with_cuda():
+        raise RuntimeError("device=gpu인데 이 python의 paddlepaddle은 CPU 빌드입니다. "
+                           "VIDEO_OCR_PYTHON을 paddlepaddle-gpu 환경으로 지정하세요.")
     from paddleocr import PaddleOCR
     return PaddleOCR(
         text_detection_model_name=DETECTION_MODEL, text_detection_model_dir=str(detection_dir),
@@ -41,10 +47,6 @@ def run(frames, output_path, detection_dir, recognition_dir, *, threads=4, devic
     from PIL import Image
     import numpy as np
     import paddle
-    # CPU 빌드에 gpu를 넘기면 모델은 올라가도 프레임마다 NotImplementedError가 나므로 바로 멈춘다
-    if device == "gpu" and not paddle.is_compiled_with_cuda():
-        raise SystemExit("device=gpu인데 이 python의 paddlepaddle은 CPU 빌드입니다. "
-                         "VIDEO_OCR_PYTHON을 paddlepaddle-gpu 환경으로 지정하세요.")
     model = build_model(detection_dir, recognition_dir, threads=threads, device=device)
     identities.update(engine="paddleocr", cpu_threads=threads, paddleocr_version=importlib.metadata.version("paddleocr"),
                       paddle_version=paddle.__version__, paddlex_version=importlib.metadata.version("paddlex"))
