@@ -1,0 +1,487 @@
+{
+  "release": "agent-framework-2026-11-02",
+  "entrypoint": "index.html",
+  "scope": "offline documentation and common framework development subset",
+  "verification": {
+    "files": 94,
+    "local_html_links": 60,
+    "external_reference_links": 2,
+    "external_auto_loaded_resources": 0,
+    "windows_filename_check": "passed",
+    "relative_link_check": "passed",
+    "browser_rendering_verified": false,
+    "windows_execution_verified": false
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 762,
+      "sha256": "07d46c08de05f24935fdc7ee0a16a63684ab6796c523fc3639618092ceb89d20"
+    },
+    {
+      "path": ".github/workflows/agent-framework.yml",
+      "bytes": 1025,
+      "sha256": "954714060b921f8bc9c41f035a281b4de8936b38c56b511857591770f29e9410"
+    },
+    {
+      "path": "PRODUCT.md",
+      "bytes": 3390,
+      "sha256": "7b49776fb347c7a68f0151e191ded90f79f8e9f5caa2966e84c80f9abc4ef614"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1020,
+      "sha256": "56746c5c9498b8046669466a684d5182f711226726a8427ab467c363e97e0c3d"
+    },
+    {
+      "path": "backend/__init__.py",
+      "bytes": 57,
+      "sha256": "f010cc6c969e1cb5f811bf24991206a3d009abeb607be5da6ac8c829bcc24397"
+    },
+    {
+      "path": "backend/agent_framework/__init__.py",
+      "bytes": 104,
+      "sha256": "f046a8a976eb540236a08b1cd8397dd6c75d7b7269bab156b20869994da8b13c"
+    },
+    {
+      "path": "backend/agent_framework/__main__.py",
+      "bytes": 150,
+      "sha256": "fb2d181351fd041a5dd6a36600de816234886105df0333fd7c06f079e47bc6e5"
+    },
+    {
+      "path": "backend/agent_framework/adapters/__init__.py",
+      "bytes": 168,
+      "sha256": "ca0b3ee9e346a27efcf15d9d17e00a6de20f7878d7e00b19fb1ba10648db4d9a"
+    },
+    {
+      "path": "backend/agent_framework/adapters/generate_examples.py",
+      "bytes": 2698,
+      "sha256": "c4e9a46ffe6e56024f12204abc38ef9cdb3f6ea26b0e4032a2bcf92801f4733f"
+    },
+    {
+      "path": "backend/agent_framework/adapters/synthetic.py",
+      "bytes": 9161,
+      "sha256": "d1f215fffe3ae6f797022fd18209bbabe18aaf89835fa6a7c3d58952274b5f91"
+    },
+    {
+      "path": "backend/agent_framework/adapters/templates.py",
+      "bytes": 1818,
+      "sha256": "165944ea114310b54d93e5d4a60f23de8838501556c45e823cea223f6451afea"
+    },
+    {
+      "path": "backend/agent_framework/api.py",
+      "bytes": 3289,
+      "sha256": "a405636d783eea49517c943c68f241bd3f4b5686c4e6ac03eddbc4bcc33b3028"
+    },
+    {
+      "path": "backend/agent_framework/cli.py",
+      "bytes": 11268,
+      "sha256": "ab179977572e8acf92eca61bab1f07c413cbf54e7d13b3eb23444225d1a66874"
+    },
+    {
+      "path": "backend/agent_framework/contracts.py",
+      "bytes": 7189,
+      "sha256": "ead26cafc963c465980619fd6029764f69122f3cbcc6fc6d2f283f3201996023"
+    },
+    {
+      "path": "backend/agent_framework/ports.py",
+      "bytes": 1411,
+      "sha256": "4d9ad3d3890c01dd6a9b7d9a657fee132bf955f2426abfbd8c125806bb257256"
+    },
+    {
+      "path": "backend/agent_framework/runtime.py",
+      "bytes": 15622,
+      "sha256": "30ec76fc75d3520151aaddbdad6aeeb5a18eed82ebe652f629cd34847b7055c6"
+    },
+    {
+      "path": "backend/agent_framework/validation.py",
+      "bytes": 11128,
+      "sha256": "c44dcfc0db3a710a1d03c9bb432fd5e08e687a59308fc992b2309a897165dcb9"
+    },
+    {
+      "path": "docs/agent-framework/README.md",
+      "bytes": 18946,
+      "sha256": "63c65357fb6515a036a07468b3193840f368dc4545dca248a1ef7e2f9848cd94"
+    },
+    {
+      "path": "docs/agent-framework/flow-build.json",
+      "bytes": 1341,
+      "sha256": "ba59923544dfb8db7eb0262198588a96abc700614b27d2d258ba05c2d963862a"
+    },
+    {
+      "path": "docs/agent-framework/flow-data.json",
+      "bytes": 26198,
+      "sha256": "842bb3dba9787f6e30ccf14cbaf6bff7836ac1afe362aad73d07000880a29fae"
+    },
+    {
+      "path": "docs/agent-framework/flow.html",
+      "bytes": 51971,
+      "sha256": "1018d6233cc1717e8c1ff45f13382f449d3d380b61db68865b5310922241dee5"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/GRAPH_REPORT.md",
+      "bytes": 10116,
+      "sha256": "4e7a24b48fae89a8ac89683ed22d6a509bb2845ec305f0e41ec0c8a10261478e"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/LICENSE-APACHE-2.0.txt",
+      "bytes": 10171,
+      "sha256": "1509904280a272780fd69c04b858f512cf216f8e3464a0dd98d8f34416feced9"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/LICENSE-MIT.txt",
+      "bytes": 1084,
+      "sha256": "1f65085e54c036645082257618db2c7b787e68c3b02485e214ecd09e0834ee8f"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/asset-audit.json",
+      "bytes": 449,
+      "sha256": "af39becc4d55b526075119cff212daed27447b53a44b938b83a43c693de4783c"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/build-summary.json",
+      "bytes": 589,
+      "sha256": "bb69aa128aaeb13483504923d6cdedf9f88f4fcb481b6d02d37ce53aae8c586c"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/communities.json",
+      "bytes": 11562,
+      "sha256": "6e353863c5da3979938feaf414396b89734b257492c55c1f4f8ed8c73a45cd9e"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/cost.json",
+      "bytes": 182,
+      "sha256": "fa26b09d471b357b2163ce2a046ea4c608b2e80b4e6bb1d01d127e2471f01804"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/diagnostics.json",
+      "bytes": 4847,
+      "sha256": "e89aac31e87ae3b082c4800fa93fc55922e69ae23d821398c02ae9b8480f7dd7"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/diagnostics.txt",
+      "bytes": 1998,
+      "sha256": "511c5561eff369c174a4d85b85430cac3eb21fd3de637c3d482ba4af02df0f21"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/extraction.json",
+      "bytes": 236959,
+      "sha256": "af6ee4dece0ccad1b7bfcbd52824197d0701a8bcbc665e204d3bfc7ce01f28f3"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/graph.html",
+      "bytes": 919857,
+      "sha256": "2f8cd3571be65629d8cee74432b43da65d47f661b3c4bf57b1235b734b329aed"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/graph.json",
+      "bytes": 191561,
+      "sha256": "e8df4dcea4ef12db0beeab0eb8deea9119e84b864b2ebb70c7858fee27982edb"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/implicit-nodes.json",
+      "bytes": 2255,
+      "sha256": "8d0f9c4d28d0ba3d1443a91e768d5549fdc504a0fa7b5120adbbd6abca2b0676"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/manifest.json",
+      "bytes": 2009,
+      "sha256": "fe9ce3db6f3396fce0aa1f76c8c21a84e603cef023a7064e4e5ff901cd826953"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/source-manifest.json",
+      "bytes": 2432,
+      "sha256": "505f625a392ce4c9535437f2808b8bf34db7e2dacd5aa00ea4b481723b2a80b1"
+    },
+    {
+      "path": "docs/agent-framework/guide.html",
+      "bytes": 4564,
+      "sha256": "6e2609b889e72ebc71d0b719cc1ab2d59aeb3ff94fec6994c00524e004ee3fcc"
+    },
+    {
+      "path": "docs/agent-framework/index.html",
+      "bytes": 3852,
+      "sha256": "66c811c7e633f60f790d4a197d1dfbce50240ca3604486817e874a6ca4d9dc42"
+    },
+    {
+      "path": "docs/agent-framework/sharing-verification-2026-11-02.md",
+      "bytes": 1871,
+      "sha256": "543600a88267ab2940022c5326f8819271ed8838a9822af41a39301d093e0f7f"
+    },
+    {
+      "path": "docs/agent-framework/source.html",
+      "bytes": 136985,
+      "sha256": "f0b9236c4f7f0167003f4fab69063b6695f8731f72a971b750affcbf16d2086f"
+    },
+    {
+      "path": "docs/agent-framework/verification-2026-11-02.md",
+      "bytes": 3336,
+      "sha256": "736ee986c1e267c2eda2d12e335c710fed9c2ec20776f15ef70a6fcf27d270c4"
+    },
+    {
+      "path": "docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.html",
+      "bytes": 67556,
+      "sha256": "26e714f26b546fcd6a2f4b5577cf3e5a6e04bc74ba208f65228413cab09691a3"
+    },
+    {
+      "path": "docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.md",
+      "bytes": 28000,
+      "sha256": "c2b0ced39cde5f8b8aa5335d784beaf8e093c3173e005264430f8762ab1e93e6"
+    },
+    {
+      "path": "examples/agent_framework/A02.json",
+      "bytes": 637,
+      "sha256": "b3cfcc305701a0dbb3d52ef7ea32aaabb74200bfb1eb40f1818490068b7e6d6a"
+    },
+    {
+      "path": "examples/agent_framework/A02.output.json",
+      "bytes": 1959,
+      "sha256": "1533f029741b9cc2ec18bdd0643cf8c194a9223d435a7d894c5e8efe727b6db7"
+    },
+    {
+      "path": "examples/agent_framework/A03.json",
+      "bytes": 1758,
+      "sha256": "b15aa9d8733487e5c8a7d9691b7ca7a4130af8b92e4da2a43c8416360ba865ad"
+    },
+    {
+      "path": "examples/agent_framework/A03.output.json",
+      "bytes": 2108,
+      "sha256": "ac9e7ffee9230b72325b75851f6455128d0053608ef27ed549ff9b9df495c53b"
+    },
+    {
+      "path": "examples/agent_framework/A04_A05.json",
+      "bytes": 4255,
+      "sha256": "a417dca107f3ff8d8ed35f70b58cead3b99121cdb4617743f80808762bcc0334"
+    },
+    {
+      "path": "examples/agent_framework/A04_A05.output.json",
+      "bytes": 1454,
+      "sha256": "48369c2c3b28c83e03fb6f8f97fb700ecd8ca46903dc806d970b1fcfd79aeab3"
+    },
+    {
+      "path": "examples/agent_framework/A06.json",
+      "bytes": 5840,
+      "sha256": "d5a89bd3d367328704072a4227a1d9682556ea6bf9867dd1ed2354425cb91b3a"
+    },
+    {
+      "path": "examples/agent_framework/A06.output.json",
+      "bytes": 781,
+      "sha256": "7010eb505c93097a0d4d95f2ba2018947cde2cfedd5f87917e1511558ba6ccaa"
+    },
+    {
+      "path": "examples/agent_framework/A07.json",
+      "bytes": 3466,
+      "sha256": "ff8ec4b0358374a196991bc44a6936bf9ff69fd37c1c2db3d5fe8666e7a4a2d0"
+    },
+    {
+      "path": "examples/agent_framework/A07.output.json",
+      "bytes": 713,
+      "sha256": "a41b5aa72b980700322d2f9e1955a53f59cd49ea769d421bcafeceb9bcce14ff"
+    },
+    {
+      "path": "examples/agent_framework/README.md",
+      "bytes": 1813,
+      "sha256": "3b365f5cbccb7624f8fe87a8a7a651b8d556bf2e4414c8a70028707e7d87151c"
+    },
+    {
+      "path": "examples/agent_framework/custom_adapter.py",
+      "bytes": 1649,
+      "sha256": "f3fd4ed2582ee03636310f5f074eb824b282b1d385edacc9e1dace7a2dc7ac92"
+    },
+    {
+      "path": "examples/agent_framework/openapi.json",
+      "bytes": 35799,
+      "sha256": "0fe7c2e053b10c4cf2422fc8f33aac7cb48a4afb42c22e4771be186990069587"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/fail.validated.json",
+      "bytes": 813,
+      "sha256": "71293f913f28f5fd6a256ea3c3a0d1537de95623fa37e72d3f129fd967db5dbd"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/pass.validated.json",
+      "bytes": 781,
+      "sha256": "7010eb505c93097a0d4d95f2ba2018947cde2cfedd5f87917e1511558ba6ccaa"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/review.validated.json",
+      "bytes": 927,
+      "sha256": "cf9230d7afeb094fd67d8d78edafcd16eeec8be722285008d19173f714c7af75"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/stale.validated.json",
+      "bytes": 863,
+      "sha256": "136fe46bdfa02ede30b4a1bbc9adf53f6e2e7097a1354c3f23a2e9337f669a9f"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/unavailable.validated.json",
+      "bytes": 999,
+      "sha256": "6d8d719a47f095c6e29b68e76ca5f06ac4088050ab0b73c46c44acd68db588a3"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Approval.schema.json",
+      "bytes": 3353,
+      "sha256": "7e82b77dcc477979274fc809a3304760dd9634f8ec1d60ae2a9639064d6534d0"
+    },
+    {
+      "path": "examples/agent_framework/schemas/AssetRef.schema.json",
+      "bytes": 1202,
+      "sha256": "2b197329111b368e7ffb681398025c42899d7b1d2c1bcad86c79462c87171f98"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Context.schema.json",
+      "bytes": 1890,
+      "sha256": "8466ac0b6cc769c275317ce08e10e458cb413d89272806a89727d1c0949c01f3"
+    },
+    {
+      "path": "examples/agent_framework/schemas/CriteriaDraft.schema.json",
+      "bytes": 6100,
+      "sha256": "0b6356dab0d6018625c4e669e75fcb4b69f41e702eb00ce186c91d53c178f81d"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Criterion.schema.json",
+      "bytes": 2749,
+      "sha256": "a7339332b96d0136d1c1d9130bf1553e02a5fcad0dd799d7b20bd815f6ac7ae2"
+    },
+    {
+      "path": "examples/agent_framework/schemas/DocumentRef.schema.json",
+      "bytes": 1056,
+      "sha256": "551432946dd86a0d2a13f9f7afcd7c3de404416004073233f5bd834e81a48d7f"
+    },
+    {
+      "path": "examples/agent_framework/schemas/EvidenceBundle.schema.json",
+      "bytes": 7415,
+      "sha256": "f3ce615e3f27e6ea0a4e310d0ffd1ccc900236c32aafbf14e3e3b58838eb72ff"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ExtractRequest.schema.json",
+      "bytes": 4045,
+      "sha256": "fbf35da7c6bf6297f05a26bf4708b73eeb0840d3ba626ed8df026735f36a7757"
+    },
+    {
+      "path": "examples/agent_framework/schemas/FrameworkError.schema.json",
+      "bytes": 651,
+      "sha256": "0c7182f2567918a3281d318f2d7376be8c4acd45f68a796d705123337aadc34f"
+    },
+    {
+      "path": "examples/agent_framework/schemas/InspectRequest.schema.json",
+      "bytes": 11822,
+      "sha256": "4b89822045bd95c242b028749797f16e2be6c70a0f29b4b4194ffb349140c5c9"
+    },
+    {
+      "path": "examples/agent_framework/schemas/InspectionResult.schema.json",
+      "bytes": 5758,
+      "sha256": "75f6429d9ef9d38356cef7742829ccca6ed7f99ba3854e4811cfd5b8dd12cea5"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ReportDraft.schema.json",
+      "bytes": 3385,
+      "sha256": "a16bfaf594fd2ca37d5f11c6a03863f8f86ccc9a88e0ae56088aff35c9a6cb12"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ReportRequest.schema.json",
+      "bytes": 10449,
+      "sha256": "193275b32ace62060f0cf0c3bc244efcdf0a7006e92e3cbfb197524cf9538724"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RetrieveRequest.schema.json",
+      "bytes": 6124,
+      "sha256": "d3c73548cdaa36a8802f38fe6348e4bfe8606bff8f8b4683741d2e2e45fede15"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RunSnapshot.schema.json",
+      "bytes": 22616,
+      "sha256": "6344ef28dc2b9b03de8550e598c39f77925c9d61129227dac1301e42610fbd57"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ValidateRequest.schema.json",
+      "bytes": 15557,
+      "sha256": "22b6ba4bbe98ce33d81e749031eb294d1b12f24b3a74d935afa8bc8902148156"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ValidatedResult.schema.json",
+      "bytes": 4135,
+      "sha256": "f7fefb6a87736be031c13ed2f30881e8e8693c8c63283470c022e53f3673b4d5"
+    },
+    {
+      "path": "index.html",
+      "bytes": 273,
+      "sha256": "da8b93b29a30bc31e4d25fa426443b4e528162f220d7ffd6f5165cfc2a63e4da"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 1109,
+      "sha256": "bb297cacaa85bd86ad65bd581b1170597502c9d6cb831618f814282b3d45ff3f"
+    },
+    {
+      "path": "scripts/build_agent_code_graph.py",
+      "bytes": 16057,
+      "sha256": "91985552ea8ab8d476f31c5c0e86f3e2c6a22ad21452979f5def6f2e63a0ebea"
+    },
+    {
+      "path": "scripts/build_agent_flow_html.py",
+      "bytes": 11334,
+      "sha256": "ac9da155c48b326649cae27dccc54cf8632f2b9426cf1fc41efb487c6c47f775"
+    },
+    {
+      "path": "scripts/export_agent_framework.py",
+      "bytes": 1271,
+      "sha256": "049083dd42b600fda13453dad9fd5579aefaf4a86fe8c5aecaed81bf391f0fc8"
+    },
+    {
+      "path": "scripts/package_agent_framework.py",
+      "bytes": 15150,
+      "sha256": "a4f96dae6fe123d7335653e50e18b0017eee8282fa62e7b09bdf99f1313521d4"
+    },
+    {
+      "path": "scripts/templates/agent-flow.html",
+      "bytes": 967,
+      "sha256": "d57df64b7a180e8285f5f1bbb2e95310764a0394d0dfdb4275c543df64d0f0dd"
+    },
+    {
+      "path": "scripts/templates/agent-flow.html.in",
+      "bytes": 29267,
+      "sha256": "65be8d280b5466cc5a04a1bf7172b26b5dd0d36c5dd5701c1fb0b5fdc4dac1f1"
+    },
+    {
+      "path": "tests/agent_framework/test_adapters.py",
+      "bytes": 9582,
+      "sha256": "597aa0302398c26ed8313aea276638cf1c65cb07fd77b266774752074a3f9c0e"
+    },
+    {
+      "path": "tests/agent_framework/test_api.py",
+      "bytes": 4868,
+      "sha256": "c7a797d19f15e20fe2e115a2f896f883c00cdf50f5f9bd10fbae6563b858763a"
+    },
+    {
+      "path": "tests/agent_framework/test_artifacts.py",
+      "bytes": 1202,
+      "sha256": "eea925be76bc0841048d89004d88171f0ed0c3c84d8a726afa1208d4de64643b"
+    },
+    {
+      "path": "tests/agent_framework/test_cli.py",
+      "bytes": 9655,
+      "sha256": "e787143153ae89e87439584b02b0aefaca6d806aeb97433d793e4994ab1ffaab"
+    },
+    {
+      "path": "tests/agent_framework/test_flow_export.py",
+      "bytes": 3362,
+      "sha256": "ad552941a59fa669c93e0f0b5e31add55b79591aa287849160b6b2cb70ad7764"
+    },
+    {
+      "path": "tests/agent_framework/test_runtime.py",
+      "bytes": 18461,
+      "sha256": "ddbfba5349487fd34ce7bfbfdadc5562e2c360752d58fb54e1e320e47572fa70"
+    },
+    {
+      "path": "tests/agent_framework/test_validation.py",
+      "bytes": 6903,
+      "sha256": "4c78514705035b880cf3e3871e4da0d890193e8c6bf87c47984edcb86fe8640e"
+    },
+    {
+      "path": "uv.lock",
+      "bytes": 222063,
+      "sha256": "c85790a3ee2b365331255be4343d6b19e3a7eb79974d544031b39757685c551e"
+    }
+  ]
+}

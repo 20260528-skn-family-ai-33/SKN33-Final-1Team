@@ -1,0 +1,122 @@
+[
+  {
+    "id": "argparse",
+    "label": "argparse",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "pathlib",
+    "label": "pathlib",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "hashlib",
+    "label": "hashlib",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "typing",
+    "label": "typing",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "importlib",
+    "label": "importlib",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "json",
+    "label": "json",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "os",
+    "label": "os",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "pydantic",
+    "label": "pydantic",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "re",
+    "label": "re",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "sys",
+    "label": "sys",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "tempfile",
+    "label": "tempfile",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "dataclasses",
+    "label": "dataclasses",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "langgraph_graph",
+    "label": "langgraph_graph",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "threading",
+    "label": "threading",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  },
+  {
+    "id": "decimal",
+    "label": "decimal",
+    "file_type": "concept",
+    "type": "external",
+    "external": true,
+    "source_file": ""
+  }
+]

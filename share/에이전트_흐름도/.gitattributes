@@ -1,0 +1,18 @@
+# Frozen schema fingerprints compare exact bytes on every checkout platform.
+backend/migrations/** text eol=lf
+backend/app/persistence/schema_contract.json text eol=lf
+
+# Portable team handoff: embedded source hashes must survive Windows checkout.
+backend/agent_framework/** text eol=lf
+docs/agent-framework/** text eol=lf
+docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.* text eol=lf
+examples/agent_framework/** text eol=lf
+tests/agent_framework/** text eol=lf
+scripts/build_agent_flow_html.py text eol=lf
+scripts/build_agent_code_graph.py text eol=lf
+scripts/package_agent_framework.py text eol=lf
+scripts/export_agent_framework.py text eol=lf
+scripts/templates/agent-flow.* text eol=lf
+share/*.md text eol=lf
+share/*.sha256 text eol=lf
+share/*.zip binary

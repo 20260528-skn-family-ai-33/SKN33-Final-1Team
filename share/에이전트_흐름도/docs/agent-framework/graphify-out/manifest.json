@@ -1,0 +1,74 @@
+{
+  "__init__.py": {
+    "mtime": 1793584348.1844423,
+    "seen": 1793585867.425144,
+    "ast_hash": "4579bc1457afb339ef6e91c4e9687aba",
+    "semantic_hash": ""
+  },
+  "__main__.py": {
+    "mtime": 1793584921.2601573,
+    "seen": 1793585867.425149,
+    "ast_hash": "394fd409ba9ca674f437a094f92beaef",
+    "semantic_hash": ""
+  },
+  "adapters/__init__.py": {
+    "mtime": 1793584535.3089805,
+    "seen": 1793585867.42515,
+    "ast_hash": "a371df42fc5296f72c5471235336a88d",
+    "semantic_hash": ""
+  },
+  "adapters/generate_examples.py": {
+    "mtime": 1793585041.0092185,
+    "seen": 1793585867.4251509,
+    "ast_hash": "b1ef9abaf27f4774bcf28356d3510ff9",
+    "semantic_hash": ""
+  },
+  "adapters/synthetic.py": {
+    "mtime": 1793584535.3316293,
+    "seen": 1793585867.4251509,
+    "ast_hash": "773580d3fdc6aeccdd3f816d904f5a4f",
+    "semantic_hash": ""
+  },
+  "adapters/templates.py": {
+    "mtime": 1793584535.3539536,
+    "seen": 1793585867.425152,
+    "ast_hash": "dc648efb42e928055a7b12429dfb664f",
+    "semantic_hash": ""
+  },
+  "api.py": {
+    "mtime": 1793584589.6262696,
+    "seen": 1793585867.425152,
+    "ast_hash": "a359bb196ebbc09bdb6477b66f9982ca",
+    "semantic_hash": ""
+  },
+  "cli.py": {
+    "mtime": 1793584921.2336257,
+    "seen": 1793585867.425153,
+    "ast_hash": "af3fcbd2c642d8310f69ee6276c55fca",
+    "semantic_hash": ""
+  },
+  "contracts.py": {
+    "mtime": 1793585043.5270557,
+    "seen": 1793585867.425154,
+    "ast_hash": "8c2f5eed0c90f0dc9794e7975fdf7d58",
+    "semantic_hash": ""
+  },
+  "ports.py": {
+    "mtime": 1793584348.2312562,
+    "seen": 1793585867.425154,
+    "ast_hash": "df5a2c8a7907211f1af039290b463bb4",
+    "semantic_hash": ""
+  },
+  "runtime.py": {
+    "mtime": 1793585043.5537314,
+    "seen": 1793585867.4251552,
+    "ast_hash": "6d3ba57ddb2b607c73e9d1b313b222e6",
+    "semantic_hash": ""
+  },
+  "validation.py": {
+    "mtime": 1793585043.5808482,
+    "seen": 1793585867.4251552,
+    "ast_hash": "8e10d552df885267db64af8b5832ca4a",
+    "semantic_hash": ""
+  }
+}

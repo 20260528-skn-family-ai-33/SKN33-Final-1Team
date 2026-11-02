@@ -1,0 +1,378 @@
+{
+  "labels": {
+    "0": "CLI and fixture composition",
+    "1": "Workflow and human approvals",
+    "2": "Evidence and verdict validation",
+    "3": "Synthetic data and observations",
+    "4": "Run input contracts",
+    "5": "Retrieval contracts and adapters",
+    "6": "Development HTTP routes",
+    "7": "Extraction contracts and adapters",
+    "8": "Reporting contracts and adapters",
+    "9": "Inspection contracts and ports",
+    "10": "Adapter error boundaries",
+    "11": "Contract field validation",
+    "12": "Adapter package scope",
+    "13": "Framework package scope"
+  },
+  "communities": {
+    "0": [
+      "adapters_generate_examples",
+      "adapters_generate_examples_generate",
+      "adapters_generate_examples_main",
+      "adapters_generate_examples_rationale_1",
+      "adapters_generate_examples_role_examples",
+      "adapters_synthetic_make_agents",
+      "adapters_synthetic_rationale_175",
+      "adapters_synthetic_syntheticadapters_init",
+      "argparse",
+      "cli",
+      "cli_emit",
+      "cli_error",
+      "cli_factory",
+      "cli_has_synthetic",
+      "cli_main",
+      "cli_parser",
+      "cli_rationale_1",
+      "cli_role",
+      "cli_schemas",
+      "contracts_frameworkerror",
+      "importlib",
+      "json",
+      "main",
+      "main_rationale_1",
+      "os",
+      "path",
+      "pathlib",
+      "ports_agents",
+      "re",
+      "runtime_workflow_init",
+      "scenario",
+      "sys",
+      "tempfile"
+    ],
+    "1": [
+      "any",
+      "cli_demo",
+      "contracts_approval",
+      "contracts_runsnapshot",
+      "runtime_boundary",
+      "runtime_copy",
+      "runtime_graphstate",
+      "runtime_py_exception",
+      "runtime_rationale_37",
+      "runtime_rationale_66",
+      "runtime_run",
+      "runtime_workflow",
+      "runtime_workflow_approve",
+      "runtime_workflow_exception_scope",
+      "runtime_workflow_extract",
+      "runtime_workflow_failed",
+      "runtime_workflow_get",
+      "runtime_workflow_inspect",
+      "runtime_workflow_inspect_request",
+      "runtime_workflow_output",
+      "runtime_workflow_record",
+      "runtime_workflow_report",
+      "runtime_workflow_rereview",
+      "runtime_workflow_retrieve",
+      "runtime_workflow_save",
+      "runtime_workflow_start",
+      "runtime_workflow_validate",
+      "t",
+      "typeddict"
+    ],
+    "2": [
+      "cli_check_role",
+      "contracts_validateditem",
+      "contracts_validatedresult",
+      "contracts_validaterequest",
+      "dataclasses",
+      "decimal",
+      "langgraph_graph",
+      "ports_validator",
+      "ports_validator_validate",
+      "pydantic",
+      "runtime",
+      "runtime_rationale_1",
+      "threading",
+      "validation",
+      "validation_aggregate",
+      "validation_criteria",
+      "validation_ensure_context",
+      "validation_rationale_1",
+      "validation_rationale_135",
+      "validation_referencevalidator",
+      "validation_referencevalidator_validate",
+      "validation_unique",
+      "validation_validate_draft",
+      "validation_validate_evidence",
+      "validation_validate_inspection",
+      "validation_validate_report",
+      "validation_validate_validated"
+    ],
+    "3": [
+      "adapters_synthetic",
+      "adapters_synthetic_hash",
+      "adapters_synthetic_rationale_1",
+      "adapters_synthetic_rationale_59",
+      "adapters_synthetic_syntheticadapters",
+      "adapters_synthetic_syntheticadapters_extract_source",
+      "adapters_synthetic_syntheticadapters_inspect",
+      "contracts",
+      "contracts_criterion",
+      "contracts_evidence",
+      "contracts_imageevidence",
+      "contracts_observation",
+      "contracts_rationale_1",
+      "contracts_rolerequest",
+      "contracts_sourceref",
+      "hashlib",
+      "typing"
+    ],
+    "4": [
+      "adapters_synthetic_rationale_35",
+      "adapters_synthetic_sample_inputs",
+      "api",
+      "api_rationale_1",
+      "api_revisionrequest",
+      "api_startrequest",
+      "basemodel",
+      "contracts_assetref",
+      "contracts_context",
+      "contracts_contract",
+      "contracts_documentref",
+      "runtime_workflow_input_scope"
+    ],
+    "5": [
+      "adapters_synthetic_syntheticadapters_retrieve",
+      "adapters_templates",
+      "adapters_templates_postgresneo4jretrieverstub",
+      "adapters_templates_postgresneo4jretrieverstub_retrieve",
+      "adapters_templates_rationale_1",
+      "adapters_templates_rationale_30",
+      "contracts_evidencebundle",
+      "contracts_retrieverequest",
+      "ports_retriever",
+      "ports_retriever_retrieve"
+    ],
+    "6": [
+      "api_create_app",
+      "api_create_app_approve",
+      "api_create_app_development_boundary",
+      "api_create_app_health",
+      "api_create_app_invoke",
+      "api_create_app_read",
+      "api_create_app_revise",
+      "api_create_app_start",
+      "fastapi"
+    ],
+    "7": [
+      "adapters_synthetic_syntheticadapters_extract",
+      "adapters_templates_qwenadapterstub",
+      "adapters_templates_qwenadapterstub_extract",
+      "adapters_templates_rationale_12",
+      "contracts_criteriadraft",
+      "contracts_extractrequest",
+      "ports_extractor",
+      "ports_extractor_extract"
+    ],
+    "8": [
+      "adapters_synthetic_syntheticadapters_report",
+      "adapters_templates_qwenadapterstub_report",
+      "contracts_reportdraft",
+      "contracts_reportrequest",
+      "ports_reporter",
+      "ports_reporter_report",
+      "protocol"
+    ],
+    "9": [
+      "adapters_templates_qwenadapterstub_inspect",
+      "contracts_inspectionresult",
+      "contracts_inspectrequest",
+      "ports",
+      "ports_inspector",
+      "ports_inspector_inspect",
+      "ports_rationale_1"
+    ],
+    "10": [
+      "adapters_synthetic_same_context",
+      "cli_demo_record",
+      "ports_adapterfailure",
+      "ports_adapterfailure_init",
+      "ports_py_exception",
+      "ports_rationale_40"
+    ],
+    "11": [
+      "contracts_approval_scoped_exception",
+      "contracts_evidence_exception_has_scope",
+      "contracts_imageevidence_valid_box",
+      "model_validator"
+    ],
+    "12": [
+      "adapters_init",
+      "adapters_init_rationale_1"
+    ],
+    "13": [
+      "init",
+      "init_rationale_1"
+    ]
+  },
+  "cohesion": {
+    "0": 0.11174242424242424,
+    "1": 0.23891625615763548,
+    "2": 0.18518518518518517,
+    "3": 0.22794117647058823,
+    "4": 0.3787878787878788,
+    "5": 0.37777777777777777,
+    "6": 0.3333333333333333,
+    "7": 0.4642857142857143,
+    "8": 0.47619047619047616,
+    "9": 0.5238095238095238,
+    "10": 0.3333333333333333,
+    "11": 0.5,
+    "12": 1.0,
+    "13": 1.0
+  },
+  "god_nodes": [
+    {
+      "id": "runtime_workflow",
+      "label": "Workflow",
+      "degree": 41
+    },
+    {
+      "id": "ports_adapterfailure",
+      "label": "AdapterFailure",
+      "degree": 26
+    },
+    {
+      "id": "contracts_contract",
+      "label": "Contract",
+      "degree": 23
+    },
+    {
+      "id": "adapters_synthetic_syntheticadapters",
+      "label": "SyntheticAdapters",
+      "degree": 22
+    },
+    {
+      "id": "contracts_inspectrequest",
+      "label": "InspectRequest",
+      "degree": 21
+    },
+    {
+      "id": "contracts_retrieverequest",
+      "label": "RetrieveRequest",
+      "degree": 20
+    },
+    {
+      "id": "contracts_reportrequest",
+      "label": "ReportRequest",
+      "degree": 19
+    },
+    {
+      "id": "contracts_extractrequest",
+      "label": "ExtractRequest",
+      "degree": 17
+    },
+    {
+      "id": "contracts_context",
+      "label": "Context",
+      "degree": 16
+    },
+    {
+      "id": "contracts_criteriadraft",
+      "label": "CriteriaDraft",
+      "degree": 16
+    }
+  ],
+  "surprising_connections": [
+    {
+      "source": "_same_context()",
+      "target": "Context",
+      "source_files": [
+        "adapters/synthetic.py",
+        "contracts.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "SyntheticAdapters",
+      "target": "CriteriaDraft",
+      "source_files": [
+        "adapters/synthetic.py",
+        "contracts.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "SyntheticAdapters",
+      "target": "EvidenceBundle",
+      "source_files": [
+        "adapters/synthetic.py",
+        "contracts.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "SyntheticAdapters",
+      "target": "ExtractRequest",
+      "source_files": [
+        "adapters/synthetic.py",
+        "contracts.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "SyntheticAdapters",
+      "target": "InspectionResult",
+      "source_files": [
+        "adapters/synthetic.py",
+        "contracts.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "suggested_questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `Workflow` connect `Workflow and human approvals` to `CLI and fixture composition`, `Evidence and verdict validation`, `Run input contracts`, `Retrieval contracts and adapters`, `Extraction contracts and adapters`, `Reporting contracts and adapters`, `Inspection contracts and ports`, `Adapter error boundaries`?",
+      "why": "High betweenness centrality (0.013) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 18 inferred relationships involving `Workflow` (e.g. with `Approval` and `AssetRef`) actually correct?",
+      "why": "`Workflow` has 18 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `CLI and fixture composition` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11174242424242424 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `make_agents()` connect `CLI and fixture composition` to `Evidence and verdict validation`, `Synthetic data and observations`?",
+      "why": "High betweenness centrality (0.012) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 14 inferred relationships involving `SyntheticAdapters` (e.g. with `CriteriaDraft` and `Criterion`) actually correct?",
+      "why": "`SyntheticAdapters` has 14 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `SyntheticAdapters` connect `Synthetic data and observations` to `CLI and fixture composition`, `Retrieval contracts and adapters`, `Extraction contracts and adapters`, `Reporting contracts and adapters`, `Inspection contracts and ports`, `Adapter error boundaries`?",
+      "why": "High betweenness centrality (0.010) - this node is a cross-community bridge."
+    }
+  ]
+}

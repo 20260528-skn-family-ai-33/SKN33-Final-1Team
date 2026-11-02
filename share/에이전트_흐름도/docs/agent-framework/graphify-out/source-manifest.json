@@ -1,0 +1,78 @@
+{
+  "git_commit": "87a3b9eaf92c2a8c14f823053beb58d7812e06c3",
+  "scope": "backend/agent_framework/**/*.py",
+  "files": [
+    {
+      "path": "backend/agent_framework/__init__.py",
+      "sha256": "f046a8a976eb540236a08b1cd8397dd6c75d7b7269bab156b20869994da8b13c",
+      "bytes": 104,
+      "lines": 3
+    },
+    {
+      "path": "backend/agent_framework/__main__.py",
+      "sha256": "fb2d181351fd041a5dd6a36600de816234886105df0333fd7c06f079e47bc6e5",
+      "bytes": 150,
+      "lines": 5
+    },
+    {
+      "path": "backend/agent_framework/adapters/__init__.py",
+      "sha256": "ca0b3ee9e346a27efcf15d9d17e00a6de20f7878d7e00b19fb1ba10648db4d9a",
+      "bytes": 168,
+      "lines": 5
+    },
+    {
+      "path": "backend/agent_framework/adapters/generate_examples.py",
+      "sha256": "c4e9a46ffe6e56024f12204abc38ef9cdb3f6ea26b0e4032a2bcf92801f4733f",
+      "bytes": 2698,
+      "lines": 58
+    },
+    {
+      "path": "backend/agent_framework/adapters/synthetic.py",
+      "sha256": "d1f215fffe3ae6f797022fd18209bbabe18aaf89835fa6a7c3d58952274b5f91",
+      "bytes": 9161,
+      "lines": 183
+    },
+    {
+      "path": "backend/agent_framework/adapters/templates.py",
+      "sha256": "165944ea114310b54d93e5d4a60f23de8838501556c45e823cea223f6451afea",
+      "bytes": 1818,
+      "lines": 39
+    },
+    {
+      "path": "backend/agent_framework/api.py",
+      "sha256": "a405636d783eea49517c943c68f241bd3f4b5686c4e6ac03eddbc4bcc33b3028",
+      "bytes": 3289,
+      "lines": 79
+    },
+    {
+      "path": "backend/agent_framework/cli.py",
+      "sha256": "ab179977572e8acf92eca61bab1f07c413cbf54e7d13b3eb23444225d1a66874",
+      "bytes": 11268,
+      "lines": 230
+    },
+    {
+      "path": "backend/agent_framework/contracts.py",
+      "sha256": "ead26cafc963c465980619fd6029764f69122f3cbcc6fc6d2f283f3201996023",
+      "bytes": 7189,
+      "lines": 234
+    },
+    {
+      "path": "backend/agent_framework/ports.py",
+      "sha256": "4d9ad3d3890c01dd6a9b7d9a657fee132bf955f2426abfbd8c125806bb257256",
+      "bytes": 1411,
+      "lines": 44
+    },
+    {
+      "path": "backend/agent_framework/runtime.py",
+      "sha256": "30ec76fc75d3520151aaddbdad6aeeb5a18eed82ebe652f629cd34847b7055c6",
+      "bytes": 15622,
+      "lines": 294
+    },
+    {
+      "path": "backend/agent_framework/validation.py",
+      "sha256": "c44dcfc0db3a710a1d03c9bb432fd5e08e687a59308fc992b2309a897165dcb9",
+      "bytes": 11128,
+      "lines": 206
+    }
+  ]
+}
