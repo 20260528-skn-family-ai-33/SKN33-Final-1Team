@@ -41,6 +41,10 @@ def run(frames, output_path, detection_dir, recognition_dir, *, threads=4, devic
     from PIL import Image
     import numpy as np
     import paddle
+    # CPU 빌드에 gpu를 넘기면 모델은 올라가도 프레임마다 NotImplementedError가 나므로 바로 멈춘다
+    if device == "gpu" and not paddle.is_compiled_with_cuda():
+        raise SystemExit("device=gpu인데 이 python의 paddlepaddle은 CPU 빌드입니다. "
+                         "VIDEO_OCR_PYTHON을 paddlepaddle-gpu 환경으로 지정하세요.")
     model = build_model(detection_dir, recognition_dir, threads=threads, device=device)
     identities.update(engine="paddleocr", cpu_threads=threads, paddleocr_version=importlib.metadata.version("paddleocr"),
                       paddle_version=paddle.__version__, paddlex_version=importlib.metadata.version("paddlex"))

@@ -28,6 +28,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 from uuid import uuid4
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException
@@ -132,6 +133,16 @@ def _run_ocr_frames(job_id: str, body: dict) -> dict:
         shutil.rmtree(work, ignore_errors=True)
 
 
+def _free_gpu() -> None:
+    """실패한 작업이 잡아 둔 GPU 캐시를 돌려줘 다음 작업이 OOM을 이어받지 않게 한다."""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except Exception:
+        pass
+
+
 RUNNERS = {"candidates": _run_candidates, "compare": _run_compare, "ocr_frames": _run_ocr_frames}
 
 
@@ -147,7 +158,9 @@ def _loop() -> None:
         try:
             result = RUNNERS[job["kind"]](job_id, body)
             _set(job_id, status="completed", progress=100, result=_plain(result))
-        except Exception as exc:  # 실패 원인 종류만 돌려준다(경로·값은 응답에 싣지 않는다)
+        except Exception as exc:  # 실패 원인 종류만 돌려준다(경로·값은 응답에 싣지 않는다). 자세한 내용은 Pod 로그에만 남긴다
+            traceback.print_exc()
+            _free_gpu()
             _set(job_id, status="failed", error=f"{exc.__class__.__name__}: {exc}" if isinstance(exc, ValueError) else exc.__class__.__name__)
 
 
