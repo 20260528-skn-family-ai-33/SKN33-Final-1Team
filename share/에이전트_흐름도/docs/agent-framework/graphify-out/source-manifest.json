@@ -1,0 +1,159 @@
+{
+  "git_commit": "eaab8701871769afec1a07c638d269abd9af06c1",
+  "scope": "backend/agent_framework/**/*.py",
+  "files": [
+    {
+      "path": "backend/agent_framework/__init__.py",
+      "sha256": "55c3bb7eea0f3b4202a71cc390650f90f732434bdef60a32d67b6a7a2b84cc53",
+      "bytes": 104,
+      "lines": 3
+    },
+    {
+      "path": "backend/agent_framework/__main__.py",
+      "sha256": "fb2d181351fd041a5dd6a36600de816234886105df0333fd7c06f079e47bc6e5",
+      "bytes": 150,
+      "lines": 5
+    },
+    {
+      "path": "backend/agent_framework/adapters/__init__.py",
+      "sha256": "ca0b3ee9e346a27efcf15d9d17e00a6de20f7878d7e00b19fb1ba10648db4d9a",
+      "bytes": 168,
+      "lines": 5
+    },
+    {
+      "path": "backend/agent_framework/adapters/file_backed.py",
+      "sha256": "ef571ea09e7a2aba71d2920575e160971e1b057071b9800a1e2f59beadc8ef1a",
+      "bytes": 1158,
+      "lines": 28
+    },
+    {
+      "path": "backend/agent_framework/adapters/generate_examples.py",
+      "sha256": "f4ab0dc3bfa4c3f1f9ea4597b21514d6227660b6e83971e4c7bc2422e2b7d9b3",
+      "bytes": 2902,
+      "lines": 60
+    },
+    {
+      "path": "backend/agent_framework/adapters/project_files.py",
+      "sha256": "cf2329e6eaac5998a6cc6f9ec1e650f8c5f627966f158ac5f985af3323ff0578",
+      "bytes": 12787,
+      "lines": 261
+    },
+    {
+      "path": "backend/agent_framework/adapters/synthetic.py",
+      "sha256": "06d64bb2419e55cc7451d0100bbc0a95075954c5ab0acc24612714d04e906c06",
+      "bytes": 7509,
+      "lines": 155
+    },
+    {
+      "path": "backend/agent_framework/adapters/templates.py",
+      "sha256": "00e6c2904d25ac09d372c0f5d1890246bbfb99d74ec3592188c3e8980d7b7591",
+      "bytes": 1241,
+      "lines": 27
+    },
+    {
+      "path": "backend/agent_framework/api.py",
+      "sha256": "bba1865a11834521d04c020fdbf2198125d387167ec9118e0acf934959dd368a",
+      "bytes": 4829,
+      "lines": 107
+    },
+    {
+      "path": "backend/agent_framework/checks.py",
+      "sha256": "80aa735d8e209b6641565a6c51fdb0047b949648f131d8c9bd5090d30aeff7ed",
+      "bytes": 7759,
+      "lines": 186
+    },
+    {
+      "path": "backend/agent_framework/cli.py",
+      "sha256": "c2cd45a891c453f930b5068c5a077e1ad04f4a8a2e2c0c6227f709ff8419fa46",
+      "bytes": 17377,
+      "lines": 329
+    },
+    {
+      "path": "backend/agent_framework/composition.py",
+      "sha256": "16b2c03c31e74c966e48e0884f9da7edd4439783a97d8d8ae301c75e1e335914",
+      "bytes": 8288,
+      "lines": 202
+    },
+    {
+      "path": "backend/agent_framework/context.py",
+      "sha256": "72739e1ae0a94b7ecb25f812ea94e355e711746b6eda849c4860e10c7cac8ab4",
+      "bytes": 1487,
+      "lines": 33
+    },
+    {
+      "path": "backend/agent_framework/contracts.py",
+      "sha256": "c24ef87756a7225be2581aed4c79849f1784b6a2ffeca71dbb8d51d49e422500",
+      "bytes": 9496,
+      "lines": 276
+    },
+    {
+      "path": "backend/agent_framework/durable_worker.py",
+      "sha256": "c71cd4f22b642a3e980604c1df93db32c1578193fa3a3d2fb69fed1b8809a529",
+      "bytes": 16435,
+      "lines": 274
+    },
+    {
+      "path": "backend/agent_framework/files.py",
+      "sha256": "aac514642877c2df41acb6659fc22ac021b092bb472b5483470ed77330c4871c",
+      "bytes": 10929,
+      "lines": 226
+    },
+    {
+      "path": "backend/agent_framework/flow_checks.py",
+      "sha256": "3ee95cac65f4d04e53570b63892385263704c169beadf21f132d1548f26fc1ea",
+      "bytes": 9038,
+      "lines": 178
+    },
+    {
+      "path": "backend/agent_framework/invocation.py",
+      "sha256": "c350cbd6af3410c6a34ee8450aadf80e5b787c1aefec630678e05d7ed2972063",
+      "bytes": 6401,
+      "lines": 142
+    },
+    {
+      "path": "backend/agent_framework/ports.py",
+      "sha256": "f08368d001f382857c3650f950665167a731cec075751342f97d4fbbcca01831",
+      "bytes": 1644,
+      "lines": 50
+    },
+    {
+      "path": "backend/agent_framework/postgres.py",
+      "sha256": "91debf61b90424ef24105f3a7d1d0ce1cb3b734c99d86aa1d833c5c7e1561707",
+      "bytes": 12785,
+      "lines": 215
+    },
+    {
+      "path": "backend/agent_framework/postgres_api.py",
+      "sha256": "2bed87159cb3b8c383c7bc4cb486ae8d0acf665f434266688e88dfe9557c13ab",
+      "bytes": 4010,
+      "lines": 74
+    },
+    {
+      "path": "backend/agent_framework/postgres_commands.py",
+      "sha256": "d35901c1cedafee38a780f7407315866f8ec53e34057a9ef68ad514a4df95ab9",
+      "bytes": 3964,
+      "lines": 90
+    },
+    {
+      "path": "backend/agent_framework/postgres_schema.py",
+      "sha256": "83090b5c2792096388241d731c0836642e54220b9101bfd58a0c37ca07583ef3",
+      "bytes": 5413,
+      "lines": 87
+    },
+    {
+      "path": "backend/agent_framework/runtime.py",
+      "sha256": "b2800acda63789a405e64e7392c4a94dbf7008fc0ab26bb2a91dca7be909e5f7",
+      "bytes": 19983,
+      "lines": 369
+    },
+    {
+      "path": "backend/agent_framework/validation.py",
+      "sha256": "7de5a0703c6971363897b1da83ade6edfa22faf47f5257f6b3c66f905cd29f49",
+      "bytes": 12665,
+      "lines": 238
+    }
+  ],
+  "excluded_sql_migrations": [
+    "backend/agent_framework/AF001.sql"
+  ]
+}

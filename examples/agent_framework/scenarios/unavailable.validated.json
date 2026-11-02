@@ -1,0 +1,40 @@
+{
+  "contract_version": "2.0.0",
+  "context": {
+    "contract_version": "2.0.0",
+    "project_id": "synthetic-project",
+    "run_id": "demo-run-1",
+    "actor_id": "synthetic-reviewer",
+    "document_version_id": "document-v1",
+    "criteria_version_id": "criteria-v1",
+    "asset_version_id": "poster-v1",
+    "parent_run_id": null
+  },
+  "verdict": "review",
+  "items": [
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "requirement-text",
+      "verdict": "review",
+      "issues": [
+        "missing_citation",
+        "missing_requirement_evidence",
+        "context_incomplete"
+      ]
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "requirement-number",
+      "verdict": "review",
+      "issues": [
+        "missing_citation",
+        "missing_requirement_evidence",
+        "context_incomplete"
+      ]
+    }
+  ],
+  "limitations": [
+    "Reference policy only; visual accuracy and source authority require real adapters."
+  ],
+  "synthetic": true
+}

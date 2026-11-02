@@ -1,0 +1,10 @@
+{
+  "version": "9.1.6",
+  "source_url": "https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js",
+  "source_sha256": "576bb887733eb01bb52ee75b90ef46d818454de5fddb5b616fb8a298d307ca12",
+  "source_sri": "sha384-Ux6phic9PEHJ38YtrijhkzyJ8yQlH8i/+buBR8s3mAZOJrP1gwyvAcIYl3GWtpX1",
+  "bytes": 702611,
+  "delivery": "inline",
+  "external_html_resources": [],
+  "verification_scope": "static HTML resource audit only; no browser execution"
+}

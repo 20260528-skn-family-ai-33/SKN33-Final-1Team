@@ -1,0 +1,1626 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Creative Checker — Development Framework",
+    "description": "Development only. In-memory state, synthetic default adapters, no authentication. Not the front-v2/M008 production API. Bind to loopback only.",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/api/framework/v1/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_framework_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/configuration": {
+      "get": {
+        "summary": "Configuration Status",
+        "operationId": "configuration_status_api_framework_v1_configuration_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs": {
+      "post": {
+        "summary": "Start",
+        "operationId": "start_api_framework_v1_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs/{run_id}": {
+      "get": {
+        "summary": "Read",
+        "operationId": "read_api_framework_v1_runs__run_id__get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs/{run_id}/steps": {
+      "get": {
+        "summary": "Steps",
+        "operationId": "steps_api_framework_v1_runs__run_id__steps_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StepTimeline"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs/{run_id}/approvals": {
+      "post": {
+        "summary": "Approve",
+        "operationId": "approve_api_framework_v1_runs__run_id__approvals_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Approval"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs/{run_id}/revisions": {
+      "post": {
+        "summary": "Revise",
+        "operationId": "revise_api_framework_v1_runs__run_id__revisions_post",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Approval": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "actor_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Actor Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve_criteria",
+              "approve_changes",
+              "approve_final",
+              "approve_exception"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
+          },
+          "criterion_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "title": "Criterion Ids",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "actor_id",
+          "decision"
+        ],
+        "title": "Approval"
+      },
+      "AssetRef": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "file_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "File Id"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Asset Version Id"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ],
+            "title": "Media Type",
+            "default": "image/png"
+          },
+          "width": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Height"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id",
+          "asset_version_id",
+          "sha256",
+          "width",
+          "height"
+        ],
+        "title": "AssetRef"
+      },
+      "Context": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "project_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Project Id"
+          },
+          "run_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Run Id"
+          },
+          "actor_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Actor Id"
+          },
+          "document_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Document Version Id"
+          },
+          "criteria_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criteria Version Id"
+          },
+          "asset_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Version Id"
+          },
+          "parent_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Run Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "run_id",
+          "actor_id",
+          "document_version_id",
+          "criteria_version_id"
+        ],
+        "title": "Context"
+      },
+      "CriteriaDraft": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/Criterion"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Criteria"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "criteria"
+        ],
+        "title": "CriteriaDraft"
+      },
+      "Criterion": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "criterion_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criterion Id"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "visual",
+              "unsupported"
+            ],
+            "title": "Kind"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "equals",
+              "contains",
+              "gte",
+              "lte",
+              "present",
+              "manual"
+            ],
+            "title": "Operator"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "human_added": {
+            "type": "boolean",
+            "title": "Human Added",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "text",
+          "kind",
+          "expected",
+          "operator",
+          "source"
+        ],
+        "title": "Criterion"
+      },
+      "DocumentRef": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "file_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "File Id"
+          },
+          "document_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Document Version Id"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          },
+          "media_type": {
+            "type": "string",
+            "const": "application/pdf",
+            "title": "Media Type",
+            "default": "application/pdf"
+          },
+          "page_count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "file_id",
+          "document_version_id",
+          "sha256",
+          "page_count"
+        ],
+        "title": "DocumentRef"
+      },
+      "Evidence": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "evidence_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Evidence Id"
+          },
+          "project_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Project Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "current_requirement",
+              "approved_exception",
+              "historical_context"
+            ],
+            "title": "Kind"
+          },
+          "criterion_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Criterion Ids"
+          },
+          "source_record_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Source Record Id"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "approval_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Id"
+          },
+          "applicable_asset_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applicable Asset Version Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "project_id",
+          "kind",
+          "criterion_ids",
+          "source_record_id",
+          "source"
+        ],
+        "title": "Evidence"
+      },
+      "EvidenceBundle": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "context_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Context Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "complete",
+              "empty",
+              "stale",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "default": []
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          },
+          "postgres_revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Postgres Revision",
+            "default": 0
+          },
+          "graph_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Revision"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "context_id",
+          "status"
+        ],
+        "title": "EvidenceBundle"
+      },
+      "FrameworkError": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable",
+            "default": false
+          },
+          "outcome_unknown": {
+            "type": "boolean",
+            "title": "Outcome Unknown",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "FrameworkError"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImageEvidence": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Asset Version Id"
+          },
+          "asset_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Asset Hash"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 4,
+                "minItems": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "asset_version_id",
+          "asset_hash"
+        ],
+        "title": "ImageEvidence"
+      },
+      "InspectionResult": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/Observation"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "observations"
+        ],
+        "title": "InspectionResult"
+      },
+      "Observation": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "criterion_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criterion Id"
+          },
+          "observed": {
+            "type": "string",
+            "title": "Observed"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "review"
+            ],
+            "title": "Verdict"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ImageEvidence"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "default": []
+          },
+          "uncertainty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uncertainty"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "observed",
+          "verdict",
+          "image"
+        ],
+        "title": "Observation"
+      },
+      "ReportDraft": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "review"
+            ],
+            "title": "Verdict"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Summary"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "default": []
+          },
+          "change_requests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Requests",
+            "default": []
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "verdict",
+          "summary"
+        ],
+        "title": "ReportDraft"
+      },
+      "RevisionRequest": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/AssetRef"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "asset"
+        ],
+        "title": "RevisionRequest"
+      },
+      "RunSnapshot": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "development",
+              "test"
+            ],
+            "title": "Profile"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          },
+          "execution_status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "extracting",
+              "reviewing",
+              "waiting_criteria",
+              "waiting_review",
+              "waiting_revision",
+              "completed",
+              "failed",
+              "outcome_unknown"
+            ],
+            "title": "Execution Status"
+          },
+          "machine_verdict": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "review"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Machine Verdict"
+          },
+          "human_decision": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "changes_approved",
+              "final_approved",
+              "exception_approved"
+            ],
+            "title": "Human Decision",
+            "default": "unreviewed"
+          },
+          "criteria": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CriteriaDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceBundle"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "inspection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InspectionResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validated": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidatedResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/Approval"
+            },
+            "type": "array",
+            "title": "Approvals",
+            "default": []
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stages",
+            "default": []
+          },
+          "step_records": {
+            "items": {
+              "$ref": "#/components/schemas/StepRecord"
+            },
+            "type": "array",
+            "title": "Step Records",
+            "default": []
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrameworkError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "profile",
+          "synthetic",
+          "execution_status"
+        ],
+        "title": "RunSnapshot"
+      },
+      "SourceRef": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "document_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Document Version Id"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "block_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Block Id"
+          },
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Quote"
+          },
+          "source_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Source Hash"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_version_id",
+          "page",
+          "block_id",
+          "quote",
+          "source_hash"
+        ],
+        "title": "SourceRef"
+      },
+      "StartRequest": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "document": {
+            "$ref": "#/components/schemas/DocumentRef"
+          },
+          "asset": {
+            "$ref": "#/components/schemas/AssetRef"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "document",
+          "asset"
+        ],
+        "title": "StartRequest"
+      },
+      "StepRecord": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Ordinal"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "A02",
+              "A04_A05",
+              "A06",
+              "A07"
+            ],
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed",
+              "failed",
+              "outcome_unknown",
+              "reused"
+            ],
+            "title": "Status"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrameworkError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          },
+          "source_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Run Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ordinal",
+          "role",
+          "status",
+          "recorded_at"
+        ],
+        "title": "StepRecord",
+        "description": "One role boundary, including validation; never a raw provider payload."
+      },
+      "StepTimeline": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "development",
+              "test"
+            ],
+            "title": "Profile"
+          },
+          "storage": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "postgres"
+            ],
+            "title": "Storage",
+            "default": "memory"
+          },
+          "execution_status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "extracting",
+              "reviewing",
+              "waiting_criteria",
+              "waiting_review",
+              "waiting_revision",
+              "completed",
+              "failed",
+              "outcome_unknown"
+            ],
+            "title": "Execution Status"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/StepRecord"
+            },
+            "type": "array",
+            "title": "Records",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "profile",
+          "execution_status"
+        ],
+        "title": "StepTimeline"
+      },
+      "ValidatedItem": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "criterion_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criterion Id"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "review"
+            ],
+            "title": "Verdict"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "verdict"
+        ],
+        "title": "ValidatedItem"
+      },
+      "ValidatedResult": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "review"
+            ],
+            "title": "Verdict"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ValidatedItem"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Items"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations",
+            "default": []
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "verdict",
+          "items"
+        ],
+        "title": "ValidatedResult"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

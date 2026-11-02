@@ -1,0 +1,17 @@
+{
+  "contract_version": "2.0.0",
+  "role": "A02",
+  "cases": [
+    {
+      "contract_version": "2.0.0",
+      "id": "pass",
+      "input": "A02.pass.json"
+    },
+    {
+      "contract_version": "2.0.0",
+      "id": "invalid-scope",
+      "input": "A02.invalid-scope.json",
+      "expected_error": "DOCUMENT_VERSION_MISMATCH"
+    }
+  ]
+}

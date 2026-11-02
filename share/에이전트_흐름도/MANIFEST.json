@@ -1,0 +1,929 @@
+{
+  "release": "agent-framework-2026-11-02",
+  "entrypoint": "에이전트_흐름도.html",
+  "scope": "Current offline documentation and source-view copy; develop and run from project root",
+  "verification": {
+    "business_flow": {
+      "source_sha256": "55cd42fa4f80a2657496c87c1719fe205858d32320495b2b9d6008c2eb5905ce",
+      "business_nodes": 21,
+      "business_edges": 33,
+      "scenario_steps": {
+        "overview": 10,
+        "revision": 20,
+        "review": 9
+      },
+      "html_sha256": "6a24d4bf4a82c3849fce8d45cebaa5df0387d26326fea1206690547ab92c2281",
+      "validation": "Reference anchors, code paths/lines, scenarios and relative links checked; browser rendering not verified."
+    },
+    "manifest_hashes_refreshed": true,
+    "browser_rendering_verified": false,
+    "windows_execution_verified": false
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 973,
+      "sha256": "f6297bf9778197058020c31c85461d6f243884b769d0a0e392b2d58a1f080214"
+    },
+    {
+      "path": ".github/workflows/agent-framework.yml",
+      "bytes": 1025,
+      "sha256": "954714060b921f8bc9c41f035a281b4de8936b38c56b511857591770f29e9410"
+    },
+    {
+      "path": ".pytest_cache/.gitignore",
+      "bytes": 37,
+      "sha256": "3ed731b65d06150c138e2dadb0be0697550888a6b47eb8c45ecc9adba8b8e9bd"
+    },
+    {
+      "path": ".pytest_cache/CACHEDIR.TAG",
+      "bytes": 191,
+      "sha256": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+    },
+    {
+      "path": ".pytest_cache/README.md",
+      "bytes": 302,
+      "sha256": "73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad"
+    },
+    {
+      "path": ".pytest_cache/v/cache/nodeids",
+      "bytes": 447,
+      "sha256": "36435b2b9b2c9a38b520065cc0c1d9317285f1934a6adc97d5fa4d4016592b81"
+    },
+    {
+      "path": "PRODUCT.md",
+      "bytes": 3390,
+      "sha256": "7b49776fb347c7a68f0151e191ded90f79f8e9f5caa2966e84c80f9abc4ef614"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1360,
+      "sha256": "a8d7bfdabab4d36a61be936d34dfa1efc97f3c42fd90043cb5d4e240ef3cae1b"
+    },
+    {
+      "path": "backend/__init__.py",
+      "bytes": 57,
+      "sha256": "f010cc6c969e1cb5f811bf24991206a3d009abeb607be5da6ac8c829bcc24397"
+    },
+    {
+      "path": "backend/agent_framework/AF001.sql",
+      "bytes": 4048,
+      "sha256": "2ea1dbedbe49a10478210e4ba4decd6134f6dec654938404bcf569797235276b"
+    },
+    {
+      "path": "backend/agent_framework/__init__.py",
+      "bytes": 104,
+      "sha256": "55c3bb7eea0f3b4202a71cc390650f90f732434bdef60a32d67b6a7a2b84cc53"
+    },
+    {
+      "path": "backend/agent_framework/__main__.py",
+      "bytes": 150,
+      "sha256": "fb2d181351fd041a5dd6a36600de816234886105df0333fd7c06f079e47bc6e5"
+    },
+    {
+      "path": "backend/agent_framework/adapters/__init__.py",
+      "bytes": 168,
+      "sha256": "ca0b3ee9e346a27efcf15d9d17e00a6de20f7878d7e00b19fb1ba10648db4d9a"
+    },
+    {
+      "path": "backend/agent_framework/adapters/file_backed.py",
+      "bytes": 1158,
+      "sha256": "ef571ea09e7a2aba71d2920575e160971e1b057071b9800a1e2f59beadc8ef1a"
+    },
+    {
+      "path": "backend/agent_framework/adapters/generate_examples.py",
+      "bytes": 2902,
+      "sha256": "f4ab0dc3bfa4c3f1f9ea4597b21514d6227660b6e83971e4c7bc2422e2b7d9b3"
+    },
+    {
+      "path": "backend/agent_framework/adapters/project_files.py",
+      "bytes": 12787,
+      "sha256": "cf2329e6eaac5998a6cc6f9ec1e650f8c5f627966f158ac5f985af3323ff0578"
+    },
+    {
+      "path": "backend/agent_framework/adapters/synthetic.py",
+      "bytes": 7509,
+      "sha256": "06d64bb2419e55cc7451d0100bbc0a95075954c5ab0acc24612714d04e906c06"
+    },
+    {
+      "path": "backend/agent_framework/adapters/templates.py",
+      "bytes": 1241,
+      "sha256": "00e6c2904d25ac09d372c0f5d1890246bbfb99d74ec3592188c3e8980d7b7591"
+    },
+    {
+      "path": "backend/agent_framework/api.py",
+      "bytes": 4829,
+      "sha256": "bba1865a11834521d04c020fdbf2198125d387167ec9118e0acf934959dd368a"
+    },
+    {
+      "path": "backend/agent_framework/checks.py",
+      "bytes": 7759,
+      "sha256": "80aa735d8e209b6641565a6c51fdb0047b949648f131d8c9bd5090d30aeff7ed"
+    },
+    {
+      "path": "backend/agent_framework/cli.py",
+      "bytes": 17377,
+      "sha256": "c2cd45a891c453f930b5068c5a077e1ad04f4a8a2e2c0c6227f709ff8419fa46"
+    },
+    {
+      "path": "backend/agent_framework/composition.py",
+      "bytes": 8288,
+      "sha256": "16b2c03c31e74c966e48e0884f9da7edd4439783a97d8d8ae301c75e1e335914"
+    },
+    {
+      "path": "backend/agent_framework/context.py",
+      "bytes": 1487,
+      "sha256": "72739e1ae0a94b7ecb25f812ea94e355e711746b6eda849c4860e10c7cac8ab4"
+    },
+    {
+      "path": "backend/agent_framework/contracts.py",
+      "bytes": 9496,
+      "sha256": "c24ef87756a7225be2581aed4c79849f1784b6a2ffeca71dbb8d51d49e422500"
+    },
+    {
+      "path": "backend/agent_framework/durable_worker.py",
+      "bytes": 16435,
+      "sha256": "c71cd4f22b642a3e980604c1df93db32c1578193fa3a3d2fb69fed1b8809a529"
+    },
+    {
+      "path": "backend/agent_framework/files.py",
+      "bytes": 10929,
+      "sha256": "aac514642877c2df41acb6659fc22ac021b092bb472b5483470ed77330c4871c"
+    },
+    {
+      "path": "backend/agent_framework/flow_checks.py",
+      "bytes": 9038,
+      "sha256": "3ee95cac65f4d04e53570b63892385263704c169beadf21f132d1548f26fc1ea"
+    },
+    {
+      "path": "backend/agent_framework/invocation.py",
+      "bytes": 6401,
+      "sha256": "c350cbd6af3410c6a34ee8450aadf80e5b787c1aefec630678e05d7ed2972063"
+    },
+    {
+      "path": "backend/agent_framework/ports.py",
+      "bytes": 1644,
+      "sha256": "f08368d001f382857c3650f950665167a731cec075751342f97d4fbbcca01831"
+    },
+    {
+      "path": "backend/agent_framework/postgres.py",
+      "bytes": 12785,
+      "sha256": "91debf61b90424ef24105f3a7d1d0ce1cb3b734c99d86aa1d833c5c7e1561707"
+    },
+    {
+      "path": "backend/agent_framework/postgres_api.py",
+      "bytes": 4010,
+      "sha256": "2bed87159cb3b8c383c7bc4cb486ae8d0acf665f434266688e88dfe9557c13ab"
+    },
+    {
+      "path": "backend/agent_framework/postgres_commands.py",
+      "bytes": 3964,
+      "sha256": "d35901c1cedafee38a780f7407315866f8ec53e34057a9ef68ad514a4df95ab9"
+    },
+    {
+      "path": "backend/agent_framework/postgres_schema.py",
+      "bytes": 5413,
+      "sha256": "83090b5c2792096388241d731c0836642e54220b9101bfd58a0c37ca07583ef3"
+    },
+    {
+      "path": "backend/agent_framework/runtime.py",
+      "bytes": 19983,
+      "sha256": "b2800acda63789a405e64e7392c4a94dbf7008fc0ab26bb2a91dca7be909e5f7"
+    },
+    {
+      "path": "backend/agent_framework/validation.py",
+      "bytes": 12665,
+      "sha256": "7de5a0703c6971363897b1da83ade6edfa22faf47f5257f6b3c66f905cd29f49"
+    },
+    {
+      "path": "docs/agent-framework/README.md",
+      "bytes": 46114,
+      "sha256": "92691039b9de9eb574998653aca85d7ae9de5551e98dd31c5d4da2e3b2c28f73"
+    },
+    {
+      "path": "docs/agent-framework/a03-retirement-2026-11-02.md",
+      "bytes": 4614,
+      "sha256": "fa1de5fdb1d3718f31fe4a6925d16ee7d3b5242d58f3c7bdc0c8d2c35a2ef0cf"
+    },
+    {
+      "path": "docs/agent-framework/business-flow-build.json",
+      "bytes": 432,
+      "sha256": "151794d609e0aad6e08ec68ee0ae774c5d0e672a2ae9917fd1af0d3b081b63a2"
+    },
+    {
+      "path": "docs/agent-framework/business-flow.json",
+      "bytes": 44370,
+      "sha256": "b63d8aabdccfe7ca3a64833a89c5c01a08b006178f3f646ba05edae4cde2ab92"
+    },
+    {
+      "path": "docs/agent-framework/composition-verification-2026-11-02.md",
+      "bytes": 3223,
+      "sha256": "8a825b959502182d0f3c3a281aa24a5cadd0bb36716b90b0f4deafaa29519778"
+    },
+    {
+      "path": "docs/agent-framework/file-access-verification-2026-11-02.md",
+      "bytes": 4755,
+      "sha256": "3046ab80ec187bd358789d84d30b27c482ec45524d1e417cfb94d6b21a16f850"
+    },
+    {
+      "path": "docs/agent-framework/file-flow-demo-result-2026-11-02.json",
+      "bytes": 14251,
+      "sha256": "fbba333abf942bc42640f24bbd3547fec82d66f6a6e468c984ba52d7fbee53fc"
+    },
+    {
+      "path": "docs/agent-framework/flow-build.json",
+      "bytes": 1342,
+      "sha256": "c365dbeef06e6f753a6956d0cf0d21d649c33a7ddbbb0608505f989ba0ebf9e3"
+    },
+    {
+      "path": "docs/agent-framework/flow-data.json",
+      "bytes": 33619,
+      "sha256": "2ff25c40980e3f20011e996932159972042fbf68151014fab029401876a04664"
+    },
+    {
+      "path": "docs/agent-framework/flow.html",
+      "bytes": 55678,
+      "sha256": "910b15316427ca3672fd3460b3316300633d6be0118df59cff9c751593a84acf"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/GRAPH_REPORT.md",
+      "bytes": 10123,
+      "sha256": "d70ce663a3c44abd81bef3ce550b1adb88f7949aecf6f49d1143bc4758bf3937"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/LICENSE-APACHE-2.0.txt",
+      "bytes": 10171,
+      "sha256": "1509904280a272780fd69c04b858f512cf216f8e3464a0dd98d8f34416feced9"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/LICENSE-MIT.txt",
+      "bytes": 1084,
+      "sha256": "1f65085e54c036645082257618db2c7b787e68c3b02485e214ecd09e0834ee8f"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/asset-audit.json",
+      "bytes": 449,
+      "sha256": "af39becc4d55b526075119cff212daed27447b53a44b938b83a43c693de4783c"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/build-summary.json",
+      "bytes": 594,
+      "sha256": "c0bbdfc34c3b8852594241d2b1423bfd146d9840afe905306aee9901c3357e5e"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/communities.json",
+      "bytes": 21206,
+      "sha256": "445b30ca8a54cb15c0cad1389d87b340d666009d1235dd5697c7db60f206f41a"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/cost.json",
+      "bytes": 182,
+      "sha256": "fa26b09d471b357b2163ce2a046ea4c608b2e80b4e6bb1d01d127e2471f01804"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/diagnostics.json",
+      "bytes": 4887,
+      "sha256": "a618a9e54ef0f67bc1d32158b14559599ea03e588c506b3503f614bed05a0a54"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/diagnostics.txt",
+      "bytes": 2021,
+      "sha256": "6e4ae1c398323ed741e2cb61bf2c70a4c3652bae88be23b9f21b9513c2a3c157"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/extraction.json",
+      "bytes": 580371,
+      "sha256": "6db7148c4c020e1620069e3d1b827490832d4ef0d081b00ecfc5c882b500f598"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/graph.html",
+      "bytes": 1212924,
+      "sha256": "458b41e9b5836894cdd4ff16d13af060964e913490fbb475b8c70436b984dc07"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/graph.json",
+      "bytes": 477419,
+      "sha256": "a3b7af2ad027efb46b705ea35e9bcbb8870f9f03e788b7e1b2566669a727d695"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/implicit-nodes.json",
+      "bytes": 5669,
+      "sha256": "2ccaa43410e1038b33a1b8d1190fc8ab0c6af9c6701c9f4b760f331d50e6e9b8"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/manifest.json",
+      "bytes": 4186,
+      "sha256": "629867158829c2a7564182f197aa55d5020ce2d897ce3d89f31534e9560ba93e"
+    },
+    {
+      "path": "docs/agent-framework/graphify-out/source-manifest.json",
+      "bytes": 5032,
+      "sha256": "4e48fbcf13c11b0c7a64b3793bcd379ab776434a049bb481dfd7e3503cfdef88"
+    },
+    {
+      "path": "docs/agent-framework/guide.html",
+      "bytes": 11284,
+      "sha256": "90c900e5fb5ed8df1fe2252b50530ee5e151dc0699b8e0cef999e19890fbd599"
+    },
+    {
+      "path": "docs/agent-framework/index.html",
+      "bytes": 4390,
+      "sha256": "db0cb818e1e9f6391d0f1ea4669dcf99b80b96e41a822ce9cd504b70e912ab58"
+    },
+    {
+      "path": "docs/agent-framework/postgres-app.env.example",
+      "bytes": 589,
+      "sha256": "aad7869c1dc91f3ca541703ed4a1874dfe39a37cd088c742efc0b526852c5eac"
+    },
+    {
+      "path": "docs/agent-framework/postgres-owner.env.example",
+      "bytes": 331,
+      "sha256": "eacb63a2552330e0a029ef842215348a80213efed9e2c6729b909302c13c0f9d"
+    },
+    {
+      "path": "docs/agent-framework/postgres-verification-2026-11-02.md",
+      "bytes": 6431,
+      "sha256": "bb274a9c41fc7d3b7bac7ace66bc1f7c91564aeaf70e8276eecdaaeac61eb8c9"
+    },
+    {
+      "path": "docs/agent-framework/reference/프로젝트_통합문서_20261102.html",
+      "bytes": 455681,
+      "sha256": "55cd42fa4f80a2657496c87c1719fe205858d32320495b2b9d6008c2eb5905ce"
+    },
+    {
+      "path": "docs/agent-framework/role-check-verification-2026-11-02.md",
+      "bytes": 3820,
+      "sha256": "77bb14a44ac7b780c1f23d7028a399b4d7eb0141bdcfee032706cc4385d029ee"
+    },
+    {
+      "path": "docs/agent-framework/sharing-verification-2026-11-02.md",
+      "bytes": 1871,
+      "sha256": "543600a88267ab2940022c5326f8819271ed8838a9822af41a39301d093e0f7f"
+    },
+    {
+      "path": "docs/agent-framework/source.html",
+      "bytes": 300326,
+      "sha256": "a392ccd50350c96a2ac312f13e90f11809c9e83c08b3dc8c36d381823816a934"
+    },
+    {
+      "path": "docs/agent-framework/step-records-verification-2026-11-02.md",
+      "bytes": 4413,
+      "sha256": "700ccb2686098f181d64f599e2e64a422d72a15aba525133b28e18447a301505"
+    },
+    {
+      "path": "docs/agent-framework/team-integration-guide.html",
+      "bytes": 318,
+      "sha256": "c1d9686e9546b932c3057e2a82321a1fb5445810a4c4acf97b1feafcd4b02854"
+    },
+    {
+      "path": "docs/agent-framework/team-integration-guide.md",
+      "bytes": 131,
+      "sha256": "38e448ba2ffb0a5582d865668864f52ab25f7f839f6c4fbb08d2f878e269eacb"
+    },
+    {
+      "path": "docs/agent-framework/verification-2026-11-02.md",
+      "bytes": 3621,
+      "sha256": "fedb5eb2faa01c0658451d1ab3527d96c87aac50c9ec052eb9afa9139c2ab8e0"
+    },
+    {
+      "path": "docs/agent-framework/workflow-check-result-2026-11-02.json",
+      "bytes": 13019,
+      "sha256": "8ef1baef9929a27349bd94b3e081984a30d102afe15827c0edae4613bdb73f40"
+    },
+    {
+      "path": "docs/agent-framework/workflow-check-verification-2026-11-02.md",
+      "bytes": 5096,
+      "sha256": "2bc4d861aa448d9aa9318669122603fe6cc94fcb4cf8a72ea671648c5e80550d"
+    },
+    {
+      "path": "docs/agent-framework/에이전트_프레임워크_PostgreSQL_실행가이드.html",
+      "bytes": 28230,
+      "sha256": "0e8a88965271332af6003cf9b729c0915b9d48fb1a816ed019d6a6bcfb6fa578"
+    },
+    {
+      "path": "docs/agent-framework/에이전트_프레임워크_PostgreSQL_실행가이드.md",
+      "bytes": 13820,
+      "sha256": "852c3cae153dfe9a85cf99a3f0b4876c58faf411668631a74f97f1c0689d3ea1"
+    },
+    {
+      "path": "docs/agent-framework/에이전트_프레임워크_가이드.html",
+      "bytes": 27579,
+      "sha256": "95ef9a7915adf2fcf73c3218fe2f0b193d099e6f42a41c9627611dcd421a388a"
+    },
+    {
+      "path": "docs/agent-framework/에이전트_프레임워크_가이드.md",
+      "bytes": 13185,
+      "sha256": "63f82fc1ae9b3d62776339ca88a79a394b1b6a5644c949ce160034d62111341f"
+    },
+    {
+      "path": "docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.html",
+      "bytes": 24304,
+      "sha256": "433e7b5ae06be01b97a8a59088d3c52af388fd35979b9d8256b050a716a340bc"
+    },
+    {
+      "path": "docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.md",
+      "bytes": 11881,
+      "sha256": "cda87d125aa0b0341f2f013c944b628e3a51c3d8adcb1832dd94892c06202463"
+    },
+    {
+      "path": "docs/reference/creative-checker-master-2026-10-30.html",
+      "bytes": 412033,
+      "sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459"
+    },
+    {
+      "path": "docs/reference/creative-checker-master-2026-11-02.html",
+      "bytes": 455681,
+      "sha256": "55cd42fa4f80a2657496c87c1719fe205858d32320495b2b9d6008c2eb5905ce"
+    },
+    {
+      "path": "examples/agent_framework/A02.json",
+      "bytes": 637,
+      "sha256": "751e2bdd63f73a8979b13f4ea81da6d08b1508b4e5f173c89327e1e12904a528"
+    },
+    {
+      "path": "examples/agent_framework/A02.output.json",
+      "bytes": 1959,
+      "sha256": "8647b376ac0f08790d039e9be646b9e3f7058d43d174e6b02e01a1ddb1846b2a"
+    },
+    {
+      "path": "examples/agent_framework/A04_A05.json",
+      "bytes": 4333,
+      "sha256": "852b46418a441e4119f8406e46aa982d6387e398ad0aa38e6914102b36b7a674"
+    },
+    {
+      "path": "examples/agent_framework/A04_A05.output.json",
+      "bytes": 1530,
+      "sha256": "5077c53cb590dba1de69f8eda2812e1cc7963dad0d65d5a326e96c9ae6548300"
+    },
+    {
+      "path": "examples/agent_framework/A06.json",
+      "bytes": 5994,
+      "sha256": "d31ac4cd0fee3cd5a74f6bc8d31a90b19b8c1a29a0bd7e332c476e72adbc218f"
+    },
+    {
+      "path": "examples/agent_framework/A06.output.json",
+      "bytes": 781,
+      "sha256": "985b283828e1c7eb47f5df83bfbf32f2ab30afac99e12644fe86f248c32dd1a0"
+    },
+    {
+      "path": "examples/agent_framework/A07.json",
+      "bytes": 3544,
+      "sha256": "83aeda27089143ecfca254038515123891475e17f7fa0325e6ee5c3fc9ad9208"
+    },
+    {
+      "path": "examples/agent_framework/A07.output.json",
+      "bytes": 789,
+      "sha256": "f4b6f326dcca707440b1a04bc1bfeef6af375fe715f2c5eac4b303e57a830ee3"
+    },
+    {
+      "path": "examples/agent_framework/README.md",
+      "bytes": 9390,
+      "sha256": "46ff9426abe88b0aad9d782f6f57b6dbadd5c2db05cf83ccddbc9b4822bc45c8"
+    },
+    {
+      "path": "examples/agent_framework/checks/A02.invalid-scope.json",
+      "bytes": 642,
+      "sha256": "30045c74dedabe7154aef27fc341b18e04fd9d8fbbf3bf26079673a19cdd7978"
+    },
+    {
+      "path": "examples/agent_framework/checks/A02.pass.json",
+      "bytes": 637,
+      "sha256": "751e2bdd63f73a8979b13f4ea81da6d08b1508b4e5f173c89327e1e12904a528"
+    },
+    {
+      "path": "examples/agent_framework/checks/A02.suite.json",
+      "bytes": 337,
+      "sha256": "92664d3188f26d2a6afa2ed24e1d824191f1bad411a907f94f80189298eb5052"
+    },
+    {
+      "path": "examples/agent_framework/checks/A04_A05.invalid-scope.json",
+      "bytes": 4338,
+      "sha256": "043a0b3401f016d61590932ccc8a80a7d1b99643a662d0601f2454113dfadba3"
+    },
+    {
+      "path": "examples/agent_framework/checks/A04_A05.pass.json",
+      "bytes": 4333,
+      "sha256": "852b46418a441e4119f8406e46aa982d6387e398ad0aa38e6914102b36b7a674"
+    },
+    {
+      "path": "examples/agent_framework/checks/A04_A05.suite.json",
+      "bytes": 346,
+      "sha256": "3f7f35828a814a4ca0acb6ffbe8099e68b427d8b62763b1202ed598953d764f4"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.fail.json",
+      "bytes": 5994,
+      "sha256": "b18058b7ce3b18936778672e1c6b4699ff084f7383969cc8c4349cd827a2c261"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.pass.json",
+      "bytes": 5994,
+      "sha256": "d31ac4cd0fee3cd5a74f6bc8d31a90b19b8c1a29a0bd7e332c476e72adbc218f"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.review.json",
+      "bytes": 6110,
+      "sha256": "f55d90e305312397bc1dd528288338696b8fe0c5d140756f4043a75d56590567"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.stale.json",
+      "bytes": 5988,
+      "sha256": "eaebaa9b95d58374ec8c15d9e5a2f86361ad63977ee556313bef3837ebd77061"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.suite.json",
+      "bytes": 759,
+      "sha256": "fad95b80a310037c87300df207ea3b8d9dda8cc3ed549bcb8c5a75f9791b1d4e"
+    },
+    {
+      "path": "examples/agent_framework/checks/A06.unavailable.json",
+      "bytes": 4197,
+      "sha256": "62940f3ab1953d778d786e6b15e6341e7eccd1047164d4de88d3ba7ba8fe246b"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.fail.json",
+      "bytes": 3580,
+      "sha256": "7b4b7d3f0b9afc716a762adff914f9a9976b43219a9d4917360fe73cf1128d2f"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.invalid-scope.json",
+      "bytes": 3542,
+      "sha256": "c09412b846d8128127a2e584f6c5ac4779621816687ff1290fa0bc5c8778c91d"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.pass.json",
+      "bytes": 3544,
+      "sha256": "83aeda27089143ecfca254038515123891475e17f7fa0325e6ee5c3fc9ad9208"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.review.json",
+      "bytes": 3702,
+      "sha256": "92854ee2de1810f0c48ae27c0177efc3dd9241695b7f7bf38041f3f766e0eb4e"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.stale.json",
+      "bytes": 3624,
+      "sha256": "309d7e20bf55ab6085fb5013976c686d3be01749593e3b01d75547dce4156bfd"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.suite.json",
+      "bytes": 929,
+      "sha256": "292741968c3ac9c1dc564dbbb2cfa42a3013e0c0d2f974c2a505882f461c4b78"
+    },
+    {
+      "path": "examples/agent_framework/checks/A07.unavailable.json",
+      "bytes": 2169,
+      "sha256": "4030ea3ef6eaca92cd02358e89932dc3730f9908e2150da9de9298333f228b04"
+    },
+    {
+      "path": "examples/agent_framework/custom_adapter.py",
+      "bytes": 1209,
+      "sha256": "2ff20633eabae6e0f62526d59e393dcf7f5d1917ddd8749907483c370aebdd73"
+    },
+    {
+      "path": "examples/agent_framework/file_access_demo.py",
+      "bytes": 5733,
+      "sha256": "6ca487b207a60b314910b05327df17b19c439b65929e6b843ceb95566a7c2cb8"
+    },
+    {
+      "path": "examples/agent_framework/file_flow_demo.py",
+      "bytes": 8847,
+      "sha256": "efb105ef3260ec9c6f842905542a49be67b0b94cdef4b4a269e4c554bbcba659"
+    },
+    {
+      "path": "examples/agent_framework/openapi.json",
+      "bytes": 41977,
+      "sha256": "f17d0d3f322d878f7b507f42526ad2de098b42a7e691e23f2d189ade5557d39d"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/fail.validated.json",
+      "bytes": 813,
+      "sha256": "c389d88a0e97b550d15a069d05a530200e39fa4b9ce2f565d91374c4e250f672"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/pass.validated.json",
+      "bytes": 781,
+      "sha256": "985b283828e1c7eb47f5df83bfbf32f2ab30afac99e12644fe86f248c32dd1a0"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/review.validated.json",
+      "bytes": 927,
+      "sha256": "c59dd08bdba2e890b38c103eecf805e5b18cd13edc69c8637b573b3deba4fe9b"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/stale.validated.json",
+      "bytes": 859,
+      "sha256": "3c9c99d8861d65e5496824e8c318fadb5a0f2807e920a4aeb405760e4a26110a"
+    },
+    {
+      "path": "examples/agent_framework/scenarios/unavailable.validated.json",
+      "bytes": 995,
+      "sha256": "f01d567addca89d6a075e9124a55ca190269d4af3284fe85aade5b6b5222cde0"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Approval.schema.json",
+      "bytes": 3353,
+      "sha256": "8cf26fa227c6ed96fb1975f5d894e82dd2f6f167703fc7671d713d3be44378b8"
+    },
+    {
+      "path": "examples/agent_framework/schemas/AssetRef.schema.json",
+      "bytes": 1202,
+      "sha256": "10088a480554d6475fe9dc4c5d226d73e50ee449c59093654a68c6f3f4dce778"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Context.schema.json",
+      "bytes": 1890,
+      "sha256": "a80ae4c82a513c0b2a4a9f6d583b2b8397f5273fa9acf0b334d0549768a1cafa"
+    },
+    {
+      "path": "examples/agent_framework/schemas/CriteriaDraft.schema.json",
+      "bytes": 6100,
+      "sha256": "a60941281c16227716a5d502a10eae7dbd659841efcf916e39fbdec0c6c6daf9"
+    },
+    {
+      "path": "examples/agent_framework/schemas/Criterion.schema.json",
+      "bytes": 2749,
+      "sha256": "e8b1a676a11b3440f0f3dcb09de4cf212d47f0bb53a3f41aa7b549ff0f958753"
+    },
+    {
+      "path": "examples/agent_framework/schemas/DocumentRef.schema.json",
+      "bytes": 1056,
+      "sha256": "34e85ea6c14a12455073ea7abbe203441c56b2e3bfea4ca44809c93c6555f22b"
+    },
+    {
+      "path": "examples/agent_framework/schemas/EvidenceBundle.schema.json",
+      "bytes": 7409,
+      "sha256": "07c3c1c5f996c17811ec57bd95c9a9a78b4fe319c3710ed1eb44afe9cfa76f99"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ExtractRequest.schema.json",
+      "bytes": 4045,
+      "sha256": "f9771e1d51b95ee04a73f3bdfe22e04df052beb0490aae320c60af1631f51a29"
+    },
+    {
+      "path": "examples/agent_framework/schemas/FlowCheckCase.schema.json",
+      "bytes": 6301,
+      "sha256": "849854eb46ccb6f822035e3bf293ccf2affe5c77a4448bfdc02bc47665abfdf7"
+    },
+    {
+      "path": "examples/agent_framework/schemas/FrameworkError.schema.json",
+      "bytes": 651,
+      "sha256": "54fbe21f7f2bf07faafe8d64da6580d449644a48fa0156300995a37bb7e05812"
+    },
+    {
+      "path": "examples/agent_framework/schemas/InspectRequest.schema.json",
+      "bytes": 11816,
+      "sha256": "a86fd4159c1ae3711df4004b708ed7f128220cc9b014299582a4ba931698d635"
+    },
+    {
+      "path": "examples/agent_framework/schemas/InspectionResult.schema.json",
+      "bytes": 5758,
+      "sha256": "15b0ec3929a9290f41fc7db0f3bcefcf044461267dd9c890933190dac74706e1"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ReportDraft.schema.json",
+      "bytes": 3385,
+      "sha256": "dfaddf1502cc85d0999f8cfdfb1a207a3a8892c3af294ad399a7c43e43bf259d"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ReportRequest.schema.json",
+      "bytes": 10443,
+      "sha256": "6a263a1db9ff943fc98441692beb2edd67893d713da4cf235ab4b54a0f42aa23"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RoleBinding.schema.json",
+      "bytes": 1081,
+      "sha256": "22535f56dd82d4e64593f8eae1d8bdf14dae06c5a4681cf152e5ca5e0f991bcf"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RoleCheckCase.schema.json",
+      "bytes": 1101,
+      "sha256": "d92204a33ad55e6c397a22745ba718b1c956ae423b1d360be2f7c518a981fa6b"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RoleCheckSuite.schema.json",
+      "bytes": 1998,
+      "sha256": "92fe638ff08f6af72185619446c8819575a068830a3f33355e8a529b89078caf"
+    },
+    {
+      "path": "examples/agent_framework/schemas/RunSnapshot.schema.json",
+      "bytes": 25585,
+      "sha256": "0f81f78b562e4c400960660c24006d0b225d23d12760be847e3ee24d7536f72d"
+    },
+    {
+      "path": "examples/agent_framework/schemas/StepRecord.schema.json",
+      "bytes": 3076,
+      "sha256": "1f2c484f6609d5ec10bad1f355a399e3b4e1e63e70b58f07f04977dba663b6f4"
+    },
+    {
+      "path": "examples/agent_framework/schemas/StepTimeline.schema.json",
+      "bytes": 6971,
+      "sha256": "c576c6737867672f934426420a74410f57e43a0869dc487aa025cc8ecee481e0"
+    },
+    {
+      "path": "examples/agent_framework/schemas/TeamConfiguration.schema.json",
+      "bytes": 2079,
+      "sha256": "f5dd7252e1415f623f0ddd33c5b7303c4c6cd40e370292db9302b790c67a15bb"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ValidateRequest.schema.json",
+      "bytes": 15551,
+      "sha256": "c99d3a9b066195fe599e9a1abd8c4bee628dea6ef54e07ef18a8d7e5b28215ca"
+    },
+    {
+      "path": "examples/agent_framework/schemas/ValidatedResult.schema.json",
+      "bytes": 4135,
+      "sha256": "392de06f99990fd453104ef7d3cce740cd2bb9ce1ce9634f338ad36249cfd1d8"
+    },
+    {
+      "path": "examples/agent_framework/team_adapters.py",
+      "bytes": 2313,
+      "sha256": "838016173e17eed40382fe4ea6d9025b1e8633e87b480fe4b4e2e7c5b637dc8a"
+    },
+    {
+      "path": "examples/agent_framework/team_config.synthetic.json",
+      "bytes": 407,
+      "sha256": "3a7c5ce12457414cc4839b4c2723de856f0d3c5d88a7c153d1233d79f554f7d6"
+    },
+    {
+      "path": "examples/agent_framework/team_config.template.json",
+      "bytes": 416,
+      "sha256": "b25028abe8913cc178c36319686cfbfb5678a08d4d0f9892c031d0b5d875881f"
+    },
+    {
+      "path": "examples/agent_framework/workflow.synthetic.json",
+      "bytes": 1728,
+      "sha256": "973a61f6012eebc6a3265306fb04ead7a778826ae52154dca4fd4514b68f8a51"
+    },
+    {
+      "path": "index.html",
+      "bytes": 266,
+      "sha256": "efcc24259ac27d3054553673f19cd48244b5136bff5cc9906ccb2dd9439001b3"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 1222,
+      "sha256": "b4b087fc9856b9d61764e7f8d2720138781a24db0d0a3ef8f2bed9c7c41ca93c"
+    },
+    {
+      "path": "scripts/build_agent_code_graph.py",
+      "bytes": 16741,
+      "sha256": "81b079a692fe41fe483c418a642ebc8df1921c9e240fae913d67fc86ee86fa56"
+    },
+    {
+      "path": "scripts/build_agent_flow_html.py",
+      "bytes": 11757,
+      "sha256": "4134da99913860e72f704daf63495e9acbc4e6609159a3936fa5acaff7f303d6"
+    },
+    {
+      "path": "scripts/build_agent_handoff.py",
+      "bytes": 17231,
+      "sha256": "5f840425127f4c649c51e699027f9f6af0bb4dcc1d09dbb08d035e54df477ac3"
+    },
+    {
+      "path": "scripts/build_business_flow.py",
+      "bytes": 6725,
+      "sha256": "61ea94b81fed0c9c2ee1d717c082d5dd9dfd957499f0a7beea18c546766e3aca"
+    },
+    {
+      "path": "scripts/build_framework_plan.py",
+      "bytes": 2429,
+      "sha256": "70f3ef4f6a4e28913ac407d27beb7d869d8a4d323dcdeaa2a24c652c186f1f9f"
+    },
+    {
+      "path": "scripts/build_framework_postgres_guide.py",
+      "bytes": 2656,
+      "sha256": "96d14202708b347bab17038201acadfb935a9f55e905afbbcc0a9109e8f2d4d2"
+    },
+    {
+      "path": "scripts/export_agent_framework.py",
+      "bytes": 4856,
+      "sha256": "ae544bccdc4a9aeb230e5d29b1521debdf39e12330a17fc23e85e1313cbc76fc"
+    },
+    {
+      "path": "scripts/package_agent_framework.py",
+      "bytes": 23137,
+      "sha256": "b2689386fea2274e87743f9d1233cf6b53ff31a0f6089ce5e75ddeb8b320a0c3"
+    },
+    {
+      "path": "scripts/templates/agent-flow.html",
+      "bytes": 967,
+      "sha256": "d57df64b7a180e8285f5f1bbb2e95310764a0394d0dfdb4275c543df64d0f0dd"
+    },
+    {
+      "path": "scripts/templates/agent-flow.html.in",
+      "bytes": 29314,
+      "sha256": "c5728897cd5a197a1ce7c34eb0fb66b72c4db83fb51c28fea14806d6e59b7315"
+    },
+    {
+      "path": "scripts/templates/business-flow.html.in",
+      "bytes": 42901,
+      "sha256": "f346a45e599f471d4d542129f97810ba2874ded2e7c25f11ea5e86046cbbd570"
+    },
+    {
+      "path": "tests/agent_framework/test_adapters.py",
+      "bytes": 9467,
+      "sha256": "8c443613a7e0f1419009232688194248d6d1ccf9ce0dfef91e0c07f99fb17469"
+    },
+    {
+      "path": "tests/agent_framework/test_api.py",
+      "bytes": 4868,
+      "sha256": "475f968687a6d79e116388292e1dbc28a45dde7fffd4a9df0e5179bd58c78f55"
+    },
+    {
+      "path": "tests/agent_framework/test_artifacts.py",
+      "bytes": 1202,
+      "sha256": "545b631a4fa03d22f0190735db0dd1001d4be7d698b513138ffa41110f51ff50"
+    },
+    {
+      "path": "tests/agent_framework/test_checks.py",
+      "bytes": 17542,
+      "sha256": "0f9958f34466beb3461ad0e98292532e18eab10ccf67587acc3302c3a47a5977"
+    },
+    {
+      "path": "tests/agent_framework/test_cli.py",
+      "bytes": 9614,
+      "sha256": "52ad48367d630881e81941ef8feed231895c0893bcdb1d07177ee963441c89aa"
+    },
+    {
+      "path": "tests/agent_framework/test_composition.py",
+      "bytes": 10340,
+      "sha256": "f79ac8f81dbd871f8178289539d471c9a852bfb2bf2649d0f52c0d6daec57a63"
+    },
+    {
+      "path": "tests/agent_framework/test_configured_entrypoints.py",
+      "bytes": 7041,
+      "sha256": "d44170159c4cf27dc387790834a41138656585594698470611b4c77251f93273"
+    },
+    {
+      "path": "tests/agent_framework/test_context.py",
+      "bytes": 3425,
+      "sha256": "1561a2dd1601808ce4cb8f16f818002c7ac990a691e7577b0631f2f7a50774a5"
+    },
+    {
+      "path": "tests/agent_framework/test_files.py",
+      "bytes": 20977,
+      "sha256": "00e9132293a8a2dd12d7bf273e054556f7e4de766d45137eb509403fcc1ffe59"
+    },
+    {
+      "path": "tests/agent_framework/test_flow_checks.py",
+      "bytes": 14920,
+      "sha256": "3960f6536eae76955f729ca092617e90471f3469da8bfa91d9f0165ff9197903"
+    },
+    {
+      "path": "tests/agent_framework/test_flow_export.py",
+      "bytes": 3954,
+      "sha256": "37dbd14218c04a5d9e0d7d3fb0f328994cec41ddfd69dc039aebd7056694235d"
+    },
+    {
+      "path": "tests/agent_framework/test_invocation.py",
+      "bytes": 9941,
+      "sha256": "44fd48f4df80905f2aeadff84991f39702521fc866c9d72c09e18df6aa17f3de"
+    },
+    {
+      "path": "tests/agent_framework/test_postgres_commands.py",
+      "bytes": 2365,
+      "sha256": "03a78659899fd4633a0daa78b8a84e88c033ba05ba55e5a1f186a16cb647040e"
+    },
+    {
+      "path": "tests/agent_framework/test_postgres_integration.py",
+      "bytes": 18399,
+      "sha256": "e58839572cbfb9937f71512cb38f20c7accb72e0e3f4142829e77de3f6dcdaf0"
+    },
+    {
+      "path": "tests/agent_framework/test_project_files.py",
+      "bytes": 17435,
+      "sha256": "945bd811a2a98082da5193949d8dada53d1b4f24d2a64bb5f88392cb2d75b460"
+    },
+    {
+      "path": "tests/agent_framework/test_report_boundary.py",
+      "bytes": 7500,
+      "sha256": "f899ff35c23ab0db2940f244d78bf74d1fa812100b17a6d382eb2e83ba0cf7bd"
+    },
+    {
+      "path": "tests/agent_framework/test_runtime.py",
+      "bytes": 17689,
+      "sha256": "6b2ba9920ccedd4094bfdf881ffc47e7db1bfd79c863c1a8e6ee1d5dc1d9d0dc"
+    },
+    {
+      "path": "tests/agent_framework/test_step_records.py",
+      "bytes": 19160,
+      "sha256": "59cec420f531b1efd98ec903b2924be1f684044ea3f402a35e4498b2a10bd009"
+    },
+    {
+      "path": "tests/agent_framework/test_validation.py",
+      "bytes": 6850,
+      "sha256": "baa9190d7eeb6148712dacb18ce74fd96218746c7a95cdfcbb835153f746ecf7"
+    },
+    {
+      "path": "uv.lock",
+      "bytes": 243637,
+      "sha256": "a8993cd54aebafb2df820ac9e95cf3cf5be1046a7a77212c4865867c6a4c0706"
+    },
+    {
+      "path": "에이전트_흐름도.html",
+      "bytes": 77897,
+      "sha256": "6a24d4bf4a82c3849fce8d45cebaa5df0387d26326fea1206690547ab92c2281"
+    }
+  ]
+}

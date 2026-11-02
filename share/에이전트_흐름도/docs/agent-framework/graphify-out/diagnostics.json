@@ -1,0 +1,220 @@
+{
+  "node_count": 404,
+  "unverified_node_count": 0,
+  "raw_edge_count": 1619,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 134,
+  "external_reference_edges": 0,
+  "self_loop_edges": 2,
+  "valid_candidate_edges": 1485,
+  "exact_duplicate_edges": 0,
+  "directed_unique_endpoint_pairs": 1394,
+  "directed_same_endpoint_collapsed_edges": 91,
+  "undirected_unique_endpoint_pairs": 1390,
+  "undirected_same_endpoint_collapsed_edges": 95,
+  "same_endpoint_group_count": 85,
+  "relation_variant_groups": 79,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 1,
+  "context_variant_groups": 5,
+  "post_build_graph_type": "DiGraph",
+  "post_build_node_count": 439,
+  "post_build_edge_count": 1527,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "graphify/extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1830,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2393,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2395,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 3062,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 3209,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 4350,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4536,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 8160,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8268,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8347,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8872,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 8873,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": "",
+    "path_base": "installed graphifyy==0.9.100 package"
+  },
+  "examples": [
+    {
+      "source": "adapters_synthetic_sample_inputs",
+      "target": "contracts_context",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "adapters/synthetic.py"
+      ],
+      "source_locations": [
+        "L30",
+        "L34",
+        "L36"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "generic_arg"
+      ]
+    },
+    {
+      "source": "adapters_synthetic_sample_inputs",
+      "target": "contracts_documentref",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "adapters/synthetic.py"
+      ],
+      "source_locations": [
+        "L30",
+        "L34",
+        "L41"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "generic_arg"
+      ]
+    },
+    {
+      "source": "adapters_synthetic_sample_inputs",
+      "target": "contracts_assetref",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "adapters/synthetic.py"
+      ],
+      "source_locations": [
+        "L30",
+        "L34",
+        "L45"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "generic_arg"
+      ]
+    },
+    {
+      "source": "adapters_synthetic_make_agents",
+      "target": "ports_agents",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "adapters/synthetic.py"
+      ],
+      "source_locations": [
+        "L146",
+        "L151"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "return_type"
+      ]
+    },
+    {
+      "source": "composition_build_agents",
+      "target": "ports_agents",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "composition.py"
+      ],
+      "source_locations": [
+        "L169",
+        "L172"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "return_type"
+      ]
+    }
+  ]
+}

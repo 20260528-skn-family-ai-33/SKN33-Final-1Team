@@ -1,0 +1,412 @@
+{
+  "contract_version": "1.0.0",
+  "check": "configured_workflow",
+  "case_id": "synthetic-approval-rereview",
+  "case_sha256": "80d90d1b2a39e6cbfbc12e149c29a0f2fcd6b85efa8791ea1dfb92854b4f47be",
+  "configuration_sha256": "45d5ae8892e0ba013915df5afb3de0d2796e3539c69c1c3c5f7867c438b1e7e3",
+  "profile": "development",
+  "storage": "memory",
+  "passed": true,
+  "stopped_on_outcome_unknown": false,
+  "configuration": {
+    "contract_version": "1.0.0",
+    "profile": "development",
+    "connection_verified": false,
+    "roles": {
+      "A02": {
+        "kind": "synthetic",
+        "connection_verified": false,
+        "scenario": "pass"
+      },
+      "A03": {
+        "kind": "synthetic",
+        "connection_verified": false,
+        "scenario": "pass"
+      },
+      "A04_A05": {
+        "kind": "synthetic",
+        "connection_verified": false,
+        "scenario": "pass"
+      },
+      "A06": {
+        "kind": "reference",
+        "connection_verified": false
+      },
+      "A07": {
+        "kind": "synthetic",
+        "connection_verified": false,
+        "scenario": "pass"
+      }
+    }
+  },
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "actions": [
+    {
+      "action": "start",
+      "run_id": "demo-run-1",
+      "execution_status": "waiting_criteria",
+      "machine_verdict": null,
+      "human_decision": "unreviewed",
+      "synthetic": true,
+      "snapshot_sha256": "0ca70dcdfdd74ade5cd2c153b32e6cf2a5b575af57f8714c53da646349bfde55",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.184631Z",
+          "started_at": "2026-11-02T05:09:01.184631Z",
+          "finished_at": "2026-11-02T05:09:01.185223Z",
+          "duration_ms": 0.592166,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "action": "approve_criteria",
+      "run_id": "demo-run-1",
+      "execution_status": "waiting_review",
+      "machine_verdict": "pass",
+      "human_decision": "unreviewed",
+      "synthetic": true,
+      "snapshot_sha256": "287112087b164631dae6112d4540bacd63a1e98ebc11e6980e4c9614f5b2b419",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.184631Z",
+          "started_at": "2026-11-02T05:09:01.184631Z",
+          "finished_at": "2026-11-02T05:09:01.185223Z",
+          "duration_ms": 0.592166,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 2,
+          "role": "A03",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.185834Z",
+          "started_at": "2026-11-02T05:09:01.185834Z",
+          "finished_at": "2026-11-02T05:09:01.186265Z",
+          "duration_ms": 0.431125,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 3,
+          "role": "A04_A05",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.186500Z",
+          "started_at": "2026-11-02T05:09:01.186500Z",
+          "finished_at": "2026-11-02T05:09:01.187035Z",
+          "duration_ms": 0.534875,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 4,
+          "role": "A06",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.187271Z",
+          "started_at": "2026-11-02T05:09:01.187271Z",
+          "finished_at": "2026-11-02T05:09:01.188012Z",
+          "duration_ms": 0.741167,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 5,
+          "role": "A07",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.188250Z",
+          "started_at": "2026-11-02T05:09:01.188250Z",
+          "finished_at": "2026-11-02T05:09:01.188725Z",
+          "duration_ms": 0.475833,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "action": "approve_changes",
+      "run_id": "demo-run-1",
+      "execution_status": "waiting_revision",
+      "machine_verdict": "pass",
+      "human_decision": "changes_approved",
+      "synthetic": true,
+      "snapshot_sha256": "c099d8b457d63b9536c0d9d6be77d1d5ca6c207c12f8bc739c77e82fa85ed045",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.184631Z",
+          "started_at": "2026-11-02T05:09:01.184631Z",
+          "finished_at": "2026-11-02T05:09:01.185223Z",
+          "duration_ms": 0.592166,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 2,
+          "role": "A03",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.185834Z",
+          "started_at": "2026-11-02T05:09:01.185834Z",
+          "finished_at": "2026-11-02T05:09:01.186265Z",
+          "duration_ms": 0.431125,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 3,
+          "role": "A04_A05",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.186500Z",
+          "started_at": "2026-11-02T05:09:01.186500Z",
+          "finished_at": "2026-11-02T05:09:01.187035Z",
+          "duration_ms": 0.534875,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 4,
+          "role": "A06",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.187271Z",
+          "started_at": "2026-11-02T05:09:01.187271Z",
+          "finished_at": "2026-11-02T05:09:01.188012Z",
+          "duration_ms": 0.741167,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 5,
+          "role": "A07",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.188250Z",
+          "started_at": "2026-11-02T05:09:01.188250Z",
+          "finished_at": "2026-11-02T05:09:01.188725Z",
+          "duration_ms": 0.475833,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "action": "rereview",
+      "run_id": "demo-run-2",
+      "execution_status": "waiting_criteria",
+      "machine_verdict": null,
+      "human_decision": "unreviewed",
+      "synthetic": true,
+      "snapshot_sha256": "2b29e56b3dc285b7d8b002f6443fc216fedf1f7f728ea8cc0973ddde3c290039",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "reused",
+          "recorded_at": "2026-11-02T05:09:01.189598Z",
+          "started_at": null,
+          "finished_at": null,
+          "duration_ms": null,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": "demo-run-1"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "action": "approve_revised_criteria",
+      "run_id": "demo-run-2",
+      "execution_status": "waiting_review",
+      "machine_verdict": "pass",
+      "human_decision": "unreviewed",
+      "synthetic": true,
+      "snapshot_sha256": "f50af6fa93b089caa0248ff65044825a4cbd89c94f5f6751ef127e9752c33ebe",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "reused",
+          "recorded_at": "2026-11-02T05:09:01.189598Z",
+          "started_at": null,
+          "finished_at": null,
+          "duration_ms": null,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": "demo-run-1"
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 2,
+          "role": "A03",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.190058Z",
+          "started_at": "2026-11-02T05:09:01.190058Z",
+          "finished_at": "2026-11-02T05:09:01.190415Z",
+          "duration_ms": 0.356917,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 3,
+          "role": "A04_A05",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.190597Z",
+          "started_at": "2026-11-02T05:09:01.190597Z",
+          "finished_at": "2026-11-02T05:09:01.191124Z",
+          "duration_ms": 0.526417,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 4,
+          "role": "A06",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.191335Z",
+          "started_at": "2026-11-02T05:09:01.191335Z",
+          "finished_at": "2026-11-02T05:09:01.192048Z",
+          "duration_ms": 0.71325,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 5,
+          "role": "A07",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.192429Z",
+          "started_at": "2026-11-02T05:09:01.192429Z",
+          "finished_at": "2026-11-02T05:09:01.193057Z",
+          "duration_ms": 0.628459,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "action": "approve_final",
+      "run_id": "demo-run-2",
+      "execution_status": "completed",
+      "machine_verdict": "pass",
+      "human_decision": "final_approved",
+      "synthetic": true,
+      "snapshot_sha256": "f9999580a4d7752e1d5140fdb9ae585481a2c8e9351101b97607859327fa478f",
+      "records": [
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 1,
+          "role": "A02",
+          "status": "reused",
+          "recorded_at": "2026-11-02T05:09:01.189598Z",
+          "started_at": null,
+          "finished_at": null,
+          "duration_ms": null,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": "demo-run-1"
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 2,
+          "role": "A03",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.190058Z",
+          "started_at": "2026-11-02T05:09:01.190058Z",
+          "finished_at": "2026-11-02T05:09:01.190415Z",
+          "duration_ms": 0.356917,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 3,
+          "role": "A04_A05",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.190597Z",
+          "started_at": "2026-11-02T05:09:01.190597Z",
+          "finished_at": "2026-11-02T05:09:01.191124Z",
+          "duration_ms": 0.526417,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 4,
+          "role": "A06",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.191335Z",
+          "started_at": "2026-11-02T05:09:01.191335Z",
+          "finished_at": "2026-11-02T05:09:01.192048Z",
+          "duration_ms": 0.71325,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        },
+        {
+          "contract_version": "1.0.0",
+          "ordinal": 5,
+          "role": "A07",
+          "status": "completed",
+          "recorded_at": "2026-11-02T05:09:01.192429Z",
+          "started_at": "2026-11-02T05:09:01.192429Z",
+          "finished_at": "2026-11-02T05:09:01.193057Z",
+          "duration_ms": 0.628459,
+          "error": null,
+          "synthetic": true,
+          "source_run_id": null
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "connection_verified": false,
+  "production_ready": false,
+  "scripted_approvals": true,
+  "notice": "Explicit developer rehearsal with scripted approvals. Hashes cover canonical validated JSON. Not authenticated human approval, model accuracy, production persistence or connectivity verification."
+}
