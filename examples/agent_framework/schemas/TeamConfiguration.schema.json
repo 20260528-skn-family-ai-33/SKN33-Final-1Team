@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "RoleBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "1.0.0",
+          "default": "1.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "synthetic",
+            "reference",
+            "factory",
+            "unconfigured"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "factory": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Factory"
+        },
+        "scenario": {
+          "anyOf": [
+            {
+              "enum": [
+                "pass",
+                "fail",
+                "review",
+                "stale",
+                "unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scenario"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "RoleBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "profile": {
+      "default": "development",
+      "enum": [
+        "development",
+        "test"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "roles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RoleBinding"
+      },
+      "propertyNames": {
+        "enum": [
+          "A02",
+          "A03",
+          "A04_A05",
+          "A06",
+          "A07"
+        ]
+      },
+      "title": "Roles",
+      "type": "object"
+    }
+  },
+  "required": [
+    "roles"
+  ],
+  "title": "TeamConfiguration",
+  "type": "object"
+}

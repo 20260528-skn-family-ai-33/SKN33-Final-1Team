@@ -1,0 +1,58 @@
+{
+  "contract_version": "1.0.0",
+  "context": {
+    "contract_version": "1.0.0",
+    "project_id": "synthetic-project",
+    "run_id": "demo-run-1",
+    "actor_id": "synthetic-reviewer",
+    "document_version_id": "document-v1",
+    "criteria_version_id": "criteria-v1",
+    "asset_version_id": "poster-v1",
+    "parent_run_id": null
+  },
+  "observations": [
+    {
+      "contract_version": "1.0.0",
+      "criterion_id": "requirement-text",
+      "observed": "MORNING CUP",
+      "verdict": "pass",
+      "image": {
+        "contract_version": "1.0.0",
+        "asset_version_id": "poster-v1",
+        "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
+        "bbox": [
+          0.08,
+          0.08,
+          0.88,
+          0.24
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-evidence-requirement-text"
+      ],
+      "uncertainty": null
+    },
+    {
+      "contract_version": "1.0.0",
+      "criterion_id": "requirement-number",
+      "observed": "3",
+      "verdict": "pass",
+      "image": {
+        "contract_version": "1.0.0",
+        "asset_version_id": "poster-v1",
+        "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
+        "bbox": [
+          0.12,
+          0.35,
+          0.78,
+          0.82
+        ]
+      },
+      "evidence_ids": [
+        "synthetic-evidence-requirement-number"
+      ],
+      "uncertainty": null
+    }
+  ],
+  "synthetic": true
+}

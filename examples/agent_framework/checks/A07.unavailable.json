@@ -1,0 +1,77 @@
+{
+  "contract_version": "1.0.0",
+  "synthetic": true,
+  "context": {
+    "contract_version": "1.0.0",
+    "project_id": "synthetic-project",
+    "run_id": "demo-run-1",
+    "actor_id": "synthetic-reviewer",
+    "document_version_id": "document-v1",
+    "criteria_version_id": "criteria-v1",
+    "asset_version_id": "poster-v1",
+    "parent_run_id": null
+  },
+  "validated": {
+    "contract_version": "1.0.0",
+    "context": {
+      "contract_version": "1.0.0",
+      "project_id": "synthetic-project",
+      "run_id": "demo-run-1",
+      "actor_id": "synthetic-reviewer",
+      "document_version_id": "document-v1",
+      "criteria_version_id": "criteria-v1",
+      "asset_version_id": "poster-v1",
+      "parent_run_id": null
+    },
+    "verdict": "review",
+    "items": [
+      {
+        "contract_version": "1.0.0",
+        "criterion_id": "requirement-text",
+        "verdict": "review",
+        "issues": [
+          "missing_citation",
+          "missing_requirement_evidence",
+          "retrieval_incomplete"
+        ]
+      },
+      {
+        "contract_version": "1.0.0",
+        "criterion_id": "requirement-number",
+        "verdict": "review",
+        "issues": [
+          "missing_citation",
+          "missing_requirement_evidence",
+          "retrieval_incomplete"
+        ]
+      }
+    ],
+    "limitations": [
+      "Reference policy only; visual accuracy and source authority require real adapters."
+    ],
+    "synthetic": true
+  },
+  "evidence": {
+    "contract_version": "1.0.0",
+    "context": {
+      "contract_version": "1.0.0",
+      "project_id": "synthetic-project",
+      "run_id": "demo-run-1",
+      "actor_id": "synthetic-reviewer",
+      "document_version_id": "document-v1",
+      "criteria_version_id": "criteria-v1",
+      "asset_version_id": "poster-v1",
+      "parent_run_id": null
+    },
+    "retrieval_id": "synthetic-retrieval-demo-run-1",
+    "status": "unavailable",
+    "evidence": [],
+    "warnings": [
+      "합성 계약 예제입니다. 실제 PDF·포스터·모델·DB를 읽거나 실행하지 않았습니다.",
+      "합성 장애: 근거 검색 서비스를 사용할 수 없습니다."
+    ],
+    "postgres_revision": 0,
+    "graph_revision": null,
+    "synthetic": true
+  }
+}

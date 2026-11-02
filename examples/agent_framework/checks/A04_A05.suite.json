@@ -1,0 +1,17 @@
+{
+  "contract_version": "1.0.0",
+  "role": "A04_A05",
+  "cases": [
+    {
+      "contract_version": "1.0.0",
+      "id": "pass",
+      "input": "A04_A05.pass.json"
+    },
+    {
+      "contract_version": "1.0.0",
+      "id": "invalid-scope",
+      "input": "A04_A05.invalid-scope.json",
+      "expected_error": "ASSET_VERSION_MISMATCH"
+    }
+  ]
+}

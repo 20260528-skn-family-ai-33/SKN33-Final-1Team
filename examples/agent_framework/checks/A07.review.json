@@ -1,0 +1,115 @@
+{
+  "contract_version": "1.0.0",
+  "synthetic": true,
+  "context": {
+    "contract_version": "1.0.0",
+    "project_id": "synthetic-project",
+    "run_id": "demo-run-1",
+    "actor_id": "synthetic-reviewer",
+    "document_version_id": "document-v1",
+    "criteria_version_id": "criteria-v1",
+    "asset_version_id": "poster-v1",
+    "parent_run_id": null
+  },
+  "validated": {
+    "contract_version": "1.0.0",
+    "context": {
+      "contract_version": "1.0.0",
+      "project_id": "synthetic-project",
+      "run_id": "demo-run-1",
+      "actor_id": "synthetic-reviewer",
+      "document_version_id": "document-v1",
+      "criteria_version_id": "criteria-v1",
+      "asset_version_id": "poster-v1",
+      "parent_run_id": null
+    },
+    "verdict": "review",
+    "items": [
+      {
+        "contract_version": "1.0.0",
+        "criterion_id": "requirement-text",
+        "verdict": "review",
+        "issues": [
+          "uncertain_observation",
+          "missing_observation"
+        ]
+      },
+      {
+        "contract_version": "1.0.0",
+        "criterion_id": "requirement-number",
+        "verdict": "review",
+        "issues": [
+          "uncertain_observation",
+          "missing_observation"
+        ]
+      }
+    ],
+    "limitations": [
+      "Reference policy only; visual accuracy and source authority require real adapters."
+    ],
+    "synthetic": true
+  },
+  "evidence": {
+    "contract_version": "1.0.0",
+    "context": {
+      "contract_version": "1.0.0",
+      "project_id": "synthetic-project",
+      "run_id": "demo-run-1",
+      "actor_id": "synthetic-reviewer",
+      "document_version_id": "document-v1",
+      "criteria_version_id": "criteria-v1",
+      "asset_version_id": "poster-v1",
+      "parent_run_id": null
+    },
+    "retrieval_id": "synthetic-retrieval-demo-run-1",
+    "status": "complete",
+    "evidence": [
+      {
+        "contract_version": "1.0.0",
+        "evidence_id": "synthetic-evidence-requirement-text",
+        "project_id": "synthetic-project",
+        "kind": "current_requirement",
+        "criterion_ids": [
+          "requirement-text"
+        ],
+        "source_record_id": "synthetic-source-requirement-text",
+        "source": {
+          "contract_version": "1.0.0",
+          "document_version_id": "document-v1",
+          "page": 1,
+          "block_id": "synthetic-page-1-block-1",
+          "quote": "포스터에는 MORNING CUP 문구를 정확히 표시해야 합니다.",
+          "source_hash": "72bf324b678c54db676da22f1f0c2585889faa7a8006a30d62f5cf83d1345c4a"
+        },
+        "approval_id": null,
+        "applicable_asset_version_id": null
+      },
+      {
+        "contract_version": "1.0.0",
+        "evidence_id": "synthetic-evidence-requirement-number",
+        "project_id": "synthetic-project",
+        "kind": "current_requirement",
+        "criterion_ids": [
+          "requirement-number"
+        ],
+        "source_record_id": "synthetic-source-requirement-number",
+        "source": {
+          "contract_version": "1.0.0",
+          "document_version_id": "document-v1",
+          "page": 1,
+          "block_id": "synthetic-page-1-block-2",
+          "quote": "포스터에는 딸기 3개가 표시되어야 합니다.",
+          "source_hash": "591838bbc99d94a8adf7b570259ec518212ac92bc80001b72b821127538868e7"
+        },
+        "approval_id": null,
+        "applicable_asset_version_id": null
+      }
+    ],
+    "warnings": [
+      "합성 계약 예제입니다. 실제 PDF·포스터·모델·DB를 읽거나 실행하지 않았습니다."
+    ],
+    "postgres_revision": 2,
+    "graph_revision": 2,
+    "synthetic": true
+  }
+}

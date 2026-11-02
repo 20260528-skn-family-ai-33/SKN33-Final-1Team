@@ -1,0 +1,46 @@
+{
+  "workflow_nodes": 18,
+  "workflow_edges": 27,
+  "scenarios": {
+    "pass": 10,
+    "revision": 18,
+    "unavailable": 8
+  },
+  "flow_data_sha256": "773a7bde21fe83859b07ae4f1b66e5d352784645ad6f1bc9ee2f312a28df87a6",
+  "html_sha256": "d1146f8d95ba353aa552c60312912bf595cafda1080ea455e8b8d2e301e1fc57",
+  "code_graph": {
+    "version": "0.9.100",
+    "files": 19,
+    "nodes": 346,
+    "edges": 1205,
+    "build_summary": {
+      "tool": "graphifyy",
+      "version": "0.9.100",
+      "source_files": 19,
+      "source_words": 11180,
+      "ast_nodes": 324,
+      "ast_edges": 1281,
+      "nodes": 346,
+      "edges": 1205,
+      "communities": 8,
+      "directed": true,
+      "edge_confidence_counts": {
+        "EXTRACTED": 1066,
+        "INFERRED": 215
+      },
+      "diagnostics": {
+        "dangling_endpoint_edges": 78,
+        "missing_endpoint_edges": 0,
+        "self_loop_edges": 1,
+        "directed_same_endpoint_collapsed_edges": 76
+      },
+      "implicit_nodes": 22,
+      "html_external_resources": [],
+      "browser_verified": false,
+      "built_at": "2026-11-02T05:08:25.347998+00:00"
+    }
+  },
+  "source_files": 29,
+  "source_html_sha256": "7b1354dd5cd80772addffd9711a67c862bd0eb4ef34b81432c494054da5dfffc",
+  "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
+}

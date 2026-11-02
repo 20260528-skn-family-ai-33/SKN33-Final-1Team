@@ -1,0 +1,26 @@
+{
+  "contract_version": "1.0.0",
+  "profile": "development",
+  "roles": {
+    "A02": {
+      "contract_version": "1.0.0",
+      "kind": "synthetic"
+    },
+    "A03": {
+      "contract_version": "1.0.0",
+      "kind": "synthetic"
+    },
+    "A04_A05": {
+      "contract_version": "1.0.0",
+      "kind": "synthetic"
+    },
+    "A06": {
+      "contract_version": "1.0.0",
+      "kind": "reference"
+    },
+    "A07": {
+      "contract_version": "1.0.0",
+      "kind": "synthetic"
+    }
+  }
+}

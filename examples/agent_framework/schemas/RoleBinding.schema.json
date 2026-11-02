@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "synthetic",
+        "reference",
+        "factory",
+        "unconfigured"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "factory": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Factory"
+    },
+    "scenario": {
+      "anyOf": [
+        {
+          "enum": [
+            "pass",
+            "fail",
+            "review",
+            "stale",
+            "unavailable"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scenario"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "RoleBinding",
+  "type": "object"
+}

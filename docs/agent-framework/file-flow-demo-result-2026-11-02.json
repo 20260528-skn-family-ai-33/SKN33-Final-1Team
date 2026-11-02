@@ -1,0 +1,419 @@
+{
+  "generated_test_media": true,
+  "database": "isolated SQLite",
+  "model_calls": 0,
+  "operational_database_checked": false,
+  "workflow": {
+    "contract_version": "1.0.0",
+    "check": "configured_workflow",
+    "case_id": "generated-file-flow",
+    "case_sha256": "445bec2a99f568261fa3d35acb01e355133c20ca3a262906f3e2abbfef175102",
+    "configuration_sha256": "8cc43ab61c3584ad65caa3f422631b18473c4b306c6c41ea1e20d6ec51cde6b1",
+    "profile": "development",
+    "storage": "memory",
+    "passed": true,
+    "stopped_on_outcome_unknown": false,
+    "configuration": {
+      "contract_version": "1.0.0",
+      "profile": "development",
+      "connection_verified": false,
+      "roles": {
+        "A02": {
+          "kind": "factory",
+          "connection_verified": false,
+          "factory": "examples.agent_framework.file_flow_demo:create_extractor"
+        },
+        "A03": {
+          "kind": "synthetic",
+          "connection_verified": false,
+          "scenario": "pass"
+        },
+        "A04_A05": {
+          "kind": "factory",
+          "connection_verified": false,
+          "factory": "examples.agent_framework.file_flow_demo:create_inspector"
+        },
+        "A06": {
+          "kind": "reference",
+          "connection_verified": false
+        },
+        "A07": {
+          "kind": "synthetic",
+          "connection_verified": false,
+          "scenario": "pass"
+        }
+      }
+    },
+    "summary": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "actions": [
+      {
+        "action": "start",
+        "run_id": "generated-flow-1",
+        "execution_status": "waiting_criteria",
+        "machine_verdict": null,
+        "human_decision": "unreviewed",
+        "synthetic": true,
+        "snapshot_sha256": "6c435e69a0761632902098d17e1a33b8a3bfdbc0ec46aaf460c48309b869f5a1",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.887264Z",
+            "started_at": "2026-11-02T05:09:01.887264Z",
+            "finished_at": "2026-11-02T05:09:01.897443Z",
+            "duration_ms": 10.18,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "action": "approve_criteria",
+        "run_id": "generated-flow-1",
+        "execution_status": "waiting_review",
+        "machine_verdict": "fail",
+        "human_decision": "unreviewed",
+        "synthetic": true,
+        "snapshot_sha256": "c00b2125a47374751f3b097bce3c00cf7880edf43d763235caac09c481fe02b3",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.887264Z",
+            "started_at": "2026-11-02T05:09:01.887264Z",
+            "finished_at": "2026-11-02T05:09:01.897443Z",
+            "duration_ms": 10.18,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 2,
+            "role": "A03",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.898253Z",
+            "started_at": "2026-11-02T05:09:01.898253Z",
+            "finished_at": "2026-11-02T05:09:01.898594Z",
+            "duration_ms": 0.341708,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 3,
+            "role": "A04_A05",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.898794Z",
+            "started_at": "2026-11-02T05:09:01.898794Z",
+            "finished_at": "2026-11-02T05:09:01.902270Z",
+            "duration_ms": 3.477041,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 4,
+            "role": "A06",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.902641Z",
+            "started_at": "2026-11-02T05:09:01.902641Z",
+            "finished_at": "2026-11-02T05:09:01.903243Z",
+            "duration_ms": 0.602208,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 5,
+            "role": "A07",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.903482Z",
+            "started_at": "2026-11-02T05:09:01.903482Z",
+            "finished_at": "2026-11-02T05:09:01.903937Z",
+            "duration_ms": 0.45575,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "action": "approve_changes",
+        "run_id": "generated-flow-1",
+        "execution_status": "waiting_revision",
+        "machine_verdict": "fail",
+        "human_decision": "changes_approved",
+        "synthetic": true,
+        "snapshot_sha256": "b72ef19706e97b59ba88f19d157e68b0daac3b722e6e079e2c6bae3d3f2c0526",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.887264Z",
+            "started_at": "2026-11-02T05:09:01.887264Z",
+            "finished_at": "2026-11-02T05:09:01.897443Z",
+            "duration_ms": 10.18,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 2,
+            "role": "A03",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.898253Z",
+            "started_at": "2026-11-02T05:09:01.898253Z",
+            "finished_at": "2026-11-02T05:09:01.898594Z",
+            "duration_ms": 0.341708,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 3,
+            "role": "A04_A05",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.898794Z",
+            "started_at": "2026-11-02T05:09:01.898794Z",
+            "finished_at": "2026-11-02T05:09:01.902270Z",
+            "duration_ms": 3.477041,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 4,
+            "role": "A06",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.902641Z",
+            "started_at": "2026-11-02T05:09:01.902641Z",
+            "finished_at": "2026-11-02T05:09:01.903243Z",
+            "duration_ms": 0.602208,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 5,
+            "role": "A07",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.903482Z",
+            "started_at": "2026-11-02T05:09:01.903482Z",
+            "finished_at": "2026-11-02T05:09:01.903937Z",
+            "duration_ms": 0.45575,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "action": "rereview",
+        "run_id": "generated-flow-2",
+        "execution_status": "waiting_criteria",
+        "machine_verdict": null,
+        "human_decision": "unreviewed",
+        "synthetic": true,
+        "snapshot_sha256": "194993aec5c932e0c8daf0320f1eac484f6a635372f0467d051a3e30757ea788",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "reused",
+            "recorded_at": "2026-11-02T05:09:01.904764Z",
+            "started_at": null,
+            "finished_at": null,
+            "duration_ms": null,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": "generated-flow-1"
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "action": "approve_revised_criteria",
+        "run_id": "generated-flow-2",
+        "execution_status": "waiting_review",
+        "machine_verdict": "pass",
+        "human_decision": "unreviewed",
+        "synthetic": true,
+        "snapshot_sha256": "1c382a389362af71d89b145e4b2c81aa233348363a2b7c8aca10ac200469fa30",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "reused",
+            "recorded_at": "2026-11-02T05:09:01.904764Z",
+            "started_at": null,
+            "finished_at": null,
+            "duration_ms": null,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": "generated-flow-1"
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 2,
+            "role": "A03",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.905269Z",
+            "started_at": "2026-11-02T05:09:01.905269Z",
+            "finished_at": "2026-11-02T05:09:01.905663Z",
+            "duration_ms": 0.394334,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 3,
+            "role": "A04_A05",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.905822Z",
+            "started_at": "2026-11-02T05:09:01.905822Z",
+            "finished_at": "2026-11-02T05:09:01.907597Z",
+            "duration_ms": 1.775333,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 4,
+            "role": "A06",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.907813Z",
+            "started_at": "2026-11-02T05:09:01.907813Z",
+            "finished_at": "2026-11-02T05:09:01.908344Z",
+            "duration_ms": 0.53125,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 5,
+            "role": "A07",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.908562Z",
+            "started_at": "2026-11-02T05:09:01.908562Z",
+            "finished_at": "2026-11-02T05:09:01.909131Z",
+            "duration_ms": 0.569208,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "action": "approve_final",
+        "run_id": "generated-flow-2",
+        "execution_status": "completed",
+        "machine_verdict": "pass",
+        "human_decision": "final_approved",
+        "synthetic": true,
+        "snapshot_sha256": "3637f15ddb0c223ff988d38408e9975fba6ea831e637e91903b3d1a526737974",
+        "records": [
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 1,
+            "role": "A02",
+            "status": "reused",
+            "recorded_at": "2026-11-02T05:09:01.904764Z",
+            "started_at": null,
+            "finished_at": null,
+            "duration_ms": null,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": "generated-flow-1"
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 2,
+            "role": "A03",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.905269Z",
+            "started_at": "2026-11-02T05:09:01.905269Z",
+            "finished_at": "2026-11-02T05:09:01.905663Z",
+            "duration_ms": 0.394334,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 3,
+            "role": "A04_A05",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.905822Z",
+            "started_at": "2026-11-02T05:09:01.905822Z",
+            "finished_at": "2026-11-02T05:09:01.907597Z",
+            "duration_ms": 1.775333,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 4,
+            "role": "A06",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.907813Z",
+            "started_at": "2026-11-02T05:09:01.907813Z",
+            "finished_at": "2026-11-02T05:09:01.908344Z",
+            "duration_ms": 0.53125,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          },
+          {
+            "contract_version": "1.0.0",
+            "ordinal": 5,
+            "role": "A07",
+            "status": "completed",
+            "recorded_at": "2026-11-02T05:09:01.908562Z",
+            "started_at": "2026-11-02T05:09:01.908562Z",
+            "finished_at": "2026-11-02T05:09:01.909131Z",
+            "duration_ms": 0.569208,
+            "error": null,
+            "synthetic": true,
+            "source_run_id": null
+          }
+        ],
+        "status": "passed"
+      }
+    ],
+    "connection_verified": false,
+    "production_ready": false,
+    "scripted_approvals": true,
+    "notice": "Explicit developer rehearsal with scripted approvals. Hashes cover canonical validated JSON. Not authenticated human approval, model accuracy, production persistence or connectivity verification."
+  },
+  "notice": "Existing storage reads and deterministic PDF/pixel fixture callbacks; no Qwen, Neo4j or authenticated human approval."
+}

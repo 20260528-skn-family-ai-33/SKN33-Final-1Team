@@ -1,0 +1,41 @@
+[graphify] MultiDiGraph edge-collapse diagnostic
+input: <in-memory>
+input_stage: provided JSON (normal graph.json is post-build)
+effective_directed: <direct-call>
+nodes: 324
+unverified_code_nodes: 0
+raw_edges: 1281
+valid_candidate_edges: 1203
+missing_endpoint_edges: 0
+dangling_endpoint_edges: 78
+external_reference_edges: 0
+self_loop_edges: 1
+exact_duplicate_edges: 0
+directed_unique_endpoint_pairs: 1127
+directed_same_endpoint_collapsed_edges: 76
+undirected_unique_endpoint_pairs: 1126
+undirected_same_endpoint_collapsed_edges: 77
+same_endpoint_group_count: 71
+relation_variant_groups: 65
+source_file_variant_groups: 0
+source_location_variant_groups: 1
+context_variant_groups: 5
+post_build_graph_type: DiGraph
+post_build_edges: 1205
+producer_suppression_sites: 12
+producer_suppression_examples:
+  - L1830 seen_ids arity=unknown
+  - L2393 seen_ids arity=unknown
+  - L2395 seen_doc_refs arity=unknown
+  - L3062 seen_ids arity=unknown
+  - L3209 seen_ids arity=unknown
+  - L4350 seen_keys arity=unknown
+  - L4536 seen_keys arity=unknown
+  - L8160 seen_ids arity=unknown
+examples:
+  - adapters_synthetic_sample_inputs -> contracts_context edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L36'] contexts=['', 'call', 'generic_arg']
+  - adapters_synthetic_sample_inputs -> contracts_documentref edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L41'] contexts=['', 'call', 'generic_arg']
+  - adapters_synthetic_sample_inputs -> contracts_assetref edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L45'] contexts=['', 'call', 'generic_arg']
+  - adapters_synthetic_make_agents -> ports_agents edges=3 relations=['calls', 'references', 'uses'] locations=['L174', 'L179'] contexts=['', 'call', 'return_type']
+  - composition_build_agents -> ports_agents edges=3 relations=['calls', 'references', 'uses'] locations=['L170', 'L173'] contexts=['', 'call', 'return_type']
+note: normal graph.json is post-build; raw producer loss must be measured earlier.
