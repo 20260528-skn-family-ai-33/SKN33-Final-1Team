@@ -47,12 +47,12 @@ Board에서는 `Status`별 진행 상황을 보고, Table에서는 담당자·�
 |---|---|
 | `Type` | Issue의 작업 유형: `Task`, `Bug`, `Feature` |
 | `Assignees` | Issue의 작업 책임자 |
-| `Labels` | Issue의 작업 영역과 차단 여부 |
+| `Labels` | Issue·PR의 작업 영역과 차단 여부 |
 | `Status` | Project의 현재 작업 단계 |
 | `Priority` | Project에서만 관리하는 처리 우선순위 |
 | `Milestone` | 팀이 합의한 버전·배포 목표와 완료 기준 |
 
-유형·담당자·라벨·Milestone은 Issue에서 관리합니다. `Labels`와 `Milestone`은 Issue 기본 필드를 사용하며, 같은 이름의 사용자 지정 필드를 따로 만들지 않습니다.
+유형·담당자·Milestone은 Issue에서 관리하고, 라벨은 Issue와 PR의 작업 범위에 맞게 지정합니다. `Labels`와 `Milestone`은 GitHub 기본 필드를 사용하며, 같은 이름의 사용자 지정 필드를 따로 만들지 않습니다.
 
 ### 상태
 
@@ -85,16 +85,37 @@ Board에서는 `Status`별 진행 상황을 보고, Table에서는 담당자·�
 
 ### 라벨
 
-`area:*`는 작업 영역에 맞는 것만 붙이고, `flag:blocked`는 막힌 경우에만 붙입니다.
+Issue와 PR에는 핵심 작업 영역에 맞는 `area:*` 라벨을 보통 1~2개 붙입니다. 여러 영역을 함께 다루는 통합 작업은 필요한 라벨을 더 붙일 수 있습니다. PR 라벨은 해당 PR에서 실제로 변경하는 범위를 기준으로 고릅니다.
+
+작업 유형은 Issue의 `Type`, 진행 상태와 우선순위는 Project의 `Status`·`Priority`로 관리합니다. 라벨은 영역과 차단 여부를 나타내는 데 사용합니다.
 
 | 라벨 | 용도 |
 |---|---|
-| `area:mcp` | MCP 서버, 도구 정의·호출 |
-| `area:agent` | AI 에이전트의 역할·동작·협업 로직 |
-| `area:workflow` | 업무 실행 순서·분기·상태 관리 |
-| `area:infra` | Docker, 개발 환경, CI, 배포, 저장소 설정 |
-| `area:docs` | README, 사용법, 설계 문서, 팀 컨벤션 |
-| `flag:blocked` | 선행 작업이나 외부 응답을 기다려 진행할 수 없는 상태 |
+| `area:ui` | 화면 디자인, 레이아웃, 색상, 글꼴, 간격, 공통 스타일, 반응형 |
+| `area:frontend` | 화면 상태, 라우팅, 입력 처리, 사용자 상호작용, API 연동 |
+| `area:api` | API 요청·응답 계약, 입력 검증, 인증·권한, 서버 오류 처리 |
+| `area:db` | PostgreSQL·Neo4j 스키마, 쿼리, 마이그레이션, 데이터 정합성 |
+| `area:model` | OCR·LLM·임베딩 모델, 프롬프트, 추론 설정, 모델 성능 평가 |
+| `area:media` | 문서 추출, 이미지·영상 전처리, 프레임 추출, 로고 영역 처리 |
+| `area:review` | 검수 기준 비교, 금액·날짜 판정, 근거 처리, 판정 집계 |
+| `area:test` | 단위·통합·E2E 테스트, 테스트 데이터, 재현·회귀 검사 |
+| `area:agent` | 에이전트별 역할과 판단·협업 로직 |
+| `area:mcp` | MCP 서버, 도구 정의와 호출 |
+| `area:workflow` | 작업 실행 순서, 승인·재검수 흐름, 재시도·취소·상태 전이 |
+| `area:infra` | Docker, 개발 환경, CI, 클라우드 배포·운영, 저장소 설정 |
+| `area:docs` | README, 실행 가이드, 설계 문서, 팀 컨벤션 |
+| `flag:blocked` | 선행 작업이나 외부 응답 때문에 진행할 수 없는 상태 |
+
+라벨이 겹쳐 보이면 다음 기준으로 고릅니다.
+
+- 화면의 모양과 배치를 맞추는 일은 `area:ui`, 화면 상태나 동작을 바꾸는 일은 `area:frontend`를 붙입니다.
+- 모델의 추론 결과와 품질을 다루면 `area:model`, 추출한 값과 기준을 비교해 판정을 내리는 규칙을 다루면 `area:review`를 붙입니다.
+- 에이전트의 역할과 협업은 `area:agent`, 검사·승인·재검수의 실행 순서와 상태 전이는 `area:workflow`로 구분합니다.
+- DB 스키마·쿼리·데이터 정합성은 `area:db`, DB를 포함한 배포·백업·복구 운영은 `area:infra`를 붙입니다.
+- 테스트나 문서 자체가 작업의 목적일 때 `area:test`·`area:docs`를 붙입니다. 기능 수정에 테스트나 설명이 함께 바뀐다는 이유만으로 추가하지 않습니다.
+- `flag:blocked`는 실제로 진행을 막는 선행 작업이나 외부 응답이 있을 때만 붙입니다. Issue에 사유와 해소 조건을 적고, 해소되면 제거합니다.
+
+기존 라벨을 정리할 때는 열린 항목과 닫힌 항목을 모두 확인합니다. `type:bug`·`type:task`에 남아 있는 유형 정보는 Issue의 `Type`으로 옮기고, 기존 값과 충돌하면 본문과 이력을 확인합니다. PR에 남은 유형 정보는 PR 제목과 연결된 Issue에서 확인할 수 있도록 보존합니다. `wontfix`는 실제 취소 결정과 종료 사유를 확인해 `not planned`로 반영하며, 라벨만 보고 열린 Issue를 닫지 않습니다. 필요한 정보가 남아 있는지 확인한 뒤 기존 라벨을 제거합니다.
 
 ### Milestone
 
