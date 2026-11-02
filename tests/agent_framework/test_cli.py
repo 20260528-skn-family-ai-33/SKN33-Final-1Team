@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -202,3 +203,43 @@ def test_python_module_entry_point_is_a_real_cli():
         cwd=root, capture_output=True, text=True, check=False, timeout=20)
     assert completed.returncode == 0, completed.stderr
     assert set(json.loads(completed.stdout)) == {contract.__name__ for contract in CONTRACT_TYPES}
+
+
+@pytest.mark.parametrize("arguments", [
+    ("backend.agent_framework", "demo"),
+    ("backend.agent_framework", "schema"),
+    ("backend.agent_framework", "doctor", "--config", "examples/agent_framework/team_config.synthetic.json"),
+    ("backend.agent_framework", "check", "A06", "--config", "examples/agent_framework/team_config.synthetic.json",
+     "--cases", "examples/agent_framework/checks/A06.suite.json"),
+    ("backend.agent_framework", "check", "A07", "--config", "examples/agent_framework/team_config.synthetic.json",
+     "--cases", "examples/agent_framework/checks/A07.suite.json"),
+    ("backend.agent_framework", "check-flow", "--config", "examples/agent_framework/team_config.synthetic.json",
+     "--case", "examples/agent_framework/workflow.synthetic.json"),
+    ("examples.agent_framework.file_access_demo",),
+    ("examples.agent_framework.file_flow_demo",),
+], ids=["demo", "schema", "doctor", "check-a06", "check-a07", "check-flow", "file-access", "file-flow"])
+def test_ci_commands_emit_valid_json_to_cp1252_pipe(arguments):
+    root = Path(__file__).resolve().parents[2]
+    environment = {**os.environ, "PYTHONIOENCODING": "cp1252:strict"}
+    completed = subprocess.run([sys.executable, "-m", *arguments], cwd=root,
+        env=environment, capture_output=True, check=False, timeout=30)
+    assert completed.returncode == 0, completed.stderr.decode("cp1252", errors="replace")
+    rendered = completed.stdout.decode("ascii")
+    result = json.loads(rendered)
+    assert isinstance(result, dict)
+    if arguments == ("backend.agent_framework", "demo"):
+        assert result["runs"][-1]["execution_status"] == "completed"
+        assert "합성" in json.dumps(result, ensure_ascii=False)
+
+
+def test_cp1252_console_keeps_explicit_output_file_as_utf8(tmp_path):
+    root = Path(__file__).resolve().parents[2]
+    output = tmp_path / "데모.json"
+    environment = {**os.environ, "PYTHONIOENCODING": "cp1252:strict"}
+    completed = subprocess.run([sys.executable, "-m", "backend.agent_framework", "demo", "--output", str(output)],
+        cwd=root, env=environment, capture_output=True, check=False, timeout=30)
+    assert completed.returncode == 0, completed.stderr.decode("cp1252", errors="replace")
+    assert completed.stdout == b""
+    text = output.read_text(encoding="utf-8")
+    assert "합성" in text
+    assert json.loads(text)["runs"][-1]["execution_status"] == "completed"

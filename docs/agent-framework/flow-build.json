@@ -7,7 +7,7 @@
     "review": 8
   },
   "flow_data_sha256": "2ff25c40980e3f20011e996932159972042fbf68151014fab029401876a04664",
-  "html_sha256": "910b15316427ca3672fd3460b3316300633d6be0118df59cff9c751593a84acf",
+  "html_sha256": "4e53acd82e5f96a4970344d604c1f1a1481a76f2798ead14b158b68c82a68846",
   "code_graph": {
     "version": "0.9.100",
     "files": 25,
@@ -17,7 +17,7 @@
       "tool": "graphifyy",
       "version": "0.9.100",
       "source_files": 25,
-      "source_words": 13311,
+      "source_words": 13336,
       "ast_nodes": 404,
       "ast_edges": 1619,
       "nodes": 439,
@@ -37,10 +37,10 @@
       "implicit_nodes": 35,
       "html_external_resources": [],
       "browser_verified": false,
-      "built_at": "2026-11-02T06:49:36.858803+00:00"
+      "built_at": "2026-11-02T07:44:15.434392+00:00"
     }
   },
   "source_files": 37,
-  "source_html_sha256": "a392ccd50350c96a2ac312f13e90f11809c9e83c08b3dc8c36d381823816a934",
+  "source_html_sha256": "ccdde1b8a7cc9b27b016356ed9a61547e867d70d910836b252b4036be4b6e98c",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

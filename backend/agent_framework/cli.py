@@ -36,7 +36,9 @@ def _load_configuration(path):
 
 
 def _emit(payload, output=None):
-    rendered = json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
+    # stdout is a JSON transport and may be a legacy-codepage Windows pipe.
+    # Unicode escapes preserve all values; explicit files remain readable UTF-8.
+    rendered = json.dumps(payload, ensure_ascii=not bool(output), indent=2, allow_nan=False) + "\n"
     if output:
         # An explicit output path authorizes this file only. Missing parent
         # directories are reported instead of silently creating another tree.

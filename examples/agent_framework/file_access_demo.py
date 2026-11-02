@@ -96,4 +96,4 @@ def run_demo() -> dict:
 
 
 if __name__ == "__main__":
-    print(json.dumps(run_demo(), ensure_ascii=False, indent=2))
+    print(json.dumps(run_demo(), ensure_ascii=True, indent=2))

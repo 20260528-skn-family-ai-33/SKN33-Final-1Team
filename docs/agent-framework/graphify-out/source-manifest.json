@@ -1,5 +1,5 @@
 {
-  "git_commit": "eaab8701871769afec1a07c638d269abd9af06c1",
+  "git_commit": "fd642a1dcaef6e5c108aa5f7d9506d41bc671049",
   "scope": "backend/agent_framework/**/*.py",
   "files": [
     {
@@ -64,9 +64,9 @@
     },
     {
       "path": "backend/agent_framework/cli.py",
-      "sha256": "c2cd45a891c453f930b5068c5a077e1ad04f4a8a2e2c0c6227f709ff8419fa46",
-      "bytes": 17377,
-      "lines": 329
+      "sha256": "42108824220a09b5b9792f216f2b7aa9f89c59c5823027b4d1cc7ab008240fef",
+      "bytes": 17545,
+      "lines": 331
     },
     {
       "path": "backend/agent_framework/composition.py",
