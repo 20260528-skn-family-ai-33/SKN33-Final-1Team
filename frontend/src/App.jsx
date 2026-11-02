@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router';
+import React from 'react';
+import { Link, Route, Routes } from 'react-router';
 import { useAuth } from './auth/AuthProvider.jsx';
 import { RequireAuth } from './auth/RequireAuth.jsx';
 import LandingPage from './pages/LandingPage.jsx';
@@ -10,38 +10,12 @@ import VideoReviewPage from './pages/video/VideoReviewPage.jsx';
 const ModelTestPage = React.lazy(() => import('./pages/modeltest/ModelTestPage.jsx'));
 const LogoConfirmPage = React.lazy(() => import('./pages/video/LogoConfirmPage.jsx'));
 
-// 인증된 사용자와 로그아웃 동작을 기존 검수 화면에 연결한다.
-function ReviewRoute() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [logoutPending, setLogoutPending] = useState(false);
-  const [logoutError, setLogoutError] = useState('');
-
-  // 서버 세션이 종료된 경우에만 로그인 화면으로 이동한다.
-  async function handleLogout() {
-    if (logoutPending) return;
-    setLogoutPending(true);
-    setLogoutError('');
-    try {
-      await logout();
-      navigate('/login', { replace: true });
-    } catch (error) {
-      setLogoutError(error.message || '로그아웃하지 못했습니다. 다시 시도해 주세요.');
-    } finally {
-      setLogoutPending(false);
-    }
-  }
-
-  return <ReviewPage user={user} onLogout={handleLogout} logoutPending={logoutPending}
-    logoutError={logoutError} onHome={() => navigate('/')} />;
-}
-
 // 소개·로그인·검수를 URL로 구분하고 검수 진입 전에 서버 세션을 확인한다.
 function AppRoutes() {
   return <Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
-    <Route path="/review/new" element={<RequireAuth><ReviewRoute /></RequireAuth>} />
+    <Route path="/review/new" element={<RequireAuth><ReviewPage /></RequireAuth>} />
     <Route path="/video" element={<RequireAuth><VideoReviewPage /></RequireAuth>} />
     <Route path="/video/logo" element={<RequireAuth><React.Suspense fallback={<p role="status">로고 확정 화면을 준비하고 있어요.</p>}><LogoConfirmPage /></React.Suspense></RequireAuth>} />
     <Route path="/modeltest" element={<React.Suspense fallback={<p role="status">모델 테스트를 준비하고 있어요.</p>}><ModelTestPage /></React.Suspense>} />

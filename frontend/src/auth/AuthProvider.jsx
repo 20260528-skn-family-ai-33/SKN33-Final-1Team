@@ -81,6 +81,9 @@ export function AuthProvider({ children }) {
 }
 
 // 인증 컨텍스트를 사용하는 화면에 일관된 세션 인터페이스를 제공한다.
+// v1 프로필처럼 이 인증 공급자 밖에서도 그려지는 공용 화면은 null을 받는다.
+export function useOptionalAuth() { return useContext(AuthContext); }
+
 export function useAuth() {
   const value = useContext(AuthContext);
   if (!value) throw new Error('useAuth는 AuthProvider 안에서 사용해야 합니다.');

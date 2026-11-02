@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Brand } from '../../components/Brand.jsx';
+import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import {
   CONTRACT, STAGES, MODEL_OPTIONS, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
@@ -467,13 +467,14 @@ export default function ModelTestPage() {
     anchor.href = url; anchor.download = `modeltest-${job?.id || 'request'}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  return <div className="mt-shell" data-theme={theme}>
-    <header className="mt-topbar"><Brand disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')} /><span className="mt-product-label">모델 테스트</span>
+  return <div className="rv-workspace rv-workspace--tool mt-shell" data-theme={theme}>
+    <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
+    <WorkspaceTopbar current="/modeltest" locked={locked} lockReason={lockReason}>
       <div className="mt-theme-switch" role="group" aria-label="화면 테마">{[['light', '라이트'], ['dark', '다크']].map(([value, title]) => <button type="button" key={value} aria-pressed={theme === value} onClick={() => setTheme(value)}>{title}</button>)}</div>
       <button type="button" className="btn secondary small" aria-haspopup="dialog" aria-controls="mt-model-library" aria-expanded={libraryOpen} onClick={() => setLibraryOpen(true)}>모델 관리</button>
-      <button type="button" className="text-btn mt-home" disabled={locked} title={lockReason || undefined} aria-describedby={locked ? 'mt-lock-reason' : undefined} onClick={() => window.location.assign('/')}>서비스 홈</button></header>
-    <main className="mt-main">
-      <div className="mt-heading"><div><h1>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
+    </WorkspaceTopbar>
+    <main id="review-content" className="rv-main" tabIndex={-1}>
+      <div className="rv-workspace-intro"><div><span className="rv-eyebrow">MODEL TEST · RunPod</span><h1 id="page-title" tabIndex={-1}>검수 모델 테스트</h1><p>자료와 모델을 바꿔가며, 추출부터 대조까지 한 번에 확인하세요.</p></div></div>
 
       <details className="mt-connection-wrap" open={connectionOpen} onToggle={event => setConnectionOpen(event.currentTarget.open)}>
         <summary><span>RunPod 연결</span><span className={`mt-connection-state ${health?.ready && !connectionError ? 'is-ready' : ''}`}><i />{connectionError ? '연결 오류' : connecting ? 'Pod 확인 중' : preparing ? '실행환경 준비 중' : health?.ready ? 'Pod 연결됨' : health ? 'Pod 준비 필요' : 'Pod 연결 전'}</span><span className="mt-connection-target" title={target}>{method === 'ssh' ? 'SSH' : 'HTTP'}{target && ` · ${target}`}</span></summary>
@@ -628,8 +629,8 @@ export default function ModelTestPage() {
       <p className="mt-result-guidance">임계값·유사도는 검수 통과 확률이 아니며, 이미지 코사인 및 특징점 지표는 일치 확률이 아닙니다. 실행 성공은 품질 검증을 뜻하지 않습니다. 실행 환경과 품질은 별도 확인이 필요합니다.</p>
       <details className="mt-api-help mt-page-help"><summary>페이지 도움말</summary><h3>Pod 연결과 작업 복원</h3>{method === 'ssh' ? <><p>노트북의 로컬 백엔드가 OpenSSH로 접속합니다. 최초 접속은 터미널에서 서버 지문을 확인하고, 암호화된 키는 ssh-agent에 등록해 주세요.</p><p>TCP SSH는 일반 데이터 통신을, 기본 SSH는 터미널을 통한 전송을 사용합니다. 큰 영상에는 TCP SSH를 권장합니다.</p><p>OWLv2는 로고 추출, SigLIP2는 후보 문구별 시각 유사도, XFeat는 로고 대조, Qwen3.5는 문서·이미지 분석에 연결됩니다. 기존 Transformers 생성 모델과 Grounding DINO도 지원 범위에서 사용할 수 있습니다.</p><p>실행 ID로 조회를 복원하며, 백엔드를 재시작했다면 같은 Pod에 연결 후 이전 작업을 조회하세요.</p></>
               : <><p>HTTP 방식은 전용 검수 API가 필요합니다. 기존 OCR 워커나 일반 채팅 API에는 직접 연결되지 않습니다.</p><p>GET /api/modeltest/health<br />POST /api/modeltest/runs<br />GET /api/modeltest/runs/:id</p><p>Pod에서 현재 화면의 출처({window.location.origin})를 CORS로 허용해야 합니다.</p><p>RunPod 계정 API 키가 아닌 Pod 검수 API 토큰을 입력하세요.</p></>}<h3>검수 자료와 결과</h3><p>필요한 단계를 선택하고 모델을 지정하세요.</p><p>소유자 없는 모델명은 받지 않습니다. 연결 후에는 Pod가 제공한 모델도 선택할 수 있습니다.</p><p>{method === 'ssh' ? '실행하면 자료·검수 스크립트를 Pod로 전송하고 선택한 모델을 다운로드·실행합니다.' : '실행하면 첨부 자료와 모델 설정을 연결된 Pod로 전송합니다.'}</p><p>실행한 모델의 출력과 요청 설정을 확인합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p><p>실행 설정은 실행 당시 설정입니다. 파일 내용과 인증 토큰은 포함하지 않습니다.</p><p>모델·revision·처리 설정이 같은 벡터만 비교합니다.</p><p>유사도, 재정렬 점수, 분류 점수는 서로 다른 지표입니다.</p><p>새 모델은 상단 모델 관리에서 등록하세요. 등록 모델은 선택 상자로 설정을 유지합니다.</p><p>입력한 모델의 로딩·추론은 Pod에서 처리합니다. 프레임을 선택하면 로고 위치와 원본 대조 결과를 볼 수 있습니다.</p></details>
-      <footer className="mt-footer"><span>크리에이티브체커 · 모델 테스트</span></footer>
     </main>
+    <WorkspaceFooter />
     <ModeltestConfirm request={confirmation} onResolve={accepted => { setConfirmation(null); if (accepted) { if (confirmation.action === 'cancel') cancel(); else confirmation.action(); } }} />
   </div>;
 }

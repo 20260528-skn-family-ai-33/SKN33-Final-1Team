@@ -139,8 +139,8 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
   assert.equal(await inner.getByRole('button', { name: /다시 실행/ }).isDisabled(), true);
   assert.equal(await page.locator('#mt-lock-reason').textContent(), 'Pod 실행환경을 준비하는 중이라 편집할 수 없습니다.');
   assert.equal(await page.locator('#mt-lock-reason').getAttribute('role'), 'status');
-  for (const name of ['크리에이티브체커 홈', '서비스 홈']) {
-    const home = page.getByRole('button', { name, exact: true });
+  for (const name of ['크리에이티브체커 홈', '포스터 검수', '영상 검수']) {
+    const home = name.endsWith('홈') ? page.getByRole('button', { name, exact: true }) : page.getByRole('navigation', { name: '검수 도구' }).getByRole('link', { name, exact: true });
     assert.equal(await home.isDisabled(), true); assert.equal(await home.getAttribute('title'), 'Pod 실행환경을 준비하는 중이라 편집할 수 없습니다.');
     assert.equal(await home.getAttribute('aria-describedby'), 'mt-lock-reason');
   }
@@ -226,7 +226,7 @@ test('full width boards, collapsible inspectors and anchored help remain usable 
   assert.ok((await tip.boundingBox()).y < (await helpButton.boundingBox()).y, 'Tip flips above its anchor near the bottom');
   await page.keyboard.press('Escape'); await tip.waitFor({ state: 'hidden' });
   assert.equal(await helpButton.evaluate(node => node === document.activeElement), true);
-  await helpButton.click(); await tip.waitFor(); await page.locator('.mt-topbar').click(); await tip.waitFor({ state: 'hidden' });
+  await helpButton.click(); await tip.waitFor(); await page.locator('.rv-topbar').click(); await tip.waitFor({ state: 'hidden' });
   await page.getByRole('button', { name: '에이전트', exact: true }).click();
   assert.equal(await page.locator('[aria-label="편집할 에이전트"],[aria-label="편집할 내부 단계"]').count(), 0);
   const agents = page.locator('[data-board="video-agents"]');
