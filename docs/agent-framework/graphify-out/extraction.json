@@ -1501,7 +1501,7 @@
       "label": "RoleRequest",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L67",
+      "source_location": "L70",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1511,7 +1511,7 @@
       "label": "ExtractRequest",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L72",
+      "source_location": "L75",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1521,7 +1521,7 @@
       "label": "CriteriaDraft",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L77",
+      "source_location": "L80",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1531,7 +1531,7 @@
       "label": "Evidence",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L84",
+      "source_location": "L87",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1549,7 +1549,7 @@
       "label": ".exception_has_scope()",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L96",
+      "source_location": "L99",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1558,7 +1558,7 @@
       "label": "EvidenceBundle",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L102",
+      "source_location": "L105",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1568,7 +1568,7 @@
       "label": "InspectRequest",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L113",
+      "source_location": "L116",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1578,7 +1578,7 @@
       "label": "ImageEvidence",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L120",
+      "source_location": "L123",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1588,7 +1588,7 @@
       "label": ".valid_box()",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L127",
+      "source_location": "L130",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1597,7 +1597,7 @@
       "label": "Observation",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L135",
+      "source_location": "L138",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1607,7 +1607,7 @@
       "label": "InspectionResult",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L144",
+      "source_location": "L147",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1617,7 +1617,7 @@
       "label": "ValidateRequest",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L150",
+      "source_location": "L153",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1627,7 +1627,7 @@
       "label": "ValidatedItem",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L158",
+      "source_location": "L161",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1637,7 +1637,7 @@
       "label": "ValidatedResult",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L164",
+      "source_location": "L167",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1647,7 +1647,7 @@
       "label": "ReportRequest",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L172",
+      "source_location": "L175",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1657,7 +1657,7 @@
       "label": "ReportDraft",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L178",
+      "source_location": "L181",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1667,7 +1667,7 @@
       "label": "FrameworkError",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L187",
+      "source_location": "L190",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1677,7 +1677,7 @@
       "label": "Approval",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L194",
+      "source_location": "L197",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1687,7 +1687,7 @@
       "label": ".scoped_exception()",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L202",
+      "source_location": "L205",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1696,7 +1696,7 @@
       "label": "StepRecord",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L210",
+      "source_location": "L213",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1706,7 +1706,7 @@
       "label": ".consistent_lifecycle()",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L224",
+      "source_location": "L227",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1715,7 +1715,7 @@
       "label": "StepTimeline",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1725,7 +1725,7 @@
       "label": "RunSnapshot",
       "file_type": "code",
       "source_file": "contracts.py",
-      "source_location": "L255",
+      "source_location": "L258",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1739,11 +1739,11 @@
       "_origin": "ast"
     },
     {
-      "id": "contracts_rationale_211",
+      "id": "contracts_rationale_214",
       "label": "One role boundary, including validation; never a raw provider payload.",
       "file_type": "rationale",
       "source_file": "contracts.py",
-      "source_location": "L211",
+      "source_location": "L214",
       "_origin": "ast"
     },
     {
@@ -3579,7 +3579,7 @@
       "label": "validate_report_request()",
       "file_type": "code",
       "source_file": "validation.py",
-      "source_location": "L136",
+      "source_location": "L138",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3588,7 +3588,7 @@
       "label": "validate_report()",
       "file_type": "code",
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3597,7 +3597,7 @@
       "label": "ReferenceValidator",
       "file_type": "code",
       "source_file": "validation.py",
-      "source_location": "L166",
+      "source_location": "L168",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -3607,7 +3607,7 @@
       "label": ".validate()",
       "file_type": "code",
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "_py_return_type": "ValidatedResult",
       "_callable": true,
       "_origin": "ast"
@@ -3629,19 +3629,19 @@
       "_origin": "ast"
     },
     {
-      "id": "validation_rationale_137",
+      "id": "validation_rationale_139",
       "label": "Check supplied A07 provenance before a reporter can consume it. ReportRequest…",
       "file_type": "rationale",
       "source_file": "validation.py",
-      "source_location": "L137",
+      "source_location": "L139",
       "_origin": "ast"
     },
     {
-      "id": "validation_rationale_167",
+      "id": "validation_rationale_169",
       "label": "Conservative example A06. Visual observations remain a model's claims. No…",
       "file_type": "rationale",
       "source_file": "validation.py",
-      "source_location": "L167",
+      "source_location": "L169",
       "_origin": "ast"
     }
   ],
@@ -7654,7 +7654,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L67",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7664,7 +7664,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L67",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7674,7 +7674,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L72",
+      "source_location": "L75",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7684,7 +7684,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L72",
+      "source_location": "L75",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7694,7 +7694,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L77",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7704,7 +7704,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L77",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7714,7 +7714,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7724,7 +7724,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L84",
+      "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7734,7 +7734,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L95",
+      "source_location": "L98",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -7745,7 +7745,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L96",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7755,7 +7755,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L102",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7765,7 +7765,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L102",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7775,7 +7775,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L113",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7785,7 +7785,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L113",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7795,7 +7795,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L120",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7805,7 +7805,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L120",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7815,7 +7815,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L126",
+      "source_location": "L129",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -7826,7 +7826,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L127",
+      "source_location": "L130",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7836,7 +7836,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L135",
+      "source_location": "L138",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7846,7 +7846,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L135",
+      "source_location": "L138",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7856,7 +7856,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L144",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7866,7 +7866,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L144",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7876,7 +7876,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L150",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7886,7 +7886,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L150",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7896,7 +7896,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L158",
+      "source_location": "L161",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7906,7 +7906,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L158",
+      "source_location": "L161",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7916,7 +7916,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L164",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7926,7 +7926,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L164",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7936,7 +7936,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L172",
+      "source_location": "L175",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7946,7 +7946,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L172",
+      "source_location": "L175",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7956,7 +7956,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L178",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7966,7 +7966,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L178",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7976,7 +7976,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L187",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7986,7 +7986,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L187",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7996,7 +7996,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L194",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8006,7 +8006,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L194",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8016,7 +8016,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L201",
+      "source_location": "L204",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -8027,7 +8027,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L202",
+      "source_location": "L205",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8037,7 +8037,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L210",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8047,7 +8047,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L210",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8057,7 +8057,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L223",
+      "source_location": "L226",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -8068,7 +8068,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L224",
+      "source_location": "L227",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8078,7 +8078,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8088,7 +8088,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8098,7 +8098,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L255",
+      "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8108,7 +8108,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L255",
+      "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8123,12 +8123,12 @@
       "_origin": "ast"
     },
     {
-      "source": "contracts_rationale_211",
+      "source": "contracts_rationale_214",
       "target": "contracts_steprecord",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "contracts.py",
-      "source_location": "L211",
+      "source_location": "L214",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -13994,7 +13994,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L136",
+      "source_location": "L138",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14005,7 +14005,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L136",
+      "source_location": "L138",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14015,7 +14015,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14026,7 +14026,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14037,7 +14037,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14047,7 +14047,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L166",
+      "source_location": "L168",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14057,7 +14057,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14068,7 +14068,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14079,7 +14079,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14255,7 +14255,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L144",
+      "source_location": "L146",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14266,7 +14266,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L145",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14277,7 +14277,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L146",
+      "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14288,7 +14288,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L154",
+      "source_location": "L156",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14299,7 +14299,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L155",
+      "source_location": "L157",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14310,7 +14310,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L158",
+      "source_location": "L160",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14321,7 +14321,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L174",
+      "source_location": "L176",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14332,7 +14332,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L235",
+      "source_location": "L244",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -14357,22 +14357,22 @@
       "_origin": "ast"
     },
     {
-      "source": "validation_rationale_137",
+      "source": "validation_rationale_139",
       "target": "validation_validate_report_request",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L137",
+      "source_location": "L139",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "validation_rationale_167",
+      "source": "validation_rationale_169",
       "target": "validation_referencevalidator",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "validation.py",
-      "source_location": "L167",
+      "source_location": "L169",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -19905,7 +19905,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L174",
+      "source_location": "L176",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -19927,7 +19927,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -19938,7 +19938,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L136",
+      "source_location": "L138",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -19949,7 +19949,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L153",
+      "source_location": "L155",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -19971,7 +19971,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -19982,7 +19982,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L234",
+      "source_location": "L243",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -20004,7 +20004,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "validation.py",
-      "source_location": "L173",
+      "source_location": "L175",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -20700,7 +20700,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "validation.py",
-      "source_location": "L174",
+      "source_location": "L176",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -20712,7 +20712,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "validation.py",
-      "source_location": "L234",
+      "source_location": "L243",
       "weight": 1.0,
       "_origin": "ast"
     },

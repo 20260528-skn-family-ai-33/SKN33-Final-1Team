@@ -127,6 +127,8 @@ def validate_validated(request: ValidateRequest, result: ValidatedResult) -> Non
         expected = safe_items[item.criterion_id]
         if expected.verdict != "pass" and item.verdict == "pass":
             raise ValueError("VALIDATOR_UNSUPPORTED_PASS")
+        if "missing_expected_value" in expected.issues and item.verdict != "review":
+            raise ValueError("VALIDATOR_UNRESOLVED_EXPECTATION")
         if expected.verdict == "fail" and item.verdict != "fail":
             raise ValueError("VALIDATOR_HID_CONFIRMED_FAILURE")
         if not set(expected.issues) <= set(item.issues):
@@ -178,6 +180,9 @@ class ReferenceValidator:
         items = []
         for criterion in request.criteria:
             issues = []
+            missing_text_expectation = (criterion.kind == "text"
+                and criterion.operator in {"equals", "contains"}
+                and not criterion.expected.strip())
             observation = observations.get(criterion.criterion_id)
             verdict = observation.verdict if observation else "review"
             if not observation:
@@ -215,7 +220,8 @@ class ReferenceValidator:
                     except InvalidOperation:
                         issues.append("numeric_observation_invalid")
                         verdict = "review"
-                elif criterion.kind == "text" and not observation.uncertainty and observation.observed.strip():
+                elif (criterion.kind == "text" and not missing_text_expectation
+                      and not observation.uncertainty and observation.observed.strip()):
                     matched = (criterion.expected == observation.observed if criterion.operator == "equals"
                                else criterion.expected in observation.observed)
                     if not matched:
@@ -224,6 +230,9 @@ class ReferenceValidator:
                     elif observation.verdict == "fail":
                         verdict = "review"
                         issues.append("verdict_conflict")
+            if missing_text_expectation:
+                issues.append("missing_expected_value")
+                verdict = "review"
             if not any(e.kind == "current_requirement" and criterion.criterion_id in e.criterion_ids
                        for e in evidence.values()):
                 issues.append("missing_requirement_evidence")

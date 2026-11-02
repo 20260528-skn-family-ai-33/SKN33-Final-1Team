@@ -1,5 +1,6 @@
 from copy import deepcopy
 from hashlib import sha256
+from types import SimpleNamespace
 
 import pytest
 
@@ -8,6 +9,7 @@ from backend.agent_framework.contracts import (
     Observation, InspectionResult, ValidateRequest, ValidatedItem, ReportDraft,
     ReportRequest,
 )
+from backend.agent_framework.invocation import InvocationFailure, invoke_role
 from backend.agent_framework.validation import ReferenceValidator, validate_evidence, validate_report, validate_validated
 
 
@@ -139,3 +141,78 @@ def test_blank_observation_is_missing_data_not_confirmed_failure():
     result = ReferenceValidator().validate(req)
     assert result.verdict == "review"
     assert "missing_observation" in result.items[0].issues
+
+
+def text_request(expected, operator, model_verdict="pass", observed="unrelated phrase"):
+    req = request()
+    data = req.model_dump(mode="json")
+    data["criteria"][0].update(kind="text", expected=expected, operator=operator)
+    data["inspection"]["observations"][0].update(observed=observed, verdict=model_verdict)
+    return ValidateRequest.model_validate(data)
+
+
+@pytest.mark.parametrize("expected", [
+    pytest.param("", id="empty"),
+    pytest.param(" ", id="space"),
+    pytest.param("\t\r\n", id="ascii-whitespace"),
+    pytest.param("\u00a0\u3000", id="unicode-whitespace"),
+])
+@pytest.mark.parametrize("operator", ["equals", "contains"])
+@pytest.mark.parametrize("model_verdict", ["pass", "fail", "review"])
+def test_blank_text_expectation_requires_review(expected, operator, model_verdict):
+    result = ReferenceValidator().validate(text_request(expected, operator, model_verdict))
+    assert result.verdict == result.items[0].verdict == "review"
+    assert result.items[0].issues == ("missing_expected_value",)
+
+
+@pytest.mark.parametrize("operator", ["equals", "contains"])
+def test_custom_validator_cannot_pass_a_blank_text_expectation(operator):
+    req = text_request(" ", operator)
+    result = ReferenceValidator().validate(req)
+    forged = result.model_copy(update={"verdict": "pass", "items": (
+        ValidatedItem(criterion_id="count", verdict="pass"),)})
+    with pytest.raises(ValueError, match="VALIDATOR_UNSUPPORTED_PASS"):
+        validate_validated(req, forged)
+    adapter = SimpleNamespace(validate=lambda _request: forged.model_dump(mode="json"))
+    with pytest.raises(InvocationFailure) as failure:
+        invoke_role("A06", adapter, req)
+    assert failure.value.code == "VALIDATOR_UNSUPPORTED_PASS"
+
+
+@pytest.mark.parametrize("operator", ["equals", "contains"])
+def test_missing_observation_does_not_hide_missing_expectation(operator):
+    req = text_request("", operator)
+    req = changed(req, ["inspection", "observations"], [])
+    result = ReferenceValidator().validate(req)
+    assert result.verdict == "review"
+    assert set(result.items[0].issues) == {"missing_observation", "missing_expected_value"}
+
+
+@pytest.mark.parametrize("operator,expected,observed,verdict", [
+    pytest.param("equals", "Hello", "Hello", "pass", id="equals-match"),
+    pytest.param("contains", "Hello", "Say Hello today", "pass", id="contains-match"),
+    pytest.param("equals", " Hello ", "Hello", "fail", id="equals-preserves-spaces"),
+    pytest.param("contains", " Hello ", "Hello", "fail", id="contains-preserves-spaces"),
+    pytest.param("equals", "0", "0", "pass", id="zero-text"),
+])
+def test_nonblank_text_expectations_preserve_comparison_semantics(operator, expected, observed, verdict):
+    result = ReferenceValidator().validate(text_request(expected, operator, observed=observed))
+    assert result.verdict == verdict
+    assert "missing_expected_value" not in result.items[0].issues
+
+
+def test_visual_presence_does_not_require_a_text_expectation():
+    req = changed(request(), ["criteria", 0, "kind"], "visual")
+    req = changed(req, ["criteria", 0, "operator"], "present")
+    req = changed(req, ["criteria", 0, "expected"], "")
+    assert ReferenceValidator().validate(req).verdict == "pass"
+
+
+@pytest.mark.parametrize("operator", ["equals", "contains"])
+def test_custom_validator_cannot_fail_an_unresolved_text_expectation(operator):
+    req = text_request("", operator)
+    result = ReferenceValidator().validate(req)
+    forged = result.model_copy(update={"verdict": "fail", "items": (
+        ValidatedItem(criterion_id="count", verdict="fail", issues=("missing_expected_value",)),)})
+    with pytest.raises(ValueError, match="VALIDATOR_UNRESOLVED_EXPECTATION"):
+        validate_validated(req, forged)

@@ -88,7 +88,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 210
+          "line": 213
         },
         {
           "path": "backend/agent_framework/flow_checks.py",
@@ -182,7 +182,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 194
+          "line": 197
         }
       ],
       "x": 920,
@@ -241,7 +241,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 113
+          "line": 116
         },
         {
           "path": "backend/agent_framework/adapters/templates.py",
@@ -274,12 +274,13 @@
         "근거가 부족하거나 검색 상태가 불완전하면 잘못된 pass를 review로 낮춘다. 확실한 필수 위반은 fail로 유지한다.",
         "다른 프로젝트 근거·잘못된 버전·허위 인용 같은 계약 위반은 단계를 실패시킨다.",
         "실제 PDF의 출처 권위나 모델의 시각 인식 정확성을 이 코드만으로 보장하지 않는다.",
-        "CLI와 워크플로가 공통 invoke_role 경계를 사용해 입출력·문맥·중첩 합성 표시를 함께 검증합니다. 실제 모델·DB 연결 확인은 포함하지 않습니다."
+        "CLI와 워크플로가 공통 invoke_role 경계를 사용해 입출력·문맥·중첩 합성 표시를 함께 검증합니다. 실제 모델·DB 연결 확인은 포함하지 않습니다.",
+        "text equals/contains의 빈·공백 기대값은 missing_expected_value와 review로 유지한다. 필수 기준의 정상 최종 승인과 미확정 기대값의 예외 승인은 차단하며, 값이 있는 기대값은 공백까지 그대로 비교한다."
       ],
       "files": [
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 166
+          "line": 168
         },
         {
           "path": "backend/agent_framework/validation.py",
@@ -321,7 +322,7 @@
         },
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 153
+          "line": 155
         },
         {
           "path": "backend/agent_framework/adapters/templates.py",
@@ -333,7 +334,7 @@
         },
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 136
+          "line": 138
         }
       ],
       "x": 80,
@@ -366,7 +367,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 194
+          "line": 197
         }
       ],
       "x": 80,
@@ -391,7 +392,7 @@
       "files": [
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 255
+          "line": 258
         },
         {
           "path": "backend/agent_framework/runtime.py",
@@ -427,7 +428,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 194
+          "line": 197
         }
       ],
       "x": 640,
@@ -518,7 +519,7 @@
         },
         {
           "path": "backend/agent_framework/contracts.py",
-          "line": 187
+          "line": 190
         }
       ],
       "x": 360,

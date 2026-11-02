@@ -1,5 +1,5 @@
 {
-  "git_commit": "fd642a1dcaef6e5c108aa5f7d9506d41bc671049",
+  "git_commit": "12b2d369da7fbeef49a88aeddcc84ec5703fbf28",
   "scope": "backend/agent_framework/**/*.py",
   "files": [
     {
@@ -82,9 +82,9 @@
     },
     {
       "path": "backend/agent_framework/contracts.py",
-      "sha256": "c24ef87756a7225be2581aed4c79849f1784b6a2ffeca71dbb8d51d49e422500",
-      "bytes": 9496,
-      "lines": 276
+      "sha256": "b90b6453db4a2924c6fda087ac06686bdfb499e51ed469f8951554825d496361",
+      "bytes": 9680,
+      "lines": 279
     },
     {
       "path": "backend/agent_framework/durable_worker.py",
@@ -142,15 +142,15 @@
     },
     {
       "path": "backend/agent_framework/runtime.py",
-      "sha256": "b2800acda63789a405e64e7392c4a94dbf7008fc0ab26bb2a91dca7be909e5f7",
-      "bytes": 19983,
+      "sha256": "589a3411be0e63c33b1b0a8f21f9a3e3448e83082cab359a8ffbf0f570813faa",
+      "bytes": 20009,
       "lines": 369
     },
     {
       "path": "backend/agent_framework/validation.py",
-      "sha256": "7de5a0703c6971363897b1da83ade6edfa22faf47f5257f6b3c66f905cd29f49",
-      "bytes": 12665,
-      "lines": 238
+      "sha256": "7de257df87d10dd02275e772a76c3f737968009770e6e439366b30830202b8ed",
+      "bytes": 13186,
+      "lines": 247
     }
   ],
   "excluded_sql_migrations": [

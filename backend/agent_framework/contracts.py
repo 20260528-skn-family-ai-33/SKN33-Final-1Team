@@ -56,7 +56,10 @@ class Criterion(Contract):
     criterion_id: Identifier
     text: str = Field(min_length=1)
     kind: Literal["text", "number", "visual", "unsupported"]
-    expected: str
+    expected: str = Field(description=(
+        "Text equals/contains comparisons need a non-whitespace expected value. "
+        "Blank expectations remain unresolved (review) and cannot pass."
+    ))
     operator: Literal["equals", "contains", "gte", "lte", "present", "manual"]
     unit: str | None = None
     required: bool = True

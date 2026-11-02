@@ -212,6 +212,7 @@
           "type": "string"
         },
         "expected": {
+          "description": "Text equals/contains comparisons need a non-whitespace expected value. Blank expectations remain unresolved (review) and cannot pass.",
           "title": "Expected",
           "type": "string"
         },

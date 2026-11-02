@@ -332,3 +332,30 @@ def test_definite_failure_without_uncertainty_issues_can_be_explicitly_accepted(
     assert result.machine_verdict=='fail' and result.validated.items[0].issues==()
     final=wf.approve(ctx.run_id,approval(ctx,'approve_exception',reason='Accept the stated visual discrepancy',criterion_ids=('criterion-1',)))
     assert final.human_decision=='exception_approved' and final.machine_verdict=='fail'
+
+
+@pytest.mark.parametrize('operator', ['equals', 'contains'])
+@pytest.mark.parametrize('other_failure', [False, True], ids=['only-missing', 'with-failure'])
+def test_blank_text_expectation_blocks_final_and_exception_approval(operator, other_failure):
+    ex = Examples(count=2 if other_failure else 1, observed='Unrelated phrase')
+
+    def missing_expected(draft):
+        criterion = draft.criteria[0].model_copy(update={'expected': ' ', 'operator': operator})
+        return draft.model_copy(update={'criteria': (criterion, *draft.criteria[1:])})
+
+    ex.transforms['extract'] = missing_expected
+    wf, ctx, _, result = reviewed(ex)
+    assert result.execution_status == 'waiting_review'
+    assert result.machine_verdict == ('fail' if other_failure else 'review')
+    assert result.validated.items[0].verdict == 'review'
+    assert result.validated.items[0].issues == ('missing_expected_value',)
+    if other_failure:
+        assert result.validated.items[1].verdict == 'fail'
+        assert result.validated.items[1].issues == ('value_mismatch',)
+    with pytest.raises(ValueError, match='requires a pass'):
+        wf.approve(ctx.run_id, approval(ctx, 'approve_final'))
+    with pytest.raises(ValueError, match='unknown or unsupported'):
+        wf.approve(ctx.run_id, approval(ctx, 'approve_exception',
+            reason='Incomplete expectations cannot be accepted as exceptions',
+            criterion_ids=tuple(item.criterion_id for item in result.criteria.criteria)))
+    assert wf.get(ctx.run_id) == result

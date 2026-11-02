@@ -6,8 +6,8 @@
     "revision": 18,
     "review": 8
   },
-  "flow_data_sha256": "2ff25c40980e3f20011e996932159972042fbf68151014fab029401876a04664",
-  "html_sha256": "4e53acd82e5f96a4970344d604c1f1a1481a76f2798ead14b158b68c82a68846",
+  "flow_data_sha256": "38a56146e3a6e2f04ff5799c0dcde0ca14e2d74b4a63e6cf41bd2e3e4371566f",
+  "html_sha256": "1a1eefdc6ae8c7be67aa6f7374da9282c03197e67cfaa289624908d81ecd3caa",
   "code_graph": {
     "version": "0.9.100",
     "files": 25,
@@ -17,7 +17,7 @@
       "tool": "graphifyy",
       "version": "0.9.100",
       "source_files": 25,
-      "source_words": 13336,
+      "source_words": 13389,
       "ast_nodes": 404,
       "ast_edges": 1619,
       "nodes": 439,
@@ -37,10 +37,10 @@
       "implicit_nodes": 35,
       "html_external_resources": [],
       "browser_verified": false,
-      "built_at": "2026-11-02T07:44:15.434392+00:00"
+      "built_at": "2026-11-02T08:29:35.886251+00:00"
     }
   },
   "source_files": 37,
-  "source_html_sha256": "ccdde1b8a7cc9b27b016356ed9a61547e867d70d910836b252b4036be4b6e98c",
+  "source_html_sha256": "c49677cefabe390741dabd28e93c5483f2ea27bdb86e7790418b7fd9d174fab9",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

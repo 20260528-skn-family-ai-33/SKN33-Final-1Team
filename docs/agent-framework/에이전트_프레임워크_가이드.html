@@ -51,6 +51,7 @@ cp examples/agent_framework/team_config.template.json examples/agent_framework/t
 <p><a href="source.html?file=backend%2Fagent_framework%2Fvalidation.py">ReferenceValidator</a>가 조건 커버리지·관측·수치 비교·문맥·인용·버전·근거 상태를 검증한다. <code>fail/review</code>도 정상 결과다. 누락·불확실·불완전 근거는 review로 유지하고 명확한 필수 위반을 pass로 바꾸지 않는다.</p>
 <div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework check A06 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A06.suite.json
 .venv/bin/python -m pytest tests/agent_framework/test_validation.py tests/agent_framework/test_runtime.py tests/agent_framework/test_context.py -q</code></pre></div>
+<p><code>text</code>의 <code>equals</code>·<code>contains</code>는 빈 문자열·공백뿐인 기대값을 <code>missing_expected_value</code>와 <code>review</code>로 처리한다. 해당 필수 조건의 정상 최종 승인과 미확정 기대값의 예외 승인은 차단한다. 값이 있는 기대값의 공백은 그대로 비교하며, <code>visual/present</code>에는 이 텍스트 제약을 적용하지 않는다.</p>
 <p>기계 판정, 실행 상태, 사람 승인 상태를 각각 유지한다. 복합·의미 조건의 실제 모델 검증은 현재 기초 참조 규칙과 구분한다.</p>
 </section><section class="chapter"><h2 id="08-a07-보고와-수정-요청-초안">08. A07 — 보고와 수정 요청 초안</h2>
 <p>동기 <code>report(request)</code>는 검증 판정을 보존한 설명·근거 ID·수정 요청을 반환한다. 다른 프로젝트·문서·산출물 근거를 섞지 않고, 사람의 승인을 생성하거나 판정을 변경하지 않는다. 요청 계약 밖의 파일을 추측해 다시 읽지 않는다.</p>

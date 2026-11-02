@@ -5,8 +5,8 @@
 > The separate clickable business flow is a curated workflow illustration, not this AST graph.
 
 - Tool: official `graphifyy==0.9.100`; directed build, community detection and native HTML exporter.
-- Corpus: **25 Python files**, 13,336 words, exclusively `backend/agent_framework/**/*.py`.
-- Git baseline: `fd642a1dcaef6e5c108aa5f7d9506d41bc671049`. The files are current working-tree sources; their SHA-256 values are recorded in `source-manifest.json`.
+- Corpus: **25 Python files**, 13,389 words, exclusively `backend/agent_framework/**/*.py`.
+- Git baseline: `12b2d369da7fbeef49a88aeddcc84ec5703fbf28`. The files are current working-tree sources; their SHA-256 values are recorded in `source-manifest.json`.
 - Raw AST: **404 nodes / 1619 edges**.
 - Native directed graph: **439 nodes / 1527 edges / 11 communities**.
 - **Integrity limits:** raw dangling endpoints 134, missing endpoints 0, self-loops 2, same-endpoint directed edges collapsed 91.
@@ -74,7 +74,7 @@ note: normal graph.json is post-build; raw producer loss must be measured earlie
 # Graph Report - agent_framework  (2026-11-02)
 
 ## Corpus Check
-- Corpus is ~13,759 words - fits in a single context window. You may not need a graph.
+- Corpus is ~13,812 words - fits in a single context window. You may not need a graph.
 
 ## Summary
 - 439 nodes · 1527 edges · 11 communities (9 shown, 2 thin omitted)
@@ -82,7 +82,7 @@ note: normal graph.json is post-build; raw producer loss must be measured earlie
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fd642a1d`
+- Built from commit: `12b2d369`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

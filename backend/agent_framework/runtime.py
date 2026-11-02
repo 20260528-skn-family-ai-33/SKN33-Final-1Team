@@ -30,7 +30,7 @@ from .validation import (
 
 T = TypeVar('T', bound=BaseModel)
 _EXCEPTION_BLOCKERS = frozenset({
-    'missing_observation', 'missing_requirement_evidence', 'missing_citation',
+    'missing_observation', 'missing_expected_value', 'missing_requirement_evidence', 'missing_citation',
     'uncertain_observation', 'unsupported_criterion', 'context_incomplete',
     'numeric_observation_invalid', 'verdict_conflict',
 })
