@@ -25,6 +25,7 @@ MIN_OWL, MAX_AREA = 0.1, 0.4
 GAP = 3
 OCR_TOP, OCR_BONUS, OCR_MATCH = 40, 0.10, 0.8
 DISPLAY_LONG = 1280  # 확정 화면에 보내는 프레임 긴 변
+OWL_BATCH = 2  # 타일을 한 번에 넣는 수. 960px 입력은 장당 어텐션만 ~1GB라 10장을 한 번에 넣으면 16GB GPU에서 OOM
 
 
 # ---------------------------------------------------------------------------
@@ -105,7 +106,8 @@ def detect(image: Image.Image) -> list[dict]:
     w, h = image.size
     (bb, sb), = _text_detect([image]); boxes, scores = [bb], [sb]
     tl = _tiles(w, h)
-    for (bt, st), t in zip(_text_detect([image.crop(t) for t in tl]), tl):
+    found = [r for i in range(0, len(tl), OWL_BATCH) for r in _text_detect([image.crop(t) for t in tl[i:i + OWL_BATCH]])]
+    for (bt, st), t in zip(found, tl):
         boxes.append(bt + torch.tensor([t[0], t[1], t[0], t[1]])); scores.append(st)
     B, S = torch.cat(boxes), torch.cat(scores)
     if not len(S):
