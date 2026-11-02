@@ -61,9 +61,9 @@ def _match(target, runs):
             for end in range(start + 1, min(len(run), start + 12) + 1):
                 group = run[start:end]
                 text = _compact(''.join(r['text'] for r in group))
-                # Do not let a price such as 3,000 match 13,000.
-                prefix = r'(?<!\d)' if target[0].isdigit() else ''
-                suffix = r'(?!\d)' if target[-1].isdigit() else ''
+                # Do not let a price such as 3,000 match 13,000 or 100 match 1,100.
+                prefix = r'(?<!\d)(?<!\d,)' if target[0].isdigit() else ''
+                suffix = r'(?!\d)(?!,\d)' if target[-1].isdigit() else ''
                 if re.search(prefix + re.escape(target) + suffix, text):
                     matches.append(group)
                     break
