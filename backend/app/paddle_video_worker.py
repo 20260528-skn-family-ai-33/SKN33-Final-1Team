@@ -13,7 +13,23 @@ import time
 from scripts.prepare_paddle import DETECTION_MODEL, MODEL, verify_model
 
 
-def run(frames, output_path, detection_dir, recognition_dir, *, threads=4):
+def build_model(detection_dir, recognition_dir, *, threads=4, device="cpu"):
+    """자막 검사 OCR 모델(탐지·한국어 인식)과 설정. 영상 로고 검수(video_logo_models)도 같은 모델을 쓴다.
+    device="gpu"는 RunPod Pod 워커(GPU용 Paddle 환경)에서만 쓴다. 모델·설정은 CPU와 같다."""
+    from paddleocr import PaddleOCR
+    return PaddleOCR(
+        text_detection_model_name=DETECTION_MODEL, text_detection_model_dir=str(detection_dir),
+        text_recognition_model_name=MODEL, text_recognition_model_dir=str(recognition_dir),
+        use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False,
+        # oneDNN(enable_mkldnn)은 Paddle 3.3.1 CPU에서 NotImplementedError로 실패해 끈다.
+        device=device, enable_mkldnn=False, cpu_threads=threads,
+        text_det_limit_side_len=1280, text_det_limit_type="max", text_det_thresh=.3,
+        text_det_box_thresh=.6, text_det_unclip_ratio=1.5, text_rec_score_thresh=0.0,
+        text_recognition_batch_size=8,
+    )
+
+
+def run(frames, output_path, detection_dir, recognition_dir, *, threads=4, device="cpu"):
     """프레임 목록을 순서대로 추론하고 프레임당 JSON 한 줄을 남긴다."""
     os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
     os.environ["HF_HUB_OFFLINE"] = "1"
@@ -25,17 +41,7 @@ def run(frames, output_path, detection_dir, recognition_dir, *, threads=4):
     from PIL import Image
     import numpy as np
     import paddle
-    from paddleocr import PaddleOCR
-    model = PaddleOCR(
-        text_detection_model_name=DETECTION_MODEL, text_detection_model_dir=str(detection_dir),
-        text_recognition_model_name=MODEL, text_recognition_model_dir=str(recognition_dir),
-        use_doc_orientation_classify=False, use_doc_unwarping=False, use_textline_orientation=False,
-        # oneDNN(enable_mkldnn)은 Paddle 3.3.1 CPU에서 NotImplementedError로 실패해 끈다.
-        device="cpu", enable_mkldnn=False, cpu_threads=threads,
-        text_det_limit_side_len=1280, text_det_limit_type="max", text_det_thresh=.3,
-        text_det_box_thresh=.6, text_det_unclip_ratio=1.5, text_rec_score_thresh=0.0,
-        text_recognition_batch_size=8,
-    )
+    model = build_model(detection_dir, recognition_dir, threads=threads, device=device)
     identities.update(engine="paddleocr", cpu_threads=threads, paddleocr_version=importlib.metadata.version("paddleocr"),
                       paddle_version=paddle.__version__, paddlex_version=importlib.metadata.version("paddlex"))
     output = Path(output_path)
@@ -71,9 +77,10 @@ def main():
     parser.add_argument("--detection-dir", required=True)
     parser.add_argument("--recognition-dir", required=True)
     parser.add_argument("--threads", type=int, choices=range(1, 33), default=4, metavar="1-32")
+    parser.add_argument("--device", choices=("cpu", "gpu"), default="cpu", help="gpu는 RunPod Pod 워커에서만")
     args = parser.parse_args()
     frames = [line for line in Path(args.frames).read_text(encoding="utf-8").splitlines() if line.strip()]
-    run(frames, args.output, args.detection_dir, args.recognition_dir, threads=args.threads)
+    run(frames, args.output, args.detection_dir, args.recognition_dir, threads=args.threads, device=args.device)
 
 
 if __name__ == "__main__":

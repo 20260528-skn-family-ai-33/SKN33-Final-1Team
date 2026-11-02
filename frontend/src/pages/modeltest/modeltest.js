@@ -18,7 +18,7 @@ export const STAGES = [
   { id: 'visual_extract', title: '시각 요소 추출', description: '이미지 → 객체·색상·배치', icon: 'image' },
   { id: 'logo_similarity', title: '로고 이미지 유사도', description: '로고 크롭 ↔ 모든 원본 로고 · SigLIP2', icon: 'search', video: true, workflowOnly: true, needs: 'logo_extract' },
   { id: 'candidate_filter', title: '후보 필터', description: '각 로고별 최소 유사도 → 상위 N개', icon: 'list', video: true, workflowOnly: true, needs: 'logo_similarity' },
-  { id: 'logo_compare', title: '원본 로고와 대조', description: '추출한 로고 ↔ 레퍼런스 이미지', icon: 'search', video: true, needs: 'logo_extract' },
+  { id: 'logo_compare', title: '원본 로고와 대조', description: '추출한 로고 ↔ 레퍼런스 이미지 · XFeat/RANSAC', icon: 'search', video: true, needs: 'logo_extract' },
   { id: 'text_compare', title: '조건과 문구 대조', description: '검수 조건 ↔ 추출한 문구', icon: 'check', needs: 'text_extract' },
   { id: 'visual_compare', title: '조건과 시각 요소 대조', description: '검수 조건 ↔ 추출한 시각 요소', icon: 'check', needs: 'visual_extract' },
   { id: 'text_generate', title: '모델 응답 생성', description: '선행 단계 결과와 지시 → 모델 응답', icon: 'file', agentOnly: true },
@@ -40,6 +40,7 @@ export const FILTER_SCOPES = {
 export const SIMILARITY_STAGES = [
   { id: 'logo_similarity', title: '이미지 코사인 유사도', model: SIGLIP2 },
   { id: 'logo_compare', title: 'XFeat 특징점 대조', model: 'vismatch/xfeat' },
+  { id: 'logo_diff', title: '로고 차이 판정', model: 'OpenCV 규칙 판정 · OCR 미사용', processing: true },
 ];
 export const MODEL_OPTIONS = [
   { id: 'PaddlePaddle/PaddleOCR-VL-1.6-GGUF', stages: ['text_extract'], description: 'OCR 문구 추출 전용. 첫 실행에 llama.cpp CUDA 빌드와 GGUF·mmproj 다운로드가 필요합니다. Pod에 git·C++ 컴파일러·nvcc가 있어야 합니다.' },
@@ -66,6 +67,7 @@ export function initialFlow(flow) {
     agentWorkflow: { enabled: false, agents: [], edges: [], positions: {}, maxParallel: 1 },
     stages: Object.fromEntries(stagesFor(flow).map(stage => [stage.id, {
       enabled: flow === 'image' || flow === 'similarity' || ['logo_extract', 'text_extract', 'visual_extract'].includes(stage.id), model: flow === 'similarity' ? stage.model : stage.id === 'logo_similarity' ? SIGLIP2 : '', labels: '', imageSimilarity: false, imageSimilarityModel: SIGLIP2, threshold: '', topK: '2', filterScope: 'references_per_crop', promptOverride: null,
+      ...(stage.id === 'logo_diff' ? { monochromePolicy: 'review' } : {}),
     }])),
   };
 }
@@ -96,6 +98,10 @@ export function workflowError(flow, state) {
   }
   for (const node of nodes) {
     const required = node.needs ? [node.needs] : [];
+    if (node.id === 'logo_diff') {
+      required.push('logo_extract', 'text_extract');
+      if (state.references.length > 1 || state.stages.logo_similarity?.enabled) required.push('logo_similarity');
+    }
     if (flow === 'video' && !['conditions', 'frames'].includes(node.id)) required.push('frames');
     if (['text_compare', 'visual_compare'].includes(node.id) && parents.has('conditions')) required.push('conditions');
     if (node.id === 'logo_compare' && parents.has('candidate_filter')) required.push('candidate_filter');
@@ -104,6 +110,7 @@ export function workflowError(flow, state) {
   }
   if (parents.has('candidate_filter') && !parents.has('logo_compare')) return '후보 필터를 원본 로고와 대조 단계에 연결해 주세요.';
   if (parents.has('logo_similarity') && state.stages.logo_compare.imageSimilarity) return '별도 유사도 노드를 사용할 때는 XFeat의 SigLIP2 추가 계산을 해제해 주세요.';
+  if (parents.has('logo_diff') && ancestors.get('logo_compare')?.has('candidate_filter')) return 'logo_diff 검수에서는 SigLIP2 점수로 후보를 탈락시키지 않도록 후보 필터를 XFeat 앞에서 분리해 주세요.';
   return '';
 }
 
@@ -111,11 +118,19 @@ export function workflowPreset(flow, state, preset = 'serial') {
   const stages = { ...state.stages };
   if (flow === 'video' && preset !== 'serial') {
     stages.logo_extract = { ...stages.logo_extract, enabled: true, model: stages.logo_extract.model || 'google/owlv2-base-patch16' };
-    stages.logo_similarity = { ...stages.logo_similarity, enabled: true, model: stages.logo_similarity.model || SIGLIP2 };
+    stages.logo_similarity = { ...stages.logo_similarity, enabled: preset === 'logo_diff' ? state.references.length > 1 : true, model: stages.logo_similarity.model || SIGLIP2 };
     stages.candidate_filter = { ...stages.candidate_filter, enabled: preset === 'filtered', topK: stages.candidate_filter.topK || '2' };
     stages.logo_compare = { ...stages.logo_compare, enabled: true, model: 'vismatch/xfeat', imageSimilarity: false };
+    if (preset === 'logo_diff') {
+      stages.text_extract = { ...stages.text_extract, enabled: true };
+      stages.visual_extract = { ...stages.visual_extract, enabled: false };
+      stages.visual_compare = { ...stages.visual_compare, enabled: false };
+      stages.candidate_filter = { ...stages.candidate_filter, enabled: false };
+      stages.logo_diff = { ...stages.logo_diff, enabled: true };
+    }
   }
-  const next = { ...state, stages, workflow: { ...state.workflow, enabled: true, maxParallel: preset === 'parallel' ? 2 : 1 } };
+  const next = { ...state, stages,
+    workflow: { ...state.workflow, enabled: true, maxParallel: preset === 'parallel' ? 2 : 1 } };
   const nodes = workflowNodes(flow, next); let edges;
   if (preset === 'serial') edges = nodes.slice(1).map((node, index) => ({ source: nodes[index].id, target: node.id }));
   else {
@@ -123,7 +138,10 @@ export function workflowPreset(flow, state, preset = 'serial') {
     const add = (source, target) => { if (ids.has(source) && ids.has(target)) edges.push({ source, target }); };
     for (const id of ['logo_extract', 'text_extract', 'visual_extract']) add('frames', id);
     add('logo_extract', 'logo_similarity');
-    if (preset === 'filtered') { add('logo_similarity', 'candidate_filter'); add('candidate_filter', 'logo_compare'); }
+    if (preset === 'logo_diff') {
+      add('logo_extract', 'logo_compare'); add('logo_extract', 'logo_diff'); add('logo_compare', 'logo_diff');
+      add('logo_similarity', 'logo_diff'); add('text_extract', 'logo_diff');
+    } else if (preset === 'filtered') { add('logo_similarity', 'candidate_filter'); add('candidate_filter', 'logo_compare'); }
     else add('logo_extract', 'logo_compare');
     for (const id of ['text', 'visual']) { add(`${id}_extract`, `${id}_compare`); add('conditions', `${id}_compare`); }
   }
@@ -177,6 +195,7 @@ export function parseStageModel(stageId, value, health) {
     if (!model) throw new Error('등록 모델이 삭제됐거나 목록을 아직 읽지 못했습니다. 모델 목록을 새로 읽어 주세요.');
     if (!['unverified', 'verified'].includes(model.status)) throw new Error(model.reasons.join(' · '));
     if (!model.tasks.includes(stageId)) throw new Error('등록 모델이 지원하지 않는 작업 유형입니다.');
+    if (stageId === 'logo_similarity' && !(SIGLIP2_MODELS.includes(model.model_id) || model.family === 'clip' && model.metadata?.configs?.['config.json']?.model_type === 'siglip2')) throw new Error('로고 후보 순위화에는 SigLIP2 계열만 사용할 수 있습니다.');
     if (value.modelFingerprint && value.modelFingerprint !== model.fingerprint) throw new Error('등록 모델 설정이 바뀌었습니다. 모델을 다시 선택하고 임계값을 확인해 주세요.');
     if (health.ready && health.registry_version !== 1) throw new Error('등록 모델 실행을 지원하는 SSH 실행기에 다시 연결해 주세요.');
     return { model_id: model.model_id, revision: model.resolved_revision, registered_model: model.id, model_fingerprint: model.fingerprint, ...prompt(model.model_id, model) };
@@ -269,7 +288,7 @@ export function formErrors(flow, state, health) {
       } else if ((width !== '' || height !== '') && ![width, height].every(value => value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 8192)) errors.push(`${label} 다운사이징 가로·세로를 모두 1~8,192px 정수로 입력하거나 둘 다 비워 주세요.`);
       if (field === 'referenceResize' && resizeConfig(state[field]) !== null && health && health.similarity_reference_resize !== true) errors.push('대조 이미지 다운사이징을 지원하는 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
     }
-    if (health && (health.similarity_test !== 1 || SIMILARITY_STAGES.some(stage => !health.stages.includes(stage.id)))) errors.push('현재 연결은 이미지 유사도 테스트를 지원하지 않습니다. 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
+    if (health && (health.similarity_test !== 1 || health.similarity_logo_diff !== 1 || SIMILARITY_STAGES.some(stage => !health.stages.includes(stage.id)))) errors.push('현재 연결은 이미지 유사도 테스트를 지원하지 않습니다. 최신 백엔드로 재시작한 뒤 연결을 다시 확인해 주세요.');
     return errors;
   }
   const agentMode = state.agentWorkflow?.enabled;
@@ -284,6 +303,12 @@ export function formErrors(flow, state, health) {
     if (stage.needs && !state.stages[stage.needs].enabled) errors.push(`${stage.title}: 먼저 추출 단계도 선택해 주세요.`);
     if (['text_compare', 'visual_compare'].includes(stage.id) && !state.stages.conditions.enabled && !state.requirements.trim()) errors.push(`${stage.title}: 문서 조건 추출을 선택하거나 조건을 직접 입력해 주세요.`);
     if (['logo_compare', 'logo_similarity'].includes(stage.id) && !state.references.length) errors.push('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+    if (stage.id === 'logo_diff') {
+      if (!state.references.length) errors.push('logo_diff에는 원본 로고 레퍼런스가 필요합니다.');
+      if (state.references.length > 1 && !state.stages.logo_similarity?.enabled) errors.push('원본 로고가 여러 장이면 SigLIP2 순위화 단계를 선택해 주세요. 순위로 후보를 탈락시키지는 않습니다.');
+      const ocr = registration(state.stages.text_extract?.model, health);
+      if (!state.stages.text_extract?.enabled || ocr?.family !== 'paddle_ocr') errors.push('logo_diff 문자 검사에는 등록된 PaddleOCR(PP-OCR) 모델을 문구 추출 단계에 선택해 주세요.');
+    }
   }
   if (!agentMode && state.workflow.enabled) {
     const graphError = workflowError(flow, state); if (graphError) errors.push(graphError);
@@ -306,13 +331,14 @@ function resizeConfig({ width = '', height = '', mode, percent = '' } = {}) {
 export function makeManifest(flow, state, health) {
   if (flow === 'similarity') return {
     contract: CONTRACT, flow,
-    stages: SIMILARITY_STAGES.map(stage => ({ id: stage.id, name: stage.title, ...(stage.id === 'logo_similarity' ? parseStageModel(stage.id, state.stages[stage.id], health) : { model_id: stage.model }) })),
+    stages: SIMILARITY_STAGES.map(stage => ({ id: stage.id, name: stage.title, ...(stage.processing ? { params: { monochrome_policy: 'review' } } : stage.id === 'logo_similarity' ? parseStageModel(stage.id, state.stages[stage.id], health) : { model_id: stage.model }) })),
     resize: resizeConfig(state.resize), reference_resize: resizeConfig(state.referenceResize),
     files: { media: fileInfo(state.media), documents: [], references: state.references.map(fileInfo) },
   };
   const execution = state.agentWorkflow?.enabled ? compileAgents(flow, state, health) : {
     ...(state.workflow.enabled ? { workflow: { edges: state.workflow.edges, max_parallel: state.workflow.maxParallel } } : {}),
-    stages: stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled)).map(stage => ({ id: stage.id, ...parseStageModel(stage.id, state.stages[stage.id], health) })),
+    stages: stagesFor(flow).filter(stage => state.stages[stage.id].enabled && (!stage.workflowOnly || state.workflow.enabled)).map(stage => ({ id: stage.id, ...parseStageModel(stage.id, state.stages[stage.id], health),
+      ...(stage.id === 'logo_diff' ? { params: { monochrome_policy: state.stages[stage.id].monochromePolicy || 'review' }, inputs: { logo_extract: 'logo_extract', logo_compare: 'logo_compare', text_extract: 'text_extract', ...(state.stages.logo_similarity?.enabled ? { logo_similarity: 'logo_similarity' } : {}) } } : {}) })),
   };
   return {
     contract: CONTRACT, flow, requirements: state.requirements.trim(),

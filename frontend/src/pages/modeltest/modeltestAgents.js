@@ -42,7 +42,7 @@ export function agentTemplate(flow) {
     ['A01 업무 총괄', ['text_generate'], '요청의 목적과 필요한 검수 내용을 정리하세요. 실제 승인이나 상태 변경을 수행했다고 주장하지 마세요.'],
     ['A02 문서·기준 분석', ['conditions']], ['A03 근거 검색', []],
     ['A04 문구 검수', ['text_extract', 'text_compare']],
-    ['A05 시각 요소 검수', flow === 'video' ? ['logo_extract', 'logo_similarity', 'candidate_filter', 'logo_compare'] : ['visual_extract', 'visual_compare']],
+    ['A05 시각 요소 검수', flow === 'video' ? ['logo_extract', 'logo_similarity', 'logo_compare', 'logo_diff'] : ['visual_extract', 'visual_compare']],
     ['A06 근거·결과 검증', ['text_generate'], '앞선 검수 결과의 근거 부족, 충돌, 미실행 항목을 확인하고 확인 필요 목록을 작성하세요.'],
     ['A07 보고서 작성', ['text_generate'], '검수 결과와 확인 필요 항목을 요약하고 수정 안내 초안을 작성하세요.'],
     ['A08 수정·재검수 관리', ['text_generate'], '이전 결과를 바탕으로 수정 요청 초안을 작성하세요. 최종 승인이나 외부 발송을 수행하지 마세요.'],
@@ -53,7 +53,7 @@ export function agentTemplate(flow) {
     agent.edges = agent.nodes.slice(1).map((node, i) => ({ source: agent.nodes[i].id, target: node.id }));
     return agent;
   });
-  const edges = [[0, 1], [1, 2], [2, 3], [2, 4], [3, 5], [4, 5], [5, 6], [6, 7]].map(([a, b]) => ({ source: agents[a].id, target: agents[b].id }));
+  const edges = [[0, 1], [1, 2], [2, 3], [3, 4], [3, 5], [4, 5], [5, 6], [6, 7]].map(([a, b]) => ({ source: agents[a].id, target: agents[b].id }));
   const layout = [[24, 24], [364, 24], [704, 24], [24, 224], [24, 424], [364, 324], [704, 324], [704, 524]];
   return { enabled: true, agents, edges, positions: Object.fromEntries(agents.map((agent, index) => [agent.id, { x: layout[index][0], y: layout[index][1] }])), maxParallel: 1 };
 }
@@ -108,11 +108,13 @@ export function compileAgents(flow, state, health) {
   if (flow === 'video') { ids.push('frames'); for (const stage of stages) if (!['conditions', 'text_generate'].includes(stage.kind)) edges.push({ source: 'frames', target: stage.id }); }
   const ancestors = ancestry(ids, edges, '모델 단계 연결');
   const original = new Map(agents.flatMap(agent => agent.nodes).map(node => [node.id, node]));
-  const required = { logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract'], text_compare: ['text_extract'], visual_compare: ['visual_extract'] };
+  const required = { logo_similarity: ['logo_extract'], candidate_filter: ['logo_similarity'], logo_compare: ['logo_extract'], logo_diff: ['logo_extract', 'logo_compare', 'text_extract'], text_compare: ['text_extract'], visual_compare: ['visual_extract'] };
   for (const stage of stages) {
     const roles = new Set(INPUTS[stage.kind] ? Object.keys(INPUTS[stage.kind]) : required[stage.kind] || []);
+    const requiredRoles = [...(required[stage.kind] || []), ...(stage.kind === 'logo_diff' && state.references.length > 1 ? ['logo_similarity'] : [])];
     if (['text_compare', 'visual_compare'].includes(stage.kind)) roles.add('conditions');
     if (stage.kind === 'logo_compare') roles.add('candidate_filter');
+    if (stage.kind === 'logo_diff' && state.references.length > 1) roles.add('logo_similarity');
     for (const role of roles) {
       const candidates = stages.filter(source => acceptsInput(stage.kind, role, source.kind) && ancestors.get(stage.id).has(source.id));
       const closest = candidates.filter(source => !candidates.some(next => ancestors.get(next.id).has(source.id)));
@@ -122,7 +124,7 @@ export function compileAgents(flow, state, health) {
         stage.inputs[role] = selected;
       } else if (closest.length === 1) stage.inputs[role] = closest[0].id;
       else if (closest.length > 1) throw new Error(`${stage.name}: 같은 종류의 입력이 여러 개입니다. 단계 설정에서 사용할 입력을 지정해 주세요.`);
-      else if ((required[stage.kind] || []).includes(role) || (role === 'conditions' && !state.requirements.trim()) || ['left', 'right', 'ocr', 'logo_extract'].includes(role) || (role === 'images' && stage.params?.image_source === 'crops')) throw new Error(`${stage.name}: ${STAGES.find(item => item.id === role)?.title || role}에서 이어지는 연결이 필요합니다.`);
+      else if (requiredRoles.includes(role) || (role === 'conditions' && !state.requirements.trim()) || ['left', 'right', 'ocr', 'logo_extract'].includes(role) || (role === 'images' && stage.params?.image_source === 'crops')) throw new Error(`${stage.name}: ${STAGES.find(item => item.id === role)?.title || role}에서 이어지는 연결이 필요합니다.`);
     }
     if (stage.kind === 'vector_compare') {
       const inputs = ['left', 'right'].map(role => stages.find(item => item.id === stage.inputs[role]));
@@ -133,10 +135,15 @@ export function compileAgents(flow, state, health) {
       if (!['paddle_ocr', 'easyocr'].includes(registration(source?.model, health)?.family)) throw new Error('문서 분류에는 단어·좌표를 제공하는 PP-OCR 또는 EasyOCR 노드를 연결해 주세요.');
       if (stage.params?.image_source && stage.params.image_source !== 'media') throw new Error('문서 분류는 OCR과 같은 원본 이미지를 사용해야 합니다.');
     }
+    if (stage.kind === 'logo_diff') {
+      const source = original.get(stage.inputs.text_extract);
+      if (registration(source?.model, health)?.family !== 'paddle_ocr') throw new Error(`${stage.name}: 문자 검수에는 등록된 PP-OCR PaddleOCR 단계가 필요합니다.`);
+    }
     if (stage.kind === 'rerank' && stage.params?.modality === 'image' && !registration(original.get(stage.id)?.model, health)?.modalities?.includes('image')) throw new Error('이 재정렬 모델은 이미지 후보를 지원하지 않습니다.');
   }
   if (stages.some(stage => stage.kind === 'conditions') && !state.documents.length) throw new Error('문서에서 조건을 추출하려면 발주서·계약서를 첨부해 주세요.');
-  if (stages.some(stage => ['logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue'].includes(stage.kind)) && !state.references.length) throw new Error('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+  if (stages.some(stage => ['logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue', 'logo_diff'].includes(stage.kind)) && !state.references.length) throw new Error('로고 대조에는 원본 로고 레퍼런스가 필요합니다.');
+  if (state.references.length > 1 && stages.some(stage => stage.kind === 'logo_diff') && !stages.some(stage => stage.kind === 'logo_similarity')) throw new Error('기준 로고가 여러 장이면 SigLIP2 순위화 노드가 필요합니다. 후보를 탈락시키지는 않습니다.');
   if (stages.some(stage => stage.kind === 'logo_similarity') && stages.some(stage => stage.image_similarity)) throw new Error('별도 유사도 단계가 있으면 XFeat 추가 유사도 계산을 해제해 주세요.');
   if (health && health.workflow?.agents !== true) throw new Error('현재 연결은 에이전트 보드를 지원하지 않습니다. 백엔드 재시작 후 Pod에 다시 연결해 주세요.');
   return { stages, workflow: { edges, max_parallel: board.maxParallel, agents: agents.map(({ id, name }) => ({ id, name: name.trim() })) } };

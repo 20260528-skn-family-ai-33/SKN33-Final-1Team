@@ -40,9 +40,9 @@ export function CandidateAudit({ row, references }) {
 export function MatchingSettings({ match }) {
   if (!match?.matching_settings) return null;
   const value = match.matching_settings;
-  return <details className="mt-matching-settings"><summary>XFeat 실행 설정 · 팀원 재현 미확인 · 색상 비교 미적용</summary>
+  return <details className="mt-matching-settings"><summary>XFeat 실행 설정 · 팀원 재현 미확인</summary>
     <dl><dt>실행 코드</dt><dd>{value.code_source}</dd><dt>가중치</dt><dd>{value.model_id || 'vismatch/xfeat'} @ {value.revision || 'resolved revision 미제공'}</dd><dt>가중치 SHA256</dt><dd>{value.weights_sha256 || '미제공'}</dd>
       <dt>입력 크기 정규화</dt><dd>긴 변 최대 {value.resize_max_side}px · 각 변 최소 {value.resize_min_side}px</dd><dt>특징점 / 매칭 임계값</dt><dd>{value.top_k}개 / {value.match_min_cosine}</dd><dt>RANSAC</dt><dd>{value.ransac_px}px · {value.ransac_max_iters}회 · confidence {value.ransac_confidence}</dd></dl>
-    <p>색상 지표는 계산하지 않았습니다. 팀원 코드 revision·가중치·전처리·특징점·매칭·RANSAC 설정이 일치하는지는 별도 확인이 필요합니다.</p>
+    <p>기하 homography는 logo_diff의 정렬 입력으로 사용합니다. 색상 검사는 logo_diff에서 계산합니다. 팀원 코드 revision·가중치·전처리·특징점·매칭·RANSAC 설정이 일치하는지는 별도 확인이 필요합니다.</p>
   </details>;
 }

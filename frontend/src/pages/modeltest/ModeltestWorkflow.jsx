@@ -28,7 +28,8 @@ export default function ModeltestWorkflow({ flow, state, update, disabled, onUnd
       <div className="mt-workflow-toolbar">
         <button type="button" className="btn secondary small" disabled={disabled} onClick={() => { update(workflowPreset(flow, state)); }}>현재 단계 순차 연결</button>
         {flow === 'video' && <><button type="button" className="btn secondary small" disabled={disabled} onClick={() => { update(workflowPreset(flow, state, 'filtered')); }}>SigLIP2 → 필터 → XFeat</button>
-          <button type="button" className="btn secondary small" disabled={disabled} onClick={() => { update(workflowPreset(flow, state, 'parallel')); }}>SigLIP2 · XFeat 병렬</button></>}
+          <button type="button" className="btn secondary small" disabled={disabled} onClick={() => { update(workflowPreset(flow, state, 'parallel')); }}>SigLIP2 · XFeat 병렬</button>
+          <button type="button" className="btn secondary small" disabled={disabled} onClick={() => { update(workflowPreset(flow, state, 'logo_diff')); }}>권장 로고 정밀 검수</button></>}
         <label>동시 실행 수<select aria-label="워크플로우 동시 실행 수" disabled={disabled} value={workflow.maxParallel} onChange={event => change({ maxParallel: Number(event.target.value) })}><option value={1}>1개</option><option value={2}>최대 2개</option></select></label>
         <button type="button" className="text-btn" disabled={disabled} onClick={() => change({ positions: {} })}>위치 초기화</button>
       </div>

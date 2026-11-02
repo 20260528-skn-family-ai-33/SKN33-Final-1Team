@@ -65,7 +65,24 @@ MODEL_STAGES.update({OWLV2_ENSEMBLE: MODEL_STAGES[OWLV2], SIGLIP2_SO400M: MODEL_
 STAGES += catalog.EXTRA_STAGES
 PAIR_STAGES = ('logo_compare', 'logo_similarity', 'phash', 'orb', 'sift', 'disk_lightglue')
 XFEAT_SOURCE = 'verlab/accelerated_features:e92685f57f8318b18725c5c8c0bd28c7fe188d9a'
-PREVIEW_NAME = r'(?:frame-\d{8,12}\.jpg|logo-(?:[A-Za-z0-9_-]{1,64}-)?\d{1,6}-\d{1,6}\.png|preview-(?:poster|reference-\d{1,2})\.jpg)'
+PREVIEW_NAME = r'(?:frame-\d{8,12}\.jpg|logo-(?:[A-Za-z0-9_-]{1,64}-)?\d{1,6}-\d{1,6}\.png|diff-\d{1,6}-\d{1,6}-\d{1,6}(?:-regions)?\.png|preview-(?:poster|reference-\d{1,2})\.jpg)'
+LOGO_BBOX_PADDING = 0.10
+LOGO_MIN_SIDE = 48
+LOGO_DIFF_MIN_INLIERS = 8
+LOGO_DIFF_MIN_INLIER_RATIO = 0.35
+LOGO_DIFF_MIN_INLIER_COVERAGE = 0.005
+# Video logo detection tuned on 19 labelled 720p/1080p videos: loose text queries over the frame and overlapping tiles,
+# then SigLIP2 keeps boxes that resemble a reference logo. 4K logos under ~60px are a known limit (tiles are still halved).
+OWLV2_THRESHOLD = 0.1
+OWLV2_MAX_AREA = 0.4
+OWLV2_NMS_IOU = 0.5
+OWLV2_INPUT_SIDE = 960
+DETECTION_FILTER_MODEL = SIGLIP2_SO400M
+DETECTION_FILTER_PADDING = 0.10
+DETECTION_FILTER_ACCEPT = 0.75
+DETECTION_FILTER_SMALL_ACCEPT = 0.80
+DETECTION_FILTER_SMALL_REVIEW = 0.75
+DETECTION_FILTER_REFERENCE_SIDES = (20, 28, 40, 56)
 
 
 def read_preview(directory, name):
@@ -87,6 +104,9 @@ def validate_model_stage(stage):
     if stage.get('model_profile'):
         catalog.validate_profile(stage['model_profile'], kind)
         if model_id != stage['model_profile']['model_id'] or stage.get('revision') != stage['model_profile']['resolved_revision']: raise ValueError('등록 모델과 실행 모델이 다릅니다.')
+        if kind == 'logo_similarity':
+            config = stage['model_profile'].get('metadata', {}).get('configs', {}).get('config.json', {})
+            if stage['model_profile'].get('family') != 'clip' or config.get('model_type') != 'siglip2': raise ValueError('로고 후보 순위화에는 SigLIP2 계열만 사용할 수 있습니다.')
         if stage.get('image_similarity'): raise ValueError('등록 모델에는 별도 이미지 유사도 노드를 연결해 주세요.')
         return
     if model_id not in MODEL_STAGES: raise ValueError('미등록 모델입니다. Hugging Face 모델 추가에서 계열과 실행 설정을 확인해 주세요.')
@@ -152,7 +172,8 @@ def workflow_dependencies(config):
             for role, source in bindings.items():
                 upstream = definitions.get(source, {})
                 if role not in allowed or source not in ancestors[name] or catalog.OUTPUTS.get(upstream.get('kind', source)) not in allowed[role]: raise ValueError(f'{stage.get("name", name)}: {role} 입력·출력 형식 또는 선행 연결이 맞지 않습니다.')
-            needed = {'vector_compare': {'left', 'right'}, 'rrf': {'left', 'right'}, 'document_classify': {'ocr'}}.get(kind, set())
+            needed = {'vector_compare': {'left', 'right'}, 'rrf': {'left', 'right'}, 'document_classify': {'ocr'},
+                      'logo_diff': {'logo_extract', 'logo_compare', 'text_extract'}}.get(kind, set())
             if kind in PAIR_STAGES: needed = {'logo_extract'}
             if stage.get('params', {}).get('image_source') == 'crops': needed = needed | {'images'}
             if not needed <= bindings.keys(): raise ValueError(f'{stage.get("name", name)}: {", ".join(sorted(needed))} 입력 연결이 필요합니다.')
@@ -168,6 +189,15 @@ def workflow_dependencies(config):
                 upstream = definitions[bindings['ocr']]
                 if upstream.get('model_profile', {}).get('family') not in ('paddle_ocr', 'easyocr'): raise ValueError('LayoutXLM OCR 입력에는 단어와 좌표를 제공하는 PP-OCR 또는 EasyOCR 노드가 필요합니다.')
                 if stage.get('params', {}).get('image_source', 'media') != 'media': raise ValueError('LayoutXLM은 OCR과 같은 원본 이미지·프레임을 사용해야 합니다.')
+            if kind == 'logo_diff':
+                compare_id = bindings['logo_compare']; compare = definitions[compare_id]
+                if compare.get('model_profile', {}).get('family') != 'xfeat' and compare.get('model_id') != XFEAT:
+                    raise ValueError('logo_diff의 기하 정렬에는 XFeat/RANSAC 노드가 필요합니다.')
+                if 'candidate_filter' in ancestors[compare_id]: raise ValueError('logo_diff에서는 SigLIP2 점수로 XFeat 후보를 탈락시킬 수 없습니다.')
+                ocr = definitions[bindings['text_extract']]
+                if ocr.get('model_profile', {}).get('family') != 'paddle_ocr': raise ValueError('logo_diff 문자 검수에는 등록된 PP-OCR PaddleOCR 모델이 필요합니다.')
+                if len(config.get('files', {}).get('references', [])) > 1 and 'logo_similarity' not in bindings:
+                    raise ValueError('기준 로고가 여러 장이면 SigLIP2 순위화 입력이 필요합니다. 후보를 탈락시키지는 않습니다.')
             if kind == 'rerank' and stage.get('params', {}).get('modality') == 'image' and 'image' not in stage.get('model_profile', {}).get('modalities', []): raise ValueError('이 재정렬 모델은 이미지 후보를 지원하지 않습니다.')
             continue
         roles = set(required.get(kind, ()))
@@ -191,17 +221,19 @@ def workflow_dependencies(config):
 
 
 def filter_candidates(rows, stage):
-    scope = stage.get('scope', 'references_per_crop'); groups = {}; identities = set()
+    scope = stage.get('scope', 'references_per_crop'); groups = {}; identities = set(); decisions = {}
     if scope not in FILTER_SCOPES: raise ValueError('후보 선정 기준을 확인해 주세요.')
     for ri, row in enumerate(rows):
         for mi, match in enumerate(row['matches']):
             score = match.get('image_cosine_similarity')
-            if type(score) not in (int, float) or not math.isfinite(score): raise ValueError('후보의 이미지 유사도 값이 올바르지 않습니다.')
+            if type(score) not in (int, float) or not math.isfinite(score):
+                if 'LOW_RESOLUTION' in match.get('reason_codes', []):
+                    decisions[ri, mi] = (None, 'low_resolution'); continue
+                raise ValueError('후보의 이미지 유사도 값이 올바르지 않습니다.')
             identities.add((match.get('similarity_model'), match.get('similarity_revision'), match.get('space_id')))
             key = (ri, match['logo_index']) if scope == 'references_per_crop' else (ri, match['reference_index']) if scope == 'crops_per_reference_frame' else match['reference_index']
             groups.setdefault(key, []).append((ri, mi, match))
     if len(identities) > 1: raise ValueError('모델·revision·전처리가 다른 유사도 결과를 함께 순위화할 수 없습니다.')
-    decisions = {}
     for group in groups.values():
         group.sort(key=lambda item: (-item[2]['image_cosine_similarity'], rows[item[0]].get('index', item[0]), item[2]['logo_index'], item[2]['reference_index']))
         selected = 0
@@ -235,12 +267,18 @@ def validate_config(config):
             raise ValueError('지원하지 않는 모델 단계입니다.')
         common = {'id', 'kind', 'name', 'agent_id', 'inputs', 'params'}
         params = stage.get('params', {})
-        if not isinstance(params, dict) or set(params) - {'documents', 'query', 'image_source', 'modality', 'classifier'} or len(json.dumps(params, allow_nan=False)) > 50000: raise ValueError('일반 처리 입력 설정은 50KB 이내여야 합니다.')
+        allowed_params = {'documents', 'query', 'image_source', 'modality', 'classifier'}
+        if stage.get('kind', stage['id']) == 'logo_diff': allowed_params.add('monochrome_policy')
+        if stage.get('kind', stage['id']) == 'logo_extract': allowed_params.add('detection_filter')
+        if not isinstance(params, dict) or set(params) - allowed_params or len(json.dumps(params, allow_nan=False)) > 50000: raise ValueError('일반 처리 입력 설정은 50KB 이내여야 합니다.')
+        if 'monochrome_policy' in params and params['monochrome_policy'] not in ('review', 'allow_monochrome'): raise ValueError('단색 로고 정책은 사람 검토 또는 색상 차이 허용이어야 합니다.')
+        if 'detection_filter' in params and params['detection_filter'] not in ('siglip2', 'off'): raise ValueError('로고 후보 필터는 SigLIP2 또는 사용 안 함이어야 합니다.')
         if 'query' in params and (not isinstance(params['query'], str) or len(params['query']) > 12000): raise ValueError('질의는 12,000자 이하여야 합니다.')
         if 'documents' in params and (not isinstance(params['documents'], list) or len(params['documents']) > 256 or any(not isinstance(text, str) or len(text) > 12000 for text in params['documents'])): raise ValueError('텍스트 후보는 256개 이하의 문자열 목록이어야 합니다.')
         if params.get('image_source', 'media') not in ('media', 'references', 'crops') or params.get('modality', 'text') not in ('text', 'image'): raise ValueError('입력 이미지·텍스트 유형을 확인해 주세요.')
         if 'kind' in stage and config.get('workflow') is None: raise ValueError('사용자 정의 단계에는 워크플로우 연결이 필요합니다.')
-        if stage.get('kind', stage['id']) in catalog.EXTRA_STAGES and stage.get('kind', stage['id']) not in ('model_prepare', 'disk_lightglue_prepare') and config.get('workflow') is None: raise ValueError('새 처리 노드는 에이전트 워크플로우 연결이 필요합니다.')
+        similarity_diff = config['flow'] == 'similarity' and stage.get('kind', stage['id']) == 'logo_diff'
+        if stage.get('kind', stage['id']) in catalog.EXTRA_STAGES and stage.get('kind', stage['id']) not in ('model_prepare', 'disk_lightglue_prepare') and not similarity_diff and config.get('workflow') is None: raise ValueError('새 처리 노드는 에이전트 워크플로우 연결이 필요합니다.')
         if stage.get('name') is not None and (not isinstance(stage['name'], str) or not 1 <= len(stage['name']) <= 100): raise ValueError('단계 이름은 1~100자여야 합니다.')
         if 'inputs' in stage and (not isinstance(stage['inputs'], dict) or set(stage['inputs']) - set(STAGES) - {'left', 'right', 'text', 'images', 'ocr', 'candidates'} or any(not isinstance(value, str) for value in stage['inputs'].values())): raise ValueError('단계 입력 연결이 올바르지 않습니다.')
         if stage.get('kind', stage['id']) in catalog.GENERAL:
@@ -283,8 +321,10 @@ def validate_config(config):
     if config['flow'] == 'similarity':
         if config.get('workflow') is not None or config.get('purpose') is not None or files['documents'] or not files['references']:
             raise ValueError('유사도 테스트는 기준 이미지 1장과 대조 이미지 1~100장으로 실행합니다.')
-        if ids != ['logo_similarity', 'logo_compare'] or stages[1].get('model_id') != XFEAT or any(set(stage) - {'id', 'name', 'model_id', 'revision', 'registered_model', 'model_fingerprint', 'model_profile'} for stage in stages):
-            raise ValueError('유사도 테스트는 이미지 유사도와 XFeat 두 단계로 실행해야 합니다.')
+        if (ids not in (['logo_similarity', 'logo_compare'], ['logo_similarity', 'logo_compare', 'logo_diff']) or stages[1].get('model_id') != XFEAT
+                or any(set(stage) - {'id', 'name', 'model_id', 'revision', 'registered_model', 'model_fingerprint', 'model_profile'} for stage in stages[:2])
+                or any(set(stage) - {'id', 'name', 'params'} or set(stage.get('params', {})) - {'monochrome_policy'} for stage in stages[2:])):
+            raise ValueError('유사도 테스트는 이미지 유사도, XFeat 단계와 선택적인 logo_diff 단계로 실행해야 합니다.')
         for field, label in (('resize', '기준 이미지'), ('reference_resize', '대조 이미지')):
             resize = config.get(field)
             if resize is not None:
@@ -293,13 +333,14 @@ def validate_config(config):
                 if not (pixels or percent): raise ValueError(f'{label} 다운사이징은 가로·세로 1~8,192px 정수 또는 비율 0.01~100%로 입력해 주세요.')
         return config
     kinds = [stage.get('kind', stage['id']) for stage in stages]
+    if 'logo_diff' in kinds and config['flow'] != 'video': raise ValueError('logo_diff는 OWLv2 프레임 로고 검수에서만 사용할 수 있습니다.')
     if config['flow'] == 'image' and (not files['documents'] or files['references'] or any(name.startswith('logo_') or name == 'candidate_filter' for name in kinds)):
         raise ValueError('이미지 검수에는 문서가 필요하며 영상 전용 단계는 사용할 수 없습니다.')
     if 'conditions' in kinds and not files['documents']:
         raise ValueError('조건 추출에는 문서가 필요합니다.')
     if any(stage.get('kind', stage['id']) == 'conditions' and stage.get('model_profile', {}).get('family') == 'qwen_text' for stage in stages) and any(str(item.get('name', '')).lower().endswith('.pdf') for item in files['documents']):
         raise ValueError('PDF 조건 추출은 페이지 이미지를 사용합니다. 이미지 입력 모델을 선택하거나 텍스트 문서를 첨부해 주세요.')
-    if any(name in kinds for name in PAIR_STAGES) and ('logo_extract' not in kinds or not files['references']):
+    if (any(name in kinds for name in PAIR_STAGES) or 'logo_diff' in kinds) and ('logo_extract' not in kinds or not files['references']):
         raise ValueError('로고 대조에는 로고 추출과 원본 로고가 필요합니다.')
     for name in ('text', 'visual'):
         if f'{name}_compare' in kinds and (f'{name}_extract' not in kinds or ('conditions' not in kinds and not requirements.strip())):
@@ -320,7 +361,7 @@ def runtime_health():
         import torch
         cuda = torch.cuda.is_available()
     return {'contract': CONTRACT, 'ready': not missing and cuda, 'stages': list(STAGES),
-            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'similarity_test': 1, 'similarity_resize_percent': True, 'similarity_reference_resize': True, 'candidate_filter_scopes': list(FILTER_SCOPES), 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
+            'formats': FORMATS, 'limits': LIMITS, 'cancel': True, 'similarity_test': 1, 'similarity_logo_diff': 1, 'similarity_resize_percent': True, 'similarity_reference_resize': True, 'candidate_filter_scopes': list(FILTER_SCOPES), 'workflow': {'version': 1, 'max_parallel': 2, 'agents': True}, 'registry_version': 1, 'prompt_overrides': 1, 'library_versions': catalog.installed_versions(),
             'models': [{'id': model_id, 'stages': list(stages)} for model_id, stages in MODEL_STAGES.items()],
             'setup_required': bool(missing), 'can_prepare': 'torch' not in missing and cuda, 'missing': missing, 'cuda': cuda,
             'detail': '준비 완료' if not missing and cuda else 'Pod 패키지 준비가 필요합니다.' if missing else 'Pod에서 CUDA GPU를 확인하지 못했습니다.'}
@@ -667,15 +708,103 @@ def run_qwen(models, stage, **inputs):
     return run_generated(models, stage, **inputs)
 
 
+def owlv2_tiles(width, height):
+    """Overlapping crops cut at source resolution so small edge logos are not shrunk away with the whole frame."""
+    if width >= height:
+        tw, th = int(width * .6), int(height * .6); bw, bh = int(width * .4), int(height * .22)
+        tiles = [(x, y, x + tw, y + th) for x in (0, width - tw) for y in (0, height - th)]
+        return tiles + [(x, y, x + bw, y + bh) for y in (0, height - bh) for x in (0, (width - bw) // 2, width - bw)]
+    tw, th = int(width * .6), int(height * .4); bw, bh = int(width * .6), int(height * .15)
+    tiles = [(x, y, x + tw, y + th) for x in (0, width - tw) for y in (0, (height - th) // 2, height - th)]
+    return tiles + [(x, y, x + bw, y + bh) for y in (0, height - bh) for x in (0, width - bw)]
+
+
+def box_nms(boxes, scores, threshold):
+    import torch
+    def area(value): return (value[..., 2] - value[..., 0]).clamp(min=0) * (value[..., 3] - value[..., 1]).clamp(min=0)
+    order = scores.argsort(descending=True); keep = []
+    while order.numel():
+        top = boxes[order[0]]; rest = order[1:]; keep.append(int(order[0]))
+        others = boxes[rest]
+        overlap = (torch.minimum(top[2], others[:, 2]) - torch.maximum(top[0], others[:, 0])).clamp(min=0) * \
+                  (torch.minimum(top[3], others[:, 3]) - torch.maximum(top[1], others[:, 1])).clamp(min=0)
+        order = rest[overlap / (area(top) + area(others) - overlap + 1e-9) <= threshold]
+    return keep
+
+
 def run_owlv2(models, stage, *, images, **_):
     import torch
-    image = image_of(images[0]); labels = [prompts.labels(stage)]
-    inputs = models.processor(text=labels, images=image, return_tensors='pt').to(models.model.device)
+    from PIL import Image
+    image = image_of(images[0]); labels = prompts.labels(stage)
+    regions = [(0, 0, image.width, image.height)] + owlv2_tiles(image.width, image.height); parts = []
+    for region in regions:
+        part = image.crop(region); scale = OWLV2_INPUT_SIDE / max(part.size)
+        # The processor resizes to 960 anyway; shrinking here avoids its slow CPU resize on large frames.
+        if scale < 1: part = part.resize((max(1, round(part.width * scale)), max(1, round(part.height * scale))), Image.LANCZOS)
+        parts.append(part)
+    inputs = models.processor(text=[labels] * len(parts), images=parts, return_tensors='pt').to(models.model.device)
     with torch.inference_mode(): output = models.model(**inputs)
-    found = models.processor.post_process_grounded_object_detection(output, threshold=0.2,
-        target_sizes=[(image.height, image.width)], text_labels=labels)[0]
-    return {'logos': [{'bbox': box, 'score': score} for box, score in
-                     zip(found['boxes'].cpu().tolist(), found['scores'].cpu().tolist())]}
+    found = models.processor.post_process_grounded_object_detection(output, threshold=OWLV2_THRESHOLD,
+        target_sizes=[(part.height, part.width) for part in parts], text_labels=[labels] * len(parts))
+    boxes, scores = [], []
+    for (x1, y1, x2, y2), part, result in zip(regions, parts, found):
+        sx, sy = (x2 - x1) / part.width, (y2 - y1) / part.height
+        boxes.append(result['boxes'].float().cpu().reshape(-1, 4) * torch.tensor([sx, sy, sx, sy]) + torch.tensor([x1, y1, x1, y1]))
+        scores.append(result['scores'].float().cpu().reshape(-1))
+    boxes, scores = torch.cat(boxes), torch.cat(scores)
+    boxes[:, 0::2] = boxes[:, 0::2].clamp(0, image.width); boxes[:, 1::2] = boxes[:, 1::2].clamp(0, image.height)
+    sizes = boxes[:, 2:] - boxes[:, :2]
+    # Boxes that collapse inside the frame cannot be cropped; boxes covering most of the frame are scenes, not logos.
+    usable = (sizes.min(dim=1).values >= 2) & (sizes.prod(dim=1) <= OWLV2_MAX_AREA * image.width * image.height)
+    boxes, scores = boxes[usable], scores[usable]
+    return {'logos': [{'bbox': boxes[i].tolist(), 'score': float(scores[i])} for i in box_nms(boxes, scores, OWLV2_NMS_IOU)]}
+
+
+def siglip_embed(models, images):
+    import torch
+    vectors = []
+    for start in range(0, len(images), 32):
+        inputs = models.processor(images=images[start:start + 32], return_tensors='pt').to(models.model.device)
+        with torch.inference_mode(): features = models.model.get_image_features(**inputs, return_dict=True).pooler_output
+        vectors.append(torch.nn.functional.normalize(features.float(), dim=-1))
+    return torch.cat(vectors)
+
+
+def detection_filter_active(stage, config, paths):
+    return (not stage.get('model_profile') and stage.get('model_id') in OWLV2_MODELS and config['flow'] == 'video' and bool(paths['references'])
+            and stage.get('params', {}).get('detection_filter', 'siglip2') == 'siglip2')
+
+
+def filter_detections(models, samples, detections, references):
+    """Keeps OWLv2 boxes that resemble a reference logo. Tiny video logos are blurry, so small boxes are compared with
+    low-resolution copies of each reference and a near miss goes to human review instead of being dropped."""
+    from PIL import Image
+    full, low = [], []
+    for path in references:
+        reference = image_of(path); variants = [reference]
+        for side in DETECTION_FILTER_REFERENCE_SIDES:
+            scale = side / min(reference.size)
+            if scale < 1: variants.append(reference.resize((max(1, round(reference.width * scale)), max(1, round(reference.height * scale))), Image.BOX))
+        vectors = siglip_embed(models, variants); full.append(vectors[:1]); low.append(vectors)
+    kept, dropped = [], []
+    for sample, logos in zip(samples, detections):
+        frame_kept = []
+        if logos:
+            image = image_of(sample['path']); crops = []
+            for logo in logos:
+                x1, y1, x2, y2 = logo['bbox']; px, py = (x2 - x1) * DETECTION_FILTER_PADDING, (y2 - y1) * DETECTION_FILTER_PADDING
+                crop = image.crop((max(0, x1 - px), max(0, y1 - py), min(image.width, x2 + px), min(image.height, y2 + py)))
+                crop.thumbnail((384, 384)); crops.append(crop)
+            for logo, vector in zip(logos, siglip_embed(models, crops)):
+                x1, y1, x2, y2 = logo['bbox']; small = min(x2 - x1, y2 - y1) < LOGO_MIN_SIDE
+                scores = [float((vector @ reference.T).max()) for reference in (low if small else full)]
+                best = max(range(len(scores)), key=scores.__getitem__); score = scores[best]
+                status = ('accepted' if score >= (DETECTION_FILTER_SMALL_ACCEPT if small else DETECTION_FILTER_ACCEPT)
+                          else 'review' if small and score >= DETECTION_FILTER_SMALL_REVIEW else None)
+                if status: frame_kept.append({**logo, 'detection_status': status, 'detection_similarity': round(score, 4), 'detection_reference_index': best,
+                                              'detection_basis': 'low_resolution_reference' if small else 'reference'})
+        kept.append(frame_kept); dropped.append(len(logos) - len(frame_kept))
+    return kept, dropped
 
 
 def run_siglip2(models, stage, *, images, **_):
@@ -694,21 +823,52 @@ def run_xfeat(models, stage, *, images, **_):
     import cv2
     import numpy as np
     import torch
-    features = []; scales = []; image_sizes = []
+    features = []; scales = []; image_sizes = []; rgb_images = []
     for path in images:
         image = image_of(path); width, height = image.size; image.thumbnail((1024, 1024))
         image_sizes.append([width, height])
         image = image.resize((max(32, image.width), max(32, image.height)))
         scales.append(np.array([width / image.width, height / image.height]))
-        tensor = torch.from_numpy(np.asarray(image, dtype=np.float32) / 255).permute(2, 0, 1)[None].to(models.model.dev)
+        rgb_images.append(np.asarray(image, dtype=np.uint8))
+    polarity_alignment = 'normal'; color_evidence = {'candidate_is_monochrome': False, 'polarity_alignment': 'unknown', 'candidate_mean_saturation': None,
+        'reference_mean_saturation': None, 'candidate_foreground_background_contrast': None, 'reference_foreground_background_contrast': None, 'alignment_available': False}
+    if len(rgb_images) == 2:
+        candidate_hsv = cv2.cvtColor(rgb_images[0], cv2.COLOR_RGB2HSV)
+        reference_hsv = cv2.cvtColor(rgb_images[1], cv2.COLOR_RGB2HSV)
+        candidate_mask = adapters._logo_foreground(rgb_images[0], None, cv2, np)
+        reference_mask = adapters._logo_foreground(rgb_images[1], None, cv2, np)
+        candidate_sat = float(candidate_hsv[..., 1][candidate_mask].mean()) if candidate_mask.any() else 0.0
+        reference_sat = float(reference_hsv[..., 1][reference_mask].mean()) if reference_mask.any() else 0.0
+        candidate_gray = cv2.cvtColor(rgb_images[0], cv2.COLOR_RGB2GRAY)
+        reference_gray = cv2.cvtColor(rgb_images[1], cv2.COLOR_RGB2GRAY)
+        def foreground_contrast(gray, mask):
+            foreground = gray[mask]; background = gray[~mask]
+            if len(foreground) < 16 or len(background) < 16: return None
+            return float(np.median(foreground) - np.median(background))
+        candidate_contrast = foreground_contrast(candidate_gray, candidate_mask)
+        reference_contrast = foreground_contrast(reference_gray, reference_mask)
+        candidate_is_monochrome = candidate_sat < 24 and reference_sat > 38
+        inverted = candidate_is_monochrome and candidate_contrast is not None and reference_contrast is not None and candidate_contrast * reference_contrast < 0
+        color_evidence = {'candidate_is_monochrome': candidate_is_monochrome, 'polarity_alignment': 'inverted' if inverted else 'normal' if candidate_contrast is not None and reference_contrast is not None else 'unknown',
+            'candidate_mean_saturation': round(candidate_sat, 2), 'reference_mean_saturation': round(reference_sat, 2),
+            'candidate_foreground_background_contrast': round(candidate_contrast, 2) if candidate_contrast is not None else None,
+            'reference_foreground_background_contrast': round(reference_contrast, 2) if reference_contrast is not None else None, 'alignment_available': False}
+        if inverted:
+            rgb_images[0] = 255 - rgb_images[0]
+            polarity_alignment = 'inverted_for_keypoints'
+    for rgb in rgb_images:
+        tensor = torch.from_numpy(rgb.astype(np.float32) / 255).permute(2, 0, 1)[None].to(models.model.dev)
         with torch.inference_mode(): features.append(models.model.detectAndCompute(tensor)[0])
     first, second = features
     result = {'keypoints': [len(first['keypoints']), len(second['keypoints'])], 'matches': 0, 'descriptor_similarity': None,
-              'inliers': 0, 'inlier_ratio': 0.0, 'decision': 'uncertain', 'matched_points': [], 'image_sizes': image_sizes,
+              'inliers': 0, 'inlier_ratio': 0.0, 'decision': 'uncertain', 'matched_points': [], 'image_sizes': image_sizes, 'color_evidence': color_evidence,
               'matching_settings': {**(getattr(models, 'execution', None) or {}), 'code_source': XFEAT_SOURCE, 'top_k': 1024, 'match_min_cosine': 0.82,
                                     'resize_max_side': 1024, 'resize_min_side': 32, 'ransac_px': 3.0, 'ransac_max_iters': 2000, 'ransac_confidence': 0.995,
-                                    'candidate_min_inliers': 8, 'candidate_min_ratio': 0.5, 'color_comparison': 'not_implemented', 'teammate_reproduction': 'unverified'},
-              'note': '특징점과 기하 검증에 따른 참고 결과입니다. 단순한 로고는 특징점 부족으로 판정하지 못할 수 있습니다.'}
+                                    'candidate_min_inliers': 8, 'candidate_min_ratio': 0.5, 'alignment_min_inliers': LOGO_DIFF_MIN_INLIERS,
+                                    'alignment_min_inlier_ratio': LOGO_DIFF_MIN_INLIER_RATIO, 'alignment_min_inlier_coverage': LOGO_DIFF_MIN_INLIER_COVERAGE,
+                                    'polarity_alignment': polarity_alignment, 'homography_direction': 'crop_to_reference',
+                                    'color_comparison': 'logo_diff', 'teammate_reproduction': 'unverified'},
+              'note': '특징점·homography는 정렬 근거입니다. logo_diff가 최종 영역 판정을 수행하며 대응점 수·공간 분포가 부족하면 판정을 보류합니다.'}
     if not all(result['keypoints']): return result
     with torch.inference_mode(): a, b = models.model.match(first['descriptors'], second['descriptors'], min_cossim=0.82)
     points0 = first['keypoints'][a].cpu().numpy(); points1 = second['keypoints'][b].cpu().numpy()
@@ -721,6 +881,19 @@ def run_xfeat(models, stage, *, images, **_):
     if matrix is None or mask is None or not np.isfinite(matrix).all(): return result
     inliers = mask.ravel().astype(bool); count = int(inliers.sum()); ratio = count / len(points0)
     result.update(inliers=count, inlier_ratio=round(ratio, 4))
+    # The estimator runs on resized inputs. Convert its crop→reference transform back to original pixel coordinates.
+    query_scale = np.diag([scales[0][0], scales[0][1], 1.0])
+    reference_scale = np.diag([scales[1][0], scales[1][1], 1.0])
+    homography = reference_scale @ matrix @ np.linalg.inv(query_scale)
+    if abs(float(homography[2, 2])) > 1e-12:
+        homography = homography / homography[2, 2]
+    result.update(homography=homography.tolist(), homography_direction='crop_to_reference')
+    def support(points, size):
+        if len(points) < 3: return 0.0
+        hull = cv2.convexHull(np.asarray(points, dtype=np.float32))
+        return round(float(cv2.contourArea(hull) / max(1, size[0] * size[1])), 6)
+    result['inlier_coverage'] = {'crop': support(points0[inliers] * scales[0], image_sizes[0]),
+                                 'reference': support(points1[inliers] * scales[1], image_sizes[1])}
     # shortcut: uncalibrated matching heuristic, calibrate on labelled logos before automatic acceptance.
     if count >= 8 and ratio >= 0.5: result['decision'] = 'candidate_match'
     result['matched_points'] = [{'crop': (p * scales[0]).tolist(), 'reference': (q * scales[1]).tolist()}
@@ -966,6 +1139,7 @@ def execute_run(config, paths, root, emit):
             width, height = image.size; image.thumbnail((1280, 1280)); image.save(target, quality=90)
             job['media'] = {'index': 0, 'preview': target.name, 'width': width, 'height': height, **similarity_meta}
             prefetch(target.name)
+        logo_diff_active = any(item.get('kind', item['id']) == 'logo_diff' for item in config['stages'])
         def execute_stage(template):
             nonlocal frames
             current = copy.deepcopy(template); worker.stage = current; worker.began = time.monotonic()
@@ -975,12 +1149,46 @@ def execute_run(config, paths, root, emit):
                 with lock: loaded_models.append(models)
             try:
                 current.update(status='running', started_at=time.time()); began = worker.began; publish()
-                node_id = current['id']; name = current.get('kind', node_id); rows = []; crops = []
+                node_id = current['id']; name = current.get('kind', node_id); rows = []; crops = []; skip_stage_model = False
                 stage = next((item for item in config['stages'] if item['id'] == node_id), None)
                 def input_rows(role): return outputs[stage.get('inputs', {}).get(role, role)]
+                diff_ocr_ids = {item.get('inputs', {}).get('text_extract', 'text_extract') for item in config['stages'] if item.get('kind', item['id']) == 'logo_diff'}
+                used_elsewhere = any(node_id in other.get('inputs', {}).values() or node_id in dependencies.get(other['id'], set())
+                    for other in config['stages'] if other['id'] != node_id and other.get('kind', other['id']) != 'logo_diff')
+                defer_ocr_stage = name == 'text_extract' and node_id in diff_ocr_ids and not used_elsewhere and not any(item.get('kind', item['id']) == 'text_compare' for item in config['stages'])
                 if name in PAIR_STAGES and config['flow'] != 'similarity':
-                    crops = [(index, root / logo['preview']) for index, row in enumerate(input_rows('logo_extract')) for logo in row['logos']]
-                if config['flow'] == 'similarity':
+                    crops = [(index, root / logo['preview'], logo) for index, row in enumerate(input_rows('logo_extract')) for logo in row['logos']]
+                if config['flow'] == 'similarity' and name == 'logo_diff':
+                    import numpy as np
+                    current['output'] = {'items': rows}
+                    features = {row['reference_index']: row for row in outputs.get('logo_compare', [])}
+                    timing_stage = {**stage, 'model_id': 'processing/logo_diff'}; no_ocr = {'text': '', 'ocr_words': []}
+                    for index, reference in enumerate(similarity_references):
+                        current['detail'] = f'대조 이미지 {index + 1} / {len(paths["references"])} 차이 판정 중'; publish()
+                        feature = features.get(index, {}); homography = None; hold = None
+                        if not feature.get('homography') or feature.get('inliers', 0) < LOGO_DIFF_MIN_INLIERS:
+                            hold = ('ALIGNMENT_FAILED', f'XFeat/RANSAC inlier가 {LOGO_DIFF_MIN_INLIERS}개 미만이어서 비교 가능한 homography를 얻지 못했습니다.')
+                        elif feature.get('inlier_ratio', 0) < LOGO_DIFF_MIN_INLIER_RATIO or min((feature.get('inlier_coverage') or {}).values() or [0]) < LOGO_DIFF_MIN_INLIER_COVERAGE:
+                            hold = ('ALIGNMENT_UNCERTAIN', '대응점의 비율 또는 공간 분포가 부족해 homography 정렬을 신뢰하기 어렵습니다.')
+                        else:
+                            # XFeat ran on [base, reference]; logo_diff warps the candidate onto the original, so invert base→reference.
+                            try: homography = np.linalg.inv(np.asarray(feature['homography'], dtype=np.float64)).tolist()
+                            except np.linalg.LinAlgError: hold = ('ALIGNMENT_FAILED', 'XFeat homography의 역변환을 계산할 수 없습니다.')
+                        if hold:
+                            result = {'decision': 'uncertain', 'reason_codes': [], 'uncertain_reason_codes': [hold[0]], 'regions': {}, 'human_review_required': True, 'note': hold[1],
+                                      'metrics': {'thresholds_calibrated': False, **adapters.LOGO_DIFF_SAFE_REJECT_POLICY,
+                                          'safe_reject_thresholds': adapters.LOGO_DIFF_SAFE_REJECT_THRESHOLDS,
+                                          'safe_reject_evidence': [],
+                                          **{key: feature[key] for key in ('inliers', 'inlier_ratio', 'inlier_coverage') if feature.get(key) is not None}}}
+                        else:
+                            result = measure(timing_stage, 'inference', adapters.logo_diff_pair, reference, similarity_path, homography,
+                                monochrome_policy=stage.get('params', {}).get('monochrome_policy', 'review'), ocr_query=no_ocr, ocr_reference=no_ocr, preview_path=root / f'diff-0-0-{index}.png')
+                            for key in ('overlay_preview', 'region_overlay_preview'):
+                                if result.get(key): prefetch(result[key])
+                        result['note'] = (result.get('note') or '') + ' 유사도 테스트에서는 OCR을 실행하지 않아 문자 변경은 심볼·형태(ADDED) 차이로 집계됩니다.'
+                        rows.append({'reference_index': index, 'homography_direction': 'candidate_to_base', **result}); publish()
+                    current.pop('detail', None); outputs[node_id] = rows
+                elif config['flow'] == 'similarity':
                     measure(stage, 'load', models.load, stage)
                     current['output'] = {'items': rows}
                     for index, reference in enumerate(similarity_references):
@@ -997,6 +1205,142 @@ def execute_run(config, paths, root, emit):
                 elif name == 'candidate_filter':
                     rows = filter_candidates(input_rows('logo_similarity'), stage)
                     outputs[node_id] = rows; current['output'] = {'items': rows}
+                elif name == 'logo_diff':
+                    detection_rows = input_rows('logo_extract'); comparison_rows = input_rows('logo_compare')
+                    similarity_id = stage.get('inputs', {}).get('logo_similarity', 'logo_similarity')
+                    similarity_rows = outputs.get(similarity_id, [])
+                    ocr_id = stage.get('inputs', {}).get('text_extract', 'text_extract')
+                    ocr_stage = next((item for item in config['stages'] if item['id'] == ocr_id), None)
+                    if ocr_stage is None or ocr_stage.get('model_profile', {}).get('family') != 'paddle_ocr': raise ValueError('logo_diff 문자 검수에는 등록된 PaddleOCR(PP-OCR) 모델이 필요합니다.')
+                    ocr_cache = {}; overlay_saved = 0; ocr_loaded = False
+                    def crop_ocr(path, roi=None):
+                        nonlocal ocr_loaded
+                        key = str(Path(path).resolve()) + (':' + ','.join(map(str, roi)) if roi else '')
+                        if key in ocr_cache: return ocr_cache[key]
+                        if not ocr_loaded:
+                            measure(ocr_stage, 'load', models.load, ocr_stage); ocr_loaded = True
+                        target = path; offset = (0, 0)
+                        if roi:
+                            image = image_of(path); x1, y1, x2, y2 = (int(round(float(value))) for value in roi)
+                            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(image.width, x2), min(image.height, y2)
+                            if x2 <= x1 or y2 <= y1: raise ValueError('logo_diff OCR 영역이 비어 있습니다.')
+                            offset = (x1, y1)
+                            digest = hashlib.sha256(key.encode('utf-8')).hexdigest()[:24]
+                            target = root / f'ocr-{digest}.png'
+                            if not target.is_file(): image.crop((x1, y1, x2, y2)).save(target)
+                        try: result = measure(ocr_stage, 'inference', models.registered.ocr, target)
+                        finally:
+                            if roi: target.unlink(missing_ok=True)
+                        if roi:
+                            result = copy.deepcopy(result)
+                            for word in result.get('ocr_words', []):
+                                if word.get('polygon'):
+                                    word['polygon'] = [[float(point[0]) + offset[0], float(point[1]) + offset[1]] for point in word['polygon']]
+                                if word.get('bbox') and len(word['bbox']) == 4:
+                                    word['bbox'] = [word['bbox'][0] + offset[0], word['bbox'][1] + offset[1], word['bbox'][2] + offset[0], word['bbox'][3] + offset[1]]
+                        ocr_cache[key] = result
+                        return result
+                    monochrome_policy = stage.get('params', {}).get('monochrome_policy', 'review')
+                    def attach_unaligned_color(result, query_path, reference_path, feature=None):
+                        metrics = result.get('metrics') if isinstance(result.get('metrics'), dict) else {}
+                        color = metrics.get('color') or (feature or {}).get('color_evidence') or adapters.logo_color_evidence(query_path, reference_path)
+                        monochrome = bool(color.get('candidate_is_monochrome'))
+                        human_review = monochrome and monochrome_policy == 'review'
+                        override = monochrome and monochrome_policy == 'allow_monochrome'
+                        reasons = list(result.get('reason_codes') or [])
+                        uncertain_reasons = list(result.get('uncertain_reason_codes') or [])
+                        if monochrome and 'COLOR' not in reasons and 'COLOR' not in uncertain_reasons: uncertain_reasons.append('COLOR')
+                        return {**result, 'reason_codes': reasons,
+                            'uncertain_reason_codes': uncertain_reasons,
+                            'metrics': {**metrics, 'thresholds_calibrated': False, 'monochrome_policy': monochrome_policy,
+                                **adapters.LOGO_DIFF_SAFE_REJECT_POLICY,
+                                'safe_reject_thresholds': metrics.get('safe_reject_thresholds') or adapters.LOGO_DIFF_SAFE_REJECT_THRESHOLDS,
+                                'safe_reject_evidence': metrics.get('safe_reject_evidence') or [],
+                                'monochrome_color_override_applied': override, 'alignment_available': False,
+                                'color': {**color, 'human_review_required': human_review}},
+                            'human_review_required': bool(result.get('human_review_required') or human_review or result.get('decision') == 'uncertain'),
+                            'note': (result.get('note') or '') + ' 정렬 근거가 부족해 전후 색상 근거만 표시하며 최종 비교는 보류했습니다.'}
+                    def alignment_hold(query_path, reference_path, feature, reason_code, note):
+                        result = {'decision': 'uncertain', 'reason_codes': [], 'uncertain_reason_codes': [reason_code], 'regions': {}, 'metrics': {},
+                            'human_review_required': True, 'note': note}
+                        for key in ('inliers', 'inlier_ratio', 'inlier_coverage'):
+                            if feature.get(key) is not None: result['metrics'][key] = feature[key]
+                        return attach_unaligned_color(result, query_path, reference_path, feature)
+                    rows = []
+                    for sample_index, sample in enumerate(frames):
+                        meta = {key: value for key, value in sample.items() if key != 'path'}
+                        detected = next((row for row in detection_rows if row.get('index') == sample.get('index')), {})
+                        compared = next((row for row in comparison_rows if row.get('index') == sample.get('index')), {})
+                        similar = next((row for row in similarity_rows if row.get('index') == sample.get('index')), {})
+                        features = {(item.get('logo_index'), item.get('reference_index')): item for item in compared.get('matches', [])}
+                        scores = {(item.get('logo_index'), item.get('reference_index')): item for item in similar.get('matches', [])}
+                        found = detected.get('logos', []); frame_matches = []; logo_decisions = []
+                        for logo in found:
+                            logo_index = logo.get('logo_index', 0); crop_path = root / logo['preview']; ordered = []
+                            for ref_index in range(len(paths['references'])):
+                                score = scores.get((logo_index, ref_index), {})
+                                ordered.append((ref_index, score.get('image_cosine_similarity')))
+                            if similarity_rows:
+                                ordered.sort(key=lambda item: (item[1] is None, -(item[1] or 0), item[0]))
+                            for rank, (ref_index, score) in enumerate(ordered, 1):
+                                feature = features.get((logo_index, ref_index), {})
+                                if logo.get('low_resolution'):
+                                    result = alignment_hold(crop_path, paths['references'][ref_index], feature, 'LOW_RESOLUTION',
+                                        '검출 로고의 짧은 변이가 48px 미만이어서 기하·문자·픽셀 비교를 생략했습니다.')
+                                elif not feature.get('homography') or feature.get('inliers', 0) < LOGO_DIFF_MIN_INLIERS:
+                                    result = alignment_hold(crop_path, paths['references'][ref_index], feature, 'ALIGNMENT_FAILED',
+                                        f'XFeat/RANSAC inlier가 {LOGO_DIFF_MIN_INLIERS}개 미만이어서 비교 가능한 homography를 얻지 못했습니다.')
+                                elif feature.get('inlier_ratio', 0) < LOGO_DIFF_MIN_INLIER_RATIO or min((feature.get('inlier_coverage') or {}).values() or [0]) < LOGO_DIFF_MIN_INLIER_COVERAGE:
+                                    result = alignment_hold(crop_path, paths['references'][ref_index], feature, 'ALIGNMENT_UNCERTAIN',
+                                        '대응점의 비율 또는 공간 분포가 부족해 homography 정렬을 신뢰하기 어렵습니다.')
+                                else:
+                                    wants_preview = rank <= 2 and sample_index < 2 or rank == 1
+                                    preview = root / f'diff-{sample_index}-{logo_index}-{ref_index}.png' if wants_preview and overlay_saved < 32 else None
+                                    result = adapters.logo_diff_pair(crop_path, paths['references'][ref_index], feature.get('homography'),
+                                        candidate_roi=logo.get('bbox_in_crop'),
+                                        monochrome_policy=monochrome_policy,
+                                        ocr_query=crop_ocr(crop_path, logo.get('bbox_in_crop')), ocr_reference=crop_ocr(paths['references'][ref_index]), preview_path=preview,
+                                        include_match_preview=rank <= 2 and sample_index < 2)
+                                    if result.get('decision') == 'uncertain' and not (result.get('metrics') or {}).get('color'):
+                                        result = attach_unaligned_color(result, crop_path, paths['references'][ref_index], feature)
+                                    if result.get('overlay_preview'):
+                                        overlay_saved += 1; prefetch(result['overlay_preview'])
+                                    if result.get('region_overlay_preview'): prefetch(result['region_overlay_preview'])
+                                frame_matches.append({'logo_index': logo_index, 'reference_index': ref_index, 'similarity_rank': rank,
+                                    'image_cosine_similarity': score, 'homography_available': bool(feature.get('homography')),
+                                    'xfeat': {key: feature.get(key) for key in ('decision', 'matches', 'inliers', 'inlier_ratio', 'inlier_coverage', 'homography_direction', 'image_sizes', 'matching_settings')}, **result})
+                            logo_matches = [item for item in frame_matches if item['logo_index'] == logo_index]
+                            logo_decisions.append('match' if any(item['decision'] == 'match' for item in logo_matches) else
+                                'uncertain' if any(item['decision'] == 'uncertain' for item in logo_matches) else 'mismatch')
+                        frame_decision = 'match' if 'match' in logo_decisions else 'uncertain' if not found or 'uncertain' in logo_decisions else 'mismatch'
+                        rows.append({**meta, 'detected_logos': len(found), 'frame_decision': frame_decision,
+                            'matches': frame_matches, 'reason_codes': ['NO_LOGO'] if not found else []})
+                        current['output'] = {'items': rows}; publish()
+                    sampling = config.get('sampling', {}); deltas = [float(rows[i].get('timestamp_seconds', i)) - float(rows[i - 1].get('timestamp_seconds', i - 1)) for i in range(1, len(rows))]
+                    expected_gap = float(sampling.get('interval', 1)) if sampling.get('unit') == 'seconds' else (sorted(deltas)[len(deltas) // 2] if deltas else 0)
+                    gap = max(0.01, expected_gap)
+                    confirmed = []
+                    for index in range(1, len(rows)):
+                        first, second = rows[index - 1], rows[index]
+                        first_time = float(first.get('timestamp_seconds', index - 1)); second_time = float(second.get('timestamp_seconds', index))
+                        first_refs = {item['reference_index'] for item in first.get('matches', []) if item['decision'] == 'match'}
+                        second_refs = {item['reference_index'] for item in second.get('matches', []) if item['decision'] == 'match'}
+                        if first['frame_decision'] == second['frame_decision'] == 'match' and first_refs & second_refs and second_time - first_time <= gap * 1.5:
+                            confirmed.append([first.get('index'), second.get('index')])
+                    if confirmed:
+                        video_verdict = {'decision': 'match', 'confirmed': True, 'evidence_frames': sorted(set(index for pair in confirmed for index in pair))[:20], 'reason': '2개 연속 분석 프레임에서 같은 기준 로고가 일치했습니다.'}
+                    elif rows and all(row['frame_decision'] == 'mismatch' for row in rows):
+                        video_verdict = {'decision': 'mismatch', 'confirmed': True, 'evidence_frames': [row.get('index') for row in rows[:20]], 'reason': '분석한 모든 프레임에서 기준 로고와 구조 차이가 확인됐습니다.'}
+                    else:
+                        evidence_frames = [row.get('index') for row in rows if row['frame_decision'] != 'uncertain' or row.get('reason_codes') or any(
+                            match.get('decision') == 'uncertain' or match.get('human_review_required') or match.get('reason_codes') for match in row.get('matches', []))][:20]
+                        video_verdict = {'decision': 'uncertain', 'confirmed': False, 'evidence_frames': evidence_frames,
+                                         'reason': '연속 일치 프레임이 부족하거나 해상도·정렬·OCR 근거가 불충분합니다.'}
+                    current['output'] = {'items': rows, 'video_verdict': video_verdict}
+                    if ocr_loaded and ocr_stage.get('model_profile'):
+                        current['model_execution'] = {'registration_id': ocr_stage['model_profile']['id'],
+                            'fingerprint': ocr_stage['model_profile']['fingerprint'], 'versions': catalog.installed_versions()}
+                    job['video_verdict'] = video_verdict; outputs[node_id] = rows
                 elif name in catalog.EXTRA_STAGES and name not in PAIR_STAGES:
                     rows = adapters.execute_extra(stage, config, paths, root, frames, job, outputs, models, measure, SimpleNamespace(**globals()))
                     outputs[node_id] = rows; current['output'] = {'items': rows}
@@ -1004,7 +1348,8 @@ def execute_run(config, paths, root, emit):
                     if name in catalog.GENERAL: models.close()
                     filter_id = stage.get('inputs', {}).get('candidate_filter', 'candidate_filter' if 'kind' not in stage else None)
                     filtered = outputs.get(filter_id) if name in PAIR_STAGES and name != 'logo_similarity' else None
-                    if name not in catalog.GENERAL and (filtered is None or any(row['matches'] for row in filtered)): measure(stage, 'load', models.load, stage)
+                    active_crops = [crop for crop in crops if not (logo_diff_active and crop[2].get('low_resolution'))]
+                    if name not in catalog.GENERAL and not defer_ocr_stage and (name not in PAIR_STAGES or active_crops) and (filtered is None or any(row['matches'] for row in filtered)): measure(stage, 'load', models.load, stage)
                     if name == 'text_generate':
                         evidence = {'requirements': config.get('requirements', ''), 'inputs': {source: outputs.get(source, []) for source in dependencies[node_id]}}
                         evidence = json.dumps(evidence, ensure_ascii=False)
@@ -1021,32 +1366,63 @@ def execute_run(config, paths, root, emit):
                                 if config.get('purpose') == 'sample': break
                     else:
                         samples = frames if config['flow'] == 'video' else [{**job['media'], 'path': paths['media']}]
+                        detections = []; dropped = None
+                        if name == 'logo_extract':
+                            for sample_index, sample in enumerate(samples):
+                                current['detail'] = f'로고 후보 탐지 {sample_index + 1} / {len(samples)}'; publish()
+                                detections.append(measure(stage, 'inference', run_model, models, stage, images=[sample['path']])['logos'])
+                            if detection_filter_active(stage, config, paths):
+                                filter_stage = {'model_id': DETECTION_FILTER_MODEL}
+                                current['detail'] = 'SigLIP2로 기준 로고와 닮은 후보만 남기고 있습니다.'; publish()
+                                measure(filter_stage, 'load', models.load, filter_stage)
+                                detections, dropped = measure(filter_stage, 'inference', filter_detections, models, samples, detections, paths['references'])
+                                current['detection_filter'] = {'model_id': DETECTION_FILTER_MODEL, 'crop_padding': DETECTION_FILTER_PADDING, 'accept': DETECTION_FILTER_ACCEPT,
+                                    'small_side': LOGO_MIN_SIDE, 'small_accept': DETECTION_FILTER_SMALL_ACCEPT, 'small_review': DETECTION_FILTER_SMALL_REVIEW,
+                                    'small_reference_sides': list(DETECTION_FILTER_REFERENCE_SIDES), 'dropped': sum(dropped),
+                                    'note': '1080p 이하 영상 기준으로 정한 값입니다. 4K의 60px 미만 로고는 놓칠 수 있습니다.'}
+                            current.pop('detail', None)
                         for sample_index, sample in enumerate(samples):
                             path = sample['path']; meta = {k: v for k, v in sample.items() if k != 'path'}
                             if name == 'logo_extract':
                                 image = image_of(path); found = []
-                                for logo_index, logo in enumerate(measure(stage, 'inference', run_model, models, stage, images=[path])['logos']):
+                                for logo_index, logo in enumerate(detections[sample_index]):
                                     x1, y1, x2, y2 = logo['bbox']; x1, y1 = max(0, int(x1)), max(0, int(y1)); x2, y2 = min(image.width, int(x2)), min(image.height, int(y2))
                                     if x2 <= x1 or y2 <= y1: raise ValueError('로고 경계 상자가 이미지 범위를 벗어났습니다.')
+                                    raw_width, raw_height = x2 - x1, y2 - y1
+                                    padding = LOGO_BBOX_PADDING if logo_diff_active else 0
+                                    pad_x, pad_y = round(raw_width * padding), round(raw_height * padding)
+                                    cx1, cy1 = max(0, x1 - pad_x), max(0, y1 - pad_y); cx2, cy2 = min(image.width, x2 + pad_x), min(image.height, y2 + pad_y)
                                     prefix = '' if node_id == name else node_id + '-'
-                                    target = root / f'logo-{prefix}{sample_index}-{logo_index}.png'; image.crop((x1, y1, x2, y2)).save(target)
+                                    target = root / f'logo-{prefix}{sample_index}-{logo_index}.png'; image.crop((cx1, cy1, cx2, cy2)).save(target)
                                     prefetch(target.name)
-                                    crops.append((sample_index, target)); found.append({**logo, 'logo_index': logo_index, 'preview': target.name, 'bbox': [x1, y1, x2, y2]})
-                                rows.append({**meta, 'logos': found})
+                                    low_resolution = min(raw_width, raw_height) < LOGO_MIN_SIDE
+                                    crop_info = {**logo, 'logo_index': logo_index, 'preview': target.name, 'bbox': [x1, y1, x2, y2],
+                                        'bbox_in_crop': [x1 - cx1, y1 - cy1, x2 - cx1, y2 - cy1],
+                                        'crop_bbox': [cx1, cy1, cx2, cy2], 'padding_pixels': [x1 - cx1, y1 - cy1, cx2 - x2, cy2 - y2],
+                                        'crop_size': [cx2 - cx1, cy2 - cy1], 'logo_size': [raw_width, raw_height],
+                                        'low_resolution': low_resolution, 'resolution_status': 'uncertain' if low_resolution else 'sufficient'}
+                                    crops.append((sample_index, target, crop_info)); found.append(crop_info)
+                                rows.append({**meta, 'logos': found, **({'filtered_out': dropped[sample_index]} if dropped is not None else {})})
                             elif name in PAIR_STAGES:
                                 matches = []
                                 candidates = None if filtered is None else {(match['logo_index'], match['reference_index']): match for match in filtered[sample_index]['matches']}
-                                for frame_index, crop in crops:
+                                for frame_index, crop, logo_meta in crops:
                                     if frame_index != sample_index: continue
                                     for ref_index, reference in enumerate(paths['references']):
-                                        logo_index = int(crop.stem.rsplit('-', 1)[1]); key = (logo_index, ref_index)
+                                        logo_index = int(logo_meta['logo_index']); key = (logo_index, ref_index)
                                         if candidates is not None and key not in candidates: continue
-                                        timing_stage = stage if stage.get('model_id') else {**stage, 'model_id': 'processing/' + name}
-                                        result = measure(timing_stage, 'inference', image_similarity, models, [crop, reference]) if name == 'logo_similarity' else measure(timing_stage, 'inference', run_model, models, stage,
-                                            images=[crop, reference], require_vision=True)
+                                        if logo_diff_active and logo_meta.get('low_resolution'):
+                                            result = {'decision': 'uncertain', 'reason_codes': ['LOW_RESOLUTION'], 'image_cosine_similarity': None} if name == 'logo_similarity' else {'decision': 'uncertain', 'reason_codes': ['LOW_RESOLUTION'], 'note': '로고 해상도가 하한보다 작아 특징점 추론을 생략했습니다.'}
+                                        else:
+                                            timing_stage = stage if stage.get('model_id') else {**stage, 'model_id': 'processing/' + name}
+                                            result = measure(timing_stage, 'inference', image_similarity, models, [crop, reference]) if name == 'logo_similarity' else measure(timing_stage, 'inference', run_model, models, stage,
+                                                images=[crop, reference], require_vision=True)
                                         matches.append({**(candidates.get(key, {}) if candidates is not None else {}), 'logo_index': logo_index, 'reference_index': ref_index, **result})
-                                rows.append({**meta, 'matches': matches, 'detected_logos': sum(i == sample_index for i, _ in crops),
+                                rows.append({**meta, 'matches': matches, 'detected_logos': sum(i == sample_index for i, _, _ in crops),
                                     **({'candidate_count': filtered[sample_index]['candidate_count'], 'selected_count': len(matches), 'filter': filtered[sample_index].get('filter'), 'excluded_matches': filtered[sample_index].get('excluded_matches', []), 'note': '필터를 통과한 후보만 대조했습니다.'} if filtered is not None else {})})
+                            elif name == 'text_extract' and defer_ocr_stage:
+                                skip_stage_model = True
+                                rows.append({**meta, 'text': '', 'note': '연결된 PaddleOCR는 전체 프레임 대신 OWLv2가 탐지한 로고 경계 상자와 기준 로고에 실행합니다.'})
                             elif name in ('text_extract', 'visual_extract'):
                                 rows.append({**meta, **measure(stage, 'inference', run_model, models, stage, images=[path], require_vision=True)})
                             else:
@@ -1057,18 +1433,19 @@ def execute_run(config, paths, root, emit):
                                 if len(evidence) > 100_000: raise ValueError('대조할 조건이 너무 깁니다. 문서를 나누어 실행해 주세요.')
                                 rows.append({**meta, **measure(stage, 'inference', run_model, models, stage, evidence=evidence, images=[path] if name == 'visual_compare' and models.kind == 'vision' else [])})
                             current['output'] = {'items': rows}; publish()
-                    if name == 'logo_compare' and stage.get('image_similarity') and crops:
+                    if name == 'logo_compare' and stage.get('image_similarity') and any(not (logo_diff_active and meta.get('low_resolution')) for _, _, meta in crops):
                         similarity_stage = {'model_id': stage.get('image_similarity_model', SIGLIP2)}
                         current['detail'] = f'{similarity_stage["model_id"]}로 로고 이미지 유사도를 계산하고 있습니다.'; publish()
                         measure(similarity_stage, 'load', models.load, similarity_stage)
                         for sample_index, row in enumerate(rows):
                             for match in row['matches']:
-                                crop = next(path for index, path in crops if index == sample_index and int(path.stem.rsplit('-', 1)[1]) == match['logo_index'])
+                                crop, logo_meta = next((path, meta) for index, path, meta in crops if index == sample_index and meta['logo_index'] == match['logo_index'])
+                                if logo_diff_active and logo_meta.get('low_resolution'): continue
                                 match.update(measure(similarity_stage, 'inference', image_similarity, models, [crop, paths['references'][match['reference_index']]]))
                             publish()
                         current.pop('detail', None)
                     outputs[node_id] = rows; current['output'] = {'items': rows}
-                if stage and stage.get('model_profile'):
+                if stage and stage.get('model_profile') and not skip_stage_model:
                     current['model_execution'] = {'registration_id': stage['model_profile']['id'], 'fingerprint': stage['model_profile']['fingerprint'], 'versions': catalog.installed_versions()}
                 current['status'] = 'completed'; current['elapsed_seconds'] = round(time.monotonic() - began, 3); publish()
             except Exception as error:

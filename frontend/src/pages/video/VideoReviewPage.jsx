@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/AuthProvider.jsx';
 import { Brand } from '../../components/Brand.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { LogoFlowCard, LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
 import { evidenceBoxStyle, parseRequirements } from '../../workflow.js';
 import {
   criteriaPayload, diffChars, formatTime, isTerminal, mismatchLabels, reviewerLabels, roleLabels, ruleLabels,
@@ -59,9 +60,11 @@ function UploadCard({ status, onSubmitted }) {
   const [projectName, setProjectName] = useState('숏폼 검수');
   const [requirements, setRequirements] = useState('');
   const [ad, setAd] = useState({ kind: 'endorsement', celebrity_exposure: false, title: '', caption: '', platform: '' });
+  const [logos, setLogos] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const input = useRef(null);
+  const logoStatus = useLogoStatus();
   const limits = status?.limits;
   const criteria = useMemo(() => parseRequirements(requirements), [requirements]);
 
@@ -87,8 +90,14 @@ function UploadCard({ status, onSubmitted }) {
       form.append('project_name', projectName.trim() || '숏폼 검수');
       form.append('disclosure', JSON.stringify(ad));
       const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form });
+      // 원본 로고를 올렸으면 같은 영상으로 영상 로고 작업도 만든다. 실패해도 동영상 검수는 그대로 진행한다.
+      let logoError = '';
+      if (logos.length) {
+        try { await submitLogoJob({ video: file, logos, title: projectName.trim() || '숏폼 검수', reviewId: created.id }); setLogos([]); }
+        catch (failure) { logoError = `동영상 검수는 접수했지만 로고 검수를 접수하지 못했습니다: ${failure.message}`; }
+      }
       setFile(null); if (input.current) input.current.value = '';
-      onSubmitted(created.id);
+      onSubmitted(created.id, logoError);
     } catch (failure) { setError(failure.message); } finally { setBusy(false); }
   }
 
@@ -114,6 +123,7 @@ function UploadCard({ status, onSubmitted }) {
           <label className="check"><input type="checkbox" checked={ad.kind === 'self'} onChange={event => field('kind', event.target.checked ? 'self' : 'endorsement')} />자사·자체 광고 (표시 의무 없어 검수 제외)</label>
           <label className="check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />PPL/협찬</label>
         </fieldset>
+        <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
       </div>
       {status?.sampling && <p className="help">{status.sampling}. CPU에서는 프레임 1장에 수 초~20초 걸립니다.</p>}
       <ErrorMessage message={error} />
@@ -269,6 +279,7 @@ export default function VideoReviewPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const id = params.get('id');
+  const [logoSubmissionWarning, setLogoSubmissionWarning] = useState(null);
   const { status, jobs, refresh } = useVideoStatus();
   const { job, error } = useVideoJob(id, refresh);
   const legacy = job && job.status === 'completed' && !job.coverage;
@@ -285,7 +296,10 @@ export default function VideoReviewPage() {
       <div className="page-heading"><div className="eyebrow">SHORT-FORM · 시연</div><h1 tabIndex="-1" id="page-title">숏폼 동영상 검수</h1>
         <p>표본 시각마다 프레임을 읽어 자막 트랙으로 묶고, 확정한 기준을 영상당 한 번 판정합니다. 광고·협찬 표시는 따로 판정합니다. 결과는 이 서버의 실행 폴더에만 저장됩니다.</p></div>
       <div className="video-top-grid">
-        <UploadCard status={status} onSubmitted={value => { setParams({ id: value }); refresh(); }} />
+        <UploadCard status={status} onSubmitted={(value, warning) => {
+          setLogoSubmissionWarning(warning ? { id: value, message: warning } : null);
+          setParams({ id: value }); refresh();
+        }} />
         <div className="form-card">
           <div className="card-heading"><h2>최근 동영상 검수</h2><button className="text-btn" onClick={refresh}>새로 고침</button></div>
           {jobs.length ? <ul className="video-jobs">{jobs.map(item => <li key={item.id}><button className={item.id === id ? 'current' : ''} onClick={() => setParams({ id: item.id })}>
@@ -297,6 +311,8 @@ export default function VideoReviewPage() {
       </div>
       <ErrorMessage message={error} />
       {legacy && <ErrorMessage message="계획 문서 반영 전에 만든 결과라 새 화면으로 보여 줄 수 없습니다. 같은 영상을 다시 검수해 주세요." />}
+      {logoSubmissionWarning?.id === id && <ErrorMessage message={logoSubmissionWarning.message} />}
+      {id && <LogoFlowCard key={id} reviewId={id} />}
       {job && !legacy && (job.status === 'completed' ? <Results key={job.id} job={job} /> : <Progress job={job} />)}
     </main>
   </div>;
