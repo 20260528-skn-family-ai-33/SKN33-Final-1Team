@@ -1,0 +1,55 @@
+{
+  "new_images": 22,
+  "new_groups": 18,
+  "new_known_cells": 170,
+  "new_unknown_cells": 6,
+  "preserved_added_images": 327,
+  "preserved_changed_train_cells": 32,
+  "expected_added_images": 349,
+  "expected_train_images": 462,
+  "expected_dev_images": 37,
+  "label_support": {
+    "person": {
+      "0": 7,
+      "1": 15,
+      "?": 0
+    },
+    "food_drink": {
+      "0": 15,
+      "1": 4,
+      "?": 3
+    },
+    "animal": {
+      "0": 11,
+      "1": 10,
+      "?": 1
+    },
+    "plant_flower": {
+      "0": 12,
+      "1": 9,
+      "?": 1
+    },
+    "vehicle": {
+      "0": 21,
+      "1": 1,
+      "?": 0
+    },
+    "building_structure": {
+      "0": 16,
+      "1": 5,
+      "?": 1
+    },
+    "musical_instrument": {
+      "0": 13,
+      "1": 9,
+      "?": 0
+    },
+    "fireworks": {
+      "0": 22,
+      "1": 0,
+      "?": 0
+    }
+  },
+  "training_executed": false,
+  "model_inference_executed": false
+}

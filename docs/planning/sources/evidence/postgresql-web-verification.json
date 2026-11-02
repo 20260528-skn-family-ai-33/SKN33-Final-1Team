@@ -1,0 +1,56 @@
+{
+  "verified_date": "2026-10-30",
+  "scope": "local real OCR storage/query; not model accuracy or human final approval",
+  "live_reviews": [
+    {
+      "review_id": "96540761-c3fb-4db6-a1ff-fbce3e264105",
+      "project_id": "5bc8212e-9c5c-4b3d-9b44-872945ed0485",
+      "status": "completed",
+      "origin_kind": "service_execution",
+      "measured": {
+        "criteria": 7,
+        "results": 7,
+        "ocr_tokens": 18,
+        "evidence": 7
+      },
+      "source_status_counts": {
+        "pass": 6,
+        "review": 1
+      },
+      "source_results_equal": true,
+      "ocr_jsonb_equal": true,
+      "service_manifest_verified": true
+    },
+    {
+      "review_id": "32caf947-822f-48ba-9e2e-6d355a2942b7",
+      "project_id": "3f351d7d-2d1d-4c2c-ad74-210b727476fb",
+      "status": "completed",
+      "origin_kind": "service_execution",
+      "measured": {
+        "criteria": 7,
+        "results": 7,
+        "ocr_tokens": 18,
+        "evidence": 7
+      },
+      "source_status_counts": {
+        "pass": 6,
+        "review": 1
+      },
+      "source_results_equal": true,
+      "ocr_jsonb_equal": true,
+      "service_manifest_verified": true
+    }
+  ],
+  "live_totals": {
+    "criteria": 14,
+    "results": 14,
+    "ocr_tokens": 36,
+    "evidence": 14
+  },
+  "original_history_files_preserved": 472,
+  "old_db_rows_preserved": true,
+  "json_copy_absent_read_verified": true,
+  "server_restart_read_verified": true,
+  "registered_files_verified": 307,
+  "source_verification_sha256": "c763c4032c416971badaf2af55a2784f1755656a280928e624640a99ad01dde6"
+}

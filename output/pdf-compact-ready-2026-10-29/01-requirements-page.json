@@ -1,0 +1,2559 @@
+{
+  "document": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/.runtime/pdf-input-smoke/requirements-page.pdf",
+  "sha256": "bbb064853dfaf35426a93e3f5e7b7d046857c24ab02bfac850f608cb685ebaa4",
+  "status": "success",
+  "result": {
+    "requirements": "행사명: 김천김밥축제 2026\n기간: 2026.10.23 금요일 ~ 2026.10.25 일요일\n장소: 김천시 직지문화공원\n장소: 사명대사공원\n장소: 친환경생태공원 일원\n상단 표지판: 김밥특별시\n도시 로고 표기: 김천시 GIMCHEON CITY 도시 로고\n중앙 건물의 안내 문: 김밥특별시 방문을 환영합니다\n표지판의 작은 영문: 상단 녹색 표지판 안의 작은 영문 보조 문구",
+    "conditions": [
+      {
+        "text": "행사명: 김천김밥축제 2026",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사명",
+        "requirement": "김천김밥축제 2026",
+        "level": "필수",
+        "inspection": "글자와 숫자가 일치해야 함. 줄바꿈·공백·장식 효과는 허용하되 오탈 자·연도 변경은 불가.",
+        "source_id": "p1-s6",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s6",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R01",
+        "source": "R01 필수 | 행사명과연도 | 김천김밥축제 2026 | 글자와 숫자가 일치해야 함 줄바꿈·공백·장식 효과는 허용하되 오탈 자:연도 변경은 불가",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "기간: 2026.10.23 금요일 ~ 2026.10.25 일요일",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사일정",
+        "requirement": "2026.10.23 금요일 ~ 2026.10.25 일요일",
+        "level": "필수",
+        "inspection": "날짜를 정규화해 비교하고 요일을 계산하여 확인. 금·일, (금)·(일) 등 축약 표기 허용.",
+        "source_id": "p1-s7",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s7",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R02",
+        "source": "R02 필수 | 행사일정 | 2026.10.23금요일 ~2026.10.25.일요일 | 날짜를정규화해 비교하고요일을계산 하여확인 금·일, (금)·(일) 등축약 표기허용",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장소: 김천시 직지문화공원",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사장소",
+        "requirement": "김천시 직지문화공원",
+        "level": "필수",
+        "inspection": "세 장소명과“일원”이 모두 있어야 함. 구분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "source_id": "p1-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R03",
+        "source": "R03 필수 | 행사장소 | 김천시 직지문화공원 사명대사공원 친환경생태공원 일원 | 세 장소명과“일원\"이 모두 있어야 함.구 분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장소: 사명대사공원",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사장소",
+        "requirement": "사명대사공원",
+        "level": "필수",
+        "inspection": "세 장소명과“일원”이 모두 있어야 함. 구분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "source_id": "p1-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R03",
+        "source": "R03 필수 | 행사장소 | 김천시 직지문화공원 사명대사공원 친환경생태공원 일원 | 세 장소명과“일원\"이 모두 있어야 함.구 분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "장소: 친환경생태공원 일원",
+        "type": "information",
+        "model_type": "information",
+        "label": "행사장소",
+        "requirement": "친환경생태공원 일원",
+        "level": "필수",
+        "inspection": "세 장소명과“일원”이 모두 있어야 함. 구분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "source_id": "p1-s8",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s8",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R03",
+        "source": "R03 필수 | 행사장소 | 김천시 직지문화공원 사명대사공원 친환경생태공원 일원 | 세 장소명과“일원\"이 모두 있어야 함.구 분 쉽표·공백·줄바꿈의 차이는 허용.",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "상단 표지판: 김밥특별시",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "상단 표지판",
+        "requirement": "김밥특별시",
+        "level": "필수",
+        "inspection": "상단 녹색 도로 표지판 형태 안에 표기. 문구 일치와 위치·형태를 함께 확인.",
+        "source_id": "p1-s9",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s9",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R04",
+        "source": "R04 필수 | 상단표지판 | 김밥특별시 | 상단 녹색 도로 표지판 형태 안에 표기. 문구 일치와 위치·형태를 함께확인",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "도시 로고 표기: 김천시 GIMCHEON CITY 도시 로고",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "도시 로고 표기",
+        "requirement": "김천시 GIMCHEON CITY 도시 로고",
+        "level": "필수",
+        "inspection": "좌측 상단 배치. 실제 사용할 승인 로고 파일과 이용 근거는 별도 제공·확인 필요.",
+        "source_id": "p1-s10",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s10",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R05",
+        "source": "R05 필수 | 도시 로고 표기 | 김천시 GIMCHEON CITY 도시 로고 | 좌측 상단배치. 실제 사용할 승인로고 파일과 이용 근거는 별도 제공·확인 필 요.",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "중앙 건물의 안내 문: 김밥특별시 방문을 환영합니다",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "중앙 건물의 안내 문",
+        "requirement": "김밥특별시 방문을 환영합니다",
+        "level": "필수",
+        "inspection": "중앙 김밥 건물의 안내문 영역에 두 문구를 표기. 문구 누락과 가독성 확인.",
+        "source_id": "p1-s11",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 1.0,
+          "model_source_id": "p1-s11",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R06",
+        "source": "R06 필수 | 중앙 건물의 안내 문 | 김밥특별시 방문을 환영합니다 | 중앙 김밥 건물의 안내문 영역에 두 문구 를 표기 문구 누락과 가독성 확인",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      },
+      {
+        "text": "표지판의 작은 영문: 상단 녹색 표지판 안의 작은 영문 보조 문구",
+        "type": "visual",
+        "model_type": "visual",
+        "label": "표지판의 작은 영문",
+        "requirement": "상단 녹색 표지판 안의 작은 영문 보조 문구",
+        "level": "권장",
+        "inspection": "정확한 영문 원문은 미확정이며 문자열 불일치를 필수 불합격 사유로 삼지 않음.",
+        "source_id": "p1-s12",
+        "source_alignment": {
+          "method": "character_bigram_overlap",
+          "overlap_ratio": 0.952,
+          "model_source_id": "p1-s12",
+          "relinked": false
+        },
+        "approval_status": "pending",
+        "requirement_id": "R07",
+        "source": "R07 권장 | 표지판의 작은 영 문 | 상단 녹색 표지판 안의 작은 영문 보조 문구 | 참고 이미지의 구성 요소로 유지 권장. 정활한 영문 원문은 미활정이무로 문자 열 불일치를 필수 불합격 사유로 삼지않 음.",
+        "page": 1,
+        "source_kind": "pdf_page+paddleocr"
+      }
+    ],
+    "page_count": 1,
+    "scanned_pages": [],
+    "model": "qwen3.5:4b",
+    "input_mode": "pdf_page_images+paddleocr_text",
+    "source_selection": {
+      "mode": "numbered_requirement_rows",
+      "extraction_pages": [
+        1
+      ],
+      "requirement_ids": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07"
+      ]
+    },
+    "timing": {
+      "ocr_seconds": 17.702,
+      "llm_seconds": 22.966,
+      "total_seconds": 40.668
+    },
+    "vision": {
+      "max_edge": 1800,
+      "pages_per_call": 1,
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ]
+        }
+      ]
+    },
+    "ocr": {
+      "engine": "paddleocr",
+      "pipeline": "paddle_full_v1",
+      "coordinate_space": "rendered_page_pixels",
+      "pages": [
+        {
+          "page": 1,
+          "dimensions": [
+            1191,
+            1684
+          ],
+          "records": [
+            {
+              "id": "paddle_000",
+              "text": "CC-GC-2026-001·v0.1·검토용 초안",
+              "confidence": 0.9772933125495911,
+              "bbox_xyxy": [
+                803,
+                50,
+                1087,
+                68
+              ],
+              "polygon": [
+                [
+                  803,
+                  50
+                ],
+                [
+                  1087,
+                  50
+                ],
+                [
+                  1087,
+                  68
+                ],
+                [
+                  803,
+                  68
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_001",
+              "text": "별지1 포스터 요구사항",
+              "confidence": 0.9752026200294495,
+              "bbox_xyxy": [
+                104,
+                139,
+                413,
+                167
+              ],
+              "polygon": [
+                [
+                  104,
+                  139
+                ],
+                [
+                  413,
+                  139
+                ],
+                [
+                  413,
+                  167
+                ],
+                [
+                  104,
+                  167
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_002",
+              "text": "기준ID REQ-GC-001/버전 v0.1/상태 제안.아래 요구사항은 R타F-01을 관찰해 만든 초안입니다.행사 주최 측",
+              "confidence": 0.9177134037017822,
+              "bbox_xyxy": [
+                101,
+                199,
+                1083,
+                217
+              ],
+              "polygon": [
+                [
+                  101,
+                  199
+                ],
+                [
+                  1083,
+                  199
+                ],
+                [
+                  1083,
+                  217
+                ],
+                [
+                  101,
+                  217
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_003",
+              "text": "의 공식 공지나 발주 승인자료로 검증된 값은 아닙니다",
+              "confidence": 0.9443128108978271,
+              "bbox_xyxy": [
+                102,
+                228,
+                590,
+                246
+              ],
+              "polygon": [
+                [
+                  102,
+                  228
+                ],
+                [
+                  590,
+                  228
+                ],
+                [
+                  590,
+                  246
+                ],
+                [
+                  102,
+                  246
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_004",
+              "text": "1 필수 문구와 표기",
+              "confidence": 0.9437875747680664,
+              "bbox_xyxy": [
+                101,
+                271,
+                296,
+                293
+              ],
+              "polygon": [
+                [
+                  101,
+                  271
+                ],
+                [
+                  296,
+                  271
+                ],
+                [
+                  296,
+                  293
+                ],
+                [
+                  101,
+                  293
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_005",
+              "text": "ID/수준",
+              "confidence": 0.9074986577033997,
+              "bbox_xyxy": [
+                105,
+                316,
+                190,
+                339
+              ],
+              "polygon": [
+                [
+                  105,
+                  316
+                ],
+                [
+                  190,
+                  316
+                ],
+                [
+                  190,
+                  339
+                ],
+                [
+                  105,
+                  339
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_006",
+              "text": "항목",
+              "confidence": 0.9998443126678467,
+              "bbox_xyxy": [
+                214,
+                314,
+                262,
+                339
+              ],
+              "polygon": [
+                [
+                  214,
+                  314
+                ],
+                [
+                  262,
+                  314
+                ],
+                [
+                  262,
+                  339
+                ],
+                [
+                  214,
+                  339
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_007",
+              "text": "요구 내용",
+              "confidence": 0.9971888661384583,
+              "bbox_xyxy": [
+                385,
+                316,
+                476,
+                338
+              ],
+              "polygon": [
+                [
+                  385,
+                  316
+                ],
+                [
+                  476,
+                  316
+                ],
+                [
+                  476,
+                  338
+                ],
+                [
+                  385,
+                  338
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_008",
+              "text": "판단 기준",
+              "confidence": 0.9234012365341187,
+              "bbox_xyxy": [
+                718,
+                313,
+                811,
+                341
+              ],
+              "polygon": [
+                [
+                  718,
+                  313
+                ],
+                [
+                  811,
+                  313
+                ],
+                [
+                  811,
+                  341
+                ],
+                [
+                  718,
+                  341
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_009",
+              "text": "글자와 숫자가 일치해야 함",
+              "confidence": 0.9138501286506653,
+              "bbox_xyxy": [
+                722,
+                363,
+                965,
+                382
+              ],
+              "polygon": [
+                [
+                  722,
+                  363
+                ],
+                [
+                  965,
+                  363
+                ],
+                [
+                  965,
+                  382
+                ],
+                [
+                  722,
+                  382
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_010",
+              "text": "R01",
+              "confidence": 0.9925100207328796,
+              "bbox_xyxy": [
+                105,
+                374,
+                152,
+                399
+              ],
+              "polygon": [
+                [
+                  105,
+                  374
+                ],
+                [
+                  152,
+                  374
+                ],
+                [
+                  152,
+                  399
+                ],
+                [
+                  105,
+                  399
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_011",
+              "text": "김천김밥축제",
+              "confidence": 0.9989607930183411,
+              "bbox_xyxy": [
+                387,
+                374,
+                510,
+                396
+              ],
+              "polygon": [
+                [
+                  387,
+                  374
+                ],
+                [
+                  510,
+                  374
+                ],
+                [
+                  510,
+                  396
+                ],
+                [
+                  387,
+                  396
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_012",
+              "text": "행사명과연도",
+              "confidence": 0.9990232586860657,
+              "bbox_xyxy": [
+                217,
+                385,
+                346,
+                411
+              ],
+              "polygon": [
+                [
+                  217,
+                  387
+                ],
+                [
+                  345,
+                  385
+                ],
+                [
+                  346,
+                  409
+                ],
+                [
+                  217,
+                  411
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_013",
+              "text": "필수",
+              "confidence": 0.9989283084869385,
+              "bbox_xyxy": [
+                103,
+                394,
+                156,
+                429
+              ],
+              "polygon": [
+                [
+                  103,
+                  398
+                ],
+                [
+                  154,
+                  394
+                ],
+                [
+                  156,
+                  426
+                ],
+                [
+                  105,
+                  429
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_014",
+              "text": "줄바꿈·공백·장식 효과는 허용하되 오탈",
+              "confidence": 0.9570296406745911,
+              "bbox_xyxy": [
+                722,
+                391,
+                1069,
+                409
+              ],
+              "polygon": [
+                [
+                  722,
+                  391
+                ],
+                [
+                  1069,
+                  391
+                ],
+                [
+                  1069,
+                  409
+                ],
+                [
+                  722,
+                  409
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_015",
+              "text": "2026",
+              "confidence": 0.9993070363998413,
+              "bbox_xyxy": [
+                381,
+                398,
+                438,
+                427
+              ],
+              "polygon": [
+                [
+                  381,
+                  402
+                ],
+                [
+                  436,
+                  398
+                ],
+                [
+                  438,
+                  423
+                ],
+                [
+                  383,
+                  427
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_016",
+              "text": "자:연도 변경은 불가",
+              "confidence": 0.9379012584686279,
+              "bbox_xyxy": [
+                720,
+                416,
+                904,
+                434
+              ],
+              "polygon": [
+                [
+                  720,
+                  416
+                ],
+                [
+                  904,
+                  416
+                ],
+                [
+                  904,
+                  434
+                ],
+                [
+                  720,
+                  434
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_017",
+              "text": "날짜를정규화해 비교하고요일을계산",
+              "confidence": 0.9577829837799072,
+              "bbox_xyxy": [
+                720,
+                460,
+                1066,
+                483
+              ],
+              "polygon": [
+                [
+                  720,
+                  460
+                ],
+                [
+                  1066,
+                  460
+                ],
+                [
+                  1066,
+                  483
+                ],
+                [
+                  720,
+                  483
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_018",
+              "text": "R02",
+              "confidence": 0.9965988993644714,
+              "bbox_xyxy": [
+                106,
+                472,
+                153,
+                497
+              ],
+              "polygon": [
+                [
+                  106,
+                  472
+                ],
+                [
+                  153,
+                  472
+                ],
+                [
+                  153,
+                  497
+                ],
+                [
+                  106,
+                  497
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_019",
+              "text": "2026.10.23금요일",
+              "confidence": 0.9189496636390686,
+              "bbox_xyxy": [
+                387,
+                475,
+                572,
+                493
+              ],
+              "polygon": [
+                [
+                  387,
+                  475
+                ],
+                [
+                  572,
+                  475
+                ],
+                [
+                  572,
+                  493
+                ],
+                [
+                  387,
+                  493
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_020",
+              "text": "필수",
+              "confidence": 0.9986028671264648,
+              "bbox_xyxy": [
+                106,
+                496,
+                156,
+                526
+              ],
+              "polygon": [
+                [
+                  106,
+                  496
+                ],
+                [
+                  156,
+                  496
+                ],
+                [
+                  156,
+                  526
+                ],
+                [
+                  106,
+                  526
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_021",
+              "text": "행사일정",
+              "confidence": 0.9971789717674255,
+              "bbox_xyxy": [
+                217,
+                487,
+                306,
+                509
+              ],
+              "polygon": [
+                [
+                  217,
+                  487
+                ],
+                [
+                  306,
+                  487
+                ],
+                [
+                  306,
+                  509
+                ],
+                [
+                  217,
+                  509
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_022",
+              "text": "하여확인",
+              "confidence": 0.9977415204048157,
+              "bbox_xyxy": [
+                720,
+                487,
+                816,
+                509
+              ],
+              "polygon": [
+                [
+                  720,
+                  487
+                ],
+                [
+                  816,
+                  487
+                ],
+                [
+                  816,
+                  509
+                ],
+                [
+                  720,
+                  509
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_023",
+              "text": "~2026.10.25.일요일",
+              "confidence": 0.9309230446815491,
+              "bbox_xyxy": [
+                387,
+                503,
+                589,
+                521
+              ],
+              "polygon": [
+                [
+                  387,
+                  503
+                ],
+                [
+                  589,
+                  503
+                ],
+                [
+                  589,
+                  521
+                ],
+                [
+                  387,
+                  521
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_024",
+              "text": "금·일, (금)·(일) 등축약 표기허용",
+              "confidence": 0.8919333219528198,
+              "bbox_xyxy": [
+                719,
+                513,
+                1021,
+                537
+              ],
+              "polygon": [
+                [
+                  719,
+                  514
+                ],
+                [
+                  1021,
+                  513
+                ],
+                [
+                  1021,
+                  535
+                ],
+                [
+                  719,
+                  537
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_025",
+              "text": "김천시 직지문화공원",
+              "confidence": 0.991855800151825,
+              "bbox_xyxy": [
+                389,
+                562,
+                578,
+                579
+              ],
+              "polygon": [
+                [
+                  389,
+                  562
+                ],
+                [
+                  578,
+                  562
+                ],
+                [
+                  578,
+                  579
+                ],
+                [
+                  389,
+                  579
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_026",
+              "text": "R03",
+              "confidence": 0.9902729392051697,
+              "bbox_xyxy": [
+                106,
+                572,
+                153,
+                597
+              ],
+              "polygon": [
+                [
+                  106,
+                  572
+                ],
+                [
+                  153,
+                  572
+                ],
+                [
+                  153,
+                  597
+                ],
+                [
+                  106,
+                  597
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_027",
+              "text": "세 장소명과“일원\"이 모두 있어야 함.구",
+              "confidence": 0.8622979521751404,
+              "bbox_xyxy": [
+                719,
+                572,
+                1074,
+                595
+              ],
+              "polygon": [
+                [
+                  719,
+                  572
+                ],
+                [
+                  1074,
+                  572
+                ],
+                [
+                  1074,
+                  595
+                ],
+                [
+                  719,
+                  595
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_028",
+              "text": "행사장소",
+              "confidence": 0.9970313906669617,
+              "bbox_xyxy": [
+                217,
+                585,
+                306,
+                609
+              ],
+              "polygon": [
+                [
+                  217,
+                  585
+                ],
+                [
+                  306,
+                  585
+                ],
+                [
+                  306,
+                  609
+                ],
+                [
+                  217,
+                  609
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_029",
+              "text": "필수",
+              "confidence": 0.9995245933532715,
+              "bbox_xyxy": [
+                108,
+                597,
+                156,
+                624
+              ],
+              "polygon": [
+                [
+                  108,
+                  597
+                ],
+                [
+                  156,
+                  597
+                ],
+                [
+                  156,
+                  624
+                ],
+                [
+                  108,
+                  624
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_030",
+              "text": "사명대사공원",
+              "confidence": 0.9991304278373718,
+              "bbox_xyxy": [
+                388,
+                588,
+                513,
+                607
+              ],
+              "polygon": [
+                [
+                  388,
+                  588
+                ],
+                [
+                  513,
+                  588
+                ],
+                [
+                  513,
+                  607
+                ],
+                [
+                  388,
+                  607
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_031",
+              "text": "분 쉽표·공백·줄바꿈의 차이는 허용.",
+              "confidence": 0.9065040349960327,
+              "bbox_xyxy": [
+                722,
+                601,
+                1039,
+                620
+              ],
+              "polygon": [
+                [
+                  722,
+                  601
+                ],
+                [
+                  1039,
+                  601
+                ],
+                [
+                  1039,
+                  620
+                ],
+                [
+                  722,
+                  620
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_032",
+              "text": "친환경생태공원 일원",
+              "confidence": 0.9616168737411499,
+              "bbox_xyxy": [
+                388,
+                614,
+                573,
+                633
+              ],
+              "polygon": [
+                [
+                  388,
+                  614
+                ],
+                [
+                  573,
+                  614
+                ],
+                [
+                  573,
+                  633
+                ],
+                [
+                  388,
+                  633
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_033",
+              "text": "R04",
+              "confidence": 0.97687166929245,
+              "bbox_xyxy": [
+                104,
+                656,
+                153,
+                685
+              ],
+              "polygon": [
+                [
+                  104,
+                  660
+                ],
+                [
+                  151,
+                  656
+                ],
+                [
+                  153,
+                  681
+                ],
+                [
+                  106,
+                  685
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_034",
+              "text": "상단 녹색 도로 표지판 형태 안에 표기.",
+              "confidence": 0.9293569922447205,
+              "bbox_xyxy": [
+                723,
+                660,
+                1062,
+                679
+              ],
+              "polygon": [
+                [
+                  723,
+                  660
+                ],
+                [
+                  1062,
+                  660
+                ],
+                [
+                  1062,
+                  679
+                ],
+                [
+                  723,
+                  679
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_035",
+              "text": "상단표지판",
+              "confidence": 0.992781937122345,
+              "bbox_xyxy": [
+                218,
+                671,
+                326,
+                693
+              ],
+              "polygon": [
+                [
+                  218,
+                  671
+                ],
+                [
+                  326,
+                  671
+                ],
+                [
+                  326,
+                  693
+                ],
+                [
+                  218,
+                  693
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_036",
+              "text": "김밥특별시",
+              "confidence": 0.9968172907829285,
+              "bbox_xyxy": [
+                387,
+                671,
+                492,
+                693
+              ],
+              "polygon": [
+                [
+                  387,
+                  671
+                ],
+                [
+                  492,
+                  671
+                ],
+                [
+                  492,
+                  693
+                ],
+                [
+                  387,
+                  693
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_037",
+              "text": "필수",
+              "confidence": 0.9994623064994812,
+              "bbox_xyxy": [
+                104,
+                678,
+                158,
+                712
+              ],
+              "polygon": [
+                [
+                  104,
+                  682
+                ],
+                [
+                  155,
+                  678
+                ],
+                [
+                  158,
+                  708
+                ],
+                [
+                  107,
+                  712
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_038",
+              "text": "문구 일치와 위치·형태를 함께확인",
+              "confidence": 0.9096542000770569,
+              "bbox_xyxy": [
+                722,
+                685,
+                1037,
+                704
+              ],
+              "polygon": [
+                [
+                  722,
+                  685
+                ],
+                [
+                  1037,
+                  685
+                ],
+                [
+                  1037,
+                  704
+                ],
+                [
+                  722,
+                  704
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_039",
+              "text": "김천시",
+              "confidence": 0.9996709823608398,
+              "bbox_xyxy": [
+                385,
+                729,
+                452,
+                753
+              ],
+              "polygon": [
+                [
+                  385,
+                  729
+                ],
+                [
+                  452,
+                  729
+                ],
+                [
+                  452,
+                  753
+                ],
+                [
+                  385,
+                  753
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_040",
+              "text": "좌측 상단배치. 실제 사용할 승인로고",
+              "confidence": 0.8793140649795532,
+              "bbox_xyxy": [
+                719,
+                729,
+                1062,
+                753
+              ],
+              "polygon": [
+                [
+                  719,
+                  729
+                ],
+                [
+                  1062,
+                  730
+                ],
+                [
+                  1062,
+                  753
+                ],
+                [
+                  719,
+                  751
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_041",
+              "text": "R05",
+              "confidence": 0.9943046569824219,
+              "bbox_xyxy": [
+                106,
+                742,
+                153,
+                767
+              ],
+              "polygon": [
+                [
+                  106,
+                  742
+                ],
+                [
+                  153,
+                  742
+                ],
+                [
+                  153,
+                  767
+                ],
+                [
+                  106,
+                  767
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_042",
+              "text": "필수",
+              "confidence": 0.9995245933532715,
+              "bbox_xyxy": [
+                108,
+                768,
+                156,
+                795
+              ],
+              "polygon": [
+                [
+                  108,
+                  768
+                ],
+                [
+                  156,
+                  768
+                ],
+                [
+                  156,
+                  795
+                ],
+                [
+                  108,
+                  795
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_043",
+              "text": "도시 로고 표기",
+              "confidence": 0.9571971893310547,
+              "bbox_xyxy": [
+                218,
+                759,
+                351,
+                778
+              ],
+              "polygon": [
+                [
+                  218,
+                  759
+                ],
+                [
+                  351,
+                  759
+                ],
+                [
+                  351,
+                  778
+                ],
+                [
+                  218,
+                  778
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_044",
+              "text": "GIMCHEON CITY",
+              "confidence": 0.9877970814704895,
+              "bbox_xyxy": [
+                385,
+                758,
+                549,
+                778
+              ],
+              "polygon": [
+                [
+                  385,
+                  759
+                ],
+                [
+                  549,
+                  758
+                ],
+                [
+                  549,
+                  776
+                ],
+                [
+                  386,
+                  778
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_045",
+              "text": "파일과 이용 근거는 별도 제공·확인 필",
+              "confidence": 0.942337155342102,
+              "bbox_xyxy": [
+                722,
+                759,
+                1057,
+                778
+              ],
+              "polygon": [
+                [
+                  722,
+                  759
+                ],
+                [
+                  1057,
+                  759
+                ],
+                [
+                  1057,
+                  778
+                ],
+                [
+                  722,
+                  778
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_046",
+              "text": "도시 로고",
+              "confidence": 0.9233567118644714,
+              "bbox_xyxy": [
+                385,
+                784,
+                476,
+                806
+              ],
+              "polygon": [
+                [
+                  385,
+                  784
+                ],
+                [
+                  476,
+                  784
+                ],
+                [
+                  476,
+                  806
+                ],
+                [
+                  385,
+                  806
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_047",
+              "text": "요.",
+              "confidence": 0.7673820853233337,
+              "bbox_xyxy": [
+                719,
+                785,
+                752,
+                806
+              ],
+              "polygon": [
+                [
+                  719,
+                  785
+                ],
+                [
+                  752,
+                  785
+                ],
+                [
+                  752,
+                  806
+                ],
+                [
+                  719,
+                  806
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_048",
+              "text": "R06",
+              "confidence": 0.9955974221229553,
+              "bbox_xyxy": [
+                106,
+                829,
+                153,
+                854
+              ],
+              "polygon": [
+                [
+                  106,
+                  829
+                ],
+                [
+                  153,
+                  829
+                ],
+                [
+                  153,
+                  854
+                ],
+                [
+                  106,
+                  854
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_049",
+              "text": "중앙 건물의 안내",
+              "confidence": 0.9102574586868286,
+              "bbox_xyxy": [
+                219,
+                831,
+                371,
+                850
+              ],
+              "polygon": [
+                [
+                  219,
+                  831
+                ],
+                [
+                  371,
+                  831
+                ],
+                [
+                  371,
+                  850
+                ],
+                [
+                  219,
+                  850
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_050",
+              "text": "김밥특별시",
+              "confidence": 0.9972950220108032,
+              "bbox_xyxy": [
+                385,
+                828,
+                490,
+                850
+              ],
+              "polygon": [
+                [
+                  385,
+                  828
+                ],
+                [
+                  490,
+                  828
+                ],
+                [
+                  490,
+                  850
+                ],
+                [
+                  385,
+                  850
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_051",
+              "text": "중앙 김밥 건물의 안내문 영역에 두 문구",
+              "confidence": 0.9529660940170288,
+              "bbox_xyxy": [
+                723,
+                831,
+                1075,
+                850
+              ],
+              "polygon": [
+                [
+                  723,
+                  831
+                ],
+                [
+                  1075,
+                  831
+                ],
+                [
+                  1075,
+                  850
+                ],
+                [
+                  723,
+                  850
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_052",
+              "text": "필수",
+              "confidence": 0.9996142387390137,
+              "bbox_xyxy": [
+                106,
+                851,
+                156,
+                885
+              ],
+              "polygon": [
+                [
+                  106,
+                  854
+                ],
+                [
+                  154,
+                  851
+                ],
+                [
+                  156,
+                  881
+                ],
+                [
+                  108,
+                  885
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_053",
+              "text": "문",
+              "confidence": 0.9963685274124146,
+              "bbox_xyxy": [
+                215,
+                855,
+                242,
+                880
+              ],
+              "polygon": [
+                [
+                  215,
+                  855
+                ],
+                [
+                  242,
+                  855
+                ],
+                [
+                  242,
+                  880
+                ],
+                [
+                  215,
+                  880
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_054",
+              "text": "방문을 환영합니다",
+              "confidence": 0.949110746383667,
+              "bbox_xyxy": [
+                389,
+                859,
+                558,
+                876
+              ],
+              "polygon": [
+                [
+                  389,
+                  859
+                ],
+                [
+                  558,
+                  859
+                ],
+                [
+                  558,
+                  876
+                ],
+                [
+                  389,
+                  876
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_055",
+              "text": "를 표기 문구 누락과 가독성 확인",
+              "confidence": 0.949909508228302,
+              "bbox_xyxy": [
+                722,
+                858,
+                1021,
+                876
+              ],
+              "polygon": [
+                [
+                  722,
+                  858
+                ],
+                [
+                  1021,
+                  858
+                ],
+                [
+                  1021,
+                  876
+                ],
+                [
+                  722,
+                  876
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_056",
+              "text": "참고 이미지의 구성 요소로 유지 권장.",
+              "confidence": 0.9883219599723816,
+              "bbox_xyxy": [
+                723,
+                904,
+                1057,
+                922
+              ],
+              "polygon": [
+                [
+                  723,
+                  904
+                ],
+                [
+                  1057,
+                  904
+                ],
+                [
+                  1057,
+                  922
+                ],
+                [
+                  723,
+                  922
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_057",
+              "text": "R07",
+              "confidence": 0.9941007494926453,
+              "bbox_xyxy": [
+                106,
+                928,
+                153,
+                953
+              ],
+              "polygon": [
+                [
+                  106,
+                  928
+                ],
+                [
+                  153,
+                  928
+                ],
+                [
+                  153,
+                  953
+                ],
+                [
+                  106,
+                  953
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_058",
+              "text": "표지판의 작은 영",
+              "confidence": 0.9497275948524475,
+              "bbox_xyxy": [
+                219,
+                930,
+                371,
+                949
+              ],
+              "polygon": [
+                [
+                  219,
+                  930
+                ],
+                [
+                  371,
+                  930
+                ],
+                [
+                  371,
+                  949
+                ],
+                [
+                  219,
+                  949
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_059",
+              "text": "상단 녹색 표지판 안의",
+              "confidence": 0.8893864750862122,
+              "bbox_xyxy": [
+                385,
+                929,
+                584,
+                949
+              ],
+              "polygon": [
+                [
+                  385,
+                  930
+                ],
+                [
+                  583,
+                  929
+                ],
+                [
+                  584,
+                  947
+                ],
+                [
+                  386,
+                  949
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_060",
+              "text": "정활한 영문 원문은 미활정이무로 문자",
+              "confidence": 0.9177390933036804,
+              "bbox_xyxy": [
+                722,
+                929,
+                1065,
+                947
+              ],
+              "polygon": [
+                [
+                  722,
+                  929
+                ],
+                [
+                  1065,
+                  929
+                ],
+                [
+                  1065,
+                  947
+                ],
+                [
+                  722,
+                  947
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_061",
+              "text": "권장",
+              "confidence": 0.9987177848815918,
+              "bbox_xyxy": [
+                105,
+                951,
+                156,
+                981
+              ],
+              "polygon": [
+                [
+                  105,
+                  951
+                ],
+                [
+                  156,
+                  951
+                ],
+                [
+                  156,
+                  981
+                ],
+                [
+                  105,
+                  981
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_062",
+              "text": "문",
+              "confidence": 0.9961245656013489,
+              "bbox_xyxy": [
+                214,
+                954,
+                242,
+                979
+              ],
+              "polygon": [
+                [
+                  214,
+                  954
+                ],
+                [
+                  242,
+                  954
+                ],
+                [
+                  242,
+                  979
+                ],
+                [
+                  214,
+                  979
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_063",
+              "text": "작은 영문 보조 문구",
+              "confidence": 0.875234842300415,
+              "bbox_xyxy": [
+                387,
+                954,
+                565,
+                978
+              ],
+              "polygon": [
+                [
+                  387,
+                  955
+                ],
+                [
+                  565,
+                  954
+                ],
+                [
+                  565,
+                  976
+                ],
+                [
+                  387,
+                  978
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_064",
+              "text": "열 불일치를 필수 불합격 사유로 삼지않",
+              "confidence": 0.9522799253463745,
+              "bbox_xyxy": [
+                724,
+                958,
+                1075,
+                976
+              ],
+              "polygon": [
+                [
+                  724,
+                  958
+                ],
+                [
+                  1075,
+                  958
+                ],
+                [
+                  1075,
+                  976
+                ],
+                [
+                  724,
+                  976
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_065",
+              "text": "음.",
+              "confidence": 0.8663183450698853,
+              "bbox_xyxy": [
+                718,
+                980,
+                754,
+                1006
+              ],
+              "polygon": [
+                [
+                  718,
+                  980
+                ],
+                [
+                  754,
+                  980
+                ],
+                [
+                  754,
+                  1006
+                ],
+                [
+                  718,
+                  1006
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_066",
+              "text": "2문구 검수 원칙",
+              "confidence": 0.9563805460929871,
+              "bbox_xyxy": [
+                97,
+                1063,
+                274,
+                1089
+              ],
+              "polygon": [
+                [
+                  97,
+                  1063
+                ],
+                [
+                  274,
+                  1063
+                ],
+                [
+                  274,
+                  1089
+                ],
+                [
+                  97,
+                  1089
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_067",
+              "text": "R01~RO6의 문자 정보는 원본 이미지와 대조해 사람이 확인합니다.OCR을 사용할 때에는 판독 오류 가능",
+              "confidence": 0.9494079947471619,
+              "bbox_xyxy": [
+                100,
+                1104,
+                1074,
+                1126
+              ],
+              "polygon": [
+                [
+                  100,
+                  1104
+                ],
+                [
+                  1074,
+                  1104
+                ],
+                [
+                  1074,
+                  1126
+                ],
+                [
+                  100,
+                  1126
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_068",
+              "text": "성을 확인하고, 낮은 신뢰도나 문구 누락 의심은 사람이 재검토합니다. 이미지 인식 모델이 연결되지 않은",
+              "confidence": 0.9345334768295288,
+              "bbox_xyxy": [
+                98,
+                1130,
+                1073,
+                1158
+              ],
+              "polygon": [
+                [
+                  98,
+                  1130
+                ],
+                [
+                  1073,
+                  1131
+                ],
+                [
+                  1073,
+                  1158
+                ],
+                [
+                  98,
+                  1156
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_069",
+              "text": "현재 샘플의 수동 관찰값을 새 이미지에 대한 자동 판독 결과로 사용하지않습니다",
+              "confidence": 0.9259073138237,
+              "bbox_xyxy": [
+                101,
+                1163,
+                864,
+                1185
+              ],
+              "polygon": [
+                [
+                  101,
+                  1163
+                ],
+                [
+                  864,
+                  1163
+                ],
+                [
+                  864,
+                  1185
+                ],
+                [
+                  101,
+                  1185
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_070",
+              "text": "연락처,운영 시간, 요금,QR 코드,주최·주관·후원 기관명은 제공 이미지에서 확정한 항목이 아니므로 이번",
+              "confidence": 0.9295334219932556,
+              "bbox_xyxy": [
+                98,
+                1200,
+                1085,
+                1229
+              ],
+              "polygon": [
+                [
+                  98,
+                  1200
+                ],
+                [
+                  1085,
+                  1203
+                ],
+                [
+                  1085,
+                  1229
+                ],
+                [
+                  98,
+                  1226
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_071",
+              "text": "필수 조건에 임의로 추가하지 않습니다.추가하려면 내용과 위치를 별도 합의합니다.",
+              "confidence": 0.9478480815887451,
+              "bbox_xyxy": [
+                102,
+                1235,
+                877,
+                1254
+              ],
+              "polygon": [
+                [
+                  102,
+                  1235
+                ],
+                [
+                  877,
+                  1235
+                ],
+                [
+                  877,
+                  1254
+                ],
+                [
+                  102,
+                  1254
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            },
+            {
+              "id": "paddle_072",
+              "text": "테스트용가상계약|4/7",
+              "confidence": 0.9845957159996033,
+              "bbox_xyxy": [
+                494,
+                1610,
+                694,
+                1633
+              ],
+              "polygon": [
+                [
+                  494,
+                  1610
+                ],
+                [
+                  694,
+                  1610
+                ],
+                [
+                  694,
+                  1633
+                ],
+                [
+                  494,
+                  1633
+                ]
+              ],
+              "recognition_engine": "paddleocr"
+            }
+          ]
+        }
+      ]
+    },
+    "warnings": [
+      "PDF 페이지 이미지와 OCR 판독문을 함께 읽은 초안입니다. 출처 문구는 교정하지 않은 OCR입니다. 숫자·날짜·조건 누락 여부를 PDF 원본과 대조해 주세요.",
+      "ID와 필수·권장·선택이 표시된 기준표 7개 항목을 추출했습니다. 표 밖의 추가 조건과 다른 배치의 예외·상충 여부는 원본에서 확인해 주세요."
+    ]
+  },
+  "elapsed_seconds": 40.693,
+  "calls": [
+    {
+      "pages": [
+        1
+      ],
+      "image_count": 1,
+      "image_bytes": [
+        306196
+      ],
+      "ocr_source_count": 7,
+      "allowed_source_ids": [
+        "p1-s6",
+        "p1-s7",
+        "p1-s8",
+        "p1-s9",
+        "p1-s10",
+        "p1-s11",
+        "p1-s12"
+      ],
+      "seconds": 22.957,
+      "raw_output": {
+        "conditions": [
+          {
+            "label": "행사명",
+            "requirement": "김천김밥축제 2026",
+            "values": [
+              "김천김밥축제 2026"
+            ],
+            "level": "필수",
+            "inspection": "글자와 숫자가 일치해야 함. 줄바꿈·공백·장식 효과는 허용하되 오탈 자·연도 변경은 불가.",
+            "type": "information",
+            "source_id": "p1-s6"
+          },
+          {
+            "label": "행사일정",
+            "requirement": "2026.10.23 금요일 ~ 2026.10.25 일요일",
+            "values": [
+              "2026.10.23 금요일 ~ 2026.10.25 일요일"
+            ],
+            "level": "필수",
+            "inspection": "날짜를 정규화해 비교하고 요일을 계산하여 확인. 금·일, (금)·(일) 등 축약 표기 허용.",
+            "type": "information",
+            "source_id": "p1-s7"
+          },
+          {
+            "label": "행사장소",
+            "requirement": "김천시 직지문화공원, 사명대사공원, 친환경생태공원 일원",
+            "values": [
+              "김천시 직지문화공원",
+              "사명대사공원",
+              "친환경생태공원 일원"
+            ],
+            "level": "필수",
+            "inspection": "세 장소명과“일원”이 모두 있어야 함. 구분 쉽표·공백·줄바꿈의 차이는 허용.",
+            "type": "information",
+            "source_id": "p1-s8"
+          },
+          {
+            "label": "상단 표지판",
+            "requirement": "김밥특별시",
+            "values": [
+              "김밥특별시"
+            ],
+            "level": "필수",
+            "inspection": "상단 녹색 도로 표지판 형태 안에 표기. 문구 일치와 위치·형태를 함께 확인.",
+            "type": "visual",
+            "source_id": "p1-s9"
+          },
+          {
+            "label": "도시 로고 표기",
+            "requirement": "김천시 GIMCHEON CITY 도시 로고",
+            "values": [
+              "김천시 GIMCHEON CITY 도시 로고"
+            ],
+            "level": "필수",
+            "inspection": "좌측 상단 배치. 실제 사용할 승인 로고 파일과 이용 근거는 별도 제공·확인 필요.",
+            "type": "visual",
+            "source_id": "p1-s10"
+          },
+          {
+            "label": "중앙 건물의 안내 문",
+            "requirement": "김밥특별시 방문을 환영합니다",
+            "values": [
+              "김밥특별시 방문을 환영합니다"
+            ],
+            "level": "필수",
+            "inspection": "중앙 김밥 건물의 안내문 영역에 두 문구를 표기. 문구 누락과 가독성 확인.",
+            "type": "visual",
+            "source_id": "p1-s11"
+          },
+          {
+            "label": "표지판의 작은 영문",
+            "requirement": "상단 녹색 표지판 안의 작은 영문 보조 문구",
+            "values": [
+              "참고 이미지의 구성 요소로 유지 권장."
+            ],
+            "level": "권장",
+            "inspection": "정확한 영문 원문은 미확정이며 문자열 불일치를 필수 불합격 사유로 삼지 않음.",
+            "type": "visual",
+            "source_id": "p1-s12"
+          }
+        ]
+      }
+    }
+  ],
+  "postprocessing_replay": {
+    "actual_inference_source": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/pdf-compact-values-verification-2026-10-29/01-requirements-page.json",
+    "new_model_inference_executed": false,
+    "new_ocr_inference_executed": false,
+    "extractor_sha256": "bf2845f3fb19c2436821185daae01e9353b8e78be22e972b8ad7a77d3f9347a2",
+    "reason": "실제 Qwen 응답과 PDF OCR을 재사용해 복합 조건을 보존하는 최종 직렬화 경로로 재구성했습니다."
+  }
+}

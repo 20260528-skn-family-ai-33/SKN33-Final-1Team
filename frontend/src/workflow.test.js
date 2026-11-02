@@ -8,6 +8,20 @@ function confirmed() {
   return reduce(state, { type: 'confirm' });
 }
 
+test('saved review restores its frozen criteria, original file and result after reload', () => {
+  const file = { name: 'original.jpg' };
+  const review = { id: 'saved-1', status: 'completed', project_name: '저장 검수', criteria_version: 7,
+    criteria: [{ id: 'c1', text: '행사명: 축제', type: 'information', source: 'PDF', document_condition: { requirement: '축제' } }] };
+  const state = reduce(initialState, { type: 'restore', review, file });
+  assert.equal(state.step, 'results');
+  assert.equal(state.version, 7);
+  assert.equal(state.file, file);
+  assert.deepEqual(state.snapshot.criteria, review.criteria);
+  assert.equal(state.criteria[0].selected, true);
+  assert.equal(canRun(state), true);
+  assert.equal(reduce(state, { type: 'unlock' }).snapshot, null);
+});
+
 test('confirmed snapshot contains selected criteria only and remains locked', () => {
   let state = confirmed();
   assert.equal(state.version, 1);

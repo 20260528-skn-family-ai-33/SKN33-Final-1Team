@@ -1,0 +1,47 @@
+{
+  "code_sha256": {
+    "backend/app/requirements_pdf.py": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+    "backend/app/document_sources.py": "41030d710e5e000aa015db8ede9c3c3ec04009be9828dc95b7e4df6c1e556fb6",
+    "backend/app/document_conditions.py": "820cc320366c8cd0d12c170d1fde2812cbb7a208b930415055b449921a6d70c7"
+  },
+  "backend": {
+    "passed": 809,
+    "deselected": 1334,
+    "subtests": 7
+  },
+  "frontend": {
+    "passed": 33
+  },
+  "browser": {
+    "source": "Actual browser upload, real HTTP stream and real PaddleOCR + Qwen worker; no model stubs",
+    "conditions": 8,
+    "information": 7,
+    "visual": 1,
+    "uiCompleted": 100,
+    "uiProgress": [
+      10,
+      30,
+      30,
+      72
+    ],
+    "apiProgress": [
+      2,
+      10,
+      30,
+      50,
+      72
+    ],
+    "warning44Visible": true,
+    "commonRuleVisible": true,
+    "confirmed": true,
+    "mobileOverflow": false,
+    "pageErrors": [],
+    "timing": {
+      "ocr_seconds": 30.221,
+      "llm_seconds": 14.887,
+      "total_seconds": 45.107
+    },
+    "previewImage": "PDF page render only; no poster inspection executed"
+  },
+  "evidence": "Actual inference in verified/ and verified-brief-final/; current postprocessing replay in replay-current-code/; real browser/API run separately recorded."
+}

@@ -1,7 +1,8 @@
 """Strict C09 HTTP input contracts. Missing source metadata remains null."""
 from typing import Annotated, Literal
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, model_serializer
+from ..document_conditions import DocumentCondition, attached_condition
 
 
 class Strict(BaseModel):
@@ -40,6 +41,13 @@ class Item(Strict):
     type: Literal['information', 'visual']
     source: str = Field(min_length=1, max_length=500)
     selected: bool
+    document_condition: DocumentCondition | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_absent_document_condition(self,handler):
+        value=handler(self)
+        if 'document_condition' not in self.model_fields_set:value.pop('document_condition',None)
+        return value
 
     @field_validator('id', 'source')
     @classmethod
@@ -116,8 +124,13 @@ def selected_items(payload):
     if not selected or any(not item['text'].strip() for item in selected):
         from ..security.errors import AuthError
         raise AuthError('INVALID_CRITERIA_SELECTION', 422)
+    def metadata(item):
+        condition=attached_condition(item)
+        return dict(expected_value=condition['requirement'] if condition else None,
+                    is_required={'필수':True,'권장':False,'선택':False}.get(condition['level']) if condition else None,
+                    source_locator={'sources':condition['sources']} if condition and condition.get('sources') else None)
     return [dict(external_item_id=item['id'], position=n, category=item['type'], text=item['text'],
                  source_text=item['source'], rule_code=None, field_code=None, expected_value=None,
                  is_required=None, source_asset_version_id=None, source_locator=None,
-                 applicability=None, check_scope=None, source_item=item.copy())
+                 applicability=None, check_scope=None, source_item=item.copy()) | metadata(item)
             for n, item in enumerate(selected, 1)]

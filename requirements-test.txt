@@ -7,3 +7,5 @@ numpy==2.5.3
 opencv-python-headless==5.0.0.93
 httpx==0.28.1
 pytest==9.1.1
+pypdfium2==5.14.0
+pypdf==6.21.2

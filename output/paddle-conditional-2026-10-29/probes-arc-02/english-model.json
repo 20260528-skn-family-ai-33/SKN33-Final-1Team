@@ -1,0 +1,92 @@
+{
+  "outputs": [
+    {
+      "id": "arc-240-rgb",
+      "text": "2026 SUWON JAZZ FESTIVAL",
+      "confidence": 0.9699798226356506,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-240-rgb.png",
+          "page_index": null,
+          "rec_text": "2026 SUWON JAZZ FESTIVAL",
+          "rec_score": 0.9699798226356506
+        }
+      }
+    },
+    {
+      "id": "arc-320-rgb",
+      "text": "2026 SUWON JAZZ. FESTIVAL.",
+      "confidence": 0.9440476298332214,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-320-rgb.png",
+          "page_index": null,
+          "rec_text": "2026 SUWON JAZZ. FESTIVAL.",
+          "rec_score": 0.9440476298332214
+        }
+      }
+    },
+    {
+      "id": "word-1",
+      "text": "SUWON",
+      "confidence": 0.9970518946647644,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-1.png",
+          "page_index": null,
+          "rec_text": "SUWON",
+          "rec_score": 0.9970518946647644
+        }
+      }
+    },
+    {
+      "id": "word-0",
+      "text": "2026",
+      "confidence": 0.9995350241661072,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-0.png",
+          "page_index": null,
+          "rec_text": "2026",
+          "rec_score": 0.9995350241661072
+        }
+      }
+    },
+    {
+      "id": "word-2",
+      "text": "JAZ.Z",
+      "confidence": 0.9456672668457031,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-2.png",
+          "page_index": null,
+          "rec_text": "JAZ.Z",
+          "rec_score": 0.9456672668457031
+        }
+      }
+    },
+    {
+      "id": "word-3",
+      "text": "FESTIVAL",
+      "confidence": 0.9651526212692261,
+      "raw": {
+        "res": {
+          "input_path": "output/paddle-conditional-2026-10-29/probes-arc-02/word-3.png",
+          "page_index": null,
+          "rec_text": "FESTIVAL",
+          "rec_score": 0.9651526212692261
+        }
+      }
+    }
+  ],
+  "model_identity": {
+    "model": "en_PP-OCRv5_mobile_rec",
+    "repository": "PaddlePaddle/en_PP-OCRv5_mobile_rec",
+    "revision": "267c36e24c331595590fe7bd72bde2436fd286f2",
+    "sha256": {
+      "inference.json": "fd1b6ec722ea841a72d3ba43e527df1d1066d5d7808e0503ee3eec7265188753",
+      "inference.pdiparams": "3ec8a97ed6cefe8568d3e2ee90bb193299b566a7661aa4fd52d224b96b59f66b",
+      "inference.yml": "27e91d0582f40168aa218303c76e184bc78fa7a5d105aad0cfbad8458b441067"
+    }
+  }
+}

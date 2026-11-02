@@ -1,0 +1,9 @@
+{
+  "actualInferenceReviewId": "068f4f9f-9651-47d9-8ed2-d6c283b0b2bf",
+  "mode": "rendering real inference result from isolated read-only server",
+  "newSubmission": "intercepted; no new inference",
+  "englishObserved": true,
+  "baselineMissingLabel": true,
+  "evidenceBox": true,
+  "pageErrors": []
+}

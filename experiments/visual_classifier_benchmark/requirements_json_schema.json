@@ -1,0 +1,9 @@
+{
+  "schema_version": "requirements-json-pilot-v1",
+  "output": {
+    "items": [{"type": "information|visual", "field": "allowed field", "target": "verbatim visual target or null", "operator": "allowed operator", "value": "verbatim string, integer count, or null", "source": "verbatim input quote"}],
+    "needs_review": [{"source": "verbatim input quote", "reason": "ambiguous|missing_value|conflicting|non_requirement"}]
+  },
+  "integration": "Isolated experiment, not a live API response. Existing backend Item uses id/text/type/source/selected; draft adapters remain unselected and do not store structured fields in the API.",
+  "metric": "Literal multiset comparison after NFC/whitespace normalization. Every invalid output remains an evaluated case. No semantic model judge. AI-authored synthetic expected values are unreviewed drafts."
+}

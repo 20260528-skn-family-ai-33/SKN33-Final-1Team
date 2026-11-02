@@ -1,0 +1,119 @@
+{
+  "basis": "Actual PaddleOCR + local Qwen inference for five PDFs, plus current-code replay of captured OCR/model responses with unchanged source scopes/schema/images. Final brief also re-run with real models after metadata filtering. Five-document regression only, not a general accuracy benchmark.",
+  "code_matches_run": true,
+  "documents": [
+    {
+      "document": "NEW103",
+      "conditions": 9,
+      "information": 7,
+      "visual": 2,
+      "seconds": 48.177,
+      "checks": [
+        "조건 개수",
+        "유형 분류",
+        "표시 문구 중복 없음",
+        "원본 PDF 해시 유지",
+        "초안 상태 보존",
+        "보완 지시 누락 없음",
+        "출처/판정 메모를 조건으로 추가하지 않음",
+        "모든 카드 ID 보존",
+        "공통 규칙 연결",
+        "JPEG 단독 기대값",
+        "원본 픽셀 기대값",
+        "절 제목의 명시 수준과 근거"
+      ],
+      "passed": true,
+      "result_file": "01-NEW103_spec_v1.json"
+    },
+    {
+      "document": "NEW114",
+      "conditions": 8,
+      "information": 7,
+      "visual": 1,
+      "seconds": 40.571,
+      "checks": [
+        "조건 개수",
+        "유형 분류",
+        "표시 문구 중복 없음",
+        "원본 PDF 해시 유지",
+        "초안 상태 보존",
+        "보완 지시 누락 없음",
+        "출처/판정 메모를 조건으로 추가하지 않음",
+        "모든 카드 ID 보존",
+        "공통 규칙 연결",
+        "JPEG 단독 기대값",
+        "원본 픽셀 기대값",
+        "절 제목의 명시 수준과 근거",
+        "기념식/박람회 시간 구분",
+        "회차 충돌 메모 보존"
+      ],
+      "passed": true,
+      "result_file": "02-NEW114_spec_v1.json"
+    },
+    {
+      "document": "NEW052",
+      "conditions": 8,
+      "information": 7,
+      "visual": 1,
+      "seconds": 59.365,
+      "checks": [
+        "조건 개수",
+        "유형 분류",
+        "표시 문구 중복 없음",
+        "원본 PDF 해시 유지",
+        "초안 상태 보존",
+        "보완 지시 누락 없음",
+        "출처/판정 메모를 조건으로 추가하지 않음",
+        "모든 카드 ID 보존",
+        "공통 규칙 연결",
+        "JPEG 단독 기대값",
+        "원본 픽셀 기대값",
+        "절 제목의 명시 수준과 근거",
+        "시작일/종료일 구분",
+        "시작/종료 날짜"
+      ],
+      "passed": true,
+      "result_file": "03-NEW052_spec_v1.json"
+    },
+    {
+      "document": "수원",
+      "conditions": 16,
+      "information": 10,
+      "visual": 6,
+      "seconds": 90.287,
+      "checks": [
+        "조건 개수",
+        "유형 분류",
+        "표시 문구 중복 없음",
+        "원본 PDF 해시 유지",
+        "초안 상태 보존",
+        "보완 지시 누락 없음",
+        "출처/판정 메모를 조건으로 추가하지 않음",
+        "모든 표 ID 보존",
+        "비교 원칙을 상세 기준으로 보존"
+      ],
+      "passed": true,
+      "result_file": "04-02_수원재즈페스티벌_디자인용역_가상계약서_v1.json"
+    },
+    {
+      "document": "브리프",
+      "conditions": 15,
+      "information": 11,
+      "visual": 4,
+      "seconds": 81.764,
+      "checks": [
+        "조건 개수",
+        "유형 분류",
+        "표시 문구 중복 없음",
+        "원본 PDF 해시 유지",
+        "초안 상태 보존",
+        "보완 지시 누락 없음",
+        "출처/판정 메모를 조건으로 추가하지 않음",
+        "브랜드 OR 보존",
+        "문서 버전 표지를 조건 ID에서 제외"
+      ],
+      "passed": true,
+      "result_file": "05-creative_brief.json"
+    }
+  ]
+}

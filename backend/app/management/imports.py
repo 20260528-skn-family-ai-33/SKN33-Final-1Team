@@ -13,10 +13,30 @@ from ..storage.local import StorageError
 from .io import OpsError,source_tree,strict_json,json_bytes,verify_bytes,relative
 from .maintenance import MAINTENANCE_KEY,session_lock
 from .files import audit
+from ..document_conditions import attached_condition
 
-PROFILE='conservative-source-v1'
+PROFILE='conservative-source-v2'
 ENVELOPE='cc-import-envelope-v1'
 PROJECTION='cc-import-projection-v1'
+
+
+def projection_fields(version):
+    """The frozen profile selects the row shape, including old v1 plans."""
+    fields=('external_item_id','position','category','text','source_text','source_item_jsonb')
+    if version=='conservative-source-v1':return fields
+    if version==PROFILE:return fields+('expected_value','is_required','source_locator')
+    raise OpsError('IMPORT_PROFILE_UNSUPPORTED')
+
+
+def structured_criterion(item):
+    """Promote explicit source values only; never infer counts or approve rules."""
+    condition=attached_condition(item)
+    expected=item.get('expected_value',condition['requirement'] if condition else None)
+    required=item.get('is_required',{'필수':True,'권장':False,'선택':False}.get(condition['level']) if condition else None)
+    locator=item.get('source_locator',{'sources':condition['sources']} if condition and condition.get('sources') else None)
+    if required is not None and type(required) is not bool:raise OpsError('SOURCE_CRITERIA_METADATA_UNSUPPORTED')
+    if locator is not None and not isinstance(locator,dict):raise OpsError('SOURCE_CRITERIA_METADATA_UNSUPPORTED')
+    return dict(expected_value=expected,is_required=required,source_locator=locator)
 
 
 def owner(c,pid,actor):
@@ -39,6 +59,7 @@ class Imports:
     def __init__(self,engine,storage):self.engine,self.storage=engine,storage
 
     def projection(self,read,inventory,profile):
+        fields=projection_fields(profile['version'])
         names={item['relative_path'] for item in inventory};reasons=[];parsed={}
         for item in inventory:
             name=item['relative_path']
@@ -72,7 +93,8 @@ class Imports:
                 if external_id in seen:raise OpsError('SOURCE_ID_AMBIGUOUS')
                 seen[external_id]=type(item['id'])
                 normalized.append(dict(external_item_id=external_id,position=position,category=item.get('type') if item.get('type') in ('information','visual') else 'unknown',text=item['text'],
-                    source_text=item.get('source') if isinstance(item.get('source'),str) else None,source_item_jsonb=item))
+                    source_text=item.get('source') if isinstance(item.get('source'),str) else None,source_item_jsonb=item,
+                    **(structured_criterion(item) if 'expected_value' in fields else {})))
             seen_results=set()
             for value in results:
                 if not isinstance(value,dict):raise OpsError('SOURCE_RESULT_UNSUPPORTED')
@@ -310,7 +332,7 @@ class Imports:
                     c.execute(insert(table('record_aliases')).values(alias_id=uuid4(),project_id=pid,asset_version_id=image_id,import_package_id=package_id,
                         namespace=plan['envelope']['source_namespace'],external_record_id=identity(external_id)))
                 c.execute(update(table('import_packages')).where(table('import_packages').c.import_id==package_id).values(import_state='completed',hash_check_state='matched',manifest_file_id=UUID(manifest_file),
-                    local_validation_jsonb=dict(syntax='checked',inventory='matched',external_schema='unavailable',projection_profile=PROFILE,ocr='source_only',criteria_payload=criteria_payload,result_payload=result_payload)))
+                    local_validation_jsonb=dict(syntax='checked',inventory='matched',external_schema='unavailable',projection_profile=profile['version'],ocr='source_only',criteria_payload=criteria_payload,result_payload=result_payload)))
                 audit(c,pid,'import.completed','import_package',package_id)
             intent['db_outcome']='committed';self.storage.journal(intent)
         return dict(import_id=ids['import_id'],state='completed',replayed=False,resources=ids)

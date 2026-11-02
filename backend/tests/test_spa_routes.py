@@ -38,7 +38,7 @@ def spa_client(tmp_path, monkeypatch, request):
         yield client
 
 
-@pytest.mark.parametrize("path", ["/", "/login", "/login/", "/review/new", "/review/new/", "/video", "/video/"])
+@pytest.mark.parametrize("path", ["/", "/login", "/login/", "/review/new", "/review/new/", "/video", "/video/", "/modeltest", "/modeltest/"])
 @pytest.mark.parametrize("method", ["GET", "HEAD"])
 def test_browser_navigation_and_refresh_return_react_html(spa_client, path, method):
     # 브라우저의 문서 탐색과 HEAD 확인 요청에만 React 진입점을 제공한다.
@@ -62,7 +62,7 @@ def test_missing_apis_assets_and_unknown_pages_stay_404(spa_client, path):
     assert "SPA fixture" not in response.text
 
 
-@pytest.mark.parametrize("path", ["/login", "/review/new"])
+@pytest.mark.parametrize("path", ["/login", "/review/new", "/modeltest"])
 @pytest.mark.parametrize("accept", ["application/json", "*/*"])
 def test_non_document_requests_do_not_receive_fallback(spa_client, path, accept):
     # fetch 요청에는 문서용 fallback을 적용하지 않는다.

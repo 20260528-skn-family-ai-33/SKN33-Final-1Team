@@ -1,69 +1,36 @@
-# Explicit single-host bundle; no DB creation, migration, seed or legacy writer.
-# Supply --env-file with the absolute paths in .env.deploy.example.
+# EC2 A. TLS terminates at the configured nginx certificate, no public MCP endpoint.
+name: creative-checker-web
 services:
   api:
-    image: ${CC_API_IMAGE:?build and select an immutable API image}
-    pull_policy: never
-    env_file:
-      - path: ${CC_WEB_ENV_FILE:?app-only production env}
-        format: raw
+    image: creative-checker:rebuild
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.v1
+    env_file: ../.env.rebuild
+    restart: unless-stopped
+    expose: ["8000"]
     read_only: true
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
-    tmpfs: ["/tmp:rw,uid=10001,gid=10001,mode=0700"]
-    extra_hosts: [host.docker.internal:host-gateway]
-    volumes:
-      - data:/data
-      - ${CC_FRONTEND_DIST:?absolute v1 build}:/web:ro
-      - ${CC_WORKER_CONFIG:?worker-generated immutable config}:/run/worker-config.json:ro
-    networks: [private]
-    stop_grace_period: 30s
-  worker:
-    image: ${CC_WORKER_IMAGE:?build and select a matching worker image}
-    pull_policy: never
-    command: [python, -m, backend.app.worker, --env-file, /opt/creative/app.env]
-    env_file:
-      - path: ${CC_WORKER_ENV_FILE:?app-only worker env}
-        format: raw
-    read_only: true
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
-    tmpfs: ["/tmp:rw,uid=10001,gid=10001,mode=0700"]
-    extra_hosts: [host.docker.internal:host-gateway]
-    volumes:
-      - data:/data
-      - ${CC_MODELS_DIR:?verified Paddle model directory}:/opt/creative/.runtime/paddle-models:ro
-      - paddle_cache:/opt/creative/.runtime/paddlex
-      - model_cache:/opt/creative/.runtime/model-cache
-    networks: [private]
-    stop_grace_period: 180s
-  proxy:
+    tmpfs: ["/tmp:size=256m"]
+    security_opt: ["no-new-privileges:true"]
+  web:
+    image: creative-checker:rebuild
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["cp -a /app/frontend/dist/. /web/"]
+    user: "0:0"
+    volumes: ["web-files:/web"]
+    restart: "no"
+  nginx:
     image: nginx:1.28-alpine
-    pull_policy: never
-    depends_on: [api]
-    read_only: true
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
-    tmpfs: [/tmp, /var/cache/nginx, /var/run, /etc/nginx/conf.d]
-    environment:
-      NGINX_ENVSUBST_FILTER: ^CC_
-      CC_SERVER_NAME: ${CC_SERVER_NAME:?exact TLS host}
-      CC_TLS_CERT: /run/tls/cert.pem
-      CC_TLS_KEY: /run/tls/key.pem
-      CC_UPSTREAM: api:8000
-    ports: ["${CC_BIND_IP:-127.0.0.1}:${CC_HTTPS_PORT:-8443}:443"]
+    depends_on:
+      api:
+        condition: service_started
+      web:
+        condition: service_completed_successfully
+    ports: ["80:80", "443:443"]
     volumes:
-      - ./nginx/v1.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - ${CC_TLS_DIR:?certificate directory}:/run/tls:ro
-    networks:
-      private:
-        ipv4_address: ${CC_PROXY_IP:?exact proxy IP matching TRUSTED_PROXY_IPS}
-networks:
-  private:
-    ipam:
-      config: [{subnet: "${CC_SUBNET:?unused private subnet}"}]
+      - web-files:/usr/share/nginx/html:ro
+      - ./nginx/rebuild.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${CC_TLS_DIRECTORY:?Set CC_TLS_DIRECTORY with fullchain.pem and privkey.pem}:/etc/nginx/tls:ro
+    restart: unless-stopped
 volumes:
-  data:
-  paddle_cache:
-  model_cache:
+  web-files:

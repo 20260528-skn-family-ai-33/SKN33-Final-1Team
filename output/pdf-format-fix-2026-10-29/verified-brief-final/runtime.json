@@ -1,0 +1,54 @@
+{
+  "model": "qwen3.5:4b",
+  "ollama": {
+    "version": "0.40.3"
+  },
+  "installed_model": {
+    "name": "qwen3.5:4b",
+    "model": "qwen3.5:4b",
+    "modified_at": "2026-10-29T11:45:26.181534734+09:00",
+    "size": 3973305013,
+    "digest": "7f3251fa6878a78a606bcb3c074283306e5ad2ea411a7774a9dd98a4bc7f2d13",
+    "details": {
+      "parent_model": "",
+      "format": "safetensors",
+      "family": "",
+      "families": null,
+      "parameter_size": "",
+      "quantization_level": "nvfp4",
+      "runner": "mlx"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "thinking",
+      "tools"
+    ]
+  },
+  "model_info": {
+    "details": {
+      "parent_model": "",
+      "format": "safetensors",
+      "family": "qwen3_5",
+      "families": null,
+      "parameter_size": "4.5B",
+      "quantization_level": "nvfp4",
+      "runner": "mlx"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "thinking",
+      "tools"
+    ],
+    "parameters": "top_k                          20\ntop_p                          0.95\nmin_p                          0\npresence_penalty               1.5\nrepeat_penalty                 1\ntemperature                    1"
+  },
+  "platform": "macOS-26.3.1-arm64-arm-64bit",
+  "python": "3.12.14",
+  "extractor_sha256": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+  "code_sha256": {
+    "backend/app/requirements_pdf.py": "755d506cb6486a734789a27216636c8032233f2db1b9fc3755b97a1cdbe3fe91",
+    "backend/app/document_sources.py": "41030d710e5e000aa015db8ede9c3c3ec04009be9828dc95b7e4df6c1e556fb6",
+    "backend/app/document_conditions.py": "820cc320366c8cd0d12c170d1fde2812cbb7a208b930415055b449921a6d70c7"
+  }
+}

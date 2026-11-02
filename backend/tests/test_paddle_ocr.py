@@ -164,6 +164,13 @@ def test_prepare_defaults_to_recognition_and_detection_is_explicit(monkeypatch):
     assert [entry.args[0] for entry in call.call_args_list] == [provision.MODEL, provision.DETECTION_MODEL]
 
 
+def test_english_retry_model_is_only_prepared_explicitly(monkeypatch):
+    call=Mock()
+    monkeypatch.setattr(provision,'prepare_model',call)
+    provision.prepare(include_english=True)
+    assert [entry.args[0] for entry in call.call_args_list]==[provision.MODEL,provision.ENGLISH_MODEL]
+
+
 @pytest.mark.parametrize("filename", ("input.png", "10000000-0000-4000-8000-000000000001"))
 def test_full_worker_uses_only_explicit_local_models_and_disables_transforms(monkeypatch, tmp_path, filename):
     """추가 자동 다운로드가 생기는 문서 보정·회전 모델을 모두 끈다."""

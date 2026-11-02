@@ -1,0 +1,406 @@
+{
+  "started": "2026-10-21T08:00:33.836345+00:00",
+  "ended": "2026-10-21T08:00:39.165004+00:00",
+  "samples": 1800,
+  "warmups": 180,
+  "first_samples": [
+    {
+      "cohort": "base",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 9.470333,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "base",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "elapsed_ms": 20.712208,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "base",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 3.275292,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "base",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "elapsed_ms": 3.125041,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "base",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 1.9865,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "base",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "elapsed_ms": 2.28425,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 1.038583,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "elapsed_ms": 2.726542,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 1.180958,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "elapsed_ms": 3.252083,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 1.319875,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "medium",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "elapsed_ms": 1.818375,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 0.686084,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "elapsed_ms": 2.243,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 0.603375,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "elapsed_ms": 2.647208,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "elapsed_ms": 2.399875,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    },
+    {
+      "cohort": "expanded",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "elapsed_ms": 2.203417,
+      "meaning": "first before dedicated warmup, not controlled cold-cache"
+    }
+  ],
+  "summary": [
+    {
+      "cohort": "base",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 1.0610213,
+      "median_ms": 0.550271,
+      "p95_ms": 2.0715666499999976,
+      "min_ms": 0.302292,
+      "max_ms": 19.511333
+    },
+    {
+      "cohort": "base",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 2.2513666900000002,
+      "median_ms": 1.686938,
+      "p95_ms": 5.218277099999997,
+      "min_ms": 0.775208,
+      "max_ms": 16.981875
+    },
+    {
+      "cohort": "base",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 0.4357983,
+      "median_ms": 0.4065835,
+      "p95_ms": 0.6311173,
+      "min_ms": 0.260042,
+      "max_ms": 1.264208
+    },
+    {
+      "cohort": "base",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 1.19802503,
+      "median_ms": 1.119188,
+      "p95_ms": 1.9456308999999998,
+      "min_ms": 0.761291,
+      "max_ms": 2.288833
+    },
+    {
+      "cohort": "base",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 271,
+      "n": 100,
+      "mean_ms": 1.24158621,
+      "median_ms": 1.1585415000000001,
+      "p95_ms": 1.7252773999999995,
+      "min_ms": 0.826292,
+      "max_ms": 2.566125
+    },
+    {
+      "cohort": "base",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 271,
+      "n": 100,
+      "mean_ms": 1.81939423,
+      "median_ms": 1.563917,
+      "p95_ms": 2.4121776999999995,
+      "min_ms": 0.8065,
+      "max_ms": 24.006542
+    },
+    {
+      "cohort": "medium",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 0.74666704,
+      "median_ms": 0.6667915,
+      "p95_ms": 1.46453365,
+      "min_ms": 0.353833,
+      "max_ms": 2.302
+    },
+    {
+      "cohort": "medium",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 2.18747541,
+      "median_ms": 1.9969375,
+      "p95_ms": 3.9747794499999998,
+      "min_ms": 0.851166,
+      "max_ms": 5.7635
+    },
+    {
+      "cohort": "medium",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 0.47313336,
+      "median_ms": 0.409813,
+      "p95_ms": 0.9459103999999996,
+      "min_ms": 0.282375,
+      "max_ms": 1.682709
+    },
+    {
+      "cohort": "medium",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 1.1830304,
+      "median_ms": 1.0002915000000001,
+      "p95_ms": 2.180472899999999,
+      "min_ms": 0.696625,
+      "max_ms": 4.486834
+    },
+    {
+      "cohort": "medium",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 5420,
+      "n": 100,
+      "mean_ms": 3.56536377,
+      "median_ms": 2.5831255,
+      "p95_ms": 10.034791699999998,
+      "min_ms": 0.795417,
+      "max_ms": 16.05875
+    },
+    {
+      "cohort": "medium",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 5420,
+      "n": 100,
+      "mean_ms": 3.88652501,
+      "median_ms": 2.2329795,
+      "p95_ms": 9.9882399,
+      "min_ms": 0.8705,
+      "max_ms": 29.185875
+    },
+    {
+      "cohort": "expanded",
+      "kind": "trace",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 0.6200958599999999,
+      "median_ms": 0.523979,
+      "p95_ms": 1.1083524,
+      "min_ms": 0.313958,
+      "max_ms": 1.657792
+    },
+    {
+      "cohort": "expanded",
+      "kind": "trace",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 753,
+      "n": 100,
+      "mean_ms": 1.13621422,
+      "median_ms": 1.0703960000000001,
+      "p95_ms": 1.88751935,
+      "min_ms": 0.606375,
+      "max_ms": 2.125709
+    },
+    {
+      "cohort": "expanded",
+      "kind": "exceptions",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 0.40696887,
+      "median_ms": 0.3887505,
+      "p95_ms": 0.5762048,
+      "min_ms": 0.287667,
+      "max_ms": 0.849333
+    },
+    {
+      "cohort": "expanded",
+      "kind": "exceptions",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 142,
+      "n": 100,
+      "mean_ms": 0.95859289,
+      "median_ms": 0.8856040000000001,
+      "p95_ms": 1.4309860499999991,
+      "min_ms": 0.619209,
+      "max_ms": 2.482292
+    },
+    {
+      "cohort": "expanded",
+      "kind": "impact",
+      "engine": "PostgreSQL",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 27100,
+      "n": 100,
+      "mean_ms": 12.03948831,
+      "median_ms": 7.237417,
+      "p95_ms": 40.789449649999995,
+      "min_ms": 0.838375,
+      "max_ms": 60.085542
+    },
+    {
+      "cohort": "expanded",
+      "kind": "impact",
+      "engine": "Neo4j",
+      "positive_requests": 50,
+      "negative_requests": 50,
+      "rows_total": 27100,
+      "n": 100,
+      "mean_ms": 9.28847335,
+      "median_ms": 3.316458,
+      "p95_ms": 24.9494274,
+      "min_ms": 0.740583,
+      "max_ms": 42.19075
+    }
+  ],
+  "manifest": {
+    "fixture.json": "e5a6eab2dfa86492bda686ebeaa92d155115a2f4775e90d5395f84d53fab864d",
+    "cases.json": "c87ca61d26b404872f8f31e8e3b3f485b3825cd22d6e022a8b87974b422e4d44",
+    "plan.json": "dc41b895e258e9aca35dfa8ba3565360aefc803bd7de0e6350191eb03ac578bd",
+    "schedule.json": "e6b19ee444228bd34041c93697b7c04e36b63fdc2a8b2341cf296410bc213c09"
+  },
+  "query_hashes": {
+    "PostgreSQL": {
+      "trace": "9f79de55c00bdb675bcbeb697b1b79a673f1367e7b39352ff03f06096445cf9e",
+      "exceptions": "0bbf4cd52e1fc4a14d082272c2a7550241d3119f66f5967e3fd1e7448966bbe1",
+      "impact": "c9f2d8108f1e113df8d0e3d015106f86fb0e62c36256e6071db3db5915c4f7e3"
+    },
+    "Neo4j": {
+      "trace": "e8b9acd063c2e91c4d7eac3769bd8d369b658cd5270204ec726d29a1375e8ff9",
+      "exceptions": "cdaa7dd1464cf3687f548d032e6a08f323f7c84a0b330c95a660adbe351019ae",
+      "impact": "a42150c346ad2d40d7ae2d7e9ff045dc9fbe03481b1d9c1fffc533b3f06d072c"
+    }
+  }
+}

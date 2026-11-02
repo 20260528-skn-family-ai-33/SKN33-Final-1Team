@@ -1,0 +1,156 @@
+"""CPU-only contract checks; no model download, inference or training."""
+import importlib.util
+from contextlib import ExitStack, redirect_stdout
+import io
+import math
+import hashlib
+import json
+from pathlib import Path
+import tempfile
+import sys
+import types
+import unittest
+from unittest.mock import patch
+import torch
+import run
+
+class ContractTests(unittest.TestCase):
+    def test_unknown_mask_has_no_loss_or_gradient(self):
+        z=torch.tensor([[0.,0.,0.]],requires_grad=True)
+        y=torch.tensor([[1.,float('nan'),0.]])
+        loss,n=run.masked_loss(z,y);loss.backward()
+        self.assertEqual(n,2);self.assertAlmostEqual(loss.item(),2*math.log(2),places=5)
+        self.assertEqual(z.grad[0,1].item(),0.0)
+
+    def test_metrics_ignore_unknown_and_count_support(self):
+        labels=dict.fromkeys(run.LABELS,0);labels['food_drink']=None;labels['person']=1
+        row={'labels':labels}
+        prob=[[0.9,0.9,0.1,0.1,0.1,0.1,0.1,0.1]]
+        m=run.score([row],prob,[.5]*8)
+        self.assertEqual(m['known_cells'],7);self.assertEqual(m['accuracy'],1.)
+        self.assertEqual(m['per_label'][1]['known'],0)
+        self.assertIsNone(m['per_label'][1]['f1'])
+
+    def test_known_and_unknown_targets_are_float32(self):
+        labels=dict.fromkeys(run.LABELS,0);labels['person']=1
+        y=run.target_tensor({'labels':labels},'cpu')
+        self.assertEqual(y.dtype,torch.float32)
+        loss,n=run.masked_loss(torch.zeros((1,8)),y)
+        self.assertEqual(n,8);self.assertTrue(torch.isfinite(loss))
+        labels['food_drink']=None
+        y=run.target_tensor({'labels':labels},'cpu')
+        self.assertEqual(y.dtype,torch.float32);self.assertTrue(torch.isnan(y[0,1]))
+
+    def test_smoke_and_train_epoch_accept_fully_known_labels(self):
+        class Body(torch.nn.Module):
+            def __init__(self):
+                super().__init__();self.encoder=torch.nn.Module()
+                self.encoder.layers=torch.nn.ModuleList([torch.nn.Linear(4,4) for _ in range(4)])
+                self.post_layernorm=torch.nn.LayerNorm(4);self.head=torch.nn.Linear(4,4)
+            def forward(self,x,interpolate_pos_encoding=False):
+                for layer in self.encoder.layers:x=layer(x)
+                return types.SimpleNamespace(pooler_output=self.head(self.post_layernorm(x)))
+        body=Body();head=torch.nn.Linear(4,8)
+        labels=dict.fromkeys(run.LABELS,0);labels['person']=1
+        row=dict(image_id='synthetic',split='train',use='active',labels=labels)
+        args=types.SimpleNamespace(sizes=[384,768],packet=Path('unused'))
+        with ExitStack() as stack:
+            stack.enter_context(patch.object(run,'preflight',return_value={'model':{'checkpoint':'unused'}}))
+            stack.enter_context(patch.object(run,'check_packet',return_value=({},[row],{})))
+            stack.enter_context(patch.object(run,'check_cache'))
+            stack.enter_context(patch.object(run,'load_models',return_value=(body,head)))
+            stack.enter_context(patch.object(run,'images',side_effect=lambda *a:torch.ones((1,4))))
+            for name in ('reset_peak_memory_stats','synchronize','empty_cache'):
+                stack.enter_context(patch.object(torch.cuda,name))
+            stack.enter_context(patch.object(torch.cuda,'max_memory_allocated',return_value=0))
+            captured=io.StringIO()
+            with redirect_stdout(captured):run.smoke(args,device='cpu')
+            self.assertIn('SMOKE OK',captured.getvalue())
+            class NoUpdate:
+                steps=0
+                def zero_grad(self,set_to_none=True):body.zero_grad(set_to_none=True);head.zero_grad(set_to_none=True)
+                def step(self):self.steps+=1
+            optimizer=NoUpdate()
+            loss=run.train_epoch(args,body,head,[row],384,optimizer,1,device='cpu')
+            self.assertTrue(math.isfinite(loss));self.assertEqual(optimizer.steps,1)
+            loss,probs=run.infer(args,body,head,[row],384,device='cpu')
+            self.assertTrue(math.isfinite(loss));self.assertEqual(len(probs[0]),8)
+
+    def test_interpolation_detection_across_transformers_versions(self):
+        class OldVision:
+            def forward(self, pixel_values, interpolate_pos_encoding=False): pass
+        class NewVision:
+            def forward(self, pixel_values, interpolate_pos_encoding=False): pass
+        class NoInterpolation:
+            def forward(self, pixel_values): pass
+        old=type('Module',(),{'SiglipVisionTransformer':OldVision})()
+        new=type('Module',(),{'SiglipVisionModel':NewVision})()
+        missing=type('Module',(),{'SiglipVisionModel':NoInterpolation})()
+        self.assertTrue(run.supports_interpolation(old))
+        self.assertTrue(run.supports_interpolation(new))
+        self.assertFalse(run.supports_interpolation(missing))
+
+    def test_cache_letterbox_and_source_hash(self):
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);packet=root/'packet';packet.mkdir();(packet/'packet.json').write_text('{}')
+            source=packet/'example.png';Image.new('RGB',(40,20),(255,0,0)).save(source)
+            row={'image':'example.png','image_id':'X','sha256':run.sha(source)}
+            args=type('Args',(),{'packet':packet,'cache':root/'cache'})()
+            with patch.object(run,'check_packet',return_value=({},[row],{})):
+                run.make_cache(args)
+            with Image.open(root/'cache/384/X.png') as result:
+                self.assertEqual(result.size,(384,384))
+                self.assertEqual(result.getpixel((0,0)),(128,128,128))
+                self.assertEqual(result.getpixel((192,192)),(255,0,0))
+            run.check_cache(args,[row])
+            (root/'cache/384/X.png').write_bytes(b'changed')
+            with self.assertRaises(ValueError):run.check_cache(args,[row])
+
+    def test_model_head_uses_resolved_vision_config(self):
+        # Regression: serialized JSON may omit hidden_size when it equals a default.
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); (root/'config.json').write_text('{"vision_config": {"image_size": 384}}')
+            backbone=torch.nn.Sequential(torch.nn.Linear(4,4))
+            original_head=torch.nn.Linear(4,8)
+            checkpoint={**{'backbone.'+k:v.clone() for k,v in backbone.state_dict().items()},
+                        **{'classifier.'+k:v.clone() for k,v in original_head.state_dict().items()}}
+            fake_full=types.SimpleNamespace(vision_model=backbone,
+                config=types.SimpleNamespace(vision_config=types.SimpleNamespace(hidden_size=4)))
+            fake_transformers=types.ModuleType('transformers')
+            fake_transformers.AutoModel=types.SimpleNamespace(from_pretrained=lambda *a,**k:(fake_full,{}))
+            fake_safetensors=types.ModuleType('safetensors');fake_safetensors.__path__=[]
+            fake_torch=types.ModuleType('safetensors.torch');fake_torch.load_file=lambda *a,**k:checkpoint
+            args=types.SimpleNamespace(model_dir=root)
+            with patch.dict(sys.modules,{'transformers':fake_transformers,'safetensors':fake_safetensors,'safetensors.torch':fake_torch}):
+                body,head=run.load_models(args,root/'unused.safetensors',device='cpu')
+            self.assertEqual(head.in_features,4)
+            self.assertTrue(torch.equal(head.weight,original_head.weight))
+            self.assertTrue(torch.equal(body[0].weight,backbone[0].weight))
+
+    def test_reference_identity_rejects_modified_checkpoint(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);model=root/'model';ref=root/'ref';model.mkdir();ref.mkdir()
+            files={}
+            for name in ('config.json','model.safetensors','preprocessor_config.json'):
+                path=model/name
+                path.write_text(json.dumps({'model_type':'siglip','vision_config':{'image_size':384}}) if name=='config.json' else name)
+                files[name]={'bytes':path.stat().st_size,'sha256':run.sha(path)}
+            ckpt=ref/'candidates/tail4-lr1e-06/best.safetensors';ckpt.parent.mkdir(parents=True);ckpt.write_bytes(b'checkpoint')
+            config={'model_packet':{'files':files}};sig=hashlib.sha256(json.dumps(config,sort_keys=True,allow_nan=False).encode()).hexdigest()
+            def write(name,obj): (ref/name).write_text(json.dumps(obj))
+            write('protocol.json',{'config':config,'signature':sig})
+            write('status.json',{'status':'complete','protocol_signature':sig})
+            write('selection_frozen.json',{'protocol_signature':sig,'checkpoint':'candidates/tail4-lr1e-06/best.safetensors','artifact_hashes':{'best.safetensors':run.sha(ckpt)},'thresholds':[.5]*8})
+            write('selection_commit.json',{'sha256':run.sha(ref/'selection_frozen.json')})
+            self.assertEqual(run.model_identity(model,ref)['checkpoint_sha256'],run.sha(ckpt))
+            ckpt.write_bytes(b'changed')
+            with self.assertRaises(ValueError):run.model_identity(model,ref)
+
+    def test_safe_paths(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            self.assertEqual(run.inside(root,'images/a.jpg'),(root/'images/a.jpg').resolve())
+            with self.assertRaises(ValueError):run.inside(root,'../outside')
+
+if __name__=='__main__':unittest.main()

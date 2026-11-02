@@ -1,0 +1,31 @@
+{
+  "files": [
+    {
+      "file": "01_김천김밥축제_포스터_720x1018.png",
+      "source": "/Users/choejiheum/SK_AI/최종프로젝트/기준문서/김천김밥축제_용역계약_초안/김천김밥축제_포스터_디자인용역계약서_초안_v0.1.docx#word/media/image1.png",
+      "sha256": "5c0a6e800d603c827a9e11f08c7604c1bb23bd60228bcd2ed23a48fa95828e8e",
+      "dimensions": [
+        720,
+        1018
+      ]
+    },
+    {
+      "file": "02_디자인용역계약서_전체_7쪽.pdf",
+      "source": "/Users/choejiheum/SK_AI/최종프로젝트/기준문서/김천김밥축제_용역계약_초안/김천김밥축제_포스터_디자인용역계약서_초안_v0.1.pdf",
+      "sha256": "a49a2850375af9364ebe62021690b6a8d71dd685479bf4cf283885dac03d46fd",
+      "bytes": 757350
+    },
+    {
+      "file": "03_요구사항표_1쪽_텍스트.pdf",
+      "source": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/.runtime/pdf-input-smoke/requirements-page.pdf",
+      "sha256": "bbb064853dfaf35426a93e3f5e7b7d046857c24ab02bfac850f608cb685ebaa4",
+      "bytes": 586797
+    },
+    {
+      "file": "04_요구사항표_1쪽_스캔.pdf",
+      "source": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/.runtime/pdf-input-smoke/requirements-scan.pdf",
+      "sha256": "4cda3685d91fc9643717c88cbaa340b88773ccf9b8a114c672f1dfb64f368abf",
+      "bytes": 135471
+    }
+  ]
+}

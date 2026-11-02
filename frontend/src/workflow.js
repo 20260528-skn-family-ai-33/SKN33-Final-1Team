@@ -1,12 +1,13 @@
 export const initialState = {
   step: 'input', projectName: '', requirements: '', file: null,
-  criteria: [], snapshot: null, version: 0, review: null,
+  criteria: [], snapshot: null, version: 0, review: null, documentSources: [],
 };
 
-export function parseRequirements(value) {
+export function parseRequirements(value, documentSources = []) {
   return value.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map((text, i) => ({
     id: `criterion-${i + 1}`, text, source: text, selected: true,
     type: /로고|색상|가독성|잘리|이미지|그림|배치|시각|캐릭터/.test(text) ? 'visual' : 'information',
+    ...documentSources.find(item => item.text === text),
   }));
 }
 
@@ -21,17 +22,34 @@ export function canRun(state) {
 
 export function workflowReducer(state, action) {
   switch (action.type) {
+    case 'restore': {
+      const review = action.review;
+      if (!review?.id || !Array.isArray(review.criteria) || !review.criteria.length) return state;
+      return { ...initialState, step: review.status === 'completed' ? 'results' : 'running',
+        projectName: review.project_name, requirements: review.criteria.map(item => item.text).join('\n'),
+        file: action.file, criteria: review.criteria.map(item => ({ ...item, selected: true })),
+        snapshot: { version: review.criteria_version, criteria: review.criteria, projectName: review.project_name },
+        version: review.criteria_version, review };
+    }
     case 'input':
       return { ...state, [action.field]: action.value, criteria: [], snapshot: null, review: null };
     case 'sample':
       return { ...state, step: 'input', projectName: action.projectName, requirements: action.requirements,
-        file: action.file, criteria: [], snapshot: null, review: null };
+        file: action.file, criteria: [], snapshot: null, review: null, documentSources: [] };
+    case 'document':
+      return { ...state, requirements: action.requirements,
+        documentSources: [...state.documentSources, ...action.sources], criteria: [], snapshot: null, review: null };
     case 'prepare':
       if (!state.file || !state.requirements.trim()) return state;
-      return { ...state, step: 'criteria', criteria: state.criteria.length ? state.criteria : parseRequirements(state.requirements) };
+      return { ...state, step: 'criteria', criteria: state.criteria.length ? state.criteria : parseRequirements(state.requirements, state.documentSources) };
     case 'update':
       if (state.snapshot) return state;
-      return { ...state, review: null, criteria: state.criteria.map(item => item.id === action.id ? { ...item, ...action.patch } : item) };
+      return { ...state, review: null, criteria: state.criteria.map(item => {
+        if (item.id !== action.id) return item;
+        const updated = { ...item, ...action.patch };
+        if (Object.hasOwn(action.patch, 'text') && action.patch.text !== item.text) delete updated.document_condition;
+        return updated;
+      }) };
     case 'select':
       if (state.snapshot) return state;
       return { ...state, review: null, criteria: state.criteria.map(item => ({ ...item, selected: action.selected })) };
@@ -41,7 +59,8 @@ export function workflowReducer(state, action) {
     case 'confirm': {
       if (!canConfirm(state)) return state;
       const version = state.version + 1;
-      const criteria = state.criteria.filter(item => item.selected).map(({ id, text, type, source }) => ({ id, text: text.trim(), type, source }));
+      const criteria = state.criteria.filter(item => item.selected).map(({ id, text, type, source, document_condition }) => ({ id, text: text.trim(), type, source,
+        ...(document_condition ? { document_condition } : {}) }));
       return { ...state, version, review: null, snapshot: { version, criteria, projectName: state.projectName } };
     }
     case 'unlock':

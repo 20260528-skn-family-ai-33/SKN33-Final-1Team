@@ -1,0 +1,65 @@
+Creative Checker · Fairweather frontend application · 2026-10-30
+
+Applied to the actual React app
+  Both legacy and v1 use the same landing page. Login, input, criteria, running,
+  results, and v1 project/history screens use the new shared visual language.
+  Existing authentication, API contracts, route guards, OCR evidence coordinates,
+  pending-request handling, and document extraction behavior are preserved.
+  Existing unrelated working-tree edits were retained.
+
+Reference / design-dna
+  Skill: https://github.com/zanwei/design-dna
+  Reference: https://uiverse.io/design/systems/fairweather
+  Approved basis: public preview only, not the paid pack's source code.
+  Public screenshot is bundled in src/assets/fairweather-public-preview.png.
+  Its provenance is recorded in src/assets/README.txt.
+  Measured neutral colors: canvas #f2f2f1, input #ececea, ink #171717,
+  secondary text #6e6e6b, white #ffffff, decorative green #1db954.
+  Readable status text uses darker green. Fonts, dimensions, mobile behavior,
+  Korean copy, product artwork, and motion are implementation choices.
+  Reference layout: dot grid, blue pixel sky, layered white window, large white
+  cards, black primary buttons. Public screenshot is clipped behind live HTML.
+  UI typography uses local system fallbacks; no remote font service is required.
+
+Source map
+  src/styles/fairweather.css: shared tokens, legacy workspace and login theme.
+  src/pages/LandingPage.jsx: shared product introduction and route entry points.
+  src/styles/landing-fairweather.css: landing-specific fw- selectors.
+  src/hooks/useScrollScene.js: scroll progress, bounded transforms, reveal cleanup.
+  src/v1/v1.css: scoped v1 workspace overrides.
+  src/v1/App.jsx: shared landing route, existing protected routes unchanged.
+
+Motion
+  Desktop >=900px wide and >=760px high: sticky scene with 340px scroll travel.
+  Scene scale 1 -> 1.065, inner window 1 -> 1.12, window shift 0 -> -12px.
+  requestAnimationFrame writes CSS variables; no React state update per scroll.
+  IntersectionObserver reveals sections and preserves keyboard-focused content.
+  Mobile/small windows and prefers-reduced-motion: fixed illustration, no sticky
+  travel or zoom. Reduced-motion CSS also removes reveal transitions.
+  Handlers, observers, and pending frames are cleaned up on unmount / StrictMode.
+
+Run with your existing backend
+  cd frontend
+  npm run dev       # legacy, API proxy defaults to http://127.0.0.1:8000
+  npm run dev:v1    # v1, requires the existing v1 backend setup
+  Set API_PROXY_TARGET only if your backend uses a different local URL.
+  Open the Vite HTTP URL printed in the terminal; do not open index.html via file://.
+
+Validation
+  npm test          # 36 tests: prior 33 plus 3 motion geometry/bounds tests
+  npm run test:v1   # 35 existing v1 tests
+  npm run build
+  npm run build:v1
+  tests/visual/README.txt describes an optional in-memory HTTP fixture for UI QA.
+  Chrome UI checked: legacy sample -> criteria -> run -> filter/evidence;
+  v1 stored image -> draft -> criteria -> run -> evidence/OCR; desktop, 900px
+  tablet and 390px mobile. No horizontal document overflow in checked views.
+  Motion preference behavior was code-reviewed; mobile fallback and desktop
+  scale changes were verified in Chrome. No actual model, DB or production
+  deployment was run as part of the visual validation.
+
+Scope boundary
+  Revision-image comparison, revision requests, and human final-approval APIs
+  are not implemented by this style change. Review completion and machine
+  verdicts remain distinct from human approval. Landing artwork is labeled
+  as an example, and visual test results are explicitly synthetic.

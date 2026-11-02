@@ -1,0 +1,32 @@
+{
+  "path": "/Users/choejiheum/Downloads/1팀_테스트/01_image_test/creative_brief.pdf",
+  "bytes": 69073,
+  "sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+  "encrypted": false,
+  "pages": [
+    {
+      "page": 1,
+      "box": [
+        0,
+        0,
+        595.2756,
+        841.8898
+      ],
+      "rotation": 0,
+      "text_chars": 456,
+      "images": 0
+    },
+    {
+      "page": 2,
+      "box": [
+        0,
+        0,
+        595.2756,
+        841.8898
+      ],
+      "rotation": 0,
+      "text_chars": 679,
+      "images": 0
+    }
+  ]
+}

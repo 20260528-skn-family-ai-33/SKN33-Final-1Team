@@ -1,0 +1,10 @@
+{
+  "backend": "isolated simulated extraction; real HTTP NDJSON stream",
+  "observedProgress": [
+    50,
+    100
+  ],
+  "existingInputPreserved": true,
+  "appliedOnlyAfterResult": true,
+  "pageErrors": []
+}

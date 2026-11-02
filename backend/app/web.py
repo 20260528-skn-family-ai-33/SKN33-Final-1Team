@@ -7,9 +7,10 @@ from .config import ConfigurationError
 from .security.errors import AuthError
 
 UUID = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-PAGE = re.compile(rf'^/(?:|login|projects|review/new|projects/{UUID}/(?:review/new|drafts|reviews|(?:drafts|criteria|reviews)/{UUID}))$')
+PAGE = re.compile(rf'^/(?:|login|modeltest/?|projects|review/new|projects/{UUID}/(?:review/new|drafts|reviews|(?:drafts|criteria|reviews)/{UUID}))$')
 ASSET = re.compile(r'^[A-Za-z0-9_-]+-[A-Za-z0-9_-]{8,}\.(?:js|css|woff2|png|svg)$')
 CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+MODELTEST_CSP = CSP.replace("connect-src 'self'", "connect-src 'self' https://*.proxy.runpod.net http://localhost:* https://localhost:* http://127.0.0.1:* https://127.0.0.1:*").replace("object-src", "media-src 'self' blob:; object-src")
 
 
 def prepare_build(root: Path):
@@ -43,9 +44,9 @@ def install_routes(app, root):
         raise AuthError('RESOURCE_NOT_FOUND', 404)
 
 
-def headers(response, *, secure):
+def headers(response, *, secure, modeltest=False):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'same-origin'
     response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
-    response.headers['Content-Security-Policy'] = CSP
+    response.headers['Content-Security-Policy'] = MODELTEST_CSP if modeltest else CSP
     if secure: response.headers['Strict-Transport-Security'] = 'max-age=31536000'

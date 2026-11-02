@@ -96,6 +96,27 @@ def test_partial_source_results_remain_partial_without_invented_passes(context):
     assert not detail['results_complete'] and len(detail['criteria'])==2 and len(detail['results'])==1
 
 
+def test_pdf_metadata_jsonb_round_trip_and_import_hash_validation(context):
+    from backend.app.document_conditions import render_condition
+    from backend.app.management.backup import graph_check
+    ctx=context
+    snapshot=json.loads((ctx.source/'snapshot.json').read_text())
+    condition=dict(label='행사명',requirement='합성 축제',level='필수',inspection='원문과 비교',
+                   sources=[dict(source_id='p1-s1',page=1,source='행사명: 합성 축제')])
+    snapshot['criteria'][0].update(text=render_condition(condition),document_condition=condition)
+    (ctx.source/'snapshot.json').write_text(json.dumps(snapshot,ensure_ascii=False))
+    p=plan(ctx);apply(ctx,p)
+    with unit_of_work(ctx.env.owner) as c:
+        item=one(c,'criteria_items','criteria_item_id',UUID(p['resources']['items']['one']))
+        result=one(c,'item_results','result_id',UUID(p['resources']['results']['one']))
+        assert item['expected_value']=='합성 축제' and item['is_required'] is True
+        assert item['source_locator']=={'sources':condition['sources']}
+        assert item['source_item_jsonb']==snapshot['criteria'][0]
+        assert result['source_status']=='pass' and result['verdict'] is None
+        checked=graph_check(c,ctx.storage,ctx.env.db.settings.database.username)
+        assert checked['import_manifests_checked']>=1
+
+
 @pytest.mark.parametrize('kind',('missing_image','missing_criteria','precision','provider_hash','unknown_result','multi_poster'))
 def test_ambiguous_source_is_intake_only_needs_review(context,kind):
     ctx=context

@@ -1,0 +1,65 @@
+{
+  "review_id": "068f4f9f-9651-47d9-8ed2-d6c283b0b2bf",
+  "status": "completed",
+  "elapsed_seconds": 16.613,
+  "actual_full_paddle_inference": true,
+  "actual_region_paddle_inference": true,
+  "llm_inference_executed": false,
+  "expected_loaded_after_inference": true,
+  "image_sha256": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+  "criteria_sha256": "dcb35bb068ab78f13ddf89edbf1357ae354a106b849ce4bfb332e24c94c70416",
+  "expected_sha256": "44ba456c0a1c39f58f01e872bd3ff01c98eb23bbd3cbc7b56e752912666a4b04",
+  "code_sha256": {
+    "backend/app/paddle_conditions.py": "50a2f1b9badaa837ec1d4849189bf884aa9ffea789f9e5f41235d658f180a978",
+    "backend/app/paddle_condition_worker.py": "6f8cfe110b11c48ba673fa107f57f64a7400860a61283d8b563b5cd742991978",
+    "backend/app/structured_review.py": "1cb80ff70323029d0f21a7f60f0104ca48b6fae5a636f65d7928fd1ad5c10749",
+    "backend/app/api.py": "04e512cb445aef967968048c63eef9e147fd1bde19306612cac429552ea05da0"
+  },
+  "checks": {
+    "title": {
+      "expected": "수원재즈페스티벌",
+      "observed": "수원재즈페스티벌",
+      "score": 0.9795600175857544,
+      "exact_equal": true,
+      "whitespace_normalized_equal": true
+    },
+    "year": {
+      "expected": "2026",
+      "observed": "2026",
+      "score": 0.9619708061218262,
+      "exact_equal": true,
+      "whitespace_normalized_equal": true
+    },
+    "arc": {
+      "expected": "2026 SUWON JAZZ FESTIVAL",
+      "observed": "2026 SUWON JAZZ FESTIVAL",
+      "score": 0.9699798226356506,
+      "exact_equal": true,
+      "whitespace_normalized_equal": true
+    }
+  },
+  "scope": "한 포스터의 지정 전사값 비교. 모델 전체 정확도·자동 승인 평가가 아닙니다.",
+  "retry_status": "success",
+  "model_identity": {
+    "ko": {
+      "model": "korean_PP-OCRv5_mobile_rec",
+      "repository": "PaddlePaddle/korean_PP-OCRv5_mobile_rec",
+      "revision": "c02ecaf1f22bfd1c618cce154fd19185b47e663a",
+      "sha256": {
+        "inference.json": "562404e3c590c50c93778d5f0a94df21b47b5ab8f3ea6d47c7f8a7930c3bc844",
+        "inference.pdiparams": "cac3e5f12cf04aaa77f6a5bc704e4e736ef2908476551891d84b41b4e9090462",
+        "inference.yml": "f757fa1c40e99edcf27e9cce879b93eb2a51fa46f5ef39095689b8c37dd75998"
+      }
+    },
+    "en": {
+      "model": "en_PP-OCRv5_mobile_rec",
+      "repository": "PaddlePaddle/en_PP-OCRv5_mobile_rec",
+      "revision": "267c36e24c331595590fe7bd72bde2436fd286f2",
+      "sha256": {
+        "inference.json": "fd1b6ec722ea841a72d3ba43e527df1d1066d5d7808e0503ee3eec7265188753",
+        "inference.pdiparams": "3ec8a97ed6cefe8568d3e2ee90bb193299b566a7661aa4fd52d224b96b59f66b",
+        "inference.yml": "27e91d0582f40168aa218303c76e184bc78fa7a5d105aad0cfbad8458b441067"
+      }
+    }
+  }
+}

@@ -128,7 +128,7 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
             response=await call_next(request)
         except AuthError as error:response=error_response(request,error)
         from .web import headers
-        headers(response,secure=settings.secure)
+        headers(response,secure=settings.secure,modeltest=request.url.path.rstrip('/') == '/modeltest')
         response.headers['Cache-Control']='no-store'
         response.headers['X-Request-ID']=request.state.request_id
         return response
@@ -157,6 +157,10 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
 
     from .routes.v1.auth import router,envelope
     app.include_router(router())
+    if not settings.secure and settings.environment in ('development', 'test'):
+        from pathlib import Path
+        from .modeltest_ssh import modeltest_ssh_router
+        app.include_router(modeltest_ssh_router(Path(__file__).resolve().parents[2] / '.runtime' / 'modeltest-ssh'))
 
     if settings.storage_root is not None:
         from .routes.v1.business import router as business_router

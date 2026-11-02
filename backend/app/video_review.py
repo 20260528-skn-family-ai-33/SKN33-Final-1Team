@@ -94,6 +94,13 @@ def _read_json(path: Path):
 # 3단계 — Paddle 전용 환경에서 프레임 전체를 한 프로세스로
 # ---------------------------------------------------------------------------
 def ocr_readiness() -> tuple[bool, str]:
+    """RunPod Pod 워커(VIDEO_LOGO_WORKER_URL)가 있으면 자막 OCR도 워커 GPU에서 읽는다. 없으면 로컬 Paddle 환경."""
+    from . import video_logo_remote as R
+    try:
+        if R.worker_url():
+            return R.health()
+    except R.WorkerError as exc:
+        return False, str(exc)
     from .paddle_ocr import paddle_readiness
     return paddle_readiness()
 
@@ -155,11 +162,19 @@ async def save_logo_query(logo, target: Path) -> bool:
 
 
 def paddle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
-    """모델을 한 번 불러 모든 프레임을 읽는다. 프레임 하나의 실패는 그 프레임만 'failed'로 남긴다."""
-    from PIL import Image
-    from scripts.prepare_paddle import DETECTION_MODEL, MODEL, verify_model
+    """모델을 한 번 불러 모든 프레임을 읽는다. 프레임 하나의 실패는 그 프레임만 'failed'로 남긴다.
+    RunPod Pod 워커가 설정돼 있으면 워커의 GPU Paddle로 읽고(같은 모델·설정), 결과 형식은 같다."""
+    from scripts.prepare_paddle import DETECTION_MODEL, MODEL, MODEL_SPECS, verify_model
+    from . import video_logo_remote as R
     from .ocr_runtime import OCRRuntimeError, PROJECT_ROOT
-    from .paddle_ocr import normalize_records, paddle_paths, paddle_readiness, worker_environment
+    from .paddle_ocr import paddle_paths, paddle_readiness, worker_environment
+
+    if R.worker_url():
+        rows = R.ocr_frames(frames, progress)
+        _write_jsonl(directory / "paddle.raw.jsonl", rows)
+        expected = {m: {"model": m, "repository": f"PaddlePaddle/{m}", **MODEL_SPECS[m]} for m in (DETECTION_MODEL, MODEL)}
+        return _parse_paddle_rows(rows, frames, lambda h: str(h.get("device", "")).split(":")[0] in {"cpu", "gpu"},
+                                  expected[DETECTION_MODEL], expected[MODEL])
 
     ready, detail = paddle_readiness()
     if not ready:
@@ -190,11 +205,18 @@ def paddle_frames(frames: list[Path], directory: Path, progress: Callable[[int],
     if worker.returncode != 0:
         raise subprocess.CalledProcessError(worker.returncode, worker.args)
     rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return _parse_paddle_rows(rows, frames, lambda h: h.get("device") == "cpu", verify_model(detection, DETECTION_MODEL),
+                              verify_model(recognition, MODEL))
+
+
+def _parse_paddle_rows(rows, frames, device_ok, detection_identity, recognition_identity) -> dict:
+    """paddle_video_worker 출력(헤더 + 프레임별 줄)을 검수 형식으로. 모델 식별자가 고정된 모델과 다르면 실패."""
+    from PIL import Image
+    from .paddle_ocr import normalize_records
     header, results = rows[0], rows[1:]
     identity = header["model_identity"]
-    if (header.get("kind") != "header" or header.get("device") != "cpu"
-            or identity["detection"] != verify_model(detection, DETECTION_MODEL)
-            or identity["recognition"] != verify_model(recognition, MODEL)):
+    if (header.get("kind") != "header" or not device_ok(header)
+            or identity["detection"] != detection_identity or identity["recognition"] != recognition_identity):
         raise ValueError("Paddle video output identity mismatch")
     if [row.get("index") for row in results] != list(range(len(frames))):
         raise ValueError("Paddle video frame count mismatch")
@@ -212,7 +234,7 @@ def paddle_frames(frames: list[Path], directory: Path, progress: Callable[[int],
             out.append({"status": "ok", "records": records, "unread_boxes": len(raw.get("rec_texts", [])) - len(records)})
         except (ValueError, KeyError, TypeError, AttributeError):
             out.append({"status": "failed", "records": []})
-    return {"frames": out, "load_seconds": header.get("load_seconds"),
+    return {"frames": out, "load_seconds": header.get("load_seconds"), "device": header.get("device"),
             "inference_seconds": [row.get("inference_seconds") for row in results]}
 
 
@@ -306,7 +328,7 @@ class Pipeline:
         failed = sum(1 for f in frames if f["ocr_status"] == "failed")
         if failed:
             self.warnings.append(f"OCR이 실패한 프레임 {failed}장은 판정에서 위반을 확정하지 않습니다.")
-        runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": "cpu", "load_seconds": payload.get("load_seconds"),
+        runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": payload.get("device") or "cpu", "load_seconds": payload.get("load_seconds"),
                    "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
                    "ocr_success_ratio": round(succeeded, 4)}
 

@@ -1,0 +1,20 @@
+[
+  {
+    "document": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/.runtime/pdf-input-smoke/requirements-page.pdf",
+    "sha256": "bbb064853dfaf35426a93e3f5e7b7d046857c24ab02bfac850f608cb685ebaa4",
+    "status": "success",
+    "elapsed_seconds": 37.074,
+    "result_file": "01-requirements-page.json",
+    "conditions": 7,
+    "image_count": 1
+  },
+  {
+    "document": "/Users/choejiheum/SK_AI/SKN33-Final-1Team/output/pdf/수원재즈페스티벌_고해상도_새테스트_2026-10-29/02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf",
+    "sha256": "61a6c2e82bd60f96f7dde6fd6f754ad9a72fbb7171d0c9276a5092e934854216",
+    "status": "success",
+    "elapsed_seconds": 90.673,
+    "result_file": "02-02_수원재즈페스티벌_디자인용역_가상계약서_v1.json",
+    "conditions": 16,
+    "image_count": 2
+  }
+]

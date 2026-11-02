@@ -1,5 +1,25 @@
+[project]
+name = "creative-checker"
+version = "0.2.0"
+description = "Versioned creative review, evidence and human approval"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn>=0.30,<1", "pydantic>=2.10,<3",
+  "sqlalchemy>=2.0,<3", "psycopg[binary,pool]>=3.2,<4",
+  "python-multipart>=0.0.20,<1",
+  "httpx>=0.28,<1", "pillow>=11,<13", "pymupdf>=1.25,<2",
+  "defusedxml>=0.7,<1", "imageio-ffmpeg>=0.6,<1", "boto3>=1.40,<2",
+  "langgraph>=1,<2", "langgraph-checkpoint-postgres>=3,<4",
+  "mcp>=1.26,<2", "neo4j>=5.28,<7"
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2"]
+
 [tool.pytest.ini_options]
 testpaths = ["backend/tests", "tests"]
+addopts = "-m 'not db_integration and not ocr_external and not integration and not live_model'"
 pythonpath = ["."]
-addopts = "-m 'not db_integration and not ocr_external'"
-markers = ["db_integration: explicit isolated PostgreSQL tests; selected runs fail if configuration is missing", "ocr_external: explicitly enabled real local model inference; never part of default CI"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["db_integration: explicit isolated legacy PostgreSQL integration", "ocr_external: real local OCR inference", "integration: requires isolated PostgreSQL and Neo4j", "live_model: requires explicitly configured Qwen endpoint"]

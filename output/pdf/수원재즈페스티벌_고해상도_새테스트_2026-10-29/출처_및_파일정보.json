@@ -1,0 +1,39 @@
+{
+  "referenced_chat": {
+    "title": "추천 모델 조사",
+    "thread_id": "01a16255-8944-72a1-bd07-49702b76aa8a",
+    "link": "codex://threads/01a16255-8944-72a1-bd07-49702b76aa8a"
+  },
+  "downloaded_collection_link": "/Users/choejiheum/Documents/Codex/2026-09-25/x20-x20/outputs/모닝컵_가상납품검수_예제/output/poster-pixel-replacement-2026-10-27/poster-set-187/images",
+  "source_record": {
+    "image_id": "NEW023",
+    "image": "images/NEW023.jpg",
+    "width": "2527",
+    "height": "3572",
+    "pixels": "9026444",
+    "sha256": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+    "kind": "다른_국내_행사_포스터",
+    "source_page": "https://mayor.suwon.go.kr/culture/ingCultureView.do?ctrSeqNo=2140&listType=main",
+    "license": "미확인",
+    "label_status": "미확인",
+    "split": "미배정",
+    "title": "2026 수원재즈페스티벌"
+  },
+  "copied_image": "01_수원재즈페스티벌_고해상도_2527x3572.jpg",
+  "original_bytes_preserved": true,
+  "image_sha256": "e47812c5b322a5516b78618b2567e1c558b4bcca9f93006d599f8be89ba57c91",
+  "pdf": "02_수원재즈페스티벌_디자인용역_가상계약서_v1.pdf",
+  "pdf_sha256": "61a6c2e82bd60f96f7dde6fd6f754ad9a72fbb7171d0c9276a5092e934854216",
+  "contract_is_new_synthetic_test_document": true,
+  "ai_image_generated": false,
+  "model_inference_executed": false,
+  "validation": {
+    "pdf_pages": 3,
+    "all_16_requirement_ids_present": true,
+    "no_characters_outside_page_bounds": true,
+    "all_rendered_pages_visually_inspected": true,
+    "image_original_hash_matches": true,
+    "within_current_upload_limits": true,
+    "model_inference_executed": false
+  }
+}

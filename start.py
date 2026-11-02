@@ -13,6 +13,7 @@ from urllib.parse import unquote, urlsplit
 
 from backend.app.ocr_config import selected_pipeline
 from backend.app.ocr_runtime import MODEL_FILES
+from scripts.local_ollama import requirements_server
 
 ROOT = Path(__file__).resolve().parent
 SERVER_PACKAGES = (("uvicorn", "uvicorn"), ("fastapi", "fastapi"),
@@ -229,6 +230,9 @@ def startup_checks(windows):
 
 # 올바른 프로젝트 Python에서만 검사하고, 준비가 끝난 경우에만 서버를 시작한다.
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] in {"api", "worker", "projection", "mcp"}:
+        from scripts.run_rebuild import main as rebuild_main
+        return rebuild_main(sys.argv[1:])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
@@ -283,7 +287,8 @@ def main():
     print(f"\n브라우저 주소: http://{args.host}:{args.port}", flush=True)
     print("실행 중에는 터미널에 입력 프롬프트가 돌아오지 않는 것이 정상입니다.", flush=True)
     print("이 터미널을 유지하고 브라우저를 여세요. Ctrl+C는 서버 종료입니다.\n", flush=True)
-    uvicorn.run("backend.app.api:app", host=args.host, port=args.port)
+    with requirements_server():
+        uvicorn.run("backend.app.api:app", host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

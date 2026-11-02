@@ -1,0 +1,234 @@
+{
+  "reference_origin": "Manual comparison against the two rendered pages of the user-provided PDF; regression checks for this single file, not a general accuracy benchmark or approved training labels",
+  "source_pdf_sha256": "fe2cda59a12f8743862e4fdd5efbb1b6de07b133d26d3b7512b6924f28496af4",
+  "runs": [
+    {
+      "run": "direct_real_model",
+      "conditions": 15,
+      "information": 11,
+      "visual": 4,
+      "timing": {
+        "ocr_seconds": 22.634,
+        "llm_seconds": 45.138,
+        "total_seconds": 67.772
+      },
+      "checks": [
+        {
+          "name": "브랜드 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "상품명 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "가격 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "판매 기간 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "판매처 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "필수 고지 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "캠페인 문구 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "이미지 비율 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "최소 이미지 폭 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "파일 형식 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "색상 모드 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "색상·분위기",
+          "passed": true
+        },
+        {
+          "name": "상품 이미지",
+          "passed": true
+        },
+        {
+          "name": "가독성",
+          "passed": true
+        },
+        {
+          "name": "정성 검토",
+          "passed": true
+        },
+        {
+          "name": "중복 표시 문구 없음",
+          "passed": true
+        },
+        {
+          "name": "브랜드 OR 보존",
+          "passed": true
+        },
+        {
+          "name": "필수 고지 중복 병합·두 페이지 근거",
+          "passed": true
+        },
+        {
+          "name": "가격 변경 금지 보존",
+          "passed": true
+        },
+        {
+          "name": "날짜 예외 보존·캠페인 설명 분리",
+          "passed": true
+        },
+        {
+          "name": "비율 권장·±1px 보존",
+          "passed": true
+        },
+        {
+          "name": "권장 수준·비율 오차를 폭에 전파하지 않음",
+          "passed": true
+        },
+        {
+          "name": "IMG-01~07 모두 추출",
+          "passed": true
+        },
+        {
+          "name": "선택한 본문 지시 근거 모두 보존",
+          "passed": true
+        },
+        {
+          "name": "초안 승인 상태 유지",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "run": "browser_real_api",
+      "conditions": 15,
+      "information": 11,
+      "visual": 4,
+      "timing": {
+        "ocr_seconds": 22.512,
+        "llm_seconds": 52.06,
+        "total_seconds": 74.571
+      },
+      "checks": [
+        {
+          "name": "브랜드 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "상품명 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "가격 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "판매 기간 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "판매처 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "필수 고지 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "캠페인 문구 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "이미지 비율 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "최소 이미지 폭 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "파일 형식 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "색상 모드 기대값·정보 분류",
+          "passed": true
+        },
+        {
+          "name": "색상·분위기",
+          "passed": true
+        },
+        {
+          "name": "상품 이미지",
+          "passed": true
+        },
+        {
+          "name": "가독성",
+          "passed": true
+        },
+        {
+          "name": "정성 검토",
+          "passed": true
+        },
+        {
+          "name": "중복 표시 문구 없음",
+          "passed": true
+        },
+        {
+          "name": "브랜드 OR 보존",
+          "passed": true
+        },
+        {
+          "name": "필수 고지 중복 병합·두 페이지 근거",
+          "passed": true
+        },
+        {
+          "name": "가격 변경 금지 보존",
+          "passed": true
+        },
+        {
+          "name": "날짜 예외 보존·캠페인 설명 분리",
+          "passed": true
+        },
+        {
+          "name": "비율 권장·±1px 보존",
+          "passed": true
+        },
+        {
+          "name": "권장 수준·비율 오차를 폭에 전파하지 않음",
+          "passed": true
+        },
+        {
+          "name": "IMG-01~07 모두 추출",
+          "passed": true
+        },
+        {
+          "name": "선택한 본문 지시 근거 모두 보존",
+          "passed": true
+        },
+        {
+          "name": "초안 승인 상태 유지",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "confirmed_snapshot_schema": "valid",
+  "source_pdf_unchanged": true
+}

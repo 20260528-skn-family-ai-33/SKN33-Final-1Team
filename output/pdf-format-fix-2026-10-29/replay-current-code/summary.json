@@ -1,0 +1,37 @@
+[
+  {
+    "file": "01-NEW103_spec_v1.json",
+    "status": "success",
+    "conditions": 9,
+    "information": 7,
+    "visual": 2
+  },
+  {
+    "file": "02-NEW114_spec_v1.json",
+    "status": "success",
+    "conditions": 8,
+    "information": 7,
+    "visual": 1
+  },
+  {
+    "file": "03-NEW052_spec_v1.json",
+    "status": "success",
+    "conditions": 8,
+    "information": 7,
+    "visual": 1
+  },
+  {
+    "file": "04-02_수원재즈페스티벌_디자인용역_가상계약서_v1.json",
+    "status": "success",
+    "conditions": 16,
+    "information": 10,
+    "visual": 6
+  },
+  {
+    "file": "05-creative_brief.json",
+    "status": "success",
+    "conditions": 15,
+    "information": 11,
+    "visual": 4
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "arc-240-rgb",
+    "path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-240-rgb.png"
+  },
+  {
+    "id": "arc-240-mask",
+    "path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-240-mask.png"
+  },
+  {
+    "id": "arc-320-rgb",
+    "path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-320-rgb.png"
+  },
+  {
+    "id": "arc-320-mask",
+    "path": "output/paddle-conditional-2026-10-29/probes-arc-01/arc-320-mask.png"
+  }
+]

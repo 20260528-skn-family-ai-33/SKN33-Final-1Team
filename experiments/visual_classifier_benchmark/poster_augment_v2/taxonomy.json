@@ -1,0 +1,66 @@
+{
+  "version": "visual-presence-v1",
+  "labels": [
+    {
+      "id": "person",
+      "name_ko": "인물",
+      "definition": "실제 사람 사진, 사람 그림, 명확한 사람 실루엣. 사람 이름이나 공연 문구만 있으면 부재. 동물/사물 마스코트는 인물이 아님."
+    },
+    {
+      "id": "food_drink",
+      "name_ko": "음식·음료",
+      "definition": "음식, 식별되는 식재료·과일·채소, 잔/컵에 담긴 음료 등. 축제명·글자나 단순 색 면만으로 추정하지 않음."
+    },
+    {
+      "id": "animal",
+      "name_ko": "동물",
+      "definition": "동물 사진·그림 및 동물임을 알아볼 수 있는 마스코트. 사람이나 정체 불명의 얼굴 장식은 제외."
+    },
+    {
+      "id": "plant_flower",
+      "name_ko": "식물·꽃",
+      "definition": "독립적으로 식별 가능한 꽃·나무·잎·풀 등의 사진/그림. 녹색 배경만으로 판정하지 않음."
+    },
+    {
+      "id": "vehicle",
+      "name_ko": "탈것",
+      "definition": "자동차·버스·기차·자전거·배·비행기 등 탈것의 시각적 묘사."
+    },
+    {
+      "id": "building_structure",
+      "name_ko": "건물·구조물",
+      "definition": "건물·성곽·탑·한옥·교량 등의 식별 가능한 구조물. 단순 사각 프레임·도형은 제외."
+    },
+    {
+      "id": "musical_instrument",
+      "name_ko": "악기",
+      "definition": "기타·북·피아노·관악기 등 식별되는 악기. 음표·가수 이름·공연 문구는 악기가 아님. 마이크·스피커는 이 범주에서 제외."
+    },
+    {
+      "id": "fireworks",
+      "name_ko": "불꽃놀이",
+      "definition": "불꽃놀이 폭발/궤적의 시각적 묘사. 별·반짝이·일반 불·축제명만 있으면 해당하지 않음."
+    }
+  ],
+  "task": "Image-level multi-label presence; not person identity, object counting, detection or quality classification.",
+  "values": {
+    "1": "visually present",
+    "0": "visually absent",
+    "null": "uncertain or unreadable; requires human decision"
+  },
+  "scope": "Main photographic, illustrative or silhouette content. Ignore tiny sponsor/footer logo emblems and pictograms inside textual glyphs. Clear objects may be photo or drawing. Multiple categories may be present simultaneously.",
+  "negative_rule": "Do not infer from the filename, festival title, OCR text or external knowledge. Text-only words do not prove visual presence.",
+  "human_review_required": true,
+  "defaults": {
+    "human_verified": false,
+    "use_for_training": false,
+    "review_status": "needs_human_review"
+  },
+  "evidence": "Record a short visual description and approximate part of the poster; never invent an exact bbox.",
+  "person_rendering": [
+    "photo",
+    "illustration",
+    "silhouette"
+  ],
+  "classification_thresholds": "Not chosen before human review and grouped dev splitting."
+}

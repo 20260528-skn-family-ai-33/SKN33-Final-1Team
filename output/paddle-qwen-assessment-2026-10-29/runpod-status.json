@@ -1,0 +1,58 @@
+{
+  "observed_at_utc": "2026-10-29T08:23:11.600882+00:00",
+  "read_only": true,
+  "jobs": [
+    {
+      "folder": "/workspace/highres30-poster-ocr-vtf8wlvf",
+      "status": {
+        "status": "poster_ocr_smoke_completed",
+        "output": "/workspace/highres30-poster-ocr-vtf8wlvf",
+        "image_id": "NEW103",
+        "text_conditions": 5,
+        "fulfilled": 3,
+        "review": 2,
+        "execution_errors": 0,
+        "native_tiles": 6,
+        "overview_ocr": 1,
+        "native_tile_coverage_complete": true,
+        "ocr_sources": 138,
+        "qwen_execution": false,
+        "training_execution": false,
+        "human_verified_conditions": 0,
+        "full_30_image_review_completed": false
+      },
+      "process": {
+        "pid": 231264,
+        "state": "not_running"
+      },
+      "result_keys": [
+        "schema",
+        "summary",
+        "conditions"
+      ],
+      "condition_results": []
+    },
+    {
+      "folder": "/workspace/highres30-pdf-batch-tmu7qijj",
+      "status": {
+        "status": "qwen_running",
+        "current_page": "NEW061-page-2",
+        "page_index": 36,
+        "paddle_attempts_this_run": 59,
+        "qwen_attempts_this_run": 34
+      },
+      "process": {
+        "pid": 224435,
+        "state": "R",
+        "output_folder_matches": true,
+        "script_names": [
+          "run_highres30_pdf_batch_v1.py"
+        ]
+      },
+      "model": {
+        "model_id": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      }
+    }
+  ]
+}

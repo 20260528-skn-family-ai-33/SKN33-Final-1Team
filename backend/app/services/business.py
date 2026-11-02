@@ -247,7 +247,8 @@ class Business:
                 connection.execute(insert(table('criteria_items')).values(criteria_item_id=uuid4(), project_id=pid,
                     target_asset_version_id=current['target_asset_version_id'], criteria_version_id=identifier,
                     external_item_id=item['external_item_id'], position=item['position'], category=item['category'], text=item['text'],
-                    source_text=item['source_text'], source_item_jsonb=item['source_item']))
+                    source_text=item['source_text'], source_item_jsonb=item['source_item'],
+                    expected_value=item['expected_value'],is_required=item['is_required'],source_locator=item['source_locator']))
             connection.execute(update(versions).where(versions.c.criteria_version_id == identifier).values(sealed_at=func.clock_timestamp()))
             audit(connection, subject, pid, 'criteria_version.confirmed', 'criteria_version', identifier, request_id)
             result = self.version_dto(connection, one(connection, 'criteria_versions', 'criteria_version_id', identifier))

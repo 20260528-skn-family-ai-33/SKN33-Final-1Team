@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-rebuild/
 # Keep the previous local environment excluded during migration.
 .venv-review/
 venv/
@@ -31,10 +32,14 @@ htmlcov/
 # Secrets and local environment
 .env
 .env.*
+.env_*
+*.env
+*.env.*
 !.env.example
 !.env.sample
 !.env.template
 !.env.*.example
+!*.env.example
 
 # Local Docker volume data
 /docker-data/
@@ -48,6 +53,13 @@ Desktop.ini
 /.runtime/
 /artifacts/
 
+# RunPod poster experiment: download payloads; never commit keys or model outputs.
+/experiments/poster_benchmark/assets/
+/experiments/poster_benchmark/runs/
+/experiments/poster_benchmark/.cache/
+/experiments/poster_benchmark/.ocr-venv/
+/experiments/poster_benchmark/*.tar*
+*.gpu_owner.lock
 # 로고 시드: 추출한 PNG만 추적한다. 큰 다운로드 아카이브·incoming 스테이징은 제외
 data/logos/**/*.zip
 data/logos/_incoming*/
@@ -59,3 +71,7 @@ data/videos/*.webm
 data/videos/*.m3u8
 data/videos/*.ts
 data/videos/_incoming*/
+
+# Alternate frontend profiles are rebuilt from the shared source.
+/frontend/dist-v1/
+/frontend/dist-rebuild/

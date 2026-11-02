@@ -1,0 +1,351 @@
+{
+  "version": 1,
+  "criteria": [
+    {
+      "id": "criterion-1",
+      "text": "브랜드: 온결 또는 ONGYEOL",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기",
+      "document_condition": {
+        "label": "브랜드",
+        "requirement": "온결 또는 ONGYEOL",
+        "inspection": "온결 또는 ONGYEOL 표기",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s13",
+            "page": 2,
+            "source": "IMG-01 | 브랜드 | 온결 또는 ONGYEOL 표기"
+          },
+          {
+            "source_id": "p1-s8",
+            "page": 1,
+            "source": "브랜드 | 온결 또는 ONGYEOL"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-2",
+      "text": "상품명: 배 라떼",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-02 | 상품명 | 배 라떼 한글 표기",
+      "document_condition": {
+        "label": "상품명",
+        "requirement": "배 라떼",
+        "inspection": "배 라떼 한글 표기",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s14",
+            "page": 2,
+            "source": "IMG-02 | 상품명 | 배 라떼 한글 표기"
+          },
+          {
+            "source_id": "p1-s10",
+            "page": 1,
+            "source": "상품명 | 배라떼"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-3",
+      "text": "가격: 5,900원",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-03 | 가격 | 5,900원 표기,가격변경 불가",
+      "document_condition": {
+        "label": "가격",
+        "requirement": "5,900원",
+        "inspection": "가격 변경 불가",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s15",
+            "page": 2,
+            "source": "IMG-03 | 가격 | 5,900원 표기,가격변경 불가"
+          },
+          {
+            "source_id": "p1-s11",
+            "page": 1,
+            "source": "판매 가격 | 5,900원"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-4",
+      "text": "기간: 2026.11.01 - 11.30",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-04 | 판매 기간 | 2026.11.01- 11.30에 해당하는 기간",
+      "document_condition": {
+        "label": "판매 기간",
+        "requirement": "2026.11.01 - 11.30",
+        "inspection": "기간의 0 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다.",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s16",
+            "page": 2,
+            "source": "IMG-04 | 판매 기간 | 2026.11.01- 11.30에 해당하는 기간"
+          },
+          {
+            "source_id": "p1-s12",
+            "page": 1,
+            "source": "판매기간 | 2026.11.01- 11.30"
+          },
+          {
+            "source_id": "p2-s20",
+            "page": 2,
+            "source": "기간의 ㅇ 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다. 캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-5",
+      "text": "장소: 온결 전매장",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-05 | 판매처 | 온결 전매장 표기",
+      "document_condition": {
+        "label": "판매처",
+        "requirement": "온결 전매장",
+        "inspection": "온결 전매장 표기",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s17",
+            "page": 2,
+            "source": "IMG-05 | 판매처 | 온결 전매장 표기"
+          },
+          {
+            "source_id": "p1-s13",
+            "page": 1,
+            "source": "판매처 | 온결 전 매장"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-6",
+      "text": "필수 고지: 시즌 한정·재료 소진 시 조기 종료",
+      "type": "information",
+      "source": "creative_brief.pdf · 2·1페이지 · PDF 이미지 + OCR 판독문\nIMG-06 | 필수 고지 | 시즌 한정·재료 소진 시 조기 종료",
+      "document_condition": {
+        "label": "필수 고지",
+        "requirement": "시즌 한정·재료 소진 시 조기 종료",
+        "inspection": "시즌 한정·재료 소진 시 조기 종료",
+        "level": "필수",
+        "sources": [
+          {
+            "source_id": "p2-s18",
+            "page": 2,
+            "source": "IMG-06 | 필수 고지 | 시즌 한정·재료 소진 시 조기 종료"
+          },
+          {
+            "source_id": "p1-s14",
+            "page": 1,
+            "source": "필수 고지 | 시즌 한정·재료 소진 시 조기 종료"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-7",
+      "text": "이미지 비율: 4:5",
+      "type": "information",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nIMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+      "document_condition": {
+        "label": "이미지 비율",
+        "requirement": "4:5",
+        "inspection": "4:5 비율의 픽셀 반올림 차이는 ±1px 까지 허용한다. / 최소 폭 1024px·PNG·RGB / ± 1px 허용",
+        "level": "권장",
+        "sources": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB"
+          },
+          {
+            "source_id": "p2-s9",
+            "page": 2,
+            "source": "SNS 세로형 4:5 권장·최소 폭 1024px·PNG·RGB"
+          },
+          {
+            "source_id": "p2-s10",
+            "page": 2,
+            "source": "4:5 비율의 픽셀 반올림 차이는 ± 1px까지 허용한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-8",
+      "text": "최소 이미지 폭: 1024px 이상",
+      "type": "information",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nIMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+      "document_condition": {
+        "label": "최소 이미지 폭",
+        "requirement": "1024px 이상",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-9",
+      "text": "파일 형식: PNG",
+      "type": "information",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nIMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+      "document_condition": {
+        "label": "파일 형식",
+        "requirement": "PNG",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-10",
+      "text": "색상 모드: RGB",
+      "type": "information",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\nIMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB",
+      "document_condition": {
+        "label": "색상 모드",
+        "requirement": "RGB",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s19",
+            "page": 2,
+            "source": "IMG-07 | 파일규격 | 4:5 권장(±1px 허용),폭1024px 이상,PNG, RGB"
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-11",
+      "text": "캠페인 문구: 가을을 담은 한 잔",
+      "type": "information",
+      "source": "creative_brief.pdf · 1·2페이지 · PDF 이미지 + OCR 판독문\n캠페인 | 가을을 담은 한 잔",
+      "document_condition": {
+        "label": "캠페인 문구",
+        "requirement": "가을을 담은 한 잔",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p1-s9",
+            "page": 1,
+            "source": "캠페인 | 가을을 담은 한 잔"
+          },
+          {
+            "source_id": "p2-s20",
+            "page": 2,
+            "source": "기간의 ㅇ 표기 및 구분자는 달라도 실제 시작일과 종료일이 같으면 허용한다. 캠페인 문구 “가을을 담은 한 잔”도 누락 없이 표기한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-12",
+      "text": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보해야 합니다.",
+      "type": "visual",
+      "source": "creative_brief.pdf · 1페이지 · PDF 이미지 + OCR 판독문\n모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다.",
+      "document_condition": {
+        "label": "표기 가독성",
+        "requirement": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보해야 합니다.",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p1-s15",
+            "page": 1,
+            "source": "모든 표기는 소비자가 쉽게 읽을 수 있는 크기와 대비를 확보한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-13",
+      "text": "분위기: 크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+      "type": "visual",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\n크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+      "document_condition": {
+        "label": "분위기",
+        "requirement": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다.",
+        "inspection": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s6",
+            "page": 2,
+            "source": "크림과 딥그린을 중심으로 차분하고 따뜻한 가을 분위기를 표현한다."
+          },
+          {
+            "source_id": "p2-s7",
+            "page": 2,
+            "source": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-14",
+      "text": "상품 배치: 배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+      "type": "visual",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\n배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+      "document_condition": {
+        "label": "상품 배치",
+        "requirement": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다.",
+        "inspection": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s7",
+            "page": 2,
+            "source": "배 라떼 한 잔과 배 이미지를 활용하여 상품이 자연스럽게 돋보이게 한다."
+          },
+          {
+            "source_id": "p2-s8",
+            "page": 2,
+            "source": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다."
+          }
+        ]
+      }
+    },
+    {
+      "id": "criterion-15",
+      "text": "디자인 검토: 배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+      "type": "visual",
+      "source": "creative_brief.pdf · 2페이지 · PDF 이미지 + OCR 판독문\n배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+      "document_condition": {
+        "label": "디자인 검토",
+        "requirement": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다.",
+        "inspection": "",
+        "level": "명시 없음",
+        "sources": [
+          {
+            "source_id": "p2-s8",
+            "page": 2,
+            "source": "배치와 색감은 전체 인상과 가독성을 기준으로 정성 검토한다."
+          }
+        ]
+      }
+    }
+  ],
+  "projectName": ""
+}

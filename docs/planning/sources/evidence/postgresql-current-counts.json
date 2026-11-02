@@ -1,0 +1,54 @@
+{
+  "queried_at": "2026-10-30T17:11:56.989752+09:00",
+  "schema": {
+    "status": "schema_ready",
+    "revision": "M008",
+    "business_tables": 26,
+    "columns": 395,
+    "foreign_keys": 81,
+    "additional_indexes": 27,
+    "trigger_instances": 35,
+    "functions": 19,
+    "structure_sha256": "6fd3482be2bdafc005d190c9be7831296bc08980350c828c48440541d24a9fc4",
+    "scope": "database_schema_and_privileges"
+  },
+  "jsonb_columns": 48,
+  "server_version": "17.11 (Debian 17.11-1.pgdg12+2)",
+  "table_counts": {
+    "alembic_version": 1,
+    "asset_versions": 41,
+    "assets": 41,
+    "audit_events": 96,
+    "criteria_drafts": 3,
+    "criteria_items": 395,
+    "criteria_sets": 41,
+    "criteria_versions": 41,
+    "evidence_ocr_tokens": 24,
+    "evidence_records": 24,
+    "image_coordinate_frames": 84,
+    "import_packages": 39,
+    "item_results": 315,
+    "ocr_runs": 2,
+    "ocr_tokens": 36,
+    "poster_extractions": 2,
+    "poster_field_observations": 18,
+    "project_members": 4,
+    "projects": 4,
+    "record_aliases": 38,
+    "review_attempts": 40,
+    "review_runs": 40,
+    "run_item_selections": 315,
+    "schema_definitions": 0,
+    "stored_files": 307,
+    "user_sessions": 1,
+    "users": 1
+  },
+  "review_origin_counts": {
+    "service_execution": 2,
+    "legacy_result": 38
+  },
+  "criteria_confirmation_counts": {
+    "confirmed": 2,
+    "unconfirmed": 39
+  }
+}

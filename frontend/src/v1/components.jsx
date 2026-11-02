@@ -5,7 +5,7 @@ import { useAction, useResource } from './hooks.jsx';
 import * as api from './api.js';
 import { Brand } from '../components/Brand.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
-export function Title({ title, children }) { return <div className="page-heading"><p className="eyebrow">CREATIVE CHECKER</p><h1 id="page-title" tabIndex={-1}>{title}</h1><p>{children}</p></div>; }
+export function Title({ title, children }) { return <div className="page-heading v2-page-heading"><p className="eyebrow">YOUR REVIEW WORKSPACE</p><h1 id="page-title" tabIndex={-1}>{title}</h1><p>{children}</p></div>; }
 export function Resource({ state, children }) {
   if (state.loading) return <p role="status" className="form-card">서버에 저장된 자료를 불러오고 있어요.</p>;
   if (state.error) return <section className="form-card"><h2>{state.error.status === 404 ? '자료를 찾을 수 없습니다.' : '자료를 불러오지 못했습니다.'}</h2><ErrorMessage message={state.error.message} /><button className="btn secondary" onClick={state.reload}>다시 조회</button><Link className="btn secondary" to="/projects">프로젝트 목록</Link></section>;
@@ -31,6 +31,10 @@ export function ServerState() {
 }
 export function Workspace() {
   const auth = useAuth(); const navigate = useNavigate(); const action = useAction(`logout:${auth.user.id}`); const match = useMatch('/projects/:projectId/*'); const pid = match?.params.projectId;
-  return <div className="app-shell v1-shell"><aside className="sidebar"><Brand onClick={() => navigate('/projects')} /><p className="workspace-name">WORKSPACE</p><nav className="v1-nav" aria-label="업무 메뉴"><NavLink to="/projects" end>내 프로젝트</NavLink>{pid && <><NavLink to={`/projects/${pid}/review/new`}>이미지·요구사항 입력</NavLink><NavLink to={`/projects/${pid}/drafts`}>저장된 초안·기준</NavLink><NavLink to={`/projects/${pid}/reviews`}>검수 이력</NavLink></>}</nav><div className="sidebar-bottom"><p>확정한 기준과 검수 이력을 보존합니다.<br />자동 판정은 담당자의 최종 승인이 아닙니다.</p></div></aside>
-    <div className="app-area"><header className="app-topbar"><Link to="/projects">내 검수 프로젝트</Link><div className="topbar-right"><ServerState /><span className="user-label">{auth.user.display_name}</span><button className="text-btn" disabled={action.busy} onClick={async () => { if (!window.dispatchEvent(new Event('cc:v1:before-logout', { cancelable: true }))) return; const done = await action.run(async signal => { await auth.logout(signal); return true; }); if (done) navigate('/login', { replace: true }); }}>{action.busy ? '로그아웃 중…' : '로그아웃'}</button></div></header><main className="app-main"><ErrorMessage message={action.error} /><Outlet key={auth.user.id} /></main></div></div>;
+  return <div className="app-shell v1-shell v2-workspace">
+    <header className="v2-global-header"><div className="v2-brand-group"><Brand onClick={() => navigate('/projects')} /><span className="v2-brand-divider" /><NavLink className="v2-workspace-link" to="/projects">프로젝트</NavLink></div><div className="v2-account"><ServerState /><span className="user-label"><span className="v2-avatar" aria-hidden="true">{auth.user.display_name.slice(0, 1)}</span>{auth.user.display_name}</span><button className="text-btn" disabled={action.busy} onClick={async () => { if (!window.dispatchEvent(new Event('cc:v1:before-logout', { cancelable: true }))) return; const done = await action.run(async signal => { await auth.logout(signal); return true; }); if (done) navigate('/login', { replace: true }); }}>{action.busy ? '로그아웃 중…' : '로그아웃'}</button></div></header>
+    {pid && <div className="v2-context-bar"><Link className="v2-back-link" to="/projects"><span aria-hidden="true">←</span> 내 프로젝트</Link><nav className="v2-tabs" aria-label="업무 메뉴"><NavLink to={`/projects/${pid}/review/new`}>이미지·요구사항 입력</NavLink><NavLink to={`/projects/${pid}/drafts`}>저장된 초안·기준</NavLink><NavLink to={`/projects/${pid}/reviews`}>검수 이력</NavLink></nav><span className="v2-context-note">프로젝트 작업 공간</span></div>}
+    <main className="app-main v2-main"><ErrorMessage message={action.error} /><Outlet key={auth.user.id} /></main>
+    <footer className="v2-workspace-footer"><span>Creative Checker</span><p>확정한 기준과 검수 이력을 보존합니다. 자동 판정은 담당자의 최종 승인이 아닙니다.</p></footer>
+  </div>;
 }
