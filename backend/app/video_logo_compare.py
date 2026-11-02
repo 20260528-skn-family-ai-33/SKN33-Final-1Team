@@ -10,6 +10,7 @@
      심볼: 자리에 전경이 30% 미만이면 다른 곳에서 비슷한 모양을 찾아 '위치 다름', 없으면 '빠짐'
            높이 20px 미만이면 비교 불가, 아니면 모양 F1 0.6 미만이면 '모양 다름'
      추가: 원본 문구에 없는 OCR 줄, 어느 요소 자리와도 떨어진 전경 덩어리
+     기준 문구가 없으면: 원본을 영상 전경 높이로 줄여 같은 크기에서 읽은 OCR 줄과 비교해 빠짐·추가를 낸다(same_size_text)
      크기 비율: 심볼이 로고의 15% 이상·높이 20px 이상일 때 심볼:주 문구 높이 비가 1.3배 넘게 다르면 '크기 비율 다름'
   ④ 초마다 match / diff(이름 붙은 근거) / unknown(비교 불가가 있음)
   ⑤ 색: 유채색 화소끼리만 비교(흰색·검은색 단색은 통과). 위 판정에는 섞지 않고 근거로만 함께 낸다.
@@ -127,6 +128,29 @@ def ref_lines(ref_text: str) -> list[str]:
     return [norm(l) for l in ref_text.split("|") if norm(l)]
 
 
+def _near(a: str, pool: list[str]) -> bool:
+    return any(sub_dist(a, b) <= len(a) / 2 or sub_dist(b, a) <= len(b) / 2 for b in pool)
+
+
+def same_size_text(q_lines: list[str], ref: dict, mq: np.ndarray) -> list[tuple[str, str]]:
+    """기준 문구가 없을 때의 문자 비교(실험 diff_real과 같은 방식): 원본을 영상 전경 높이로 줄여 같은 크기에서 읽고,
+    원본에만 있는 줄은 빠짐, 영상에만 있는 줄은 추가로 낸다. 같은 크기라 작은 글자·장식 글꼴은 양쪽이 똑같이 못 읽는다.
+    실험은 줄인 원본의 OCR 잡음(심볼에서 읽힌 글자)을 사람이 쓴 문구로 걸렀는데, 여기서는 원본 원래 크기 OCR로 거른다."""
+    if not ref["auto"] or not mq.any():
+        return []
+    bq, br = bbox(mq), bbox(ref["mask"]); k = (bq[3] - bq[1]) / max(1, br[3] - br[1]); rf = ref["image"]
+    small = rf.resize((max(8, round(rf.width * k)), max(8, round(rf.height * k))), Image.LANCZOS)
+    r_lines = [o["t"] for o in ocr_boxes(small) if _near(o["t"], ref["auto"])]
+    cur = "".join(ref["auto"]); out = []
+    for l in r_lines:
+        if not _near(l, q_lines):
+            out.append(("빠짐", f"원본 문구 '{l}' 없음(같은 크기 원본 OCR 기준)"))
+    for l in q_lines:
+        if not _near(l, r_lines) and sub_dist(l, cur) > len(l) / 2:
+            out.append(("추가", f"원본에 없는 문구 '{l}'(같은 크기 원본 OCR 기준)"))
+    return out
+
+
 # ---------------------------------------------------------------------------
 # 요소
 # ---------------------------------------------------------------------------
@@ -159,7 +183,8 @@ def reference(image: Image.Image, ref_text: str) -> dict:
     """원본 로고 1장을 요소(주 문구·보조 문구·심볼, 또는 로고 전체)로 나눈다."""
     from .video_logo_candidates import on_white
     rf = trim_ref(on_white(image)); mr = fg_mask(rf); H, W = mr.shape; lines = ref_lines(ref_text); texts = []
-    for o in ocr_boxes(rf):
+    full = ocr_boxes(rf)
+    for o in full:
         i = match_line(o["t"], lines)
         if i is not None:
             texts.append({**o, "ref_t": lines[i]})
@@ -179,7 +204,8 @@ def reference(image: Image.Image, ref_text: str) -> dict:
             els.append({"type": "symbol", "name": "심볼", "box": list(bbox(sym)), "mask": sym, "share": float(sym.sum() / mr.sum())})
     if not els or not any(e["type"] in ("main", "symbol") for e in els):
         els = [{"type": "whole", "name": "로고 전체", "box": list(bbox(mr)), "mask": mr}]
-    return {"image": rf, "mask": mr, "elements": els, "lines": lines}
+    # auto: 원본 원래 크기 OCR 줄. 기준 문구가 없을 때 같은 크기 비교의 잡음 거르기에만 쓴다
+    return {"image": rf, "mask": mr, "elements": els, "lines": lines, "auto": [] if lines else [o["t"] for o in full]}
 
 
 def compare(q: Image.Image, ref: dict) -> dict:
@@ -237,9 +263,11 @@ def compare(q: Image.Image, ref: dict) -> dict:
                 if f1 < SYMBOL_F1:
                     st = "changed"; findings.append(("가림·변형", f"{e['name']} 모양이 원본과 다름(F1 {f1:.2f})"))
         status.append({"type": e["type"], "name": e["name"], "status": st, "box": [round(float(v), 1) for v in eb]})
-    for o in (qocr if lines else []):  # 기준 문구가 없으면 문자 비교를 하지 않는다
+    for o in (qocr if lines else []):  # 기준 문구가 없으면 아래 같은 크기 원본 OCR과 비교한다
         if not o.get("used") and match_line(o["t"], lines) is None and sub_dist(o["t"], cur) > len(o["t"]) / 2:
             findings.append(("추가", f"원본에 없는 문구 '{o['raw']}'"))
+    if not lines:
+        findings += same_size_text([o["t"] for o in qocr], ref, mq)
     mapped = [_expand(mp(e["box"]), .2, W, H) for e in els]
     for g in qg:
         b = g["box"]

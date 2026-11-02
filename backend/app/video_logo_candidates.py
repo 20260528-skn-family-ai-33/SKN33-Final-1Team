@@ -7,6 +7,7 @@
   ④ 시간 묶음: 3초 이내 간격, 위치·크기·모양이 이어지면 같은 묶음(화면 전환으로는 끊지 않는다)
   ⑤ 원본 로고마다 묶음 점수 = 초별 최고 SigLIP2 유사도의 상위 3개 평균(짧은 변 48px 미만 상자는 원본을 작게 줄인 사본과 비교)
   ⑥ 묶음 점수 상위 40개의 대표 상자를 OCR해 원본 문구(3글자 이상 조각)를 80% 이상 읽으면 +0.10 → 순위 점수
+     원본 문구는 사람이 쓴 기준 문구, 비어 있으면 원본 로고 OCR로 대신한다(ref_text_for_bonus, 실험 설정 밖의 보완)
 결과는 확정 화면(frontend/src/pages/video/LogoConfirmPage.jsx)이 읽는 data.json 형식이다.
 """
 from __future__ import annotations
@@ -167,6 +168,18 @@ def _ocr_text(im, b) -> str:
     return " ".join(t for t, _, _ in M.ocr_predict(np.asarray(c.convert("RGB"))))
 
 
+def ref_text_for_bonus(r: dict) -> tuple[str, str | None]:
+    """가산점 기준 문구와 그 출처. 사람이 쓴 기준 문구가 우선이고, 비어 있으면 원본 로고 OCR(점수 0.5 이상 줄)로 대신한다.
+    원본 OCR이 잘못 읽어도 후보가 그 글자와 맞을 일이 드물어 가산점이 안 붙을 뿐이다(기준 문구를 비운 것과 같다)."""
+    if r["text"]:
+        return r["text"], "input"
+    im = on_white(r["image"]); k = min(1.0, 2000 / max(im.size))
+    if k < 1:
+        im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+    text = " ".join(t for t, _, s in M.ocr_predict(np.asarray(im)) if s >= .5) if min(im.size) >= 8 else ""
+    return text, "ocr" if text.strip() else None
+
+
 def build_candidates(frames_dir: Path, frames: list[dict], refs: list[dict], progress=lambda p, d: None) -> dict:
     """refs = [{"name", "image": PIL, "text"}] → 확정 화면용 data(refs, groups, size, seconds)."""
     # 원본 임베딩: 원본 + 짧은 변 20·28·40·56px로 줄인 사본(작은 상자용)
@@ -220,6 +233,7 @@ def build_candidates(frames_dir: Path, frames: list[dict], refs: list[dict], pro
         (best.append(r) if best else groups.append([r]))
     members = [[(m["sec"], m["bbox"], m["sim"]) for r in g for m in r["members"]] for g in groups]
     progress(70, "후보 OCR")
+    bonus_refs = [ref_text_for_bonus(r) for r in refs]
     # 원본마다 묶음 점수 상위 40개의 대표 상자를 OCR한다(같은 상자는 한 번만)
     scale = DISPLAY_LONG / max(frames[0]["size"]) if frames else 1.0
     cache, ocr_hits, frame_cache = {}, [], {}
@@ -238,7 +252,8 @@ def build_candidates(frames_dir: Path, frames: list[dict], refs: list[dict], pro
                 if sec not in frame_cache:
                     frame_cache[sec] = Image.open(frames_dir / "full" / f"{sec}.jpg").convert("RGB")
                 cache[key] = _ocr_text(frame_cache[sec], b)
-            hits[gi] = [cache[key], seg_match(cache[key], r["text"]) >= OCR_MATCH if r["text"] else False]
+            ref_text = bonus_refs[ri][0]
+            hits[gi] = [cache[key], seg_match(cache[key], ref_text) >= OCR_MATCH if ref_text.strip() else False]
         ocr_hits.append(hits)
         progress(70 + 25 * (ri + 1) / max(1, len(refs)), f"후보 OCR {ri + 1}/{len(refs)}")
     out_groups = []
@@ -257,4 +272,5 @@ def build_candidates(frames_dir: Path, frames: list[dict], refs: list[dict], pro
                            "score": score, "rank": rank, "rep": [[b[1], [round(c * scale, 1) for c in b[2]]] for b in best]})
     size = frames[0]["size"] if frames else [0, 0]
     return {"size": [round(size[0] * scale), round(size[1] * scale)], "seconds": len(frames),
-            "refs": [{"name": r["name"], "ocr": {str(gi): v for gi, v in ocr_hits[ri].items()}} for ri, r in enumerate(refs)], "groups": out_groups}
+            "refs": [{"name": r["name"], "ocr": {str(gi): v for gi, v in ocr_hits[ri].items()},
+                      "bonus_text": bonus_refs[ri][0], "bonus_basis": bonus_refs[ri][1]} for ri, r in enumerate(refs)], "groups": out_groups}
