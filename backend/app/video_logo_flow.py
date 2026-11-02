@@ -12,6 +12,7 @@ from __future__ import annotations
 from io import BytesIO
 from ipaddress import ip_address
 import json
+import math
 from pathlib import Path
 import shutil
 import threading
@@ -293,8 +294,11 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 if type(li) is not int or not 0 <= li < len(meta["logos"]) or not isinstance(a.get("crops"), list):
                     raise HTTPException(422, "원본 로고 번호(logo)나 crops 형식이 맞지 않습니다.")
                 for c in a["crops"]:
-                    if not (isinstance(c, dict) and isinstance(c.get("bbox"), list) and len(c["bbox"]) == 4 and isinstance(c.get("sec"), int)):
-                        raise HTTPException(422, "crop마다 sec(정수)와 bbox(4개)가 필요합니다.")
+                    box = c.get("bbox") if isinstance(c, dict) else None
+                    if not (isinstance(box, list) and len(box) == 4 and isinstance(c.get("sec"), int)
+                            and all(type(v) in (int, float) and math.isfinite(v) for v in box)
+                            and box[0] < box[2] and box[1] < box[3]):
+                        raise HTTPException(422, "crop마다 sec(정수)와 bbox(x1<x2, y1<y2인 숫자 4개)가 필요합니다.")
             if len({a["logo"] for a in answers}) != len(answers):
                 raise HTTPException(422, "같은 원본 로고 번호가 두 번 들어 있습니다.")
             (target / "compare.json").unlink(missing_ok=True)  # 다시 실행하면 이전 결과를 새 결과처럼 보여 주지 않는다
