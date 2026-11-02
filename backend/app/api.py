@@ -561,7 +561,7 @@ def create_app(
                             raise AuthError('MAINTENANCE_ACTIVE',503)
                     if request.method not in ('GET','HEAD','OPTIONS'):
                         application.state.csrf.verify(request,postgres_store.settings)
-                    if request.url.path.startswith(('/api/reviews','/api/requirements','/api/video-reviews')):
+                    if request.url.path.startswith(('/api/reviews','/api/requirements','/api/video-reviews','/api/video-logos')):
                         from .routes.v1.business import subject
                         request.state.web_subject=await run_in_threadpool(subject,request)
                 response=await call_next(request)
