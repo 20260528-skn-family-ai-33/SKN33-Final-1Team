@@ -177,7 +177,11 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                             path = target / "frames" / "full" / f"{sec}.jpg"
                             if not path.is_file():
                                 skipped.append({"sec": sec, "reason": "frame_missing"}); continue
-                            q = V.crop_at(Image.open(path).convert("RGB"), crop["bbox"], data["size"], crop.get("source", "manual"))
+                            box = crop["bbox"]
+                            if crop.get("source") == "candidate" and crop.get("group") is not None:
+                                # 후보는 화면에서 본 그 초의 위치로 자른다. 직접 지정은 고정 좌표를 그대로 쓴다.
+                                box = data["groups"][crop["group"]]["box"][li].get(str(sec), box)
+                            q = V.crop_at(Image.open(path).convert("RGB"), box, data["size"], crop.get("source", "manual"))
                             if min(q.size) < 4:
                                 skipped.append({"sec": sec, "reason": "crop_too_small"}); continue
                             items.append((sec, q))
