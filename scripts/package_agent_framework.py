@@ -45,18 +45,18 @@ def build_pages():
 <a class="card" href="../planning/{PLAN}.html"><strong>02 / 전체 계획</strong><span>목표 구조, 역할별 계약, 저장·복구, 구현 단계와 완료 기준</span></a>
 <a class="card" href="graphify-out/graph.html"><strong>03 / Graphify 코드 지도</strong><span>현재 Python 코드의 클래스·함수·호출 관계</span></a>
 <a class="card" href="guide.html"><strong>04 / 개발 시작하기</strong><span>역할별 구성 · 설정 진단 · macOS·Windows 개발 API 실행</span></a>
-<a class="card" href="team-integration-guide.html"><strong>05 / 담당자별 연결 가이드</strong><span>수정 파일 · factory · 역할별 테스트 · 실제 기능 인수 순서</span></a>
+<a class="card" href="에이전트_프레임워크_가이드.html"><strong>05 / 담당자별 연결 가이드</strong><span>수정 파일 · factory · 역할별 테스트 · 실제 기능 인수 순서</span></a>
 </div>
 <h2>열람 방법</h2><ol><li>Git으로 받은 프로젝트에서 <code>docs/agent-framework/index.html</code>을 Chrome으로 엽니다.</li>
 <li>개발할 때는 프로젝트 루트의 코드·예제·테스트를 사용합니다. share 폴더와 기존 ZIP은 이전 공유 사본입니다.</li>
 <li>Mac·Windows 모두 동일합니다. HTML과 하위 폴더를 함께 이동하면 링크가 유지됩니다. 코드 근거 링크는 브라우저에서 행 번호까지 표시합니다.</li></ol>
 <p class="note">현재 제공 범위는 공통 계약·역할 어댑터·기존 저장소 파일 접근·메모리 기반 승인 및 재검수와 단계별 실행 기록입니다. Qwen 추론·PostgreSQL/Neo4j 검색·MCP·영속 저장·front-v2 연결은 담당자가 구현할 후속 범위입니다.</p>
-<p>담당자별 연결 위치와 인수 명령은 <a href="team-integration-guide.html">담당자 가이드</a>에서 확인합니다. 외부 기술 문서 링크를 열 때만 인터넷 연결이 필요합니다.</p>
+<p>담당자별 연결 위치와 인수 명령은 <a href="에이전트_프레임워크_가이드.html">담당자 가이드</a>에서 확인합니다. 외부 기술 문서 링크를 열 때만 인터넷 연결이 필요합니다.</p>
 """), encoding="utf-8")
     (DOCS / "guide.html").write_text(page("개발 시작하기", """
 <p class="eyebrow">COMMON CONTRACTS / INDEPENDENT ADAPTERS</p><h1>개발 시작하기.</h1>
 <p class="lead">HTML만 읽을 때는 설치가 필요 없습니다. 합성 데모와 테스트를 실행하려면 Python 3.12 또는 3.13과 uv를 준비하세요.</p>
-<p>Git 저장소의 프로젝트 루트가 개발 기준입니다. <a href="team-integration-guide.html">담당자별 연결 가이드</a>에서 수정할 파일과 테스트 명령을 확인하세요.</p>
+<p>Git 저장소의 프로젝트 루트가 개발 기준입니다. <a href="에이전트_프레임워크_가이드.html">담당자별 연결 가이드</a>에서 수정할 파일과 테스트 명령을 확인하세요.</p>
 <h2>1. 공통 의존성 설치</h2><p>터미널에서 <code>pyproject.toml</code>과 <code>uv.lock</code>이 있는 프로젝트 루트로 이동합니다.</p>
 <pre><code>uv sync --locked --group dev</code></pre><p>의존성을 처음 설치할 때는 인터넷이 필요합니다. 아래 명령은 가상환경을 별도로 활성화하지 않아도 실행됩니다.</p>
 <h2>2. macOS 터미널</h2><pre><code>.venv/bin/python -m backend.agent_framework demo

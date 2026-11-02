@@ -4,7 +4,7 @@
 
 ## 공통 에이전트 개발 시작점 · 2026-11-02
 
-[팀 공유 HTML 시작 페이지](docs/agent-framework/index.html) · [다운로드용 ZIP](share/agent-framework-2026-11-02.zip) · [공유·재생성 안내](share/README.md). ZIP은 전체 압축을 해제한 뒤 `index.html`을 Chrome에서 여세요. macOS·Windows 모두 상대 경로로 연결됩니다.
+[에이전트 흐름도](share/에이전트_흐름도/에이전트_흐름도.html) · [에이전트 프레임워크 가이드](docs/agent-framework/에이전트_프레임워크_가이드.html) · [가이드 Markdown](docs/agent-framework/에이전트_프레임워크_가이드.md) · [문서 시작 페이지](docs/agent-framework/index.html). Git으로 받은 프로젝트에서 HTML을 열면 됩니다. macOS·Windows 모두 상대 경로로 연결됩니다.
 
 역할별 `team_config`로 담당 어댑터를 따로 연결하고, `doctor --config`로 설정만 검사하거나 `role --config`·`serve --config`로 같은 구성을 사용할 수 있습니다. 개발 정본은 저장소 루트의 `backend/agent_framework`, `tests/agent_framework`, `docs/agent-framework`입니다. `share/`의 ZIP 및 압축 해제본은 배포 시점 사본입니다.
 

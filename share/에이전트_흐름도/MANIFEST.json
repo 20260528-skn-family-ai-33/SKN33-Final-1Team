@@ -1,6 +1,6 @@
 {
   "release": "agent-framework-2026-11-02",
-  "entrypoint": "index.html",
+  "entrypoint": "에이전트_흐름도.html",
   "scope": "Offline business workflow and preserved common-framework development snapshot",
   "verification": {
     "business_flow": {
@@ -12,7 +12,7 @@
         "revision": 22,
         "review": 10
       },
-      "html_sha256": "ac071cbb1c59611b026af89cbe5f532730421702ea48a8097da8a5fceba687ef",
+      "html_sha256": "c509ee483b2af6991a8b85a2ab59d6598ebdf3dc82731b76514dcc196b4c27ff",
       "validation": "Reference anchors, code paths/lines, scenarios and relative links checked; browser rendering not verified."
     },
     "manifest_hashes_refreshed": true,
@@ -37,8 +37,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 2131,
-      "sha256": "093660097fb019ebceada2c19b373159f3cad3c7098927e8aa602bad05576791"
+      "bytes": 2165,
+      "sha256": "2cca2370e67b6ca5a61d971e2c31732583d26d5e269c8e9e2cb75ad3400795b1"
     },
     {
       "path": "backend/__init__.py",
@@ -113,7 +113,7 @@
     {
       "path": "docs/agent-framework/business-flow-build.json",
       "bytes": 433,
-      "sha256": "07c8c350261a1313bac2e2ffa89102de0fdac14684a7c53570382dc723533210"
+      "sha256": "6d3896123d046ad9dc84be551a48435ca22840d1e27e16f0680accd73383ddcb"
     },
     {
       "path": "docs/agent-framework/business-flow.json",
@@ -427,8 +427,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 81950,
-      "sha256": "ac071cbb1c59611b026af89cbe5f532730421702ea48a8097da8a5fceba687ef"
+      "bytes": 266,
+      "sha256": "efcc24259ac27d3054553673f19cd48244b5136bff5cc9906ccb2dd9439001b3"
     },
     {
       "path": "pyproject.toml",
@@ -447,8 +447,8 @@
     },
     {
       "path": "scripts/build_business_flow.py",
-      "bytes": 6245,
-      "sha256": "88f942e3e46953929b7cced6f5e5c5c8cc048860b28e418a5eb6a354990b8cb1"
+      "bytes": 6681,
+      "sha256": "e4e120ac3c69b0a56c70f8e5e30fcb38439ed5a3ed244a113542eecaa63cc353"
     },
     {
       "path": "scripts/export_agent_framework.py",
@@ -472,8 +472,8 @@
     },
     {
       "path": "scripts/templates/business-flow.html.in",
-      "bytes": 42946,
-      "sha256": "c581a4d43f923edd7c1f1830b27ae26c0fcc34cdab3312fe5df76ff5835631b1"
+      "bytes": 42980,
+      "sha256": "258fabe4cc67889288d663923a0f28354fe8ec15b5226610945c784ee97edd0e"
     },
     {
       "path": "tests/agent_framework/test_adapters.py",
@@ -514,6 +514,11 @@
       "path": "uv.lock",
       "bytes": 222063,
       "sha256": "c85790a3ee2b365331255be4343d6b19e3a7eb79974d544031b39757685c551e"
+    },
+    {
+      "path": "에이전트_흐름도.html",
+      "bytes": 81984,
+      "sha256": "c509ee483b2af6991a8b85a2ab59d6598ebdf3dc82731b76514dcc196b4c27ff"
     }
   ]
 }

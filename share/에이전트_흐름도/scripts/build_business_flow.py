@@ -1,4 +1,4 @@
-"""Rebuild this share folder's index.html from its reviewed business-flow data.
+"""Rebuild this share folder's Korean-named entry page from its reviewed business-flow data.
 
 Standard library only. Does not change application code or call any service.
 Run from this share folder: python -m scripts.build_business_flow
@@ -11,6 +11,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER = ROOT / "docs/agent-framework"
+ENTRY = ROOT / "에이전트_흐름도.html"
 REFERENCE = ROOT / "docs/reference/creative-checker-master-2026-10-30.html"
 
 
@@ -85,20 +86,25 @@ def build():
             continue
         if url.scheme or url.netloc or "\\" in url.path or url.path.startswith("/"):
             raise ValueError(f"Nonportable link: {value}")
-        target = (ROOT / unquote(url.path)).resolve() if url.path else ROOT / "index.html"
+        target = (ROOT / unquote(url.path)).resolve() if url.path else ENTRY
         if not target.is_relative_to(ROOT) or not target.is_file():
             raise ValueError(f"Missing shared target: {value}")
-    (ROOT / "index.html").write_text(html, encoding="utf-8", newline="\n")
+    ENTRY.write_text(html, encoding="utf-8", newline="\n")
+    (ROOT / "index.html").write_text(
+        '<!doctype html><html lang="ko"><head><meta charset="utf-8">'
+        '<meta http-equiv="refresh" content="0;url=에이전트_흐름도.html">'
+        '<title>에이전트 흐름도</title></head><body>'
+        '<a href="에이전트_흐름도.html">에이전트 흐름도 열기</a></body></html>\n', encoding="utf-8")
     audit = {"source_sha256": data["meta"]["sourceSha256"], "business_nodes": len(data["nodes"]),
              "business_edges": len(data["edges"]), "scenario_steps": {name: len(s["path"]) for name, s in data["scenarios"].items()},
-             "html_sha256": sha256((ROOT / "index.html").read_bytes()).hexdigest(),
+             "html_sha256": sha256(ENTRY.read_bytes()).hexdigest(),
              "validation": "Reference anchors, code paths/lines, scenarios and relative links checked; browser rendering not verified."}
     (FOLDER / "business-flow-build.json").write_text(json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     manifest_path = ROOT / "MANIFEST.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         names = {entry["path"] for entry in manifest["files"]}
-        names.update({"index.html", "scripts/build_business_flow.py", "scripts/templates/business-flow.html.in",
+        names.update({"index.html", ENTRY.name, "scripts/build_business_flow.py", "scripts/templates/business-flow.html.in",
                       "docs/agent-framework/business-flow.json", "docs/agent-framework/business-flow-build.json",
                       "docs/reference/creative-checker-master-2026-10-30.html"})
         entries = []
@@ -109,6 +115,7 @@ def build():
             content = path.read_bytes()
             entries.append({"path": name, "bytes": len(content), "sha256": sha256(content).hexdigest()})
         manifest["files"] = entries
+        manifest["entrypoint"] = ENTRY.name
         manifest["scope"] = "Offline business workflow and preserved common-framework development snapshot"
         manifest["verification"] = {"business_flow": audit, "manifest_hashes_refreshed": True,
                                     "browser_rendering_verified": False, "windows_execution_verified": False}

@@ -2,7 +2,7 @@
 
 각 담당자가 같은 JSON 계약으로 자신의 역할을 단독 개발하고, 합성 입력으로 전체 흐름을 연결하는 개발용 기반이다. `backend/agent_framework`는 기존 제품 앱과 분리되어 있다.
 
-**[담당자별 연결 위치·실행법 HTML](team-integration-guide.html)** · [Markdown 원본](team-integration-guide.md) — 역할별 수정 파일·factory·입출력·테스트 명령과 Git 기준 인수 절차를 정리했다.
+**[담당자별 연결 위치·실행법 HTML](에이전트_프레임워크_가이드.html)** · [Markdown 원본](에이전트_프레임워크_가이드.md) — 역할별 수정 파일·factory·입출력·테스트 명령과 Git 기준 인수 절차를 정리했다.
 
 **[HTML 업무 흐름 열기](flow.html)** — 노드 선택·검색·확대/이동·기본 검수/재검수/검색 장애 시나리오 탐색을 제공한다. HTML 파일을 브라우저에서 열면 되며 Python이나 서버를 실행할 필요가 없다. 실제 코드의 함수·클래스 관계는 **[Graphify 코드 지도](graphify-out/graph.html)**와 [추출 진단 보고서](graphify-out/GRAPH_REPORT.md)에서 확인한다. 업무 흐름은 코드·계획을 대조해 정리한 설명 그래프이며 실행 모니터가 아니다.
 

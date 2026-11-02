@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER = ROOT / "docs/agent-framework"
-SOURCE = FOLDER / "team-integration-guide.md"
+SOURCE = FOLDER / "에이전트_프레임워크_가이드.md"
 TARGET = SOURCE.with_suffix(".html")
 
 
@@ -166,7 +166,7 @@ def build():
 <body><div class="shell"><aside><a class="brand" href="index.html">Creative Checker<span aria-hidden="true"> ↗</span></a><div class="edition">DEVELOPER HANDOFF / 01</div>
 <div class="nav-label">CONTENTS</div><nav class="toc" aria-label="문서 목차">{toc}</nav>
 <div class="side-foot">Git 저장소 기준 · 2026.11.02<br>공통 계약 1.0.0<br><a href="flow.html">업무 흐름도 열기 ↗</a></div></aside>
-<div class="content"><header class="topbar"><span class="crumb">FRAMEWORK / TEAM INTEGRATION</span><div class="tools"><a href="team-integration-guide.md">Markdown 원본 ↗</a><div class="platform" role="group" aria-label="실행 명령 운영체제"><button type="button" data-platform="macos" aria-pressed="true">macOS</button><button type="button" data-platform="windows" aria-pressed="false">Windows</button></div></div></header>
+<div class="content"><header class="topbar"><span class="crumb">FRAMEWORK / TEAM INTEGRATION</span><div class="tools"><a href="에이전트_프레임워크_가이드.md">Markdown 원본 ↗</a><div class="platform" role="group" aria-label="실행 명령 운영체제"><button type="button" data-platform="macos" aria-pressed="true">macOS</button><button type="button" data-platform="windows" aria-pressed="false">Windows</button></div></div></header>
 <div class="hero"><span class="eyebrow">ONE CONTRACT. EACH ROLE.</span><h1>담당자별 연결 가이드.</h1><p>어디를 수정하고, 무엇을 반환하며, 어떻게 확인하는지.<br>각 역할의 시작 코드부터 테스트와 승인·재검수 연결까지 정리했습니다.</p><div class="pills">{pills}</div><div class="meta"><span>05 ROLE ADAPTERS</span><span>06 WORKFLOW ACTIONS</span><span>GIT SOURCE OF TRUTH</span></div></div>
 <article>{body}</article><footer class="footer">Markdown 원본에서 생성한 문서 · 코드 링크는 같은 저장소의 소스 뷰어로 연결됩니다.<br>현재 공통 실행은 메모리 기반이며 모델·DB 실연결 여부는 담당자의 실행 증거로 확인합니다.</footer></div></div><div id="copy-status" role="status" aria-live="polite"></div><script>{SCRIPT}</script></body></html>
 '''
@@ -176,6 +176,15 @@ def build():
     if any(link[1:] not in audit.ids for link in audit.links if link.startswith("#")):
         raise ValueError("unresolved table-of-contents anchor")
     TARGET.write_text(html, encoding="utf-8")
+    (FOLDER / "team-integration-guide.html").write_text(
+        '<!doctype html><html lang="ko"><head><meta charset="utf-8">'
+        '<meta http-equiv="refresh" content="0;url=에이전트_프레임워크_가이드.html">'
+        '<title>에이전트 프레임워크 가이드</title></head><body>'
+        '<a href="에이전트_프레임워크_가이드.html">한글 이름의 가이드 열기</a></body></html>\n',
+        encoding="utf-8")
+    (FOLDER / "team-integration-guide.md").write_text(
+        '# 문서 위치 변경\n\n[에이전트 프레임워크 가이드](에이전트_프레임워크_가이드.md)로 이동했습니다.\n',
+        encoding="utf-8")
     print(f"Built {TARGET.relative_to(ROOT)}: {len(headings)} sections, {len(audit.links)} links, external resources 0")
 
 
