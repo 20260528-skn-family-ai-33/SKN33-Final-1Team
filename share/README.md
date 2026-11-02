@@ -11,6 +11,8 @@ ZIP은 **전체 압축을 해제한 뒤** 최상위 `index.html`을 엽니다. m
 
 ## 재생성
 
+개발 정본은 저장소 루트의 `backend/agent_framework`, `docs/agent-framework`, `tests/agent_framework`입니다. 이전에 올린 한국어 이름 ZIP·압축 해제 폴더는 당시 사본으로 보존합니다. 새 구성 기능은 위 영어 이름 ZIP에서 확인하며, 팀 개발 시에는 루트 정본도 함께 Git에 포함해야 합니다. 공유 폴더 안 사본을 수정해도 루트 코드에 반영되지 않습니다.
+
 저장소 루트에서 실행합니다. Python 표준 라이브러리만 필요합니다.
 
 ```sh

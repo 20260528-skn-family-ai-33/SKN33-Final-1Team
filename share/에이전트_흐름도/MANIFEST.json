@@ -1,22 +1,29 @@
 {
   "release": "agent-framework-2026-11-02",
   "entrypoint": "index.html",
-  "scope": "offline documentation and common framework development subset",
+  "scope": "Offline business workflow and preserved common-framework development snapshot",
   "verification": {
-    "files": 94,
-    "local_html_links": 60,
-    "external_reference_links": 2,
-    "external_auto_loaded_resources": 0,
-    "windows_filename_check": "passed",
-    "relative_link_check": "passed",
+    "business_flow": {
+      "source_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459",
+      "business_nodes": 22,
+      "business_edges": 34,
+      "scenario_steps": {
+        "overview": 11,
+        "revision": 22,
+        "review": 10
+      },
+      "html_sha256": "ac071cbb1c59611b026af89cbe5f532730421702ea48a8097da8a5fceba687ef",
+      "validation": "Reference anchors, code paths/lines, scenarios and relative links checked; browser rendering not verified."
+    },
+    "manifest_hashes_refreshed": true,
     "browser_rendering_verified": false,
     "windows_execution_verified": false
   },
   "files": [
     {
       "path": ".gitattributes",
-      "bytes": 762,
-      "sha256": "07d46c08de05f24935fdc7ee0a16a63684ab6796c523fc3639618092ceb89d20"
+      "bytes": 973,
+      "sha256": "f6297bf9778197058020c31c85461d6f243884b769d0a0e392b2d58a1f080214"
     },
     {
       "path": ".github/workflows/agent-framework.yml",
@@ -30,8 +37,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1020,
-      "sha256": "56746c5c9498b8046669466a684d5182f711226726a8427ab467c363e97e0c3d"
+      "bytes": 2131,
+      "sha256": "093660097fb019ebceada2c19b373159f3cad3c7098927e8aa602bad05576791"
     },
     {
       "path": "backend/__init__.py",
@@ -104,9 +111,19 @@
       "sha256": "63c65357fb6515a036a07468b3193840f368dc4545dca248a1ef7e2f9848cd94"
     },
     {
+      "path": "docs/agent-framework/business-flow-build.json",
+      "bytes": 433,
+      "sha256": "07c8c350261a1313bac2e2ffa89102de0fdac14684a7c53570382dc723533210"
+    },
+    {
+      "path": "docs/agent-framework/business-flow.json",
+      "bytes": 49047,
+      "sha256": "c4e72cbbe5ce4c340888be01a39efdaf4836f022aee6572de43f24ded71095b4"
+    },
+    {
       "path": "docs/agent-framework/flow-build.json",
       "bytes": 1341,
-      "sha256": "ba59923544dfb8db7eb0262198588a96abc700614b27d2d258ba05c2d963862a"
+      "sha256": "759e59e3382e0c4345d96b359f3a89e46cf4ce56f82c1d5bb98983e4259d76d8"
     },
     {
       "path": "docs/agent-framework/flow-data.json",
@@ -115,8 +132,8 @@
     },
     {
       "path": "docs/agent-framework/flow.html",
-      "bytes": 51971,
-      "sha256": "1018d6233cc1717e8c1ff45f13382f449d3d380b61db68865b5310922241dee5"
+      "bytes": 52027,
+      "sha256": "5d5faf499419ee983cd5ad9c02c090d895fcc1e0971d30d0d7b5da90ef4c01c0"
     },
     {
       "path": "docs/agent-framework/graphify-out/GRAPH_REPORT.md",
@@ -200,8 +217,8 @@
     },
     {
       "path": "docs/agent-framework/index.html",
-      "bytes": 3852,
-      "sha256": "66c811c7e633f60f790d4a197d1dfbce50240ca3604486817e874a6ca4d9dc42"
+      "bytes": 3978,
+      "sha256": "d3a59bd1bebecef6a1a017dbdd227fcc452c3dbca44a4083b5e58ef7f34e8735"
     },
     {
       "path": "docs/agent-framework/sharing-verification-2026-11-02.md",
@@ -227,6 +244,11 @@
       "path": "docs/planning/pdf-qwen-rag-workflow-plan-2026-11-02.md",
       "bytes": 28000,
       "sha256": "c2b0ced39cde5f8b8aa5335d784beaf8e093c3173e005264430f8762ab1e93e6"
+    },
+    {
+      "path": "docs/reference/creative-checker-master-2026-10-30.html",
+      "bytes": 412033,
+      "sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459"
     },
     {
       "path": "examples/agent_framework/A02.json",
@@ -405,8 +427,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 273,
-      "sha256": "da8b93b29a30bc31e4d25fa426443b4e528162f220d7ffd6f5165cfc2a63e4da"
+      "bytes": 81950,
+      "sha256": "ac071cbb1c59611b026af89cbe5f532730421702ea48a8097da8a5fceba687ef"
     },
     {
       "path": "pyproject.toml",
@@ -424,14 +446,19 @@
       "sha256": "ac9da155c48b326649cae27dccc54cf8632f2b9426cf1fc41efb487c6c47f775"
     },
     {
+      "path": "scripts/build_business_flow.py",
+      "bytes": 6245,
+      "sha256": "88f942e3e46953929b7cced6f5e5c5c8cc048860b28e418a5eb6a354990b8cb1"
+    },
+    {
       "path": "scripts/export_agent_framework.py",
       "bytes": 1271,
       "sha256": "049083dd42b600fda13453dad9fd5579aefaf4a86fe8c5aecaed81bf391f0fc8"
     },
     {
       "path": "scripts/package_agent_framework.py",
-      "bytes": 15150,
-      "sha256": "a4f96dae6fe123d7335653e50e18b0017eee8282fa62e7b09bdf99f1313521d4"
+      "bytes": 15223,
+      "sha256": "a59edee8c26e7994c700039ef7a686495db55e1e11b2be7774de2eb0d4e31e7a"
     },
     {
       "path": "scripts/templates/agent-flow.html",
@@ -440,8 +467,13 @@
     },
     {
       "path": "scripts/templates/agent-flow.html.in",
-      "bytes": 29267,
-      "sha256": "65be8d280b5466cc5a04a1bf7172b26b5dd0d36c5dd5701c1fb0b5fdc4dac1f1"
+      "bytes": 29323,
+      "sha256": "1bf4cce753280df1ec536c6bda2cd198baef091fac9c80086ae0e4ea81efb4dd"
+    },
+    {
+      "path": "scripts/templates/business-flow.html.in",
+      "bytes": 42946,
+      "sha256": "c581a4d43f923edd7c1f1830b27ae26c0fcc34cdab3312fe5df76ff5835631b1"
     },
     {
       "path": "tests/agent_framework/test_adapters.py",

@@ -16,3 +16,9 @@ scripts/templates/agent-flow.* text eol=lf
 share/*.md text eol=lf
 share/*.sha256 text eol=lf
 share/*.zip binary
+
+# Shared business-flow HTML and its reproducible sources.
+index.html text eol=lf
+scripts/build_business_flow.py text eol=lf
+scripts/templates/business-flow.html.in text eol=lf
+docs/reference/*.html text eol=lf

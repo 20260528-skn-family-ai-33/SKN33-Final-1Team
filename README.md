@@ -6,6 +6,8 @@
 
 [팀 공유 HTML 시작 페이지](docs/agent-framework/index.html) · [다운로드용 ZIP](share/agent-framework-2026-11-02.zip) · [공유·재생성 안내](share/README.md). ZIP은 전체 압축을 해제한 뒤 `index.html`을 Chrome에서 여세요. macOS·Windows 모두 상대 경로로 연결됩니다.
 
+역할별 `team_config`로 담당 어댑터를 따로 연결하고, `doctor --config`로 설정만 검사하거나 `role --config`·`serve --config`로 같은 구성을 사용할 수 있습니다. 개발 정본은 저장소 루트의 `backend/agent_framework`, `tests/agent_framework`, `docs/agent-framework`입니다. `share/`의 ZIP 및 압축 해제본은 배포 시점 사본입니다.
+
 [공통 프레임워크 개발 안내](docs/agent-framework/README.md)에서 역할별 입출력 규격, 합성 실행 예제, 모델·검색 어댑터 교체 방법과 팀별 담당 경계를 확인하세요. `python -m backend.agent_framework demo`로 개발용 전체 흐름을 실행할 수 있습니다. 실제 모델·DB 연결 없이 메모리에서 실행하며, 기존 front-v2·업무 DB와는 분리되어 있습니다. 최신 목표 범위는 **PDF·Qwen·PostgreSQL·Neo4j RAG**이며, 벡터DB와 PaddleOCR는 새 흐름에 포함하지 않습니다.
 
 현재 저장소에서는 이미지와 요구사항을 입력하거나 PDF에서 조건 초안을 읽어 검수 기준을 확정하고, OCR로 읽은 문구와 이미지 위치를 확인하는 시제품을 실행할 수 있습니다. 문서 분석부터 최종 승인까지 이어지는 전체 업무 흐름은 단계적으로 구현합니다.

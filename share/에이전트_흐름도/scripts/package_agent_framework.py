@@ -15,6 +15,7 @@ from urllib.parse import unquote, urlsplit
 import zipfile
 
 from scripts.build_agent_flow_html import build as build_flow
+from scripts.build_business_flow import build as build_business_flow
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs/agent-framework"
@@ -41,12 +42,12 @@ def build_pages():
 <h1>같은 흐름에서,<br>각자의 역할을 개발합니다.</h1>
 <p class="lead">PDF·Qwen·PostgreSQL·Neo4j 기반 RAG와 승인·재검수의 전체 계획, 현재 공통 프레임워크, 코드 관계를 한곳에서 확인하세요.</p>
 <div class="cards">
-<a class="card" href="flow.html"><strong>01 / 업무 흐름</strong><span>7개 역할 · 3개 승인 지점 · 기본 검수, 재검수, 검색 장애</span></a>
+<a class="card" href="../../index.html"><strong>01 / 통합문서 기반 업무 흐름</strong><span>사람·시스템·근거 3개 레인 · 승인·비교·이력 · 문서 반영 기준</span></a>
 <a class="card" href="../planning/{PLAN}.html"><strong>02 / 전체 계획</strong><span>목표 구조, 역할별 계약, 저장·복구, 구현 단계와 완료 기준</span></a>
 <a class="card" href="graphify-out/graph.html"><strong>03 / Graphify 코드 지도</strong><span>현재 Python 코드의 클래스·함수·호출 관계</span></a>
 <a class="card" href="guide.html"><strong>04 / 개발 시작하기</strong><span>macOS·Windows 실행 명령과 담당별 연결 위치</span></a>
 </div>
-<h2>열람 방법</h2><ol><li>ZIP이라면 먼저 <strong>전체 압축을 해제</strong>하세요. 압축 프로그램 안에서 HTML만 바로 열지 마세요.</li>
+<p><a href="flow.html">공유 코드 기준의 현재 프레임워크 지도 ↗</a></p><h2>열람 방법</h2><ol><li>ZIP이라면 먼저 <strong>전체 압축을 해제</strong>하세요. 압축 프로그램 안에서 HTML만 바로 열지 마세요.</li>
 <li>압축 해제한 폴더의 <code>index.html</code>을 Chrome으로 엽니다. Git으로 받은 경우 <code>docs/agent-framework/index.html</code>을 엽니다.</li>
 <li>Mac·Windows 모두 동일합니다. HTML과 하위 폴더를 함께 이동하면 링크가 유지됩니다. 코드 근거 링크는 브라우저에서 행 번호까지 표시합니다.</li></ol>
 <p class="note">현재 제공 범위는 공통 계약·합성 어댑터·메모리 기반 승인 및 재검수입니다. 실제 PDF/Qwen·PostgreSQL/Neo4j 검색·MCP·영속 저장·front-v2 연결은 담당자가 구현할 후속 범위입니다.</p>
@@ -78,7 +79,8 @@ def allowed_files():
     paths = {".gitattributes", "backend/__init__.py", "PRODUCT.md", "pyproject.toml", "uv.lock",
              ".github/workflows/agent-framework.yml", "scripts/build_agent_code_graph.py",
              "scripts/build_agent_flow_html.py", "scripts/export_agent_framework.py",
-             "scripts/package_agent_framework.py", "scripts/templates/agent-flow.html.in",
+             "scripts/package_agent_framework.py", "scripts/build_business_flow.py", "scripts/templates/business-flow.html.in",
+             "docs/reference/creative-checker-master-2026-10-30.html", "scripts/templates/agent-flow.html.in",
              "scripts/templates/agent-flow.html", f"docs/planning/{PLAN}.md", f"docs/planning/{PLAN}.html"}
     for folder, extensions in (("backend/agent_framework", {".py"}),
                                ("tests/agent_framework", {".py"}),
@@ -152,11 +154,9 @@ def validate_tree(root):
 def build():
     build_pages()
     build_flow()
+    build_business_flow()
     payload = dict(allowed_files())
-    payload["index.html"] = ("<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
-        "<meta http-equiv=\"refresh\" content=\"0;url=docs/agent-framework/index.html\">"
-        "<title>Creative Checker 공유 자료</title></head><body>"
-        "<a href=\"docs/agent-framework/index.html\">공유 자료 열기</a></body></html>\n").encode()
+    payload["index.html"] = (ROOT / "index.html").read_bytes()
     payload["README.md"] = """# Creative Checker 팀 공유 묶음
 
 1. ZIP 전체를 압축 해제하세요. 압축 프로그램 안에서 HTML만 열지 마세요.

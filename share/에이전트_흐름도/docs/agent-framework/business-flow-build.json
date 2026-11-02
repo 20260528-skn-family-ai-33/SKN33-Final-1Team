@@ -1,0 +1,12 @@
+{
+  "source_sha256": "b2fde556b02237ca2d69c400e653d1eec042062e93d0543132e1d50228d1f459",
+  "business_nodes": 22,
+  "business_edges": 34,
+  "scenario_steps": {
+    "overview": 11,
+    "revision": 22,
+    "review": 10
+  },
+  "html_sha256": "ac071cbb1c59611b026af89cbe5f532730421702ea48a8097da8a5fceba687ef",
+  "validation": "Reference anchors, code paths/lines, scenarios and relative links checked; browser rendering not verified."
+}
