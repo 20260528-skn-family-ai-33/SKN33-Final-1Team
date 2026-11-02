@@ -4,8 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, TYPE_CHECKING
 
-from .contracts import (CriteriaDraft, EvidenceBundle, ExtractRequest, InspectRequest,
-                        InspectionResult, ReportDraft, ReportRequest, RetrieveRequest,
+from .contracts import (CriteriaDraft, ExtractRequest, InspectRequest,
+                        InspectionResult, ReportDraft, ReportRequest,
                         ValidateRequest, ValidatedResult)
 from .contracts import Context, DocumentRef, AssetRef
 
@@ -20,10 +20,6 @@ class FileAccess(Protocol):
 
 class Extractor(Protocol):
     def extract(self, request: ExtractRequest) -> CriteriaDraft: ...
-
-
-class Retriever(Protocol):
-    def retrieve(self, request: RetrieveRequest) -> EvidenceBundle: ...
 
 
 class Inspector(Protocol):
@@ -41,7 +37,6 @@ class Reporter(Protocol):
 @dataclass(frozen=True)
 class Agents:
     extractor: Extractor
-    retriever: Retriever
     inspector: Inspector
     validator: Validator
     reporter: Reporter

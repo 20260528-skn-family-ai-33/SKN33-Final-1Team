@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ..contracts import ExtractRequest, InspectRequest, ReportRequest, RetrieveRequest, ValidateRequest
+from ..contracts import ExtractRequest, InspectRequest, ReportRequest, ValidateRequest
 from .synthetic import SCENARIOS, make_agents, sample_inputs
 
 
@@ -13,8 +13,10 @@ def role_examples(scenario="pass"):
     agents = make_agents(scenario)
     extract_input = ExtractRequest(context=context, document=document, synthetic=True)
     criteria = agents.extractor.extract(extract_input)
-    retrieve_input = RetrieveRequest(context=context, criteria=criteria.criteria, synthetic=True)
-    evidence = agents.retriever.retrieve(retrieve_input)
+    from ..context import freeze_approved_context
+    evidence = freeze_approved_context(context,criteria.criteria,synthetic=True)
+    if scenario in {"stale","unavailable"}:
+        evidence = evidence.model_copy(update={"status":scenario, "postgres_revision": 2 if scenario=="stale" else 0, "graph_revision": 1 if scenario=="stale" else None, "evidence":() if scenario=="unavailable" else evidence.evidence})
     inspect_input = InspectRequest(context=context, criteria=criteria.criteria, asset=asset, evidence=evidence, synthetic=True)
     observations = agents.inspector.inspect(inspect_input)
     validate_input = ValidateRequest(context=context, criteria=criteria.criteria, asset=asset, evidence=evidence, inspection=observations, synthetic=True)
@@ -22,7 +24,7 @@ def role_examples(scenario="pass"):
     report_input = ReportRequest(context=context, validated=validated, evidence=evidence, synthetic=True)
     report = agents.reporter.report(report_input)
     return {
-        "A02": (extract_input, criteria), "A03": (retrieve_input, evidence),
+        "A02": (extract_input, criteria),
         "A04_A05": (inspect_input, observations), "A06": (validate_input, validated),
         "A07": (report_input, report),
     }

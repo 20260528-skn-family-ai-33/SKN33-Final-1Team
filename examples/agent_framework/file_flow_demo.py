@@ -128,7 +128,6 @@ def run_demo():
             module = "examples.agent_framework.file_flow_demo"
             config = TeamConfiguration(roles={
                 "A02": RoleBinding(kind="factory", factory=f"{module}:create_extractor"),
-                "A03": RoleBinding(kind="synthetic"),
                 "A04_A05": RoleBinding(kind="factory", factory=f"{module}:create_inspector"),
                 "A06": RoleBinding(kind="reference"), "A07": RoleBinding(kind="synthetic"),
             })

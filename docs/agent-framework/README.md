@@ -4,15 +4,21 @@
 
 **[담당자별 연결 위치·실행법 HTML](에이전트_프레임워크_가이드.html)** · [Markdown 원본](에이전트_프레임워크_가이드.md) — 역할별 수정 파일·factory·입출력·테스트 명령과 Git 기준 인수 절차를 정리했다.
 
-**[HTML 업무 흐름 열기](flow.html)** — 노드 선택·검색·확대/이동·기본 검수/재검수/검색 장애 시나리오 탐색을 제공한다. HTML 파일을 브라우저에서 열면 되며 Python이나 서버를 실행할 필요가 없다. 실제 코드의 함수·클래스 관계는 **[Graphify 코드 지도](graphify-out/graph.html)**와 [추출 진단 보고서](graphify-out/GRAPH_REPORT.md)에서 확인한다. 업무 흐름은 코드·계획을 대조해 정리한 설명 그래프이며 실행 모니터가 아니다.
+**[PostgreSQL 실행·승인·worker 가이드](에이전트_프레임워크_PostgreSQL_실행가이드.html)** · [MD](에이전트_프레임워크_PostgreSQL_실행가이드.md) — 기존 M008 DB의 AF001 추가 마이그레이션과 새 API·worker 실행법이다.
+
+**[HTML 업무 흐름 열기](flow.html)** — 노드 선택·검색·확대/이동·기본 검수/재검수/근거 확인 필요 시나리오 탐색을 제공한다. HTML 파일을 브라우저에서 열면 되며 Python이나 서버를 실행할 필요가 없다. 실제 코드의 함수·클래스 관계는 **[Graphify 코드 지도](graphify-out/graph.html)**와 [추출 진단 보고서](graphify-out/GRAPH_REPORT.md)에서 확인한다. 업무 흐름은 코드·계획을 대조해 정리한 설명 그래프이며 실행 모니터가 아니다.
 
 브라우저에서 열 파일은 **`docs/agent-framework/flow.html`**이다. 업무 흐름의 원본은 `flow-data.json`과 빌드 전용 `scripts/templates/agent-flow.html.in`이며 `python -m scripts.build_agent_flow_html`로 단일 HTML을 재생성한다. 이전 `scripts/templates/agent-flow.html` 경로는 완성본으로 이동하는 안내 페이지다. Graphify 코드 지도는 별도 임시 환경의 공식 `graphifyy==0.9.100`으로 생성했다. 프로젝트 의존성에는 추가하지 않았다. 두 HTML은 자동 외부 자원을 로드하지 않도록 만들었으며 정적 구조·JavaScript 문법을 검사했다. 브라우저 렌더링은 미검증이다.
 
-현재 제공하는 것은 Pydantic 계약, 교체 가능한 역할 포트, 실제 LangGraph 단계 실행, 메모리 내 승인·재검수 상태와 단계별 실행 기록, 참조 검증기, 합성 어댑터, CLI 및 개발 API다. 기존 저장소의 PDF·포스터를 읽고 파일·버전·해시를 확인하는 공통 파일 접근 연결부도 제공한다. **Qwen 추론, PostgreSQL·Neo4j RAG, MCP 통신, 영속 worker와 제품 인증·front-v2 통합은 후속 범위다.** 파일 접근은 주입된 기존 권한 검사와 저장소를 사용하며 운영 DB 연결 성공을 대신하지 않는다.
+현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 개발 실행, 승인·재검수·단계 기록, 파일 접근, CLI다. 메모리 개발 도구와 별도로 **기존 M008 DB·세션 인증·CSRF를 재사용하는 PostgreSQL API 및 독립 worker**를 제공한다. API는 접수·승인·조회만 처리하고 worker가 역할을 실행한다. **Qwen·PostgreSQL/Neo4j RAG 실모델·실검색 어댑터, MCP, Neo4j projection, front-v2 및 운영 배포는 후속 범위다.** 실제 DB 적용은 명시적 AF001 마이그레이션으로 수행한다.
 
-현재 로컬 검증 결과와 범위는 [검증 기록](verification-2026-11-02.md)에 정리했다.
+이번 변경과 최신 로컬 검증은 [A03 제거 정리](a03-retirement-2026-11-02.md)를 따른다. [이전 검증 기록](verification-2026-11-02.md)은 변경 전 이력이다.
 
 제품 목표는 **PDF·Qwen3.5-4B·PostgreSQL/Neo4j 근거 검색 및 RAG·데스크톱 front-v2**다. PaddleOCR를 포함한 별도 OCR 대체 경로, 벡터 DB·임베딩·벡터 인덱스를 추가하지 않는다. 실제 어댑터 구현 범위는 [전체 계획](../planning/pdf-qwen-rag-workflow-plan-2026-11-02.md)을 따른다.
+
+## 최신 역할 결정
+
+**독립 A03 검색·근거 에이전트는 폐기했다.** [11월 2일 통합문서](reference/프로젝트_통합문서_20261102.html#section-014)를 따른다. 네 역할(A02·A04_A05·A06·A07)과 공통 A01·A08만 유지한다. 승인 조건 출처는 `context.freeze_approved_context`로 고정하며 이 함수는 외부 조회를 하지 않는다. PostgreSQL→Neo4j→PostgreSQL 관계 조회·RAG는 후속 공통 문맥 준비 기능이고 별도 GraphDB 에이전트 배치는 미확정이다. 구버전 JSON과 설정은 계약 2.0.0으로 교체한다.
 
 ## 설치와 첫 실행
 
@@ -48,7 +54,6 @@ Windows PowerShell:
 |---|---|---|---|
 | A01 | `Workflow.start/approve/get` | 실행 문맥·파일 참조·승인 → `RunSnapshot` | 공통 실행·상태 전환·계약 연결 |
 | A02 | `Extractor.extract` | `ExtractRequest` → `CriteriaDraft` | PDF 전체 처리·조건·원문 출처 |
-| A03 | `Retriever.retrieve` | `RetrieveRequest` → `EvidenceBundle` | 승인 기준·원문·예외·이력 검색 |
 | A04·A05 | `Inspector.inspect` | `InspectRequest` → `InspectionResult` | 현재 포스터 관측·조건별 판정 초안 |
 | A06 | `Validator.validate` | `ValidateRequest` → `ValidatedResult` | 전체 조건 커버리지·관측·인용·판정 검증 |
 | A07 | `Reporter.report` | `ReportRequest` → `ReportDraft` | 검증된 판정의 설명·수정 요청 초안 |
@@ -66,7 +71,6 @@ Windows PowerShell:
 예제 입력·예상 출력은 `examples/agent_framework/`에 있다. 역할 입력은 `A02.json`처럼, 예상 출력은 `A02.output.json`처럼 구분한다.
 
 ```sh
-.venv/bin/python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --synthetic
 .venv/bin/python -m backend.agent_framework role A04_A05 --input examples/agent_framework/A04_A05.json --synthetic --scenario fail
 .venv/bin/python -m backend.agent_framework role A06 --input examples/agent_framework/A06.json --synthetic
 ```
@@ -84,7 +88,6 @@ CLI는 요청·응답 스키마와 공통 역할 검증을 적용한다. `--synt
 `examples/agent_framework/custom_adapter.py`는 연결 지점 예제다. 기본 상태에서는 실제 서비스를 호출하지 않고 `ADAPTER_NOT_CONFIGURED`를 발생시킨다. 메서드를 구현한 뒤 명시적으로 factory를 선택한다.
 
 ```sh
-.venv/bin/python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --factory examples.agent_framework.custom_adapter:make_agents
 ```
 
 기존 `--factory`의 factory는 인자 없이 호출되며 `ports.Agents`를 반환해야 한다. 아래 역할별 설정의 factory는 단일 역할 어댑터를 반환한다. factory import는 로컬 Python 코드를 실행하므로 팀이 관리하는 신뢰된 모듈만 지정한다. 요청 JSON 안에서는 factory나 모듈을 지정할 수 없다.
@@ -93,17 +96,17 @@ CLI는 요청·응답 스키마와 공통 역할 검증을 적용한다. `--synt
 
 실제 출력은 실행 증거가 있을 때만 `synthetic=False`로 표시한다. 합성 입력이나 이전 단계가 섞인 전체 실행은 계속 `synthetic=True`로 추적된다. 이 플래그 자체가 실제 모델·DB 연결을 증명하지는 않는다.
 
-모든 역할 요청에도 `synthetic` 필드가 있다. 합성 조건 초안에서 조건 목록만 꺼내 A03에 전달할 때도 이 표시를 유지한다. 같은 어댑터 인스턴스는 여러 실행에서 호출될 수 있으므로 공유 상태의 스레드 안전성과 모델 동시 실행 제한은 해당 구현에서 관리한다.
+모든 역할 요청에도 `synthetic` 필드가 있다. 합성 조건 초안의 출처 묶음을 공통 함수로 고정할 때도 이 표시를 유지한다. 같은 어댑터 인스턴스는 여러 실행에서 호출될 수 있으므로 공유 상태의 스레드 안전성과 모델 동시 실행 제한은 해당 구현에서 관리한다.
 
 ## 계약에서 지켜야 할 경계
 
 - **ID와 버전:** 프로젝트·실행·문서·조건·산출물 버전은 요청 문맥과 동일해야 한다. ID는 공통 `Identifier` 문자열 규격을 사용하며 모델이 임의 발급·변경하지 않는다. 제품 UUID 매핑은 이후 저장소 어댑터가 맡는다.
 - **원문:** 인용 위치는 1부터 시작하는 페이지와 블록 ID를 사용한다. `SourceRef.source_hash`는 인용문 UTF-8 바이트의 SHA-256이며 파일 해시와 다르다. 참조 검증은 해시 정합성을 확인할 뿐 실제 PDF에 그 문장이 있다는 사실을 증명하지 않는다.
 - **현재 관측:** 이미지 근거는 현재 산출물 버전·파일 해시를 가리킨다. 좌표가 있으면 정규화된 `x1,y1,x2,y2`를 사용한다. 과거 통과나 예외 승인은 현재 이미지 관측이 아니다.
-- **근거:** `current_requirement`, `approved_exception`, `historical_context`를 구분한다. A03의 예외 유효기간·철회·권한 확인은 실제 검색 구현의 책임이다. 참조 코드의 범위 검사를 실제 권한 검사로 부르지 않는다.
-- **조건 전체:** A03 검색이 검사 조건을 줄이면 안 된다. A06는 누락·중복·알 수 없는 ID·근거 부족을 확인하며 잘못된 통과를 차단한다.
+- **근거:** `current_requirement`, `approved_exception`, `historical_context`를 구분한다. 예외 유효기간·철회·권한 확인은 후속 공통 문맥 준비 서비스의 책임이다. 참조 코드의 범위 검사를 실제 권한 검사로 부르지 않는다.
+- **조건 전체:** 공통 근거 조회가 검사 조건을 줄이면 안 된다. A06는 누락·중복·알 수 없는 ID·근거 부족을 확인하며 잘못된 통과를 차단한다.
 - **판정:** 실행 상태, 기계 판정, 사람 결정을 별도로 기록한다. A07은 A06의 판정을 변경하지 않는다. 예외 승인도 원래 기계 판정을 보존한다.
-- **재검수:** 수정 요청 승인 후 새 실행·산출물 버전을 등록한다. 현재 메서드는 같은 문서·조건 버전의 초안을 재사용하고 새 실행에서 다시 승인받는다. A03·A04/A05·A06·A07 모두 다시 실행한다. 문서나 기준 버전이 달라지면 새 `start`가 필요하다. 조건 편집 API는 이 범위에 없다.
+- **재검수:** 수정 요청 승인 후 새 실행·산출물 버전을 등록한다. 현재 메서드는 같은 문서·조건 버전의 초안을 재사용하고 새 실행에서 다시 승인받는다. 승인 입력·근거를 다시 고정하고 A04_A05·A06·A07을 모두 다시 실행한다. 문서나 기준 버전이 달라지면 새 `start`가 필요하다. 조건 편집 API는 이 범위에 없다.
 
 참조 A06는 텍스트·수치 대조와 누락·근거·범위의 기초 정책을 제공한다. 객체를 잘못 센 모델을 자동으로 교정하거나 시각 관측의 정확도를 보장하지 않는다. 복잡한 조건 그룹·정책 예외·문맥 판단은 후속 구현과 평가가 필요하다.
 
@@ -142,7 +145,7 @@ API를 실행하지 않아도 `examples/agent_framework/openapi.json`으로 계�
 
 ## 단계별 실행 기록
 
-`RunSnapshot.step_records`와 `Workflow.get_steps(run_id)`에서 A02, A03, A04_A05, A06, A07의 실행 기록을 확인한다. 개발 API의 `/runs/{run_id}/steps`는 원문·검사 결과 본문 없이 문맥 ID, 실행 상태, 역할별 기록을 반환한다. 기록의 `ordinal`은 해당 실행 안의 1부터 시작하는 순서다.
+`RunSnapshot.step_records`와 `Workflow.get_steps(run_id)`에서 A02, A04_A05, A06, A07의 실행 기록을 확인한다. 개발 API의 `/runs/{run_id}/steps`는 원문·검사 결과 본문 없이 문맥 ID, 실행 상태, 역할별 기록을 반환한다. 기록의 `ordinal`은 해당 실행 안의 1부터 시작하는 순서다.
 
 | 상태 | 의미 |
 |---|---|
@@ -170,15 +173,15 @@ Windows에서는 `.\.venv\Scripts\python.exe -m backend.agent_framework demo`를
 
 ## 저장·복구 범위
 
-실행 기록은 **현재 `Workflow` 인스턴스의 메모리에만 존재**한다. 프로세스 재시작이나 새 인스턴스 생성 시 실행·승인·단계 결과가 사라진다. LangGraph의 실제 노드를 사용하지만 PostgreSQL checkpoint·lease·heartbeat·영속 재개를 연결한 것은 아니다.
+`demo`, `serve`, `check-flow`의 `Workflow`는 **메모리 개발 도구**이며 종료하면 기록이 사라진다. 새 `postgres-serve`·`worker` 경로는 동일 M008 DB의 `agent_framework` 스키마에 실행·단계·승인·작업·이벤트를 저장한다. 기존 인증과 프로젝트 권한을 재사용하며 승인 대기에는 lease를 유지하지 않는다. 자세한 실행법은 PostgreSQL 가이드를 따른다.
 
-같은 프로세스에서는 중복·오래된 승인과 실행 ID 충돌을 거부하고, 호출 결과 불명은 `outcome_unknown`으로 남긴다. 자동 재시도는 하지 않는다. 이 동작을 운영 DB의 멱등성·장애 복구 검증으로 확대 해석하지 않는다.
+메모리 경로는 중복·오래된 명령을 거부한다. PostgreSQL 경로는 같은 고정 입력·승인의 재전송을 기존 기록으로 반환하고, 완료한 역할 결과를 재사용한다. 역할 시작 표시 전에만 안전한 재선점을 허용하며, 호출 가능성이 있으면 결과 불명으로 닫고 자동 재호출하지 않는다. LangGraph 자체 checkpoint와 업무 DB가 하나의 트랜잭션이라고 가정하지 않고 DB에 확정한 결과를 기준으로 재개한다.
 
-PostgreSQL·Neo4j RAG의 실제 쿼리, projection/outbox, 검색 권한·원문 버전·freshness, 동등한 SQL fallback, MCP 전송 및 모델 실행은 각 담당자가 연결해야 한다. 원문 파일 읽기·해시 검증에는 아래 공통 파일 접근 연결부를 사용한다. 이 프레임워크를 실행한다고 기존 DB나 front-v2가 변경되지는 않는다.
+PostgreSQL·Neo4j RAG의 실제 쿼리, projection/outbox, 검색 권한·원문 버전·freshness, 동등한 SQL fallback, MCP 전송 및 모델 실행은 각 담당자가 연결해야 한다. 원문 파일 읽기·해시 검증에는 아래 공통 파일 접근 연결부를 사용한다. 메모리 개발 명령은 기존 DB를 변경하지 않으며 PostgreSQL 명령은 명시적으로 선택한 DB의 AF001 기록을 읽고 쓴다. front-v2 통합은 후속 범위다.
 
 ## 설정한 어댑터의 전체 흐름 검증
 
-`check-flow`는 팀 설정의 **다섯 역할을 모두 초기화**하고 같은 `Workflow`에서 시작 → 조건 승인 → 수정 승인 → 수정본 실행 생성 → 수정본 조건 승인 → 최종 승인 순으로 실행한다. 시작/조건 승인이 각각 추출 및 검사·보고 그래프를 실행한다. 모든 승인은 로컬 개발용 테스트 입력이며 운영 승인 권한을 대신하지 않는다.
+`check-flow`는 팀 설정의 **네 역할을 모두 초기화**하고 같은 `Workflow`에서 시작 → 조건 승인 → 수정 승인 → 수정본 실행 생성 → 수정본 조건 승인 → 최종 승인 순으로 실행한다. 시작/조건 승인이 각각 추출 및 검사·보고 그래프를 실행한다. 모든 승인은 로컬 개발용 테스트 입력이며 운영 승인 권한을 대신하지 않는다.
 
 프로젝트 루트에서 기본 합성 구성으로 확인한다.
 
@@ -276,25 +279,25 @@ Graphify 관계 지도는 현재 코드의 AST 스냅샷이다. 코드 구조가
 
 개발 정본은 저장소 루트의 `backend/agent_framework`, `examples/agent_framework`, `tests/agent_framework`, `docs/agent-framework`다. Git에 있는 `share/에이전트_흐름도`와 ZIP은 이전 공유 시점의 사본이다. 사본의 코드를 따로 수정하지 않고 루트 정본을 수정·검증하여 Git으로 공유한다.
 
-각 담당자가 어댑터 하나만 반환하는 factory를 제공하면 공통 설정이 다섯 역할을 조합한다. A01·A08 실행 조정과 승인 상태는 공통 실행기가 계속 소유한다. 실제 모델·검색·DB·front-v2 제품 연결은 이 설정 기능만으로 구현되지 않는다.
+각 담당자가 어댑터 하나만 반환하는 factory를 제공하면 공통 설정이 네 역할을 조합한다. A01·A08 실행 조정과 승인 상태는 공통 실행기가 계속 소유한다. 실제 모델·검색·DB·front-v2 제품 연결은 이 설정 기능만으로 구현되지 않는다.
 
 | 설정 파일 | 용도 | 기본 역할 구성 |
 |---|---|---|
-| `examples/agent_framework/team_config.template.json` | 팀이 복사해 연결 위치를 채울 시작점 | A02·A03·A04_A05·A07은 `unconfigured`, A06은 `reference` |
-| `examples/agent_framework/team_config.synthetic.json` | 외부 연결 없이 명시적으로 선택하는 합성 구성 | A02·A03·A04_A05·A07은 `synthetic`, A06은 `reference` |
+| `examples/agent_framework/team_config.template.json` | 팀이 복사해 연결 위치를 채울 시작점 | A02·A04_A05·A07은 `unconfigured`, A06은 `reference` |
+| `examples/agent_framework/team_config.synthetic.json` | 외부 연결 없이 명시적으로 선택하는 합성 구성 | A02·A04_A05·A07은 `synthetic`, A06은 `reference` |
 
-설정의 `roles`는 `A02`, `A03`, `A04_A05`, `A06`, `A07`을 빠짐없이 선언한다. `kind`는 `unconfigured`, `synthetic`, `reference`, `factory` 중 하나다. `reference`는 A06에만 허용한다. `factory` 항목은 `kind: factory`일 때만, `scenario` 항목은 `kind: synthetic`일 때만 사용한다. 합성 시나리오는 `pass`, `fail`, `review`, `stale`, `unavailable`이고 생략 시 `pass`다. 설정의 개발 프로필은 `development` 또는 `test`이며 운영 프로필은 없다.
+설정의 `roles`는 `A02`, `A04_A05`, `A06`, `A07`을 빠짐없이 선언한다. `kind`는 `unconfigured`, `synthetic`, `reference`, `factory` 중 하나다. `reference`는 A06에만 허용한다. `factory` 항목은 `kind: factory`일 때만, `scenario` 항목은 `kind: synthetic`일 때만 사용한다. 합성 시나리오는 `pass`, `fail`, `review`, `stale`, `unavailable`이고 생략 시 `pass`다. 설정의 개발 프로필은 `development` 또는 `test`이며 운영 프로필은 없다.
 
-팀 설정의 `roles.A03`만 교체하는 예시는 다음과 같다. 나머지 네 역할의 선언도 설정 파일에 유지해야 한다.
+팀 설정의 `roles.A04_A05`만 교체하는 예시는 다음과 같다. 나머지 세 역할의 선언도 설정 파일에 유지해야 한다.
 
 ```json
 {
   "kind": "factory",
-  "factory": "examples.agent_framework.team_adapters:create_retriever"
+  "factory": "examples.agent_framework.team_adapters:create_inspector"
 }
 ```
 
-`examples/agent_framework/team_adapters.py`에 `create_extractor`, `create_retriever`, `create_inspector`, `create_reporter`를 각각 분리했다. 이들은 인자 없는 동기 함수이며 **해당 역할 어댑터 인스턴스 하나**를 반환한다. 선택적으로 `create_validator`를 사용하면 참조 `ReferenceValidator`를 반환한다. 현재 모델·검색 클래스는 미구현 stub이므로 메서드 호출 시 `ADAPTER_NOT_CONFIGURED`로 실패한다. 정상 생성이나 설정 검사 통과가 실제 연결 성공을 뜻하지 않으며 합성 결과로 대체하지 않는다.
+`examples/agent_framework/team_adapters.py`에 `create_extractor`, `create_inspector`, `create_reporter`를 각각 분리했다. 이들은 인자 없는 동기 함수이며 **해당 역할 어댑터 인스턴스 하나**를 반환한다. 선택적으로 `create_validator`를 사용하면 참조 `ReferenceValidator`를 반환한다. 현재 모델·검색 클래스는 미구현 stub이므로 메서드 호출 시 `ADAPTER_NOT_CONFIGURED`로 실패한다. 정상 생성이나 설정 검사 통과가 실제 연결 성공을 뜻하지 않으며 합성 결과로 대체하지 않는다.
 
 기존 `--factory examples.agent_framework.custom_adapter:make_agents`도 유지한다. 이는 `ports.Agents` 전체를 반환하는 기존 경로이고, 설정 파일의 역할별 factory와 반환 규격이 다르다. 요청 JSON에는 factory를 넣지 않는다. 설정은 개발자가 지정한 로컬 파일이며 업무 요청으로 교체하지 않는다.
 
@@ -304,19 +307,17 @@ Graphify 관계 지도는 현재 코드의 AST 스냅샷이다. 코드 구조가
 
 ```sh
 .venv/bin/python -m backend.agent_framework doctor --config examples/agent_framework/team_config.synthetic.json
-.venv/bin/python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --config examples/agent_framework/team_config.synthetic.json
 .venv/bin/python -m backend.agent_framework serve --config examples/agent_framework/team_config.synthetic.json --port 8012
 ```
 
 Windows PowerShell의 같은 역할 실행 예:
 
 ```powershell
-.\.venv\Scripts\python.exe -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --config examples/agent_framework/team_config.synthetic.json
 ```
 
 - `doctor`는 JSON 구문·계약·역할 구성을 검사하고 선언 내용을 출력한다. 설정된 모듈을 import하거나 factory·역할 메서드를 호출하지 않는다. 파일명에 적은 모듈의 존재, 실제 메서드, 모델·DB 연결은 검증하지 않는다.
 - `role --config`는 선택한 역할만 생성하고 호출한다. 다른 역할의 factory는 import·실행하지 않으므로 팀원은 자기 역할만 독립 개발할 수 있다. 공통 호출 경계에서 CLI와 실행기에 같은 요청·응답 검증을 적용한다. 요청 안의 조건·근거·관측 등 중첩 데이터가 합성이면 전체 결과에도 합성 표시가 전파된다.
-- `serve --config`는 같은 설정 파일로 다섯 역할을 조합해 개발 API를 연다. 서버 시작만으로 검수 실행·승인을 만들지 않는다. `127.0.0.1`, 단일 worker, 인증 없음, 메모리 저장 범위이며 종료하면 실행 기록이 사라진다. 구성 조회는 `GET /api/framework/v1/configuration`에서 선언과 초기화 상태를 구분해 확인한다. `connection_verified: false`는 실제 외부 연결을 검증하지 않았다는 뜻이다.
+- `serve --config`는 같은 설정 파일로 네 역할을 조합해 개발 API를 연다. 서버 시작만으로 검수 실행·승인을 만들지 않는다. `127.0.0.1`, 단일 worker, 인증 없음, 메모리 저장 범위이며 종료하면 실행 기록이 사라진다. 구성 조회는 `GET /api/framework/v1/configuration`에서 선언과 초기화 상태를 구분해 확인한다. `connection_verified: false`는 실제 외부 연결을 검증하지 않았다는 뜻이다.
 
 팀 연결을 시작할 때는 `team_config.template.json`을 복사하고 담당 역할만 `factory`로 바꾼다. 합성 구성은 개발 테스트를 위해 명시적으로 선택하며 미구현 역할의 자동 대체용이 아니다. 실제 연결에 필요한 비밀정보는 팀의 별도 설정 방식으로 관리하고 공유 JSON에 넣지 않는다.
 
@@ -344,13 +345,13 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m backend.agent_framework check A06 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A06.suite.json
 ```
 
-자기 역할을 연결할 때는 `team_config.template.json`을 복사해 해당 역할의 factory를 지정하고, `checks/A03.suite.json` 같은 예제 묶음을 복사해 실제 개발 입력으로 바꾼다. **기본 fixture의 PDF·포스터는 합성 참조이므로 실제 미디어 파일을 읽는 어댑터의 실행 입력으로 사용할 수 없다.** 파일·모델·DB 접근은 연결한 어댑터가 수행하며, 프레임워크는 대신 접속하거나 성공 결과로 대체하지 않는다.
+자기 역할을 연결할 때는 `team_config.template.json`을 복사해 해당 역할의 factory를 지정하고, `checks/A04_A05.suite.json` 같은 예제 묶음을 복사해 실제 개발 입력으로 바꾼다. **기본 fixture의 PDF·포스터는 합성 참조이므로 실제 미디어 파일을 읽는 어댑터의 실행 입력으로 사용할 수 없다.** 파일·모델·DB 접근은 연결한 어댑터가 수행하며, 프레임워크는 대신 접속하거나 성공 결과로 대체하지 않는다.
 
 묶음 파일 형식:
 
 ```json
 {
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "role": "A06",
   "cases": [
     {"id": "normal", "input": "inputs/normal.json", "expected_verdict": "pass"},
@@ -369,7 +370,7 @@ Windows PowerShell:
 - 최상위 `passed`는 선언한 기대와의 일치 여부다. `summary.contract_outputs_checked`는 실제로 계약 검증을 통과한 출력 수이며, 예상한 오류만 확인한 경우에는 0일 수 있다. 실제 모델 정확도·근거 진위·DB 연결·승인 검증을 뜻하지 않는다.
 - 종료 코드는 모두 기대 일치 `0`, 불일치/역할 실패/결과 불명 `1`, 입력·설정 오류 `2`다. `--output <파일>`은 실패 결과도 보고서로 저장한다. 입력 확인·초기화 실패 때는 기존 보고서를 유지하며, 설정·묶음·입력 파일 자체를 출력으로 덮어쓸 수 없다.
 
-기본 제공 묶음은 A02 2개, A03 2개, A04/A05 2개, A06 5개, A07 6개로 총 17개 사례다. 범위가 잘못된 입력 거부도 포함한다. 묶음과 스키마는 `python -m scripts.export_agent_framework`로 재생성하며, 검사 스키마만 확인하려면 `python -m backend.agent_framework schema --include-checks`를 사용한다.
+기본 제공 묶음은 A02 2개, A04/A05 2개, A06 5개, A07 6개로 총 15개 사례다. 범위가 잘못된 입력 거부도 포함한다. 묶음과 스키마는 `python -m scripts.export_agent_framework`로 재생성하며, 검사 스키마만 확인하려면 `python -m backend.agent_framework schema --include-checks`를 사용한다.
 
 A07 단독 호출도 근거의 프로젝트·현재 문서·예외 산출물 범위, 인용 해시, 중복 ID, 검색 revision 모순을 보고서 어댑터 호출 전에 검사한다. `ReportRequest`에는 전체 조건 원문·필수 여부·현재 관측이 없으므로 A06의 전체 판단을 다시 검증하지 않는다. 실제 원문 진위·권한·예외 승인 유효성은 각 실서비스 구현의 책임이다.
 

@@ -10,7 +10,6 @@ synthetic fixtures. Real implementations must preserve nested synthetic flags.
 from __future__ import annotations
 
 from backend.agent_framework.adapters.templates import (
-    PostgresNeo4jRetrieverStub,
     QwenAdapterStub,
 )
 from backend.agent_framework.contracts import (
@@ -21,9 +20,8 @@ from backend.agent_framework.contracts import (
     InspectionResult,
     ReportDraft,
     ReportRequest,
-    RetrieveRequest,
 )
-from backend.agent_framework.ports import Extractor, Inspector, Reporter, Retriever, Validator
+from backend.agent_framework.ports import Extractor, Inspector, Reporter, Validator
 from backend.agent_framework.validation import ReferenceValidator
 
 
@@ -33,14 +31,6 @@ class TeamPDFExtractor(QwenAdapterStub):
     def extract(self, request: ExtractRequest) -> CriteriaDraft:
         # Replace this body with your implementation; preserve the request scope.
         return super().extract(request)
-
-
-class TeamEvidenceRetriever(PostgresNeo4jRetrieverStub):
-    """A03 owner: implement PostgreSQL/Neo4j evidence retrieval and freshness."""
-
-    def retrieve(self, request: RetrieveRequest) -> EvidenceBundle:
-        # Keep permission/version filters and unavailable results explicit.
-        return super().retrieve(request)
 
 
 class TeamPosterInspector(QwenAdapterStub):
@@ -61,10 +51,6 @@ class TeamReportWriter(QwenAdapterStub):
 
 def create_extractor() -> Extractor:
     return TeamPDFExtractor()
-
-
-def create_retriever() -> Retriever:
-    return TeamEvidenceRetriever()
 
 
 def create_inspector() -> Inspector:

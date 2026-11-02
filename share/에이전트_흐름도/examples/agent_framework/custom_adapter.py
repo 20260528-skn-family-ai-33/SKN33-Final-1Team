@@ -4,9 +4,7 @@ Use this factory's module path with the framework CLI after implementing the
 methods below. As shipped, every unimplemented role raises ADAPTER_NOT_CONFIGURED.
 It never substitutes synthetic observations for unavailable real services.
 """
-from backend.agent_framework.adapters.templates import (
-    PostgresNeo4jRetrieverStub, QwenAdapterStub,
-)
+from backend.agent_framework.adapters.templates import QwenAdapterStub
 from backend.agent_framework.ports import Agents
 
 
@@ -21,21 +19,12 @@ class TeamQwenAdapter(QwenAdapterStub):
     """
 
 
-class TeamRetriever(PostgresNeo4jRetrieverStub):
-    """Override retrieve using authorized PostgreSQL records and Neo4j relations.
-
-    A graph relationship is a pointer: verify current source/version/permission
-    before returning the source evidence. Historical verdicts are not current
-    observations, and approved exceptions do not alter the machine verdict.
-    """
-
-
 def make_agents() -> Agents:
     from backend.agent_framework.validation import ReferenceValidator
 
     qwen = TeamQwenAdapter()
     return Agents(
-        extractor=qwen, retriever=TeamRetriever(), inspector=qwen,
+        extractor=qwen, inspector=qwen,
         validator=ReferenceValidator(), reporter=qwen,
     )
 

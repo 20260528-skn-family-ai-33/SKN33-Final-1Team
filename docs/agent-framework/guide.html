@@ -11,7 +11,7 @@
 .venv/bin/python -m pytest tests/agent_framework -q</code></pre>
 <h2>3. Windows PowerShell</h2><pre><code>.\.venv\Scripts\python.exe -m backend.agent_framework demo
 .\.venv\Scripts\python.exe -m pytest tests/agent_framework -q</code></pre>
-<h2>4. 담당 역할 연결</h2><p>공통 포트에 맞춘 어댑터를 만든 뒤 factory를 지정합니다. <code>A02</code>, <code>A03</code>, <code>A04_A05</code>, <code>A06</code>, <code>A07</code> 단독 실행과 합성 예제를 제공합니다.</p>
+<h2>4. 담당 역할 연결</h2><p>공통 포트에 맞춘 어댑터를 만든 뒤 factory를 지정합니다. <code>A02</code>, <code>A04_A05</code>, <code>A06</code>, <code>A07</code> 단독 실행과 합성 예제를 제공합니다.</p>
 <ul><li><a href="source.html?file=docs%2Fagent-framework%2FREADME.md">전체 개발 가이드와 역할·계약 규칙</a></li>
 <li><a href="source.html?file=backend%2Fagent_framework%2Fports.py#L1">입출력 포트와 어댑터 연결 규격</a></li>
 <li><a href="source.html?file=examples%2Fagent_framework%2FREADME.md">합성 JSON 예제 안내</a></li>
@@ -19,7 +19,7 @@
 <h2>5. 역할별 설정과 개발 API</h2><p>전체 역할을 한 factory에 묶지 않고, 담당 역할의 factory만 설정할 수 있습니다. 설정을 검사하는 doctor는 모듈을 import하거나 모델·DB에 연결하지 않습니다.</p>
 <pre><code># macOS
 .venv/bin/python -m backend.agent_framework doctor --config examples/agent_framework/team_config.synthetic.json
-.venv/bin/python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --config examples/agent_framework/team_config.synthetic.json
+.venv/bin/python -m backend.agent_framework role A04_A05 --input examples/agent_framework/A04_A05.json --config examples/agent_framework/team_config.synthetic.json
 .venv/bin/python -m backend.agent_framework serve --config examples/agent_framework/team_config.synthetic.json --port 8012
 
 # Windows PowerShell
@@ -34,7 +34,7 @@
 
 # Windows PowerShell
 .\.venv\Scripts\python.exe -m backend.agent_framework check A06 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A06.suite.json</code></pre>
-<p>기본 묶음은 5개 역할의 합성 사례 17개입니다. 실제 PDF·포스터 파일은 포함하지 않으므로 실서비스 어댑터에는 별도의 개발 입력을 준비하세요. 상대 입력 경로는 suite 파일 기준이며, <code>--output 보고서.json</code>을 지정하면 실패 결과도 저장합니다. 보고서의 passed는 기대와의 일치이고 실모델 정확도나 DB 연결 증명이 아닙니다.</p>
+<p>기본 묶음은 4개 역할의 합성 사례 15개입니다. 실제 PDF·포스터 파일은 포함하지 않으므로 실서비스 어댑터에는 별도의 개발 입력을 준비하세요. 상대 입력 경로는 suite 파일 기준이며, <code>--output 보고서.json</code>을 지정하면 실패 결과도 저장합니다. 보고서의 passed는 기대와의 일치이고 실모델 정확도나 DB 연결 증명이 아닙니다.</p>
 <h2>7. 실제 파일 읽기 연결부 확인</h2><p>FileAccess는 기존 파일·버전·권한 조회와 저장소를 재사용하고 실제 바이트의 해시·형식·치수를 검사합니다. 아래 예제는 생성 PDF·PNG를 기존 파일 서비스로 임시 저장한 뒤 읽으며, 운영 DB·모델에 연결하지 않습니다.</p>
 <pre><code># macOS
 .venv/bin/python -m examples.agent_framework.file_access_demo
@@ -44,8 +44,8 @@
 <p>재구축 creative_checker 경로는 PDF·포스터, M008 경로는 포스터를 지원합니다. M008의 기존 POSIX 저장소는 Windows 지원 대상이 아닙니다. 제품 API에 자동 연결하지 않으며 인증이 확인된 주체와 기존 저장소를 호출자가 주입합니다. 원본 바이트와 EXIF 표시 좌표는 구분합니다.</p>
 <h2>8. 단계별 실행 기록</h2><p>demo 출력의 <code>runs[].step_records</code> 또는 같은 Workflow 객체의 <code>get_steps(run_id)</code>에서 역할별 상태·UTC 시작/종료 시각·소요 시간·오류 코드를 확인합니다. 개발 API는 <code>GET /api/framework/v1/runs/실행ID/steps</code>를 제공합니다. 어댑터가 실행 중이어도 조회할 수 있으며 시작·승인 요청은 동기식으로 완료를 기다립니다.</p>
 <p>상태는 running·completed·failed·outcome_unknown·reused로 구분합니다. 재검수의 A02는 부모 실행의 조건 재사용을 표시하며 새로운 호출 시간이나 소요 시간을 만들지 않습니다. 오류 뒤에는 후속 역할을 실행하지 않고 자동 재시도도 하지 않습니다. 사람 승인 대기는 역할 소요 시간에 포함하지 않습니다. 단계 completed는 검수 통과나 최종 승인이 아닙니다.</p>
-<p class="note">기록은 메모리에만 존재하며 프로세스 재시작 후 사라집니다. CLI와 별도로 실행한 API는 기록을 공유하지 않습니다. 역할 단독 role/check 명령은 Workflow 이력을 만들지 않습니다. PostgreSQL 영속 기록·worker·운영 인증은 후속 단계입니다.</p>
-<h2>9. 설정한 어댑터의 전체 흐름 검증</h2><p>check-flow는 구성한 다섯 역할로 조건 승인→검사·보고→수정 승인→새 버전 전체 재검수→최종 테스트 승인을 확인합니다. 오류·기대 불일치·결과 불명 뒤에는 후속 동작을 건너뛰며 자동 재시도하지 않습니다.</p>
+<p class="note">demo·serve·check-flow는 메모리 개발 도구입니다. 역할 단독 role/check 명령은 Workflow 이력을 만들지 않습니다. 기존 DB·인증을 사용하는 postgres-serve·worker는 <a href="에이전트_프레임워크_PostgreSQL_실행가이드.html">별도 PostgreSQL 실행가이드</a>를 따릅니다. 운영 배포·실모델·front-v2는 후속 단계입니다.</p>
+<h2>9. 설정한 어댑터의 전체 흐름 검증</h2><p>check-flow는 구성한 네 역할로 조건 승인→검사·보고→수정 승인→새 버전 전체 재검수→최종 테스트 승인을 확인합니다. 오류·기대 불일치·결과 불명 뒤에는 후속 동작을 건너뛰며 자동 재시도하지 않습니다.</p>
 <pre><code># macOS
 .venv/bin/python -m backend.agent_framework check-flow --config examples/agent_framework/team_config.synthetic.json --case examples/agent_framework/workflow.synthetic.json
 .venv/bin/python -m examples.agent_framework.file_flow_demo
@@ -54,7 +54,7 @@
 .\.venv\Scripts\python.exe -m backend.agent_framework check-flow --config examples/agent_framework/team_config.synthetic.json --case examples/agent_framework/workflow.synthetic.json
 .\.venv\Scripts\python.exe -m examples.agent_framework.file_flow_demo</code></pre>
 <p>--output 보고서.json으로 상태·판정·단계 시간·오류·정규 JSON 해시를 남깁니다. 전체 기대 일치 0, 실행 실패·불일치 1, 입력·설정 오류 2를 반환합니다. 기본 사례는 실제 미디어가 없는 합성 참조이므로 담당 어댑터에는 별도 개발 입력을 준비하세요.</p>
-<p>file_flow_demo는 생성 PDF·두 PNG를 기존 파일 저장소와 임시 SQLite에 등록하고 설정 factory·파일 검증·텍스트/픽셀 테스트 콜백으로 불합격→수정본 통과→테스트 최종 승인을 확인합니다. 모델 호출은 0회이며 합성 검색·보고·테스트 승인을 사용합니다. 예제의 임시 factory 의존성은 상시 서비스 설정용이 아닙니다.</p>
+<p>file_flow_demo는 생성 PDF·두 PNG를 기존 파일 저장소와 임시 SQLite에 등록하고 설정 factory·파일 검증·텍스트/픽셀 테스트 콜백으로 불합격→수정본 통과→테스트 최종 승인을 확인합니다. 모델 호출은 0회이며 승인 기준 출처 고정·합성 보고·테스트 승인을 사용합니다. 예제의 임시 factory 의존성은 상시 서비스 설정용이 아닙니다.</p>
 <h2>자료 다시 만들기</h2><p>문서나 공통 소스를 수정하면 프로젝트 루트에서 HTML을 갱신하여 Git으로 공유합니다. ZIP 생성은 필요하지 않습니다.</p>
 <pre><code>python -m scripts.build_agent_flow_html
 python -m scripts.build_agent_handoff

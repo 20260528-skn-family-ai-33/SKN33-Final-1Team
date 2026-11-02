@@ -17,13 +17,12 @@ from pydantic import Field, model_validator
 from .contracts import Contract, ValidateRequest, ValidatedResult
 from .ports import AdapterFailure, Agents
 
-RoleId = Literal["A02", "A03", "A04_A05", "A06", "A07"]
+RoleId = Literal["A02", "A04_A05", "A06", "A07"]
 BindingKind = Literal["synthetic", "reference", "factory", "unconfigured"]
 Scenario = Literal["pass", "fail", "review", "stale", "unavailable"]
 FactoryRef = Annotated[str, Field(pattern=r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$")]
 ROLE_PORTS = {
     "A02": ("extractor", "extract"),
-    "A03": ("retriever", "retrieve"),
     "A04_A05": ("inspector", "inspect"),
     "A06": ("validator", "validate"),
     "A07": ("reporter", "report"),
@@ -53,7 +52,7 @@ class TeamConfiguration(Contract):
     @model_validator(mode="after")
     def complete_roles(self):
         if set(self.roles) != set(ROLE_PORTS):
-            raise ValueError("configuration must explicitly declare all five roles")
+            raise ValueError("configuration must explicitly declare all four roles")
         if any(binding.kind == "reference" and role != "A06" for role, binding in self.roles.items()):
             raise ValueError("reference binding is available only for A06")
         return self
@@ -94,7 +93,7 @@ class _UnconfiguredRole:
     def _missing(self, _request):
         raise AdapterFailure("ADAPTER_NOT_CONFIGURED", "The selected role has no configured adapter.")
 
-    extract = retrieve = inspect = validate = report = _missing
+    extract = inspect = validate = report = _missing
 
 
 class _SyntheticValidator:
@@ -192,12 +191,12 @@ def describe_configuration(config: TeamConfiguration) -> dict:
 def describe_agents(agents: Agents) -> dict:
     """Describe exact known adapters; a custom type is never proof of connectivity."""
     from .adapters.synthetic import SyntheticAdapters
-    from .adapters.templates import PostgresNeo4jRetrieverStub, QwenAdapterStub
+    from .adapters.templates import QwenAdapterStub
     from .validation import ReferenceValidator
 
     kinds = {SyntheticAdapters: "synthetic", _SyntheticValidator: "synthetic",
              ReferenceValidator: "reference", _UnconfiguredRole: "unconfigured",
-             PostgresNeo4jRetrieverStub: "unconfigured", QwenAdapterStub: "unconfigured"}
+             QwenAdapterStub: "unconfigured"}
     return {role: {"kind": kinds.get(type(getattr(agents, port)), "custom"),
                    "connection_verified": False}
             for role, (port, _method) in ROLE_PORTS.items()}

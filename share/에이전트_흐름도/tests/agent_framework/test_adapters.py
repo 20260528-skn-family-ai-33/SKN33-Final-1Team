@@ -11,9 +11,10 @@ from unittest.mock import patch
 
 from backend.agent_framework.adapters.generate_examples import generate, role_examples
 from backend.agent_framework.adapters.synthetic import SCENARIOS, SyntheticAdapters, make_agents, sample_inputs
-from backend.agent_framework.adapters.templates import PostgresNeo4jRetrieverStub, QwenAdapterStub
+from backend.agent_framework.adapters.templates import QwenAdapterStub
+from backend.agent_framework.context import freeze_approved_context
 from backend.agent_framework.contracts import (
-    ExtractRequest, InspectRequest, ReportRequest, RetrieveRequest,
+    ExtractRequest, InspectRequest, ReportRequest,
     ValidatedItem, ValidatedResult,
 )
 from backend.agent_framework.ports import AdapterFailure
@@ -53,10 +54,10 @@ class AdapterContractTests(unittest.TestCase):
 
     def test_every_criterion_has_current_requirement_evidence(self):
         draft = self.extraction()
-        bundle = SyntheticAdapters().retrieve(RetrieveRequest(context=self.context, criteria=draft.criteria))
+        bundle = freeze_approved_context(self.context, draft.criteria, synthetic=True)
         self.assertTrue(bundle.synthetic)
         self.assertEqual(bundle.status, "complete")
-        self.assertEqual(bundle.postgres_revision, bundle.graph_revision)
+        self.assertIsNone(bundle.graph_revision)
         for criterion in draft.criteria:
             matches = [evidence for evidence in bundle.evidence if criterion.criterion_id in evidence.criterion_ids]
             self.assertEqual(len(matches), 1)
@@ -80,12 +81,12 @@ class AdapterContractTests(unittest.TestCase):
                     self.assertEqual(validated.verdict, expected[scenario])
                     self.assertEqual(report.verdict, validated.verdict)
                     self.assertIn("합성", report.summary)
-                    known_ids = {evidence.evidence_id for evidence in stages["A03"][1].evidence}
+                    known_ids = {evidence.evidence_id for evidence in stages["A04_A05"][0].evidence.evidence}
                     self.assertTrue(set(report.evidence_ids).issubset(known_ids))
 
-    def test_stale_and_unavailable_remain_explicit_retrieval_states(self):
+    def test_stale_and_unavailable_remain_explicit_context_states(self):
         for scenario in ("stale", "unavailable"):
-            bundle = role_examples(scenario)["A03"][1]
+            bundle = role_examples(scenario)["A04_A05"][0].evidence
             self.assertEqual(bundle.status, scenario)
             if scenario == "stale":
                 self.assertLess(bundle.graph_revision, bundle.postgres_revision)
@@ -116,15 +117,14 @@ class AdapterContractTests(unittest.TestCase):
         synthetic = SyntheticAdapters()
         extract = ExtractRequest(context=self.context, document=self.document)
         draft = synthetic.extract(extract)
-        retrieve = RetrieveRequest(context=self.context, criteria=draft.criteria)
-        bundle = synthetic.retrieve(retrieve)
+        bundle = freeze_approved_context(self.context, draft.criteria, synthetic=True)
         inspect = InspectRequest(context=self.context, criteria=draft.criteria, asset=self.asset, evidence=bundle)
         validated = ValidatedResult(context=self.context, verdict="review",
             items=tuple(ValidatedItem(criterion_id=item.criterion_id, verdict="review") for item in draft.criteria), synthetic=True)
         report = ReportRequest(context=self.context, validated=validated, evidence=bundle)
-        qwen, retriever = QwenAdapterStub(), PostgresNeo4jRetrieverStub()
+        qwen = QwenAdapterStub()
         with patch("socket.create_connection", side_effect=AssertionError("network forbidden")):
-            for method, request in ((qwen.extract, extract), (retriever.retrieve, retrieve), (qwen.inspect, inspect), (qwen.report, report)):
+            for method, request in ((qwen.extract, extract), (qwen.inspect, inspect), (qwen.report, report)):
                 with self.subTest(method=method.__name__), self.assertRaises(AdapterFailure) as failure:
                     method(request)
                 self.assertEqual(failure.exception.code, "ADAPTER_NOT_CONFIGURED")
@@ -153,7 +153,7 @@ class AdapterContractTests(unittest.TestCase):
             destination = Path(directory)
             files = generate(destination)
             before = {file.relative_to(destination): file.read_bytes() for file in files}
-            self.assertEqual(len(files), 15)
+            self.assertEqual(len(files), 13)
             generate(destination)
             self.assertEqual(before, {file.relative_to(destination): file.read_bytes() for file in files})
             for role, (request, response) in role_examples().items():

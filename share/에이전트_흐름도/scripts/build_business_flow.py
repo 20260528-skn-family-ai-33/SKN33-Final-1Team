@@ -12,7 +12,7 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER = ROOT / "docs/agent-framework"
 ENTRY = ROOT / "에이전트_흐름도.html"
-REFERENCE = ROOT / "docs/reference/creative-checker-master-2026-10-30.html"
+REFERENCE = ROOT / "docs/reference/creative-checker-master-2026-11-02.html"
 
 
 class HTML(HTMLParser):
@@ -106,9 +106,9 @@ def build():
         names = {entry["path"] for entry in manifest["files"]}
         names.update({"index.html", ENTRY.name, "scripts/build_business_flow.py", "scripts/templates/business-flow.html.in",
                       "docs/agent-framework/business-flow.json", "docs/agent-framework/business-flow-build.json",
-                      "docs/reference/creative-checker-master-2026-10-30.html"})
+                      "docs/reference/creative-checker-master-2026-11-02.html"})
         entries = []
-        for name in sorted(names):
+        for name in sorted(name for name in names if (ROOT / name).is_file()):
             path = (ROOT / name).resolve()
             if not path.is_relative_to(ROOT) or not path.is_file():
                 raise ValueError(f"Missing manifest source: {name}")

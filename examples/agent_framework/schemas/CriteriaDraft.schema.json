@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -89,8 +89,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -173,8 +173,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -222,8 +222,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "1.0.0",
-      "default": "1.0.0",
+      "const": "2.0.0",
+      "default": "2.0.0",
       "title": "Contract Version",
       "type": "string"
     },

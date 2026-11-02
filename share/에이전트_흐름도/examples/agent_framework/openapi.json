@@ -3,13 +3,29 @@
   "info": {
     "title": "Creative Checker — Development Framework",
     "description": "Development only. In-memory state, synthetic default adapters, no authentication. Not the front-v2/M008 production API. Bind to loopback only.",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "paths": {
     "/api/framework/v1/health": {
       "get": {
         "summary": "Health",
         "operationId": "health_api_framework_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/configuration": {
+      "get": {
+        "summary": "Configuration Status",
+        "operationId": "configuration_status_api_framework_v1_configuration_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -82,6 +98,45 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RunSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/framework/v1/runs/{run_id}/steps": {
+      "get": {
+        "summary": "Steps",
+        "operationId": "steps_api_framework_v1_runs__run_id__steps_get",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StepTimeline"
                 }
               }
             }
@@ -204,9 +259,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -258,9 +313,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "file_id": {
             "type": "string",
@@ -317,9 +372,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "project_id": {
             "type": "string",
@@ -400,9 +455,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -441,9 +496,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -524,9 +579,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "file_id": {
             "type": "string",
@@ -573,9 +628,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "evidence_id": {
             "type": "string",
@@ -666,19 +721,19 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
           },
-          "retrieval_id": {
+          "context_id": {
             "type": "string",
             "maxLength": 160,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-            "title": "Retrieval Id"
+            "title": "Context Id"
           },
           "status": {
             "type": "string",
@@ -734,7 +789,7 @@
         "type": "object",
         "required": [
           "context",
-          "retrieval_id",
+          "context_id",
           "status"
         ],
         "title": "EvidenceBundle"
@@ -743,9 +798,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "code": {
             "type": "string",
@@ -791,9 +846,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "asset_version_id": {
             "type": "string",
@@ -847,9 +902,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -879,9 +934,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -943,9 +998,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1002,9 +1057,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1025,9 +1080,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1047,6 +1102,9 @@
           "execution_status": {
             "type": "string",
             "enum": [
+              "queued",
+              "extracting",
+              "reviewing",
               "waiting_criteria",
               "waiting_review",
               "waiting_revision",
@@ -1149,6 +1207,14 @@
             "title": "Stages",
             "default": []
           },
+          "step_records": {
+            "items": {
+              "$ref": "#/components/schemas/StepRecord"
+            },
+            "type": "array",
+            "title": "Step Records",
+            "default": []
+          },
           "error": {
             "anyOf": [
               {
@@ -1174,9 +1240,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "document_version_id": {
             "type": "string",
@@ -1223,9 +1289,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1246,13 +1312,190 @@
         ],
         "title": "StartRequest"
       },
+      "StepRecord": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Ordinal"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "A02",
+              "A04_A05",
+              "A06",
+              "A07"
+            ],
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed",
+              "failed",
+              "outcome_unknown",
+              "reused"
+            ],
+            "title": "Status"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrameworkError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
+          },
+          "source_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Run Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ordinal",
+          "role",
+          "status",
+          "recorded_at"
+        ],
+        "title": "StepRecord",
+        "description": "One role boundary, including validation; never a raw provider payload."
+      },
+      "StepTimeline": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "context": {
+            "$ref": "#/components/schemas/Context"
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "development",
+              "test"
+            ],
+            "title": "Profile"
+          },
+          "storage": {
+            "type": "string",
+            "enum": [
+              "memory",
+              "postgres"
+            ],
+            "title": "Storage",
+            "default": "memory"
+          },
+          "execution_status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "extracting",
+              "reviewing",
+              "waiting_criteria",
+              "waiting_review",
+              "waiting_revision",
+              "completed",
+              "failed",
+              "outcome_unknown"
+            ],
+            "title": "Execution Status"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/StepRecord"
+            },
+            "type": "array",
+            "title": "Records",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "context",
+          "profile",
+          "execution_status"
+        ],
+        "title": "StepTimeline"
+      },
       "ValidatedItem": {
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -1291,9 +1534,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "1.0.0",
+            "const": "2.0.0",
             "title": "Contract Version",
-            "default": "1.0.0"
+            "default": "2.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"

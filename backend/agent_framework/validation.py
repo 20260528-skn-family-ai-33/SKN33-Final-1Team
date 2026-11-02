@@ -4,7 +4,7 @@ from hashlib import sha256
 
 from .contracts import (Context, CriteriaDraft, DocumentRef, EvidenceBundle,
                         InspectRequest, InspectionResult, ReportDraft, ReportRequest,
-                        RetrieveRequest, ValidateRequest, ValidatedItem, ValidatedResult)
+                        ValidateRequest, ValidatedItem, ValidatedResult)
 
 
 def ensure_context(expected: Context, result) -> None:
@@ -48,7 +48,7 @@ def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None
     ensure_context(context, bundle)
     _unique((e.evidence_id for e in bundle.evidence), "EVIDENCE")
     if bundle.status == "empty" and bundle.evidence:
-        raise ValueError("EMPTY_RETRIEVAL_HAS_EVIDENCE")
+        raise ValueError("EMPTY_CONTEXT_HAS_EVIDENCE")
     if (bundle.status == "complete" and bundle.graph_revision is not None
             and bundle.graph_revision < bundle.postgres_revision):
         raise ValueError("STALE_GRAPH_MARKED_COMPLETE")
@@ -66,11 +66,11 @@ def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None
                 raise ValueError("EXCEPTION_SCOPE_MISMATCH")
 
 
-def validate_evidence(request: RetrieveRequest, bundle: EvidenceBundle) -> None:
-    ensure_context(request.context, bundle)
-    _criteria(request.context, request.criteria)
-    validate_evidence_envelope(request.context, bundle)
-    criteria = {c.criterion_id: c for c in request.criteria}
+def validate_evidence(context, criteria_input, bundle: EvidenceBundle) -> None:
+    ensure_context(context, bundle)
+    _criteria(context, criteria_input)
+    validate_evidence_envelope(context, bundle)
+    criteria = {c.criterion_id: c for c in criteria_input}
     for evidence in bundle.evidence:
         if not set(evidence.criterion_ids) <= criteria.keys():
             raise ValueError("UNKNOWN_EVIDENCE_CRITERION")
@@ -81,7 +81,7 @@ def validate_evidence(request: RetrieveRequest, bundle: EvidenceBundle) -> None:
 
 def validate_inspection(request: InspectRequest, result: InspectionResult) -> None:
     ensure_context(request.context, result)
-    validate_evidence(RetrieveRequest(context=request.context, criteria=request.criteria), request.evidence)
+    validate_evidence(request.context, request.criteria, request.evidence)
     if request.asset.asset_version_id != request.context.asset_version_id:
         raise ValueError("ASSET_VERSION_MISMATCH")
     ids = {c.criterion_id for c in request.criteria}
@@ -228,7 +228,7 @@ class ReferenceValidator:
                        for e in evidence.values()):
                 issues.append("missing_requirement_evidence")
             if request.evidence.status != "complete":
-                issues.append("retrieval_incomplete")
+                issues.append("context_incomplete")
             if issues and verdict == "pass":
                 verdict = "review"
             items.append(ValidatedItem(criterion_id=criterion.criterion_id, verdict=verdict, issues=tuple(issues)))

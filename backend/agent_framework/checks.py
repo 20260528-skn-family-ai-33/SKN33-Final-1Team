@@ -173,14 +173,12 @@ exception messages. Contract acceptance does not establish semantic accuracy.
                         synthetic=output.synthetic, output_sha256=sha256(serialized).hexdigest())
             if verdict is not None:
                 item["machine_verdict"] = verdict
-            if role == "A03":
-                item["retrieval_status"] = output.status
             if not matched:
                 item["reason"] = "EXPECTED_ERROR_NOT_RAISED" if case.spec.expected_error else "VERDICT_MISMATCH"
         results.append(item)
     counts = {status: sum(item["status"] == status for item in results)
               for status in ("passed", "failed", "skipped")}
-    return {"contract_version": "1.0.0", "check": "role_contract_suite", "role": role,
+    return {"contract_version": "2.0.0", "check": "role_contract_suite", "role": role,
             "profile": configuration.profile, "adapter_kind": binding.kind,
             "passed": counts["passed"] == len(results), "stopped_on_outcome_unknown": stopped,
             "summary": {"total": len(results), **counts, "contract_outputs_checked": outputs_checked},

@@ -71,17 +71,13 @@ def test_nested_input_scope_is_checked_before_remote_work():
 
 
 @pytest.mark.parametrize("role,code", (("A02", "DOCUMENT_VERSION_MISMATCH"),
-    ("A03", "SOURCE_HASH_MISMATCH"), ("A06", "OBSERVATION_ASSET_MISMATCH"),
+ ("A06", "OBSERVATION_ASSET_MISMATCH"),
     ("A07", "CONTEXT_MISMATCH")))
 def test_shared_input_policy_prevents_calls_for_inconsistent_prior_stage_data(role, code):
     request, result = role_examples()[role]
     if role == "A02":
         request = request.model_copy(update={"document": request.document.model_copy(
             update={"document_version_id": "another-document"})})
-    elif role == "A03":
-        criteria = (request.criteria[0].model_copy(update={"source": request.criteria[0].source.model_copy(
-            update={"source_hash": "0" * 64})}),) + request.criteria[1:]
-        request = request.model_copy(update={"criteria": criteria})
     elif role == "A06":
         first = request.inspection.observations[0]
         observations = (first.model_copy(update={"image": first.image.model_copy(
@@ -200,20 +196,20 @@ def test_runtime_uses_identical_scope_boundary_and_stops_without_fallback():
 
     def forged(request):
         call_count.append(True)
-        result = agents.retriever.retrieve(request)
+        result = agents.inspector.inspect(request)
         return result.model_copy(update={"context": request.context.model_copy(update={"run_id": "other"})})
 
-    adapter = SimpleNamespace(retrieve=forged)
-    request, _ = role_examples()["A03"]
+    adapter = SimpleNamespace(inspect=forged)
+    request, _ = role_examples()["A04_A05"]
     with pytest.raises(InvocationFailure) as failure:
-        invoke_role("A03", adapter, request)
+        invoke_role("A04_A05", adapter, request)
     assert failure.value.code == "CONTEXT_MISMATCH"
-    workflow = Workflow(replace(agents, retriever=adapter))
+    workflow = Workflow(replace(agents, inspector=adapter))
     workflow.start(context, document, asset)
     result = workflow.approve(context.run_id,
         Approval(context=context, actor_id=context.actor_id, decision="approve_criteria"))
     assert result.execution_status == "failed" and result.error.code == "contract_violation"
-    assert result.evidence is result.inspection is result.report is None
+    assert result.inspection is result.report is None
     assert call_count == [True, True]
 
 

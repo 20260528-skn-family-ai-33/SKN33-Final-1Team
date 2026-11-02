@@ -12,20 +12,19 @@ from typing import Any
 from pydantic import BaseModel
 
 from .contracts import (
-    CriteriaDraft, EvidenceBundle, ExtractRequest, InspectionResult,
-    InspectRequest, ReportDraft, ReportRequest, RetrieveRequest,
+    CriteriaDraft, ExtractRequest, InspectionResult,
+    InspectRequest, ReportDraft, ReportRequest,
     ValidateRequest, ValidatedResult,
 )
 from .ports import AdapterFailure
 from .validation import (
-    _criteria, ensure_context, validate_draft, validate_evidence,
+    _criteria, ensure_context, validate_draft,
     validate_inspection, validate_report, validate_report_request, validate_validated,
 )
 
 
 ROLE_CONTRACTS = {
     "A02": ("extractor", "extract", ExtractRequest, CriteriaDraft),
-    "A03": ("retriever", "retrieve", RetrieveRequest, EvidenceBundle),
     "A04_A05": ("inspector", "inspect", InspectRequest, InspectionResult),
     "A06": ("validator", "validate", ValidateRequest, ValidatedResult),
     "A07": ("reporter", "report", ReportRequest, ReportDraft),
@@ -67,13 +66,11 @@ def _input_policy(role: str, request: BaseModel) -> None:
     if role == "A02":
         if request.document.document_version_id != request.context.document_version_id:
             raise ValueError("DOCUMENT_VERSION_MISMATCH")
-    elif role == "A03":
-        _criteria(request.context, request.criteria)
     elif role in {"A04_A05", "A06"}:
         inspection_request = InspectRequest(context=request.context, criteria=request.criteria,
             asset=request.asset, evidence=request.evidence, synthetic=request.synthetic)
         # Empty observations are permitted for A04/A05; this still validates
-        # criteria, retrieval provenance and the current asset before any call.
+        # criteria, approved provenance and the current asset before any call.
         inspection = (request.inspection if role == "A06" else
                       InspectionResult(context=request.context, observations=()))
         validate_inspection(inspection_request, inspection)
@@ -86,7 +83,7 @@ def _output_policy(role: str, request: BaseModel, result: BaseModel) -> None:
     if role == "A02":
         validate_draft(request.context, request.document, result)
     else:
-        {"A03": validate_evidence, "A04_A05": validate_inspection,
+        {"A04_A05": validate_inspection,
          "A06": validate_validated, "A07": validate_report}[role](request, result)
 
 
@@ -98,6 +95,22 @@ def _policy(check, *args) -> None:
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,80}", code):
             code = "BOUNDARY_INVALID"
         _reject(code, "The role violates the shared scope, evidence, or verdict policy.")
+
+
+def accept_role_output(role: str, request: Any, raw: Any, *, require_synthetic: bool = False) -> BaseModel:
+    """Validate an already returned result without invoking any provider again."""
+    if role not in ROLE_CONTRACTS:
+        _reject("INVALID_ROLE", "The selected role is not part of the shared contract.")
+    _port,_method,request_type,result_type=ROLE_CONTRACTS[role]
+    expected=_contract(request_type,request)
+    _policy(_input_policy,role,expected)
+    result=_contract(result_type,raw)
+    if require_synthetic and not result.synthetic:
+        _reject("SYNTHETIC_LABEL_MISSING", "Fixture output must explicitly identify itself as synthetic.")
+    if _synthetic(expected.model_dump(mode="python")) and not result.synthetic:
+        result=result.model_copy(update={"synthetic":True},deep=True)
+    _policy(_output_policy,role,expected,result)
+    return result.model_copy(deep=True)
 
 
 def invoke_role(role: str, adapter: Any, request: Any, *, require_synthetic: bool = False) -> BaseModel:
@@ -112,7 +125,6 @@ fallback, network request, or persistence is performed by this boundary.
     _port_name, method_name, request_type, result_type = ROLE_CONTRACTS[role]
     expected = _contract(request_type, request)
     _policy(_input_policy, role, expected)
-    inherited_synthetic = _synthetic(expected.model_dump(mode="python"))
     method = getattr(adapter, method_name, None)
     if not callable(method):
         _reject("ADAPTER_NOT_IMPLEMENTED", "The selected role does not implement its port.")
@@ -127,10 +139,4 @@ fallback, network request, or persistence is performed by this boundary.
         if inspect.iscoroutine(raw):
             raw.close()
         _reject("ASYNC_ADAPTER_UNSUPPORTED", "Role adapters must return a completed synchronous result.")
-    result = _contract(result_type, raw)
-    if require_synthetic and not result.synthetic:
-        _reject("SYNTHETIC_LABEL_MISSING", "Fixture output must explicitly identify itself as synthetic.")
-    if inherited_synthetic and not result.synthetic:
-        result = result.model_copy(update={"synthetic": True}, deep=True)
-    _policy(_output_policy, role, expected, result)
-    return result.model_copy(deep=True)
+    return accept_role_output(role,expected,raw,require_synthetic=require_synthetic)

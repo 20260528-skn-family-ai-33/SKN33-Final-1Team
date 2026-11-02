@@ -11,6 +11,8 @@ import sys
 import tempfile
 
 from pydantic import ValidationError
+from backend.app.config import ConfigurationError
+from backend.app.persistence.database import PersistenceError
 
 from .contracts import (
     CONTRACT_TYPES, Approval, FrameworkError,
@@ -270,6 +272,19 @@ def parser():
     serve.add_argument("--config", required=True, help="explicit trusted team configuration JSON")
     serve.add_argument("--port", type=_port, default=8012)
     serve.set_defaults(handler=_serve)
+    from .postgres_commands import postgres_check,postgres_serve,postgres_worker,postgres_migrate
+    for name,handler,help_text in (
+        ('postgres-check',postgres_check,'read-only existing M008 and AF001 extension preflight'),
+        ('postgres-serve',postgres_serve,'start authenticated PostgreSQL framework API; never executes models'),
+        ('worker',postgres_worker,'run the separate fenced framework role worker'),
+        ('migrate-postgres',postgres_migrate,'explicit owner-only additive AF001 migration in an existing M008 DB')):
+        command=commands.add_parser(name,help=help_text)
+        command.add_argument('--env-file',required=True,help='explicit app-only env file; migration uses a separate owner-only file')
+        if name in ('postgres-serve','worker'):
+            command.add_argument('--config',required=True,help='fixed trusted team adapter configuration')
+        if name=='postgres-serve':command.add_argument('--port',type=_port,default=8012)
+        if name=='worker':command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
+        command.set_defaults(handler=handler)
     return cli
 
 
@@ -286,6 +301,12 @@ def main(argv=None):
     except FlowCaseError:
         _error("FLOW_CASE_INVALID", "The workflow fixture must use fixed document/criteria and a new child run/poster version.")
         return 2
+    except ConfigurationError:
+        _error('POSTGRES_CONFIGURATION_INVALID','Use an explicit app-only or migration-only environment file for the selected action.')
+        return 2
+    except PersistenceError as exc:
+        _error(exc.code,'The PostgreSQL operation was not confirmed. Inspect readiness before any explicit retry.',outcome_unknown=exc.outcome=='commit_unknown')
+        return 1
     except ValidationError:
         _error("CONTRACT_INVALID", "Input or adapter output does not match the versioned JSON contract.")
         return 2

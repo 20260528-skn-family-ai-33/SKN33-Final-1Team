@@ -36,18 +36,18 @@ def request_file(tmp_path):
 
 
 def test_doctor_does_not_import_missing_factories_or_claim_connectivity(tmp_path, capsys):
-    team = config(A03=RoleBinding(kind="factory", factory="does_not_exist_here:create_retriever"))
+    team = config(A07=RoleBinding(kind="factory", factory="does_not_exist_here:create_reporter"))
     assert main(["doctor", "--config", str(config_file(tmp_path, team))]) == 0
     result = json.loads(capsys.readouterr().out)
     assert result["factory_imports_performed"] is False
     assert result["role_calls_performed"] is False
     assert result["connection_verified"] is False
-    assert result["roles"]["A03"]["kind"] == "factory"
+    assert result["roles"]["A07"]["kind"] == "factory"
     assert "does_not_exist_here" not in sys.modules
 
 
 def test_role_config_initializes_only_requested_adapter(tmp_path, capsys):
-    team = config(A03=RoleBinding(kind="factory", factory="does_not_exist_here:create_retriever"))
+    team = config(A07=RoleBinding(kind="factory", factory="does_not_exist_here:create_reporter"))
     assert main(["role", "A02", "--input", str(request_file(tmp_path)),
                  "--config", str(config_file(tmp_path, team))]) == 0
     assert json.loads(capsys.readouterr().out)["synthetic"] is True
@@ -80,22 +80,22 @@ def test_configuration_is_exclusive_with_synthetic_and_factory(tmp_path):
 
 def test_mixed_config_api_reports_every_role_and_preserves_synthetic_through_approval(monkeypatch):
     calls = []
-    class TeamRetriever:
-        def retrieve(self, request):
+    class TeamReporter:
+        def report(self, request):
             calls.append(request.context.run_id)
             # Test adapter intentionally tries to discard provenance.
-            return make_agents().retriever.retrieve(request).model_copy(update={"synthetic": False})
-    module = types.ModuleType("configured_test_retriever")
-    module.create = lambda: TeamRetriever()
+            return make_agents().reporter.report(request).model_copy(update={"synthetic": False})
+    module = types.ModuleType("configured_test_reporter")
+    module.create = lambda: TeamReporter()
     monkeypatch.setitem(sys.modules, module.__name__, module)
-    team = config(A03=RoleBinding(kind="factory", factory="configured_test_retriever:create"))
+    team = config(A07=RoleBinding(kind="factory", factory="configured_test_reporter:create"))
     with TestClient(create_app(configuration=team)) as client:
         health = client.get(PREFIX + "/health").json()
         assert health["default_adapters"] == "mixed"
         assert health["roles"]["A02"]["kind"] == "synthetic"
-        assert health["roles"]["A03"]["kind"] == "custom"
+        assert health["roles"]["A07"]["kind"] == "custom"
         status = client.get(PREFIX + "/configuration").json()
-        assert status["declared"]["roles"]["A03"]["kind"] == "factory"
+        assert status["declared"]["roles"]["A07"]["kind"] == "factory"
         assert status["initialized"]["connection_verified"] is False
         assert calls == []
         context, document, asset = sample_inputs()

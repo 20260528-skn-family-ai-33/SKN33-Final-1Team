@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from ..contracts import (
     CriteriaDraft, EvidenceBundle, ExtractRequest, InspectRequest,
-    InspectionResult, ReportDraft, ReportRequest, RetrieveRequest,
+    InspectionResult, ReportDraft, ReportRequest,
 )
 from ..ports import AdapterFailure
 
@@ -24,16 +24,4 @@ class QwenAdapterStub:
 
     def report(self, request: ReportRequest) -> ReportDraft:
         raise AdapterFailure("ADAPTER_NOT_CONFIGURED", "A07 Qwen 보고서 어댑터를 구현하고 연결해야 합니다.")
-
-
-class PostgresNeo4jRetrieverStub:
-    """Implement permission/version-checked PostgreSQL + Neo4j retrieval here.
-
-    No database is opened by this class. Keep current requirements, approved
-    exceptions, and historical context separate, including stale/unavailable
-    states. Do not silently supply fixtures when a dependency fails.
-    """
-
-    def retrieve(self, request: RetrieveRequest) -> EvidenceBundle:
-        raise AdapterFailure("ADAPTER_NOT_CONFIGURED", "A03 PostgreSQL·Neo4j 근거 검색 어댑터를 구현하고 연결해야 합니다.")
 

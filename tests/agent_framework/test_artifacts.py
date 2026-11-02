@@ -23,4 +23,4 @@ def test_all_public_schemas_reject_silent_extra_fields_and_pin_version():
     for contract in CONTRACT_TYPES:
         schema = contract.model_json_schema()
         assert schema["additionalProperties"] is False
-        assert schema["properties"]["contract_version"]["const"] == "1.0.0"
+        assert schema["properties"]["contract_version"]["const"] == "2.0.0"

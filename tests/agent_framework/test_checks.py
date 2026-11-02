@@ -32,7 +32,7 @@ def suite_file(tmp_path, role="A02", cases=None):
         path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
         specs.append({"id": case_id, "input": f"../inputs/{case_id}.json", **options})
     path = suites / f"{role}.suite.json"
-    path.write_text(json.dumps({"contract_version": "1.0.0", "role": role, "cases": specs}), encoding="utf-8")
+    path.write_text(json.dumps({"contract_version": "2.0.0", "role": role, "cases": specs}), encoding="utf-8")
     return path
 
 
@@ -207,7 +207,7 @@ def test_malformed_suites_fail_before_any_factory_and_preserve_report(tmp_path, 
     elif mutation == "absolute-windows": case["input"] = "C:/Temp/request.json"
     elif mutation == "backslash": case["input"] = "..\\inputs\\normal.json"
     elif mutation == "extra": value["factory"] = "private-token:create"
-    else: value["contract_version"] = "2.0.0"
+    else: value["contract_version"] = "3.0.0"
     path.write_text(json.dumps(value), encoding="utf-8")
     config, factories = selected_config(monkeypatch, "A02", make_agents().extractor)
     output = tmp_path / "report.json"
@@ -312,7 +312,7 @@ def test_factory_initialization_error_preserves_existing_report(tmp_path, monkey
     assert "private-factory-token" not in captured.out + captured.err
 
 
-@pytest.mark.parametrize("role,count", (("A02", 2), ("A03", 2), ("A04_A05", 2), ("A06", 5), ("A07", 6)))
+@pytest.mark.parametrize("role,count", (("A02", 2), ("A04_A05", 2), ("A06", 5), ("A07", 6)))
 def test_shipped_suites_pass_against_explicit_synthetic_composition(role, count):
     path = Path(__file__).resolve().parents[2] / "examples" / "agent_framework" / "checks" / f"{role}.suite.json"
     report = run_checks(load_suite(path, role), synthetic_config())

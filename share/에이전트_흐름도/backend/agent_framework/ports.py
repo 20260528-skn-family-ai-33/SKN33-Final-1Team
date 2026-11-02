@@ -1,18 +1,25 @@
 """Implement these interfaces without importing another agent's internals or ORM."""
-from dataclasses import dataclass
-from typing import Protocol
+from __future__ import annotations
 
-from .contracts import (CriteriaDraft, EvidenceBundle, ExtractRequest, InspectRequest,
-                        InspectionResult, ReportDraft, ReportRequest, RetrieveRequest,
+from dataclasses import dataclass
+from typing import Protocol, TYPE_CHECKING
+
+from .contracts import (CriteriaDraft, ExtractRequest, InspectRequest,
+                        InspectionResult, ReportDraft, ReportRequest,
                         ValidateRequest, ValidatedResult)
+from .contracts import Context, DocumentRef, AssetRef
+
+if TYPE_CHECKING:
+    from .files import VerifiedDocument, VerifiedPoster
+
+
+class FileAccess(Protocol):
+    def read_document(self, context: Context, reference: DocumentRef) -> VerifiedDocument: ...
+    def read_asset(self, context: Context, reference: AssetRef) -> VerifiedPoster: ...
 
 
 class Extractor(Protocol):
     def extract(self, request: ExtractRequest) -> CriteriaDraft: ...
-
-
-class Retriever(Protocol):
-    def retrieve(self, request: RetrieveRequest) -> EvidenceBundle: ...
 
 
 class Inspector(Protocol):
@@ -30,7 +37,6 @@ class Reporter(Protocol):
 @dataclass(frozen=True)
 class Agents:
     extractor: Extractor
-    retriever: Retriever
     inspector: Inspector
     validator: Validator
     reporter: Reporter

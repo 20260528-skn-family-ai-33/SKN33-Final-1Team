@@ -64,3 +64,15 @@ def test_every_flow_source_is_embedded_and_links_to_a_real_line():
     canonical = (folder / 'flow.html').read_text(encoding='utf-8')
     assert "'source.html?file='+encodeURIComponent(f.path)+'#L'+f.line" in canonical
     assert "line.id='L'+(index+1)" in html
+
+
+def test_retired_agent_is_absent_from_flow_and_role_filters():
+    folder = ROOT / 'docs/agent-framework'
+    data = json.loads((folder / 'flow-data.json').read_text(encoding='utf-8'))
+    assert 'A03' not in {node['id'] for node in data['nodes']}
+    assert 'A03' not in {role['id'] for role in data['roles']}
+    context = next(node for node in data['nodes'] if node['id'] == 'INPUT_CONTEXT')
+    assert context['kind'] == 'input'
+    assert context['status'] == 'ready'
+    ids = {node['id'] for node in data['nodes']}
+    assert all(set(role['nodes']) <= ids for role in data['roles'])

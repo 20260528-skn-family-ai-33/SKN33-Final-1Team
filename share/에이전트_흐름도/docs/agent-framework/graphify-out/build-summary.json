@@ -1,26 +1,26 @@
 {
   "tool": "graphifyy",
   "version": "0.9.100",
-  "source_files": 12,
-  "source_words": 5064,
-  "ast_nodes": 158,
-  "ast_edges": 678,
-  "nodes": 173,
-  "edges": 633,
-  "communities": 14,
+  "source_files": 25,
+  "source_words": 13311,
+  "ast_nodes": 404,
+  "ast_edges": 1619,
+  "nodes": 439,
+  "edges": 1527,
+  "communities": 11,
   "directed": true,
   "edge_confidence_counts": {
-    "EXTRACTED": 563,
-    "INFERRED": 115
+    "EXTRACTED": 1372,
+    "INFERRED": 247
   },
   "diagnostics": {
-    "dangling_endpoint_edges": 33,
+    "dangling_endpoint_edges": 134,
     "missing_endpoint_edges": 0,
-    "self_loop_edges": 1,
-    "directed_same_endpoint_collapsed_edges": 45
+    "self_loop_edges": 2,
+    "directed_same_endpoint_collapsed_edges": 91
   },
-  "implicit_nodes": 15,
+  "implicit_nodes": 35,
   "html_external_resources": [],
   "browser_verified": false,
-  "built_at": "2026-11-02T02:18:55.627646+00:00"
+  "built_at": "2026-11-02T06:49:36.858803+00:00"
 }

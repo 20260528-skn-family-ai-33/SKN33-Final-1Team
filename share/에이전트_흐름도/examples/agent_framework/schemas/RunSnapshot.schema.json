@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -58,8 +58,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -143,8 +143,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -184,8 +184,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -268,8 +268,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -363,19 +363,19 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
         "context": {
           "$ref": "#/$defs/Context"
         },
-        "retrieval_id": {
+        "context_id": {
           "maxLength": 160,
           "minLength": 1,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-          "title": "Retrieval Id",
+          "title": "Context Id",
           "type": "string"
         },
         "status": {
@@ -431,7 +431,7 @@
       },
       "required": [
         "context",
-        "retrieval_id",
+        "context_id",
         "status"
       ],
       "title": "EvidenceBundle",
@@ -441,8 +441,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -476,8 +476,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -533,8 +533,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -565,8 +565,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -630,8 +630,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -689,8 +689,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -734,12 +734,133 @@
       "title": "SourceRef",
       "type": "object"
     },
+    "StepRecord": {
+      "additionalProperties": false,
+      "description": "One role boundary, including validation; never a raw provider payload.",
+      "properties": {
+        "contract_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "ordinal": {
+          "minimum": 1,
+          "title": "Ordinal",
+          "type": "integer"
+        },
+        "role": {
+          "enum": [
+            "A02",
+            "A04_A05",
+            "A06",
+            "A07"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "running",
+            "completed",
+            "failed",
+            "outcome_unknown",
+            "reused"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finished At"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FrameworkError"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "synthetic": {
+          "default": false,
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "source_run_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Run Id"
+        }
+      },
+      "required": [
+        "ordinal",
+        "role",
+        "status",
+        "recorded_at"
+      ],
+      "title": "StepRecord",
+      "type": "object"
+    },
     "ValidatedItem": {
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -779,8 +900,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -830,8 +951,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "1.0.0",
-      "default": "1.0.0",
+      "const": "2.0.0",
+      "default": "2.0.0",
       "title": "Contract Version",
       "type": "string"
     },
@@ -852,6 +973,9 @@
     },
     "execution_status": {
       "enum": [
+        "queued",
+        "extracting",
+        "reviewing",
         "waiting_criteria",
         "waiting_review",
         "waiting_revision",
@@ -959,6 +1083,14 @@
         "type": "string"
       },
       "title": "Stages",
+      "type": "array"
+    },
+    "step_records": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StepRecord"
+      },
+      "title": "Step Records",
       "type": "array"
     },
     "error": {

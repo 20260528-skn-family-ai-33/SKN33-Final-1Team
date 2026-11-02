@@ -4,43 +4,43 @@
   "scenarios": {
     "pass": 10,
     "revision": 18,
-    "unavailable": 8
+    "review": 8
   },
-  "flow_data_sha256": "773a7bde21fe83859b07ae4f1b66e5d352784645ad6f1bc9ee2f312a28df87a6",
-  "html_sha256": "d1146f8d95ba353aa552c60312912bf595cafda1080ea455e8b8d2e301e1fc57",
+  "flow_data_sha256": "2ff25c40980e3f20011e996932159972042fbf68151014fab029401876a04664",
+  "html_sha256": "910b15316427ca3672fd3460b3316300633d6be0118df59cff9c751593a84acf",
   "code_graph": {
     "version": "0.9.100",
-    "files": 19,
-    "nodes": 346,
-    "edges": 1205,
+    "files": 25,
+    "nodes": 439,
+    "edges": 1527,
     "build_summary": {
       "tool": "graphifyy",
       "version": "0.9.100",
-      "source_files": 19,
-      "source_words": 11180,
-      "ast_nodes": 324,
-      "ast_edges": 1281,
-      "nodes": 346,
-      "edges": 1205,
-      "communities": 8,
+      "source_files": 25,
+      "source_words": 13311,
+      "ast_nodes": 404,
+      "ast_edges": 1619,
+      "nodes": 439,
+      "edges": 1527,
+      "communities": 11,
       "directed": true,
       "edge_confidence_counts": {
-        "EXTRACTED": 1066,
-        "INFERRED": 215
+        "EXTRACTED": 1372,
+        "INFERRED": 247
       },
       "diagnostics": {
-        "dangling_endpoint_edges": 78,
+        "dangling_endpoint_edges": 134,
         "missing_endpoint_edges": 0,
-        "self_loop_edges": 1,
-        "directed_same_endpoint_collapsed_edges": 76
+        "self_loop_edges": 2,
+        "directed_same_endpoint_collapsed_edges": 91
       },
-      "implicit_nodes": 22,
+      "implicit_nodes": 35,
       "html_external_resources": [],
       "browser_verified": false,
-      "built_at": "2026-11-02T05:08:25.347998+00:00"
+      "built_at": "2026-11-02T06:49:36.858803+00:00"
     }
   },
-  "source_files": 29,
-  "source_html_sha256": "dbc1cc047626546bc257e9b6cb1153d48e0d050f35a4e036cf14448eebf2a868",
+  "source_files": 37,
+  "source_html_sha256": "a392ccd50350c96a2ac312f13e90f11809c9e83c08b3dc8c36d381823816a934",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

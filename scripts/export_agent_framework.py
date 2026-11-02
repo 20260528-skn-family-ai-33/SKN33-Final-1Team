@@ -30,9 +30,6 @@ def export_checks(destination: Path) -> None:
         if role == "A02":
             request["document"]["document_version_id"] = "another-document"
             code = "DOCUMENT_VERSION_MISMATCH"
-        elif role == "A03":
-            request["criteria"].append(request["criteria"][0])
-            code = "DUPLICATE_CRITERION"
         elif role == "A04_A05":
             request["asset"]["asset_version_id"] = "another-poster"
             code = "ASSET_VERSION_MISMATCH"
@@ -50,6 +47,8 @@ def export_checks(destination: Path) -> None:
 
 
 def export(destination: Path) -> None:
+    for old in ("A03.json","A03.output.json","schemas/RetrieveRequest.schema.json","checks/A03.pass.json","checks/A03.invalid-scope.json","checks/A03.suite.json"):
+        (destination / old).unlink(missing_ok=True)
     generate(destination)
     schemas = destination / "schemas"
     schemas.mkdir(parents=True, exist_ok=True)

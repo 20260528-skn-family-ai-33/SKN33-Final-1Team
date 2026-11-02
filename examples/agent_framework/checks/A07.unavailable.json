@@ -1,8 +1,8 @@
 {
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "synthetic": true,
   "context": {
-    "contract_version": "1.0.0",
+    "contract_version": "2.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -12,9 +12,9 @@
     "parent_run_id": null
   },
   "validated": {
-    "contract_version": "1.0.0",
+    "contract_version": "2.0.0",
     "context": {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "project_id": "synthetic-project",
       "run_id": "demo-run-1",
       "actor_id": "synthetic-reviewer",
@@ -26,23 +26,23 @@
     "verdict": "review",
     "items": [
       {
-        "contract_version": "1.0.0",
+        "contract_version": "2.0.0",
         "criterion_id": "requirement-text",
         "verdict": "review",
         "issues": [
           "missing_citation",
           "missing_requirement_evidence",
-          "retrieval_incomplete"
+          "context_incomplete"
         ]
       },
       {
-        "contract_version": "1.0.0",
+        "contract_version": "2.0.0",
         "criterion_id": "requirement-number",
         "verdict": "review",
         "issues": [
           "missing_citation",
           "missing_requirement_evidence",
-          "retrieval_incomplete"
+          "context_incomplete"
         ]
       }
     ],
@@ -52,9 +52,9 @@
     "synthetic": true
   },
   "evidence": {
-    "contract_version": "1.0.0",
+    "contract_version": "2.0.0",
     "context": {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "project_id": "synthetic-project",
       "run_id": "demo-run-1",
       "actor_id": "synthetic-reviewer",
@@ -63,12 +63,11 @@
       "asset_version_id": "poster-v1",
       "parent_run_id": null
     },
-    "retrieval_id": "synthetic-retrieval-demo-run-1",
+    "context_id": "approved-689a4c3bd9b53763bba4e502de1f00e70eb82e3656220abaa62059638fb45f6b",
     "status": "unavailable",
     "evidence": [],
     "warnings": [
-      "합성 계약 예제입니다. 실제 PDF·포스터·모델·DB를 읽거나 실행하지 않았습니다.",
-      "합성 장애: 근거 검색 서비스를 사용할 수 없습니다."
+      "Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed."
     ],
     "postgres_revision": 0,
     "graph_revision": null,

@@ -132,7 +132,7 @@ def test_unknown_exception_does_not_expose_adapter_secret(tmp_path, capsys, monk
     assert json.loads(captured.out)["error"]["code"] == "ADAPTER_FAILED"
 
 
-@pytest.mark.parametrize("role,port,method", (("A02", "extractor", "extract"), ("A03", "retriever", "retrieve"), ("A04_A05", "inspector", "inspect"),
+@pytest.mark.parametrize("role,port,method", (("A02", "extractor", "extract"), ("A04_A05", "inspector", "inspect"),
     ("A06", "validator", "validate"), ("A07", "reporter", "report")))
 def test_factory_cannot_remove_existing_synthetic_provenance(role, port, method, tmp_path, capsys, monkeypatch):
     from backend.agent_framework.adapters.generate_examples import role_examples
@@ -158,7 +158,7 @@ def test_constructed_output_is_revalidated(tmp_path, capsys, monkeypatch):
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "CONTRACT_INVALID"
 
 
-@pytest.mark.parametrize("role", ("A02", "A03", "A04_A05", "A06", "A07"))
+@pytest.mark.parametrize("role", ("A02", "A04_A05", "A06", "A07"))
 def test_every_role_accepts_shared_request_fixture(role, tmp_path, capsys):
     from backend.agent_framework.adapters.generate_examples import role_examples
 

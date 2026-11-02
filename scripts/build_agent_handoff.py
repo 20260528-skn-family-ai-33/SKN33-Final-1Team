@@ -165,10 +165,10 @@ def build():
 <title>담당자별 연결 가이드 · Creative Checker</title><style>{STYLE}</style></head>
 <body><div class="shell"><aside><a class="brand" href="index.html">Creative Checker<span aria-hidden="true"> ↗</span></a><div class="edition">DEVELOPER HANDOFF / 01</div>
 <div class="nav-label">CONTENTS</div><nav class="toc" aria-label="문서 목차">{toc}</nav>
-<div class="side-foot">Git 저장소 기준 · 2026.11.02<br>공통 계약 1.0.0<br><a href="flow.html">업무 흐름도 열기 ↗</a></div></aside>
+<div class="side-foot">Git 저장소 기준 · 2026.11.02<br>공통 계약 2.0.0<br><a href="flow.html">업무 흐름도 열기 ↗</a></div></aside>
 <div class="content"><header class="topbar"><span class="crumb">FRAMEWORK / TEAM INTEGRATION</span><div class="tools"><a href="에이전트_프레임워크_가이드.md">Markdown 원본 ↗</a><div class="platform" role="group" aria-label="실행 명령 운영체제"><button type="button" data-platform="macos" aria-pressed="true">macOS</button><button type="button" data-platform="windows" aria-pressed="false">Windows</button></div></div></header>
-<div class="hero"><span class="eyebrow">ONE CONTRACT. EACH ROLE.</span><h1>담당자별 연결 가이드.</h1><p>어디를 수정하고, 무엇을 반환하며, 어떻게 확인하는지.<br>각 역할의 시작 코드부터 테스트와 승인·재검수 연결까지 정리했습니다.</p><div class="pills">{pills}</div><div class="meta"><span>05 ROLE ADAPTERS</span><span>06 WORKFLOW ACTIONS</span><span>GIT SOURCE OF TRUTH</span></div></div>
-<article>{body}</article><footer class="footer">Markdown 원본에서 생성한 문서 · 코드 링크는 같은 저장소의 소스 뷰어로 연결됩니다.<br>현재 공통 실행은 메모리 기반이며 모델·DB 실연결 여부는 담당자의 실행 증거로 확인합니다.</footer></div></div><div id="copy-status" role="status" aria-live="polite"></div><script>{SCRIPT}</script></body></html>
+<div class="hero"><span class="eyebrow">ONE CONTRACT. EACH ROLE.</span><h1>담당자별 연결 가이드.</h1><p>어디를 수정하고, 무엇을 반환하며, 어떻게 확인하는지.<br>각 역할의 시작 코드부터 테스트와 승인·재검수 연결까지 정리했습니다.</p><div class="pills">{pills}</div><div class="meta"><span>04 ROLE ADAPTERS</span><span>06 WORKFLOW ACTIONS</span><span>GIT SOURCE OF TRUTH</span></div></div>
+<article>{body}</article><footer class="footer">Markdown 원본에서 생성한 문서 · 코드 링크는 같은 저장소의 소스 뷰어로 연결됩니다.<br>메모리 개발 도구와 PostgreSQL API·worker를 구분합니다. 실모델·관계 조회와 운영 배포 여부는 실행 증거로 확인합니다.</footer></div></div><div id="copy-status" role="status" aria-live="polite"></div><script>{SCRIPT}</script></body></html>
 '''
     audit = Audit(); audit.feed(html)
     if len(audit.ids) != len(set(audit.ids)) or audit.resources:

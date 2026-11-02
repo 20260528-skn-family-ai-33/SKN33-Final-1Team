@@ -36,7 +36,7 @@ def register(monkeypatch, name, factory):
     lambda d: d["roles"].pop("A07"),
     lambda d: d["roles"].update({"A08": {"kind": "unconfigured"}}),
     lambda d: d.update({"profile": "production"}),
-    lambda d: d.update({"contract_version": "2.0.0"}),
+    lambda d: d.update({"contract_version": "3.0.0"}),
     lambda d: d.update({"database_url": "not-a-config-field"}),
     lambda d: d["roles"].update({"A02": {"kind": "reference"}}),
 ])
@@ -71,11 +71,11 @@ def test_load_and_describe_do_not_import_factories(tmp_path, monkeypatch):
         pytest.fail("configuration inspection must not import developer code")
 
     monkeypatch.setattr("backend.agent_framework.composition.importlib.import_module", forbidden)
-    config = configuration(A03={"kind": "factory", "factory": "not_installed.retrieval:make"})
+    config = configuration(A07={"kind": "factory", "factory": "not_installed.reporting:make"})
     path = tmp_path / "팀 설정.json"
     path.write_text(config.model_dump_json(), encoding="utf-8-sig")
     description = describe_configuration(load_config(path))
-    assert description["roles"]["A03"] == {"kind": "factory", "factory": "not_installed.retrieval:make", "connection_verified": False}
+    assert description["roles"]["A07"] == {"kind": "factory", "factory": "not_installed.reporting:make", "connection_verified": False}
     assert not description["connection_verified"]
     assert set(description["roles"]) == set(ROLE_PORTS)
 
@@ -95,13 +95,13 @@ def test_load_rejects_ambiguous_json_before_assembly(tmp_path, content):
 
 def test_selected_role_is_the_only_factory_imported_and_initialized(monkeypatch):
     called = []
-    own = register(monkeypatch, "team_selected", lambda: (called.append("A03") or SyntheticAdapters()))
+    own = register(monkeypatch, "team_selected", lambda: (called.append("A07") or SyntheticAdapters()))
     config = configuration(A02={"kind": "factory", "factory": "missing.other_team:make"},
-                           A03={"kind": "factory", "factory": own},
-                           A07={"kind": "factory", "factory": "missing.reporting:make"})
-    adapter = build_role(config, "A03")
+                           A07={"kind": "factory", "factory": own},
+                           A04_A05={"kind": "factory", "factory": "missing.inspection:make"})
+    adapter = build_role(config, "A07")
     assert type(adapter) is SyntheticAdapters
-    assert called == ["A03"]
+    assert called == ["A07"]
 
 
 @pytest.mark.parametrize("role", ROLE_PORTS)
@@ -114,24 +114,24 @@ def test_every_unconfigured_role_fails_without_substitution(role):
 
 
 def test_build_agents_honors_all_roles_and_reports_mixed_types(monkeypatch):
-    class Retriever:
-        def retrieve(self, request):
-            raise AdapterFailure("NOT_READY", "A03 is intentionally incomplete.")
+    class Reporter:
+        def report(self, request):
+            raise AdapterFailure("NOT_READY", "A07 is intentionally incomplete.")
 
     config = configuration(A02={"kind": "synthetic"},
-                           A03={"kind": "factory", "factory": register(monkeypatch, "team_mixed", Retriever)},
+                           A07={"kind": "factory", "factory": register(monkeypatch, "team_mixed", Reporter)},
                            A06={"kind": "reference"})
     agents = build_agents(config)
     assert type(agents.extractor) is SyntheticAdapters
     assert type(agents.validator) is ReferenceValidator
-    assert type(agents.retriever) is Retriever
+    assert type(agents.reporter) is Reporter
     description = describe_agents(agents)
     assert {role: value["kind"] for role, value in description.items()} == {
-        "A02": "synthetic", "A03": "custom", "A04_A05": "unconfigured", "A06": "reference", "A07": "unconfigured",
+        "A02": "synthetic", "A07": "custom", "A04_A05": "unconfigured", "A06": "reference",
     }
     assert all(not item["connection_verified"] for item in description.values())
     with pytest.raises(AdapterFailure, match="intentionally incomplete"):
-        agents.retriever.retrieve(None)
+        agents.reporter.report(None)
 
 
 def test_describe_agents_uses_exact_types_not_names_or_inherited_claims():
@@ -141,7 +141,7 @@ def test_describe_agents_uses_exact_types_not_names_or_inherited_claims():
     agents = replace(make_agents(), extractor=UserSubclass(), reporter=QwenAdapterStub())
     description = describe_agents(agents)
     assert description["A02"]["kind"] == "custom"
-    assert description["A03"]["kind"] == "synthetic"
+    assert description["A04_A05"]["kind"] == "synthetic"
     assert description["A06"]["kind"] == "reference"
     assert description["A07"]["kind"] == "unconfigured"
 
@@ -161,7 +161,7 @@ def test_factory_must_return_instance_with_the_selected_role_method(monkeypatch,
 
 
 def test_factory_method_for_a_different_role_is_rejected(monkeypatch):
-    factory = lambda: types.SimpleNamespace(retrieve=lambda request: None)
+    factory = lambda: types.SimpleNamespace(report=lambda request: None)
     config = configuration(A02={"kind": "factory", "factory": register(monkeypatch, "team_wrong_role", factory)})
     with pytest.raises(AdapterFailure) as caught:
         build_role(config, "A02")
@@ -199,7 +199,7 @@ def test_factory_failure_is_safe_and_does_not_fall_back(monkeypatch):
     def fail():
         raise RuntimeError("secret-provider-token")
 
-    config = configuration(A03={"kind": "factory", "factory": register(monkeypatch, "team_failed", fail)})
+    config = configuration(A07={"kind": "factory", "factory": register(monkeypatch, "team_failed", fail)})
     with pytest.raises(AdapterFailure) as caught:
         build_agents(config)
     assert caught.value.code == "ADAPTER_FACTORY_FAILED"
@@ -207,9 +207,9 @@ def test_factory_failure_is_safe_and_does_not_fall_back(monkeypatch):
 
 
 def test_missing_factory_module_is_an_error_not_a_fixture():
-    config = configuration(A03={"kind": "factory", "factory": "missing_team_module_for_framework_test:make"})
+    config = configuration(A07={"kind": "factory", "factory": "missing_team_module_for_framework_test:make"})
     with pytest.raises(AdapterFailure) as caught:
-        build_role(config, "A03")
+        build_role(config, "A07")
     assert caught.value.code == "ADAPTER_FACTORY_FAILED"
 
 
@@ -231,7 +231,7 @@ def test_examples_are_valid_and_reference_validator_keeps_fixture_provenance():
 
     synthetic = load_config(ROOT / "examples/agent_framework/team_config.synthetic.json")
     template = load_config(ROOT / "examples/agent_framework/team_config.template.json")
-    assert describe_configuration(template)["roles"]["A03"]["kind"] == "unconfigured"
+    assert describe_configuration(template)["roles"]["A07"]["kind"] == "unconfigured"
     assert describe_agents(build_agents(synthetic))["A06"]["kind"] == "reference"
     config = configuration(A06={"kind": "synthetic"})
     request, _expected = role_examples()["A06"]

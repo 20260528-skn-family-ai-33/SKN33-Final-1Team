@@ -68,7 +68,7 @@ def community_names(graph, communities):
         ('validation_referencevalidator','Evidence and verdict validation'),
         ('contracts_criterion','Synthetic data and observations'),
         ('contracts_context','Run input contracts'),
-        ('contracts_evidencebundle','Retrieval contracts and adapters'),
+        ('contracts_evidencebundle','Approved context contracts'),
         ('api_create_app','Development HTTP routes'),
         ('contracts_criteriadraft','Extraction contracts and adapters'),
         ('contracts_reportdraft','Reporting contracts and adapters'),
@@ -147,7 +147,15 @@ def main():
 
         detection=detect(source,cache_root=cache,follow_symlinks=False)
         expected=sorted(p.resolve() for p in source.rglob('*.py') if not p.is_symlink())
-        code=sorted(Path(p).resolve() for p in detection['files'].get('code',[]))
+        detected=sorted(Path(p).resolve() for p in detection['files'].get('code',[]))
+        # Explicit SQL migrations are reviewed/executed separately. Graphify's
+        # AST scope remains Python even when it classifies .sql as code.
+        excluded=[p for p in detected if p.suffix!='.py']
+        if any(p.parent!=source or re.fullmatch(r'AF[0-9]{3}\.sql',p.name) is None for p in excluded):
+            raise RuntimeError('Unexpected non-Python source in AST scope')
+        code=[p for p in detected if p.suffix=='.py']
+        detection['files']['code']=[str(p) for p in code]
+        detection['total_words']=sum(len(p.read_text(encoding='utf-8').split()) for p in code)
         if not code or code!=expected or any(detection['files'].get(k) for k in ('document','paper','image','video')):
             raise RuntimeError('The detected corpus differs from the explicit code-only Python scope')
         extraction=extract(code,root=source,cache_root=cache,parallel=False)
@@ -226,7 +234,8 @@ def main():
         dump(out/'extraction.json',extraction)
         dump(out/'diagnostics.json',diagnosis)
         (out/'diagnostics.txt').write_text(format_diagnostic_report(diagnosis),encoding='utf-8')
-        dump(out/'source-manifest.json',{'git_commit':commit,'scope':'backend/agent_framework/**/*.py','files':manifest})
+        dump(out/'source-manifest.json',{'git_commit':commit,'scope':'backend/agent_framework/**/*.py','files':manifest,
+            'excluded_sql_migrations':[p.relative_to(repo).as_posix() for p in excluded]})
         dump(out/'implicit-nodes.json',implicit)
         dump(out/'communities.json',{'labels':labels,'communities':communities,'cohesion':cohesion,'god_nodes':gods,'surprising_connections':surprises,'suggested_questions':questions})
         dump(out/'asset-audit.json',asset)

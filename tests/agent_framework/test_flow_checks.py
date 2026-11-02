@@ -85,7 +85,7 @@ def test_configured_roles_initialized_once_and_run_both_versions_through_all_bou
     assert all(len(a["snapshot_sha256"]) == 64 for a in report["actions"])
 
 
-@pytest.mark.parametrize("failed_role,passed", [("A02", 0), ("A03", 1), ("A04_A05", 1), ("A06", 1), ("A07", 1)])
+@pytest.mark.parametrize("failed_role,passed", [("A02", 0), ("A04_A05", 1), ("A06", 1), ("A07", 1)])
 def test_each_role_failure_stops_the_flow_without_retry_or_approval_after_failure(monkeypatch, failed_role, passed):
     cfg, _, invoked = factories(monkeypatch, fail_role=failed_role,
         error=AdapterFailure("FILE_HASH_MISMATCH", "private-provider-message", retryable=True))
@@ -99,7 +99,7 @@ def test_each_role_failure_stops_the_flow_without_retry_or_approval_after_failur
 
 
 def test_unknown_outcome_stops_all_later_commands_and_does_not_count_as_expected_success(monkeypatch):
-    cfg, _, invoked = factories(monkeypatch, fail_role="A03",
+    cfg, _, invoked = factories(monkeypatch, fail_role="A04_A05",
         error=AdapterFailure("REMOTE_TIMEOUT", "unknown", outcome_unknown=True))
     report = run_flow_check(case(), cfg)
     assert not report["passed"] and report["stopped_on_outcome_unknown"]
@@ -107,12 +107,10 @@ def test_unknown_outcome_stops_all_later_commands_and_does_not_count_as_expected
     assert len(invoked) == 2
 
 
-@pytest.mark.parametrize("scenario", ["fail", "review", "stale", "unavailable"])
+@pytest.mark.parametrize("scenario", ["fail", "review"])
 def test_valid_nonpass_initial_result_can_continue_to_a_corrected_version(monkeypatch, scenario):
     def transform(role, request, result):
         if request.context.parent_run_id is None:
-            if role == "A03":
-                return make_agents(scenario).retriever.retrieve(request)
             if role == "A04_A05":
                 return make_agents(scenario).inspector.inspect(request)
         return result
@@ -127,7 +125,7 @@ def test_initial_verdict_mismatch_prevents_scripted_change_approval(monkeypatch)
     report = run_flow_check(case(expected_initial_verdict="fail"), cfg)
     assert report["summary"] == {"total": 6, "passed": 1, "failed": 1, "skipped": 4}
     assert report["actions"][1]["reason"] == "VERDICT_MISMATCH"
-    assert len(invoked) == 5
+    assert len(invoked) == 4
 
 
 def test_revised_nonpass_never_receives_final_approval(monkeypatch):
@@ -152,7 +150,7 @@ def test_revised_stage_failure_preserves_initial_run_and_skips_final_approval(mo
     assert report["actions"][4]["records"][-1]["role"] == role
     assert report["actions"][4]["records"][0]["status"] == "reused"
     assert report["actions"][2]["human_decision"] == "changes_approved"
-    assert all(run == "child-run" for run, _ in invoked[5:])
+    assert all(run == "child-run" for run, _ in invoked[4:])
 
 
 def test_dev_api_with_configured_factories_completes_the_same_six_actions(monkeypatch):
@@ -183,8 +181,8 @@ def test_dev_api_with_configured_factories_completes_the_same_six_actions(monkey
         assert approve(fixture.revision_context, "approve_final")["human_decision"] == "final_approved"
         assert client.get(prefix + "/" + fixture.context.run_id).json() == parent
         records = client.get(prefix + "/" + fixture.revision_context.run_id + "/steps").json()["records"]
-        assert len(records) == 5 and records[0]["status"] == "reused"
-    assert initialized == list(ROLE_PORTS) and len(invoked) == 9
+        assert len(records) == 4 and records[0]["status"] == "reused"
+    assert initialized == list(ROLE_PORTS) and len(invoked) == 7
 
 
 def test_report_contract_failure_retains_specific_stage_code(monkeypatch):

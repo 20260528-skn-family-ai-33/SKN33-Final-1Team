@@ -1,3 +1,5 @@
+> 현재 계약은 2.0.0이다. 독립 A03·RetrieveRequest·retriever factory는 제거했다. 승인 출처는 공통 context.py에서 고정하며 외부 관계 조회는 아직 실행하지 않는다.
+
 # 합성 에이전트 계약 예제
 
 이 폴더의 JSON은 실제 PDF, 포스터, 모델, PostgreSQL, Neo4j 실행 결과가 아닙니다.
@@ -7,7 +9,6 @@
 | 역할 | 요청 JSON | 응답 JSON | 계약 |
 |---|---|---|---|
 | A02 조건 추출 | `A02.json` | `A02.output.json` | ExtractRequest → CriteriaDraft |
-| A03 근거 검색 | `A03.json` | `A03.output.json` | RetrieveRequest → EvidenceBundle |
 | A04/A05 통합 검사 | `A04_A05.json` | `A04_A05.output.json` | InspectRequest → InspectionResult |
 | A06 코드 검증 | `A06.json` | `A06.output.json` | ValidateRequest → ValidatedResult |
 | A07 보고서 | `A07.json` | `A07.output.json` | ReportRequest → ReportDraft |
@@ -28,16 +29,16 @@ python -m backend.agent_framework.adapters.generate_examples
 
 ## 팀별 역할 설정
 
-- `team_config.template.json`: A02·A03·A04_A05·A07은 미설정, A06은 참조 검증기입니다. 팀 연결용으로 복사해 사용합니다.
+- `team_config.template.json`: A02·A04_A05·A07은 미설정, A06은 참조 검증기입니다. 팀 연결용으로 복사해 사용합니다.
 - `team_config.synthetic.json`: 합성 역할과 A06 참조 검증기를 명시적으로 조합합니다. 실제 모델·DB 연결을 하지 않습니다.
-- `team_adapters.py`: 역할별 `create_extractor`, `create_retriever`, `create_inspector`, `create_validator`, `create_reporter` factory의 시작점입니다. 모델·검색 stub은 호출 시 `ADAPTER_NOT_CONFIGURED`로 실패합니다.
+- `team_adapters.py`: 역할별 `create_extractor`, `create_inspector`, `create_validator`, `create_reporter` factory의 시작점입니다. 모델·검색 stub은 호출 시 `ADAPTER_NOT_CONFIGURED`로 실패합니다.
 
-설정 파일에는 다섯 역할을 모두 선언하고, 역할 하나의 binding을 다음처럼 바꿉니다. 아래는 `roles.A03`의 값이며 완전한 설정 파일이 아닙니다.
+설정 파일에는 네 역할을 모두 선언하고, 역할 하나의 binding을 다음처럼 바꿉니다. 아래는 `roles.A04_A05`의 값이며 완전한 설정 파일이 아닙니다.
 
 ```json
 {
   "kind": "factory",
-  "factory": "examples.agent_framework.team_adapters:create_retriever"
+  "factory": "examples.agent_framework.team_adapters:create_inspector"
 }
 ```
 
@@ -47,7 +48,7 @@ macOS:
 
 ```sh
 .venv/bin/python -m backend.agent_framework doctor --config examples/agent_framework/team_config.synthetic.json
-.venv/bin/python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --config examples/agent_framework/team_config.synthetic.json
+.venv/bin/python -m backend.agent_framework role A04_A05 --input examples/agent_framework/A04_A05.json --config examples/agent_framework/team_config.synthetic.json
 .venv/bin/python -m backend.agent_framework serve --config examples/agent_framework/team_config.synthetic.json --port 8012
 ```
 
@@ -59,7 +60,7 @@ Windows PowerShell에서는 위의 실행 파일을 `.\.venv\Scripts\python.exe`
 
 ## 여러 예제의 계약 검사
 
-`checks/`의 역할별 `*.suite.json`과 요청 fixture는 `python -m scripts.export_agent_framework`로 생성합니다. 다섯 역할에 총 17개 사례가 있으며 A06/A07의 정상 `fail`·`review` 판정과 범위 위반 거부도 구분합니다.
+`checks/`의 역할별 `*.suite.json`과 요청 fixture는 `python -m scripts.export_agent_framework`로 생성합니다. 네 역할에 총 17개 사례가 있으며 A06/A07의 정상 `fail`·`review` 판정과 범위 위반 거부도 구분합니다.
 
 ```sh
 .venv/bin/python -m backend.agent_framework check A07 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A07.suite.json
@@ -86,7 +87,7 @@ Windows PowerShell에서는 실행 파일을 `.\.venv\Scripts\python.exe`로 바
 .venv/bin/python -m examples.agent_framework.file_flow_demo
 ```
 
-Windows는 실행 파일을 `.\.venv\Scripts\python.exe`로 바꿉니다. `check-flow`는 다섯 역할을 구성해 테스트 조건 승인→검사·보고→수정 승인→수정본 재검수→최종 승인을 확인합니다. `--output 보고서.json`으로 요약을 저장하며 전체 기대 일치 0, 실패·결과 불명·불일치 1, 입력·설정 오류 2를 반환합니다. 오류·기대 불일치 뒤에는 나머지 동작을 건너뜁니다.
+Windows는 실행 파일을 `.\.venv\Scripts\python.exe`로 바꿉니다. `check-flow`는 네 역할을 구성해 테스트 조건 승인→검사·보고→수정 승인→수정본 재검수→최종 승인을 확인합니다. `--output 보고서.json`으로 요약을 저장하며 전체 기대 일치 0, 실패·결과 불명·불일치 1, 입력·설정 오류 2를 반환합니다. 오류·기대 불일치 뒤에는 나머지 동작을 건너뜁니다.
 
 `workflow.synthetic.json`은 실제 미디어가 없는 합성 참조입니다. 담당자 구성에는 별도 개발 사례의 PDF·포스터 ID·버전·해시와 기대 판정을 입력합니다. `file_flow_demo`는 생성 PDF와 실제 PNG 두 버전을 기존 저장소에 넣고, 파일 검증 후 PDF 텍스트·픽셀 테스트 콜백으로 최초 불합격→수정본 통과를 확인합니다. Qwen·Neo4j 호출은 없으며 임시 SQLite·파일은 종료 후 정리됩니다. 모든 승인은 테스트 값이고 실행 기록은 메모리에만 남습니다.
 

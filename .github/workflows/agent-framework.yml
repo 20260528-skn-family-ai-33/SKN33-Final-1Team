@@ -23,7 +23,6 @@ jobs:
       - run: uv run pytest tests/agent_framework -q
       - run: uv run python -m backend.agent_framework demo
       - run: uv run python -m backend.agent_framework doctor --config examples/agent_framework/team_config.synthetic.json
-      - run: uv run python -m backend.agent_framework role A03 --input examples/agent_framework/A03.json --config examples/agent_framework/team_config.synthetic.json
       - run: uv run python -m backend.agent_framework check A06 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A06.suite.json
       - run: uv run python -m backend.agent_framework check A07 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A07.suite.json
       - run: uv run python -m examples.agent_framework.file_access_demo

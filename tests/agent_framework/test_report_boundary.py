@@ -67,7 +67,7 @@ def test_current_document_and_exception_asset_scope_are_checked_before_reporting
     ("duplicate_evidence", "DUPLICATE_EVIDENCE"),
     ("duplicate_validated", "DUPLICATE_VALIDATED_ITEM"),
     ("unknown_criterion", "UNKNOWN_EVIDENCE_CRITERION"),
-    ("empty_has_evidence", "EMPTY_RETRIEVAL_HAS_EVIDENCE"),
+    ("empty_has_evidence", "EMPTY_CONTEXT_HAS_EVIDENCE"),
     ("stale_marked_complete", "STALE_GRAPH_MARKED_COMPLETE"),
 ))
 def test_report_input_envelope_invariants_stop_provider_calls(fault, expected):
@@ -101,7 +101,7 @@ def test_valid_history_and_scoped_exception_can_be_cited_without_changing_failed
         update={"evidence": request.evidence.evidence + (historical, exception)})})
     # The shared retrieval boundary permits this same provenance. History may
     # refer to an older document; it is never converted to current observation.
-    validate_evidence(examples["A03"][0], request.evidence)
+    validate_evidence(request.context, examples["A04_A05"][0].criteria, request.evidence)
     response = ReportDraft(context=request.context, verdict="fail", summary="Failure with historical context.",
                            evidence_ids=tuple(e.evidence_id for e in request.evidence.evidence), synthetic=True)
     result = invoke_role("A07", SimpleNamespace(report=lambda _request: response), request)

@@ -38,7 +38,7 @@ def create_app(agents: Agents | None = None, *, profile: str | None = None,
         agents = make_agents()
     workflow = Workflow(agents, profile=profile)
     app = FastAPI(title="Creative Checker — Development Framework",
-                  version="1.0.0",
+                  version="2.0.0",
                   description="Development only. In-memory state, synthetic default adapters, no authentication. "
                               "Not the front-v2/M008 production API. Bind to loopback only.")
     app.state.workflow = workflow
@@ -73,7 +73,7 @@ def create_app(agents: Agents | None = None, *, profile: str | None = None,
 
     @app.get(prefix + "/health")
     def health():
-        return {"contract_version": "1.0.0", "profile": profile, "storage": "memory",
+        return {"contract_version": "2.0.0", "profile": profile, "storage": "memory",
                 "authenticated": False, "production_ready": False,
                 **adapter_status()}
 

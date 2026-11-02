@@ -4,7 +4,7 @@ from hashlib import sha256
 
 from .contracts import (Context, CriteriaDraft, DocumentRef, EvidenceBundle,
                         InspectRequest, InspectionResult, ReportDraft, ReportRequest,
-                        RetrieveRequest, ValidateRequest, ValidatedItem, ValidatedResult)
+                        ValidateRequest, ValidatedItem, ValidatedResult)
 
 
 def ensure_context(expected: Context, result) -> None:
@@ -37,35 +37,51 @@ def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft
         raise ValueError("SOURCE_PAGE_OUT_OF_RANGE")
 
 
-def validate_evidence(request: RetrieveRequest, bundle: EvidenceBundle) -> None:
-    ensure_context(request.context, bundle)
-    _criteria(request.context, request.criteria)
-    criteria = {c.criterion_id: c for c in request.criteria}
+def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None:
+    """Validate self-contained provenance without claiming source authenticity.
+
+    Historical context may cite an older document in the same project. Current
+    requirements and approved exceptions must reference this document, and an
+    exception must also apply to this asset version. This cannot prove actual
+    permission, approval validity, database freshness or source-file contents.
+    """
+    ensure_context(context, bundle)
     _unique((e.evidence_id for e in bundle.evidence), "EVIDENCE")
     if bundle.status == "empty" and bundle.evidence:
-        raise ValueError("EMPTY_RETRIEVAL_HAS_EVIDENCE")
+        raise ValueError("EMPTY_CONTEXT_HAS_EVIDENCE")
     if (bundle.status == "complete" and bundle.graph_revision is not None
             and bundle.graph_revision < bundle.postgres_revision):
         raise ValueError("STALE_GRAPH_MARKED_COMPLETE")
     for evidence in bundle.evidence:
-        if evidence.project_id != request.context.project_id:
+        if evidence.project_id != context.project_id:
             raise ValueError("EVIDENCE_PROJECT_MISMATCH")
-        if not set(evidence.criterion_ids) <= criteria.keys():
-            raise ValueError("UNKNOWN_EVIDENCE_CRITERION")
         if sha256(evidence.source.quote.encode("utf-8")).hexdigest() != evidence.source.source_hash:
             raise ValueError("EVIDENCE_HASH_MISMATCH")
+        if (evidence.kind == "current_requirement"
+                and evidence.source.document_version_id != context.document_version_id):
+            raise ValueError("EVIDENCE_SOURCE_MISMATCH")
+        if evidence.kind == "approved_exception":
+            if (evidence.source.document_version_id != context.document_version_id
+                    or evidence.applicable_asset_version_id != context.asset_version_id):
+                raise ValueError("EXCEPTION_SCOPE_MISMATCH")
+
+
+def validate_evidence(context, criteria_input, bundle: EvidenceBundle) -> None:
+    ensure_context(context, bundle)
+    _criteria(context, criteria_input)
+    validate_evidence_envelope(context, bundle)
+    criteria = {c.criterion_id: c for c in criteria_input}
+    for evidence in bundle.evidence:
+        if not set(evidence.criterion_ids) <= criteria.keys():
+            raise ValueError("UNKNOWN_EVIDENCE_CRITERION")
         if evidence.kind == "current_requirement":
             if any(evidence.source != criteria[cid].source for cid in evidence.criterion_ids):
                 raise ValueError("EVIDENCE_SOURCE_MISMATCH")
-        if evidence.kind == "approved_exception":
-            if (evidence.source.document_version_id != request.context.document_version_id
-                    or evidence.applicable_asset_version_id != request.context.asset_version_id):
-                raise ValueError("EXCEPTION_SCOPE_MISMATCH")
 
 
 def validate_inspection(request: InspectRequest, result: InspectionResult) -> None:
     ensure_context(request.context, result)
-    validate_evidence(RetrieveRequest(context=request.context, criteria=request.criteria), request.evidence)
+    validate_evidence(request.context, request.criteria, request.evidence)
     if request.asset.asset_version_id != request.context.asset_version_id:
         raise ValueError("ASSET_VERSION_MISMATCH")
     ids = {c.criterion_id for c in request.criteria}
@@ -117,9 +133,25 @@ def validate_validated(request: ValidateRequest, result: ValidatedResult) -> Non
             raise ValueError("VALIDATOR_DROPPED_LIMITATIONS")
 
 
-def validate_report(request: ReportRequest, result: ReportDraft) -> None:
+def validate_report_request(request: ReportRequest) -> None:
+    """Check supplied A07 provenance before a reporter can consume it.
+
+    ReportRequest lacks full criteria, required/optional flags and observations.
+    This checks only the provided evidence and validated-item identities; it does
+    not re-establish criteria completeness, aggregation correctness or A06's
+    substantive judgment. Those remain the upstream validation boundary's work.
+    """
     ensure_context(request.context, request.validated)
-    ensure_context(request.context, request.evidence)
+    validate_evidence_envelope(request.context, request.evidence)
+    _unique((item.criterion_id for item in request.validated.items), "VALIDATED_ITEM")
+    criteria = {item.criterion_id for item in request.validated.items}
+    for evidence in request.evidence.evidence:
+        if not set(evidence.criterion_ids) <= criteria:
+            raise ValueError("UNKNOWN_EVIDENCE_CRITERION")
+
+
+def validate_report(request: ReportRequest, result: ReportDraft) -> None:
+    validate_report_request(request)
     ensure_context(request.context, result)
     if result.verdict != request.validated.verdict:
         raise ValueError("REPORT_CHANGED_VERDICT")
@@ -196,7 +228,7 @@ class ReferenceValidator:
                        for e in evidence.values()):
                 issues.append("missing_requirement_evidence")
             if request.evidence.status != "complete":
-                issues.append("retrieval_incomplete")
+                issues.append("context_incomplete")
             if issues and verdict == "pass":
                 verdict = "review"
             items.append(ValidatedItem(criterion_id=criterion.criterion_id, verdict=verdict, issues=tuple(issues)))

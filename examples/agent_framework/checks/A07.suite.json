@@ -1,39 +1,39 @@
 {
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "role": "A07",
   "cases": [
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "pass",
       "input": "A07.pass.json",
       "expected_verdict": "pass"
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "fail",
       "input": "A07.fail.json",
       "expected_verdict": "fail"
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "review",
       "input": "A07.review.json",
       "expected_verdict": "review"
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "stale",
       "input": "A07.stale.json",
       "expected_verdict": "review"
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "unavailable",
       "input": "A07.unavailable.json",
       "expected_verdict": "review"
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "id": "invalid-scope",
       "input": "A07.invalid-scope.json",
       "expected_error": "EVIDENCE_PROJECT_MISMATCH"

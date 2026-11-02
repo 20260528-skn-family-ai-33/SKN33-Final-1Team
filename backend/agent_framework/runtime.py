@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from .contracts import (
     Approval, AssetRef, Context, CriteriaDraft, DocumentRef, EvidenceBundle,
     ExtractRequest, FrameworkError, InspectionResult, InspectRequest, ReportDraft,
-    ReportRequest, RetrieveRequest, RunSnapshot, StepRecord, StepTimeline, ValidatedResult, ValidateRequest,
+    ReportRequest, RunSnapshot, StepRecord, StepTimeline, ValidatedResult, ValidateRequest,
 )
 from .ports import AdapterFailure, Agents
 from .invocation import ROLE_CONTRACTS, InvocationFailure, invoke_role
@@ -31,7 +31,7 @@ from .validation import (
 T = TypeVar('T', bound=BaseModel)
 _EXCEPTION_BLOCKERS = frozenset({
     'missing_observation', 'missing_requirement_evidence', 'missing_citation',
-    'uncertain_observation', 'unsupported_criterion', 'retrieval_incomplete',
+    'uncertain_observation', 'unsupported_criterion', 'context_incomplete',
     'numeric_observation_invalid', 'verdict_conflict',
 })
 
@@ -90,7 +90,7 @@ class Workflow:
         extraction.add_edge('A02', END)
         self._extraction_graph = extraction.compile()
         review = StateGraph(_GraphState)
-        nodes = [('A03', self._retrieve), ('A04_A05', self._inspect),
+        nodes = [('A04_A05', self._inspect),
                  ('A06', self._validate), ('A07', self._report)]
         for name, fn in nodes:
             review.add_node(name, fn)
@@ -182,7 +182,7 @@ class Workflow:
         self._save(record, execution_status='outcome_unknown' if error.outcome_unknown else 'failed', error=error)
         return _copy(record.snapshot)
 
-    def start(self, context: Context, document: DocumentRef, asset: AssetRef) -> RunSnapshot:
+    def start(self, context: Context, document: DocumentRef, asset: AssetRef, *, defer=False) -> RunSnapshot:
         context = _boundary(Context, context)
         document = _boundary(DocumentRef, document)
         asset = _boundary(AssetRef, asset)
@@ -190,7 +190,7 @@ class Workflow:
             raise ValueError('use rereview to create a child run')
         self._input_scope(context, document, asset)
         record = _Run(document, asset, RunSnapshot(context=context, profile=self.profile,
-            synthetic=False, execution_status='extracting', stages=('A01',)))
+            synthetic=False, execution_status='queued' if defer else 'extracting', stages=('A01',)))
         # Reserve the run before calling an adapter. Readers may observe its
         # explicit extracting state, while competing commands remain serialized.
         with record.lock:
@@ -198,6 +198,8 @@ class Workflow:
                 if context.run_id in self._runs:
                     raise ValueError('run_id already exists')
                 self._runs[context.run_id] = record
+            if defer:
+                return _copy(record.snapshot)
             try:
                 self._extraction_graph.invoke({'run_id': context.run_id}, {'recursion_limit': 8})
             except Exception as exc:
@@ -223,7 +225,24 @@ class Workflow:
             return _copy(StepTimeline(context=state.context, profile=state.profile,
                                      execution_status=state.execution_status, records=state.step_records))
 
-    def approve(self, run_id: str, approval: Approval) -> RunSnapshot:
+    def restore(self, snapshot: RunSnapshot, document: DocumentRef, asset: AssetRef,
+                *, child_run_id: str | None = None) -> None:
+        """Load a trusted durable snapshot without invoking any adapter.
+
+        The caller owns DB authorization/transactions. This method only enforces
+        contract isolation and fixed input scope; it is not an import API.
+        """
+        snapshot = _boundary(RunSnapshot, snapshot)
+        document, asset = _boundary(DocumentRef, document), _boundary(AssetRef, asset)
+        self._input_scope(snapshot.context, document, asset)
+        if snapshot.criteria is not None:
+            validate_draft(snapshot.context, document, snapshot.criteria)
+        with self._registry_lock:
+            if snapshot.context.run_id in self._runs:
+                raise ValueError('run_id already exists')
+            self._runs[snapshot.context.run_id] = _Run(document, asset, snapshot, child_run_id=child_run_id)
+
+    def approve(self, run_id: str, approval: Approval, *, defer=False) -> RunSnapshot:
         approval = _boundary(Approval, approval)
         record = self._record(run_id)
         with record.lock:
@@ -236,7 +255,11 @@ class Workflow:
             if decision == 'approve_criteria':
                 if state.execution_status != 'waiting_criteria' or state.criteria is None:
                     raise ValueError('criteria approval is not available')
-                self._save(record, approvals=state.approvals + (approval,), execution_status='reviewing')
+                from .context import freeze_approved_context
+                evidence=freeze_approved_context(state.context,state.criteria.criteria,synthetic=state.synthetic)
+                self._save(record, approvals=state.approvals + (approval,), evidence=evidence, execution_status='queued' if defer else 'reviewing')
+                if defer:
+                    return _copy(record.snapshot)
                 try:
                     self._review_graph.invoke({'run_id': run_id}, {'recursion_limit': 12})
                 except Exception as exc:
@@ -263,7 +286,7 @@ class Workflow:
         if state.criteria is None or state.validated is None or state.evidence is None:
             raise ValueError('validated evidence is required for an exception')
         if state.evidence.status != 'complete':
-            raise ValueError('incomplete retrieval cannot be approved as an exception')
+            raise ValueError('incomplete context cannot be approved as an exception')
         if any(_EXCEPTION_BLOCKERS.intersection(item.issues) for item in state.validated.items):
             raise ValueError('unknown or unsupported evidence cannot be approved as an exception')
         # Custom A06 adapters cannot silently turn new uncertainty codes into an
@@ -319,13 +342,6 @@ class Workflow:
         self._run_stage(record, 'A02', 'criteria', lambda: ExtractRequest(
             context=_copy(record.snapshot.context), document=_copy(record.document),
             synthetic=record.snapshot.synthetic), execution_status='waiting_criteria')
-        return {}
-
-    def _retrieve(self, state: _GraphState) -> dict:
-        record = self._record(state['run_id'])
-        self._run_stage(record, 'A03', 'evidence', lambda: RetrieveRequest(
-            context=_copy(record.snapshot.context), criteria=_copy(record.snapshot.criteria).criteria,
-            synthetic=record.snapshot.synthetic))
         return {}
 
     def _inspect_request(self, record: _Run) -> InspectRequest:

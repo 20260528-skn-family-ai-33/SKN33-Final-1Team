@@ -24,6 +24,9 @@ def load_flow():
                 raise ValueError(f"invalid source: {reference}")
             if not 1 <= reference["line"] <= len(path.read_text(encoding="utf-8").splitlines()):
                 raise ValueError(f"invalid source line: {reference}")
+    for role in data["roles"]:
+        if not set(role["nodes"]) <= ids:
+            raise ValueError("role filter has unknown workflow nodes")
     edges = {(e["from"], e["to"]) for e in data["edges"]}
     if any(a not in ids or b not in ids for a, b in edges):
         raise ValueError("dangling workflow edge")
@@ -52,7 +55,11 @@ def source_payload(data):
     names = {reference["path"] for node in data["nodes"] for reference in node["files"]}
     names.update({"docs/agent-framework/graphify-out/GRAPH_REPORT.md",
                   "docs/agent-framework/verification-2026-11-02.md",
-                  "examples/agent_framework/README.md"})
+                  "docs/agent-framework/a03-retirement-2026-11-02.md",
+                  "examples/agent_framework/README.md",
+                  "examples/agent_framework/team_adapters.py",
+                  "examples/agent_framework/team_config.synthetic.json",
+                  "examples/agent_framework/team_config.template.json"})
     names.update(path.relative_to(ROOT).as_posix() for path in (ROOT / "backend" / "agent_framework").rglob("*.py"))
     sources = {}
     for name in sorted(names):

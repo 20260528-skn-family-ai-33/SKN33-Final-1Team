@@ -3,16 +3,18 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 Identifier = Annotated[str, Field(min_length=1, max_length=160, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")]
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 Verdict = Literal["pass", "fail", "review"]
+ExecutionStatus = Literal["queued", "extracting", "reviewing", "waiting_criteria", "waiting_review",
+                          "waiting_revision", "completed", "failed", "outcome_unknown"]
 
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    contract_version: Literal["1.0.0"] = "1.0.0"
+    contract_version: Literal["2.0.0"] = "2.0.0"
 
 
 class Context(Contract):
@@ -79,12 +81,6 @@ class CriteriaDraft(Contract):
     synthetic: bool = False
 
 
-class RetrieveRequest(RoleRequest):
-    context: Context
-    criteria: tuple[Criterion, ...] = Field(min_length=1)
-    purpose: Literal["inspection", "report"] = "inspection"
-
-
 class Evidence(Contract):
     evidence_id: Identifier
     project_id: Identifier
@@ -93,7 +89,7 @@ class Evidence(Contract):
     source_record_id: Identifier
     source: SourceRef
     approval_id: Identifier | None = None
-    # Exception eligibility must be checked by the retrieval implementation.
+    # Exception eligibility must be checked by the common context preparation service.
     applicable_asset_version_id: Identifier | None = None
 
     @model_validator(mode="after")
@@ -105,7 +101,7 @@ class Evidence(Contract):
 
 class EvidenceBundle(Contract):
     context: Context
-    retrieval_id: Identifier
+    context_id: Identifier
     status: Literal["complete", "empty", "stale", "unavailable"]
     evidence: tuple[Evidence, ...] = ()
     warnings: tuple[str, ...] = ()
@@ -211,11 +207,56 @@ class Approval(Contract):
         return self
 
 
+class StepRecord(Contract):
+    """One role boundary, including validation; never a raw provider payload."""
+    ordinal: int = Field(ge=1, strict=True)
+    role: Literal["A02", "A04_A05", "A06", "A07"]
+    status: Literal["running", "completed", "failed", "outcome_unknown", "reused"]
+    recorded_at: AwareDatetime
+    started_at: AwareDatetime | None = None
+    finished_at: AwareDatetime | None = None
+    duration_ms: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    error: FrameworkError | None = None
+    synthetic: bool = False
+    source_run_id: Identifier | None = None
+
+    @model_validator(mode="after")
+    def consistent_lifecycle(self):
+        if self.status == "reused":
+            if (self.role != "A02" or self.source_run_id is None or self.started_at is not None
+                    or self.finished_at is not None or self.duration_ms is not None or self.error is not None):
+                raise ValueError("reused criteria must name their source without claiming an invocation")
+            return self
+        if self.source_run_id is not None or self.started_at is None:
+            raise ValueError("an invoked step requires a start time and no reuse source")
+        if self.status == "running":
+            if self.finished_at is not None or self.duration_ms is not None or self.error is not None:
+                raise ValueError("a running step cannot have a terminal outcome")
+        else:
+            if (self.finished_at is None or self.finished_at < self.started_at
+                    or self.duration_ms is None and self.status != "outcome_unknown"):
+                raise ValueError("a finished step requires ordered timestamps and a duration")
+            failed = self.status in {"failed", "outcome_unknown"}
+            if failed != (self.error is not None):
+                raise ValueError("only failed steps carry an error")
+            if self.error and self.error.outcome_unknown != (self.status == "outcome_unknown"):
+                raise ValueError("error ambiguity must match step status")
+        return self
+
+
+class StepTimeline(Contract):
+    context: Context
+    profile: Literal["development", "test"]
+    storage: Literal["memory", "postgres"] = "memory"
+    execution_status: ExecutionStatus
+    records: tuple[StepRecord, ...] = ()
+
+
 class RunSnapshot(Contract):
     context: Context
     profile: Literal["development", "test"]
     synthetic: bool
-    execution_status: Literal["waiting_criteria", "waiting_review", "waiting_revision", "completed", "failed", "outcome_unknown"]
+    execution_status: ExecutionStatus
     machine_verdict: Verdict | None = None
     human_decision: Literal["unreviewed", "changes_approved", "final_approved", "exception_approved"] = "unreviewed"
     criteria: CriteriaDraft | None = None
@@ -225,10 +266,11 @@ class RunSnapshot(Contract):
     report: ReportDraft | None = None
     approvals: tuple[Approval, ...] = ()
     stages: tuple[str, ...] = ()
+    step_records: tuple[StepRecord, ...] = ()
     error: FrameworkError | None = None
 
 
 CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion, ExtractRequest, CriteriaDraft,
-                  RetrieveRequest, EvidenceBundle, InspectRequest, InspectionResult,
+                  EvidenceBundle, InspectRequest, InspectionResult,
                   ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, Approval,
-                  FrameworkError, RunSnapshot)
+                  FrameworkError, StepRecord, StepTimeline, RunSnapshot)

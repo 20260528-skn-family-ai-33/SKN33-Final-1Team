@@ -1,7 +1,7 @@
 {
-  "contract_version": "1.0.0",
+  "contract_version": "2.0.0",
   "context": {
-    "contract_version": "1.0.0",
+    "contract_version": "2.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -13,23 +13,23 @@
   "verdict": "review",
   "items": [
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "criterion_id": "requirement-text",
       "verdict": "review",
       "issues": [
         "missing_citation",
         "missing_requirement_evidence",
-        "retrieval_incomplete"
+        "context_incomplete"
       ]
     },
     {
-      "contract_version": "1.0.0",
+      "contract_version": "2.0.0",
       "criterion_id": "requirement-number",
       "verdict": "review",
       "issues": [
         "missing_citation",
         "missing_requirement_evidence",
-        "retrieval_incomplete"
+        "context_incomplete"
       ]
     }
   ],

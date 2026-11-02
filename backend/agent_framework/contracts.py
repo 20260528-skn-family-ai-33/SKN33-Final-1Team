@@ -8,13 +8,13 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validato
 Identifier = Annotated[str, Field(min_length=1, max_length=160, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")]
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 Verdict = Literal["pass", "fail", "review"]
-ExecutionStatus = Literal["extracting", "reviewing", "waiting_criteria", "waiting_review",
+ExecutionStatus = Literal["queued", "extracting", "reviewing", "waiting_criteria", "waiting_review",
                           "waiting_revision", "completed", "failed", "outcome_unknown"]
 
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    contract_version: Literal["1.0.0"] = "1.0.0"
+    contract_version: Literal["2.0.0"] = "2.0.0"
 
 
 class Context(Contract):
@@ -81,12 +81,6 @@ class CriteriaDraft(Contract):
     synthetic: bool = False
 
 
-class RetrieveRequest(RoleRequest):
-    context: Context
-    criteria: tuple[Criterion, ...] = Field(min_length=1)
-    purpose: Literal["inspection", "report"] = "inspection"
-
-
 class Evidence(Contract):
     evidence_id: Identifier
     project_id: Identifier
@@ -95,7 +89,7 @@ class Evidence(Contract):
     source_record_id: Identifier
     source: SourceRef
     approval_id: Identifier | None = None
-    # Exception eligibility must be checked by the retrieval implementation.
+    # Exception eligibility must be checked by the common context preparation service.
     applicable_asset_version_id: Identifier | None = None
 
     @model_validator(mode="after")
@@ -107,7 +101,7 @@ class Evidence(Contract):
 
 class EvidenceBundle(Contract):
     context: Context
-    retrieval_id: Identifier
+    context_id: Identifier
     status: Literal["complete", "empty", "stale", "unavailable"]
     evidence: tuple[Evidence, ...] = ()
     warnings: tuple[str, ...] = ()
@@ -216,7 +210,7 @@ class Approval(Contract):
 class StepRecord(Contract):
     """One role boundary, including validation; never a raw provider payload."""
     ordinal: int = Field(ge=1, strict=True)
-    role: Literal["A02", "A03", "A04_A05", "A06", "A07"]
+    role: Literal["A02", "A04_A05", "A06", "A07"]
     status: Literal["running", "completed", "failed", "outcome_unknown", "reused"]
     recorded_at: AwareDatetime
     started_at: AwareDatetime | None = None
@@ -239,7 +233,8 @@ class StepRecord(Contract):
             if self.finished_at is not None or self.duration_ms is not None or self.error is not None:
                 raise ValueError("a running step cannot have a terminal outcome")
         else:
-            if self.finished_at is None or self.duration_ms is None or self.finished_at < self.started_at:
+            if (self.finished_at is None or self.finished_at < self.started_at
+                    or self.duration_ms is None and self.status != "outcome_unknown"):
                 raise ValueError("a finished step requires ordered timestamps and a duration")
             failed = self.status in {"failed", "outcome_unknown"}
             if failed != (self.error is not None):
@@ -252,7 +247,7 @@ class StepRecord(Contract):
 class StepTimeline(Contract):
     context: Context
     profile: Literal["development", "test"]
-    storage: Literal["memory"] = "memory"
+    storage: Literal["memory", "postgres"] = "memory"
     execution_status: ExecutionStatus
     records: tuple[StepRecord, ...] = ()
 
@@ -276,6 +271,6 @@ class RunSnapshot(Contract):
 
 
 CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion, ExtractRequest, CriteriaDraft,
-                  RetrieveRequest, EvidenceBundle, InspectRequest, InspectionResult,
+                  EvidenceBundle, InspectRequest, InspectionResult,
                   ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, Approval,
                   FrameworkError, StepRecord, StepTimeline, RunSnapshot)

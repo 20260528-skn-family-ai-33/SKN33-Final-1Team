@@ -12,7 +12,7 @@ from typing import Literal
 from ..contracts import (
     AssetRef, Context, CriteriaDraft, Criterion, DocumentRef, Evidence,
     EvidenceBundle, ExtractRequest, ImageEvidence, InspectRequest,
-    InspectionResult, Observation, ReportDraft, ReportRequest, RetrieveRequest,
+    InspectionResult, Observation, ReportDraft, ReportRequest,
     SourceRef,
 )
 from ..ports import AdapterFailure, Agents
@@ -56,7 +56,7 @@ def _same_context(left: Context, right: Context) -> None:
 
 
 class SyntheticAdapters:
-    """One stateless fixture implements A02, A03, A04/A05 and A07 ports."""
+    """One stateless fixture implements A02, A04/A05 and A07 ports."""
 
     def __init__(self, scenario: Scenario = "pass"):
         if scenario not in SCENARIOS:
@@ -90,34 +90,6 @@ class SyntheticAdapters:
                 ),
             ),
             warnings=(SYNTHETIC_NOTICE, "파일 해시는 실제 파일이 아닌 합성 참조 문자열의 SHA-256입니다."),
-            synthetic=True,
-        )
-
-    def retrieve(self, request: RetrieveRequest) -> EvidenceBundle:
-        for criterion in request.criteria:
-            if criterion.source.document_version_id != request.context.document_version_id:
-                raise AdapterFailure("CONTEXT_MISMATCH", "요구조건의 출처 문서 버전이 다릅니다.")
-        status = self.scenario if self.scenario in {"stale", "unavailable"} else "complete"
-        entries = () if status == "unavailable" else tuple(
-            Evidence(
-                evidence_id=f"synthetic-evidence-{criterion.criterion_id}",
-                project_id=request.context.project_id, kind="current_requirement",
-                criterion_ids=(criterion.criterion_id,),
-                source_record_id=f"synthetic-source-{criterion.criterion_id}",
-                source=criterion.source,
-            )
-            for criterion in request.criteria
-        )
-        warning = {
-            "stale": "합성 장애: Graph 반영 버전이 PostgreSQL 원본보다 오래되었습니다.",
-            "unavailable": "합성 장애: 근거 검색 서비스를 사용할 수 없습니다.",
-        }.get(status)
-        return EvidenceBundle(
-            context=request.context, retrieval_id=f"synthetic-retrieval-{request.context.run_id}",
-            status=status, evidence=entries,
-            postgres_revision=0 if status == "unavailable" else 2,
-            graph_revision=None if status == "unavailable" else 1 if status == "stale" else 2,
-            warnings=(SYNTHETIC_NOTICE, warning) if warning else (SYNTHETIC_NOTICE,),
             synthetic=True,
         )
 
@@ -177,7 +149,7 @@ def make_agents(scenario: Scenario = "pass") -> Agents:
 
     adapters = SyntheticAdapters(scenario)
     return Agents(
-        extractor=adapters, retriever=adapters, inspector=adapters,
+        extractor=adapters, inspector=adapters,
         validator=ReferenceValidator(), reporter=adapters,
     )
 

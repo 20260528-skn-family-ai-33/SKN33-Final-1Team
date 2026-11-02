@@ -79,7 +79,7 @@ def test_actual_role_sequence_is_separate_from_human_decisions_and_machine_verdi
     assert started.machine_verdict is None and started.human_decision == "unreviewed"
     result = workflow.approve(context.run_id, approval(context))
     assert [item.role for item in result.step_records] == list(ROLES)
-    assert [item.ordinal for item in result.step_records] == list(range(1, 6))
+    assert [item.ordinal for item in result.step_records] == list(range(1, 5))
     assert calls == [(context.run_id, role) for role in ROLES]
     for item in result.step_records:
         assert_finished(item)
@@ -124,7 +124,7 @@ def test_uncertain_completion_remains_unknown_without_retry_or_later_stages():
     record = result.step_records[-1]
     assert_finished(record, "outcome_unknown")
     assert record.error.code == "REMOTE_TIMEOUT" and record.error.outcome_unknown
-    assert calls == [(context.run_id, role) for role in ROLES[:3]]
+    assert calls == [(context.run_id, role) for role in ROLES[:2]]
 
 
 @pytest.mark.parametrize("role", ROLES)
@@ -163,7 +163,7 @@ def test_step_errors_do_not_expose_arbitrary_provider_payloads(failure):
     assert "secret-provider-token" not in record.model_dump_json()
 
 
-@pytest.mark.parametrize("role,status", [("A02", "extracting"), ("A03", "reviewing")])
+@pytest.mark.parametrize("role,status", [("A02", "extracting"), ("A04_A05", "reviewing")])
 def test_get_and_timeline_return_running_record_before_adapter_is_released(role, status):
     entered, release = Event(), Event()
     agents, _calls = instrumented(block_role=role, entered=entered, release=release)
@@ -183,7 +183,7 @@ def test_get_and_timeline_return_running_record_before_adapter_is_released(role,
             assert running == timeline.records[-1] and running.role == role and running.status == "running"
             assert running.started_at is not None and running.finished_at is None
             assert running.duration_ms is None and running.error is None
-            assert snapshot.criteria is None if role == "A02" else snapshot.evidence is None
+            assert snapshot.criteria is None if role == "A02" else snapshot.inspection is None
         finally:
             release.set()
         assert operation.result(timeout=3).step_records[-1].status == "completed"
@@ -191,7 +191,7 @@ def test_get_and_timeline_return_running_record_before_adapter_is_released(role,
 
 def test_api_live_timeline_and_snapshot_are_nonblocking_during_review():
     entered, release = Event(), Event()
-    agents, _calls = instrumented(block_role="A03", entered=entered, release=release)
+    agents, _calls = instrumented(block_role="A04_A05", entered=entered, release=release)
     app = create_app(agents, profile="test")
     context, document, asset = sample_inputs()
     with TestClient(app) as client, ThreadPoolExecutor(max_workers=3) as pool:
@@ -208,7 +208,7 @@ def test_api_live_timeline_and_snapshot_are_nonblocking_during_review():
             timeline = response.json()
             assert timeline["storage"] == "memory" and timeline["profile"] == "test"
             assert timeline["execution_status"] == snapshot.json()["execution_status"] == "reviewing"
-            assert timeline["records"][-1]["role"] == "A03" and timeline["records"][-1]["status"] == "running"
+            assert timeline["records"][-1]["role"] == "A04_A05" and timeline["records"][-1]["status"] == "running"
             assert response.headers["Cache-Control"] == "no-store"
         finally:
             release.set()
@@ -290,7 +290,7 @@ def test_running_one_run_does_not_block_another_run_or_mix_records():
 
 
 def test_returned_step_records_and_errors_are_isolated_from_internal_state():
-    agents, _calls = instrumented(fail_role="A03", failure=AdapterFailure("LOOKUP_FAILED", "Lookup failed."))
+    agents, _calls = instrumented(fail_role="A04_A05", failure=AdapterFailure("LOOKUP_FAILED", "Lookup failed."))
     workflow = Workflow(agents)
     context, result = reviewed(workflow)
     timeline = workflow.get_steps(context.run_id)
@@ -331,7 +331,7 @@ def test_step_contract_rejects_invalid_or_misleading_completed_records(change):
 def test_unknown_failure_contract_requires_explicit_outcome_uncertainty():
     now = datetime(2026, 11, 2, tzinfo=timezone.utc)
     with pytest.raises(ValidationError):
-        StepRecord(ordinal=1, role="A03", status="outcome_unknown", recorded_at=now,
+        StepRecord(ordinal=1, role="A04_A05", status="outcome_unknown", recorded_at=now,
                    started_at=now, finished_at=now, duration_ms=0,
                    error=FrameworkError(code="REMOTE_TIMEOUT", message="Timeout", outcome_unknown=False), synthetic=True)
 
@@ -351,7 +351,7 @@ def test_running_contract_cannot_claim_a_terminal_result(change):
 
 
 @pytest.mark.parametrize("change", [
-    {"source_run_id": None}, {"role": "A03"}, {"duration_ms": 0},
+    {"source_run_id": None}, {"role": "A04_A05"}, {"duration_ms": 0},
     {"started_at": datetime(2026, 11, 2, tzinfo=timezone.utc)},
     {"finished_at": datetime(2026, 11, 2, tzinfo=timezone.utc)},
     {"error": FrameworkError(code="FAILED", message="Failure")},

@@ -5,14 +5,14 @@
 > The separate clickable business flow is a curated workflow illustration, not this AST graph.
 
 - Tool: official `graphifyy==0.9.100`; directed build, community detection and native HTML exporter.
-- Corpus: **12 Python files**, 5,064 words, exclusively `backend/agent_framework/**/*.py`.
-- Git baseline: `87a3b9eaf92c2a8c14f823053beb58d7812e06c3`. The files are current working-tree sources; their SHA-256 values are recorded in `source-manifest.json`.
-- Raw AST: **158 nodes / 678 edges**.
-- Native directed graph: **173 nodes / 633 edges / 14 communities**.
-- **Integrity limits:** raw dangling endpoints 33, missing endpoints 0, self-loops 1, same-endpoint directed edges collapsed 45.
-- Build added **15 implicit/external placeholder nodes**. These have no extracted in-scope definition; they are not deployment components.
+- Corpus: **25 Python files**, 13,311 words, exclusively `backend/agent_framework/**/*.py`.
+- Git baseline: `eaab8701871769afec1a07c638d269abd9af06c1`. The files are current working-tree sources; their SHA-256 values are recorded in `source-manifest.json`.
+- Raw AST: **404 nodes / 1619 edges**.
+- Native directed graph: **439 nodes / 1527 edges / 11 communities**.
+- **Integrity limits:** raw dangling endpoints 134, missing endpoints 0, self-loops 2, same-endpoint directed edges collapsed 91.
+- Build added **35 implicit/external placeholder nodes**. These have no extracted in-scope definition; they are not deployment components.
 - The native view has collapsed parallel relations. **`extraction.json` retains every raw relationship and source location**; `diagnostics.json` and `diagnostics.txt` retain the official diagnostic.
-- Raw edge confidence: `{'EXTRACTED': 563, 'INFERRED': 115}`. `INFERRED` edges are extractor resolution inferences, not verified runtime calls.
+- Raw edge confidence: `{'EXTRACTED': 1372, 'INFERRED': 247}`. `INFERRED` edges are extractor resolution inferences, not verified runtime calls.
 - Source direction, confidence, `_origin` and location metadata are retained as emitted by Graphify. AST name resolution can be incomplete or ambiguous.
 - AST extraction model tokens: **0 input / 0 output**. No semantic extraction or model API call. Host-agent reasoning/labeling tokens were **not separately measured**; this is not a zero-cost claim for the whole conversation.
 - Token-reduction benchmark not run: the requested scope is the flow/code graph artifact, not a compression experiment.
@@ -30,26 +30,26 @@
 input: <in-memory>
 input_stage: provided JSON (normal graph.json is post-build)
 effective_directed: <direct-call>
-nodes: 158
+nodes: 404
 unverified_code_nodes: 0
-raw_edges: 678
-valid_candidate_edges: 645
+raw_edges: 1619
+valid_candidate_edges: 1485
 missing_endpoint_edges: 0
-dangling_endpoint_edges: 33
+dangling_endpoint_edges: 134
 external_reference_edges: 0
-self_loop_edges: 1
+self_loop_edges: 2
 exact_duplicate_edges: 0
-directed_unique_endpoint_pairs: 600
-directed_same_endpoint_collapsed_edges: 45
-undirected_unique_endpoint_pairs: 600
-undirected_same_endpoint_collapsed_edges: 45
-same_endpoint_group_count: 41
-relation_variant_groups: 38
+directed_unique_endpoint_pairs: 1394
+directed_same_endpoint_collapsed_edges: 91
+undirected_unique_endpoint_pairs: 1390
+undirected_same_endpoint_collapsed_edges: 95
+same_endpoint_group_count: 85
+relation_variant_groups: 79
 source_file_variant_groups: 0
-source_location_variant_groups: 0
-context_variant_groups: 3
+source_location_variant_groups: 1
+context_variant_groups: 5
 post_build_graph_type: DiGraph
-post_build_edges: 633
+post_build_edges: 1527
 producer_suppression_sites: 12
 producer_suppression_examples:
   - L1830 seen_ids arity=unknown
@@ -64,8 +64,8 @@ examples:
   - adapters_synthetic_sample_inputs -> contracts_context edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L36'] contexts=['', 'call', 'generic_arg']
   - adapters_synthetic_sample_inputs -> contracts_documentref edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L41'] contexts=['', 'call', 'generic_arg']
   - adapters_synthetic_sample_inputs -> contracts_assetref edges=3 relations=['calls', 'references', 'uses'] locations=['L30', 'L34', 'L45'] contexts=['', 'call', 'generic_arg']
-  - adapters_synthetic_make_agents -> ports_agents edges=3 relations=['calls', 'references', 'uses'] locations=['L174', 'L179'] contexts=['', 'call', 'return_type']
-  - adapters_generate_examples_generate -> path edges=2 relations=['references'] locations=['L31'] contexts=['generic_arg', 'parameter_type']
+  - adapters_synthetic_make_agents -> ports_agents edges=3 relations=['calls', 'references', 'uses'] locations=['L146', 'L151'] contexts=['', 'call', 'return_type']
+  - composition_build_agents -> ports_agents edges=3 relations=['calls', 'references', 'uses'] locations=['L169', 'L172'] contexts=['', 'call', 'return_type']
 note: normal graph.json is post-build; raw producer loss must be measured earlier.
 ```
 
@@ -74,119 +74,111 @@ note: normal graph.json is post-build; raw producer loss must be measured earlie
 # Graph Report - agent_framework  (2026-11-02)
 
 ## Corpus Check
-- Corpus is ~5,064 words - fits in a single context window. You may not need a graph.
+- Corpus is ~13,734 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 173 nodes · 633 edges · 14 communities (11 shown, 3 thin omitted)
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.94)
+- 439 nodes · 1527 edges · 11 communities (9 shown, 2 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 201 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `87a3b9ea`
+- Built from commit: `eaab8701`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+- Evidence and verdict validation
+- Checks relationships
+- Run input contracts
+- Postgres relationships
+- Postgres Api relationships
+- Synthetic data and observations
 - CLI and fixture composition
 - Workflow and human approvals
-- Evidence and verdict validation
-- Synthetic data and observations
-- Run input contracts
-- Retrieval contracts and adapters
-- Development HTTP routes
-- Extraction contracts and adapters
-- Reporting contracts and adapters
-- Inspection contracts and ports
-- Adapter error boundaries
+- Durable Worker relationships
 
 ## God Nodes (most connected - your core abstractions)
-1. `Workflow` - 41 edges
-2. `AdapterFailure` - 26 edges
-3. `Contract` - 23 edges
-4. `SyntheticAdapters` - 22 edges
-5. `InspectRequest` - 21 edges
-6. `RetrieveRequest` - 20 edges
-7. `ReportRequest` - 19 edges
-8. `ExtractRequest` - 17 edges
-9. `Context` - 16 edges
-10. `CriteriaDraft` - 16 edges
+1. `Context` - 53 edges
+2. `Workflow` - 47 edges
+3. `AdapterFailure` - 39 edges
+4. `Contract` - 36 edges
+5. `DocumentRef` - 32 edges
+6. `AssetRef` - 32 edges
+7. `InspectRequest` - 28 edges
+8. `PostgresStore` - 28 edges
+9. `create_app()` - 24 edges
+10. `ExtractRequest` - 23 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `CreativeCheckerCatalog` --uses--> `AdapterFailure`  [INFERRED]
+  adapters/project_files.py → ports.py
+- `CreativeCheckerStorageReader` --uses--> `AdapterFailure`  [INFERRED]
+  adapters/project_files.py → ports.py
+- `LegacyPosterCatalog` --uses--> `AdapterFailure`  [INFERRED]
+  adapters/project_files.py → ports.py
+- `LegacyStorageReader` --uses--> `AdapterFailure`  [INFERRED]
+  adapters/project_files.py → ports.py
 - `_same_context()` --uses--> `Context`  [INFERRED]
-  adapters/synthetic.py → contracts.py
-- `SyntheticAdapters` --uses--> `CriteriaDraft`  [INFERRED]
-  adapters/synthetic.py → contracts.py
-- `SyntheticAdapters` --uses--> `EvidenceBundle`  [INFERRED]
-  adapters/synthetic.py → contracts.py
-- `SyntheticAdapters` --uses--> `ExtractRequest`  [INFERRED]
-  adapters/synthetic.py → contracts.py
-- `SyntheticAdapters` --uses--> `InspectionResult`  [INFERRED]
   adapters/synthetic.py → contracts.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (14 total, 3 thin omitted)
+## Communities (11 total, 2 thin omitted)
 
-### Community 0 - "CLI and fixture composition"
+### Community 0 - "Evidence and verdict validation"
+Cohesion: 0.09
+Nodes (37): FileBackedExtractor, FileBackedInspector, QwenAdapterStub, _SyntheticValidator, CriteriaDraft, EvidenceBundle, ExtractRequest, InspectionResult (+29 more)
+
+### Community 1 - "Checks relationships"
+Cohesion: 0.07
+Nodes (32): CheckSuiteError, _invalid_constant(), load_suite(), PreparedCase, PreparedSuite, _read_json(), RoleCheckCase, RoleCheckSuite (+24 more)
+
+### Community 2 - "Run input contracts"
+Cohesion: 0.08
+Nodes (22): _authorize_error(), _creative_key(), CreativeCheckerCatalog, CreativeCheckerStorageReader, _fail(), LegacyPosterCatalog, LegacyStorageReader, _maximum() (+14 more)
+
+### Community 3 - "Postgres relationships"
+Cohesion: 0.08
+Nodes (12): steps(), FrameworkError, StepRecord, StepTimeline, Claim, _PhaseState, PostgresQueue, coordinator() (+4 more)
+
+### Community 4 - "Postgres Api relationships"
+Cohesion: 0.09
+Nodes (24): _invalid_constant(), load_config(), _unique_object(), create_postgres_app(), approve(), history(), invoke(), lifespan() (+16 more)
+
+### Community 5 - "Synthetic data and observations"
+Cohesion: 0.09
+Nodes (17): generate(), main(), role_examples(), _hash(), make_agents(), _same_context(), SyntheticAdapters, source() (+9 more)
+
+### Community 6 - "CLI and fixture composition"
 Cohesion: 0.11
-Nodes (14): generate(), main(), role_examples(), make_agents(), _emit(), _error(), _factory(), _has_synthetic() (+6 more)
+Nodes (21): create_app(), adapter_status(), approve(), configuration_status(), health(), invoke(), read(), revise() (+13 more)
 
-### Community 1 - "Workflow and human approvals"
-Cohesion: 0.24
-Nodes (8): _demo(), Approval, RunSnapshot, _boundary(), _copy(), _GraphState, _Run, Workflow
+### Community 7 - "Workflow and human approvals"
+Cohesion: 0.17
+Nodes (10): _demo(), Approval, RunSnapshot, run_flow_check(), approve(), _boundary(), _copy(), _GraphState (+2 more)
 
-### Community 2 - "Evidence and verdict validation"
-Cohesion: 0.19
-Nodes (15): _check_role(), ValidatedItem, ValidatedResult, ValidateRequest, Validator, aggregate(), _criteria(), ensure_context() (+7 more)
-
-### Community 3 - "Synthetic data and observations"
-Cohesion: 0.23
-Nodes (9): _hash(), SyntheticAdapters, source(), Criterion, Evidence, ImageEvidence, Observation, RoleRequest (+1 more)
-
-### Community 4 - "Run input contracts"
-Cohesion: 0.38
-Nodes (7): sample_inputs(), RevisionRequest, StartRequest, AssetRef, Context, Contract, DocumentRef
-
-### Community 5 - "Retrieval contracts and adapters"
-Cohesion: 0.38
-Nodes (4): PostgresNeo4jRetrieverStub, EvidenceBundle, RetrieveRequest, Retriever
-
-### Community 6 - "Development HTTP routes"
-Cohesion: 0.33
-Nodes (6): create_app(), approve(), invoke(), read(), revise(), start()
-
-### Community 7 - "Extraction contracts and adapters"
-Cohesion: 0.46
-Nodes (4): QwenAdapterStub, CriteriaDraft, ExtractRequest, Extractor
-
-### Community 8 - "Reporting contracts and adapters"
-Cohesion: 0.48
-Nodes (3): ReportDraft, ReportRequest, Reporter
-
-### Community 9 - "Inspection contracts and ports"
-Cohesion: 0.52
-Nodes (3): InspectionResult, InspectRequest, Inspector
-
-### Community 10 - "Adapter error boundaries"
-Cohesion: 0.33
-Nodes (3): _same_context(), record(), AdapterFailure
+### Community 8 - "Durable Worker relationships"
+Cohesion: 0.16
+Nodes (10): execute_claim(), execute_role(), node(), Lease, accept_role_output(), _contract(), invoke_role(), _policy() (+2 more)
 
 ## Knowledge Gaps
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Workflow` connect `Workflow and human approvals` to `CLI and fixture composition`, `Evidence and verdict validation`, `Run input contracts`, `Retrieval contracts and adapters`, `Extraction contracts and adapters`, `Reporting contracts and adapters`, `Inspection contracts and ports`, `Adapter error boundaries`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Are the 18 inferred relationships involving `Workflow` (e.g. with `Approval` and `AssetRef`) actually correct?**
-  _`Workflow` has 18 INFERRED edges - model-reasoned connections that need verification._
-- **Should `CLI and fixture composition` be split into smaller, more focused modules?**
-  _Cohesion score 0.11174242424242424 - nodes in this community are weakly interconnected._
-- **Why does `make_agents()` connect `CLI and fixture composition` to `Evidence and verdict validation`, `Synthetic data and observations`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Are the 14 inferred relationships involving `SyntheticAdapters` (e.g. with `CriteriaDraft` and `Criterion`) actually correct?**
-  _`SyntheticAdapters` has 14 INFERRED edges - model-reasoned connections that need verification._
-- **Why does `SyntheticAdapters` connect `Synthetic data and observations` to `CLI and fixture composition`, `Retrieval contracts and adapters`, `Extraction contracts and adapters`, `Reporting contracts and adapters`, `Inspection contracts and ports`, `Adapter error boundaries`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `Context` connect `Run input contracts` to `Evidence and verdict validation`, `Postgres Api relationships`, `Synthetic data and observations`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Are the 16 inferred relationships involving `Workflow` (e.g. with `Approval` and `AssetRef`) actually correct?**
+  _`Workflow` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **Should `Evidence and verdict validation` be split into smaller, more focused modules?**
+  _Cohesion score 0.09272300469483569 - nodes in this community are weakly interconnected._
+- **Why does `Workflow` connect `Workflow and human approvals` to `Evidence and verdict validation`, `Checks relationships`, `Run input contracts`, `Postgres relationships`, `Synthetic data and observations`, `CLI and fixture composition`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Should `Checks relationships` be split into smaller, more focused modules?**
+  _Cohesion score 0.06663141195134849 - nodes in this community are weakly interconnected._
+- **Why does `invoke_role()` connect `Durable Worker relationships` to `Evidence and verdict validation`, `CLI and fixture composition`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Should `Run input contracts` be split into smaller, more focused modules?**
+  _Cohesion score 0.08087431693989071 - nodes in this community are weakly interconnected._

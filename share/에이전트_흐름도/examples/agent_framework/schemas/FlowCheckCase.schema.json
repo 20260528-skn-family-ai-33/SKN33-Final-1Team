@@ -1,11 +1,70 @@
 {
   "$defs": {
+    "AssetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "file_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "File Id",
+          "type": "string"
+        },
+        "asset_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Asset Version Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "media_type": {
+          "default": "image/png",
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ],
+          "title": "Media Type",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file_id",
+        "asset_version_id",
+        "sha256",
+        "width",
+        "height"
+      ],
+      "title": "AssetRef",
+      "type": "object"
+    },
     "Context": {
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -85,97 +144,20 @@
       "title": "Context",
       "type": "object"
     },
-    "Criterion": {
+    "DocumentRef": {
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
-        "criterion_id": {
+        "file_id": {
           "maxLength": 160,
           "minLength": 1,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-          "title": "Criterion Id",
-          "type": "string"
-        },
-        "text": {
-          "minLength": 1,
-          "title": "Text",
-          "type": "string"
-        },
-        "kind": {
-          "enum": [
-            "text",
-            "number",
-            "visual",
-            "unsupported"
-          ],
-          "title": "Kind",
-          "type": "string"
-        },
-        "expected": {
-          "title": "Expected",
-          "type": "string"
-        },
-        "operator": {
-          "enum": [
-            "equals",
-            "contains",
-            "gte",
-            "lte",
-            "present",
-            "manual"
-          ],
-          "title": "Operator",
-          "type": "string"
-        },
-        "unit": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Unit"
-        },
-        "required": {
-          "default": true,
-          "title": "Required",
-          "type": "boolean"
-        },
-        "source": {
-          "$ref": "#/$defs/SourceRef"
-        },
-        "human_added": {
-          "default": false,
-          "title": "Human Added",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "criterion_id",
-        "text",
-        "kind",
-        "expected",
-        "operator",
-        "source"
-      ],
-      "title": "Criterion",
-      "type": "object"
-    },
-    "SourceRef": {
-      "additionalProperties": false,
-      "properties": {
-        "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
-          "title": "Contract Version",
+          "title": "File Id",
           "type": "string"
         },
         "document_version_id": {
@@ -185,78 +167,94 @@
           "title": "Document Version Id",
           "type": "string"
         },
-        "page": {
-          "minimum": 1,
-          "title": "Page",
-          "type": "integer"
-        },
-        "block_id": {
-          "maxLength": 160,
-          "minLength": 1,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-          "title": "Block Id",
-          "type": "string"
-        },
-        "quote": {
-          "minLength": 1,
-          "title": "Quote",
-          "type": "string"
-        },
-        "source_hash": {
+        "sha256": {
           "pattern": "^[a-f0-9]{64}$",
-          "title": "Source Hash",
+          "title": "Sha256",
           "type": "string"
+        },
+        "media_type": {
+          "const": "application/pdf",
+          "default": "application/pdf",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "page_count": {
+          "minimum": 1,
+          "title": "Page Count",
+          "type": "integer"
         }
       },
       "required": [
+        "file_id",
         "document_version_id",
-        "page",
-        "block_id",
-        "quote",
-        "source_hash"
+        "sha256",
+        "page_count"
       ],
-      "title": "SourceRef",
+      "title": "DocumentRef",
       "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "1.0.0",
-      "default": "1.0.0",
+      "const": "2.0.0",
+      "default": "2.0.0",
       "title": "Contract Version",
       "type": "string"
     },
-    "synthetic": {
-      "default": false,
-      "title": "Synthetic",
-      "type": "boolean"
+    "id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Id",
+      "type": "string"
     },
     "context": {
       "$ref": "#/$defs/Context"
     },
-    "criteria": {
-      "items": {
-        "$ref": "#/$defs/Criterion"
-      },
-      "minItems": 1,
-      "title": "Criteria",
-      "type": "array"
+    "document": {
+      "$ref": "#/$defs/DocumentRef"
     },
-    "purpose": {
-      "default": "inspection",
+    "asset": {
+      "$ref": "#/$defs/AssetRef"
+    },
+    "revision_context": {
+      "$ref": "#/$defs/Context"
+    },
+    "revision_asset": {
+      "$ref": "#/$defs/AssetRef"
+    },
+    "expected_initial_verdict": {
       "enum": [
-        "inspection",
-        "report"
+        "pass",
+        "fail",
+        "review"
       ],
-      "title": "Purpose",
+      "title": "Expected Initial Verdict",
+      "type": "string"
+    },
+    "expected_revised_verdict": {
+      "const": "pass",
+      "default": "pass",
+      "title": "Expected Revised Verdict",
+      "type": "string"
+    },
+    "change_reason": {
+      "minLength": 1,
+      "title": "Change Reason",
       "type": "string"
     }
   },
   "required": [
+    "id",
     "context",
-    "criteria"
+    "document",
+    "asset",
+    "revision_context",
+    "revision_asset",
+    "expected_initial_verdict",
+    "change_reason"
   ],
-  "title": "RetrieveRequest",
+  "title": "FlowCheckCase",
   "type": "object"
 }

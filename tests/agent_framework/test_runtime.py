@@ -62,15 +62,6 @@ class Examples:
                        for index in range(1,self.count+1))
         return self.called('extract',CriteriaDraft(context=request.context,criteria=criteria,synthetic=self.synthetic))
 
-    def retrieve(self, request):
-        evidence=tuple(Evidence(evidence_id=f'evidence-{index}',project_id=request.context.project_id,
-                               kind='current_requirement',criterion_ids=(item.criterion_id,),
-                               source_record_id=item.source.block_id,source=item.source)
-                       for index,item in enumerate(request.criteria,1))
-        if self.retrieval_status=='empty':evidence=()
-        return self.called('retrieve',EvidenceBundle(context=request.context,retrieval_id='retrieval-1',
-                    status=self.retrieval_status,evidence=evidence,synthetic=False))
-
     def inspect(self, request):
         observations=[]
         for index,item in enumerate(request.criteria,1):
@@ -89,7 +80,7 @@ class Examples:
                 evidence_ids=tuple(e.evidence_id for e in request.evidence.evidence),synthetic=False))
 
     def agents(self):
-        return Agents(extractor=self,retriever=self,inspector=self,validator=self,reporter=self)
+        return Agents(extractor=self,inspector=self,validator=self,reporter=self)
 
 
 def reviewed(example=None):
@@ -109,8 +100,8 @@ def test_actual_graph_nodes_wait_for_human_criteria_and_preserve_three_states():
     assert ex.calls==['extract']
     result=wf.approve(ctx.run_id,approval(ctx,'approve_criteria'))
     assert result.execution_status=='waiting_review' and result.machine_verdict=='pass'
-    assert result.stages==('A01','A02','A03','A04_A05','A06','A07')
-    assert ex.calls==['extract','retrieve','inspect','validate','report']
+    assert result.stages==('A01','A02','A04_A05','A06','A07')
+    assert ex.calls==['extract','inspect','validate','report']
     assert result.human_decision=='unreviewed'
     assert all(x.synthetic for x in (result,result.criteria,result.evidence,result.inspection,result.validated,result.report))
     final=wf.approve(ctx.run_id,approval(ctx,'approve_final'))
@@ -168,7 +159,7 @@ def test_concurrent_criteria_approvals_execute_graph_once():
         except ValueError:return 'rejected'
     with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(approve,range(2)))
     assert sorted(results)==['rejected','waiting_review']
-    assert ex.calls==['extract','retrieve','inspect','validate','report']
+    assert ex.calls==['extract','inspect','validate','report']
 
 
 def test_rereview_requires_new_run_asset_and_new_criteria_approval():
@@ -211,10 +202,9 @@ def test_exception_requires_all_nonpass_required_targets_and_keeps_machine_failu
     assert final.machine_verdict=='fail' and final.validated==result.validated
 
 
-@pytest.mark.parametrize('kind',['uncertain','empty','unavailable','missing'])
+@pytest.mark.parametrize('kind',['uncertain','missing'])
 def test_exception_cannot_turn_missing_or_unknown_evidence_into_approval(kind):
     ex=Examples(uncertainty='not readable' if kind=='uncertain' else None)
-    if kind in ('empty','unavailable'):ex.retrieval_status=kind
     if kind=='missing':ex.transforms['inspect']=lambda result:result.model_copy(update={'observations':()})
     wf,ctx,_,result=reviewed(ex)
     assert result.machine_verdict=='review'
@@ -222,7 +212,7 @@ def test_exception_cannot_turn_missing_or_unknown_evidence_into_approval(kind):
     assert wf.get(ctx.run_id)==result
 
 
-@pytest.mark.parametrize('stage',['extract','retrieve','inspect','validate','report'])
+@pytest.mark.parametrize('stage',['extract','inspect','validate','report'])
 def test_output_context_boundary_failure_stops_remaining_stages(stage):
     ex=Examples()
     ex.transforms[stage]=lambda result:result.model_copy(update={'context':result.context.model_copy(update={'project_id':'forged'})})
@@ -233,10 +223,10 @@ def test_output_context_boundary_failure_stops_remaining_stages(stage):
 
 
 def test_pydantic_model_copy_cannot_bypass_output_validation():
-    ex=Examples();ex.transforms['retrieve']=lambda value:value.model_copy(update={'status':'invented'})
+    ex=Examples();ex.transforms['inspect']=lambda value:value.model_copy(update={'observations':'invalid'})
     wf,ctx,_,result=reviewed(ex)
     assert result.execution_status=='failed' and result.error.code=='contract_violation'
-    assert 'inspect' not in ex.calls
+    assert 'validate' not in ex.calls
 
 
 def test_report_cannot_change_verdict_or_create_citations():
@@ -257,10 +247,10 @@ def test_unknown_remote_outcome_has_no_automatic_retry():
 
 
 def test_retryable_adapter_failure_is_metadata_and_is_not_automatically_replayed():
-    ex=Examples();ex.fail_at=('retrieve',AdapterFailure('retrieval_unavailable','Unavailable.',retryable=True))
+    ex=Examples();ex.fail_at=('inspect',AdapterFailure('inspection_unavailable','Unavailable.',retryable=True))
     _,_,_,result=reviewed(ex)
     assert result.execution_status=='failed' and result.error.retryable
-    assert ex.calls.count('retrieve')==1
+    assert ex.calls.count('inspect')==1
 
 
 def test_provider_exception_is_sanitized_and_cannot_claim_success():

@@ -6,7 +6,7 @@ import pytest
 from backend.agent_framework.contracts import (
     Context, SourceRef, Criterion, AssetRef, Evidence, EvidenceBundle, ImageEvidence,
     Observation, InspectionResult, ValidateRequest, ValidatedItem, ReportDraft,
-    ReportRequest, RetrieveRequest,
+    ReportRequest,
 )
 from backend.agent_framework.validation import ReferenceValidator, validate_evidence, validate_report, validate_validated
 
@@ -21,7 +21,7 @@ def request():
     asset = AssetRef(file_id="file1", asset_version_id="a1", sha256="a" * 64, width=100, height=100)
     evidence = Evidence(evidence_id="e1", project_id="p1", kind="current_requirement", criterion_ids=("count",),
                         source_record_id="b1", source=source)
-    bundle = EvidenceBundle(context=context, retrieval_id="q1", status="complete", evidence=(evidence,), synthetic=True)
+    bundle = EvidenceBundle(context=context, context_id="q1", status="complete", evidence=(evidence,), synthetic=True)
     observation = Observation(criterion_id="count", observed="3", verdict="pass",
                               image=ImageEvidence(asset_version_id="a1", asset_hash="a" * 64), evidence_ids=("e1",))
     return ValidateRequest(context=context, criteria=(criterion,), asset=asset, evidence=bundle,
@@ -107,7 +107,7 @@ def test_stale_graph_cannot_claim_complete():
     req = request()
     bundle = req.evidence.model_copy(update={"postgres_revision": 2, "graph_revision": 1})
     with pytest.raises(ValueError, match="STALE_GRAPH"):
-        validate_evidence(RetrieveRequest(context=req.context, criteria=req.criteria), bundle)
+        validate_evidence(req.context, req.criteria, bundle)
 
 
 def test_uncertain_value_is_not_a_confirmed_mismatch():

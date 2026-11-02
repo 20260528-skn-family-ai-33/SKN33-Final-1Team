@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -58,8 +58,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -143,8 +143,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -184,8 +184,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -268,8 +268,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -363,19 +363,19 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
         "context": {
           "$ref": "#/$defs/Context"
         },
-        "retrieval_id": {
+        "context_id": {
           "maxLength": 160,
           "minLength": 1,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
-          "title": "Retrieval Id",
+          "title": "Context Id",
           "type": "string"
         },
         "status": {
@@ -431,7 +431,7 @@
       },
       "required": [
         "context",
-        "retrieval_id",
+        "context_id",
         "status"
       ],
       "title": "EvidenceBundle",
@@ -441,8 +441,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -476,8 +476,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -533,8 +533,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -565,8 +565,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -630,8 +630,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -689,8 +689,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -739,8 +739,8 @@
       "description": "One role boundary, including validation; never a raw provider payload.",
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -752,7 +752,6 @@
         "role": {
           "enum": [
             "A02",
-            "A03",
             "A04_A05",
             "A06",
             "A07"
@@ -860,8 +859,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -901,8 +900,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "1.0.0",
-          "default": "1.0.0",
+          "const": "2.0.0",
+          "default": "2.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -952,8 +951,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "1.0.0",
-      "default": "1.0.0",
+      "const": "2.0.0",
+      "default": "2.0.0",
       "title": "Contract Version",
       "type": "string"
     },
@@ -974,6 +973,7 @@
     },
     "execution_status": {
       "enum": [
+        "queued",
         "extracting",
         "reviewing",
         "waiting_criteria",
