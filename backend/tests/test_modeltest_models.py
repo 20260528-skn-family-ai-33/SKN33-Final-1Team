@@ -12,7 +12,7 @@ from backend.app import modeltest_remote as remote
 
 @pytest.mark.parametrize('similarity_model', remote.SIGLIP2_MODELS)
 @pytest.mark.parametrize('failure', [None, 'load', 'inference'])
-def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, failure, similarity_model):
+def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, matching_detection_embeddings, failure, similarity_model):
     clock = [0.0]; events = []
     monkeypatch.setattr(remote.time, 'monotonic', lambda: clock[0])
     monkeypatch.setattr(remote.time, 'time', lambda: 1000 + clock[0])
@@ -48,13 +48,19 @@ def test_timings_separate_models_and_keep_failed_work(tmp_path, monkeypatch, fai
     job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
     assert job['status'] == ('failed' if failure else 'completed')
     assert job['stages'][0]['elapsed_seconds'] == 1
-    assert job['stages'][1]['elapsed_seconds'] == 5
+    extraction = job['stages'][1]
+    assert extraction['elapsed_seconds'] == 7
+    detector, detection_filter = extraction['model_timings']
+    assert (detector['model_id'], detector['load_seconds'], detector['inference_seconds'], detector['calls']) == (remote.OWLV2, 2, 3, 1)
+    assert (detection_filter['model_id'], detection_filter['load_seconds'], detection_filter['inference_seconds'], detection_filter['calls']) == (remote.DETECTION_FILTER_MODEL, 2, 0, 1)
+    assert extraction['detection_filter']['dropped'] == 0
+    assert len(matching_detection_embeddings) == 2
     stage = job['stages'][2]; xfeat = stage['model_timings'][0]
     assert xfeat['load_seconds'] == 2
     assert xfeat['inference_seconds'] == (0 if failure == 'load' else 3)
     assert xfeat['calls'] == (0 if failure == 'load' else 1)
     assert stage['elapsed_seconds'] == (2 if failure == 'load' else 5 if failure else 11)
-    assert job['elapsed_seconds'] == 6 + stage['elapsed_seconds']
+    assert job['elapsed_seconds'] == 8 + stage['elapsed_seconds']
     assert all('active_phase' not in row for row in stage['model_timings'])
     assert any(row.get('active_phase') == 'load' for event in events for item in event['stages'] for row in item.get('model_timings', []))
     if not failure:
@@ -189,7 +195,7 @@ def test_xfeat_loader_pins_code_uses_only_tensor_weights_and_reuses_model(tmp_pa
     assert models.model is not first and calls[-1] == ('weights', remote.XFEAT, 'xfeat.pt', 'other')
 
 
-def test_specialized_outputs_reach_crops_reference_comparison_and_condition_judge(tmp_path, monkeypatch):
+def test_specialized_outputs_reach_crops_reference_comparison_and_condition_judge(tmp_path, monkeypatch, matching_detection_embeddings):
     calls = []; prompts = []
     class Models:
         kind = 'vision'
@@ -215,10 +221,51 @@ def test_specialized_outputs_reach_crops_reference_comparison_and_condition_judg
     remote.execute_run(config, {'media': poster, 'documents': [], 'references': [reference], 'container': 'mov'}, tmp_path, lambda *_: None)
     job = json.loads((tmp_path / 'result.json').read_text(encoding='utf-8'))
     assert job['status'] == 'completed', job
-    assert calls == [remote.OWLV2, remote.SIGLIP2, remote.XFEAT, remote.QWEN]
+    assert calls == [remote.OWLV2, remote.DETECTION_FILTER_MODEL, remote.SIGLIP2, remote.XFEAT, remote.QWEN]
     assert 'label_scores' in prompts[0] and 'red required' in prompts[0]
     match = next(stage for stage in job['stages'] if stage['id'] == 'logo_compare')['output']['items'][0]['matches'][0]
     assert match == {'logo_index': 0, 'reference_index': 0, 'decision': 'uncertain', 'matches': 0}
+
+
+@pytest.mark.parametrize('reference_index', [0, 1])
+@pytest.mark.parametrize('side,score,status', [
+    (48, 0.75, 'accepted'), (48, 0.7499, None),
+    (47, 0.80, 'accepted'), (47, 0.7999, 'review'),
+    (47, 0.75, 'review'), (47, 0.7499, None),
+])
+def test_detection_filter_uses_reference_resolution_and_keeps_review_boundary(tmp_path, monkeypatch, reference_index, side, score, status):
+    import numpy as np
+
+    frame = tmp_path / 'frame.png'; Image.new('RGB', (100, 100)).save(frame)
+    references = [tmp_path / f'reference-{index}.png' for index in range(2)]
+    for path in references: Image.new('RGB', (100, 80)).save(path)
+    calls = []
+    def embed(models, images):
+        index = len(calls); calls.append([image.size for image in images])
+        if index < 2:
+            assert calls[-1] == [(100, 80), (25, 20), (35, 28), (50, 40), (70, 56)]
+            if index == reference_index:
+                # Small logos can match the degraded reference even when the full image does not.
+                return np.array([[1., 0., 0., 0.]] + [[0., 1., 0., 0.]] * 4)
+            return np.array([[0., 0., 1., 0.]] * 5)
+        assert len(images) == 1
+        vector = np.zeros(4); vector[1 if side < remote.LOGO_MIN_SIDE else 0] = score
+        vector[3] = np.sqrt(1 - score ** 2)
+        return vector[None, :]
+    monkeypatch.setattr(remote, 'siglip_embed', embed)
+    logo = {'bbox': [0, 0, side, side], 'score': 0.9}
+    detections = [[logo], []]
+    kept, dropped = remote.filter_detections(object(), [{'path': frame}, {'path': frame}], detections, references)
+
+    assert len(calls) == 3 and kept[1] == [] and dropped[1] == 0
+    assert detections == [[logo], []] and 'detection_status' not in logo
+    if status is None:
+        assert kept[0] == [] and dropped[0] == 1
+    else:
+        assert dropped[0] == 0
+        assert kept[0] == [{**logo, 'detection_status': status, 'detection_similarity': score,
+                            'detection_reference_index': reference_index,
+                            'detection_basis': 'low_resolution_reference' if side < remote.LOGO_MIN_SIDE else 'reference'}]
 
 
 def test_optional_image_cosine_uses_siglip_pooler_features(tmp_path):

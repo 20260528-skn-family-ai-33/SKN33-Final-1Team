@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+from fractions import Fraction
 import hashlib
 import io
 import os
@@ -78,23 +79,25 @@ def probe(ffmpeg: str, demuxer: str, path: Path) -> dict:
     width, height = int(stream.group(2)), int(stream.group(3))
     if degrees in (90, 270):
         width, height = height, width  # 화면에 보이는 방향 기준
-    copied = subprocess.run(_input_args(ffmpeg, demuxer, path) + ["-map", "0:v:0", "-c", "copy", "-f", "null", "-"],
-                            capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
-    copied_log = copied.stderr.decode("utf-8", errors="replace")
-    times = re.findall(r"time=(\d+):(\d{2}):(\d{2}(?:\.\d+)?)", copied_log)
-    frame_counts = re.findall(r"frame=\s*(\d+)", copied_log)
+    # 진행 로그의 time=은 B-frame 재정렬 때문에 영상 끝보다 이르다. frame=이 숫자가
+    # 아니어도 마지막 표본을 버리지 않도록 실제 영상 패킷의 PTS와 지속시간을 읽는다.
+    copied = subprocess.run(_input_args(ffmpeg, demuxer, path) + ["-map", "0:v:0", "-c", "copy", "-f", "framecrc", "-"],
+                            check=True, capture_output=True, timeout=120, stdin=subprocess.DEVNULL)
+    packets_text = copied.stdout.decode("utf-8", errors="replace")
+    time_base = re.search(r"^#tb 0: (\d+)/(\d+)\s*$", packets_text, re.MULTILINE)
+    packets = [row.split(",") for row in packets_text.splitlines() if row.startswith("0,")]
     container_ms = _clock_ms(*container.groups()) if container else None
-    duration_ms = container_ms or 0
-    frame_count = int(frame_counts[-1]) if frame_counts else None
-    if frame_count and fps:
-        # 영상 길이 = 영상 프레임 수 / fps. ffmpeg stats의 time= 은 소스·실행 타이밍에 따라 마지막
-        # 프레임의 pts(시작)나 끝 어느 쪽으로도 찍혀(mp4 5.8~5.9s, webm 6.0s 등) 불안정하지만,
-        # 영상 스트림만 copy로 세는 frame= 총수는 결정적이다. 이렇게 하면 영상보다 오디오가 긴
-        # WebM에서도 컨테이너(오디오 포함) 길이가 아니라 영상 길이만 잡아, plan_times가 영상 끝
-        # 이후 프레임을 요청해 extract_frames 장수 검사가 정상 파일을 실패시키는 일을 막는다.
-        duration_ms = int(round(frame_count * 1000 / float(fps.group(1))))
-    elif times:  # frame= 또는 fps 를 못 얻을 때만 마지막 time= 로 떨어진다
-        duration_ms = int(round(_clock_ms(*times[-1])))
+    try:
+        timings = [(int(row[2]), int(row[3])) for row in packets]
+        if not time_base or not timings or any(pts <= -(1 << 62) or span <= 0 for pts, span in timings):
+            raise ValueError("Missing video packet timestamps")
+        tick = Fraction(int(time_base[1]), int(time_base[2]))
+        duration_ms = round((max(pts + span for pts, span in timings) - min(pts for pts, _ in timings)) * tick * 1000)
+    except (ValueError, IndexError, ZeroDivisionError):
+        # 일부 AVI에는 PTS가 없다. 이 경우에도 진행 표시가 아닌 실제 패킷 수만 쓴다.
+        if not packets or not fps or float(fps.group(1)) <= 0:
+            raise ValueError("Cannot determine video duration")
+        duration_ms = int(round(len(packets) * 1000 / float(fps.group(1))))
     if container_ms:  # 컨테이너(오디오 포함) 길이를 넘지는 않게 둔다
         duration_ms = min(duration_ms, container_ms)
     return {

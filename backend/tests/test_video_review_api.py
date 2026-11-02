@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 import subprocess
 
 import pytest
@@ -183,6 +184,35 @@ def test_webm_audio_longer_than_video_extracts(tmp_path):
     assert job["media"]["container"] == "matroska"
     assert 5500 <= job["media"]["duration_ms"] <= 6200   # 영상 끝 기준(과다계산이면 약 7000)
     assert job["media"]["container_duration_ms"] >= 6800  # 컨테이너는 오디오 기준이라 더 길다
+
+
+@pytest.mark.parametrize("container", ["mp4", "webm"])
+def test_video_sampling_does_not_use_ffmpeg_progress_time(tmp_path, monkeypatch, container):
+    """stream copy가 frame=N/A와 마지막 DTS만 표시해도 실제 끝 표본을 버리지 않는다."""
+    source = tmp_path / f"clip.{container}"
+    if container == "webm":
+        make_webm_video_shorter_than_audio(source)
+        demuxer = "matroska"
+    else:
+        make_video(source)
+        demuxer = "mov"
+    run = subprocess.run
+
+    def without_frame_counter(command, **kwargs):
+        result = run(command, **kwargs)
+        if "copy" in command:
+            # FFmpeg의 진행 표시만 달라진 상황. 영상 바이트·패킷·추출 결과는 그대로다.
+            result.stderr = re.sub(rb"frame=\s*\d+", b"frame=N/A", result.stderr)
+            result.stderr = re.sub(rb"time=\d+:\d+:\d+(?:\.\d+)?", b"time=00:00:05.80", result.stderr)
+        return result
+
+    monkeypatch.setattr(video_frames.subprocess, "run", without_frame_counter)
+    media = video_frames.probe(FFMPEG, demuxer, source)
+    assert media["duration_ms"] == 6000
+    plan = video_frames.plan_times(media["duration_ms"])
+    frames = video_frames.extract_frames(FFMPEG, demuxer, source, tmp_path / "sampled", plan)
+    assert len(frames) == 30 and frames[-1]["time_ms"] == 5800
+    assert sum(frame["sampling"] == "tail" for frame in frames) == 12
 
 
 def test_self_ad_skips_edge_frames(tmp_path):

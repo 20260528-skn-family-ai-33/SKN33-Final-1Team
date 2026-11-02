@@ -10,7 +10,7 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'msedge' }); t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } }); page.setDefaultTimeout(8000);
   const errors = []; const unexpected = []; let manifest; let png; let jpeg;
-  const health = { contract: CONTRACT, ready: true, similarity_test: 1, similarity_resize_percent: true, similarity_reference_resize: true, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
+  const health = { contract: CONTRACT, ready: true, similarity_test: 1, similarity_logo_diff: 1, similarity_resize_percent: true, similarity_reference_resize: true, stages: STAGES.map(stage => stage.id), formats: FILE_TYPES,
     limits: { ...Object.fromEntries(Object.entries(FILE_LIMITS).map(([key, value]) => [`${key}_bytes`, value])), total_bytes: 600 * 1024 ** 2 } };
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/*', route => {
@@ -19,6 +19,7 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname.endsWith('/models')) return json({ models: [], families: {} });
     if (url.pathname.endsWith('/connections') || url.pathname.endsWith('/health')) return json({ ...health, connection_id: 'similarity-fixture' });
     if (url.pathname.includes('/previews/')) return json({ mime: 'image/jpeg', data: jpeg });
@@ -28,6 +29,7 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
         references: manifest.files.references.map((_, index) => ({ index, preview: `preview-reference-${index}.jpg`, original_width: 200, original_height: 100, width: 50, height: 25, resized: true })),
         stages: manifest.stages.map(stage => ({ ...stage, status: 'completed', output: { items: manifest.files.references.map((_, reference_index) => ({ reference_index, ...(stage.id === 'logo_similarity'
           ? { image_cosine_similarity: reference_index === 1 ? -.25 : reference_index === 2 ? .99 : .9 }
+          : stage.id === 'logo_diff' ? { decision: reference_index === 1 ? 'mismatch' : 'uncertain', reason_codes: reference_index === 1 ? ['COLOR'] : [], human_review_required: reference_index !== 1 }
           : { descriptor_similarity: reference_index === 1 ? .1 : reference_index === 2 ? .95 : .85, matches: 12 + reference_index, inliers: 10, inlier_ratio: 0.8, keypoints: [100, 90], decision: reference_index === 1 ? 'mismatch' : reference_index === 2 ? 'uncertain' : 'candidate_match', image_sizes: [[100, 50], [50, 25]], matched_points: [{ crop: [25, 10], reference: [12.5, 5] }, { crop: [50, 25], reference: [25, 12.5] }] }) })).filter(row => row.reference_index !== 3) } })) });
     }
     unexpected.push(url.pathname); return route.abort();
@@ -110,7 +112,8 @@ for (const resizeMode of ['pixels', 'percent']) test(`similarity test preserves 
   await page.getByRole('region', { name: '이미지별 유사도 표', exact: true }).waitFor();
   assert.equal(manifest.flow, 'similarity'); assert.equal(manifest.files.references.length, 100); assert.deepEqual(manifest.resize, resizeMode === 'percent' ? { percent: 50 } : { width: 100, height: 50 });
   assert.deepEqual(manifest.reference_resize, resizeMode === 'percent' ? { percent: 25 } : { width: 50, height: 25 });
-  assert.deepEqual(manifest.stages.map(stage => stage.model_id), ['google/siglip2-so400m-patch14-384', 'vismatch/xfeat']);
+  assert.deepEqual(manifest.stages.map(stage => [stage.id, stage.model_id]), [['logo_similarity', 'google/siglip2-so400m-patch14-384'], ['logo_compare', 'vismatch/xfeat'], ['logo_diff', undefined]]);
+  assert.deepEqual(manifest.stages[2].params, { monochrome_policy: 'review' });
   await page.getByRole('button', { name: '100. candidate-99.png', exact: true }).click();
   const detail = page.locator('.mt-similarity-results');
   await detail.getByRole('img', { name: '대조 이미지 100 미리보기', exact: true }).waitFor();
@@ -211,6 +214,7 @@ test('HF registry persists, selects a compatible node, prepares separately and s
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname.endsWith('/models/inspect')) return json(profile);
     if (url.pathname === '/api/modeltest/ssh/models' && request.method() === 'POST') { records = [{ ...profile, ...request.postDataJSON(), id: 'registered-one' }]; return json(records[0]); }
     if (url.pathname === '/api/modeltest/ssh/models') return json({ models: records, families });
@@ -332,6 +336,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname === '/api/modeltest/ssh/connections') return json({ ...health, connection_id: 'fixture-connection' });
     if (url.pathname.endsWith('/health')) return json(health);
     if (url.pathname.endsWith('/runs') && request.method() === 'POST') {
@@ -569,6 +574,7 @@ test('workflow and agent boards edit connections, persist settings and submit dy
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname === '/api/modeltest/ssh/connections') return json({ ...health, connection_id: 'agent-fixture' });
     if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname.includes('/previews/')) {
@@ -622,12 +628,12 @@ test('workflow and agent boards edit connections, persist settings and submit dy
   const fixedPrompt = page.locator('#mt-stage-logo_extract .mt-prompt');
   await page.getByLabel('로고 추출 등록 모델 선택', { exact: true }).selectOption('google/owlv2-base-patch16-ensemble');
   assert.equal(await fixedPrompt.getAttribute('open'), null); await fixedPrompt.locator('summary').click();
-  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), `a brand logo
 a logo
 an emblem
 a brand symbol
 a watermark
-a logo mark');
+a logo mark`);
   await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('sponsor logo');
   await fixedPrompt.locator('summary').click(); await page.getByText('첨부·모델 설정 저장 완료', { exact: false }).waitFor(); await page.reload();
   await page.locator('[data-board="video-models"]').waitFor();
@@ -641,12 +647,12 @@ a logo mark');
     return selectors.every((selector, i) => !i || (document.querySelector(selectors[i - 1]).compareDocumentPosition(document.querySelector(selector)) & Node.DOCUMENT_POSITION_FOLLOWING));
   }), true, 'Connection, mode, board/settings, materials/monitor and results follow the reading order');
   await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();
-  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), 'a brand logo
+  assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).inputValue(), `a brand logo
 a logo
 an emblem
 a brand symbol
 a watermark
-a logo mark');
+a logo mark`);
   await page.getByLabel('로고 추출 프롬프트', { exact: true }).fill('logo\nlogo');
   assert.equal(await page.getByLabel('로고 추출 프롬프트', { exact: true }).isVisible(), true);
   await fixedPrompt.getByRole('button', { name: '기본값 복원', exact: true }).click();
@@ -798,6 +804,7 @@ test('connection summary collapses once, restores compactly and reopens on conne
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname === '/api/modeltest/ssh/connections') {
       await connectGate;

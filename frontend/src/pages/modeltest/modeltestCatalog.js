@@ -4,7 +4,7 @@ export const EXTRA_STAGES = [
   ['image_embed', '이미지 임베딩'], ['text_embed', '텍스트 임베딩'], ['multimodal_embed', '이미지·텍스트 임베딩'], ['rerank', '후보 재정렬'],
   ['image_classify', '이미지 분류'], ['text_classify', '텍스트 분류'], ['document_classify', '문서 단어 분류'],
   ['text_input', '텍스트 후보 입력'], ['vector_compare', '벡터 코사인 비교'], ['phash', 'pHash 거리'], ['orb', 'ORB 특징점 대조'], ['sift', 'SIFT 특징점 대조'],
-  ['disk_lightglue', 'DISK + LightGlue 대조'], ['bm25', 'BM25 검색'], ['rrf', 'RRF 순위 합성'], ['tfidf_lr', 'TF-IDF / LR 분류'],
+  ['disk_lightglue', 'DISK + LightGlue 대조'], ['logo_diff', '로고 차이 판정'], ['bm25', 'BM25 검색'], ['rrf', 'RRF 순위 합성'], ['tfidf_lr', 'TF-IDF / LR 분류'],
 ].map(([id, title]) => ({ id, title, icon: 'grid', agentOnly: id !== 'logo_diff', video: ['phash', 'orb', 'sift', 'disk_lightglue', 'logo_diff'].includes(id), ...(id === 'logo_diff' ? { workflowOnly: true, needs: 'logo_compare', description: 'RunPod 실험의 보수 컷에 해당하는 확실한 오답만 제외하며, 나머지는 정답 승인 없이 검토 필요로 남깁니다.' } : { description: GENERAL.includes(id) ? '일반 처리 · HF 모델 아님' : '등록한 모델 설정으로 실행' }) }));
 export const OUTPUTS = { conditions: 'text', text_extract: 'text', visual_extract: 'text', text_generate: 'text', text_input: 'text', logo_extract: 'detections', logo_compare: 'matches', logo_diff: 'logo_diff', image_embed: 'vectors', text_embed: 'vectors', multimodal_embed: 'vectors', vector_compare: 'ranking', rerank: 'ranking', bm25: 'ranking', rrf: 'ranking', logo_similarity: 'similarity', candidate_filter: 'similarity' };
 export const INPUTS = {

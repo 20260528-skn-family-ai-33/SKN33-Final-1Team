@@ -20,6 +20,7 @@ test('board zoom, pan, resize, fullscreen, context editing and undo preserve wor
     if (!url.pathname.startsWith('/api/')) return route.continue();
     const json = value => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (url.pathname === '/api/v1/auth/me') return json({ authenticated: false });
+    if (url.pathname === '/api/v1/auth/csrf') return json({ csrf_token: 'modeltest-fixture-csrf' });
     if (url.pathname === '/api/modeltest/ssh/models') return json({ models: [], families: {} });
     if (url.pathname === '/api/modeltest/ssh/connections' || url.pathname.endsWith('/health')) return json({ ...health, connection_id: 'fixture' });
     unexpected.push(`${request.method()} ${url.pathname}`); return route.abort();

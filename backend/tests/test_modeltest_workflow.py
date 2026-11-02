@@ -25,7 +25,7 @@ def fixture(tmp_path):
 
 
 @pytest.mark.parametrize('empty', [False, True])
-def test_filter_reduces_actual_xfeat_calls_per_logo_and_skips_loading_when_empty(tmp_path, monkeypatch, empty):
+def test_filter_reduces_actual_xfeat_calls_per_logo_and_skips_loading_when_empty(tmp_path, monkeypatch, matching_detection_embeddings, empty):
     config, paths = fixture(tmp_path); calls = []; loaded = []
     if empty: config['stages'][2]['threshold'] = 1
     class Models:
@@ -87,7 +87,7 @@ def test_parallel_agents_wait_for_both_inputs_and_keep_distinct_model_instances(
     assert job['stages'][-1]['output']['items'][0]['text'] == 'step-c result'
 
 
-def test_duplicate_detector_roles_use_explicit_source_and_unique_crop_files(tmp_path, monkeypatch):
+def test_duplicate_detector_roles_use_explicit_source_and_unique_crop_files(tmp_path, monkeypatch, matching_detection_embeddings):
     config, paths = fixture(tmp_path); seen = []
     class Models:
         def load(self, stage): pass
@@ -153,7 +153,7 @@ def test_separate_similarity_node_rejects_additional_siglip_calculation(tmp_path
 
 
 @pytest.mark.parametrize('scope,expected_calls', [('crops_per_reference_frame', 6), ('crops_per_reference_video', 3)])
-def test_reference_crop_selection_limits_xfeat_calls_across_video(tmp_path, monkeypatch, scope, expected_calls):
+def test_reference_crop_selection_limits_xfeat_calls_across_video(tmp_path, monkeypatch, matching_detection_embeddings, scope, expected_calls):
     config, paths = fixture(tmp_path); calls = []
     config['stages'][0]['model_id'] = remote.OWLV2_ENSEMBLE
     config['stages'][1]['model_id'] = remote.SIGLIP2_SO400M

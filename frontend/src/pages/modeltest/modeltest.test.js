@@ -63,7 +63,7 @@ test('similarity filters combine inclusive numeric ranges and decisions without 
   assert.deepEqual(similarityRows([], new Map(), new Map()).rows, []);
 });
 
-test('image similarity sends one base and up to one hundred candidates with explicit resize and both models', () => {
+test('image similarity sends one base and up to one hundred candidates with resize, both models and rule comparison', () => {
   const state = initialFlow('similarity');
   state.media = new File(['base'], 'base.png', { type: 'image/png' });
   state.references = Array.from({ length: 100 }, (_, i) => new File(['candidate'], `candidate-${i}.png`, { type: 'image/png' }));
@@ -71,7 +71,8 @@ test('image similarity sends one base and up to one hundred candidates with expl
   assert.deepEqual(formErrors('similarity', state), []);
   const manifest = makeManifest('similarity', state);
   assert.deepEqual(manifest.resize, { width: 100, height: 50 });
-  assert.deepEqual(manifest.stages.map(stage => [stage.id, stage.model_id]), [['logo_similarity', SIGLIP2], ['logo_compare', 'vismatch/xfeat']]);
+  assert.deepEqual(manifest.stages.map(stage => [stage.id, stage.model_id]), [['logo_similarity', SIGLIP2], ['logo_compare', 'vismatch/xfeat'], ['logo_diff', undefined]]);
+  assert.deepEqual(manifest.stages[2].params, { monochrome_policy: 'review' });
   assert.deepEqual(manifest.files.documents, []);
   const body = makeFormData(manifest, state);
   assert.equal(body.getAll('media').length, 1); assert.equal(body.getAll('references').length, 100);
@@ -82,7 +83,10 @@ test('image similarity sends one base and up to one hundred candidates with expl
   state.resize = { width: '', height: '' }; assert.equal(makeManifest('similarity', state).resize, null);
   const health = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 } };
   assert.ok(formErrors('similarity', state, health).some(error => error.includes('현재 연결')));
-  assert.deepEqual(formErrors('similarity', state, { ...health, similarity_test: 1 }), []);
+  assert.ok(formErrors('similarity', state, { ...health, similarity_test: 1 }).some(error => error.includes('현재 연결')));
+  const capable = { ...health, similarity_test: 1, similarity_logo_diff: 1 };
+  assert.ok(formErrors('similarity', state, capable).some(error => error.includes('현재 연결')), 'The rule-comparison stage must also be advertised');
+  assert.deepEqual(formErrors('similarity', state, { ...capable, stages: [...health.stages, 'logo_diff'] }), []);
   state.references = []; assert.ok(formErrors('similarity', state).some(error => error.includes('1~100')));
 });
 
@@ -95,7 +99,7 @@ test('percentage resize accepts decimals, excludes inactive pixel fields and che
     state.resize.percent = percent; assert.ok(formErrors('similarity', state).some(error => error.includes('다운사이징 비율')));
   }
   state.resize.percent = '50';
-  const capable = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1 };
+  const capable = { stages: ['logo_similarity', 'logo_compare', 'logo_diff'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1, similarity_logo_diff: 1 };
   assert.ok(formErrors('similarity', state, capable).some(error => error.includes('최신 백엔드')));
   assert.deepEqual(formErrors('similarity', state, { ...capable, similarity_resize_percent: true }), []);
   state.resize.percent = ''; assert.equal(makeManifest('similarity', state).resize, null);
@@ -112,7 +116,7 @@ test('candidate resize is independent, validated and requires explicit runner su
   assert.deepEqual(makeManifest('similarity', state).resize, { percent: 50 });
   state.referenceResize.mode = 'percent';
   assert.deepEqual(makeManifest('similarity', state).reference_resize, { percent: 12.5 });
-  const health = { stages: ['logo_similarity', 'logo_compare'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1, similarity_resize_percent: true };
+  const health = { stages: ['logo_similarity', 'logo_compare', 'logo_diff'], formats: FILE_TYPES, limits: { total_bytes: 600 * 1024 ** 2 }, similarity_test: 1, similarity_logo_diff: 1, similarity_resize_percent: true };
   assert.ok(formErrors('similarity', state, health).some(error => error.includes('대조 이미지 다운사이징을 지원')));
   assert.deepEqual(formErrors('similarity', state, { ...health, similarity_reference_resize: true }), []);
   for (const bad of [{ mode: 'percent', percent: '0' }, { mode: 'percent', percent: '101' }, { width: '20', height: '' }, { width: '-1', height: '10' }]) {
@@ -330,8 +334,15 @@ test('agent templates bypass disabled agents, bind inputs and preserve agent met
   for (const flow of ['image', 'video']) {
     const state = fixture(flow); state.agentWorkflow = agentTemplate(flow);
     state.documents = [new File(['contract'], 'contract.txt')];
-    if (flow === 'video') state.references = [new File(['logo'], 'logo.png')];
-    const plan = compileAgents(flow, state, { ...health, workflow: { agents: true } });
+    const capable = { ...health, workflow: { agents: true } };
+    if (flow === 'video') {
+      state.references = [new File(['logo'], 'logo.png')];
+      assert.throws(() => compileAgents(flow, state, capable), /등록된 PP-OCR PaddleOCR 단계가 필요/);
+      const ocr = { id: 'paddle', model_id: 'PaddlePaddle/PP-OCRv5_server_det', resolved_revision: 'a'.repeat(40), fingerprint: 'paddle-fixture', status: 'verified', tasks: ['text_extract'], family: 'paddle_ocr', reasons: [] };
+      capable.registry_version = 1; capable.registered = [ocr];
+      Object.assign(state.agentWorkflow.agents.flatMap(agent => agent.nodes).find(node => node.kind === 'text_extract'), modelChoice('registered:paddle', capable));
+    }
+    const plan = compileAgents(flow, state, capable);
     assert.equal(plan.workflow.agents.length, 6);
     const conditions = plan.stages.find(stage => stage.kind === 'conditions');
     const text = plan.stages.find(stage => stage.kind === 'text_extract');
@@ -339,9 +350,16 @@ test('agent templates bypass disabled agents, bind inputs and preserve agent met
     assert.equal(comparison.inputs.conditions, conditions.id);
     assert.equal(comparison.inputs.text_extract, text.id);
     assert.ok(plan.workflow.edges.some(edge => edge.source === conditions.id && edge.target === text.id));
-    assert.deepEqual(makeManifest(flow, state).stages, plan.stages);
-    assert.throws(() => compileAgents(flow, state, health), /지원하지 않습니다/);
-    assert.throws(() => compileAgents(flow, state, { ...health, stages: [], workflow: { agents: true } }), /지원하지 않습니다/);
+    if (flow === 'video') {
+      const diff = plan.stages.find(stage => stage.kind === 'logo_diff');
+      assert.equal(diff.inputs.text_extract, text.id);
+      for (const kind of ['logo_extract', 'logo_compare', 'logo_similarity']) assert.equal(diff.inputs[kind], plan.stages.find(stage => stage.kind === kind).id);
+      assert.equal(text.registered_model, 'paddle');
+      assert.throws(() => compileAgents(flow, state, { ...capable, registered: [{ ...capable.registered[0], family: 'easyocr' }] }), /등록된 PP-OCR PaddleOCR 단계가 필요/);
+    }
+    assert.deepEqual(makeManifest(flow, state, capable).stages, plan.stages);
+    assert.throws(() => compileAgents(flow, state, { ...capable, workflow: undefined }), /지원하지 않습니다/);
+    assert.throws(() => compileAgents(flow, state, { ...capable, stages: [] }), /지원하지 않습니다/);
   }
 });
 
