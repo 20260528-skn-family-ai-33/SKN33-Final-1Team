@@ -62,7 +62,7 @@ def test_invalid_configuration_is_safe_and_does_not_replace_previous_output(tmp_
     captured = capsys.readouterr()
     assert json.loads(captured.out)["error"]["code"] == "CONFIG_INVALID"
     assert "never-print-me" not in captured.out + captured.err
-    assert output.read_text() == "previous"
+    assert output.read_text(encoding="utf-8") == "previous"
 
 
 def test_template_role_is_explicitly_unconfigured(tmp_path, capsys):

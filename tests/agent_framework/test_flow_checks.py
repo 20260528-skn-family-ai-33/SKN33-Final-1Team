@@ -218,7 +218,7 @@ def test_cli_is_portable_bom_aware_and_writes_readable_report(tmp_path, monkeypa
     output = tmp_path / "보고서.json"
     monkeypatch.chdir(tmp_path)
     assert command(inputs, settings, "--output", output) == 0
-    report = json.loads(output.read_text())
+    report = json.loads(output.read_text(encoding="utf-8"))
     assert report["passed"] and report["summary"]["passed"] == 6
     assert "scripted" in capsys.readouterr().err
 
@@ -227,18 +227,18 @@ def test_cli_saves_failed_report_with_exit_one(tmp_path):
     inputs, settings = write_inputs(tmp_path, case(expected_initial_verdict="fail"))
     output = tmp_path / "failure.json"
     assert command(inputs, settings, "--output", output) == 1
-    assert not json.loads(output.read_text())["passed"]
+    assert not json.loads(output.read_text(encoding="utf-8"))["passed"]
 
 
 @pytest.mark.parametrize("raw", ['{"id":"a","id":"b"}', '{"expected_initial_verdict":NaN}', '{}', '{'])
 def test_malformed_cases_preserve_previous_report_and_do_not_import_factories(tmp_path, monkeypatch, raw, capsys):
     cfg, initialized, invoked = factories(monkeypatch)
     inputs, settings = write_inputs(tmp_path, configuration=cfg)
-    inputs.write_text(raw)
+    inputs.write_text(raw, encoding="utf-8")
     output = tmp_path / "report.json"
-    output.write_text("prior-report")
+    output.write_text("prior-report", encoding="utf-8")
     assert command(inputs, settings, "--output", output) == 2
-    assert output.read_text() == "prior-report" and initialized == invoked == []
+    assert output.read_text(encoding="utf-8") == "prior-report" and initialized == invoked == []
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "FLOW_CASE_INVALID"
 
 
@@ -271,9 +271,9 @@ def test_factory_initialization_failure_keeps_previous_report(tmp_path, capsys):
     cfg.roles["A07"] = RoleBinding(kind="factory", factory="missing_workflow_module:create")
     inputs, settings = write_inputs(tmp_path, configuration=cfg)
     output = tmp_path / "previous.json"
-    output.write_text("previous")
+    output.write_text("previous", encoding="utf-8")
     assert command(inputs, settings, "--output", output) == 1
-    assert output.read_text() == "previous"
+    assert output.read_text(encoding="utf-8") == "previous"
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "ADAPTER_FACTORY_FAILED"
 
 

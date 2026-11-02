@@ -13,7 +13,7 @@ from backend.agent_framework.adapters.synthetic import sample_inputs,make_agents
 @pytest.mark.parametrize('command',['worker','postgres-check','postgres-serve'])
 def test_runtime_rejects_owner_credentials_before_connections(tmp_path,capsys,command):
     env=tmp_path/'owner.env'
-    env.write_text('APP_ENV=test\nDB_OWNER_PASSWORD=never-print-this-secret\n')
+    env.write_text('APP_ENV=test\nDB_OWNER_PASSWORD=never-print-this-secret\n', encoding="utf-8")
     args=[command,'--env-file',str(env)]
     if command!='postgres-check':args+=['--config','examples/agent_framework/team_config.synthetic.json']
     assert main(args)==2

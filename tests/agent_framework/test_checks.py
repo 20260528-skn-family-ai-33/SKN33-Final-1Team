@@ -79,9 +79,9 @@ def test_suite_is_portable_bom_aware_and_initializes_only_selected_role(tmp_path
     config, factories = selected_config(monkeypatch, "A02", adapter)
     path = suite_file(tmp_path, cases=[("one", request, {}), ("two", request, {})])
     # BOMs from Windows editors are valid in both the suite and requests.
-    path.write_text(path.read_text(), encoding="utf-8-sig")
+    path.write_text(path.read_text(encoding="utf-8"), encoding="utf-8-sig")
     first_input = path.parent / "../inputs/one.json"
-    first_input.write_text(first_input.read_text(), encoding="utf-8-sig")
+    first_input.write_text(first_input.read_text(encoding="utf-8"), encoding="utf-8-sig")
     monkeypatch.chdir(tmp_path)
     prepared = load_suite(path, "A02")
     assert factories == []
@@ -196,7 +196,7 @@ def test_unexpected_error_is_sanitized_and_output_contract_is_still_checked(tmp_
                                       "absolute-posix", "absolute-windows", "backslash", "extra", "future-version"))
 def test_malformed_suites_fail_before_any_factory_and_preserve_report(tmp_path, monkeypatch, capsys, mutation):
     path = suite_file(tmp_path)
-    value = json.loads(path.read_text())
+    value = json.loads(path.read_text(encoding="utf-8"))
     case = value["cases"][0]
     if mutation == "empty": value["cases"] = []
     elif mutation == "duplicate-id": value["cases"].append(dict(case))
@@ -215,7 +215,7 @@ def test_malformed_suites_fail_before_any_factory_and_preserve_report(tmp_path, 
     assert invoke_cli(path, "A02", config_file(tmp_path, config), "--output", output) == 2
     captured = capsys.readouterr()
     assert json.loads(captured.out)["error"]["code"] == "CHECK_SUITE_INVALID"
-    assert factories == [] and output.read_text() == "previous"
+    assert factories == [] and output.read_text(encoding="utf-8") == "previous"
     assert "private-token" not in captured.out + captured.err
 
 
@@ -264,7 +264,7 @@ def test_cli_writes_failed_comparison_report_with_exit_one(tmp_path, capsys):
     output = tmp_path / "report.json"
     assert invoke_cli(path, "A06", config_file(tmp_path, synthetic_config()), "--output", output) == 1
     assert capsys.readouterr().out == ""
-    report = json.loads(output.read_text())
+    report = json.loads(output.read_text(encoding="utf-8"))
     assert not report["passed"] and report["cases"][0]["machine_verdict"] == "review"
 
 
@@ -308,7 +308,7 @@ def test_factory_initialization_error_preserves_existing_report(tmp_path, monkey
     assert invoke_cli(path, "A02", config_file(tmp_path, config), "--output", output) == 1
     captured = capsys.readouterr()
     assert json.loads(captured.out)["error"]["code"] == "ADAPTER_FACTORY_FAILED"
-    assert factories == ["failed"] and output.read_text() == "previous"
+    assert factories == ["failed"] and output.read_text(encoding="utf-8") == "previous"
     assert "private-factory-token" not in captured.out + captured.err
 
 

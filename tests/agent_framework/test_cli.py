@@ -47,7 +47,7 @@ def test_role_output_file_does_not_mix_logs_into_json(tmp_path, capsys):
     output = tmp_path / "response.json"
     assert main(["role", "A02", "--input", str(input_file(tmp_path)), "--synthetic", "--output", str(output)]) == 0
     assert capsys.readouterr().out == ""
-    assert json.loads(output.read_text())["criteria"]
+    assert json.loads(output.read_text(encoding="utf-8"))["criteria"]
 
 
 def test_invalid_json_is_safe_contract_error_and_preserves_output(tmp_path, capsys):
@@ -59,7 +59,7 @@ def test_invalid_json_is_safe_contract_error_and_preserves_output(tmp_path, caps
     captured = capsys.readouterr()
     assert "do-not-print" not in captured.out + captured.err
     assert json.loads(captured.out)["error"]["code"] == "CONTRACT_INVALID"
-    assert output.read_text() == "previous"
+    assert output.read_text(encoding="utf-8") == "previous"
 
 
 def test_output_write_failure_preserves_previous_file(tmp_path, capsys, monkeypatch):
@@ -72,7 +72,7 @@ def test_output_write_failure_preserves_previous_file(tmp_path, capsys, monkeypa
     monkeypatch.setattr("backend.agent_framework.cli.os.replace", reject_replace)
     assert main(["role", "A02", "--input", str(input_file(tmp_path)), "--synthetic", "--output", str(output)]) == 2
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "FILE_UNAVAILABLE"
-    assert output.read_text() == "previous"
+    assert output.read_text(encoding="utf-8") == "previous"
     assert not list(tmp_path.glob(".framework-*.tmp"))
 
 
@@ -102,7 +102,7 @@ def test_request_json_cannot_inject_factory_or_execute_it(tmp_path, capsys, monk
     called = []
     register_factory(monkeypatch, lambda: called.append(True))
     path = input_file(tmp_path)
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     data["factory"] = "framework_test_factory:make"
     path.write_text(json.dumps(data), encoding="utf-8")
     assert main(["role", "A02", "--input", str(path), "--synthetic"]) == 2
@@ -174,7 +174,7 @@ def test_schema_export_matches_contract_types(tmp_path, capsys):
     output = json.loads(capsys.readouterr().out)
     assert output["schema_count"] == len(CONTRACT_TYPES)
     for contract in CONTRACT_TYPES:
-        actual = json.loads((tmp_path / "schemas" / f"{contract.__name__}.schema.json").read_text())
+        actual = json.loads((tmp_path / "schemas" / f"{contract.__name__}.schema.json").read_text(encoding="utf-8"))
         assert actual == contract.model_json_schema()
 
 

@@ -247,7 +247,7 @@ def test_separate_worker_process_loads_only_framework_queue(runtime,tmp_path):
     env=tmp_path/'worker.env'
     env.write_text('\n'.join(['PERSISTENCE_MODE=postgres','APP_ENV=test','DB_HOST='+settings.host,
         'DB_PORT='+str(settings.port),'POSTGRES_DB='+settings.database,'DB_APP_USER='+settings.username,
-        'DB_APP_PASSWORD='+settings.password.reveal()])+'\n');env.chmod(0o600)
+        'DB_APP_PASSWORD='+settings.password.reveal()])+'\n', encoding="utf-8");env.chmod(0o600)
     result=subprocess.run([sys.executable,'-m','backend.agent_framework','worker','--env-file',str(env),
         '--config','examples/agent_framework/team_config.synthetic.json','--once'],capture_output=True,text=True,timeout=30)
     assert result.returncode==0,result.stdout+result.stderr

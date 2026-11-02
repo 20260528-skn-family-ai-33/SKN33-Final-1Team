@@ -158,9 +158,9 @@ class AdapterContractTests(unittest.TestCase):
             self.assertEqual(before, {file.relative_to(destination): file.read_bytes() for file in files})
             for role, (request, response) in role_examples().items():
                 self.assertTrue(request.synthetic)
-                self.assertEqual(type(request).model_validate_json((destination / f"{role}.json").read_text()), request)
-                self.assertEqual(type(response).model_validate_json((destination / f"{role}.output.json").read_text()), response)
-            self.assertTrue(json.loads((destination / "A07.output.json").read_text())["synthetic"])
+                self.assertEqual(type(request).model_validate_json((destination / f"{role}.json").read_text(encoding="utf-8")), request)
+                self.assertEqual(type(response).model_validate_json((destination / f"{role}.output.json").read_text(encoding="utf-8")), response)
+            self.assertTrue(json.loads((destination / "A07.output.json").read_text(encoding="utf-8"))["synthetic"])
 
 
 if __name__ == "__main__":
