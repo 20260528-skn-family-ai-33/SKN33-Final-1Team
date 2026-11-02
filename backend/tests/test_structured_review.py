@@ -25,6 +25,18 @@ def test_adjacent_text_matches_but_separate_rows_do_not():
     assert compare([criterion], [result], different_lines, {'oriented_dimensions':[100,100]})[0]['status'] == 'review'
 
 
+def test_amount_split_across_ocr_boxes_must_match_whole_number():
+    criterion, result = review('문구: 입장료 100원', parsed('other_text', '100원'))
+    larger = [record('1','1,10',[0,0,20,10]), record('2','0원',[22,0,42,10])]
+    assert compare([criterion], [result], larger, {'oriented_dimensions':[100,100]})[0]['status'] == 'review'
+    criterion, result = review('문구: 입장료 100원', parsed('other_text', '100원'))
+    three = [record('1','1,',[0,0,20,10]), record('2','10',[22,0,42,10]), record('3','0원',[44,0,64,10])]
+    assert compare([criterion], [result], three, {'oriented_dimensions':[100,100]})[0]['status'] == 'review'
+    criterion, result = review('문구: 입장료 100원', parsed('other_text', '100원'))
+    exact = [record('1','10',[0,0,20,10]), record('2','0원',[22,0,42,10])]
+    assert compare([criterion], [result], exact, {'oriented_dimensions':[100,100]})[0]['status'] == 'pass'
+
+
 def test_one_of_accepts_either_grounded_value_when_model_abstains():
     criterion, result = review('브랜드: 온결 또는 ONGYEOL 중 하나 필수 표기')
     rows = [record('1','온결',[0,0,20,10])]

@@ -30,8 +30,10 @@ def test_postgres_video_session_guard_and_restart_recovery(tmp_path, monkeypatch
                      video_logo_readiness=lambda: (False, 'test-only unavailable'))
     with TestClient(app, base_url='http://localhost', client=('127.0.0.1', 12)) as client:
         for path in ('/api/video-reviews/status', '/api/video-reviews',
-                     '/api/video-reviews/00000000-0000-0000-0000-000000000001'):
+                     '/api/video-reviews/00000000-0000-0000-0000-000000000001',
+                     '/api/video-logos/status', '/api/video-logos'):
             assert client.get(path).status_code == 401
         client.cookies.set('test-session', 'authenticated')
         assert client.get('/api/video-reviews').status_code == 200
+        assert client.get('/api/video-logos').status_code == 200
     assert json.loads((interrupted / 'result.json').read_text())['status'] == 'failed'

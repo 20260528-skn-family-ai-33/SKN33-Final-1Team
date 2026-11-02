@@ -12,6 +12,7 @@ from __future__ import annotations
 from io import BytesIO
 from ipaddress import ip_address
 import json
+import math
 from pathlib import Path
 import shutil
 import threading
@@ -177,7 +178,11 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                             path = target / "frames" / "full" / f"{sec}.jpg"
                             if not path.is_file():
                                 skipped.append({"sec": sec, "reason": "frame_missing"}); continue
-                            q = V.crop_at(Image.open(path).convert("RGB"), crop["bbox"], data["size"], crop.get("source", "manual"))
+                            box = crop["bbox"]
+                            if crop.get("source") == "candidate" and crop.get("group") is not None:
+                                # 후보는 화면에서 본 그 초의 위치로 자른다. 직접 지정은 고정 좌표를 그대로 쓴다.
+                                box = data["groups"][crop["group"]]["box"][li].get(str(sec), box)
+                            q = V.crop_at(Image.open(path).convert("RGB"), box, data["size"], crop.get("source", "manual"))
                             if min(q.size) < 4:
                                 skipped.append({"sec": sec, "reason": "crop_too_small"}); continue
                             items.append((sec, q))
@@ -288,11 +293,14 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 li = a.get("logo")
                 if type(li) is not int or not 0 <= li < len(meta["logos"]) or not isinstance(a.get("crops"), list):
                     raise HTTPException(422, "원본 로고 번호(logo)나 crops 형식이 맞지 않습니다.")
+                for c in a["crops"]:
+                    box = c.get("bbox") if isinstance(c, dict) else None
+                    if not (isinstance(box, list) and len(box) == 4 and isinstance(c.get("sec"), int)
+                            and all(type(v) in (int, float) and math.isfinite(v) for v in box)
+                            and box[0] < box[2] and box[1] < box[3]):
+                        raise HTTPException(422, "crop마다 sec(정수)와 bbox(x1<x2, y1<y2인 숫자 4개)가 필요합니다.")
             if len({a["logo"] for a in answers}) != len(answers):
                 raise HTTPException(422, "같은 원본 로고 번호가 두 번 들어 있습니다.")
-                for c in a["crops"]:
-                    if not (isinstance(c.get("bbox"), list) and len(c["bbox"]) == 4 and isinstance(c.get("sec"), int)):
-                        raise HTTPException(422, "crop마다 sec(정수)와 bbox(4개)가 필요합니다.")
             (target / "compare.json").unlink(missing_ok=True)  # 다시 실행하면 이전 결과를 새 결과처럼 보여 주지 않는다
             update(target, compare_status="queued", compare_progress=0, compare_error=None)
             background.add_task(run_compare, target, [a for a in answers if a.get("decision") == "done"])
