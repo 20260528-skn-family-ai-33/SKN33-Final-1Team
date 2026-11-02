@@ -56,16 +56,20 @@ def _match(target, runs):
     matches = []
     if not target:
         return matches
+    # Do not let a price such as 3,000 match 13,000 or 100 match 1,100.
+    prefix = r'(?<!\d)(?<!\d,)' if target[0].isdigit() else ''
+    suffix = r'(?!\d)(?!,\d)' if target[-1].isdigit() else ''
+    pattern = re.compile(prefix + re.escape(target) + suffix)
     for run in runs:
+        texts = [_compact(r['text']) for r in run]
+        full = ''.join(texts)
         for start in range(len(run)):
+            left = len(''.join(texts[:start]))
             for end in range(start + 1, min(len(run), start + 12) + 1):
-                group = run[start:end]
-                text = _compact(''.join(r['text'] for r in group))
-                # Do not let a price such as 3,000 match 13,000 or 100 match 1,100.
-                prefix = r'(?<!\d)(?<!\d,)' if target[0].isdigit() else ''
-                suffix = r'(?!\d)(?!,\d)' if target[-1].isdigit() else ''
-                if re.search(prefix + re.escape(target) + suffix, text):
-                    matches.append(group)
+                # Boundaries also see neighboring boxes, so "1," + "10" + "0원" is not 100원.
+                found = pattern.search(full, left)
+                if found and found.end() <= left + len(''.join(texts[start:end])):
+                    matches.append(run[start:end])
                     break
     return matches
 
