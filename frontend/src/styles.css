@@ -49,7 +49,6 @@
 @media(prefers-reduced-motion:reduce){.document-progress-fill{transition:none}}
 /* 동영상 검수 시연 화면 */
 .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-.video-page{background:#f6f8fb;min-height:100vh}.video-topbar .brand{font-size:20px}
 .video-top-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:20px;margin-bottom:24px}
 .video-upload-body{padding:22px 26px 26px}.video-upload-body .upload-zone{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}.video-upload-body .upload-zone .icon{width:28px;height:28px;color:var(--blue)}.video-upload-body .btn{width:100%;margin-top:18px}
 .video-jobs{list-style:none;margin:0;padding:8px;max-height:300px;overflow:auto}.video-jobs button{width:100%;display:grid;grid-template-columns:1fr auto;gap:2px 12px;text-align:left;background:none;padding:11px 14px;border-radius:9px;font-size:13px;color:var(--muted)}.video-jobs button strong{grid-column:1/-1;color:var(--ink);font-size:14px}.video-jobs button:hover,.video-jobs button.current{background:var(--pale)}

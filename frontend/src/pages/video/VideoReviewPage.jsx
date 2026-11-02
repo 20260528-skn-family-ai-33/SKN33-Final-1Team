@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
-import { useAuth } from '../../auth/AuthProvider.jsx';
-import { Brand } from '../../components/Brand.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { LogoFlowCard, LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
 import { evidenceBoxStyle, parseRequirements } from '../../workflow.js';
 import {
@@ -275,8 +274,6 @@ function Results({ job }) {
 
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 시연 화면.
 export default function VideoReviewPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const id = params.get('id');
   const [logoSubmissionWarning, setLogoSubmissionWarning] = useState(null);
@@ -284,17 +281,12 @@ export default function VideoReviewPage() {
   const { job, error } = useVideoJob(id, refresh);
   const legacy = job && job.status === 'completed' && !job.coverage;
 
-  return <div className="video-page">
-    <header className="app-topbar video-topbar">
-      <Brand onClick={() => navigate('/')} />
-      <div className="topbar-right">
-        <Link className="text-btn" to="/review/new">포스터 검수로</Link>
-        <span className="user-label">{user?.display_name || user?.username}</span>
-      </div>
-    </header>
-    <main className="app-main">
-      <div className="page-heading"><div className="eyebrow">SHORT-FORM · 시연</div><h1 tabIndex="-1" id="page-title">숏폼 동영상 검수</h1>
-        <p>표본 시각마다 프레임을 읽어 자막 트랙으로 묶고, 확정한 기준을 영상당 한 번 판정합니다. 광고·협찬 표시는 따로 판정합니다. 결과는 이 서버의 실행 폴더에만 저장됩니다.</p></div>
+  return <div className="rv-workspace rv-workspace--tool video-page">
+    <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
+    <WorkspaceTopbar current="/video" />
+    <main id="review-content" className="rv-main" tabIndex={-1}>
+      <div className="rv-workspace-intro"><div><span className="rv-eyebrow">SHORT-FORM · 시연</span><h1 tabIndex={-1} id="page-title">숏폼 동영상 검수</h1>
+        <p>표본 시각마다 프레임을 읽어 자막 트랙으로 묶고, 확정한 기준을 영상당 한 번 판정합니다. 광고·협찬 표시는 따로 판정합니다. 결과는 이 서버의 실행 폴더에만 저장됩니다.</p></div></div>
       <div className="video-top-grid">
         <UploadCard status={status} onSubmitted={(value, warning) => {
           setLogoSubmissionWarning(warning ? { id: value, message: warning } : null);
@@ -315,5 +307,6 @@ export default function VideoReviewPage() {
       {id && <LogoFlowCard key={id} reviewId={id} />}
       {job && !legacy && (job.status === 'completed' ? <Results key={job.id} job={job} /> : <Progress job={job} />)}
     </main>
+    <WorkspaceFooter />
   </div>;
 }

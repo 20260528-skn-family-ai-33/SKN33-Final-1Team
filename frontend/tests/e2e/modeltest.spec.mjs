@@ -449,8 +449,8 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'mt-results-title');
   assert.equal(submissions, 1, 'Reload must query, never resubmit');
   assert.equal(await page.locator('#mt-lock-reason').textContent(), '검수가 실행 중이라 설정을 바꿀 수 없습니다.');
-  for (const name of ['크리에이티브체커 홈', '서비스 홈']) {
-    const home = page.getByRole('button', { name, exact: true });
+  for (const name of ['크리에이티브체커 홈', '포스터 검수', '영상 검수']) {
+    const home = name.endsWith('홈') ? page.getByRole('button', { name, exact: true }) : page.getByRole('navigation', { name: '검수 도구' }).getByRole('link', { name, exact: true });
     assert.equal(await home.isDisabled(), true); assert.equal(await home.getAttribute('title'), '검수가 실행 중이라 설정을 바꿀 수 없습니다.');
     assert.equal(await home.getAttribute('aria-describedby'), 'mt-lock-reason');
   }
@@ -519,7 +519,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   assert.equal(await page.getByLabel('Pod 실행 오류 로그', { exact: true }).textContent(), job.diagnostics.log_tail);
   assert.equal(await page.getByLabel('Pod 실행 오류 로그', { exact: true }).locator('script').count(), 0);
   await page.getByRole('button', { name: '라이트', exact: true }).click();
-  assert.equal(await page.locator('.mt-shell').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(244, 247, 250)');
+  assert.equal(await page.locator('.mt-shell').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(242, 242, 241)');
   await page.getByRole('button', { name: '저장된 첨부·설정 지우기', exact: true }).click();
   await confirmation.getByRole('button', { name: '취소', exact: true }).click();
   assert.ok(await page.locator('.mt-file-list').count() > 0);
@@ -552,7 +552,7 @@ test('modeltest preserves files, keeps controls open, previews evidence and resu
   await page.locator('#mt-lock-reason').waitFor({ state: 'detached' });
   assert.equal(cancellations, 1, 'Ending receipt checks does not cancel Pod work');
   assert.equal(await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).isDisabled(), false);
-  assert.equal(await page.getByRole('button', { name: '서비스 홈', exact: true }).isDisabled(), false);
+  assert.equal(await page.getByRole('navigation', { name: '검수 도구' }).getByRole('link', { name: '영상 검수', exact: true }).isDisabled(), false);
 
   assert.deepEqual(errors, []); assert.deepEqual(unexpected, []);
 });

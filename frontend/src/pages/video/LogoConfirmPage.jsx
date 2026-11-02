@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
-import { Brand } from '../../components/Brand.jsx';
+import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { handoff, intervalText, LINK_RATIO, linkCandidates, toIntervals, topGroups } from './logoFlow.js';
 import './logoConfirm.css';
@@ -704,9 +704,11 @@ export default function LogoConfirmPage() {
   const back = meta?.review_id ? '/video?id=' + meta.review_id : '/video';
   const missing = video?.missing || [];
 
-  return <main className="vl-page">
-    <header className="vl-topbar">
-      <Link to="/" aria-label="서비스 홈"><Brand /></Link>
+  return <div className="rv-workspace rv-workspace--tool">
+    <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
+    <WorkspaceTopbar current="/video" />
+    <main id="review-content" className="vl-page" tabIndex={-1}>
+    <div className="vl-topbar">
       <div className="vl-topbar-title"><span>VIDEO LOGO REVIEW</span><strong>동영상 로고 검수</strong></div>
       <div className="vl-topbar-actions">
         <Link className="vl-button secondary" to={back}>동영상 검수로</Link>
@@ -716,7 +718,7 @@ export default function LogoConfirmPage() {
             ? '저장한 ' + compareCount + '개 로고 정밀 대조' : '정밀 대조할 위치 없음'}
         </button>}
       </div>
-    </header>
+    </div>
 
     {!job ? <section className="vl-empty-state">
       <div className="vl-empty-mark">01</div>
@@ -803,5 +805,7 @@ export default function LogoConfirmPage() {
         </div> : <CompareResults base={base} refs={video.refs} onBack={() => changeView('confirm')} onStatus={onCompareStatus} />}
       </>}
     </div>}
-  </main>;
+  </main>
+    <WorkspaceFooter />
+  </div>;
 }
