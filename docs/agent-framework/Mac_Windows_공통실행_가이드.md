@@ -164,6 +164,6 @@ python3 scripts/framework_desktop.py worker --env-file .runtime/framework-deskto
 
 ## 10. 확인한 범위
 
-현재 기록은 [공통 실행 검증 JSON](desktop-runtime-verification-2026-11-03.json)을 따른다. Windows/Linux 공통 실행기 검사와 Linux 컨테이너 빌드·데모·named volume 무결성/잠금·API/worker 통합 검사를 구성했다. Mac Docker Desktop에서 실제 실행한 범위와 Windows 실기기·원격 CI 미검증 범위를 구분한다. 컨테이너 방식의 지원 구성을 Windows 네이티브 POSIX 저장소 구현 완료라고 설명하지 않는다.
+현재 기록은 [공통 실행 검증 JSON](desktop-runtime-verification-2026-11-03.json)을 따른다. Windows/Linux 공통 실행기 검사와 Linux 컨테이너 빌드·데모·named volume 무결성/잠금·API/worker 통합 검사를 구성했다. Mac Docker Desktop의 실제 실행과 Windows/Linux 원격 CI는 통과했다. Windows Docker Desktop 실기기 관통 실행과 실제 Qwen 호출은 아직 검증하지 않았다. 컨테이너 방식의 지원 구성을 Windows 네이티브 POSIX 저장소 구현 완료라고 설명하지 않는다.
 
 근거: [Docker Desktop 네트워크](https://docs.docker.com/desktop/features/networking/), [Windows Docker Desktop 설치](https://docs.docker.com/desktop/setup/install/windows-install/), [Windows OpenSSH](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse).

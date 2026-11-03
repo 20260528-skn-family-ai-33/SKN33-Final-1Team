@@ -3,7 +3,16 @@
   "scope": "Mac/Windows host launcher with shared Linux container backend",
   "native_windows_posix_storage_implemented": false,
   "windows_real_machine_execution_verified": false,
-  "new_remote_ci_result": null,
+  "new_remote_ci_result": {
+    "commit": "ae8723df1347c2fb6517effc7de1fb53e5478348",
+    "checked_at_utc": "2026-11-03T08:00:30.661476+00:00",
+    "ubuntu_contracts": "success",
+    "windows_contracts": "success",
+    "linux_container_runtime": "success",
+    "postgres_and_docker_integration": "success",
+    "contracts_url": "https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/actions/runs/41599749726",
+    "postgres_url": "https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/actions/runs/41599749734"
+  },
   "local_tests": {
     "command": ".venv/bin/python -m pytest tests/agent_framework tests/test_qwen_server_preparation.py tests/test_framework_desktop.py -q",
     "passed": 555,
@@ -36,7 +45,7 @@
   "windows_coverage": [
     "literal Windows drive/Korean/space arguments without shell",
     "shared Linux runtime and named-volume design",
-    "Windows/Linux unit CI configured; new run pending"
+    "Windows/Linux unit CI passed for ae8723df1347c2fb6517effc7de1fb53e5478348; actual Windows Docker Desktop end-to-end remains unverified"
   ],
   "configuration_preservation": {
     "source_env_unchanged": true,
@@ -80,5 +89,5 @@
     "postgres_and_docker_integration": "success",
     "windows_contracts": "failed: default fixture encoding and Windows line-ending hashes"
   },
-  "utf8_lf_followup_ci": "pending"
+  "utf8_lf_followup_ci": "success"
 }
