@@ -14,6 +14,7 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
+from . import CONTRACT_VERSION
 from .composition import TeamConfiguration, build_agents, describe_configuration
 from .contracts import Approval, AssetRef, Context, Contract, DocumentRef, Identifier, Verdict
 from .runtime import Workflow
@@ -166,7 +167,7 @@ def run_flow_check(case: FlowCheckCase, configuration: TeamConfiguration) -> dic
         actions.append(item)
     counts = {status: sum(a["status"] == status for a in actions)
               for status in ("passed", "failed", "skipped")}
-    return {"contract_version": "2.0.0", "check": "configured_workflow", "case_id": case.id,
+    return {"contract_version": CONTRACT_VERSION, "check": "configured_workflow", "case_id": case.id,
             "case_sha256": _digest(case), "configuration_sha256": _digest(configuration),
             "profile": configuration.profile, "storage": "memory", "passed": not stopped,
             "stopped_on_outcome_unknown": unknown,

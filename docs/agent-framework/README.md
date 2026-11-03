@@ -14,13 +14,13 @@
 
 현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 개발 실행, 승인·재검수·단계 기록, 파일 접근, CLI다. 메모리 개발 도구와 별도로 **기존 M008 DB·세션 인증·CSRF를 재사용하는 PostgreSQL API 및 독립 worker**를 제공한다. API는 접수·승인·조회만 처리하고 worker가 역할을 실행한다. **Qwen·PostgreSQL/Neo4j RAG 실모델·실검색 어댑터, MCP, Neo4j projection, front-v2 및 운영 배포는 후속 범위다.** 실제 DB 적용은 명시적 AF001 마이그레이션으로 수행한다.
 
-이번 변경과 최신 로컬 검증은 [A03 제거 정리](a03-retirement-2026-11-02.md)를 따른다. [이전 검증 기록](verification-2026-11-02.md)은 변경 전 이력이다.
+현재 계약은 **3.0.0**이다. A06의 관측 상태·단위·근거 우선 판정과 팀 전환 방법은 [A06 계약 가이드](a06-contract-v3.md)를 따른다. [A03 제거 정리](a03-retirement-2026-11-02.md)와 [이전 검증 기록](verification-2026-11-02.md)은 당시의 이력이다. 공유 ZIP·코드 그래프·다른 설명 HTML도 생성 시점의 자료이며 최신 계약은 코드와 생성 JSON, 이 Markdown 가이드를 기준으로 확인한다.
 
 제품 목표는 **PDF·Qwen3.5-4B·PostgreSQL/Neo4j 근거 검색 및 RAG·데스크톱 front-v2**다. PaddleOCR를 포함한 별도 OCR 대체 경로, 벡터 DB·임베딩·벡터 인덱스를 추가하지 않는다. 실제 어댑터 구현 범위는 [전체 계획](../planning/pdf-qwen-rag-workflow-plan-2026-11-02.md)을 따른다.
 
 ## 최신 역할 결정
 
-**독립 A03 검색·근거 에이전트는 폐기했다.** [11월 2일 통합문서](reference/프로젝트_통합문서_20261102.html#section-014)를 따른다. 네 역할(A02·A04_A05·A06·A07)과 공통 A01·A08만 유지한다. 승인 조건 출처는 `context.freeze_approved_context`로 고정하며 이 함수는 외부 조회를 하지 않는다. PostgreSQL→Neo4j→PostgreSQL 관계 조회·RAG는 후속 공통 문맥 준비 기능이고 별도 GraphDB 에이전트 배치는 미확정이다. 구버전 JSON과 설정은 계약 2.0.0으로 교체한다.
+**독립 A03 검색·근거 에이전트는 폐기했다.** [11월 2일 통합문서](reference/프로젝트_통합문서_20261102.html#section-014)를 따른다. 네 역할(A02·A04_A05·A06·A07)과 공통 A01·A08만 유지한다. 승인 조건 출처는 `context.freeze_approved_context`로 고정하며 이 함수는 외부 조회를 하지 않는다. PostgreSQL→Neo4j→PostgreSQL 관계 조회·RAG는 후속 공통 문맥 준비 기능이고 별도 GraphDB 에이전트 배치는 미확정이다. 새 요청과 설정은 계약 3.0.0을 사용하며 구버전 저장 실행은 자동 변환·재개하지 않는다.
 
 ## 설치와 첫 실행
 
