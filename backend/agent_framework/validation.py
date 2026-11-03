@@ -187,7 +187,7 @@ def validate_report(request: ReportRequest, result: ReportDraft) -> None:
 
 
 _NUMBER = re.compile(
-    r"(?P<value>[+-]?(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)(?:\.[0-9]+)?)"
+    r"(?P<value>[+-]?(?:[0-9]+|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.[0-9]+)?)"
     r"(?:[ \t]*(?P<unit>[A-Za-z가-힣%₩$€£°/²³]+))?"
 )
 
@@ -254,7 +254,11 @@ class ReferenceValidator:
                 if observation.observation_status == "absent":
                     if criterion.kind == "number":
                         issues.append("missing_observation")
-                    elif observation.verdict != "fail":
+                    elif (observation.verdict != "fail"
+                          or criterion.expected.strip() and (
+                              observation.observed == criterion.expected
+                              or criterion.kind == "text" and criterion.operator == "contains"
+                              and criterion.expected in observation.observed)):
                         issues.append("verdict_conflict")
                     else:
                         verdict = "fail"

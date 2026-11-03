@@ -36,6 +36,9 @@ def number_request(expected, expected_unit, observed, observed_unit, operator="e
     ("3", None, "4", None, "gte", "pass"),
     ("3", None, "4", None, "lte", "fail"),
     ("0.30", None, "0.3", None, "equals", "pass"),
+    ("0.001", None, "0.001", None, "equals", "pass"),
+    ("1000000", None, "1,000,000", None, "equals", "pass"),
+    ("-1000", None, "-1,000", None, "equals", "pass"),
     ("0", None, "0", None, "equals", "pass"),
     ("-1.5", None, "-1.50", None, "equals", "pass"),
     ("1000", None, "1,00", None, "equals", "review"),
@@ -52,6 +55,18 @@ def test_numeric_policy(expected, unit, observed, observed_unit, operator, verdi
     assert result.verdict == result.items[0].verdict == verdict
     if verdict == "review":
         assert "value_mismatch" not in result.items[0].issues
+
+
+@pytest.mark.parametrize("raw", ["0,001", "0,500", "00,500", "001,000", "+0,500", "-0,001"])
+@pytest.mark.parametrize("side", ["expected", "observed"])
+def test_ambiguous_leading_zero_comma_numbers_require_review(raw, side):
+    req = number_request(raw if side == "expected" else "1", None,
+                         raw if side == "observed" else "1", None)
+    result = validate(req)
+    item = result.items[0]
+    assert result.verdict == item.verdict == "review"
+    assert item.issues == (("numeric_expectation_invalid" if side == "expected" else "numeric_observation_invalid"),)
+    assert item.comparison_expected is None and item.comparison_observed is None
 
 
 @pytest.mark.parametrize("kind", ["text", "number"])
@@ -100,6 +115,25 @@ def test_explicit_absence_is_not_unreadability_or_numeric_zero(kind, operator, e
     result = validate(ValidateRequest.model_validate(data))
     assert result.verdict == verdict
     assert result.items[0].observed == ""
+    assert result.items[0].comparison_observed is None
+
+
+@pytest.mark.parametrize("kind,operator,expected,observed,verdict", [
+    ("text", "equals", "Hello", "Hello", "review"),
+    ("text", "contains", "Hello", "Hello", "review"),
+    ("text", "contains", "Hello", "Hello festival", "review"),
+    ("visual", "present", "LOGO", "LOGO", "review"),
+    ("text", "equals", "Hello", "Different", "fail"),
+    ("text", "contains", "Hello", "Different", "fail"),
+])
+def test_absence_with_matching_observed_text_is_an_unresolved_conflict(kind, operator, expected, observed, verdict):
+    req = text_request(expected, operator, model_verdict="fail", observed=observed)
+    req = changed(req, ["criteria", 0, "kind"], kind)
+    req = changed(req, ["inspection", "observations", 0, "observation_status"], "absent")
+    result = validate(req)
+    assert result.verdict == result.items[0].verdict == verdict
+    assert result.items[0].issues == (("verdict_conflict" if verdict == "review" else "observed_absence"),)
+    assert result.items[0].observed == observed
     assert result.items[0].comparison_observed is None
 
 
@@ -176,6 +210,28 @@ def test_custom_a06_cannot_resolve_missing_information_by_changing_the_verdict(f
     with pytest.raises(InvocationFailure) as failure:
         invoke_role("A06", SimpleNamespace(validate=lambda _request: forged), req)
     assert failure.value.code == ("VALIDATOR_UNSUPPORTED_PASS" if forced == "pass" else "VALIDATOR_UNRESOLVED_OBSERVATION")
+
+
+@pytest.mark.parametrize("source,forced,issues,code", [
+    ("pass", "fail", None, "VALIDATOR_UNSUPPORTED_FAILURE"),
+    ("fail", "review", None, "VALIDATOR_HID_CONFIRMED_FAILURE"),
+    ("review", "review", (), "VALIDATOR_DROPPED_LIMITATIONS"),
+    ("pass", "pass", ("uncertain_observation",), "VALIDATOR_UNSUPPORTED_PASS"),
+])
+def test_custom_a06_rejects_unjustified_verdicts_and_lost_limitations(source, forced, issues, code):
+    req = request()
+    if source == "fail":
+        req = changed(req, ["inspection", "observations", 0, "observed"], "2")
+    elif source == "review":
+        req = changed(req, ["inspection", "observations", 0, "uncertainty"], "unclear")
+    result = validate(req)
+    assert result.verdict == source
+    item = result.items[0].model_copy(update={"verdict": forced,
+        "issues": result.items[0].issues if issues is None else issues})
+    forged = result.model_copy(update={"verdict": forced, "items": (item,)})
+    with pytest.raises(InvocationFailure) as failure:
+        invoke_role("A06", SimpleNamespace(validate=lambda _request: forged), req)
+    assert failure.value.code == code
 
 
 @pytest.mark.parametrize("contract", [ValidateRequest, TeamConfiguration, RunSnapshot])
