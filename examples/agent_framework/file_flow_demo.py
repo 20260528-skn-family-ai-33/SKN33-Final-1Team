@@ -44,6 +44,7 @@ def _inspect(request, poster):
     citations = tuple(e.evidence_id for e in request.evidence.evidence if criterion.criterion_id in e.criterion_ids)
     return InspectionResult(context=request.context, synthetic=True, observations=(Observation(
         criterion_id=criterion.criterion_id, observed=str(count), verdict="pass" if count == 3 else "fail",
+        observation_status="observed", observed_unit="개",
         evidence_ids=citations, image=ImageEvidence(asset_version_id=request.asset.asset_version_id,
             asset_hash=request.asset.sha256, bbox=(0, 0, 1, 1))),))
 

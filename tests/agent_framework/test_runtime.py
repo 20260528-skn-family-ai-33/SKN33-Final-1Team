@@ -67,6 +67,7 @@ class Examples:
         for index,item in enumerate(request.criteria,1):
             evidence_ids=tuple(e.evidence_id for e in request.evidence.evidence if item.criterion_id in e.criterion_ids)
             observations.append(Observation(criterion_id=item.criterion_id,observed=self.observed,verdict='pass',
+                observation_status='observed',
                 image=ImageEvidence(asset_version_id=request.asset.asset_version_id,asset_hash=request.asset.sha256,bbox=(0.1,0.1,0.5,0.5)),
                 evidence_ids=evidence_ids,uncertainty=self.uncertainty))
         return self.called('inspect',InspectionResult(context=request.context,observations=tuple(observations),synthetic=False))
@@ -322,16 +323,17 @@ def test_custom_validator_cannot_expand_exception_policy(kind):
     assert wf.get(ctx.run_id)==result
 
 
-def test_definite_failure_without_uncertainty_issues_can_be_explicitly_accepted():
+def test_conflicting_visual_observation_cannot_be_accepted_as_an_exception():
     ex=Examples()
     ex.transforms['extract']=lambda value:value.model_copy(update={'criteria':tuple(
         item.model_copy(update={'kind':'visual','operator':'present'}) for item in value.criteria)})
     ex.transforms['inspect']=lambda value:value.model_copy(update={'observations':tuple(
         item.model_copy(update={'verdict':'fail'}) for item in value.observations)})
     wf,ctx,_,result=reviewed(ex)
-    assert result.machine_verdict=='fail' and result.validated.items[0].issues==()
-    final=wf.approve(ctx.run_id,approval(ctx,'approve_exception',reason='Accept the stated visual discrepancy',criterion_ids=('criterion-1',)))
-    assert final.human_decision=='exception_approved' and final.machine_verdict=='fail'
+    assert result.machine_verdict=='review' and result.validated.items[0].issues==('verdict_conflict',)
+    with pytest.raises(ValueError, match='unknown or unsupported'):
+        wf.approve(ctx.run_id,approval(ctx,'approve_exception',reason='Try to accept a conflicting visual claim',criterion_ids=('criterion-1',)))
+    assert wf.get(ctx.run_id)==result
 
 
 @pytest.mark.parametrize('operator', ['equals', 'contains'])

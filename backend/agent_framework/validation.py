@@ -1,6 +1,7 @@
 """A06 reference policy and boundary checks; these do not establish model accuracy."""
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
+import re
 
 from .contracts import (Context, CriteriaDraft, DocumentRef, EvidenceBundle,
                         InspectRequest, InspectionResult, ReportDraft, ReportRequest,
@@ -129,19 +130,26 @@ def validate_validated(request: ValidateRequest, result: ValidatedResult) -> Non
             raise ValueError("VALIDATOR_UNSUPPORTED_PASS")
         if "missing_expected_value" in expected.issues and item.verdict != "review":
             raise ValueError("VALIDATOR_UNRESOLVED_EXPECTATION")
+        if expected.verdict == "review" and item.verdict != "review":
+            raise ValueError("VALIDATOR_UNRESOLVED_OBSERVATION")
+        if expected.verdict == "pass" and item.verdict == "fail":
+            raise ValueError("VALIDATOR_UNSUPPORTED_FAILURE")
         if expected.verdict == "fail" and item.verdict != "fail":
             raise ValueError("VALIDATOR_HID_CONFIRMED_FAILURE")
         if not set(expected.issues) <= set(item.issues):
             raise ValueError("VALIDATOR_DROPPED_LIMITATIONS")
+        if item.verdict == "pass" and item.issues:
+            raise ValueError("VALIDATOR_UNSUPPORTED_PASS")
+        if item.model_dump(exclude={"verdict", "issues"}) != expected.model_dump(exclude={"verdict", "issues"}):
+            raise ValueError("VALIDATOR_CHANGED_EVIDENCE")
 
 
 def validate_report_request(request: ReportRequest) -> None:
     """Check supplied A07 provenance before a reporter can consume it.
 
-    ReportRequest lacks full criteria, required/optional flags and observations.
-    This checks only the provided evidence and validated-item identities; it does
-    not re-establish criteria completeness, aggregation correctness or A06's
-    substantive judgment. Those remain the upstream validation boundary's work.
+    Item details allow aggregation and citation checks, but cannot authenticate
+    the approved criteria set or image contents. The A06 boundary must compare
+    those details with the original request before constructing ReportRequest.
     """
     ensure_context(request.context, request.validated)
     validate_evidence_envelope(request.context, request.evidence)
@@ -150,6 +158,19 @@ def validate_report_request(request: ReportRequest) -> None:
     for evidence in request.evidence.evidence:
         if not set(evidence.criterion_ids) <= criteria:
             raise ValueError("UNKNOWN_EVIDENCE_CRITERION")
+    if aggregate(request.validated.items, request.validated.items) != request.validated.verdict:
+        raise ValueError("AGGREGATE_VERDICT_MISMATCH")
+    evidence_by_id = {e.evidence_id: e for e in request.evidence.evidence}
+    for item in request.validated.items:
+        if item.image and item.image.asset_version_id != request.context.asset_version_id:
+            raise ValueError("OBSERVATION_ASSET_MISMATCH")
+        _unique(item.evidence_ids, "CITATION")
+        for eid in item.evidence_ids:
+            if eid not in evidence_by_id:
+                raise ValueError("UNKNOWN_CITATION")
+            source = evidence_by_id[eid]
+            if source.kind == "historical_context" or item.criterion_id not in source.criterion_ids:
+                raise ValueError("INVALID_OBSERVATION_CITATION")
 
 
 def validate_report(request: ReportRequest, result: ReportDraft) -> None:
@@ -165,11 +186,30 @@ def validate_report(request: ReportRequest, result: ReportDraft) -> None:
         raise ValueError("REPORT_CITATION_REQUIRED")
 
 
-class ReferenceValidator:
-    """Conservative example A06. Visual observations remain a model's claims.
+_NUMBER = re.compile(
+    r"(?P<value>[+-]?(?:[0-9]+|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.[0-9]+)?)"
+    r"(?:[ \t]*(?P<unit>[A-Za-z가-힣%₩$€£°/²³]+))?"
+)
 
-    No automatic exception application, semantic entailment or group policies.
-    Those extensions must retain these coverage/citation/version boundaries.
+
+def _number(raw: str, declared_unit: str | None) -> tuple[Decimal, str | None]:
+    """One decimal and an optional literal unit; never extract digits from prose."""
+    match = _NUMBER.fullmatch(raw.strip())
+    if not match or declared_unit is not None and not declared_unit.strip():
+        raise ValueError("invalid numeric value or unit")
+    unit = declared_unit.strip() if declared_unit is not None else None
+    suffix = match["unit"]
+    if suffix and unit and suffix != unit:
+        raise ValueError("numeric suffix conflicts with declared unit")
+    return Decimal(match["value"].replace(",", "")), suffix or unit
+
+
+class ReferenceValidator:
+    """Code-only A06: validate evidence before comparing an inspector's claims.
+
+    Visual accuracy, source authority and semantic criterion classification still
+    belong to upstream adapters and human criteria approval. No unit conversion,
+    automatic exceptions, semantic matching or group policies are applied here.
     """
 
     def validate(self, request: ValidateRequest) -> ValidatedResult:
@@ -180,68 +220,96 @@ class ReferenceValidator:
         items = []
         for criterion in request.criteria:
             issues = []
-            missing_text_expectation = (criterion.kind == "text"
-                and criterion.operator in {"equals", "contains"}
-                and not criterion.expected.strip())
             observation = observations.get(criterion.criterion_id)
-            verdict = observation.verdict if observation else "review"
-            if not observation:
-                issues.append("missing_observation")
-            else:
-                if observation.uncertainty:
-                    issues.append("uncertain_observation")
-                    verdict = "review"
-                if not observation.observed.strip():
-                    issues.append("missing_observation")
-                    verdict = "review"
-                if not any(evidence[eid].kind == "current_requirement" for eid in observation.evidence_ids):
-                    issues.append("missing_citation")
-                supported = {"text": {"equals", "contains"}, "number": {"equals", "gte", "lte"},
-                             "visual": {"present"}}
-                if criterion.operator not in supported.get(criterion.kind, set()):
-                    issues.append("unsupported_criterion")
-                    verdict = "review"
-                elif criterion.kind == "number" and not observation.uncertainty and observation.observed.strip():
-                    try:
-                        observed, expected = Decimal(observation.observed), Decimal(criterion.expected)
-                        if not observed.is_finite() or not expected.is_finite():
-                            raise InvalidOperation
-                        comparisons = {"equals": observed == expected, "gte": observed >= expected,
-                                       "lte": observed <= expected}
-                        if criterion.operator not in comparisons:
-                            issues.append("unsupported_criterion")
-                            verdict = "review"
-                        elif not comparisons[criterion.operator]:
-                            verdict = "fail"
-                            issues.append("value_mismatch")
-                        elif observation.verdict == "fail":
-                            verdict = "review"
-                            issues.append("verdict_conflict")
-                    except InvalidOperation:
-                        issues.append("numeric_observation_invalid")
-                        verdict = "review"
-                elif (criterion.kind == "text" and not missing_text_expectation
-                      and not observation.uncertainty and observation.observed.strip()):
-                    matched = (criterion.expected == observation.observed if criterion.operator == "equals"
-                               else criterion.expected in observation.observed)
-                    if not matched:
-                        verdict = "fail"
-                        issues.append("value_mismatch")
-                    elif observation.verdict == "fail":
-                        verdict = "review"
-                        issues.append("verdict_conflict")
-            if missing_text_expectation:
+            verdict = "review"
+            comparison_expected = comparison_observed = comparison_unit = None
+            supported = {"text": {"equals", "contains"}, "number": {"equals", "gte", "lte"},
+                         "visual": {"present"}}
+            if criterion.operator not in supported.get(criterion.kind, set()):
+                issues.append("unsupported_criterion")
+            if criterion.kind in {"text", "number"} and not criterion.expected.strip():
                 issues.append("missing_expected_value")
-                verdict = "review"
             if not any(e.kind == "current_requirement" and criterion.criterion_id in e.criterion_ids
                        for e in evidence.values()):
                 issues.append("missing_requirement_evidence")
             if request.evidence.status != "complete":
                 issues.append("context_incomplete")
-            if issues and verdict == "pass":
-                verdict = "review"
-            items.append(ValidatedItem(criterion_id=criterion.criterion_id, verdict=verdict, issues=tuple(issues)))
+            if observation is None:
+                issues.append("missing_observation")
+            else:
+                if not any(evidence[eid].kind == "current_requirement" for eid in observation.evidence_ids):
+                    issues.append("missing_citation")
+                if observation.uncertainty:
+                    issues.append("uncertain_observation")
+                status_issue = {"unknown": "observation_status_unknown", "unreadable": "unreadable_observation",
+                                "not_checked": "observation_not_checked"}.get(observation.observation_status)
+                if status_issue:
+                    issues.append(status_issue)
+                if observation.observation_status == "observed" and not observation.observed.strip():
+                    issues.append("missing_observation")
+                if observation.verdict == "review":
+                    issues.append("model_review")
+
+            if not issues:
+                if observation.observation_status == "absent":
+                    if criterion.kind == "number":
+                        issues.append("missing_observation")
+                    elif (observation.verdict != "fail"
+                          or criterion.expected.strip() and (
+                              observation.observed == criterion.expected
+                              or criterion.kind == "text" and criterion.operator == "contains"
+                              and criterion.expected in observation.observed)):
+                        issues.append("verdict_conflict")
+                    else:
+                        verdict = "fail"
+                        issues.append("observed_absence")
+                elif criterion.kind == "visual":
+                    if observation.verdict == "pass":
+                        verdict = "pass"
+                    else:
+                        issues.append("verdict_conflict")
+                else:
+                    if criterion.kind == "number":
+                        try:
+                            expected, expected_unit = _number(criterion.expected, criterion.unit)
+                        except (ValueError, InvalidOperation):
+                            issues.append("numeric_expectation_invalid")
+                        try:
+                            observed, observed_unit = _number(observation.observed, observation.observed_unit)
+                        except (ValueError, InvalidOperation):
+                            issues.append("numeric_observation_invalid")
+                        if not issues:
+                            if expected_unit != observed_unit:
+                                issues.append("unit_mismatch")
+                            else:
+                                comparison_expected, comparison_observed = format(expected, "f"), format(observed, "f")
+                                comparison_unit = expected_unit
+                                matched = {"equals": observed == expected, "gte": observed >= expected,
+                                           "lte": observed <= expected}[criterion.operator]
+                    else:
+                        comparison_expected, comparison_observed = criterion.expected, observation.observed
+                        matched = (criterion.expected == observation.observed if criterion.operator == "equals"
+                                   else criterion.expected in observation.observed)
+                    if not issues:
+                        if not matched:
+                            verdict = "fail"
+                            issues.append("value_mismatch")
+                        elif observation.verdict == "fail":
+                            issues.append("verdict_conflict")
+                        else:
+                            verdict = "pass"
+
+            items.append(ValidatedItem(
+                criterion_id=criterion.criterion_id, criterion_text=criterion.text, kind=criterion.kind,
+                operator=criterion.operator, required=criterion.required, expected=criterion.expected,
+                expected_unit=criterion.unit, observed=observation.observed if observation else None,
+                observed_unit=observation.observed_unit if observation else None,
+                observation_status=observation.observation_status if observation else "not_checked",
+                comparison_expected=comparison_expected, comparison_observed=comparison_observed,
+                comparison_unit=comparison_unit, image=observation.image if observation else None,
+                evidence_ids=observation.evidence_ids if observation else (), verdict=verdict, issues=tuple(issues),
+            ))
         return ValidatedResult(context=request.context, verdict=aggregate(request.criteria, items),
                                items=tuple(items),
-                               limitations=("Reference policy only; visual accuracy and source authority require real adapters.",),
+                               limitations=("Code validation only; visual accuracy and source authority are not independently verified.",),
                                synthetic=request.synthetic or request.inspection.synthetic or request.evidence.synthetic)
