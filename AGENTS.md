@@ -12,6 +12,7 @@
 - 첫 연결은 PDF 기준 문서와 포스터 이미지, Qwen3.5-4B, 기존 PostgreSQL·Neo4j 근거/RAG 방향이다.
 - 벡터DB와 독립 A03은 제외됐다. 과거 Qdrant·PaddleOCR·SigLIP2 비교 기록을 새 기본 흐름으로 복원하지 않는다.
 - 기존 데스크톱 front-v2를 유지한다. 모바일·태블릿은 별도 요청 전 범위에 넣지 않는다.
+- 개발자 PC는 Mac·Windows를 모두 고려한다. 공통 API/worker 실행은 `scripts/framework_desktop.py`와 Docker Linux 런타임·named volume을 우선하고 RunPod 서버 명령은 접속 후 Linux Bash를 사용한다. Windows 네이티브 POSIX 파일 저장소 지원이나 Windows 실기기 검증을 완료했다고 단정하지 않는다.
 - A02 PDF/Qwen/저장·승인은 구조 설계를 바탕으로 샘플 3종의 7단계 작업을 시작했다. 현재 완료 범위는 `docs/poster-baselines/2026-11-03/workflow/진행현황.json`을 읽는다. 실제 모델 호출·GPU 생성·운영 DB 적용을 이미 완료했다고 설명하지 않는다.
 - 구현/테스트/실배포/계획을 구분하고 당시 테스트 수치·CI·서버 상태는 현재 결과로 단정하지 않는다.
 

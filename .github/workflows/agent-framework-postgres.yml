@@ -1,10 +1,10 @@
 name: Agent framework PostgreSQL
 on:
   pull_request:
-    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "docs/poster-baselines/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
+    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "docs/poster-baselines/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
   push:
     branches: [main, feat/agent-framework, feat/37-a02-pdf-registration]
-    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
+    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
 permissions:
   contents: read
 jobs:
@@ -29,12 +29,14 @@ jobs:
       TEST_DB_OWNER_PASSWORD: disposable-framework-ci-owner
       TEST_DB_APP_USER: af_app
       TEST_DB_APP_PASSWORD: disposable-framework-ci-app
+      FRAMEWORK_DOCKER_TEST_IMAGE: creative-checker-framework:ci
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.12.10"
       - run: uv sync --locked --group dev
+      - run: docker build -f deploy/agent-framework/Dockerfile -t creative-checker-framework:ci .
       - name: Create restricted roles in disposable CI server
         run: |
           uv run python - <<'PY'

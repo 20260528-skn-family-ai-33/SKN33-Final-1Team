@@ -2,6 +2,8 @@
 
 각 담당자가 같은 JSON 계약으로 자신의 역할을 단독 개발하고, 합성 입력으로 전체 흐름을 연결하는 개발용 기반이다. `backend/agent_framework`는 기존 제품 앱과 분리되어 있다.
 
+**[Mac·Windows 공통 실행 가이드](Mac_Windows_공통실행_가이드.html)** · [MD](Mac_Windows_공통실행_가이드.md) — 두 OS에서 같은 Python 실행기로 Docker Linux API·worker·저장 볼륨을 사용한다. RunPod SSH 터널과 비밀 설정·DB 접속 방법을 함께 설명한다. Windows 네이티브 POSIX 저장소 실행과 구분한다.
+
 **[담당자별 연결 위치·실행법 HTML](에이전트_프레임워크_가이드.html)** · [Markdown 원본](에이전트_프레임워크_가이드.md) — 역할별 수정 파일·factory·입출력·테스트 명령과 Git 기준 인수 절차를 정리했다.
 
 **[PostgreSQL 실행·승인·worker 가이드](에이전트_프레임워크_PostgreSQL_실행가이드.html)** · [MD](에이전트_프레임워크_PostgreSQL_실행가이드.md) — 기존 M008 DB의 AF001 추가 마이그레이션과 새 API·worker 실행법이다.

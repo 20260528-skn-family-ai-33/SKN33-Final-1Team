@@ -1,0 +1,76 @@
+{
+  "checked_at_utc": "2026-11-03T07:39:52.707904+00:00",
+  "scope": "Mac/Windows host launcher with shared Linux container backend",
+  "native_windows_posix_storage_implemented": false,
+  "windows_real_machine_execution_verified": false,
+  "new_remote_ci_result": null,
+  "local_tests": {
+    "command": ".venv/bin/python -m pytest tests/agent_framework tests/test_qwen_server_preparation.py tests/test_framework_desktop.py -q",
+    "passed": 555,
+    "db_tests_deselected": 77,
+    "subtests_passed": 8,
+    "new_launcher_tests": 15
+  },
+  "docker_integration": {
+    "opt_in_environment": "FRAMEWORK_DOCKER_TEST_IMAGE",
+    "tests_passed": 1,
+    "schema": "M008 + AF003",
+    "checks": [
+      "authenticated HTTP API",
+      "actual sample PDF upload to Linux named volume",
+      "independent Docker worker",
+      "synthetic A02 extraction persisted and reread"
+    ]
+  },
+  "mac_docker_desktop": {
+    "linux_image_built": true,
+    "image": "creative-checker-framework:desktop-validation",
+    "image_id": "sha256:5cb12e2583dca3139d3456e703f9fd802e05dede83251b9fbd7b595cf7483966",
+    "clean_build_context": true,
+    "base_python": "3.12.16",
+    "mock_demo": "passed",
+    "pdf_volume_integrity_and_locks": "passed",
+    "container_to_host_loopback_probe": "passed",
+    "api_and_worker": "passed"
+  },
+  "windows_coverage": [
+    "literal Windows drive/Korean/space arguments without shell",
+    "shared Linux runtime and named-volume design",
+    "Windows/Linux unit CI configured; new run pending"
+  ],
+  "configuration_preservation": {
+    "source_env_unchanged": true,
+    "source_team_json_unchanged": true,
+    "temporary_read_only_container_settings": true,
+    "original_env_files_modified": false,
+    "app_refuses_owner_credentials": true,
+    "init_config_refuses_existing_file": true
+  },
+  "real_qwen_calls": 0,
+  "runpod_changes": false,
+  "existing_database_changed": false,
+  "temporary_test_databases_remaining": 0,
+  "temporary_api_containers_removed": true,
+  "temporary_test_volumes_removed": true,
+  "temporary_postgres_container_removed": true,
+  "desktop_backend_scope": "framework API/worker only; front-v2 and existing product image upload are preserved",
+  "limitations": [
+    "Windows Docker Desktop end-to-end not run on an actual Windows machine",
+    "No native Windows rewrite of POSIX storage",
+    "Existing M008 DB and associated file volume must remain one environment",
+    "Existing poster upload storage must be attached explicitly; no file migration or PC-to-PC volume synchronization",
+    "No real Qwen invocation or production deployment"
+  ],
+  "warnings": [
+    "Existing pytest asyncio configuration warnings",
+    "PyMuPDF SWIG deprecation warnings"
+  ],
+  "artifact_sha256": {
+    "scripts/framework_desktop.py": "720a4bd87614eef5577a85cbd0d3c1dee77ae1f218a589c666ec816589b90d0f",
+    "deploy/agent-framework/Dockerfile": "350f74b7e0f9e88e1564f3ae2eb1a8f9d55acaf989e0e7f3ad99f6afe99029d7",
+    "deploy/agent-framework/Dockerfile.dockerignore": "5efe62585f94dbeba530e4a1d57531b335d60f8bc3bf862bc05b99911630d5c4",
+    "deploy/agent-framework/app.env.example": "98a3c530e3b048a8e1d686123d60224bb4531872b3295a21765155f2b0e02ed5",
+    "tests/test_framework_desktop.py": "d2f88dfa40a87816dbd0b40f5657aefe10294ed02e8d2051dfe775adc2ce087c",
+    "tests/agent_framework/test_desktop_postgres_integration.py": "e4d25bbf32500718a923c4a116bfa8c629e206608ac032b61a11a6ca5c0872e5"
+  }
+}

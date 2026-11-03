@@ -289,6 +289,7 @@ def parser():
             command.add_argument('--config',required=True,help='fixed trusted team adapter configuration')
         if name=='postgres-serve':
             command.add_argument('--port',type=_port,default=8012)
+            command.add_argument('--host',choices=('127.0.0.1','0.0.0.0'),default='127.0.0.1',help='Use 0.0.0.0 only inside a container with a loopback-only published host port.')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF root initialized with init-pdf-storage; requires AF002')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; registered poster reviews require AF003')
         if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003'),default='AF001')

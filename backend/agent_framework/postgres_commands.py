@@ -48,7 +48,7 @@ def postgres_serve(args):
     root=Path(args.pdf_storage_root).expanduser().resolve() if args.pdf_storage_root else None
     posters=Path(args.poster_storage_root).expanduser().resolve() if args.poster_storage_root else None
     app=create_postgres_app(load_v1_settings(values),load_config(args.config),pdf_storage_root=root,poster_storage_root=posters)
-    uvicorn.run(app,host='127.0.0.1',port=args.port,workers=1,reload=False)
+    uvicorn.run(app,host=getattr(args,'host','127.0.0.1'),port=args.port,workers=1,reload=False)
     return 0
 
 

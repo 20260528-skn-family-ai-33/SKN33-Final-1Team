@@ -2,7 +2,7 @@
   "meta": {
     "title": "Creative Checker · 에이전트 공통 개발 흐름",
     "basis": "2026-11-02 통합문서 정리본 · 독립 A03 폐기 · 네 구성 역할 · 계약 2.0.0 · PostgreSQL API/worker 개발 구현 · 2026-11-03 AF002 PDF 등록과 PDF-only A02 mock/출처 저장 구현 · 2026-11-03 AF003 기준 보완·승인 · 2026-11-03 승인 기준 기반 등록 포스터·재검수 시험",
-    "scope": "PDF·포스터 1차 범위. A02→기준 승인·입력 근거 고정→A04_A05→A06→A07. 메모리 개발 도구와 명시적 AF001 PostgreSQL 경로를 구분한다. 현재 입력 고정은 외부 조회를 하지 않으며 PG→Neo4j→PG 공통 문맥 준비·실모델·front-v2·운영 배포는 후속이다. PDF-only 경로는 registered_pdf 설정에서 A02 초안과 본문 trace를 저장하고 waiting_criteria에서 대기한다. 실제 Qwen endpoint·새 PDF 기준 승인은 후속이다. AF003에서는 PDF-only 기준을 새 불변 버전으로 보완·승인하고 waiting_asset에서 대기한다. 합성 승인 시험이며 실제 클라이언트 승인과 다르다. 7단계 registered_poster는 AF003 승인 버전·해시·출처와 기존 M008 display 이미지를 별도 실행에 고정한다. 새 입력 확인과 독립 worker·수정본 재확인을 실파일·격리 DB·합성 관측으로 검증했으며 실제 Qwen·사람 승인은 미수행이다."
+    "scope": "PDF·포스터 1차 범위. A02→기준 승인·입력 근거 고정→A04_A05→A06→A07. 메모리 개발 도구와 명시적 AF001 PostgreSQL 경로를 구분한다. 현재 입력 고정은 외부 조회를 하지 않으며 PG→Neo4j→PG 공통 문맥 준비·실모델·front-v2·운영 배포는 후속이다. PDF-only 경로는 registered_pdf 설정에서 A02 초안과 본문 trace를 저장하고 waiting_criteria에서 대기한다. 실제 Qwen endpoint·새 PDF 기준 승인은 후속이다. AF003에서는 PDF-only 기준을 새 불변 버전으로 보완·승인하고 waiting_asset에서 대기한다. 합성 승인 시험이며 실제 클라이언트 승인과 다르다. 7단계 registered_poster는 AF003 승인 버전·해시·출처와 기존 M008 display 이미지를 별도 실행에 고정한다. 새 입력 확인과 독립 worker·수정본 재확인을 실파일·격리 DB·합성 관측으로 검증했으며 실제 Qwen·사람 승인은 미수행이다. Mac·Windows 공통 개발 실행은 Docker Linux·named volume과 Python host 실행기를 사용한다. Windows 네이티브 POSIX 저장소 구현/실기기 검증 완료를 뜻하지 않는다."
   },
   "nodes": [
     {
@@ -64,7 +64,8 @@
         "개발용 check 명령은 담당 역할 하나의 여러 fixture를 공통 경계로 검사하고 요약합니다. 업무 실행이나 승인 처리를 대신하지 않습니다.",
         "역할의 running·completed·failed·outcome_unknown 상태, UTC 시각·단조 시계 소요 시간·오류 코드를 기록한다. get_steps와 개발 GET /runs/{run_id}/steps는 어댑터 종료를 기다리지 않고 조회한다.",
         "check-flow는 팀 설정의 네 역할로 조건 승인→검사·보고→수정본 재검수→최종 테스트 승인을 확인한다. 오류·기대 불일치 시 후속 동작을 중단하며 운영 승인이나 실모델 연결 증명으로 사용하지 않는다.",
-        "API는 접수·승인만 저장하고 worker가 선점·lease·heartbeat·token으로 역할을 실행한다. 완료 단계와 승인 입력·근거 스냅샷은 재사용하고, 호출 가능성이 있으면 결과 불명으로 종료하여 자동 재호출하지 않는다."
+        "API는 접수·승인만 저장하고 worker가 선점·lease·heartbeat·token으로 역할을 실행한다. 완료 단계와 승인 입력·근거 스냅샷은 재사용하고, 호출 가능성이 있으면 결과 불명으로 종료하여 자동 재호출하지 않는다.",
+        "scripts/framework_desktop.py는 Mac·Windows에서 같은 Linux API/worker 이미지·파일 볼륨을 실행한다. 원본 env/JSON을 보존하고 컨테이너용 임시 사본의 loopback 주소만 host.docker.internal로 바꾼다. SSH는 각 PC의 본인 키를 사용한다."
       ],
       "files": [
         {
@@ -114,6 +115,10 @@
         {
           "path": "backend/agent_framework/postgres_api.py",
           "line": 23
+        },
+        {
+          "path": "scripts/framework_desktop.py",
+          "line": 1
         }
       ],
       "x": 360,
