@@ -3,7 +3,7 @@ import DocumentConditionDetails from './DocumentConditionDetails.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { canConfirm, canRun } from '../../workflow.js';
+import { canConfirm, canRun } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 포함 여부와 현재 편집 항목을 분리해, 기준 전체를 펼치지 않고 한 항목씩 검토한다.

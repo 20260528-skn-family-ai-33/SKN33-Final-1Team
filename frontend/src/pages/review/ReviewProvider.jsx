@@ -1,9 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 import { fetchJson, fetchResponse } from '../../api/client.js';
-import { initialState, workflowReducer, canConfirm, canRun, parseRequirements } from '../../workflow.js';
-import { mergeDocumentRequirements } from '../../documentRequirements.js';
-import { extractDocumentWithProgress } from '../../documentProgress.js';
+import { initialState, workflowReducer, canConfirm, canRun, parseRequirements } from './workflow.js';
+import { mergeDocumentRequirements } from './documentRequirements.js';
+import { extractDocumentWithProgress } from './documentProgress.js';
 
 const ReviewContext = createContext(null);
 

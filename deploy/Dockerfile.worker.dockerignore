@@ -9,4 +9,4 @@ docs
 tests
 **/__pycache__
 **/*.pyc
-backend/tests
+tests/app

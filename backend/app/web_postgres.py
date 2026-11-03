@@ -30,7 +30,7 @@ class WebPipeline:
         from .api import _runtime_identity
         identity=_runtime_identity()
         if identity['execution_target']!='local':raise AuthError('REVIEW_RUNTIME_UNAVAILABLE',503)
-        names=('api.py','structured_review.py','document_conditions.py','web_postgres.py')
+        names=('api.py','ocr/results.py','reviews/comparison.py','documents/conditions.py','web_postgres.py')
         revision=hashlib.sha256(b''.join((Path(__file__).parent/name).read_bytes() for name in names)).hexdigest()
         return dict(pipeline='cc-current-web-v1',ocr_pipeline=identity.get('pipeline'),execution_target='local',
                     code_revision=revision,preprocessing={'version':'cc-display-2x-lanczos-v1','ocr_scale':2})
@@ -48,7 +48,7 @@ class CompletedWebPipeline:
         return dict(status='success',engine=self.payload['runtime'].get('engine'),pipeline=self.config['pipeline'],
                     device='cpu',execution_target='local',input_dimensions=self.payload['ocr']['input_dimensions'],records=records)
     def check(self,criteria,records):
-        from .event_layout import extract_event_multiline
+        from backend.app.reviews.layout import extract_event_multiline
         import json
         event=json.loads(json.dumps(extract_event_multiline(records),ensure_ascii=False))
         return self.payload['results'],event

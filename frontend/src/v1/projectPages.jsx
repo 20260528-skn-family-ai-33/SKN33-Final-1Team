@@ -6,7 +6,7 @@ import * as api from './api.js';
 import * as C from './contracts.js';
 import { Title, Resource, Pager, DirtyDialog } from './components.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
-import { parseRequirements } from '../workflow.js';
+import { parseRequirements } from '../pages/review/workflow.js';
 import ImageStage from '../components/ImageStage.jsx';
 const role = value => ({ owner: '소유자', editor: '편집자', viewer: '조회자' })[value];
 export function ProjectsPage() {

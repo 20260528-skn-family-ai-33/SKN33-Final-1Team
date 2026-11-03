@@ -6,7 +6,7 @@
 
 ## 데이터와 해석 범위
 
-현재 확인한 코드의 요구조건 처리는 `frontend/src/workflow.js`에서 줄 단위 분리와 `information/visual` 분류를 수행한다.
+현재 확인한 코드의 요구조건 처리는 `frontend/src/pages/review/workflow.js`에서 줄 단위 분리와 `information/visual` 분류를 수행한다.
 이번 실험은 그 웹 기능을 바꾸지 않는 별도 CLI다. 현재 backend의 `Item` 형식은 `id/text/type/source/selected`다.
 조건·값 등의 추가 필드를 운영 API에 바로 저장하거나 기존 규칙 엔진이 실행할 수 있다고 가정하지 않는다.
 

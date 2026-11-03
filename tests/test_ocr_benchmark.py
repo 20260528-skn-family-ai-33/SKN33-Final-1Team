@@ -134,7 +134,9 @@ def test_invalid_ocr_output_is_rejected(change):
 
 def test_paddle_only_benchmark_keeps_engine_and_uses_no_baseline(tmp_path, monkeypatch):
     """단독 비교는 EasyOCR를 호출하지 않고 Paddle 근거와 좌표를 그대로 평가한다."""
-    from backend.app import paddle_ocr, ocr_runtime, model_ocr
+    from backend.app.ocr import paddle as paddle_ocr
+    from backend.app.ocr import runtime as ocr_runtime
+    from backend.app.ocr import models as model_ocr
     from unittest.mock import Mock
     native = {**record(), "recognition_engine": "paddleocr"}
     raw = {"engine": "paddleocr", "pipeline": "paddle_full_v1", "execution_target": "local",
@@ -154,7 +156,8 @@ def test_paddle_only_benchmark_keeps_engine_and_uses_no_baseline(tmp_path, monke
 
 def test_paddle_only_failure_is_not_retried_with_easyocr(tmp_path, monkeypatch):
     """Paddle 실패를 별도 실패 기록으로 남기고 비교 엔진을 몰래 바꾸지 않는다."""
-    from backend.app import paddle_ocr, model_ocr
+    from backend.app.ocr import paddle as paddle_ocr
+    from backend.app.ocr import models as model_ocr
     from unittest.mock import Mock
     monkeypatch.setattr(paddle_ocr, "recognize_paddle", Mock(side_effect=RuntimeError("unavailable")))
     monkeypatch.setattr(model_ocr, "baseline_once", lambda *a, **k: pytest.fail("기준선 실행 금지"))
@@ -229,7 +232,7 @@ def test_subprocess_has_timeout_and_receives_no_labels(tmp_path, monkeypatch):
 
 def test_runtime_missing_is_local_failure_without_download(tmp_path, monkeypatch):
     """의존성 누락 시 자동 설치·원격 전환 없이 실패하는지 확인한다."""
-    from backend.app import ocr_runtime
+    from backend.app.ocr import runtime as ocr_runtime
 
     def missing(*, allow_download):
         """설치 누락이 있어도 다운로드나 원격 실행을 요청하지 않게 한다."""

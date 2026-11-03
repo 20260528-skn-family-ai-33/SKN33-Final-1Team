@@ -39,7 +39,7 @@ def iter_images(image: str | None, frames_dir: str | None) -> list[Path]:
 
 def review_image(path: Path, detector, matcher, index, query_logo, threshold: float,
                  query_vec=None) -> dict:
-    from backend.app.logo_pipeline import crop
+    from backend.app.logos.pipeline import crop
 
     if query_logo is not None:
         boxes = detector.guided_detect(path, query_logo, threshold=threshold)
@@ -59,7 +59,9 @@ def review_image(path: Path, detector, matcher, index, query_logo, threshold: fl
 
 
 def main() -> None:
-    from backend.app.logo_pipeline import LogoDetector, LogoMatcher, ReferenceIndex
+    from backend.app.logos.pipeline import LogoDetector
+    from backend.app.logos.pipeline import LogoMatcher
+    from backend.app.logos.pipeline import ReferenceIndex
 
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)

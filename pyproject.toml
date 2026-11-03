@@ -19,7 +19,7 @@ dependencies = [
 dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2"]
 
 [tool.pytest.ini_options]
-testpaths = ["backend/tests", "tests"]
+testpaths = ["tests"]
 addopts = "-m 'not db_integration and not ocr_external and not integration and not live_model'"
 pythonpath = ["."]
 asyncio_mode = "auto"

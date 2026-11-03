@@ -1,4 +1,4 @@
-import defaults from '../../../../backend/app/modeltest_prompts.json' with { type: 'json' };
+import defaults from '../../../../backend/app/modeltest/prompts.json' with { type: 'json' };
 
 export function promptSpec(kind, modelId, profile) {
   const family = profile?.family || defaults.models[modelId];

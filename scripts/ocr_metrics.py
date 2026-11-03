@@ -5,8 +5,8 @@ import math
 import re
 import unicodedata
 
-from backend.app.extract_event import extract_event
-from backend.app.review_rules import review_criteria
+from backend.app.reviews.events import extract_event
+from backend.app.reviews.rules import review_criteria
 
 FIELDS = ("event_name", "start_date", "end_date", "location_raw")
 
@@ -74,7 +74,7 @@ def validate_label(label, source_hash, dimensions):
 
 def evaluate(records, label, *, multiline=False):
     """OCR 추출을 먼저 수행한 뒤 분리된 라벨과 검수 기준으로 결과를 채점한다."""
-    from backend.app.event_layout import extract_event_multiline
+    from backend.app.reviews.layout import extract_event_multiline
     event = extract_event_multiline(records) if multiline else extract_event(records)
     regions = label["regions"]
     assigned = {r["id"]: [] for r in regions}

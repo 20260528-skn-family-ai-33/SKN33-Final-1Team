@@ -73,7 +73,11 @@ def find_query(video_name, logos_dir):
 
 
 def main():
-    from backend.app.logo_pipeline import LogoDetector, LogoMatcher, ReferenceIndex, crop, load_rgb
+    from backend.app.logos.pipeline import LogoDetector
+    from backend.app.logos.pipeline import LogoMatcher
+    from backend.app.logos.pipeline import ReferenceIndex
+    from backend.app.logos.pipeline import crop
+    from backend.app.logos.pipeline import load_rgb
 
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--matcher", default="siglip2")

@@ -290,7 +290,7 @@ def ready_paddle_start(project, monkeypatch, *, ready=True):
 
     modules.side_effect = server_only_import
     readiness = Mock(return_value=(ready, "Paddle model missing" if not ready else "Paddle ready"))
-    monkeypatch.setitem(sys.modules, "backend.app.paddle_ocr", SimpleNamespace(paddle_readiness=readiness))
+    monkeypatch.setitem(sys.modules, "backend.app.ocr.paddle", SimpleNamespace(paddle_readiness=readiness))
     monkeypatch.setenv("OCR_PIPELINE", "paddle-only")
     return uvicorn, modules, readiness
 
@@ -416,7 +416,7 @@ def test_paddle_setup_preserves_existing_environment(windows_project, monkeypatc
 @pytest.mark.parametrize("pipeline", ["paddle", "qwen"])
 def test_selected_new_model_missing_stops_server_and_only_prints_commands(windows_project, monkeypatch, capsys, pipeline):
     """선택 모델 누락 시 기존 실행 정책대로 설치 안내만 하고 서버를 시작하지 않는다."""
-    from backend.app import model_ocr
+    from backend.app.ocr import models as model_ocr
     uvicorn, _ = ready_start(windows_project, monkeypatch)
     monkeypatch.setenv("OCR_PIPELINE", pipeline)
     readiness = Mock(return_value=(False, "test missing model"))
@@ -531,7 +531,7 @@ def test_pip_alone_is_warning_and_does_not_block_start(windows_project, monkeypa
 def test_check_only_returns_success_without_server_or_model_loading(windows_project, monkeypatch):
     uvicorn, _ = ready_start(windows_project, monkeypatch)
     monkeypatch.setattr(start.sys, "argv", ["start.py", "--check-only"])
-    from backend.app import ocr_runtime
+    from backend.app.ocr import runtime as ocr_runtime
     warmup = Mock(side_effect=AssertionError("No model loading"))
     monkeypatch.setattr(ocr_runtime, "warmup_models", warmup)
     monkeypatch.setattr(ocr_runtime, "recognize_image", warmup)

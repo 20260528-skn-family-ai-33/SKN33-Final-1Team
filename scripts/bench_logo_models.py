@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from backend.app import logo_models as reg  # noqa: E402
+from backend.app.logos import catalog as reg  # noqa: E402
 
 BENCH_ROOT = ROOT / ".runtime" / "logo-bench"
 DEFAULT_MATCHERS = [k for k, s in reg.REGISTRY.items() if s.role == "match"]
@@ -78,7 +78,8 @@ def detect_all(detector, sources: list[tuple[str, Path]], threshold: float, max_
 
 def crops_for(sources: list[tuple[str, Path]], detections: dict) -> dict:
     """후보 영역 크롭을 미리 만들어 모든 매처가 같은 픽셀을 쓰게 한다."""
-    from backend.app.logo_pipeline import crop, load_rgb
+    from backend.app.logos.pipeline import crop
+    from backend.app.logos.pipeline import load_rgb
     out = {}
     for sid, path in sources:
         boxes = detections[sid]["boxes"]
@@ -154,7 +155,7 @@ def video_stats(name: str, frames: list[tuple], ms: list[float], min_cos: float,
 
 
 def bench_matcher(key: str, args, query: Path, frames, images, crops) -> dict:
-    from backend.app.logo_pipeline import LogoMatcher
+    from backend.app.logos.pipeline import LogoMatcher
 
     spec = reg.spec(key)
     entry = {"matcher": key, "repo_id": spec.repo_id, "note": spec.note}
@@ -237,7 +238,7 @@ def bench_matcher(key: str, args, query: Path, frames, images, crops) -> dict:
 
 
 def main() -> None:
-    from backend.app.logo_pipeline import LogoDetector
+    from backend.app.logos.pipeline import LogoDetector
 
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)

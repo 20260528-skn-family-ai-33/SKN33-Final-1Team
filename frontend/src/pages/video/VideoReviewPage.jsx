@@ -5,7 +5,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { LogoFlowCard, LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
-import { evidenceBoxStyle, parseRequirements } from '../../workflow.js';
+import { evidenceBoxStyle, parseRequirements } from '../review/workflow.js';
 import {
   criteriaPayload, diffChars, formatTime, isTerminal, mismatchLabels, reviewerLabels, roleLabels, ruleLabels,
   severityLabels, stageLabels, statusLabels,

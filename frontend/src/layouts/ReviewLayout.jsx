@@ -4,7 +4,7 @@ import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { Brand } from '../components/Brand.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
-import { labels } from '../reviewConstants.js';
+import { labels } from '../pages/review/reviewConstants.js';
 import '../styles/review-v2.css';
 
 const tools = [['/review/new', '포스터 검수'], ['/video', '영상 검수'], ['/modeltest', '모델 테스트']];

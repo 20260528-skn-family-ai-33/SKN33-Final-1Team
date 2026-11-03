@@ -28,7 +28,7 @@ def configuration():
 
 def requirements_status():
     """추론·다운로드 없이 문서 조건 모델의 연결 및 설치 여부를 확인한다."""
-    from backend.app.model_ocr import ollama_request
+    from backend.app.ocr.models import ollama_request
     try:
         models = ollama_request('/api/tags', timeout=2).get('models')
         if not isinstance(models, list):

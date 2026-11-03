@@ -11,8 +11,8 @@ import subprocess
 import sys
 from urllib.parse import unquote, urlsplit
 
-from backend.app.ocr_config import selected_pipeline
-from backend.app.ocr_runtime import MODEL_FILES
+from backend.app.ocr.config import selected_pipeline
+from backend.app.ocr.runtime import MODEL_FILES
 from scripts.local_ollama import requirements_server
 
 ROOT = Path(__file__).resolve().parent
@@ -200,7 +200,7 @@ def startup_checks(windows):
     # 새 모델도 실행 전에 점검하되 설치·모델 다운로드는 사용자가 명시적으로 실행한다.
     if pipeline == "paddle-only" and target == "local":
         # 단독 경로에서는 EasyOCR import·모델 검사 없이 Paddle 격리 환경만 점검한다.
-        from backend.app.paddle_ocr import paddle_readiness
+        from backend.app.ocr.paddle import paddle_readiness
         ready, detail = paddle_readiness(check_import=True)
         if not ready:
             problems.append(f"[모델 준비 부족] {detail}")
@@ -208,7 +208,7 @@ def startup_checks(windows):
             warnings.extend(paddle_warnings)
             commands.extend(paddle_commands)
     elif pipeline in {"paddle", "qwen"} and target == "local":
-        from backend.app.model_ocr import model_readiness
+        from backend.app.ocr.models import model_readiness
         ready, detail = model_readiness(pipeline, check_import=True)
         if not ready:
             problems.append(f"[모델 준비 부족] {detail}")
