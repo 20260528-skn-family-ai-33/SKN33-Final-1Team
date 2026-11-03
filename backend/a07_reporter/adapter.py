@@ -1,16 +1,19 @@
 """A07 보고 어댑터(팀 소유). A06 판정을 바꾸지 않고 사람이 읽을 한국어 요약·수정 요청 초안·인용 근거를 만든다.
 
-- 사실(조건 ID·판정·사유·기준 원문)은 코드가 정해진 틀로 쓴다. 모델·파일·네트워크를 쓰지 않는다.
+- 사실(조건 ID·판정·사유·기준 원문)은 코드가 정해진 틀로 쓴다. 기본은 모델·파일·네트워크를 쓰지 않는다.
 - 요청에 없는 정보(조건 문장 전체, 포스터에서 읽은 값·위치)는 추측하지 않는다.
   기준 원문은 근거 묶음의 인용만 쓰고, 과거 기록·승인된 예외는 현재 기준과 구분해 표시한다.
 - 판정이 나쁜 조건부터(불충족 → 확인 필요 → 통과) 보여 준다.
 - 모르는 사유 코드는 버리지 않고 코드 그대로 남긴다(팀별 A06이 코드를 더할 수 있다).
-- Qwen 문장 다듬기는 나중에 items()가 만든 사실 위에 붙인다. 사실 칸은 바꾸지 않는다.
+- Qwen 문장 다듬기(polisher, 선택)는 items()가 만든 사실 위에 불충족·확인 필요 항목의 설명·할 일 문장만 더한다.
+  사실 칸은 바꾸지 않고, 다듬기가 실패하면 규칙 문장만 쓴다. 연결은 A07_QWEN_BASE_URL(qwen.py).
 """
 from __future__ import annotations
 
+import os
 from collections import Counter
 from dataclasses import dataclass
+from typing import Protocol
 
 from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest
 from backend.agent_framework.ports import Reporter
@@ -28,6 +31,14 @@ ISSUE = {   # backend/agent_framework/validation.py ReferenceValidator의 사유
     "missing_expected_value": "기준 값이 비어 있어 비교할 수 없습니다.",
     "missing_requirement_evidence": "이 조건의 현재 기준 원문이 근거 묶음에 없습니다.",
     "context_incomplete": "기준 근거가 최신이 아니거나 조회되지 않았습니다.",
+    # 계약 3.0.0(A06 PR #53)에서 더해지는 코드. 2.0.0에서는 나오지 않는다.
+    "unreadable_observation": "포스터에서 이 항목을 읽을 수 없었습니다.",
+    "unit_mismatch": "기준과 포스터의 단위가 달라 비교할 수 없습니다.",
+    "observed_absence": "포스터에 이 항목이 없습니다.",
+    "observation_status_unknown": "검사 결과에 관측 상태가 적혀 있지 않습니다.",
+    "observation_not_checked": "이 항목은 검사하지 않았습니다.",
+    "numeric_expectation_invalid": "기준 값을 숫자로 읽을 수 없어 비교할 수 없습니다.",
+    "model_review": "검사 모델이 사람 확인이 필요하다고 표시했습니다.",
 }
 EVIDENCE_STATUS = {
     "empty": "이 실행에는 기준 근거가 없습니다.",
@@ -41,6 +52,7 @@ EVIDENCE_KIND = {
 }
 DRAFT_NOTICE = "자동 검수 초안입니다. 사람이 확인하기 전에는 승인이 아닙니다."
 SYNTHETIC_NOTICE = "합성 시험 데이터로 만든 보고서입니다."
+POLISH_NOTICE = "설명·할 일 문장은 Qwen이 위 사실을 바탕으로 쓴 초안입니다."
 
 
 @dataclass(frozen=True)
@@ -49,6 +61,10 @@ class ItemReport:
     verdict: str
     reasons: tuple[str, ...]
     sources: tuple[Evidence, ...]
+
+
+class Polisher(Protocol):
+    def polish(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]] | None: ...
 
 
 def reason(issue: str) -> str:
@@ -71,16 +87,23 @@ def _source_line(evidence: Evidence) -> str:
     return f'{EVIDENCE_KIND[evidence.kind]}: "{source.quote}" ({source.document_version_id} {source.page}쪽)'
 
 
-def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: bool) -> str:
+def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: bool,
+            sentences: dict[str, tuple[str, str]] | None = None) -> str:
     counts = Counter(report.verdict for report in reports)
+    sentences = sentences or {}
     lines = [f"검수 결과: {VERDICT[request.validated.verdict]} (조건 {len(reports)}개: 불충족 {counts['fail']}"
              f" · 확인 필요 {counts['review']} · 통과 {counts['pass']})", DRAFT_NOTICE]
     if synthetic:
         lines.append(SYNTHETIC_NOTICE)
+    if sentences:
+        lines.append(POLISH_NOTICE)
     for report in reports:
         lines.append(f"[{VERDICT[report.verdict]}] {report.criterion_id}")
         lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다."]
         lines += [f"  사유: {text}" for text in report.reasons]
+        if report.criterion_id in sentences:
+            explanation, action = sentences[report.criterion_id]
+            lines += [f"  설명: {explanation}", f"  할 일: {action}"]
     limits = ([EVIDENCE_STATUS[request.evidence.status]] if request.evidence.status in EVIDENCE_STATUS else [])
     limits += [*request.validated.limitations, *request.evidence.warnings]   # 앞 단계의 한계 문구는 그대로 옮긴다
     if limits:
@@ -88,8 +111,10 @@ def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: 
     return "\n".join(lines)
 
 
-def change_requests(reports: tuple[ItemReport, ...]) -> tuple[str, ...]:
-    """불충족은 수정 요청, 확인 필요는 확인 요청. 기준 원문은 현재 기준만 쓴다."""
+def change_requests(reports: tuple[ItemReport, ...],
+                    sentences: dict[str, tuple[str, str]] | None = None) -> tuple[str, ...]:
+    """불충족은 수정 요청, 확인 필요는 확인 요청. 기준 원문은 현재 기준만 쓴다.
+    다듬은 문장이 있으면 할 일·설명을 그 문장으로 쓰고, 조건 ID·기준 원문은 그대로 둔다."""
     out = []
     for report in reports:
         if report.verdict == "pass":
@@ -97,7 +122,11 @@ def change_requests(reports: tuple[ItemReport, ...]) -> tuple[str, ...]:
         quotes = [f'"{e.source.quote}"' for e in report.sources if e.kind == "current_requirement"]
         basis = f" 기준 원문: {' / '.join(quotes)}" if quotes else " 기준 원문이 근거 묶음에 없습니다."
         why = f" 사유: {' / '.join(report.reasons)}" if report.reasons else ""
-        if report.verdict == "fail":
+        if report.criterion_id in (sentences or {}):
+            explanation, action = sentences[report.criterion_id]
+            head = "수정 요청" if report.verdict == "fail" else "확인 요청"
+            out.append(f"{head} [{report.criterion_id}] {action}{basis} 설명: {explanation}")
+        elif report.verdict == "fail":
             out.append(f"수정 요청 [{report.criterion_id}] 포스터를 기준에 맞게 고쳐 주세요.{basis}{why}")
         else:
             out.append(f"확인 요청 [{report.criterion_id}] 담당자가 포스터와 기준을 직접 확인해 주세요.{basis}{why}")
@@ -105,17 +134,34 @@ def change_requests(reports: tuple[ItemReport, ...]) -> tuple[str, ...]:
 
 
 class TeamA07Reporter:
-    """규칙 기반 보고기. 상태가 없어 여러 실행에서 같은 인스턴스를 써도 된다."""
+    """규칙 기반 보고기. 상태가 없어 여러 실행에서 같은 인스턴스를 써도 된다. polisher는 선택이다."""
+
+    def __init__(self, polisher: Polisher | None = None):
+        self.polisher = polisher
+
+    def _sentences(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]]:
+        if self.polisher is None or all(report.verdict == "pass" for report in reports):
+            return {}
+        try:
+            return self.polisher.polish(reports) or {}
+        except Exception:   # 문장 다듬기 실패가 보고를 막지 않는다(규칙 문장으로 보고)
+            return {}
 
     def report(self, request: ReportRequest) -> ReportDraft:
         reports = items(request)
         synthetic = request.synthetic or request.validated.synthetic or request.evidence.synthetic
         cited = tuple(dict.fromkeys(e.evidence_id for report in reports for e in report.sources))
+        sentences = self._sentences(reports)
         return ReportDraft(context=request.context, verdict=request.validated.verdict,
-                           summary=summary(request, reports, synthetic), evidence_ids=cited,
-                           change_requests=change_requests(reports), synthetic=synthetic)
+                           summary=summary(request, reports, synthetic, sentences), evidence_ids=cited,
+                           change_requests=change_requests(reports, sentences), synthetic=synthetic)
 
 
 def create_reporter() -> Reporter:
-    """설정 파일이 가리키는 factory. 모델·파일 없이 바로 동작한다."""
-    return TeamA07Reporter()
+    """설정 파일이 가리키는 factory. 기본은 모델·파일 없이 규칙 문장만 쓴다.
+    A07_QWEN_BASE_URL이 있으면 팀 공용 Qwen 서버로 문장을 다듬는다(A07_QWEN_API_KEY는 선택)."""
+    base_url = os.environ.get("A07_QWEN_BASE_URL", "").strip()
+    if not base_url:
+        return TeamA07Reporter()
+    from backend.a07_reporter.qwen import QwenPolisher   # qwen.py가 이 모듈을 import하므로 여기서 불러온다
+    return TeamA07Reporter(QwenPolisher(base_url, api_key=os.environ.get("A07_QWEN_API_KEY") or None))

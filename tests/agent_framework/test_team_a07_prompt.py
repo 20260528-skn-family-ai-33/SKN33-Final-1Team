@@ -7,8 +7,9 @@ from pathlib import Path
 import pytest
 
 from backend.a07_reporter.adapter import items
-from backend.a07_reporter.prompt import (EXAMPLE_ITEMS, EXAMPLE_OUTPUT, MAX_ITEMS_PER_CALL, SYSTEM_PROMPT,
-                                         build_payload, check, location_hint, prompt_items, user_message)
+from backend.a07_reporter.details import facts
+from backend.a07_reporter.prompt import (EXAMPLE_ITEMS, EXAMPLE_OUTPUT, FIELDS, MAX_ITEMS_PER_CALL, SYSTEM_PROMPT,
+                                         build_payload, check, prompt_items, user_message)
 from backend.agent_framework.contracts import ReportRequest
 
 CHECKS = Path(__file__).resolve().parents[2] / "examples/agent_framework/checks"
@@ -54,11 +55,16 @@ def test_poster_text_stays_data_and_cannot_close_the_block():
     assert json.loads(body)[0]["observed"] == attack
 
 
-@pytest.mark.parametrize(("bbox", "words"), [
-    ((0.12, 0.35, 0.78, 0.82), "가운데"), ((0.08, 0.08, 0.88, 0.24), "위쪽"), ((0.4, 0.8, 0.6, 1.0), "아래쪽"),
-    ((0.7, 0.4, 1.0, 0.6), "오른쪽"), ((0.0, 0.0, 0.2, 0.2), "왼쪽 위"), ((0.7, 0.7, 1.0, 1.0), "오른쪽 아래")])
-def test_location_is_given_in_words_not_coordinates(bbox, words):
-    assert location_hint(bbox) == words
+def test_v3_details_are_merged_in_field_order_and_only_for_items_sent():
+    reports = items(fixture("fail"))
+    details = {"requirement-number": facts(kind="number", operator="equals", required=True, expected="3",
+                                           expected_unit="개", observed="2", observed_unit="개",
+                                           observation_status="observed", bbox=(0.12, 0.35, 0.78, 0.82)),
+               "requirement-text": facts(kind="text", operator="equals", required=True, expected="MORNING CUP")}
+    sent, = prompt_items(reports, details)
+    assert list(sent) == [key for key in FIELDS if key in sent] and sent["criterion_id"] == "requirement-number"
+    assert (sent["expected"], sent["observed"], sent["observation"], sent["location"]) == ("3개", "2개", "읽음", "가운데")
+    assert list(EXAMPLE_ITEMS[0]) == [key for key in FIELDS if key in EXAMPLE_ITEMS[0]]
 
 
 def test_the_example_passes_its_own_check():

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from backend.a07_reporter.adapter import DRAFT_NOTICE, SYNTHETIC_NOTICE, create_reporter
+from backend.a07_reporter.adapter import DRAFT_NOTICE, ISSUE, SYNTHETIC_NOTICE, create_reporter
 from backend.agent_framework.checks import load_suite, run_checks
 from backend.agent_framework.composition import load_config
 from backend.agent_framework.contracts import ReportRequest
@@ -27,7 +27,8 @@ def quote_of(request, criterion_id):
     return next(e.source.quote for e in request.evidence.evidence if criterion_id in e.criterion_ids)
 
 
-def test_shared_check_suite_passes_with_the_real_factory():
+def test_shared_check_suite_passes_with_the_real_factory(monkeypatch):
+    monkeypatch.delenv("A07_QWEN_BASE_URL", raising=False)
     result = run_checks(load_suite(CHECKS / "A07.suite.json", "A07"),
                         load_config(ROOT / "backend/a07_reporter/team_config.json"))
     assert result["adapter_kind"] == "factory"
@@ -99,3 +100,15 @@ def test_synthetic_inputs_are_labelled_and_real_inputs_are_not():
         "evidence": request.evidence.model_copy(update={"synthetic": False})})
     draft = report(real)
     assert SYNTHETIC_NOTICE not in draft.summary and draft.synthetic is False
+
+
+V3_ISSUES = ("unreadable_observation", "unit_mismatch", "observed_absence", "observation_status_unknown",
+             "observation_not_checked", "numeric_expectation_invalid", "model_review")
+
+
+def test_issue_codes_added_by_contract_3_read_as_korean_sentences():
+    request = fixture("review")
+    items = tuple(i.model_copy(update={"issues": V3_ISSUES}) for i in request.validated.items)
+    draft = report(request.model_copy(update={"validated": request.validated.model_copy(update={"items": items})}))
+    assert "기타 사유" not in draft.summary
+    assert all(ISSUE[code] in draft.summary and ISSUE[code] in draft.change_requests[0] for code in V3_ISSUES)
