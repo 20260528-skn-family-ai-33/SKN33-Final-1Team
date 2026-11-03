@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from backend.a07_reporter.adapter import items
-from backend.a07_reporter.details import facts
 from backend.a07_reporter.prompt import (EXAMPLE_ITEMS, EXAMPLE_OUTPUT, FIELDS, MAX_ITEMS_PER_CALL, SYSTEM_PROMPT,
                                          build_payload, check, prompt_items, user_message)
 from backend.agent_framework.contracts import ReportRequest
@@ -27,7 +26,9 @@ def test_only_failed_or_review_items_are_sent_with_the_current_quote():
     request = fixture("fail")
     quote = next(e.source.quote for e in request.evidence.evidence if "requirement-number" in e.criterion_ids)
     assert prompt_items(items(request)) == [{"criterion_id": "requirement-number", "verdict": "불충족",
-                                              "standard": quote, "reasons": ["포스터에서 읽은 값이 기준과 다릅니다."]}]
+                                              "required": "필수", "standard": quote, "check": "숫자가 같아야 함",
+                                              "expected": "3개", "observed": "2개", "observation": "읽음",
+                                              "location": "가운데", "reasons": ["포스터에서 읽은 값이 기준과 다릅니다."]}]
     assert prompt_items(items(fixture("pass"))) == []
 
 
@@ -55,16 +56,11 @@ def test_poster_text_stays_data_and_cannot_close_the_block():
     assert json.loads(body)[0]["observed"] == attack
 
 
-def test_v3_details_are_merged_in_field_order_and_only_for_items_sent():
-    reports = items(fixture("fail"))
-    details = {"requirement-number": facts(kind="number", operator="equals", required=True, expected="3",
-                                           expected_unit="개", observed="2", observed_unit="개",
-                                           observation_status="observed", bbox=(0.12, 0.35, 0.78, 0.82)),
-               "requirement-text": facts(kind="text", operator="equals", required=True, expected="MORNING CUP")}
-    sent, = prompt_items(reports, details)
-    assert list(sent) == [key for key in FIELDS if key in sent] and sent["criterion_id"] == "requirement-number"
-    assert (sent["expected"], sent["observed"], sent["observation"], sent["location"]) == ("3개", "2개", "읽음", "가운데")
-    assert list(EXAMPLE_ITEMS[0]) == [key for key in FIELDS if key in EXAMPLE_ITEMS[0]]
+def test_a06_values_are_sent_in_field_order_and_match_the_example():
+    sent, = prompt_items(items(fixture("fail")))
+    assert list(sent) == list(FIELDS) and sent == EXAMPLE_ITEMS[0]   # 예시는 팀 fixture 값 그대로다
+    unread = prompt_items(items(fixture("review")))
+    assert all("observed" not in item and item["observation"] == "읽을 수 없음" for item in unread)
 
 
 def test_the_example_passes_its_own_check():

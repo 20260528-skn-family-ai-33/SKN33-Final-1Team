@@ -60,10 +60,9 @@ class QwenPolisher:
         self.last_problems = ("Qwen 서버에 연결하지 못했습니다.",)
         return None
 
-    def polish(self, reports: tuple[ItemReport, ...],
-               details: dict[str, dict[str, str]] | None = None) -> dict[str, tuple[str, str]] | None:
+    def polish(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]] | None:
         self.last_problems = ()
-        items = prompt_items(reports, details)
+        items = prompt_items(reports)
         out = {}
         for start in range(0, len(items), MAX_ITEMS_PER_CALL):
             chunk = items[start:start + MAX_ITEMS_PER_CALL]

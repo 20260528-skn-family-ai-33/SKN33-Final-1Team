@@ -46,6 +46,9 @@ def test_failed_item_comes_first_with_its_source_and_a_change_request():
     change, = draft.change_requests
     assert change.startswith("수정 요청 [requirement-number]")
     assert quote_of(request, "requirement-number") in change and "기준과 다릅니다" in change
+    at = lines.index("[불충족] requirement-number")
+    assert lines[at + 2:at + 4] == ["  기준: 필수 · 숫자가 같아야 함 · 기준값 3개", "  검사 모델이 읽은 값: 2개 (포스터 가운데)"]
+    assert "기준값 3개. 검사 모델이 읽은 값: 2개 (포스터 가운데). 사유:" in change
     number_first = [e.evidence_id for e in request.evidence.evidence][::-1]
     assert draft.verdict == "fail" and draft.evidence_ids == tuple(number_first)
 
@@ -53,7 +56,19 @@ def test_failed_item_comes_first_with_its_source_and_a_change_request():
 def test_review_items_ask_for_a_human_check_with_korean_reasons():
     draft = report(fixture("review"))
     assert [c.split("]")[0] for c in draft.change_requests] == ["확인 요청 [requirement-text", "확인 요청 [requirement-number"]
-    assert all("확실하지 않습니다" in c and "찾거나 읽지 못했습니다" in c for c in draft.change_requests)
+    assert all("확실하지 않습니다" in c and "읽을 수 없었습니다" in c and "사람 확인이 필요하다고" in c
+               and "검사 모델: 읽을 수 없음." in c for c in draft.change_requests)
+    assert "검사 모델이 읽은 값" not in draft.summary   # 읽지 못한 항목에 읽은 값을 지어내지 않는다
+
+
+def test_without_a_source_the_approved_criterion_is_shown_but_not_as_the_source():
+    request = fixture("unavailable")
+    draft = report(request)
+    text = {i.criterion_id: i.criterion_text for i in request.validated.items}
+    lines = draft.summary.splitlines()
+    at = lines.index("[확인 필요] requirement-number")
+    assert lines[at + 1:at + 3] == ["  기준 원문: 근거 묶음에 없습니다.", f'  승인된 조건: "{text["requirement-number"]}"']
+    assert all("기준 원문이 근거 묶음에 없습니다. 승인된 조건:" in c for c in draft.change_requests)
 
 
 @pytest.mark.parametrize(("name", "limit"), [("stale", "최신 상태가 아닙니다"), ("unavailable", "조회하지 못했습니다")])

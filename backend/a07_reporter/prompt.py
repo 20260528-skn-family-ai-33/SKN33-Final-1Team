@@ -1,10 +1,9 @@
-"""A07 Qwen 문장 다듬기 프롬프트(초안). 서버 연결 전이라 호출 코드는 아직 없다.
+"""A07 Qwen 문장 다듬기 프롬프트(초안). 호출은 qwen.py가 한다.
 
 - Qwen은 불충족·확인 필요 항목마다 explanation(무엇이 문제인지)·action(무엇을 하면 되는지) 두 칸만 쓴다.
   조건 ID·판정·기준 원문·첫 줄 요약·통과 항목은 지금처럼 코드가 쓴다.
-- 입력은 adapter.items()가 만든 사실이다. 계약 2.0.0에는 기준값·읽은 값·위치가 없어서 칸을 빼고 보낸다.
-  계약 3.0.0(A06 PR #53)이 들어오면 details.facts()가 만든 required·check·expected·observed·observation·
-  location을 prompt_items(details=...)로 더한다. 불확실 사유 문장은 3.0.0에도 A07까지 오지 않는다.
+- 입력은 adapter.items()가 만든 사실이다. 기준 원문·사유에 details.facts()가 만든 required·check·expected·
+  observed·observation·location(계약 3.0.0)을 더한다. 불확실 사유 문장은 3.0.0에도 A07까지 오지 않는다.
 - 포스터에서 읽은 글자는 데이터로만 넘기고, 응답은 check()가 확인한다. 문제가 하나라도 있으면
   그 실행 전체를 규칙 문장으로 쓴다(다시 묻지 않는다).
 - EXAMPLE_*는 팀 fixture(A06.fail) 값으로 만든 형식 예시다. 문장은 팀원이 문체를 확인하기 전까지
@@ -70,9 +69,9 @@ CODE_WORDS = re.compile(r"(?<![A-Za-z0-9_])[a-z]+(?:_[a-z]+)+(?![A-Za-z0-9_])") 
 QUOTED = re.compile(r'["“]([^"”]+)["”]|[\'‘]([^\'’]+)[\'’]')
 
 
-def prompt_items(reports: tuple[ItemReport, ...], details: dict[str, dict[str, str]] | None = None) -> list[dict]:
+def prompt_items(reports: tuple[ItemReport, ...]) -> list[dict]:
     """통과가 아닌 항목만. 기준 원문은 현재 기준 인용만 쓰고, 없으면 standard 칸을 뺀다.
-    details는 조건 ID별 details.facts() 결과(계약 3.0.0부터). 칸 순서는 FIELDS를 따른다."""
+    기준값·읽은 값·위치는 items()가 담은 details 그대로다. 칸 순서는 FIELDS를 따른다."""
     out = []
     for report in reports:
         if report.verdict == "pass":
@@ -80,7 +79,7 @@ def prompt_items(reports: tuple[ItemReport, ...], details: dict[str, dict[str, s
         quotes = [e.source.quote for e in report.sources if e.kind == "current_requirement"]
         item = {"criterion_id": report.criterion_id, "verdict": VERDICT[report.verdict],
                 **({"standard": " / ".join(quotes)} if quotes else {}), "reasons": list(report.reasons),
-                **(details or {}).get(report.criterion_id, {})}
+                **report.details}
         out.append(_ordered(item))
     return out
 

@@ -62,7 +62,7 @@ def test_polished_sentences_are_added_without_changing_facts():
 
 
 @pytest.mark.parametrize(("responses", "problem"), [
-    ((envelope({"items": [{**GOOD["items"][0], "explanation": "딸기가 2개로 보입니다."}]}),), "입력에 없는 숫자 2"),
+    ((envelope({"items": [{**GOOD["items"][0], "explanation": "딸기가 5개로 보입니다."}]}),), "입력에 없는 숫자 5"),
     ((envelope(GOOD, finish="length"),), "형식"),
     ((envelope("이건 JSON이 아닙니다"),), "형식"),
     ((httpx.Response(200, text="<html>"),), "형식"),

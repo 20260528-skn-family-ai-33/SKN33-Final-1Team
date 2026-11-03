@@ -1,7 +1,8 @@
 """A07 보고 어댑터(팀 소유). A06 판정을 바꾸지 않고 사람이 읽을 한국어 요약·수정 요청 초안·인용 근거를 만든다.
 
 - 사실(조건 ID·판정·사유·기준 원문)은 코드가 정해진 틀로 쓴다. 기본은 모델·파일·네트워크를 쓰지 않는다.
-- 요청에 없는 정보(조건 문장 전체, 포스터에서 읽은 값·위치)는 추측하지 않는다.
+- 기준값·필수 여부·검사 모델이 읽은 값·위치는 A06 검증 항목(계약 3.0.0)의 값만 쓴다(details.py).
+  요청에 없는 정보는 추측하지 않는다.
   기준 원문은 근거 묶음의 인용만 쓰고, 과거 기록·승인된 예외는 현재 기준과 구분해 표시한다.
 - 판정이 나쁜 조건부터(불충족 → 확인 필요 → 통과) 보여 준다.
 - 모르는 사유 코드는 버리지 않고 코드 그대로 남긴다(팀별 A06이 코드를 더할 수 있다).
@@ -12,10 +13,11 @@ from __future__ import annotations
 
 import os
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
-from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest
+from backend.a07_reporter.details import detail_lines, facts
+from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest, ValidatedItem
 from backend.agent_framework.ports import Reporter
 
 VERDICT = {"pass": "통과", "fail": "불충족", "review": "확인 필요"}
@@ -31,7 +33,7 @@ ISSUE = {   # backend/agent_framework/validation.py ReferenceValidator의 사유
     "missing_expected_value": "기준 값이 비어 있어 비교할 수 없습니다.",
     "missing_requirement_evidence": "이 조건의 현재 기준 원문이 근거 묶음에 없습니다.",
     "context_incomplete": "기준 근거가 최신이 아니거나 조회되지 않았습니다.",
-    # 계약 3.0.0(A06 PR #53)에서 더해지는 코드. 2.0.0에서는 나오지 않는다.
+    # 계약 3.0.0(A06 PR #53)에서 더해진 코드
     "unreadable_observation": "포스터에서 이 항목을 읽을 수 없었습니다.",
     "unit_mismatch": "기준과 포스터의 단위가 달라 비교할 수 없습니다.",
     "observed_absence": "포스터에 이 항목이 없습니다.",
@@ -61,6 +63,8 @@ class ItemReport:
     verdict: str
     reasons: tuple[str, ...]
     sources: tuple[Evidence, ...]
+    details: dict[str, str] = field(default_factory=dict)   # details.facts() 결과
+    criterion_text: str = ""
 
 
 class Polisher(Protocol):
@@ -79,7 +83,19 @@ def items(request: ReportRequest) -> tuple[ItemReport, ...]:
             sources.setdefault(criterion_id, []).append(evidence)
     ordered = sorted(request.validated.items, key=lambda item: ORDER[item.verdict])
     return tuple(ItemReport(item.criterion_id, item.verdict, tuple(reason(issue) for issue in item.issues),
-                            tuple(sources.get(item.criterion_id, ()))) for item in ordered)
+                            tuple(sources.get(item.criterion_id, ())), _facts(item), item.criterion_text)
+                 for item in ordered)
+
+
+def _facts(item: ValidatedItem) -> dict[str, str]:
+    return facts(kind=item.kind, operator=item.operator, required=item.required, expected=item.expected,
+                 expected_unit=item.expected_unit, observed=item.observed, observed_unit=item.observed_unit,
+                 observation_status=item.observation_status, bbox=item.image.bbox if item.image else None)
+
+
+def _approved(report: ItemReport, indent: str) -> list[str]:
+    # 기준 원문이 없을 때만 사람이 승인한 조건 문장을 보여 준다. 원문 인용은 아니다.
+    return [f'{indent}승인된 조건: "{report.criterion_text}"'] if report.criterion_text else []
 
 
 def _source_line(evidence: Evidence) -> str:
@@ -99,7 +115,9 @@ def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: 
         lines.append(POLISH_NOTICE)
     for report in reports:
         lines.append(f"[{VERDICT[report.verdict]}] {report.criterion_id}")
-        lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다."]
+        lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다.",
+                                                                     *_approved(report, "  ")]
+        lines += [f"  {line}" for line in detail_lines(report.details)] if report.details else []
         lines += [f"  사유: {text}" for text in report.reasons]
         if report.criterion_id in sentences:
             explanation, action = sentences[report.criterion_id]
@@ -120,7 +138,9 @@ def change_requests(reports: tuple[ItemReport, ...],
         if report.verdict == "pass":
             continue
         quotes = [f'"{e.source.quote}"' for e in report.sources if e.kind == "current_requirement"]
-        basis = f" 기준 원문: {' / '.join(quotes)}" if quotes else " 기준 원문이 근거 묶음에 없습니다."
+        basis = (f" 기준 원문: {' / '.join(quotes)}" if quotes
+                 else " 기준 원문이 근거 묶음에 없습니다." + "".join(_approved(report, " ")))
+        basis += f" {'. '.join(detail_lines(report.details))}." if report.details else ""
         why = f" 사유: {' / '.join(report.reasons)}" if report.reasons else ""
         if report.criterion_id in (sentences or {}):
             explanation, action = sentences[report.criterion_id]
