@@ -30,11 +30,11 @@ def context():
                    asset_version_id="poster-v1")
 
 
-def criterion(criterion_id, kind, operator, expected, quote):
+def criterion(criterion_id, kind, operator, expected, quote, unit=None):
     source = SourceRef(document_version_id="document-v1", page=1, block_id=f"block-{criterion_id}",
                        quote=quote, source_hash=sha256(quote.encode("utf-8")).hexdigest())
     return Criterion(criterion_id=criterion_id, text=quote, kind=kind, expected=expected,
-                     operator=operator, source=source)
+                     operator=operator, unit=unit, source=source)
 
 
 CRITERIA = (
@@ -42,6 +42,7 @@ CRITERIA = (
     criterion("marks", "number", "equals", "3", "초록 표시를 정확히 3개 넣는다."),
     criterion("logo", "visual", "present", "주최 로고", "주최 로고를 포함한다."),
 )
+FEE = criterion("fee", "number", "lte", "10000", "참가비는 10,000원 이하로 표기한다.", unit="원")
 
 
 def png(image, orientation=None):
@@ -97,6 +98,10 @@ class FakeModel:
         return self.answers
 
 
+def observed_answer(criterion_id, observed, verdict, bbox=None, **fields):
+    return a04.ModelAnswer(criterion_id, observed, verdict, bbox, observation_status="observed", **fields)
+
+
 def validate(request, inspection):
     return ReferenceValidator().validate(ValidateRequest(context=request.context, criteria=request.criteria,
         asset=request.asset, evidence=request.evidence, inspection=inspection))
@@ -110,9 +115,9 @@ def code_of(action):
 
 def test_model_answers_become_observations_with_request_owned_ids():
     access, request = setup()
-    model = FakeModel(a04.ModelAnswer("title", "가을 문화축제", "pass", (0.1, 0.1, 0.9, 0.3)),
-                      a04.ModelAnswer("marks", "3", "pass", (0.2, 0.4, 0.8, 0.6)),
-                      a04.ModelAnswer("logo", "우측 하단 주최 로고", "pass", (0.7, 0.8, 0.95, 0.95)))
+    model = FakeModel(observed_answer("title", "가을 문화축제", "pass", (0.1, 0.1, 0.9, 0.3)),
+                      observed_answer("marks", "3", "pass", (0.2, 0.4, 0.8, 0.6)),
+                      observed_answer("logo", "우측 하단 주최 로고", "pass", (0.7, 0.8, 0.95, 0.95)))
     result = invoke_role("A04_A05", a04.TeamPosterInspector(model, files=access), request)
     citations = {evidence.criterion_ids[0]: evidence.evidence_id for evidence in request.evidence.evidence}
     assert result.context == request.context and not result.synthetic
@@ -120,6 +125,7 @@ def test_model_answers_become_observations_with_request_owned_ids():
         assert observation.image.asset_version_id == request.asset.asset_version_id
         assert observation.image.asset_hash == request.asset.sha256
         assert observation.evidence_ids == (citations[observation.criterion_id],)
+        assert (observation.observation_status, observation.observed_unit) == ("observed", None)
         assert observation.uncertainty is None
     criteria, image = model.calls[0]
     assert criteria == request.criteria
@@ -130,14 +136,53 @@ def test_model_answers_become_observations_with_request_owned_ids():
 def test_a06_judges_text_and_numbers_from_observed_values_not_model_verdicts():
     access, request = setup()
     result = invoke_role("A04_A05", a04.TeamPosterInspector(FakeModel(
-        a04.ModelAnswer("title", "가을 문화 축제", "pass", (0.1, 0.1, 0.9, 0.3)),
-        a04.ModelAnswer("marks", "3개", "pass", (0.2, 0.4, 0.8, 0.6)),
-        a04.ModelAnswer("logo", "주최 로고", "pass", (0.7, 0.8, 0.95, 0.95))), files=access), request)
+        observed_answer("title", "가을 문화 축제", "pass", (0.1, 0.1, 0.9, 0.3)),
+        observed_answer("marks", "3개", "pass", (0.2, 0.4, 0.8, 0.6)),
+        observed_answer("logo", "주최 로고", "pass", (0.7, 0.8, 0.95, 0.95))), files=access), request)
     validated = validate(request, result)
     items = {item.criterion_id: item for item in validated.items}
     assert items["title"].verdict == "fail" and "value_mismatch" in items["title"].issues
-    assert items["marks"].verdict == "review" and "numeric_observation_invalid" in items["marks"].issues
+    # "3개" parses as 3 with the printed unit 개, but this criterion declares no unit.
+    assert items["marks"].verdict == "review" and "unit_mismatch" in items["marks"].issues
     assert validated.verdict == "fail"
+
+
+@pytest.mark.parametrize(("value", "unit", "verdict", "issue"), (
+    ("10,000원", None, "pass", None),
+    ("10000", "원", "pass", None),
+    ("12,000원", "원", "fail", "value_mismatch"),
+    ("10,000", None, "review", "unit_mismatch"),
+    ("10,000달러", None, "review", "unit_mismatch"),
+    ("10,000원", "달러", "review", "numeric_observation_invalid"),
+))
+def test_numbers_keep_the_printed_value_and_unit(value, unit, verdict, issue):
+    access, request = setup(criteria=(FEE,))
+    result = invoke_role("A04_A05", a04.TeamPosterInspector(FakeModel(
+        observed_answer("fee", value, "pass", (0.1, 0.7, 0.6, 0.8), observed_unit=unit)), files=access), request)
+    [observation] = result.observations
+    # The adapter passes the printed value and unit as they are; it never borrows the expected 원.
+    assert (observation.observed, observation.observed_unit) == (value, unit)
+    [item] = validate(request, result).items
+    assert item.verdict == verdict and (issue in item.issues if issue else not item.issues)
+
+
+@pytest.mark.parametrize(("answer", "verdict", "issue"), (
+    (a04.ModelAnswer("title", "", "fail", observation_status="absent"), "fail", "observed_absence"),
+    (a04.ModelAnswer("logo", "", "fail", observation_status="absent"), "fail", "observed_absence"),
+    (a04.ModelAnswer("marks", "", "fail", observation_status="absent"), "review", "missing_observation"),
+    (a04.ModelAnswer("title", "", "review", (0.1, 0.1, 0.9, 0.3), "글자가 번져 읽을 수 없습니다",
+                     observation_status="unreadable"), "review", "unreadable_observation"),
+    (a04.ModelAnswer("logo", "", "review", observation_status="not_checked"), "review", "observation_not_checked"),
+    (a04.ModelAnswer("title", "가을 문화축제", "pass", (0.1, 0.1, 0.9, 0.3)), "review", "observation_status_unknown"),
+))
+def test_observation_status_reaches_a06_unchanged(answer, verdict, issue):
+    access, request = setup()
+    result = invoke_role("A04_A05", a04.TeamPosterInspector(FakeModel(answer), files=access), request)
+    [observation] = result.observations
+    # Only an observed pass/fail needs a location, so an absence keeps the model's own note.
+    assert (observation.observation_status, observation.uncertainty) == (answer.observation_status, answer.uncertainty)
+    items = {item.criterion_id: item for item in validate(request, result).items}
+    assert items[answer.criterion_id].verdict == verdict and issue in items[answer.criterion_id].issues
 
 
 @pytest.mark.parametrize("answers", (
@@ -145,6 +190,8 @@ def test_a06_judges_text_and_numbers_from_observed_values_not_model_verdicts():
     (a04.ModelAnswer("title", "가을 문화축제", "review"), a04.ModelAnswer("title", "가을 문화축제", "review")),
     (a04.ModelAnswer("title", "가을 문화축제", "approved"),),
     (a04.ModelAnswer("title", "가을 문화축제", "review", uncertainty=3),),
+    (a04.ModelAnswer("title", "가을 문화축제", "pass", observation_status="seen"),),
+    (observed_answer("marks", "3", "pass", observed_unit=3),),
 ))
 def test_model_output_outside_the_request_is_rejected(answers):
     access, request = setup()
@@ -154,8 +201,8 @@ def test_model_output_outside_the_request_is_rejected(answers):
 def test_missing_answers_locations_and_invalid_boxes_stay_reviewable():
     access, request = setup()
     result = invoke_role("A04_A05", a04.TeamPosterInspector(FakeModel(
-        a04.ModelAnswer("title", "가을 문화축제", "pass"),
-        a04.ModelAnswer("logo", "주최 로고", "pass", (0.9, 0.2, 0.4, 0.8))), files=access), request)
+        observed_answer("title", "가을 문화축제", "pass"),
+        observed_answer("logo", "주최 로고", "pass", (0.9, 0.2, 0.4, 0.8))), files=access), request)
     observations = {observation.criterion_id: observation for observation in result.observations}
     assert set(observations) == {"title", "logo"}
     assert all(item.image.bbox is None and item.uncertainty for item in observations.values())
@@ -163,7 +210,7 @@ def test_missing_answers_locations_and_invalid_boxes_stay_reviewable():
     assert {item.verdict for item in items.values()} == {"review"}
     assert "missing_observation" in items["marks"].issues
 
-    relaxed = a04.TeamPosterInspector(FakeModel(a04.ModelAnswer("title", "가을 문화축제", "pass")),
+    relaxed = a04.TeamPosterInspector(FakeModel(observed_answer("title", "가을 문화축제", "pass")),
                                       files=access, require_location=False)
     assert invoke_role("A04_A05", relaxed, request).observations[0].uncertainty is None
 
@@ -257,6 +304,11 @@ def chat_response(observations, finish_reason="stop"):
     return {"choices": [{"index": 0, "finish_reason": finish_reason, "message": {"role": "assistant", "content": content}}]}
 
 
+def row(criterion_id, observed, verdict, bbox=None, *, status="observed", unit=None, uncertainty=None):
+    return {"criterion_id": criterion_id, "observation_status": status, "observed": observed, "observed_unit": unit,
+            "verdict": verdict, "bbox": bbox, "uncertainty": uncertainty}
+
+
 def model_image(width=200, height=100):
     return a04.ModelImage(png(Image.new("RGB", (width, height), "white")), "image/png", width, height)
 
@@ -279,12 +331,12 @@ def test_client_sends_one_image_with_a_strict_schema_and_normalizes_boxes(box_fo
 
     def handler(request):
         seen.append(request)
-        return httpx.Response(200, json=chat_response([{"criterion_id": "title", "observed": "가을 문화축제",
-                                                        "verdict": "pass", "bbox": raw_box, "uncertainty": None}]))
+        return httpx.Response(200, json=chat_response([row("title", "가을 문화축제", "pass", raw_box)]))
 
     [answer] = client(handler, model="Qwen/Qwen3.5-4B", api_key="test-key",
                       box_format=box_format).inspect(CRITERIA[:1], model_image())
     assert (answer.criterion_id, answer.observed, answer.verdict, answer.uncertainty) == ("title", "가을 문화축제", "pass", None)
+    assert (answer.observation_status, answer.observed_unit) == ("observed", None)
     assert answer.bbox == pytest.approx((0.1, 0.2, 0.5, 0.6))
     [request] = seen
     assert str(request.url) == "http://127.0.0.1:8001/v1/chat/completions"
@@ -292,6 +344,8 @@ def test_client_sends_one_image_with_a_strict_schema_and_normalizes_boxes(box_fo
     payload = json.loads(request.content)
     assert (payload["model"], payload["temperature"]) == ("Qwen/Qwen3.5-4B", 0)
     assert payload["response_format"]["json_schema"]["strict"] is True
+    answer_schema = payload["response_format"]["json_schema"]["schema"]["$defs"]["AnswerSchema"]
+    assert {"observation_status", "observed_unit"} <= set(answer_schema["required"])
     content = payload["messages"][1]["content"]
     assert [part["type"] for part in content] == ["text", "image_url"]
     assert content[1]["image_url"]["url"].startswith("data:image/png;base64,")
@@ -303,8 +357,7 @@ def test_client_downscales_to_its_pixel_budget_and_batches_criteria():
 
     def handler(request):
         seen.append(request)
-        rows = [{"criterion_id": key, "observed": "", "verdict": "review", "bbox": None, "uncertainty": "보이지 않음"}
-                for key in sent_criteria(request)]
+        rows = [row(key, "", "review", status="unknown", uncertainty="보이지 않음") for key in sent_criteria(request)]
         return httpx.Response(200, json=chat_response(rows))
 
     answers = client(handler, max_pixels=5_000, max_criteria_per_call=2).inspect(CRITERIA, model_image(200, 100))
@@ -321,7 +374,10 @@ def test_client_downscales_to_its_pixel_budget_and_batches_criteria():
     (httpx.Response(200, json=chat_response([], finish_reason="length")), "MODEL_OUTPUT_INVALID", False),
     (httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "not json"}}]}),
      "MODEL_OUTPUT_INVALID", False),
-    (httpx.Response(200, json=chat_response([{"criterion_id": "marks", "observed": "3", "verdict": "pass",
+    (httpx.Response(200, json=chat_response([row("marks", "3", "pass")])), "MODEL_OUTPUT_INVALID", False),
+    (httpx.Response(200, json=chat_response([row("title", "가을 문화축제", "pass", status="seen")])),
+     "MODEL_OUTPUT_INVALID", False),
+    (httpx.Response(200, json=chat_response([{"criterion_id": "title", "observed": "가을 문화축제", "verdict": "pass",
                                               "bbox": None, "uncertainty": None}])), "MODEL_OUTPUT_INVALID", False),
 ))
 def test_client_failures_are_explicit_and_never_retried(response, code, retryable):
@@ -353,11 +409,13 @@ def test_adapter_and_client_together_return_a_contract_inspection():
 
     def handler(_request):
         return httpx.Response(200, json=chat_response([
-            {"criterion_id": "title", "observed": "가을 문화축제", "verdict": "pass", "bbox": [0.1, 0.1, 0.9, 0.3], "uncertainty": None},
-            {"criterion_id": "marks", "observed": "3", "verdict": "pass", "bbox": [0.2, 0.4, 0.8, 0.6], "uncertainty": None},
-            {"criterion_id": "logo", "observed": "", "verdict": "review", "bbox": None, "uncertainty": "로고가 흐립니다"}]))
+            row("title", "가을 문화축제", "pass", [0.1, 0.1, 0.9, 0.3]),
+            row("marks", "3", "pass", [0.2, 0.4, 0.8, 0.6]),
+            row("logo", "", "review", status="unreadable", uncertainty="로고가 흐립니다")]))
 
     result = invoke_role("A04_A05", a04.TeamPosterInspector(client(handler), files=access), request)
+    assert {observation.criterion_id: observation.observation_status for observation in result.observations} == {
+        "title": "observed", "marks": "observed", "logo": "unreadable"}
     validated = validate(request, result)
     assert {item.criterion_id: item.verdict for item in validated.items} == {"title": "pass", "marks": "pass", "logo": "review"}
     assert validated.verdict == "review"
