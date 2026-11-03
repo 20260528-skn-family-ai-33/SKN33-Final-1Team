@@ -1,6 +1,7 @@
 """A07 Qwen 문장 다듬기 호출. OpenAI 호환 /v1/chat/completions(vLLM)에 prompt.build_payload를 보낸다.
 
-- 서버는 팀 공용 Qwen3.5-4B를 쓴다(A07이 따로 띄우지 않는다). create_reporter()는 A07_QWEN_BASE_URL이 있을 때만 붙인다.
+- 서버는 팀 공용 Qwen3.5-4B를 쓴다(A07이 따로 띄우지 않는다). create_reporter()는 팀 공용 설정 CC_QWEN_BASE_URL이
+  있을 때만 붙인다.
 - 실패(연결·거절·잘린 응답·형식·check 위반)는 예외로 올리지 않고 None을 돌려준다. 보고기는 규칙 문장을 쓴다.
   이유는 last_problems에 남긴다.
 - 추론은 부작용이 없어 연결 오류·429·5xx만 한 번 다시 보낸다. 형식이 틀린 응답은 다시 묻지 않는다.

@@ -115,10 +115,18 @@ def test_endpoint_is_completed_from_the_base_address(base, endpoint):
     assert QwenPolisher(base).url == endpoint
 
 
-def test_factory_uses_qwen_only_when_the_address_is_set(monkeypatch):
-    monkeypatch.delenv("A07_QWEN_BASE_URL", raising=False)
+def test_factory_reads_the_shared_cc_qwen_settings(monkeypatch):
+    for name in ("CC_QWEN_BASE_URL", "CC_QWEN_API_KEY", "CC_QWEN_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("A07_QWEN_BASE_URL", "http://127.0.0.1:18290")   # 예전 A07 전용 이름은 읽지 않는다
     assert create_reporter().polisher is None
-    monkeypatch.setenv("A07_QWEN_BASE_URL", "http://127.0.0.1:18290")
+    monkeypatch.setenv("CC_QWEN_BASE_URL", "http://127.0.0.1:8001/v1")
     reporter = create_reporter()
     assert isinstance(reporter.polisher, QwenPolisher)
-    assert reporter.polisher.url == "http://127.0.0.1:18290/v1/chat/completions"
+    assert reporter.polisher.url == "http://127.0.0.1:8001/v1/chat/completions"
+    assert reporter.polisher.model == "Qwen/Qwen3.5-4B" and "Authorization" not in reporter.polisher.http.headers
+    monkeypatch.setenv("CC_QWEN_MODEL", "team-qwen")
+    monkeypatch.setenv("CC_QWEN_API_KEY", "test-key")
+    reporter = create_reporter()
+    assert reporter.polisher.model == "team-qwen"
+    assert reporter.polisher.http.headers["Authorization"] == "Bearer test-key"

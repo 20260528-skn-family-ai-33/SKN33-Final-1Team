@@ -6,7 +6,7 @@
 - 판정이 나쁜 조건부터(불충족 → 확인 필요 → 통과) 보여 준다.
 - 모르는 사유 코드는 버리지 않고 코드 그대로 남긴다(팀별 A06이 코드를 더할 수 있다).
 - Qwen 문장 다듬기(polisher, 선택)는 items()가 만든 사실 위에 불충족·확인 필요 항목의 설명·할 일 문장만 더한다.
-  사실 칸은 바꾸지 않고, 다듬기가 실패하면 규칙 문장만 쓴다. 연결은 A07_QWEN_BASE_URL(qwen.py).
+  사실 칸은 바꾸지 않고, 다듬기가 실패하면 규칙 문장만 쓴다. 연결은 팀 공용 CC_QWEN_* 설정(qwen.py).
 """
 from __future__ import annotations
 
@@ -159,9 +159,11 @@ class TeamA07Reporter:
 
 def create_reporter() -> Reporter:
     """설정 파일이 가리키는 factory. 기본은 모델·파일 없이 규칙 문장만 쓴다.
-    A07_QWEN_BASE_URL이 있으면 팀 공용 Qwen 서버로 문장을 다듬는다(A07_QWEN_API_KEY는 선택)."""
-    base_url = os.environ.get("A07_QWEN_BASE_URL", "").strip()
+    CC_QWEN_BASE_URL이 있으면 팀 공용 Qwen 서버로 문장을 다듬는다. A02·A04_A05와 같은 CC_QWEN_* 값을 읽는다
+    (CC_QWEN_API_KEY는 선택, CC_QWEN_MODEL이 비어 있으면 Qwen/Qwen3.5-4B)."""
+    base_url = os.environ.get("CC_QWEN_BASE_URL", "").strip()
     if not base_url:
         return TeamA07Reporter()
-    from backend.a07_reporter.qwen import QwenPolisher   # qwen.py가 이 모듈을 import하므로 여기서 불러온다
-    return TeamA07Reporter(QwenPolisher(base_url, api_key=os.environ.get("A07_QWEN_API_KEY") or None))
+    from backend.a07_reporter.qwen import MODEL, QwenPolisher   # qwen.py가 이 모듈을 import하므로 여기서 불러온다
+    return TeamA07Reporter(QwenPolisher(base_url, api_key=os.environ.get("CC_QWEN_API_KEY") or None,
+                                        model=os.environ.get("CC_QWEN_MODEL", "").strip() or MODEL))

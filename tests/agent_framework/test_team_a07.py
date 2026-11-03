@@ -28,7 +28,7 @@ def quote_of(request, criterion_id):
 
 
 def test_shared_check_suite_passes_with_the_real_factory(monkeypatch):
-    monkeypatch.delenv("A07_QWEN_BASE_URL", raising=False)
+    monkeypatch.delenv("CC_QWEN_BASE_URL", raising=False)
     result = run_checks(load_suite(CHECKS / "A07.suite.json", "A07"),
                         load_config(ROOT / "backend/a07_reporter/team_config.json"))
     assert result["adapter_kind"] == "factory"
