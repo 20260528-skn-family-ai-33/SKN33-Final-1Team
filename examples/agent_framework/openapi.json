@@ -3,7 +3,7 @@
   "info": {
     "title": "Creative Checker — Development Framework",
     "description": "Development only. In-memory state, synthetic default adapters, no authentication. Not the front-v2/M008 production API. Bind to loopback only.",
-    "version": "2.0.0"
+    "version": "3.0.0"
   },
   "paths": {
     "/api/framework/v1/health": {
@@ -259,9 +259,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -313,9 +313,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "file_id": {
             "type": "string",
@@ -372,9 +372,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "project_id": {
             "type": "string",
@@ -455,9 +455,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -496,9 +496,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -580,9 +580,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "file_id": {
             "type": "string",
@@ -629,9 +629,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "evidence_id": {
             "type": "string",
@@ -722,9 +722,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -799,9 +799,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "code": {
             "type": "string",
@@ -847,9 +847,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "asset_version_id": {
             "type": "string",
@@ -903,9 +903,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -935,9 +935,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -949,6 +949,29 @@
           "observed": {
             "type": "string",
             "title": "Observed"
+          },
+          "observation_status": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "absent",
+              "unreadable",
+              "not_checked",
+              "unknown"
+            ],
+            "title": "Observation Status",
+            "default": "unknown"
+          },
+          "observed_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Unit"
           },
           "verdict": {
             "type": "string",
@@ -999,9 +1022,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1058,9 +1081,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1081,9 +1104,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1241,9 +1264,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "document_version_id": {
             "type": "string",
@@ -1290,9 +1313,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1317,9 +1340,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "ordinal": {
             "type": "integer",
@@ -1433,9 +1456,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"
@@ -1494,9 +1517,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "criterion_id": {
             "type": "string",
@@ -1504,6 +1527,139 @@
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
             "title": "Criterion Id"
+          },
+          "criterion_text": {
+            "type": "string",
+            "title": "Criterion Text"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "visual",
+              "unsupported"
+            ],
+            "title": "Kind"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "equals",
+              "contains",
+              "gte",
+              "lte",
+              "present",
+              "manual"
+            ],
+            "title": "Operator"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected"
+          },
+          "expected_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Unit"
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed"
+          },
+          "observed_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Unit"
+          },
+          "observation_status": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "absent",
+              "unreadable",
+              "not_checked",
+              "unknown"
+            ],
+            "title": "Observation Status",
+            "default": "unknown"
+          },
+          "comparison_expected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Expected"
+          },
+          "comparison_observed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Observed"
+          },
+          "comparison_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Unit"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageEvidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "default": []
           },
           "verdict": {
             "type": "string",
@@ -1527,6 +1683,11 @@
         "type": "object",
         "required": [
           "criterion_id",
+          "criterion_text",
+          "kind",
+          "operator",
+          "required",
+          "expected",
           "verdict"
         ],
         "title": "ValidatedItem"
@@ -1535,9 +1696,9 @@
         "properties": {
           "contract_version": {
             "type": "string",
-            "const": "2.0.0",
+            "const": "3.0.0",
             "title": "Contract Version",
-            "default": "2.0.0"
+            "default": "3.0.0"
           },
           "context": {
             "$ref": "#/components/schemas/Context"

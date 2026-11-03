@@ -158,17 +158,17 @@ def build():
     template = (ROOT / "scripts" / "templates" / "agent-flow.html.in").read_text(encoding="utf-8")
     result = render(template, data, metadata)
     output = FOLDER / "flow.html"
-    output.write_text(result, encoding="utf-8")
+    output.write_text(result, encoding="utf-8", newline="\n")
     sources = source_payload(data)
     source_output = FOLDER / "source.html"
-    source_output.write_text(render_sources(sources), encoding="utf-8")
+    source_output.write_text(render_sources(sources), encoding="utf-8", newline="\n")
     audit = {"workflow_nodes": len(data["nodes"]), "workflow_edges": len(data["edges"]),
              "scenarios": {k: len(v) for k, v in data["scenarios"].items()},
              "flow_data_sha256": sha256((FOLDER / "flow-data.json").read_bytes()).hexdigest(),
              "html_sha256": sha256(output.read_bytes()).hexdigest(), "code_graph": metadata,
              "source_files": len(sources), "source_html_sha256": sha256(source_output.read_bytes()).hexdigest(),
              "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."}
-    (FOLDER / "flow-build.json").write_text(json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (FOLDER / "flow-build.json").write_text(json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"Built {output}: {len(data['nodes'])} nodes, {len(data['edges'])} edges")
 
 

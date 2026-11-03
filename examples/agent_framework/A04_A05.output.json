@@ -1,7 +1,7 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "context": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -12,12 +12,14 @@
   },
   "observations": [
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "criterion_id": "requirement-text",
       "observed": "MORNING CUP",
+      "observation_status": "observed",
+      "observed_unit": null,
       "verdict": "pass",
       "image": {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "asset_version_id": "poster-v1",
         "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
         "bbox": [
@@ -33,12 +35,14 @@
       "uncertainty": null
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "criterion_id": "requirement-number",
       "observed": "3",
+      "observation_status": "observed",
+      "observed_unit": "개",
       "verdict": "pass",
       "image": {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "asset_version_id": "poster-v1",
         "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
         "bbox": [

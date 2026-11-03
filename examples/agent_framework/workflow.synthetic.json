@@ -1,8 +1,8 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "id": "synthetic-approval-rereview",
   "context": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -12,7 +12,7 @@
     "parent_run_id": null
   },
   "document": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "file_id": "synthetic-pdf-reference",
     "document_version_id": "document-v1",
     "sha256": "dbf21f8e6c7c3af1c860ae8b58a157066944aa6feced8abb0a1d19e5b5230ce1",
@@ -20,7 +20,7 @@
     "page_count": 1
   },
   "asset": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "file_id": "synthetic-poster-v1",
     "asset_version_id": "poster-v1",
     "sha256": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
@@ -29,7 +29,7 @@
     "height": 1600
   },
   "revision_context": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-2",
     "actor_id": "synthetic-reviewer",
@@ -39,7 +39,7 @@
     "parent_run_id": "demo-run-1"
   },
   "revision_asset": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "file_id": "synthetic-poster-v2",
     "asset_version_id": "poster-v2",
     "sha256": "35fce4fe4d9d1fd6d94a211cb5399c3ed15e9564b59e369ca80b921f3a07cf9f",

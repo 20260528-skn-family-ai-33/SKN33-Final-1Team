@@ -36,7 +36,7 @@ def register(monkeypatch, name, factory):
     lambda d: d["roles"].pop("A07"),
     lambda d: d["roles"].update({"A08": {"kind": "unconfigured"}}),
     lambda d: d.update({"profile": "production"}),
-    lambda d: d.update({"contract_version": "3.0.0"}),
+    lambda d: d.update({"contract_version": "2.0.0"}),
     lambda d: d.update({"database_url": "not-a-config-field"}),
     lambda d: d["roles"].update({"A02": {"kind": "reference"}}),
 ])
