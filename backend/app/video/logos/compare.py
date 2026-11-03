@@ -12,8 +12,10 @@
      추가: 원본 문구에 없는 OCR 줄, 어느 요소 자리와도 떨어진 전경 덩어리
      기준 문구가 없으면: 원본을 영상 전경 높이로 줄여 같은 크기에서 읽은 OCR 줄과 비교해 빠짐·추가를 낸다(same_size_text)
      크기 비율: 심볼이 로고의 15% 이상·높이 20px 이상일 때 심볼:주 문구 높이 비가 1.3배 넘게 다르면 '크기 비율 다름'
+     외곽 비율: 전경 상자 가로세로 비율이 원본과 |log| 0.3 넘게 다르면 '외곽 비율 다름'(붙은 막대·빠진 줄·배치 변경)
   ④ 초마다 match / diff(이름 붙은 근거) / unknown(비교 불가가 있음)
-  ⑤ 색: 유채색 화소끼리만 비교(흰색·검은색 단색은 통과). 위 판정에는 섞지 않고 근거로만 함께 낸다.
+  ⑤ 색: 유채색 화소끼리만 비교(흰색·검은색 단색은 통과). 색상 차이 22° 이상이거나 빠진 유채색 15% 이상이면 '색' 근거로 낸다
+     (2026-11-03: 윤곽 안쪽 무늬가 빠진 경우를 모양 비교가 못 잡아 색을 판정에 넣음. 새 유채색은 정상에서도 커서 쓰지 않는다)
 묶음은 판정 없이 초별 결과, 근거와 나온 초 수, 대표 프레임(가장 크고 선명한 초), 결과가 바뀌는 초를 낸다.
 """
 from __future__ import annotations
@@ -30,6 +32,13 @@ SMALL_TEXT_PX = 8
 SMALL_SYMBOL_PX = 20
 SYMBOL_F1 = 0.6
 RATIO_LIMIT = 1.3
+# 색 차이 근거(2026-11-03 상현님 결정): 건강보험심사평가원 DNA 무늬가 빠진 구간은 색상 24~36°·빠진 유채색 15~28%,
+# 정상으로 본 구간은 색상 2~20°·빠진 유채색 0~4%였다. 사례가 적어 경계값은 다시 보정해야 한다.
+COLOR_HUE_LIMIT = 22.0   # 둘 다 유채색인 화소의 색상 차이 중앙값(도)
+COLOR_LOST_LIMIT = 0.15  # 원본 유채색 중 영상에서 무채색이 된 비율
+# 외곽 비율(2026-11-03): 전경 상자 가로세로 비율의 |log(영상/원본)|. 정답 crop 65개+오늘 1개에서 정상 최대 0.214,
+# 0.3이면 다름 11/22·정상 오검출 0/44(같은 데이터로 정해 여유를 둠). 로고에 붙은 막대·빠진 줄·배치 변경을 잡는다
+ASPECT_LIMIT = 0.3
 
 
 # ---------------------------------------------------------------------------
@@ -283,10 +292,18 @@ def compare(q: Image.Image, ref: dict) -> dict:
             qr = (bbox(sub)[3] - bbox(sub)[1]) / max(1, found[anc][3] - found[anc][1])
             if abs(np.log(qr / rr)) > np.log(RATIO_LIMIT):
                 findings.append(("배치", f"심볼:문구 크기 비율 다름 (원본 {rr:.2f}, 영상 {qr:.2f})"))
+    if mq.any():
+        bq, br = bbox(mq), bbox(ref["mask"])
+        aq, ar = (bq[2] - bq[0]) / max(1, bq[3] - bq[1]), (br[2] - br[0]) / max(1, br[3] - br[1])
+        if abs(np.log(aq / ar)) > ASPECT_LIMIT:
+            findings.append(("배치", f"로고 외곽 비율이 원본과 다름(가로/세로 원본 {ar:.2f}, 영상 {aq:.2f})"))
+    col = color(q, mq, ref["image"], ref["mask"])
+    if (col["hue"] or 0) >= COLOR_HUE_LIMIT or (col["lostc"] or 0) >= COLOR_LOST_LIMIT:
+        findings.append(("색", f"색이 원본과 다름(색상 차이 {col['hue'] if col['hue'] is not None else '-'}°, 빠진 유채색 {round((col['lostc'] or 0) * 100)}%)"))
     outcome = "diff" if findings else "unknown" if any(x["status"].startswith("not_comparable") for x in status) else "match"
     names = sorted({f[1] for f in findings})
     return {"outcome": outcome, "findings": names, "kinds": sorted({f[0] for f in findings}), "elements": status,
-            "ocr": [o["raw"] for o in qocr], "color": color(q, mq, ref["image"], ref["mask"])}
+            "ocr": [o["raw"] for o in qocr], "color": col}
 
 
 def color(q: Image.Image, mq: np.ndarray, rf: Image.Image, mr: np.ndarray, size=96) -> dict:

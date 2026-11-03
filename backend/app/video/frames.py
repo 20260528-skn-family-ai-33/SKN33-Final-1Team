@@ -114,13 +114,16 @@ def probe(ffmpeg: str, demuxer: str, path: Path) -> dict:
 # 1단계 — 표본 시각과 검사 범위
 # ---------------------------------------------------------------------------
 def plan_times(duration_ms: int, *, edges: bool = True) -> list[dict]:
-    """1초 격자 전체와 (광고 표시 검사 대상이면) 시작·끝 3초의 0.2초 슬롯. 겹치는 시각은 1초 쪽으로."""
-    times = {t: "base" for t in range(0, duration_ms, BASE_MS)}
+    """1초 격자 전체와 (광고 표시 검사 대상이면) 시작·끝 3초의 0.2초 슬롯. 겹치는 시각은 1초 쪽으로.
+    ffmpeg fps=5 필터는 0.2초를 다 채우는 슬롯만 내므로, 영상 안에서 0.2초를 다 채우는 슬롯(t + 0.2초 ≤ 길이)만 계획한다.
+    (예: 88.967초 영상의 88.8초 슬롯은 나오지 않아 정상 파일이 잘린 파일로 실패했다.) 0.2초보다 짧은 영상도 첫 프레임은 본다."""
+    end = max(duration_ms - EDGE_MS + 1, 1)
+    times = {t: "base" for t in range(0, end, BASE_MS)}
     if edges:
-        for t in range(0, min(EDGE_WINDOW_MS, duration_ms), EDGE_MS):
+        for t in range(0, min(EDGE_WINDOW_MS, end), EDGE_MS):
             times.setdefault(t, "head")
         tail_start = max(0, duration_ms - EDGE_WINDOW_MS)
-        for t in range(-(-tail_start // EDGE_MS) * EDGE_MS, duration_ms, EDGE_MS):
+        for t in range(-(-tail_start // EDGE_MS) * EDGE_MS, end, EDGE_MS):
             times.setdefault(t, "tail")
     return [{"time_ms": t, "sampling": kind, "frame_id": f"t{t:06d}"} for t, kind in sorted(times.items())]
 
