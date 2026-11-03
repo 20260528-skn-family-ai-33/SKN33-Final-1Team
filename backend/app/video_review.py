@@ -79,7 +79,14 @@ def _now() -> str:
 def _write_json(path: Path, value) -> None:
     temp = path.with_suffix(f".{uuid4().hex}.tmp")
     temp.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
-    temp.replace(path)
+    # Windows는 다른 요청이 대상 파일을 읽는 동안 교체를 PermissionError로 거부하므로 잠깐 기다렸다 다시 시도한다.
+    for attempt in range(20):
+        try:
+            temp.replace(path); return
+        except PermissionError:
+            if attempt == 19:
+                temp.unlink(missing_ok=True); raise
+            time.sleep(0.05)
 
 
 def _write_jsonl(path: Path, rows: list[dict]) -> None:
