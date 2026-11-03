@@ -23,11 +23,12 @@ OCR_PACKAGES = (("torch", "torch"), ("torchvision", "torchvision"),
                 ("opencv-python-headless", "cv2"))
 
 
-def requirements_file():
+def install_command():
     """원격·Paddle 단독은 EasyOCR 없이 실행 가능한 공통 패키지만 안내한다."""
     target = os.getenv("RUN_TARGET", "local").strip().lower()
     pipeline = selected_pipeline()
-    return "requirements-test.txt" if target == "runpod" or pipeline == "paddle-only" else "requirements.txt"
+    extra = "" if target == "runpod" or pipeline == "paddle-only" else " --extra legacy-ocr"
+    return "uv sync --locked --group dev" + extra
 
 
 def print_ocr_selection(windows):
@@ -80,7 +81,7 @@ def environment_failure(reason, windows, preserve=False):
         print("Python 3.12가 없다면 먼저 설치하세요.")
         print("python3.12 -m venv .venv")
     python = r".\.venv\Scripts\python.exe" if windows else ".venv/bin/python"
-    print(f"{python} -m pip install -r {requirements_file()}")
+    print(install_command())
     print("설치 후 다시 실행: " + (r".\run.cmd" if windows else "./run.sh"))
     raise SystemExit(1)
 
@@ -190,8 +191,8 @@ def startup_checks(windows):
         package_errors = package_errors or bool(ocr_errors)
     if package_errors:
         if pipeline == "paddle-only":
-            warnings.append("[안내] requirements-test.txt는 EasyOCR·PyTorch 없이 서버 공통 패키지를 준비하는 데 사용합니다.")
-        commands.append(f"{python} -m pip install -r {requirements_file()}")
+            warnings.append("[안내] 기본 uv sync는 EasyOCR·PyTorch 없이 서버 공통 패키지를 준비합니다.")
+        commands.append(install_command())
     if target != "runpod" and pipeline != "paddle-only":
         missing_models = model_problems()
         problems.extend(missing_models)
@@ -237,6 +238,7 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--check-only", action="store_true", help="준비 상태만 확인하고 서버를 실행하지 않습니다.")
+    parser.add_argument("--env-file", type=Path, help="명시한 실행 설정만 읽습니다. 생략하면 프로세스 환경변수를 사용합니다.")
     args = parser.parse_args()
     windows = sys.platform == "win32"
     start_command = r".\run.cmd" if windows else "./run.sh"
@@ -268,6 +270,14 @@ def main():
         environment_failure("프로젝트 Python이 가상환경을 사용하지 않습니다.", windows, True)
     if sys.version_info[:2] != (3, 12):
         environment_failure("프로젝트 .venv에는 Python 3.12가 필요합니다.", windows, True)
+    from backend.app.config import ConfigurationError
+    from backend.runtime_environment import activate_runtime
+    try:
+        values = activate_runtime("legacy", args.env_file)
+        if args.env_file and values.get("PERSISTENCE_MODE") == "postgres":
+            os.environ.setdefault("CC_WEB_POSTGRES_ENV_FILE", str(args.env_file.resolve()))
+    except ConfigurationError as error:
+        parser.error(str(error))
     print_ocr_selection(windows)
     print(f"[실행 전 검사] Python: {sys.executable}", flush=True)
     problems, warnings, commands, uvicorn = startup_checks(windows)

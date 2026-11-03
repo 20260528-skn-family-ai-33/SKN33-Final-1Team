@@ -40,7 +40,7 @@ def database():
         from psycopg import sql
         import sqlalchemy  # noqa: F401
     except ImportError:
-        pytest.fail("Selected db_integration requires requirements-db.txt; missing packages are not skipped.")
+        pytest.fail("Selected db_integration requires uv sync --locked; missing packages are not skipped.")
     name = "creative_checker_test_" + uuid4().hex
     assert name.startswith("creative_checker_test_") and len(name) <= 63
     common = {"host": env["TEST_DB_HOST"], "port": int(env["TEST_DB_PORT"]), "connect_timeout": 5}

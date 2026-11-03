@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .venv/
 .venv-rebuild/
+.venv-common/
 # Keep the previous local environment excluded during migration.
 .venv-review/
 venv/

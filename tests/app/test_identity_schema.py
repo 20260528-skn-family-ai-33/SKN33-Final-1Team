@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("sqlalchemy", reason="Optional schema tests require requirements-db.txt")
-pytest.importorskip("alembic", reason="Optional migration tests require requirements-db.txt")
+pytest.importorskip("sqlalchemy", reason="Optional schema tests require uv sync --locked")
+pytest.importorskip("alembic", reason="Optional migration tests require uv sync --locked")
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import CheckConstraint, UniqueConstraint

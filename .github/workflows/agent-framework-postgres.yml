@@ -1,10 +1,10 @@
 name: Agent framework PostgreSQL
 on:
   pull_request:
-    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
+    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "pyproject.toml", "uv.lock", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example", ".github/workflows/agent-framework-postgres.yml"]
   push:
     branches: [main, feat/agent-framework]
-    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
+    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "pyproject.toml", "uv.lock", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example", ".github/workflows/agent-framework-postgres.yml"]
 permissions:
   contents: read
 jobs:

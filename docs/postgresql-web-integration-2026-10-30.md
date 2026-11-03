@@ -64,7 +64,7 @@ PDF 구조가 없는 과거 항목에 `document_condition:null`을 임의 추가
 - 앱 계정: 기존 제한된 `creative_checker_app`. 웹 설정에는 owner/admin 비밀번호를 넣지 않았다.
 - `.runtime/postgres-web.env`는 `0600` 권한이며 Git에 포함하지 않는다. 기존 `.env`는 수정하지 않았다.
 - 비공개 파일 저장소는 기존 DB 파일들이 있는 `STORAGE_ROOT`를 계속 사용한다. 다른 머신으로 옮길 때는 DB와 이 파일 저장소를 함께 옮기고 해당 머신의 절대 경로로 설정한다.
-- 새 환경에는 `requirements-v1.txt`의 DB·인증·파일 저장 의존성이 필요하다. 실행기가 패키지나 모델을 자동 설치하지 않는다.
+- 새 환경에는 `uv sync --locked --group dev`로 공통 DB·인증·파일 저장 의존성을 준비한다. 실행기가 패키지나 모델을 자동 설치하지 않는다.
 - 기존 개발 계정의 세션도 DB에 저장하며, 검수 요청에 로그인과 CSRF 검증을 적용한다.
 
 ## 검증 범위와 제한

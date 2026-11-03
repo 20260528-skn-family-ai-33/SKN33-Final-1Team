@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip('sqlalchemy',reason='Optional index tests require requirements-db.txt')
-pytest.importorskip('alembic',reason='Optional draft tests require requirements-db.txt')
+pytest.importorskip('sqlalchemy',reason='Optional index tests require uv sync --locked')
+pytest.importorskip('alembic',reason='Optional draft tests require uv sync --locked')
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
