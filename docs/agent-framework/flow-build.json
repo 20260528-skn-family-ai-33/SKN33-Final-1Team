@@ -7,7 +7,7 @@
     "review": 8
   },
   "flow_data_sha256": "38a56146e3a6e2f04ff5799c0dcde0ca14e2d74b4a63e6cf41bd2e3e4371566f",
-  "html_sha256": "1a1eefdc6ae8c7be67aa6f7374da9282c03197e67cfaa289624908d81ecd3caa",
+  "html_sha256": "cab7228d2b586429f8db93b753242b94dc2127427bf64122b5c855aa047c330a",
   "code_graph": {
     "version": "0.9.100",
     "files": 25,
@@ -40,7 +40,7 @@
       "built_at": "2026-11-02T08:29:35.886251+00:00"
     }
   },
-  "source_files": 38,
-  "source_html_sha256": "faeb34b7822d5915dd2a0ebe2491f40ded614013769b40660331e3eb396d56fa",
+  "source_files": 44,
+  "source_html_sha256": "5b5e7e5ba7f49ebb2b83c7b92551322ea1659f7dbd55004bbf1a78847afdb055",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }
