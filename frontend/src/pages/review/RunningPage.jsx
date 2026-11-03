@@ -2,7 +2,7 @@ import React from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { stageLabels } from '../../reviewConstants.js';
+import { stageLabels } from './reviewConstants.js';
 
 export default function RunningPage({ state, pollError, retryPoll, navigate, run, preview, dimensions }) {
   const failed = state.review?.status === 'failed';

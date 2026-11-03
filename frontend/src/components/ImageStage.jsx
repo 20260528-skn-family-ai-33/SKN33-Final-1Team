@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from './Icon.jsx';
-import { evidenceBoxStyle } from '../workflow.js';
+import { evidenceBoxStyle } from '../pages/review/workflow.js';
 import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import '../styles/image-stage.css';
 

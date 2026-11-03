@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from backend.app import logo_models as reg  # noqa: E402
+from backend.app.logos import catalog as reg  # noqa: E402
 
 
 def prepare_one(key: str, force: bool = False) -> None:

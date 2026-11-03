@@ -64,7 +64,10 @@ def _cos(a, b):
 
 
 def autolabel(args):
-    from backend.app.logo_pipeline import LogoDetector, LogoMatcher, crop, load_rgb
+    from backend.app.logos.pipeline import LogoDetector
+    from backend.app.logos.pipeline import LogoMatcher
+    from backend.app.logos.pipeline import crop
+    from backend.app.logos.pipeline import load_rgb
     from PIL import Image
 
     vdir, ldir = Path(args.videos_dir), Path(args.logos_dir)

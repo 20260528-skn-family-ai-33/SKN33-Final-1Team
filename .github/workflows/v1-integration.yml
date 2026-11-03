@@ -1,7 +1,7 @@
 name: Rebuild PostgreSQL and Neo4j integration
 on:
   pull_request:
-    paths: ["backend/**", "tests/rebuild/**", "pyproject.toml", "uv.lock", ".github/workflows/**"]
+    paths: ["backend/**", "tests/creative_checker/**", "pyproject.toml", "uv.lock", ".github/workflows/**"]
   push:
     branches: [main]
 permissions:
@@ -38,4 +38,4 @@ jobs:
         with:
           version: "0.12.10"
       - run: uv sync --locked --group dev
-      - run: uv run pytest tests/rebuild -m integration -q
+      - run: uv run pytest tests/creative_checker -m integration -q

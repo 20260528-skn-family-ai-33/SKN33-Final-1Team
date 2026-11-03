@@ -2,7 +2,8 @@
 from typing import Annotated, Literal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator, model_serializer
-from ..document_conditions import DocumentCondition, attached_condition
+from backend.app.documents.conditions import DocumentCondition
+from backend.app.documents.conditions import attached_condition
 
 
 class Strict(BaseModel):

@@ -15,8 +15,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select,insert,update,func
 
-from backend.tests.test_db_integration import database
-from backend.tests.test_v1_auth_integration import auth_database,email_user,login,csrf
+from tests.app.test_db_integration import database
+from tests.app.test_v1_auth_integration import auth_database,email_user,login,csrf
 from backend.migrations.configuration import load_migration_settings
 from backend.app.contracts.business import ProjectCreate
 from backend.app.services.business import Business,table

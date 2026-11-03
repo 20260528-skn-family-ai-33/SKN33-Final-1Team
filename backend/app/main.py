@@ -159,7 +159,7 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
     app.include_router(router())
     if not settings.secure and settings.environment in ('development', 'test'):
         from pathlib import Path
-        from .modeltest_ssh import modeltest_ssh_router
+        from backend.app.modeltest.routes import modeltest_ssh_router
         app.include_router(modeltest_ssh_router(Path(__file__).resolve().parents[2] / '.runtime' / 'modeltest-ssh'))
 
     if settings.storage_root is not None:

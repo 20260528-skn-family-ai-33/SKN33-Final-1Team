@@ -3,9 +3,9 @@
 영상 속 원본 로고의 위치를 사용자가 확정하고, 확정한 묶음을 원본과 정밀 대조해 **근거**를 돌려준다.
 묶음에 대한 일치·다름 판정은 내지 않는다. 최종 판단은 사람이 한다(2026-11-01 결정).
 
-- 코드: `backend/app/video_logo_flow.py`(API), `video_logo_candidates.py`(1부 후보), `video_logo_compare.py`(2부 대조), `video_logo_models.py`(모델)
+- 코드: `backend/app/video/logos/routes.py`(API), `video/logos/candidates.py`(1부 후보), `video/logos/compare.py`(2부 대조), `video/logos/models.py`(모델)
 - 실행 위치: 로컬 백엔드는 업로드·프레임 추출·저장·화면 데이터를 맡고, 모델이 필요한 두 단계(1부 후보 찾기, 2부 정밀 대조)는
-  RunPod Pod의 HTTP 워커(`backend/app/video_logo_worker.py`)에 맡긴다. 의존성(Pod)은 `requirements-logo.txt`, `requirements-paddle.txt`
+  RunPod Pod의 HTTP 워커(`backend/app/video/logos/worker.py`)에 맡긴다. 의존성(Pod)은 `requirements-logo.txt`, `requirements-paddle.txt`
   - `VIDEO_LOGO_WORKER_URL`(로컬 서버 환경변수)이 있으면 워커로 보내고, 없으면 그 프로세스에서 직접 추론한다(백엔드를 Pod에서 띄운 경우)
   - `VIDEO_LOGO_WORKER_TOKEN`(선택): 워커와 로컬에 같은 값을 두면 `X-Worker-Token` 헤더로 확인한다
   - `VIDEO_LOGO_WORKER_TIMEOUT_SECONDS`(선택, 기본 7200): 작업 하나의 최대 대기 시간

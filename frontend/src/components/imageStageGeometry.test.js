@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
-import { evidenceBoxStyle } from '../workflow.js';
+import { evidenceBoxStyle } from '../pages/review/workflow.js';
 test('fit preserves aspect ratio and keeps portrait inside canvas', () => {
   const size = imageStageSize(600, 848, 700, 650);
   assert.ok(size.width <= 636 && size.height <= 586);

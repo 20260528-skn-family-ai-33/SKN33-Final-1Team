@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from backend.app import modeltest_adapters as adapters  # noqa: E402
+from backend.app.modeltest import adapters  # noqa: E402
 
 CATEGORIES = ((1, 10, 'TEXT'), (11, 20, 'COLOR'), (21, 30, 'RATIO'), (31, 40, 'CROP'), (41, 50, 'ADDED'))
 IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg', '.webp', '.bmp'}

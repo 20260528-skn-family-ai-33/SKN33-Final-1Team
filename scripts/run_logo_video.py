@@ -61,7 +61,8 @@ def _cosine(a, b) -> float:
 
 def embed_boxes(matcher, frame: Path, boxes) -> list:
     """프레임의 탐지 상자들을 크롭해 한 번의 배치로 임베딩한다(상자마다 GPU 호출하지 않도록)."""
-    from backend.app.logo_pipeline import crop, load_rgb
+    from backend.app.logos.pipeline import crop
+    from backend.app.logos.pipeline import load_rgb
     if not boxes:
         return []
     image = load_rgb(frame)  # 상자마다 파일을 다시 열지 않는다
@@ -69,7 +70,9 @@ def embed_boxes(matcher, frame: Path, boxes) -> list:
 
 
 def main() -> None:
-    from backend.app.logo_pipeline import LogoDetector, LogoMatcher, ReferenceIndex
+    from backend.app.logos.pipeline import LogoDetector
+    from backend.app.logos.pipeline import LogoMatcher
+    from backend.app.logos.pipeline import ReferenceIndex
 
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)

@@ -7,7 +7,7 @@ import subprocess
 import sys
 import venv
 
-from backend.app.ocr_config import selected_pipeline
+from backend.app.ocr.config import selected_pipeline
 
 ROOT = Path(__file__).resolve().parent
 

@@ -56,7 +56,7 @@ def main():
         'criteria_sha256':hashlib.sha256(args.criteria.read_bytes()).hexdigest(),
         'expected_sha256':hashlib.sha256(args.expected.read_bytes()).hexdigest() if args.expected else None,
         'code_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in [
-            'backend/app/paddle_conditions.py','backend/app/paddle_condition_worker.py','backend/app/structured_review.py','backend/app/api.py']},
+            'backend/app/ocr/conditions.py','backend/app/ocr/paddle_condition_worker.py','backend/app/reviews/comparison.py','backend/app/api.py']},
         'checks':checks,'scope':'한 포스터의 지정 전사값 비교. 모델 전체 정확도·자동 승인 평가가 아닙니다.',
         'retry_status':summary.get('status'),'model_identity':summary.get('model_identity',{})}
     (args.output/'transcription-checks.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

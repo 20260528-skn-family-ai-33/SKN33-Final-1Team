@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseRequirements } from '../../workflow.js';
+import { parseRequirements } from '../review/workflow.js';
 import { criteriaPayload, diffChars, formatTime } from './videoFormat.js';
 
 test('video criteria payload drops screen-only fields that the server rejects', () => {

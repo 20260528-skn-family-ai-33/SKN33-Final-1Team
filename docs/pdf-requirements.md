@@ -62,7 +62,7 @@ Ollama가 공식 설치돼 있어야 하며, 기본 모델 `qwen3.5:4b`가 없�
 ## 검증
 
 ```sh
-.venv/bin/python -m pytest backend/tests/test_requirements_pdf.py backend/tests/test_requirements_progress.py backend/tests/test_document_comparison.py backend/tests/test_review_api.py backend/tests/test_spa_routes.py -q
+.venv/bin/python -m pytest tests/app/test_requirements_pdf.py tests/app/test_requirements_progress.py tests/app/test_document_comparison.py tests/app/test_review_api.py tests/app/test_spa_routes.py -q
 cd frontend
 npm test
 npm run build
@@ -95,7 +95,7 @@ npm run build
 
 ## 2026-10-29 카드형 명세서와 공통 규칙 수정
 
-`document_sources.py`에서 OCR 문단을 조건, 공통 규칙, 확인 메모, 출처/작성 설명, 검토 절차와 제목으로 구분합니다. 표 행 외에 `NEW103-C01 | 행사명`과 아래 조건 문장이 분리된 카드, OCR 열 정렬 때문에 `항목명 ID 조건 문장`이 한 문단이 된 카드도 같은 조건 근거로 묶습니다. 원문은 교정하지 않고 카드 문단 사이에 줄바꿈만 넣습니다. 실제 텍스트는 기존 350자 겹침 구간으로 보존합니다.
+`documents/sources.py`에서 OCR 문단을 조건, 공통 규칙, 확인 메모, 출처/작성 설명, 검토 절차와 제목으로 구분합니다. 표 행 외에 `NEW103-C01 | 행사명`과 아래 조건 문장이 분리된 카드, OCR 열 정렬 때문에 `항목명 ID 조건 문장`이 한 문단이 된 카드도 같은 조건 근거로 묶습니다. 원문은 교정하지 않고 카드 문단 사이에 줄바꿈만 넣습니다. 실제 텍스트는 기존 350자 겹침 구간으로 보존합니다.
 
 - 절 제목의 명시적 필수·권장·선택 수준은 그 절의 카드에 연결하고 제목 원문도 별도 출처로 보존합니다. 수준 열이 없는 파일 기준에 앞 절의 필수 수준을 이어붙이지 않습니다.
 - `문구 판정`/`문구 비교 원칙`은 같은 페이지의 관련 정보 조건 상세 기준과 출처에 연결합니다. 독립 조건이 없다는 이유로 전체 추출을 실패시키지 않습니다. 파일 규격이나 시각 항목에 문구 비교 규칙을 일괄 적용하지 않습니다.
@@ -104,4 +104,4 @@ npm run build
 - 긴 조건 ID도 전체 항목 추출 여부를 검사합니다. 카드 본문 연결 실패, 실제 ID 누락, 실제 표 밖 지시 누락, 수준 충돌은 성공으로 숨기지 않습니다.
 - 전시명·행사 제목·시작일·종료일·기념식/박람회 시간·참여 대상·참가비·원본 가로·세로를 정보 비교에 연결합니다. 시작/종료와 세부 행사 시간의 라벨은 표시에서도 유지합니다. 카드의 단독 JPEG와 명시적 가로/세로 픽셀 값은 파일 메타데이터 비교 형식으로 정리합니다.
 
-실제 실패 문서의 OCR 문단은 `backend/tests/fixtures/pdf_format_ocr.json`에 회귀 사례로 보존했습니다. 이는 사람 승인 정답이나 일반 정확도 평가 데이터가 아닙니다. 원본 PDF와 기존 검수 기록은 변경하지 않습니다. 실모델 결과는 `output/pdf-format-fix-2026-10-29/`의 원시 응답·모델/코드 해시·문서별 검증 기록에서 확인합니다.
+실제 실패 문서의 OCR 문단은 `tests/app/fixtures/pdf_format_ocr.json`에 회귀 사례로 보존했습니다. 이는 사람 승인 정답이나 일반 정확도 평가 데이터가 아닙니다. 원본 PDF와 기존 검수 기록은 변경하지 않습니다. 실모델 결과는 `output/pdf-format-fix-2026-10-29/`의 원시 응답·모델/코드 해시·문서별 검증 기록에서 확인합니다.

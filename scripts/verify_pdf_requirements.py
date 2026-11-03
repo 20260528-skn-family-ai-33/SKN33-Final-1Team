@@ -13,8 +13,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backend.app import requirements_pdf as pdf
-from backend.app.model_ocr import ollama_request
+from backend.app.documents import pdf
+from backend.app.ocr.models import ollama_request
 from scripts.local_ollama import requirements_model, requirements_status
 
 
@@ -33,8 +33,8 @@ def main():
                'platform': platform.platform(), 'python': platform.python_version(),
                'extractor_sha256': hashlib.sha256(Path(pdf.__file__).read_bytes()).hexdigest(),
                'code_sha256': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in
-                              ('backend/app/requirements_pdf.py', 'backend/app/document_sources.py',
-                               'backend/app/document_conditions.py')}}
+                              ('backend/app/documents/pdf.py', 'backend/app/documents/sources.py',
+                               'backend/app/documents/conditions.py')}}
     # 대용량 템플릿·가중치 메타데이터 대신 재현에 필요한 모델 정체성만 보존한다.
     runtime['model_info'] = {k: runtime['model_info'].get(k) for k in ('details', 'capabilities', 'parameters')}
     (args.output / 'runtime.json').write_text(json.dumps(runtime, ensure_ascii=False, indent=2) + '\n')

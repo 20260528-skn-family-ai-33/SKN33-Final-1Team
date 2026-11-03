@@ -36,15 +36,15 @@ def main(argv=None):
                 state['default_privileges']=c.execute('SELECT defaclrole::regrole::text,defaclnamespace,defaclobjtype,defaclacl::text FROM pg_default_acl ORDER BY 1,2,3').fetchall()
         return state
     before=snapshot();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True);env=os.environ.copy();env.update(values)
-    selection={'core':['backend/tests','--ignore=backend/tests/test_c12_live_integration.py','--ignore=backend/tests/test_c12_https_integration.py','--ignore=backend/tests/test_c15_deployment_integration.py','-m','db_integration and not ocr_external'],
-        'release':['backend/tests/test_c15_release_integration.py','-m','db_integration'],
-        'deployment':['backend/tests/test_c15_deployment_integration.py','-m','db_integration'],
-        'operations':['backend/tests/test_c14_import_gc_integration.py','backend/tests/test_c14_backup_integration.py','-m','db_integration and not ocr_external'],
-        'worker':['backend/tests/test_c13_worker_integration.py','backend/tests/test_c13_process_integration.py','-m','db_integration and not ocr_external'],
-        'browser':['backend/tests/test_c12_live_integration.py','-m','db_integration and not ocr_external'],
-        'https':['backend/tests/test_c12_https_integration.py','-m','db_integration'],
-        'ocr':['backend/tests/test_c12_live_integration.py','-m','db_integration and ocr_external'],
-        'worker-ocr':['backend/tests/test_c13_real_ocr_integration.py','-m','db_integration and ocr_external']}[args.suite]
+    selection={'core':['tests/app','--ignore=tests/app/test_web_live_integration.py','--ignore=tests/app/test_web_https_integration.py','--ignore=tests/app/test_deployment_integration.py','-m','db_integration and not ocr_external'],
+        'release':['tests/app/test_release_integration.py','-m','db_integration'],
+        'deployment':['tests/app/test_deployment_integration.py','-m','db_integration'],
+        'operations':['tests/app/test_import_gc_integration.py','tests/app/test_backup_integration.py','-m','db_integration and not ocr_external'],
+        'worker':['tests/app/test_worker_integration.py','tests/app/test_worker_process_integration.py','-m','db_integration and not ocr_external'],
+        'browser':['tests/app/test_web_live_integration.py','-m','db_integration and not ocr_external'],
+        'https':['tests/app/test_web_https_integration.py','-m','db_integration'],
+        'ocr':['tests/app/test_web_live_integration.py','-m','db_integration and ocr_external'],
+        'worker-ocr':['tests/app/test_worker_ocr_integration.py','-m','db_integration and ocr_external']}[args.suite]
     result=subprocess.run([sys.executable,'-m','pytest',*selection,'-q','--tb=short','-x','--basetemp='+str(out/'fixtures'),'--junitxml='+str(out/'pytest.xml')],cwd=ROOT,env=env)
     after=snapshot();report={'suite':args.suite,'pytest_exit_code':result.returncode,'before':before,'after':after,'guard_unchanged':before==after,'daily_guard_executed':args.guard_env is not None}
     if (out/'pytest.xml').exists():
