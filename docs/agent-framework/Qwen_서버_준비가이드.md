@@ -4,6 +4,14 @@
 
 이번 단계는 원격 읽기 전용 점검과 로컬 실행 파일 작성이다. Git clone/pull, Pod 생성·중지·재시작, 패키지 설치, 가중치 다운로드, 추론 서버 기동은 수행하지 않았다. [점검 JSON](qwen-server-preparation-2026-11-03.json)이 당시 확인 범위를 기록한다.
 
+## 현재 경로 정정 — Global Volume의 Python 설치 오류
+
+11/03 사용자의 `ensurepip` 오류 뒤 같은 Pod를 읽기 전용으로 확인했다. `/workspace`는 `fuse.geesefs`이고 실패한 venv에는 실행 권한 없는 `bin/pip`과 일부 pip metadata만 남아 있었다. `python3.12-venv`는 이미 설치돼 있으며, pip 모듈이 import된다는 것만으로 가상환경 설치 성공을 판정하지 않는다. 내부 ensurepip traceback은 사용자 로그에 없어 정확히 어느 파일 작업에서 실패했는지는 확정하지 않았다.
+
+**Git·venv·실행 캐시는 `/opt/creative-checker-a02`, 모델 파일은 `/workspace/creative-checker-a02/models`에 분리한다.** 기존 `/workspace`의 실패한 환경과 다른 서비스를 삭제하거나 chmod/chown하지 않는다. 코드와 가상환경을 `/workspace`에 두도록 했던 이전 안내를 이 경로로 정정한다. 새 경로에 Git clone·venv 생성·패키지 설치를 아직 원격 실행하지 않았다.
+
+`/opt`는 현재 Pod의 컨테이너 디스크다. Pod 중지·재시작 시 사라질 수 있으므로 Git 커밋·이 설치 절차로 재생성하고, 모델·결과 원본은 별도 영속 저장소에 보존한다. Global Volume은 Git/venv/잠금/실행 권한이 필요한 런타임 저장소로 사용하지 않는다.
+
 ## 1. 접속 포트와 현재 Pod
 
 `213.173.99.23:20719 → 22`는 외부 TCP 20719를 컨테이너 SSH 22로 연결한다. SSH의 `-p`에는 **20719**를 쓴다. 주소와 외부 포트는 재시작 뒤 달라질 수 있으므로 RunPod Connect 탭에서 다시 확인한다.
@@ -23,19 +31,19 @@ ssh -p 20719 -i ~/.ssh/id_ed25519 root@213.173.99.23
 | 경로 | 용도 |
 |---|---|
 | `/workspace/SKN33-Final-1Team` | 기존 서비스. 보존 |
-| `/workspace/creative-checker-a02/repository` | 새 Git 작업본 예정 경로 |
-| `/workspace/creative-checker-a02/runtime/venv` | GPU 서버만의 Python 환경 |
-| `/workspace/creative-checker-a02/runtime/cache` | A02 런타임 캐시 |
+| `/opt/creative-checker-a02/repository` | 새 Git 작업본 예정 경로 — 컨테이너 로컬 |
+| `/opt/creative-checker-a02/runtime/venv` | GPU 서버만의 Python 환경 |
+| `/opt/creative-checker-a02/runtime/cache` | A02 런타임 캐시 |
 | `/workspace/creative-checker-a02/models/Qwen3.5-4B/<revision>` | 고정 모델 파일 |
 
-서버 준비 점검 당시 로컬 브랜치는 `feat/37-a02-pdf-registration`이며 원격에 같은 이름이 없었다. 새 프레임워크·서버 준비 파일도 미커밋 상태였다. **필요한 변경을 검토·커밋·push하고 원격 커밋을 확인한 뒤 clone**해야 최신 파일을 받을 수 있다. 이 점검 이력과 이후 Git 게시를 구분한다. 다른 환경/실행 스크립트 변경이 함께 있으므로 전체 파일을 무조건 stage하지 않는다.
+최초 서버 준비 점검 당시 미게시였던 `feat/37-a02-pdf-registration`은 이후 원격 게시했다. 이번 오류 점검에서는 기존에 안내한 `/workspace/creative-checker-a02/repository` 자체가 없는 것을 확인했다. 아래 전용 로컬 경로로 해당 브랜치를 clone하고, 받은 커밋과 `server.json`의 `/opt` 런타임 경로를 확인한다. 기존 앱 디렉터리에 덮어쓰지 않는다.
 
 아래는 해당 브랜치가 원격에 준비된 다음 수행할 명령이다. 대상 경로가 이미 있으면 내용을 확인하고 재사용 여부를 결정하며 삭제·강제 초기화하지 않는다.
 
 ```bash
-git clone --branch feat/37-a02-pdf-registration https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team.git /workspace/creative-checker-a02/repository
-git -C /workspace/creative-checker-a02/repository rev-parse HEAD
-git -C /workspace/creative-checker-a02/repository status --short
+git clone --branch feat/37-a02-pdf-registration https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team.git /opt/creative-checker-a02/repository
+git -C /opt/creative-checker-a02/repository rev-parse HEAD
+git -C /opt/creative-checker-a02/repository status --short
 ```
 
 실행할 때에는 확인한 커밋 SHA를 기록하고 그 커밋을 유지한다. 서버가 실행 중인 디렉터리에서 무조건 pull하는 운영 방식은 사용하지 않는다. Git URL에 토큰을 넣거나 팀원에게 개인 SSH 키를 공유하지 않는다.
@@ -44,11 +52,27 @@ git -C /workspace/creative-checker-a02/repository status --short
 
 현재 기본 Python은 3.12.3, torch 2.8.0+cu128, transformers 4.56.2이고 기본 환경에 vLLM은 없다. 기존 base Python과 `/root/paddlegpu`는 그대로 둔다. 프로젝트 전체의 `uv sync`를 GPU 서버 환경에 수행할 필요는 없다. DB·인증·PDF 파싱·승인·worker는 기존 앱 측에서 맡고, 이 Pod의 새 서버는 추론만 제공한다.
 
-후속 2단계에서 새 가상환경을 만들고 [서버 요구사항](../../deploy/qwen-a02/requirements-server.txt)을 설치한다.
+후속 2단계에서 **컨테이너 로컬 디스크에** 새 가상환경을 만들고 [서버 요구사항](../../deploy/qwen-a02/requirements-server.txt)을 설치한다. `requirements-server.txt`가 있는지 먼저 확인하고 단계가 실패하면 이후 설치를 중단한다. 아래 명령은 SSH 접속 후 RunPod의 Linux Bash에서 실행한다. Mac/Windows PC의 터미널에는 직접 실행하지 않는다.
 
 ```bash
-python3 -m venv /workspace/creative-checker-a02/runtime/venv
-/workspace/creative-checker-a02/runtime/venv/bin/python -m pip install --no-cache-dir -r /workspace/creative-checker-a02/repository/deploy/qwen-a02/requirements-server.txt
+export A02_ROOT=/opt/creative-checker-a02
+export A02_REPO="$A02_ROOT/repository"
+export A02_PY="$A02_ROOT/runtime/venv/bin/python"
+export PIP_CACHE_DIR="$A02_ROOT/runtime/cache/pip"
+
+(
+  set -euo pipefail
+  test -d "$A02_REPO/.git"
+  test -f "$A02_REPO/deploy/qwen-a02/requirements-server.txt"
+  mkdir -p "$A02_ROOT/runtime"
+  if [ ! -e "$A02_ROOT/runtime/venv" ]; then
+    python3 -m venv "$A02_ROOT/runtime/venv"
+  fi
+  "$A02_PY" -c 'import sys; assert sys.prefix != sys.base_prefix'
+  "$A02_PY" -m pip --version
+  "$A02_PY" -m pip install --no-cache-dir -r "$A02_REPO/deploy/qwen-a02/requirements-server.txt"
+  "$A02_PY" -m pip show vllm torch transformers
+)
 ```
 
 후보는 `vllm==0.17.1`로 고정했다. 공식 해당 tag에 Qwen3.5 모델 구현이 있는 것을 확인했으며 torch 2.10.0 등을 별도 환경에 설치하는 구성이다. **현재 GPU에서 설치·CUDA kernel·실제 모델 적재가 검증된 버전은 아니다.** 2단계에서 호환성을 시험하고 최종 패키지 목록·wheel·CUDA 정보를 기록한다. 단일 최상위 버전 고정은 전체 전이 의존성 lock을 대신하지 않는다. 검증 없이 nightly/latest로 자동 변경하지 않는다.
@@ -62,7 +86,7 @@ python3 -m venv /workspace/creative-checker-a02/runtime/venv
 후속 설치 단계에서 먼저 재사용 가능한 같은 revision 파일을 확인한다. 없으면 공식 revision을 전용 모델 경로에 내려받고 모든 manifest 해시를 검증한다. 기존 캐시를 이동·삭제하지 않는다. `/workspace`는 다른 Pod에서도 같은 글로벌 볼륨을 참조하는 것으로 관측됐으므로 전용 하위 디렉터리만 사용한다. `df`의 1.0P 표시는 실제 계정 여유 공간/무료 저장 용량으로 해석하지 않으며 볼륨 과금·저장 여유는 설치 전에 확인한다.
 
 ```bash
-/workspace/creative-checker-a02/runtime/venv/bin/python - <<'PY'
+/opt/creative-checker-a02/runtime/venv/bin/python - <<'PY'
 from huggingface_hub import snapshot_download
 snapshot_download(
     repo_id='Qwen/Qwen3.5-4B',
@@ -87,8 +111,8 @@ python3 deploy/qwen-a02/server.py plan
 설치·모델 검증·VRAM 확보가 끝난 다음, 서버 전용 Python으로 실행한다. `check`가 기존 listener·VRAM·가상환경·패키지 버전·키·모델 파일을 검사하고 `serve`는 같은 검사와 전체 파일 해시 검증을 통과해야만 foreground 서버를 시작한다. 어떤 프로세스도 자동 중지하지 않으며 모델을 자동 다운로드/재시작하지 않는다.
 
 ```bash
-/workspace/creative-checker-a02/runtime/venv/bin/python /workspace/creative-checker-a02/repository/deploy/qwen-a02/server.py check --verify-model
-/workspace/creative-checker-a02/runtime/venv/bin/python /workspace/creative-checker-a02/repository/deploy/qwen-a02/server.py serve
+/opt/creative-checker-a02/runtime/venv/bin/python /opt/creative-checker-a02/repository/deploy/qwen-a02/server.py check --verify-model
+/opt/creative-checker-a02/runtime/venv/bin/python /opt/creative-checker-a02/repository/deploy/qwen-a02/server.py serve
 ```
 
 기존 GPU 프로세스는 단계 1에서 중지하지 않았다. VRAM이 확보되지 않으면 `GPU_MEMORY_NOT_AVAILABLE`로 실패하는 것이 현재 구성의 정상 동작이다. TOCTOU를 완전히 제거하는 GPU 예약 장치는 아니므로 기동 직전에도 실행 담당을 조율한다.
@@ -123,4 +147,4 @@ Linux EC2 worker로 옮기면 그 worker 호스트에서 터널을 유지하거�
 
 이번 파일은 **서버 준비 1단계**다. 앞서 완료한 합성 7단계의 기준을 실제 사람 승인으로 바꾸지 않으며 그 진행 기록을 새 단계 번호로 덮어쓰지 않는다.
 
-근거: [Qwen 공식 고정 모델](https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a), [vLLM 공식 v0.17.1 Qwen3.5 구현](https://github.com/vllm-project/vllm/blob/v0.17.1/vllm/model_executor/models/qwen3_5.py), [RunPod 저장소 안내](https://docs.runpod.io/pods/storage/types).
+근거: [RunPod Global Volume의 Git·venv 제약](https://www.runpod.io/blog/global-volumes-arent-network-volumes), [Qwen 공식 고정 모델](https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a), [vLLM 공식 v0.17.1 Qwen3.5 구현](https://github.com/vllm-project/vllm/blob/v0.17.1/vllm/model_executor/models/qwen3_5.py), [RunPod 저장소 안내](https://docs.runpod.io/pods/storage/types).

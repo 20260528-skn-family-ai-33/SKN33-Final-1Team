@@ -63,10 +63,22 @@ def test_same_size_weight_corruption_is_detected(config,tmp_path,monkeypatch):
     assert server.verify_model(config)==['MODEL_SHA256_MISMATCH:'+path.name]
 
 
-@pytest.mark.parametrize('field,value',[('host','0.0.0.0'),('venv_directory','/root/paddlegpu')])
+@pytest.mark.parametrize('field,value',[
+    ('host','0.0.0.0'),('venv_directory','/root/paddlegpu'),
+    ('venv_directory','/workspace/creative-checker-a02/runtime/venv'),
+    ('cache_directory','/workspace/creative-checker-a02/runtime/cache'),
+    ('venv_directory','/opt/creative-checker-a02/runtime/../other'),
+    ('cache_directory','/opt/creative-checker-a02/runtime'),
+    ('model_directory','/workspace/another-project/models')])
 def test_config_cannot_target_existing_environment_or_public_bind(config,tmp_path,field,value):
     config[field]=value;p=tmp_path/'server.json';p.write_text(json.dumps(config))
     with pytest.raises(ValueError):server.load_config(p)
+
+
+def test_plan_separates_executable_runtime_from_global_model_storage(config):
+    assert server.command(config)[0]=='/opt/creative-checker-a02/runtime/venv/bin/python'
+    assert config['cache_directory']=='/opt/creative-checker-a02/runtime/cache'
+    assert config['model_directory'].startswith('/workspace/creative-checker-a02/models/')
 
 
 def test_worker_config_uses_same_model_and_local_tunnel(config):

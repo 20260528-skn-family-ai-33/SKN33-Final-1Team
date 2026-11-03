@@ -20,7 +20,8 @@ def load_config(path):
     if config['host']!='127.0.0.1':raise ValueError('LOOPBACK_REQUIRED')
     for key in ('model_directory','venv_directory','cache_directory'):
         p=PurePosixPath(config[key])
-        if not p.is_absolute() or '..' in p.parts or not p.is_relative_to('/workspace/creative-checker-a02'):
+        root='/workspace/creative-checker-a02/models' if key=='model_directory' else '/opt/creative-checker-a02/runtime'
+        if not p.is_absolute() or '..' in p.parts or not p.is_relative_to(root) or p==PurePosixPath(root):
             raise ValueError('DEDICATED_PATH_REQUIRED')
     if not 1024<=config['port']<=65535 or not 0<config['gpu_memory_utilization']<1:
         raise ValueError('INVALID_SERVER_LIMIT')
