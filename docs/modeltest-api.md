@@ -200,7 +200,7 @@ XFeat 가중치는 지정한 `vismatch/xfeat` revision의 `xfeat.pt`를 `weights
 - PaddleOCR-VL 및 GGUF는 `OCR:`를 기본값으로 사용한다. 변경은 실제 호출에 전달되지만 문서 레이아웃 기능이 추가되는 것은 아니며 출력 품질·형식이 달라질 수 있다.
 - OWLv2·Grounding DINO는 자연어 지시 대신 탐지 문구를 한 줄에 하나씩 편집한다. SigLIP2의 후보 문구 입력은 기존 설정을 유지한다. XFeat·일반 필터·프레임 추출 등 지시문을 받지 않는 단계에는 편집창이 없다. 임베딩 prefix·재정렬 instruction 등 모델 계열의 전처리 설정은 기존 모델 등록 설정에서 관리한다.
 
-기본값은 `backend/app/modeltest_prompts.json`을 화면과 SSH 실행기가 공유한다. 교체 요청은 단계의 `prompt_override`로 전달하며 health의 `prompt_overrides: 1` 지원 선언이 필요하다. 기존 에이전트의 `prompt`는 추가 지시로 계속 해석하며, 편집창에서는 기본 지시와 합친 내용을 표시한다. 해당 내용을 수정하면 추가 지시를 중복 결합하지 않고 전체 지시를 교체한다. 백엔드를 재시작하고 연결을 다시 확인하면 새 SSH 실행기와 지원 정보가 반영된다.
+기본값은 `backend/app/modeltest/prompts.json`을 화면과 SSH 실행기가 공유한다. 교체 요청은 단계의 `prompt_override`로 전달하며 health의 `prompt_overrides: 1` 지원 선언이 필요하다. 기존 에이전트의 `prompt`는 추가 지시로 계속 해석하며, 편집창에서는 기본 지시와 합친 내용을 표시한다. 해당 내용을 수정하면 추가 지시를 중복 결합하지 않고 전체 지시를 교체한다. 백엔드를 재시작하고 연결을 다시 확인하면 새 SSH 실행기와 지원 정보가 반영된다.
 
 활성 에이전트의 모든 내부 말단 단계가 끝나면 다음 에이전트의 시작 단계가 실행된다. 비활성 에이전트는 건너뛰어 의존성을 이어간다. 같은 종류의 선행 결과가 여러 개면 가장 가까운 결과를 선택하되, 후보가 여럿이면 사용자가 입력을 지정해야 한다. 필터와 로고 대조는 같은 탐지 결과를 사용해야 한다. 결과 화면과 소요 시간 표에는 에이전트·단계 이름이 표시된다.
 
@@ -226,7 +226,7 @@ A01~A08 템플릿은 첨부 아키텍처를 참고한 수정 가능한 초안이
 
 위는 영상 검수 요청에 넣을 단계·연결 예시이며 `contract`, `flow`, `sampling`, `files` 등 기존 필드도 필요하다. 임계값 0.85는 예시이며 데이터로 검증한 기준이 아니다. 결과 단계는 동일한 ID·종류·이름·소속·입력 정보를 유지한다. 사용자 정의 HTTP 서버도 이 입력·출력 규격을 구현해야 보드를 실행할 수 있다. 새 실행기 적용에는 **로컬 백엔드 재시작, Pod 재연결, 새 검수 실행**이 필요하다.
 
-`Pod 실행환경 준비`에서 설치하는 패키지는 `backend/app/modeltest_remote.py`의 `PACKAGES`에 정의한다. 실제 모델 설치·추론을 로컬 노트북에서 수행하지 않는다. 원격 작업 파일은 `/workspace/.creative-checker-modeltest/runs/<요청 ID>`에 남는다(`/workspace`가 없으면 원격 홈 아래). 자동 삭제하지 않는다.
+`Pod 실행환경 준비`에서 설치하는 패키지는 `backend/app/modeltest/contracts.py`의 `PACKAGES`에 정의한다. 실제 모델 설치·추론을 로컬 노트북에서 수행하지 않는다. 원격 작업 파일은 `/workspace/.creative-checker-modeltest/runs/<요청 ID>`에 남는다(`/workspace`가 없으면 원격 홈 아래). 자동 삭제하지 않는다.
 
 SSH 접속 정보는 로컬 서버 메모리에 유지한다. 같은 요청 ID와 파일은 새 추론을 만들지 않는다. 연결이 끊기면 원격 결과 파일을 다시 조회한다. **새로고침·조회 일시정지·브라우저 닫기는 작업 취소가 아니다.** 새 실행은 독립된 프로세스 세션에서 계속 진행하며 결과를 Pod에 기록한다. 화면은 저장한 실행 ID로 조회를 복원하고 자동 재접수하지 않는다. 백엔드를 재시작했다면 같은 Pod에 다시 연결한 후 `이전 작업 조회`를 누른다.
 
@@ -366,7 +366,7 @@ Pod는 프런트엔드의 실제 출처(예: `http://127.0.0.1:5173`, `http://lo
 ## 범위가 제한된 오프라인 검사
 
 프런트엔드 입력·요청 규격: `cd frontend` 후 `node --test src/pages/modeltest/modeltest.test.js`.
-SSH 명령·전송·단계 연결: 저장소 루트에서 `python -m pytest backend/tests/test_modeltest_ssh.py`. 실제 SSH 대신 로컬 자식 프로세스의 입출력과 가짜 모델을 사용한다.
+SSH 명령·전송·단계 연결: 저장소 루트에서 `python -m pytest tests/app/test_modeltest_ssh.py`. 실제 SSH 대신 로컬 자식 프로세스의 입출력과 가짜 모델을 사용한다.
 실제 Pod 연결·패키지 설치·모델 다운로드·추론·브라우저 렌더링은 이 검사에 포함되지 않는다.
 
 참고: [RunPod SSH 방식](https://docs.runpod.io/pods/configuration/use-ssh), [RunPod HTTP 서비스 노출](https://www.runpod.io/articles/guides/deploy-fastapi-applications-gpu-cloud), [Hugging Face 저장소 ID 규칙](https://huggingface.co/docs/huggingface_hub/en/package_reference/utilities#huggingface_hub.utils.validate_repo_id), [멀티모달 모델 입력](https://huggingface.co/docs/transformers/chat_templating_multimodal).

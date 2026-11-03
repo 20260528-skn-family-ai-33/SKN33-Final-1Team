@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from backend.app import logo_models as reg  # noqa: E402
+from backend.app.logos import catalog as reg  # noqa: E402
 
 
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp")
@@ -45,7 +45,7 @@ def collect_flat(flat_dir: Path) -> list[tuple[str, Path]]:
 
 def main() -> None:
     import numpy as np
-    from backend.app.logo_pipeline import LogoMatcher
+    from backend.app.logos.pipeline import LogoMatcher
 
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)

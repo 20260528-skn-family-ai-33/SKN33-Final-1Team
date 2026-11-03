@@ -19,10 +19,10 @@ kornia==0.8.1          # 조합 B 이중검수(DISK + LightGlue), BiRefNet 원�
 timm==1.0.15           # BiRefNet 원격 코드(배경 분리)
 einops==0.8.1          # BiRefNet 원격 코드(배경 분리)
 
-# 영상 로고 Pod HTTP 워커(backend/app/video_logo_worker.py). 버전은 requirements.txt와 같다.
+# 영상 로고 Pod HTTP 워커(backend/app/video/logos/worker.py). 버전은 requirements.txt와 같다.
 fastapi==0.143.0
 uvicorn==0.54.0
 
-# 서버리스 워커(backend/app/logo_runpod_worker.py)를 Pod에서 handler로 띄울 때만 필요.
+# 서버리스 워커(backend/app/logos/runpod_worker.py)를 Pod에서 handler로 띄울 때만 필요.
 # Pod 터미널 스크립트나 로컬에선 설치하지 않아도 된다.
 runpod>=1.6.0

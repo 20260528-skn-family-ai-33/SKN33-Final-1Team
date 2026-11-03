@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageOps
 
-from backend.app.ocr_runtime import recognize_image
+from backend.app.ocr.runtime import recognize_image
 from scripts.paths import DEFAULT_ARTIFACTS, PROJECT_ROOT, output_directory, source_reference, artifact_path
 
 

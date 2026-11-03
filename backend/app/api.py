@@ -28,13 +28,18 @@ from starlette.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from .review_rules import review_criteria
+from backend.app.reviews.rules import review_criteria
 from .sample import sample_image_path
 from .spa import ReviewStaticFiles
 from .local_auth import local_auth_router
-from .ocr_config import selected_pipeline
-from .requirements_pdf import DocumentError, MAX_PDF_BYTES, extract_document
-from .document_conditions import DocumentCondition, matches_condition_text
+from backend.app.ocr.config import selected_pipeline
+from backend.app.documents.pdf import DocumentError
+from backend.app.documents.pdf import MAX_PDF_BYTES
+from backend.app.documents.pdf import extract_document
+from backend.app.documents.conditions import DocumentCondition
+from backend.app.documents.conditions import matches_condition_text
+
+from .ocr.results import MULTILINE_PIPELINES, RECOGNITION_ENGINES, SELECTION_REASONS, _map_records, _safe_runtime
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -44,25 +49,7 @@ MAX_IMAGE_SIDE = 8192
 ALLOWED_FORMATS = {"PNG", "JPEG", "WEBP"}
 CRITERIA_MAX_JSON = 250_000
 PIPELINE_NAMES = {"baseline", "multiline", "adaptive", "paddle", "paddle-only", "qwen"}
-MULTILINE_PIPELINES = {
-    "multiline_v2",
-    "adaptive_v1",
-    "paddle_regions_v1",
-    "paddle_full_v1",
-    "qwen_regions_v1",
-}
 LOCAL_PIPELINES = {"adaptive", "paddle", "paddle-only", "qwen"}
-RECOGNITION_ENGINES = {"easyocr", "paddleocr", "qwen3-vl"}
-SELECTION_REASONS = {
-    "new_model_candidate_unverified",
-    "model_abstained_keep_original",
-    "conflicting_candidates_keep_original",
-    "stronger_candidate_unverified",
-    "new_detection_unverified",
-    "vlm_location_unverified",
-    "same_text_without_confidence_boost",
-    "refinement_incomplete",
-}
 
 
 class Criterion(BaseModel):
@@ -170,22 +157,22 @@ def _default_recognizer(path: Path) -> dict:
     pipeline = selected_pipeline()
     if pipeline == "paddle-only":
         # 탐지부터 인식까지 Paddle로 처리하여 EasyOCR 패키지·가중치를 요구하지 않는다.
-        from .paddle_ocr import recognize_paddle
+        from backend.app.ocr.paddle import recognize_paddle
 
         return recognize_paddle(path, path.parent / "paddle-only")
     if pipeline in {"paddle", "qwen"}:
-        from .model_ocr import recognize_models
+        from backend.app.ocr.models import recognize_models
 
         return recognize_models(path, path.parent / pipeline, pipeline)
     if pipeline == "adaptive":
-        from .adaptive_ocr import recognize_adaptive
+        from backend.app.ocr.adaptive import recognize_adaptive
 
         return recognize_adaptive(path, path.parent / "adaptive")
     if pipeline not in {"baseline", "multiline"}:
         raise ValueError(
             "OCR_PIPELINE must be baseline, multiline, adaptive, paddle, paddle-only or qwen"
         )
-    from .ocr_runtime import recognize_image
+    from backend.app.ocr.runtime import recognize_image
 
     payload = recognize_image(path)
     if pipeline == "multiline":
@@ -237,7 +224,7 @@ def _default_runtime_status() -> dict:
             "detail": "Selected pipeline requires RUN_TARGET=local",
         }
     if pipeline == "paddle-only":
-        from .paddle_ocr import paddle_readiness
+        from backend.app.ocr.paddle import paddle_readiness
 
         ready, detail = paddle_readiness()
         return {
@@ -247,11 +234,13 @@ def _default_runtime_status() -> dict:
             "status": "ready" if ready else "not_ready",
             "detail": detail,
         }
-    from .ocr_runtime import get_runtime_status
+    from backend.app.ocr.runtime import get_runtime_status
 
     status = get_runtime_status()
     if pipeline in {"paddle", "qwen"}:
-        from .model_ocr import model_readiness, ENGINES, PIPELINES
+        from backend.app.ocr.models import model_readiness
+        from backend.app.ocr.models import ENGINES
+        from backend.app.ocr.models import PIPELINES
 
         ready, detail = model_readiness(pipeline)
         status.update(
@@ -262,210 +251,6 @@ def _default_runtime_status() -> dict:
             device="unknown",
         )
     return status
-
-
-def _safe_runtime(payload: dict) -> dict:
-    """Return public execution metadata, never URLs, credentials or tracebacks."""
-    allowed_values = {
-        "engine": {"easyocr", "paddleocr", "easyocr+paddleocr", "easyocr+qwen3-vl"},
-        "execution_target": {"local", "runpod"},
-        "device": {"cuda", "mps", "cpu", "gpu", "runpod", "remote-auto", "unknown"},
-        "status": {
-            "ok",
-            "ready",
-            "completed",
-            "failed",
-            "unavailable",
-            "not_ready",
-            "configured",
-            "success",
-            "skipped",
-            "fallback",
-        },
-    }
-    result = {}
-    if isinstance(payload.get("ready"), bool):
-        result["ready"] = payload["ready"]
-    for key, allowed in allowed_values.items():
-        value = payload.get(key)
-        if isinstance(value, str) and value.lower() in allowed:
-            result[key] = value.lower()
-    if payload.get("pipeline") in MULTILINE_PIPELINES:
-        result["pipeline"] = payload["pipeline"]
-    if payload.get("refinement_status") in {
-        "completed",
-        "partial",
-        "timeout",
-        "worker_failed",
-    }:
-        result["refinement_status"] = payload["refinement_status"]
-    # Attempts deliberately omit free-form errors that may contain secrets.
-    result["attempts"] = []
-    for attempt in (
-        payload.get("attempts", []) if isinstance(payload.get("attempts"), list) else []
-    ):
-        if isinstance(attempt, dict):
-            clean = {}
-            for key in ("device", "execution_target", "status"):
-                value = attempt.get(key)
-                if isinstance(value, str) and value.lower() in allowed_values[key]:
-                    clean[key] = value.lower()
-            if clean:
-                result["attempts"].append(clean)
-    return result
-
-
-def _map_records(payload: dict, width: int, height: int) -> list[dict]:
-    raw_records = payload.get("records")
-    if not isinstance(raw_records, list) or len(raw_records) > 10_000:
-        raise ValueError("Invalid OCR record list")
-    expected_dimensions = [width * 2, height * 2]
-    dimensions = payload.get("input_dimensions")
-    if isinstance(dimensions, dict):
-        dimensions = [dimensions.get("width"), dimensions.get("height")]
-    if dimensions is not None and list(dimensions) != expected_dimensions:
-        raise ValueError("OCR returned coordinates for an unexpected image size")
-    mapped = []
-    seen = set()
-    for index, raw in enumerate(raw_records):
-        if not isinstance(raw, dict) or not isinstance(raw.get("text"), str):
-            raise ValueError("Invalid OCR text")
-        record_id = raw.get("id", f"ocr-{index + 1}")
-        if (
-            not isinstance(record_id, (str, int))
-            or isinstance(record_id, bool)
-            or record_id in seen
-        ):
-            raise ValueError("Invalid OCR ID")
-        seen.add(record_id)
-        text = raw["text"].strip()
-        if not text:
-            continue
-        if len(text) > 10_000:
-            raise ValueError("OCR text is too long")
-        box = raw.get("bbox_xyxy")
-        if (
-            not isinstance(box, (list, tuple))
-            or len(box) != 4
-            or any(
-                isinstance(number, bool)
-                or not isinstance(number, (int, float))
-                or not math.isfinite(number)
-                for number in box
-            )
-        ):
-            raise ValueError("Invalid OCR bounding box")
-        if box[2] <= box[0] or box[3] <= box[1]:
-            raise ValueError("Degenerate OCR bounding box")
-        coordinates = [
-            max(0, min(limit, float(number) / 2))
-            for number, limit in zip(box, [width, height, width, height])
-        ]
-        if coordinates[2] <= coordinates[0] or coordinates[3] <= coordinates[1]:
-            raise ValueError("OCR bounding box outside image")
-        confidence = raw.get("confidence")
-        if confidence is not None and (
-            isinstance(confidence, bool)
-            or not isinstance(confidence, (int, float))
-            or not math.isfinite(confidence)
-            or not 0 <= confidence <= 1
-        ):
-            raise ValueError("Invalid OCR confidence")
-        record = {
-            "id": record_id,
-            "text": text,
-            "confidence": confidence,
-            "bbox_xyxy": coordinates,
-        }
-        # 재인식 정보도 허용한 값만 공개하고 입력 좌표는 한 번만 복원한다.
-        if "requires_review" in raw:
-            if type(raw["requires_review"]) is not bool:
-                raise ValueError("Invalid review flag")
-            record["requires_review"] = raw["requires_review"]
-        if "baseline_text" in raw:
-            if (
-                not isinstance(raw["baseline_text"], str)
-                or len(raw["baseline_text"]) > 10_000
-            ):
-                raise ValueError("Invalid baseline text")
-            record["baseline_text"] = raw["baseline_text"]
-        # 원문 근거의 점수·엔진·보류 사유를 검증해 항목별 재판정에 전달한다.
-        if "baseline_confidence" in raw:
-            baseline_confidence = raw["baseline_confidence"]
-            if baseline_confidence is not None and (
-                type(baseline_confidence) not in (int, float)
-                or not math.isfinite(baseline_confidence)
-                or not 0 <= baseline_confidence <= 1
-            ):
-                raise ValueError("Invalid baseline confidence")
-            record["baseline_confidence"] = baseline_confidence
-        if "baseline_requires_review" in raw:
-            if type(raw["baseline_requires_review"]) is not bool:
-                raise ValueError("Invalid baseline review flag")
-            record["baseline_requires_review"] = raw["baseline_requires_review"]
-        if "baseline_recognition_engine" in raw:
-            if raw["baseline_recognition_engine"] not in RECOGNITION_ENGINES:
-                raise ValueError("Invalid baseline recognition engine")
-            record["baseline_recognition_engine"] = raw["baseline_recognition_engine"]
-        if raw.get("selection_reason") in SELECTION_REASONS:
-            record["selection_reason"] = raw["selection_reason"]
-        alternatives = raw.get("alternatives", [])
-        if not isinstance(alternatives, list) or len(alternatives) > 10:
-            raise ValueError("Invalid OCR alternatives")
-        if alternatives:
-            # 후보에도 같은 좌표 검증을 적용하고 임의 속성은 공개하지 않는다.
-            candidates = [
-                {
-                    "id": f"candidate-{i}",
-                    "text": c.get("text"),
-                    "confidence": c.get("confidence"),
-                    "bbox_xyxy": c.get("bbox_xyxy"),
-                }
-                for i, c in enumerate(alternatives)
-            ]
-            record["alternatives"] = _map_records(
-                {"records": candidates}, width, height
-            )
-            for candidate, raw_candidate in zip(record["alternatives"], alternatives):
-                if raw_candidate.get("engine") in RECOGNITION_ENGINES:
-                    candidate["engine"] = raw_candidate["engine"]
-        # 단독 Paddle의 출처가 빠져도 EasyOCR 기본 점수 기준으로 낮아지지 않게 한다.
-        if "recognition_engine" in raw:
-            if (
-                not isinstance(raw["recognition_engine"], str)
-                or raw["recognition_engine"] not in RECOGNITION_ENGINES
-            ):
-                raise ValueError("Invalid recognition engine")
-            record["recognition_engine"] = raw["recognition_engine"]
-        if (
-            payload.get("engine") == "paddleocr"
-            or payload.get("pipeline") == "paddle_full_v1"
-        ):
-            if record.get("recognition_engine", "paddleocr") != "paddleocr":
-                raise ValueError("Paddle payload recognition engine mismatch")
-            record["recognition_engine"] = "paddleocr"
-        if raw.get("polygon") is not None:
-            polygon = raw["polygon"]
-            if (
-                not isinstance(polygon, list)
-                or len(polygon) < 4
-                or len(polygon) > 32
-                or any(
-                    not isinstance(p, list)
-                    or len(p) != 2
-                    or any(
-                        type(v) not in (int, float) or not math.isfinite(v) for v in p
-                    )
-                    for p in polygon
-                )
-            ):
-                raise ValueError("Invalid OCR polygon")
-            record["polygon"] = [
-                [max(0, min(width, p[0] / 2)), max(0, min(height, p[1] / 2))]
-                for p in polygon
-            ]
-        mapped.append(record)
-    return mapped
 
 
 def create_app(
@@ -511,7 +296,7 @@ def create_app(
             try:
                 await run_in_threadpool(postgres_store.open,_app)
                 if not readonly:
-                    from .video_review import recover_jobs
+                    from backend.app.video.review import recover_jobs
                     recover_jobs(video_storage)
                 yield
             finally:
@@ -533,7 +318,7 @@ def create_app(
             except (OSError, ValueError):
                 continue
         if not readonly:
-            from .video_review import recover_jobs
+            from backend.app.video.review import recover_jobs
 
             recover_jobs(video_storage)
         yield
@@ -599,7 +384,7 @@ def create_app(
         auth_router = local_auth_router()
         application.include_router(auth_router)
     if not readonly and os.getenv('APP_ENV', 'development') in ('development', 'test'):
-        from .modeltest_ssh import modeltest_ssh_router
+        from backend.app.modeltest.routes import modeltest_ssh_router
         application.include_router(modeltest_ssh_router(PROJECT_ROOT / '.runtime' / 'modeltest-ssh'))
     allowed_origins = [
         value.strip()
@@ -667,7 +452,7 @@ def create_app(
                     and (recognizer is None or paddle_refiner is not None)):
                 update(target, progress=55, progress_message='조건별 후보 영역을 찾아 문구를 다시 읽고 있습니다.')
                 try:
-                    from .paddle_conditions import refine
+                    from backend.app.ocr.conditions import refine
                     records, conditional_retry = (paddle_refiner or refine)(
                         target/'normalized.png', records, snapshot['criteria'], snapshot['image_source'], target/'paddle-conditional')
                 except Exception as error:
@@ -683,7 +468,7 @@ def create_app(
                 ocr['conditional_retry'] = conditional_retry
             multiline = payload.get("pipeline") in MULTILINE_PIPELINES
             if multiline:
-                from .event_layout import extract_event_multiline
+                from backend.app.reviews.layout import extract_event_multiline
 
                 ocr["event"] = extract_event_multiline(records)
             _write_json(target / "ocr.json", {**ocr, **runtime})
@@ -692,7 +477,7 @@ def create_app(
             results = review_criteria(
                 snapshot["criteria"], records, multiline=multiline
             )
-            from . import review_models
+            from backend.app.reviews import model_client as review_models
             model_runtime = {"status": "not_configured"}
             if review_models.configured():
                 stage = "review_models"
@@ -700,7 +485,7 @@ def create_app(
                 model_output = review_models.infer(target / "normalized.png", snapshot["criteria"])
                 results = review_models.enrich(results, model_output)
                 model_runtime = {"status": "success", **model_output["model"]}
-            from .structured_review import compare
+            from backend.app.reviews.comparison import compare
             results = compare(snapshot["criteria"], results, records, snapshot["image_source"])
             update(
                 target,
@@ -984,7 +769,7 @@ def create_app(
             if request.state.web_subject[0].account_kind!='developer':raise HTTPException(404,'검수 기록을 찾을 수 없습니다.')
         return FileResponse(directory(review_id)/'original.bin',media_type='application/octet-stream')
     # 동영상 검수 시연: 포스터 검수와 같은 추론 잠금으로 CPU 작업을 하나씩 실행한다.
-    from .video_review import video_review_router
+    from backend.app.video.review import video_review_router
 
     application.include_router(video_review_router(
         root=video_storage, inference_lock=inference_lock, readonly=readonly,
@@ -994,7 +779,7 @@ def create_app(
     ))
 
     # 영상 로고 확정·정밀 대조: 후보 찾기 → 사용자가 위치 확정 → 묶음별 근거. 같은 추론 잠금을 쓴다.
-    from .video_logo_flow import video_logo_router
+    from backend.app.video.logos.routes import video_logo_router
 
     application.include_router(video_logo_router(
         root=PROJECT_ROOT / ".runtime" / "video-logos", inference_lock=inference_lock, readonly=readonly,

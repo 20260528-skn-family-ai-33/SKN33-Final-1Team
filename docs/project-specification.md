@@ -40,7 +40,7 @@ PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세�
 | 기준 확정 | 브라우저 스냅샷·정수 버전, 실행 요청 때 서버에 함께 저장 | 서버에 별도로 확정·저장하는 프로젝트별 불변 버전 |
 | 실행 | FastAPI `BackgroundTasks`, 프로세스 내부 잠금 | PostgreSQL 작업 기록 + 독립 Python worker |
 | OCR | 로컬 기본 Paddle 단독(`paddle-only`), EasyOCR 기준선·줄 결합·재인식 등 비교 경로. RunPod 기본은 `baseline` | 기존 OCR 모듈을 worker에서 호출하고 실행 설정·근거·시도 기록 보존 |
-| 판정·행사 정보 추출 | `review_rules.py`, `extract_event.py`, `event_layout.py` | 기존 규칙·추출기를 worker에서 재사용 |
+| 판정·행사 정보 추출 | `reviews/rules.py`, `reviews/events.py`, `reviews/layout.py` | 기존 규칙·추출기를 worker에서 재사용 |
 | 사용자·권한 | 기존 화면의 localhost `admin / admin` 유지. 별도 C08 main에 이메일/개발 DB 세션·서명 CSRF·권한 helper·계정 CLI 구현 | 기존 React와 실제 업무 API의 새 인증/접근 통제 연결 |
 | 재실행 | 새 UUID 생성, 이전 실행과 관계 없음 | 새 실행에 `retry_of` 연결, 이전 결과 보존 |
 | 재시작 | 남아 있는 queued/running JSON을 failed 처리 | DB 작업 상태와 시도 기록을 기준으로 복구·실패 판정 |
@@ -56,7 +56,7 @@ PostgreSQL에 저장하는 작업 큐, 독립 Python worker, 서버 저장 세�
 
 현재 임시 로그인은 8시간 메모리 세션이며 서버 재시작 때 사라진다. 검수 API에는 아직 사용자·프로젝트별 접근 검사가 연결되어 있지 않다. 이 문단은 기존 시제품의 설명이다. 별도 v1은 C08~C10 DB/API와 C11 이력·작업 복원 화면까지 구현했으며, 영속 worker는 C13·실제 종합 연계도 C12에서 격리 환경으로 검증했다.
 
-현재 코드 근거: [검수 API](../backend/app/api.py), [임시 인증](../backend/app/local_auth.py), [OCR 런타임](../backend/app/ocr_runtime.py), [Paddle 단독 연결](../backend/app/paddle_ocr.py), [여러 줄 추출](../backend/app/event_layout.py), [React 경로 구성](../frontend/src/App.jsx), [화면 상태 전이](../frontend/src/workflow.js), [데이터 파이프라인](data-pipeline.md).
+현재 코드 근거: [검수 API](../backend/app/api.py), [임시 인증](../backend/app/local_auth.py), [OCR 런타임](../backend/app/ocr/runtime.py), [Paddle 단독 연결](../backend/app/ocr/paddle.py), [여러 줄 추출](../backend/app/reviews/layout.py), [React 경로 구성](../frontend/src/App.jsx), [화면 상태 전이](../frontend/src/pages/review/workflow.js), [데이터 파이프라인](data-pipeline.md).
 
 ## 3. 서비스 구성과 책임
 
@@ -286,7 +286,7 @@ FastAPI `BackgroundTasks`를 영속 작업 큐로 재사용하지 않는다. 무
 
 ## 9. 행사 정보 추출·판정·라벨 정책
 
-독립 Python worker가 OCR 모듈의 검증된 출력으로 기존 [행사 정보 추출기](../backend/app/extract_event.py), [여러 줄 추출기](../backend/app/event_layout.py), [판정 규칙](../backend/app/review_rules.py)을 실행한다. 파일명·정답 라벨·샘플 설명으로 OCR 결과를 채우지 않는다.
+독립 Python worker가 OCR 모듈의 검증된 출력으로 기존 [행사 정보 추출기](../backend/app/reviews/events.py), [여러 줄 추출기](../backend/app/reviews/layout.py), [판정 규칙](../backend/app/reviews/rules.py)을 실행한다. 파일명·정답 라벨·샘플 설명으로 OCR 결과를 채우지 않는다.
 
 - 핵심 필드: `event_name`, `start_date`, `end_date`, `location_raw`.
 - 필드별로 `value`, `source_ocr_ids`, `status`, `normalization`, 필요 시 `reason`을 보존한다. 날짜는 검증 후 ISO `YYYY-MM-DD`로 기록한다.

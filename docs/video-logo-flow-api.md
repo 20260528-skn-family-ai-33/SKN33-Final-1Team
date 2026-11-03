@@ -3,9 +3,9 @@
 영상 속 원본 로고의 위치를 사용자가 확정하고, 확정한 묶음을 원본과 정밀 대조해 **근거**를 돌려준다.
 묶음에 대한 일치·다름 판정은 내지 않는다. 최종 판단은 사람이 한다(2026-11-01 결정).
 
-- 코드: `backend/app/video_logo_flow.py`(API), `video_logo_candidates.py`(1부 후보), `video_logo_compare.py`(2부 대조), `video_logo_models.py`(모델)
+- 코드: `backend/app/video/logos/routes.py`(API), `video/logos/candidates.py`(1부 후보), `video/logos/compare.py`(2부 대조), `video/logos/models.py`(모델)
 - 실행 위치: 로컬 백엔드는 업로드·프레임 추출·저장·화면 데이터를 맡고, 모델이 필요한 두 단계(1부 후보 찾기, 2부 정밀 대조)는
-  RunPod Pod의 HTTP 워커(`backend/app/video_logo_worker.py`)에 맡긴다. 의존성(Pod)은 `requirements-logo.txt`, `requirements-paddle.txt`
+  RunPod Pod의 HTTP 워커(`backend/app/video/logos/worker.py`)에 맡긴다. 의존성(Pod)은 `requirements-logo.txt`, `requirements-paddle.txt`
   - `VIDEO_LOGO_WORKER_URL`(로컬 서버 환경변수)이 있으면 워커로 보내고, 없으면 그 프로세스에서 직접 추론한다(백엔드를 Pod에서 띄운 경우)
   - `VIDEO_LOGO_WORKER_TOKEN`(선택): 워커와 로컬에 같은 값을 두면 `X-Worker-Token` 헤더로 확인한다
   - `VIDEO_LOGO_WORKER_TIMEOUT_SECONDS`(선택, 기본 7200): 작업 하나의 최대 대기 시간
@@ -74,6 +74,7 @@
 1초 간격 프레임 → OWLv2(프롬프트 6개, 전체 화면 + 타일 10개, NMS 0.5) → 점수 0.1 이상·화면 40% 이하
 → 같은 초 겹침 묶기 → 시간 묶음(3초 이내, 위치·크기·모양 연속) → 원본마다 묶음 점수(초별 최고 SigLIP2 유사도 상위 3개 평균)
 → 상위 40개 OCR, 기준 문구를 80% 이상 읽으면 +0.10 = 순위 점수(`rank`).
+기준 문구가 비어 있으면 원본 로고 OCR(점수 0.5 이상 줄)을 대신 쓴다. 쓴 문구와 출처는 `refs[].bonus_text`, `refs[].bonus_basis`(`input`/`ocr`/`null`).
 
 ## 2부: 정밀 대조
 
@@ -83,6 +84,9 @@
 2. 원본을 요소로 나눔: 기준 문구와 맞는 OCR 줄 = 주 문구·보조 문구, 나머지 전경 = 심볼(글자가 곧 그림이면 로고 전체)
 3. 요소 판정: 빠짐(글자·심볼), 원본에 없는 문구·요소(추가), 위치 다름·크기 비율 다름(배치), 심볼 모양 다름(가림·변형).
    보조 문구 높이 8px 미만, 심볼 높이 20px 미만, 전경은 있는데 못 읽은 글자는 `비교 불가`
+   기준 문구가 비어 있으면 글자 요소 없이 로고 전체로 보되, 원본을 영상 전경 높이로 줄여 같은 크기에서 읽은 OCR 줄과 비교해
+   원본에만 있는 줄은 빠짐, 영상에만 있는 줄은 추가로 낸다(근거에 "같은 크기 원본 OCR 기준" 표시). 줄인 원본의 OCR 잡음은
+   원본 원래 크기 OCR에도 나오는 줄만 남겨 거른다. 기준 문구를 넣으면 지금처럼 기준 문구로 비교한다
 4. 초마다 `outcome`: `match` / `diff`(근거 있음) / `unknown`(비교 불가 있음)
 5. 색(`color`): 유채색끼리만 비교(흰색·검은색 단색은 `mono`). `outcome`에는 섞지 않고 근거로만 낸다(`hue`: 색상 차이 도)
 

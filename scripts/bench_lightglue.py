@@ -77,7 +77,9 @@ class LightGlueScorer:
 
 
 def main():
-    from backend.app.logo_pipeline import LogoDetector, crop, load_rgb
+    from backend.app.logos.pipeline import LogoDetector
+    from backend.app.logos.pipeline import crop
+    from backend.app.logos.pipeline import load_rgb
 
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--videos-dir", default="/workspace/videos")

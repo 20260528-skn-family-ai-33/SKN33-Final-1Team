@@ -150,7 +150,8 @@ def load_cases(manifest_path, project):
 
 def environment_metadata(pipeline="baseline"):
     """실험 코드·패키지·모델 해시를 기록하되 환경 변수와 비밀값은 수집하지 않는다."""
-    from backend.app.ocr_runtime import MODEL_FILES, _model_dir
+    from backend.app.ocr.runtime import MODEL_FILES
+    from backend.app.ocr.runtime import _model_dir
     packages = {}
     for name in ("easyocr", "torch", "torchvision", "numpy", "Pillow", "opencv-python-headless"):
         try:
@@ -158,10 +159,10 @@ def environment_metadata(pipeline="baseline"):
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
     models = [{"name": name, "sha256": sha256(_model_dir() / name) if (_model_dir() / name).is_file() else None} for name in MODEL_FILES]
-    code = ["scripts/benchmark_ocr.py", "scripts/ocr_metrics.py", "backend/app/api.py", "backend/app/ocr_runtime.py",
-            "backend/app/extract_event.py", "backend/app/review_rules.py", "backend/app/event_layout.py", "backend/app/adaptive_ocr.py",
-            "backend/app/model_ocr.py", "backend/app/paddle_worker.py", "backend/app/paddle_ocr.py",
-            "backend/app/paddle_full_worker.py", "scripts/prepare_paddle.py"]
+    code = ["scripts/benchmark_ocr.py", "scripts/ocr_metrics.py", "backend/app/api.py", "backend/app/ocr/runtime.py",
+            "backend/app/reviews/events.py", "backend/app/reviews/rules.py", "backend/app/reviews/layout.py", "backend/app/ocr/adaptive.py",
+            "backend/app/ocr/models.py", "backend/app/ocr/paddle_worker.py", "backend/app/ocr/paddle.py",
+            "backend/app/ocr/paddle_full_worker.py", "scripts/prepare_paddle.py"]
     # 단독 경로에는 EasyOCR 설정을 실행 설정으로 표시하지 않는다.
     settings = ({"detection_model": "PP-OCRv5_server_det", "recognition_model": "korean_PP-OCRv5_mobile_rec",
                  "device": "cpu", "download_enabled": False, "doc_preprocessing": False}
@@ -193,25 +194,26 @@ def worker(input_path, output_path, pipeline="baseline"):
     try:
         if pipeline == "paddle-only":
             # 탐지부터 인식까지 Paddle 작업자만 실행하며 EasyOCR 기준선을 호출하지 않는다.
-            from backend.app.paddle_ocr import recognize_paddle
+            from backend.app.ocr.paddle import recognize_paddle
             raw = recognize_paddle(input_path, output_path.parent / pipeline)
             result.update(status="success", raw=raw, **raw.get("profile", {}))
             write_json(output_path, result)
             return 0
         if pipeline in {"paddle", "qwen"}:
-            from backend.app.model_ocr import recognize_models
+            from backend.app.ocr.models import recognize_models
             raw = recognize_models(input_path, output_path.parent / pipeline, pipeline)
             result.update(status="success", raw=raw, refinement_status=raw["refinement_status"], **raw.get("profile", {}))
             write_json(output_path, result)
             return 0
         if pipeline == "adaptive":
-            from backend.app.adaptive_ocr import recognize_adaptive
+            from backend.app.ocr.adaptive import recognize_adaptive
             raw = recognize_adaptive(input_path, output_path.parent / "adaptive")
             result.update(status="success", raw=raw, **raw.get("profile", {}))
             result["worker_seconds"] = time.perf_counter() - started
             write_json(output_path, result)
             return 0
-        from backend.app.ocr_runtime import warmup_models, recognize_image
+        from backend.app.ocr.runtime import warmup_models
+        from backend.app.ocr.runtime import recognize_image
         warmup = warmup_models(allow_download=False)
         import torch
         device = warmup["device"]
@@ -234,7 +236,7 @@ def run_worker(input_path, directory, timeout, pipeline="baseline"):
     """시간 초과 시 자식 프로세스를 종료하고 다음 이미지의 측정을 계속한다."""
     if pipeline == "paddle-only":
         # 단독 어댑터가 실제 Paddle 자식 프로세스를 직접 종료할 수 있게 한다.
-        from backend.app.paddle_ocr import recognize_paddle
+        from backend.app.ocr.paddle import recognize_paddle
         started = time.perf_counter()
         try:
             raw = recognize_paddle(input_path, directory / pipeline, timeout=timeout)
@@ -246,7 +248,8 @@ def run_worker(input_path, directory, timeout, pipeline="baseline"):
         return result
     if pipeline in {"paddle", "qwen"}:
         # 어댑터가 개별 작업자·HTTP 요청을 제한하므로 바깥 프로세스를 중첩하지 않는다.
-        from backend.app.model_ocr import recognize_models, MAX_SECONDS
+        from backend.app.ocr.models import recognize_models
+        from backend.app.ocr.models import MAX_SECONDS
         started = time.perf_counter()
         try:
             raw = recognize_models(input_path, directory / pipeline, pipeline, timeout=min(timeout, MAX_SECONDS))
@@ -258,7 +261,8 @@ def run_worker(input_path, directory, timeout, pipeline="baseline"):
         return result
     if pipeline == "adaptive":
         # 중첩 프로세스를 만들지 않아 비교 제한시간이 끝나면 실제 추론도 종료된다.
-        from backend.app.adaptive_ocr import recognize_adaptive, HARD_TIMEOUT_SECONDS
+        from backend.app.ocr.adaptive import recognize_adaptive
+        from backend.app.ocr.adaptive import HARD_TIMEOUT_SECONDS
         started = time.perf_counter()
         try:
             raw = recognize_adaptive(input_path, directory / "adaptive", timeout=min(timeout, HARD_TIMEOUT_SECONDS))

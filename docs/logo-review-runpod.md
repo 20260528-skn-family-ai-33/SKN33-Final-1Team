@@ -13,12 +13,12 @@ DINOv2·pHash·ORB·YOLO-World는 벤치 비교군이라 레지스트리에만 �
 | 파일 | 역할 |
 | --- | --- |
 | `requirements-logo.txt` | Pod 설치 의존성(transformers·huggingface_hub·pillow·numpy·**kornia**·runpod) |
-| `backend/app/logo_models.py` | 모델 레지스트리(운영 조합 A/B + 비교군)와 캐시 경로 |
+| `backend/app/logos/catalog.py` | 모델 레지스트리(운영 조합 A/B + 비교군)와 캐시 경로 |
 | `scripts/prepare_logo_models.py` | HF 모델 다운로드 → `.runtime/logo-models/<key>/` + manifest |
-| `backend/app/logo_pipeline.py` | OWLv2 탐지 · CLIP/SigLIP2 임베딩 · **LightGlue 검증기** · 기준 인덱스 |
-| `backend/app/logo_review.py` | **guided + 이중검수 오케스트레이터**(§8): 탐지→1차 대조→2차 검증→판정 |
-| `backend/app/logo_runtime.py` | **로컬(Pod)↔RunPod 원격 경계**(§9). 서버는 이 모듈만 호출 |
-| `backend/app/logo_runpod_worker.py` | **RunPod Serverless handler**(§9). Pod GPU로 프레임 배치 판정 |
+| `backend/app/logos/pipeline.py` | OWLv2 탐지 · CLIP/SigLIP2 임베딩 · **LightGlue 검증기** · 기준 인덱스 |
+| `backend/app/logos/review.py` | **guided + 이중검수 오케스트레이터**(§8): 탐지→1차 대조→2차 검증→판정 |
+| `backend/app/logos/runtime.py` | **로컬(Pod)↔RunPod 원격 경계**(§9). 서버는 이 모듈만 호출 |
+| `backend/app/logos/runpod_worker.py` | **RunPod Serverless handler**(§9). Pod GPU로 프레임 배치 판정 |
 | `scripts/run_logo_guided.py` | **운영 검수 CLI**: 영상/이미지/프레임 1건 guided 검수(JSON + 판정 요약) |
 | `scripts/precompute_logo_embeddings.py` | 기준 로고 142개 임베딩 → `.runtime/logo-index/<matcher>/`(blind 식별용) |
 | `scripts/run_logo_review.py`, `scripts/run_logo_video.py` | 벤치기 단건 검수 도구(초기 guided/blind) |
@@ -200,7 +200,7 @@ python scripts/run_logo_guided.py --image frame.jpg --query-logo 로고.png --no
 ## 9. RunPod Serverless 배포 (서버에서 원격 호출)
 
 서비스 배포 시에는 무거운 모델을 **RunPod Serverless 엔드포인트**에 올리고, FastAPI 서버는 프레임만 보내 판정을 받습니다
-(OCR의 `ocr_runtime.py` ↔ `runpod_worker.py` 구조와 동일). 서버는 `backend/app/logo_runtime.py`만 호출합니다.
+(OCR의 `ocr/runtime.py` ↔ `ocr/runpod_worker.py` 구조와 동일). 서버는 `backend/app/logos/runtime.py`만 호출합니다.
 
 **추론 위치 — `RUN_TARGET`:**
 
@@ -239,7 +239,7 @@ result = review_video("clip.mp4", "로고.png", fps=1.0)   # RUN_TARGET에 따�
 
 ## 10. 동영상 검수 서비스 연동 (`logo_match`)
 
-동영상 검수(`video_review.py`)에 로고 검수를 **추가 축**으로 붙였습니다. 기존 OCR 검수 로직은 그대로입니다.
+동영상 검수(`video/review.py`)에 로고 검수를 **추가 축**으로 붙였습니다. 기존 OCR 검수 로직은 그대로입니다.
 
 - 업로드 때 **지정 로고(쿼리) 1장**을 선택 첨부(`logo` 멀티파트 필드, 이미지·8MB 이하). 안 올리면 기존과 동일하게 동작합니다.
 - 파이프라인이 이미 뽑아 둔 **base 표본 프레임**(1초 격자, 중복 제거)을 `logo_runtime`으로 guided 대조해,

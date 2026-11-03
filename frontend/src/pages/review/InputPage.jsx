@@ -3,7 +3,7 @@ import DocumentInput from './DocumentInput.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { parseRequirements } from '../../workflow.js';
+import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 기존 업로드·문서 처리 흐름을 큰 이미지 캔버스와 입력 inspector에 연결한다.

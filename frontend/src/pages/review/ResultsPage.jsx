@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DocumentConditionDetails from './DocumentConditionDetails.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
-import { statuses } from '../../reviewConstants.js';
+import { statuses } from './reviewConstants.js';
 import { filterResults, selectVisibleResult, evidenceOverlays } from './resultSelection.js';
 import '../../styles/review-results-v2.css';
 

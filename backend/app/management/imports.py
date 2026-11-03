@@ -13,7 +13,7 @@ from ..storage.local import StorageError
 from .io import OpsError,source_tree,strict_json,json_bytes,verify_bytes,relative
 from .maintenance import MAINTENANCE_KEY,session_lock
 from .files import audit
-from ..document_conditions import attached_condition
+from backend.app.documents.conditions import attached_condition
 
 PROFILE='conservative-source-v2'
 ENVELOPE='cc-import-envelope-v1'

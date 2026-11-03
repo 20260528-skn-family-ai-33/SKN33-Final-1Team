@@ -36,8 +36,10 @@ def _overrides(args) -> dict:
 
 
 def main() -> None:
-    from backend.app.logo_review import VERDICT_LABELS, summarize
-    from backend.app.logo_runtime import review_frames, review_video
+    from backend.app.logos.review import VERDICT_LABELS
+    from backend.app.logos.review import summarize
+    from backend.app.logos.runtime import review_frames
+    from backend.app.logos.runtime import review_video
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     source = parser.add_mutually_exclusive_group(required=True)

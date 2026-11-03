@@ -7,7 +7,7 @@ BASE=Path(__file__).resolve().parents[1]
 
 
 def code_revision():
-    names=('review_rules.py','extract_event.py','event_layout.py','paddle_ocr.py','paddle_full_worker.py','execution/output.py','execution/pipeline.py','services/review_results.py',
+    names=('reviews/rules.py','reviews/events.py','reviews/layout.py','ocr/paddle.py','ocr/paddle_full_worker.py','execution/output.py','execution/pipeline.py','services/review_results.py',
            'execution/queue.py','execution/worker_config.py','worker.py')
     hasher=hashlib.sha256()
     for name in names:
@@ -22,7 +22,8 @@ class DisabledPipeline:
 class PaddlePipeline:
     """Readiness is not inference success; both are checked at their real boundary."""
     def describe(self):
-        from ..paddle_ocr import paddle_readiness,paddle_paths
+        from backend.app.ocr.paddle import paddle_readiness
+        from backend.app.ocr.paddle import paddle_paths
         from scripts.prepare_paddle import DETECTION_MODEL,MODEL,verify_model
         if not paddle_readiness()[0]: raise AuthError('REVIEW_RUNTIME_UNAVAILABLE',503)
         _,detection,recognition=paddle_paths()
@@ -35,12 +36,12 @@ class PaddlePipeline:
                     preprocessing={'version':'cc-display-2x-lanczos-v1','ocr_scale':2})
 
     def recognize(self,path,directory):
-        from ..paddle_ocr import recognize_paddle
+        from backend.app.ocr.paddle import recognize_paddle
         return recognize_paddle(path,directory)
 
     def check(self,criteria,records):
-        from ..review_rules import review_criteria
-        from ..event_layout import extract_event_multiline
+        from backend.app.reviews.rules import review_criteria
+        from backend.app.reviews.layout import extract_event_multiline
         # The existing extractor uses tuples for date ranges in groups.values.
         # Project internal sequences without casting unsupported/unknown values.
         def project(value):

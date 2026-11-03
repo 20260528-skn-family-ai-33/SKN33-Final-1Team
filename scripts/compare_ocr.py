@@ -9,7 +9,7 @@ import re
 import unicodedata
 from pathlib import Path
 
-from backend.app.extract_event import extract_event
+from backend.app.reviews.events import extract_event
 from scripts.paths import DEFAULT_ARTIFACTS, PROJECT_ROOT, output_directory, artifact_path
 
 

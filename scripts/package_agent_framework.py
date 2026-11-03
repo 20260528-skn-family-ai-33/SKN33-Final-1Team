@@ -118,7 +118,7 @@ python -c "from scripts.package_agent_framework import build_pages; build_pages(
 
 
 def allowed_files():
-    paths = {".gitattributes", "backend/__init__.py", "PRODUCT.md", "pyproject.toml", "uv.lock",
+    paths = {".gitattributes", "backend/__init__.py", "tests/__init__.py", "PRODUCT.md", "pyproject.toml", "uv.lock",
              ".github/workflows/agent-framework.yml", "scripts/build_agent_code_graph.py",
              "scripts/build_agent_flow_html.py", "scripts/export_agent_framework.py",
              "scripts/package_agent_framework.py", "scripts/templates/agent-flow.html.in",
@@ -127,7 +127,9 @@ def allowed_files():
     # dependency closure so an extracted framework bundle can run its tests and
     # isolated file demo. Do not include product API/worker entrypoints or data.
     paths.update("backend/creative_checker/" + name + ".py" for name in (
-        "__init__", "contracts", "database", "models", "services", "settings", "storage", "tool_records"))
+        "__init__", "contracts", "database", "models", "settings", "storage", "tool_records"))
+    paths.update(p.relative_to(ROOT).as_posix()
+                 for p in (ROOT / "backend/creative_checker/services").glob("*.py"))
     paths.update({"backend/app/__init__.py", "backend/app/storage/__init__.py", "backend/app/storage/local.py",
                   "backend/app/hashing/__init__.py", "backend/app/hashing/canonical.py",
                   "backend/app/security/__init__.py", "backend/app/security/errors.py"})
