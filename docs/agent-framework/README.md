@@ -6,6 +6,8 @@
 
 **[PostgreSQL 실행·승인·worker 가이드](에이전트_프레임워크_PostgreSQL_실행가이드.html)** · [MD](에이전트_프레임워크_PostgreSQL_실행가이드.md) — 기존 M008 DB의 AF001 추가 마이그레이션과 새 API·worker 실행법이다.
 
+**[A02 PDF·Qwen·저장·승인 구조 설계](A02_PDF_Qwen_저장승인_구조설계.html)** · [MD](A02_PDF_Qwen_저장승인_구조설계.md) — 모델 서버가 아직 없는 상태에서 정리한 후속 설계안이다. API·worker·GPU 서버 경계, PDF 등록·승인 조회, 구현 순서를 설명하며 실제 연결 완료를 뜻하지 않는다.
+
 **[HTML 업무 흐름 열기](flow.html)** — 노드 선택·검색·확대/이동·기본 검수/재검수/근거 확인 필요 시나리오 탐색을 제공한다. HTML 파일을 브라우저에서 열면 되며 Python이나 서버를 실행할 필요가 없다. 실제 코드의 함수·클래스 관계는 **[Graphify 코드 지도](graphify-out/graph.html)**와 [추출 진단 보고서](graphify-out/GRAPH_REPORT.md)에서 확인한다. 업무 흐름은 코드·계획을 대조해 정리한 설명 그래프이며 실행 모니터가 아니다.
 
 브라우저에서 열 파일은 **`docs/agent-framework/flow.html`**이다. 업무 흐름의 원본은 `flow-data.json`과 빌드 전용 `scripts/templates/agent-flow.html.in`이며 `python -m scripts.build_agent_flow_html`로 단일 HTML을 재생성한다. 이전 `scripts/templates/agent-flow.html` 경로는 완성본으로 이동하는 안내 페이지다. Graphify 코드 지도는 별도 임시 환경의 공식 `graphifyy==0.9.100`으로 생성했다. 프로젝트 의존성에는 추가하지 않았다. 두 HTML은 자동 외부 자원을 로드하지 않도록 만들었으며 정적 구조·JavaScript 문법을 검사했다. 브라우저 렌더링은 미검증이다.
