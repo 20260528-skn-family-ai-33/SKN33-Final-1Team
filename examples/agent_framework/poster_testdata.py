@@ -41,14 +41,14 @@ def generate(output,cases=('EXH-NEW004','CON-NEW043','FES-NEW072')):
                 raw=doc[0].get_pixmap(alpha=False).tobytes('png')
             display,_=normalize(raw)
             name=case+'.'+variant
-            (output/(name+'.svg')).write_text(markup,encoding='utf-8')
+            (output/(name+'.svg')).write_bytes(markup.encode('utf-8'))
             (output/(name+'.png')).write_bytes(raw)
             records.append({'case_id':case,'variant':variant,'svg':name+'.svg','png':name+'.png',
                 'svg_sha256':sha256(markup.encode()).hexdigest(),'png_sha256':sha256(raw).hexdigest(),
                 'display_sha256':sha256(display).hexdigest(),'fields':fields(case,variant),
                 'synthetic':True,'observation_source':'scripted sidecar, not OCR or model output'})
     manifest={'artifact_role':'synthetic_poster_wiring_fixtures','real_model_calls':0,'records':records}
-    (output/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    (output/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     return manifest
 
 

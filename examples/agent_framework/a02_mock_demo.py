@@ -30,7 +30,7 @@ def main():
         document=VerifiedDocument(context,reference,raw,pages)
         result=invoke_role('A02',RegisteredPDFExtractor(lambda _:document,PDFExtractionConfiguration(mode='mock')),
             ExtractRequest(context=context,document=reference,synthetic=True))
-        if args.output:args.output.write_text(result.model_dump_json(indent=2)+'\n',encoding='utf-8')
+        if args.output:args.output.write_text(result.model_dump_json(indent=2)+'\n',encoding='utf-8',newline='\n')
         # ASCII on stdout remains parseable in Windows redirection as well.
         print(json.dumps(result.model_dump(mode='json'),ensure_ascii=True,indent=2))
         return 0

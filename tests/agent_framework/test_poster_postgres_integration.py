@@ -170,7 +170,7 @@ def test_preserved_real_poster_files_are_registered_and_verified_without_claimin
     from PIL import Image
     from backend.app.security.errors import AuthError
     r=pipeline;workflow=ROOT/'docs/poster-baselines/2026-11-03/workflow'
-    scenarios=json.loads((workflow/'01_시나리오_설계.json').read_text())
+    scenarios=json.loads((workflow/'01_시나리오_설계.json').read_text(encoding='utf-8'))
     case=next(c for c in scenarios['cases'] if c['id']==r.case)
     raw=(workflow/case['reference_poster']).read_bytes();assert sha256(raw).hexdigest()==case['reference_poster_sha256']
     with Image.open(BytesIO(raw)) as original:width,height=original.size

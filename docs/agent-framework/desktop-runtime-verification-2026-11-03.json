@@ -72,5 +72,13 @@
     "deploy/agent-framework/app.env.example": "98a3c530e3b048a8e1d686123d60224bb4531872b3295a21765155f2b0e02ed5",
     "tests/test_framework_desktop.py": "d2f88dfa40a87816dbd0b40f5657aefe10294ed02e8d2051dfe775adc2ce087c",
     "tests/agent_framework/test_desktop_postgres_integration.py": "e4d25bbf32500718a923c4a116bfa8c629e206608ac032b61a11a6ca5c0872e5"
-  }
+  },
+  "ci_before_utf8_lf_fix": {
+    "commit": "61a89d5eddf53f62834566981a3616c5e1b5cfb8",
+    "ubuntu_contracts": "success",
+    "linux_container_runtime": "success",
+    "postgres_and_docker_integration": "success",
+    "windows_contracts": "failed: default fixture encoding and Windows line-ending hashes"
+  },
+  "utf8_lf_followup_ci": "pending"
 }
