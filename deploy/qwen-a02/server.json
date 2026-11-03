@@ -1,0 +1,20 @@
+{
+  "model": "Qwen/Qwen3.5-4B",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "runtime_candidate": "vllm==0.17.1",
+  "runtime_verified": false,
+  "model_directory": "/workspace/creative-checker-a02/models/Qwen3.5-4B/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "venv_directory": "/workspace/creative-checker-a02/runtime/venv",
+  "cache_directory": "/workspace/creative-checker-a02/runtime/cache",
+  "host": "127.0.0.1",
+  "port": 8015,
+  "local_tunnel_port": 18015,
+  "dtype": "bfloat16",
+  "max_model_len": 32768,
+  "max_num_seqs": 1,
+  "gpu_memory_utilization": 0.85,
+  "minimum_free_gpu_mib": 14336,
+  "language_model_only": true,
+  "enforce_eager": true,
+  "api_key_environment": "VLLM_API_KEY"
+}

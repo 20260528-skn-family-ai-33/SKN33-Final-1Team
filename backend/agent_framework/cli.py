@@ -274,18 +274,28 @@ def parser():
     serve.add_argument("--config", required=True, help="explicit trusted team configuration JSON")
     serve.add_argument("--port", type=_port, default=8012)
     serve.set_defaults(handler=_serve)
-    from .postgres_commands import postgres_check,postgres_serve,postgres_worker,postgres_migrate
+    from .postgres_commands import postgres_check,postgres_serve,postgres_worker,postgres_migrate,initialize_pdf_storage
+    pdf_init=commands.add_parser('init-pdf-storage',help='explicitly initialize a NEW dedicated PDF directory; never reuse legacy image storage')
+    pdf_init.add_argument('--root',required=True)
+    pdf_init.set_defaults(handler=initialize_pdf_storage)
     for name,handler,help_text in (
-        ('postgres-check',postgres_check,'read-only existing M008 and AF001 extension preflight'),
+        ('postgres-check',postgres_check,'read-only existing M008 and framework extension preflight'),
         ('postgres-serve',postgres_serve,'start authenticated PostgreSQL framework API; never executes models'),
         ('worker',postgres_worker,'run the separate fenced framework role worker'),
-        ('migrate-postgres',postgres_migrate,'explicit owner-only additive AF001 migration in an existing M008 DB')):
+        ('migrate-postgres',postgres_migrate,'explicit owner-only additive framework migration in an existing M008 DB')):
         command=commands.add_parser(name,help=help_text)
         command.add_argument('--env-file',required=True,help='explicit app-only env file; migration uses a separate owner-only file')
         if name in ('postgres-serve','worker'):
             command.add_argument('--config',required=True,help='fixed trusted team adapter configuration')
-        if name=='postgres-serve':command.add_argument('--port',type=_port,default=8012)
-        if name=='worker':command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
+        if name=='postgres-serve':
+            command.add_argument('--port',type=_port,default=8012)
+            command.add_argument('--pdf-storage-root',help='existing dedicated PDF root initialized with init-pdf-storage; requires AF002')
+            command.add_argument('--poster-storage-root',help='existing M008 image storage; registered poster reviews require AF003')
+        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003'),default='AF001')
+        if name=='worker':
+            command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
+            command.add_argument('--pdf-storage-root',help='existing dedicated PDF storage; required by registered_pdf A02 configuration')
+            command.add_argument('--poster-storage-root',help='existing M008 image storage; required by registered_poster inspector')
         command.set_defaults(handler=handler)
     return cli
 

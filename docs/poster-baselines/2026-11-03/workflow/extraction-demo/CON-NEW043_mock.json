@@ -1,0 +1,319 @@
+{
+  "contract_version": "2.0.0",
+  "context": {
+    "contract_version": "2.0.0",
+    "project_id": "cbfceeb6-2aaa-4e07-bbbf-ace55d1c6753",
+    "run_id": "8f958146-1387-4d07-8494-4e33147e727e",
+    "actor_id": "b3e200f6-7d1b-4b56-bdaa-0fa2544c802a",
+    "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+    "criteria_version_id": "1221e157-1739-406f-9c90-c71f3a3ff9b6",
+    "asset_version_id": null,
+    "parent_run_id": null
+  },
+  "criteria": [
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c001",
+      "text": "단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.",
+        "source_hash": "d276a92cef916633d08cd5a51a49097fe9c02b8c9b7741e91adeb4ad9e4a47b3"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c002",
+      "text": "주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.",
+        "source_hash": "5d7510b97c47462eacd8c4b8cea3211383d31b6504a11e6d05e746d7480241d4"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c003",
+      "text": "허용 범위: 영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "허용 범위: 영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.",
+        "source_hash": "89de8120fdd8d294e8d82e6b4cfa68ae4c8268c4cffe94a07c8b6759bedcde93"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c004",
+      "text": "공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.",
+        "source_hash": "103342a8a6a25205a196261c9e0e10d8805c62bbdbe4e043ef25386fad44e194"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c005",
+      "text": "공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.",
+        "source_hash": "70e4029e23e3d90927e0b71d780ebe22d8a63f0baef9c75ea4e536aeab378567"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c006",
+      "text": "출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.",
+        "source_hash": "e03c9c5b25325c9ded77ea5b11d6f4ae45907032e65eed47e2ea6f0a5a00aa70"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c007",
+      "text": "허용 범위: 두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "허용 범위: 두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.",
+        "source_hash": "d5b7550f59faf09ce6ed0abb53bb3b75b1898d888068c3f4ae6278b930c1d9a5"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c008",
+      "text": "프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.",
+        "source_hash": "d548430442e3085e9852bb96e2d313865b9e33ddf22778da32e80357599a68c9"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c009",
+      "text": "1. 산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "1. 산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+        "source_hash": "c8cabd670e13394485d3cb20393e70026b8d40da3ddd10a24e3cff9fb62017c7"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c010",
+      "text": "JPEG (.jpg 또는 .jpeg)",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "JPEG (.jpg 또는 .jpeg)",
+        "source_hash": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c011",
+      "text": "가로 4500픽셀 × 세로 4500픽셀",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "가로 4500픽셀 × 세로 4500픽셀",
+        "source_hash": "6acd436226cbb66b6bc041e8f32800be3a1e418ebfeb503ff4d44d5215602779"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c012",
+      "text": "RGB",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "RGB",
+        "source_hash": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c013",
+      "text": "관람연령 - 확인 중",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "관람연령 - 확인 중",
+        "source_hash": "07a6ce0f0db828b8719a0e1ffa6e65c8dc26711f14d9ec8c5e665cf4a8cde528"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c014",
+      "text": "관람연령은 확인 중입니다. 최소 관람연령을 확인한 뒤 포스터에 안내해야 합니다. 구체적인 연령과 표기 문구는 담당자",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "aa521cb1-0c1e-444b-ba6b-8de361442048",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "관람연령은 확인 중입니다. 최소 관람연령을 확인한 뒤 포스터에 안내해야 합니다. 구체적인 연령과 표기 문구는 담당자",
+        "source_hash": "250d6e01565ba4856c8f3aab389dd99f6046317441d291b334d86b87f888bcc6"
+      },
+      "human_added": false
+    }
+  ],
+  "warnings": [
+    "unapproved_draft",
+    "exact_source_check_is_not_semantic_accuracy",
+    "text_layer_only_visual_layout_not_verified",
+    "synthetic_mock_manual_candidates_not_qwen_results",
+    "missing_values_require_client_clarification"
+  ],
+  "synthetic": true,
+  "extraction": {
+    "contract_version": "2.0.0",
+    "mode": "mock",
+    "model": "mock-line-fixture-v1",
+    "parser": "pymupdf-1.28.2",
+    "policy": "a02-text-v1",
+    "document_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7",
+    "prompt_sha256": "2aa3e669dc40ea82efb21ec54ad8df0a2df44097749b47fccd29b16538d58a79",
+    "response_sha256": "ed295138ed82e1c7aa0aa7e588d1c1322d685401cf5da1a96dc27a5ad0c784b6",
+    "sources": [
+      {
+        "contract_version": "2.0.0",
+        "page": 1,
+        "block_id": "p1-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  1 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n연주회 포스터 제작 의뢰서\n수원시립교향악단 제303회 정기연주회\n기존 포스터를 참고하여 작성한 개발용 가상 의뢰서입니다. 실제 기관이나 인물의 발주·승인 사실을 나타내지 않습니다.\n의뢰 개요\n내용\n문서 식별\nCON-NEW043 / client-draft-v0.2\n과업 분야\n시각디자인 / 디지털 홍보 포스터\n결과물\n아래 요구사항을 반영한 디지털 포스터 파일 1점\n1. 제작 목적\n교향악단 정기연주회의 작품명, 공연 일시·장소와 출연 정보를 알리는 디지털 홍보 포스터를 의뢰합니다. 한글 정보와 외국\n어 작품명을 함께 읽을 수 있도록 구성해 주세요.\n2. 포스터에 표기할 내용\n항목\n표기 내용과 허용 범위\n1\n단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.\n허용 범위: 줄바꿈·공백 차이는 허용하되 회차 숫자는 바꾸지 않는다.\n2\n주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.\n허용 범위: 영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.\n3\n공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.\n허용 범위: 수요일/wed, 날짜 구분자와 0 표기는 허용한다. 날짜와 시각을 변경하지 않는다.\n4\n공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.\n허용 범위: 줄바꿈·공백 차이는 허용한다.\n5\n출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.\n허용 범위: 두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.\n6\n프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.\n허용 범위: 줄바꿈·공백 차이는 허용한다. 이 항목의 필수 표기는 한글 프로그램명과 작곡가명이며, 영문 부제 전체와 \n작품 번호는 이번 요청 범위에 포함하지 않는다.\n",
+        "text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+      },
+      {
+        "contract_version": "2.0.0",
+        "page": 2,
+        "block_id": "p2-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  2 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n시각 구성·납품·확인 사항\nCON-NEW043 / 제작 의뢰 세부내역\n3. 시각 구성\n1. 산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.\n2. 보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.\n색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.\n4. 디지털 납품 규격\n항목\n요청 규격\n파일 형식\nJPEG (.jpg 또는 .jpeg)\n픽셀 크기\n가로 4500픽셀 × 세로 4500픽셀\n색상 모드\nRGB\n5. 담당자 확인 후 반영할 필수 사항\n관람연령 - 확인 중\n관람연령은 확인 중입니다. 최소 관람연령을 확인한 뒤 포스터에 안내해야 합니다. 구체적인 연령과 표기 문구는 담당자\n 회신 후 반영해 주세요.\n위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.\n6. 협의 및 확인 범위\n행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.\n사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.\n변경 내용은 새 문서 버전으로 기록하고 담당자와 표기 기준을 확인합니다. 이전 초안의 확인 기록을 변경된 기준의 승인으\n로 사용하지 않습니다.\n",
+        "text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+      }
+    ],
+    "unresolved_criterion_ids": [
+      "c013",
+      "c014"
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "stage": 2,
+  "document_checks": "passed",
+  "pdfs": 3,
+  "pages": 6,
+  "markdown_files": 3,
+  "pdfs_text_selectable": true,
+  "embedded_korean_fonts_checked": true,
+  "pdf_visual_review": "All final 6 pages rendered and inspected.",
+  "pending_answers_supplied": false,
+  "reviewer_keys_embedded": false,
+  "poster_images_embedded": false,
+  "source_scenarios_unchanged": true,
+  "legacy_pdfs_and_posters_unchanged": true,
+  "client_links_checked": 18,
+  "browser_rendered": false,
+  "actual_windows_execution_verified": false,
+  "human_verified": false,
+  "criteria_approval_status": "unapproved",
+  "model_inference_executed": false,
+  "database_changed": false,
+  "documents": [
+    {
+      "case_id": "EXH-NEW004",
+      "pages": 2,
+      "text_characters": [
+        741,
+        841
+      ],
+      "embedded_fonts": [
+        "/AAAAAA+ArialUnicodeMS",
+        "/AAAAAB+ArialUnicodeMS"
+      ],
+      "embedded_images": 0,
+      "pending_field": "관람시간",
+      "pending_answer_supplied": false,
+      "pdf_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "pages": 2,
+      "text_characters": [
+        1017,
+        830
+      ],
+      "embedded_fonts": [
+        "/AAAAAA+ArialUnicodeMS",
+        "/AAAAAB+ArialUnicodeMS"
+      ],
+      "embedded_images": 0,
+      "pending_field": "관람연령",
+      "pending_answer_supplied": false,
+      "pdf_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "pages": 2,
+      "text_characters": [
+        1070,
+        862
+      ],
+      "embedded_fonts": [
+        "/AAAAAA+ArialUnicodeMS",
+        "/AAAAAB+ArialUnicodeMS"
+      ],
+      "embedded_images": 0,
+      "pending_field": "우천 시 운영 안내",
+      "pending_answer_supplied": false,
+      "pdf_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614"
+    }
+  ],
+  "progress_checked": true,
+  "last_completed_step": 2,
+  "next_step": 3,
+  "source_scenarios_unchanged_after_progress_update": true,
+  "workflow_links_checked": 48
+}

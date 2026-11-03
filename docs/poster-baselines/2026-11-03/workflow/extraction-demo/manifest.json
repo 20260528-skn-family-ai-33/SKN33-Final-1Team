@@ -1,0 +1,38 @@
+{
+  "artifact_role": "local_mock_wiring_demo_not_db_results_or_gold",
+  "records": [
+    {
+      "case_id": "EXH-NEW004",
+      "file": "EXH-NEW004_mock.json",
+      "sha256": "dad16f77ddae23071737add91d24e6c31db01177f857831220eb95acc6d7e94c",
+      "source_pdf_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+      "manual_mock_candidates": 11,
+      "synthetic": true,
+      "database_registered_result": false,
+      "real_model_calls": 0,
+      "human_approved": false
+    },
+    {
+      "case_id": "CON-NEW043",
+      "file": "CON-NEW043_mock.json",
+      "sha256": "076cc20834725ddda4bcd1c8de73a041a03a3d2d024ecf453b7cca3a3fe36ba0",
+      "source_pdf_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7",
+      "manual_mock_candidates": 14,
+      "synthetic": true,
+      "database_registered_result": false,
+      "real_model_calls": 0,
+      "human_approved": false
+    },
+    {
+      "case_id": "FES-NEW072",
+      "file": "FES-NEW072_mock.json",
+      "sha256": "1f551bb99443991a1f1315cc16d1b102067c224a2ae99397c64536d07cd035d1",
+      "source_pdf_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614",
+      "manual_mock_candidates": 16,
+      "synthetic": true,
+      "database_registered_result": false,
+      "real_model_calls": 0,
+      "human_approved": false
+    }
+  ]
+}

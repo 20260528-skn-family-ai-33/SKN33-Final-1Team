@@ -1,0 +1,73 @@
+{
+  "version": "0.1",
+  "created_at": "2026-11-03",
+  "status": "draft_for_human_review",
+  "human_verified": false,
+  "source_kind": "poster_derived_synthetic",
+  "gold_verdict": null,
+  "purpose": "표준계약서의 첨부 개발 세부내역 구조를 참고한 A02 개발용 기준문서 초안. 실제 계약·발주 요구서 또는 독립 평가 정답이 아님.",
+  "source_pdf": {
+    "path": "sources/standard-contract-2025-033.pdf",
+    "sha256": "e0717c3c78eee5dca00fa13ca7b1b446c294664650d7ac06452e82e7fef55c60",
+    "pages": 12
+  },
+  "pairs": [
+    {
+      "id": "EXH-NEW004",
+      "poster_id": "NEW004",
+      "title": "수원의 영화, 수원의 극장",
+      "document": "cases/EXH-NEW004/기준문서_v0.1.pdf",
+      "document_sha256": "19bae58b2d92942292253083e38e9c8b4ca520433538516ed156d1e993798b92",
+      "document_pages": 3,
+      "poster": "cases/EXH-NEW004/poster.jpg",
+      "poster_sha256": "7744f979df13e36e527f4eb9a50baaf78ebcafcd8fd6b0ad687a7f134137be33",
+      "width": 3000,
+      "height": 3000,
+      "format": "JPEG",
+      "color_mode": "RGB",
+      "text_requirement_candidates": 4,
+      "visual_requirement_candidates": 2,
+      "file_metadata_proposal": true,
+      "approval_status": "unapproved",
+      "gold_verdict": null
+    },
+    {
+      "id": "CON-NEW043",
+      "poster_id": "NEW043",
+      "title": "수원시립교향악단 제303회 정기연주회",
+      "document": "cases/CON-NEW043/기준문서_v0.1.pdf",
+      "document_sha256": "c8ab07692f7c7916c085f87d25422fd6f303febe545e2c7800882d628d60810d",
+      "document_pages": 3,
+      "poster": "cases/CON-NEW043/poster.jpg",
+      "poster_sha256": "4195c0380114b3e4095dbc369fcc14adaba575443700c39dd4ed56d39fc6671d",
+      "width": 4500,
+      "height": 4500,
+      "format": "JPEG",
+      "color_mode": "RGB",
+      "text_requirement_candidates": 6,
+      "visual_requirement_candidates": 2,
+      "file_metadata_proposal": true,
+      "approval_status": "unapproved",
+      "gold_verdict": null
+    },
+    {
+      "id": "FES-NEW072",
+      "poster_id": "NEW072",
+      "title": "2025 탄소중립 한마당 축제 오늘무해! FESTIVAL",
+      "document": "cases/FES-NEW072/기준문서_v0.1.pdf",
+      "document_sha256": "4393148a6ba3976e00753dfc533392a11e4da6a1272e946f35478f0749ccacb4",
+      "document_pages": 3,
+      "poster": "cases/FES-NEW072/poster.jpg",
+      "poster_sha256": "82a3587b51963d9ad7eec4e5495bda809d82005f4e9048f96cbc65307442aeee",
+      "width": 2382,
+      "height": 3368,
+      "format": "JPEG",
+      "color_mode": "RGB",
+      "text_requirement_candidates": 8,
+      "visual_requirement_candidates": 2,
+      "file_metadata_proposal": true,
+      "approval_status": "unapproved",
+      "gold_verdict": null
+    }
+  ]
+}

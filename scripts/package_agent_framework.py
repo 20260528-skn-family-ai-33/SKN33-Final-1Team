@@ -48,6 +48,10 @@ def build_pages():
 <a class="card" href="에이전트_프레임워크_가이드.html"><strong>05 / 담당자별 연결 가이드</strong><span>수정 파일 · factory · 역할별 테스트 · 실제 기능 인수 순서</span></a>
 <a class="card" href="에이전트_프레임워크_PostgreSQL_실행가이드.html"><strong>06 / PostgreSQL 실행·worker</strong><span>기존 DB · 실행·단계·승인 기록 · 독립 worker · lease 복구</span></a>
 <a class="card" href="A02_PDF_Qwen_저장승인_구조설계.html"><strong>07 / A02 연결 구조 설계</strong><span>PDF · Qwen GPU 서버 · 기존 DB · 기준 승인·재조회 · 구현 예정안</span></a>
+<a class="card" href="PDF_등록_버전저장_가이드.html"><strong>08 / PDF 등록·버전 저장</strong><span>4단계 구현 · AF002 · 원본 해시 · 프로젝트 권한 · 재조회</span></a>
+<a class="card" href="A02_조건추출_연결가이드.html"><strong>09 / A02 조건 추출 연결</strong><span>5단계 구현 · PDF-only · 별도 worker · 출처 검증 · 미승인 초안</span></a>
+<a class="card" href="기준_보완승인_가이드.html"><strong>10 / 기준 보완·승인</strong><span>6단계 구현 · AF003 · 보완 출처 · 기준 버전 · 승인·재조회</span></a>
+<a class="card" href="포스터_검수재검수_가이드.html"><strong>11 / 포스터 검수·재검수</strong><span>7단계 구현 · 기존 이미지 저장 · 승인 기준 고정 · 새 입력 확인 · 독립 worker</span></a>
 </div>
 <h2>열람 방법</h2><ol><li>Git으로 받은 프로젝트에서 <code>docs/agent-framework/index.html</code>을 Chrome으로 엽니다.</li>
 <li>개발할 때는 프로젝트 루트의 코드·예제·테스트를 사용합니다. share 흐름도는 열람용 사본이며 개발은 루트 코드를 기준으로 합니다. 기존 ZIP은 이전 이력입니다.</li>
@@ -95,7 +99,7 @@ def build_pages():
 
 # Windows PowerShell
 .\\.venv\\Scripts\\python.exe -m examples.agent_framework.file_access_demo</code></pre>
-<p>재구축 creative_checker 경로는 PDF·포스터, M008 경로는 포스터를 지원합니다. M008의 기존 POSIX 저장소는 Windows 지원 대상이 아닙니다. 제품 API에 자동 연결하지 않으며 인증이 확인된 주체와 기존 저장소를 호출자가 주입합니다. 원본 바이트와 EXIF 표시 좌표는 구분합니다.</p>
+<p>재구축 creative_checker 경로는 PDF·포스터, M008의 기존 catalog는 포스터를 지원합니다. AF002를 활성화하면 <a href="PDF_등록_버전저장_가이드.html">새 PDF 등록·버전 저장</a>을 사용할 수 있습니다. M008의 기존 POSIX 저장소는 Windows 지원 대상이 아닙니다. 제품 API에 자동 연결하지 않으며 인증이 확인된 주체와 기존 저장소를 호출자가 주입합니다. 원본 바이트와 EXIF 표시 좌표는 구분합니다.</p>
 <h2>8. 단계별 실행 기록</h2><p>demo 출력의 <code>runs[].step_records</code> 또는 같은 Workflow 객체의 <code>get_steps(run_id)</code>에서 역할별 상태·UTC 시작/종료 시각·소요 시간·오류 코드를 확인합니다. 개발 API는 <code>GET /api/framework/v1/runs/실행ID/steps</code>를 제공합니다. 어댑터가 실행 중이어도 조회할 수 있으며 시작·승인 요청은 동기식으로 완료를 기다립니다.</p>
 <p>상태는 running·completed·failed·outcome_unknown·reused로 구분합니다. 재검수의 A02는 부모 실행의 조건 재사용을 표시하며 새로운 호출 시간이나 소요 시간을 만들지 않습니다. 오류 뒤에는 후속 역할을 실행하지 않고 자동 재시도도 하지 않습니다. 사람 승인 대기는 역할 소요 시간에 포함하지 않습니다. 단계 completed는 검수 통과나 최종 승인이 아닙니다.</p>
 <p class="note">demo·serve·check-flow는 메모리 개발 도구입니다. 역할 단독 role/check 명령은 Workflow 이력을 만들지 않습니다. 기존 DB·인증을 사용하는 postgres-serve·worker는 <a href="에이전트_프레임워크_PostgreSQL_실행가이드.html">별도 PostgreSQL 실행가이드</a>를 따릅니다. 운영 배포·실모델·front-v2는 후속 단계입니다.</p>

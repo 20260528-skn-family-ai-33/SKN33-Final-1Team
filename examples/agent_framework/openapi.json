@@ -298,6 +298,32 @@
             "type": "array",
             "title": "Criterion Ids",
             "default": []
+          },
+          "approved_criteria_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Criteria Version Id"
+          },
+          "criteria_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criteria Sha256"
           }
         },
         "additionalProperties": false,
@@ -308,6 +334,57 @@
           "decision"
         ],
         "title": "Approval"
+      },
+      "ApprovedBaseline": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "source_run_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Source Run Id"
+          },
+          "criteria_version_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criteria Version Id"
+          },
+          "criteria_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Criteria Sha256"
+          },
+          "approval_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Approval Id"
+          },
+          "document_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Document Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source_run_id",
+          "criteria_version_id",
+          "criteria_sha256",
+          "approval_id",
+          "document_sha256"
+        ],
+        "title": "ApprovedBaseline"
       },
       "AssetRef": {
         "properties": {
@@ -482,6 +559,16 @@
             "type": "boolean",
             "title": "Synthetic",
             "default": false
+          },
+          "extraction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExtractionTrace"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -491,6 +578,77 @@
           "criteria"
         ],
         "title": "CriteriaDraft"
+      },
+      "CriteriaValueSource": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "record_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Record Id"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "human_review",
+              "synthetic_test"
+            ],
+            "title": "Purpose"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reference"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Quote"
+          },
+          "quote_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Quote Sha256"
+          },
+          "submitted_by": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Submitted By"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "record_id",
+          "purpose",
+          "reference",
+          "quote",
+          "quote_sha256",
+          "submitted_by",
+          "submitted_at",
+          "synthetic"
+        ],
+        "title": "CriteriaValueSource"
       },
       "Criterion": {
         "properties": {
@@ -562,6 +720,16 @@
             "type": "boolean",
             "title": "Human Added",
             "default": false
+          },
+          "value_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CriteriaValueSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -704,6 +872,16 @@
               }
             ],
             "title": "Applicable Asset Version Id"
+          },
+          "value_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CriteriaValueSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -794,6 +972,89 @@
           "status"
         ],
         "title": "EvidenceBundle"
+      },
+      "ExtractionTrace": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "qwen"
+            ],
+            "title": "Mode"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model"
+          },
+          "parser": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Parser"
+          },
+          "policy": {
+            "type": "string",
+            "const": "a02-text-v1",
+            "title": "Policy",
+            "default": "a02-text-v1"
+          },
+          "document_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Document Sha256"
+          },
+          "prompt_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Prompt Sha256"
+          },
+          "response_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Response Sha256"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/PDFTextSource"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Sources"
+          },
+          "unresolved_criterion_ids": {
+            "items": {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+            },
+            "type": "array",
+            "title": "Unresolved Criterion Ids",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "model",
+          "parser",
+          "document_sha256",
+          "prompt_sha256",
+          "response_sha256",
+          "sources"
+        ],
+        "title": "ExtractionTrace"
       },
       "FrameworkError": {
         "properties": {
@@ -995,6 +1256,49 @@
         ],
         "title": "Observation"
       },
+      "PDFTextSource": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "page": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "block_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Block Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 60000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "text_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Text Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "page",
+          "block_id",
+          "text",
+          "text_sha256"
+        ],
+        "title": "PDFTextSource"
+      },
       "ReportDraft": {
         "properties": {
           "contract_version": {
@@ -1107,6 +1411,7 @@
               "extracting",
               "reviewing",
               "waiting_criteria",
+              "waiting_asset",
               "waiting_review",
               "waiting_revision",
               "completed",
@@ -1220,6 +1525,30 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/FrameworkError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approved_criteria_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Criteria Version Id"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovedBaseline"
               },
               {
                 "type": "null"
@@ -1464,6 +1793,7 @@
               "extracting",
               "reviewing",
               "waiting_criteria",
+              "waiting_asset",
               "waiting_review",
               "waiting_revision",
               "completed",

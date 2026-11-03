@@ -1,0 +1,165 @@
+{
+  "stage": "qwen-server-preparation-1",
+  "checked_at_utc": "2026-11-03T06:52:26.319371+00:00",
+  "status": "configuration_prepared_not_deployed",
+  "selected_pod": {
+    "name": "faithful_moccasin_puma",
+    "id": "bh1xgw8db1mp5w",
+    "ssh_host": "213.173.99.23",
+    "ssh_external_port": 20719,
+    "ssh_container_port": 22,
+    "gpu": "NVIDIA RTX 2000 Ada Generation",
+    "driver": "595.91.07",
+    "memory_total_mib": 16380,
+    "memory_used_mib": 5599,
+    "memory_free_mib": 10352,
+    "gpu_utilization_percent": 0,
+    "preserved_processes": [
+      {
+        "pid": 69056,
+        "module": "uvicorn backend.app.video_logo_worker:app",
+        "port": 8791,
+        "gpu_mib": 3582
+      },
+      {
+        "pid": 72411,
+        "module": "backend.app.paddle_ocr_server",
+        "python": "/root/paddlegpu/bin/python",
+        "gpu_mib": 2002
+      }
+    ],
+    "python": "3.12.3",
+    "base_packages": {
+      "torch": "2.8.0+cu128",
+      "transformers": "4.56.2",
+      "safetensors": "0.8.0",
+      "vllm": null
+    },
+    "existing_repository_path": "/workspace/SKN33-Final-1Team",
+    "existing_repository_has_dot_git": false,
+    "existing_ports": [
+      22,
+      8888,
+      8791,
+      8001,
+      8081,
+      7861,
+      7270,
+      3001,
+      9091
+    ],
+    "container_disk_observation": "50G total, 13G used, 38G available; not model-volume quota",
+    "workspace_volume_observation": "global volume reports synthetic 1.0P df capacity; not verified account quota"
+  },
+  "other_running_pods": [
+    {
+      "name": "상현_동영상 검수용",
+      "id": "dwkko5ze40zfbu",
+      "gpu": "RTX 4000 Ada Generation",
+      "memory_total_mib": 20475,
+      "memory_used_mib": 5495,
+      "memory_free_mib": 14526,
+      "gpu_utilization_percent": 0,
+      "decision": "preserve assigned team workload"
+    },
+    {
+      "name": "Qwen3.5 27B 8비트 양자화 테스트 - 정민",
+      "id": "fzbpqqfjgyf0zf",
+      "gpu": "NVIDIA A40",
+      "memory_total_mib": 46068,
+      "memory_used_mib": 32437,
+      "memory_free_mib": 13054,
+      "gpu_utilization_percent": 36,
+      "decision": "preserve active experiment"
+    }
+  ],
+  "stopped_pod": {
+    "id": "t0inj2blg44az2",
+    "name": "influential_indigo_mastodon-migration",
+    "gpu": "RTX 2000 Ada",
+    "ssh_inspected": false,
+    "started": false
+  },
+  "weights_inventory": {
+    "checked_roots": [
+      "/workspace/models",
+      "/workspace/hf-cache/hub",
+      "/workspace/.cache/huggingface/hub"
+    ],
+    "qwen_4b_found_in_checked_roots": false,
+    "qwen_4b_absence_outside_checked_roots_verified": false,
+    "preserved_cached_models": [
+      "ZhengPeng7/BiRefNet",
+      "google/owlv2-base-patch16",
+      "google/siglip2-so400m-patch14-384",
+      "google/owlv2-base-patch16-ensemble preprocessor",
+      "google/owlvit-base-patch32 preprocessor"
+    ],
+    "download_target_model": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "shard_bytes": 9319828096,
+    "official_manifest": "../../deploy/qwen-a02/model-manifest.json",
+    "remote_qwen_shards_hashed": false
+  },
+  "git": {
+    "local_branch": "feat/37-a02-pdf-registration",
+    "local_committed_head": "55df41bfff938b101f7e61570461b140822c8b95",
+    "uncommitted_changes": true,
+    "same_named_remote_branch_present": false,
+    "origin_main_observed": "233cd6de0b77ca6b70af3d8f46e6204e28e6c065",
+    "new_checkout_target": "/workspace/creative-checker-a02/repository",
+    "clone_executed": false,
+    "commit_executed": false,
+    "push_executed": false
+  },
+  "runtime": {
+    "candidate": "vllm==0.17.1",
+    "official_tag_qwen35_implementation_checked": true,
+    "official_x86_64_wheel_sha256": "c52e892309532b4e51cb94d022c5e3c0087300cdb56e4645708601443299d871",
+    "gpu_compatibility_verified": false,
+    "transitive_dependencies_locked": false,
+    "package_install_executed": false
+  },
+  "configuration": {
+    "path": "../../deploy/qwen-a02/server.json",
+    "host": "127.0.0.1",
+    "server_port": 8015,
+    "local_tunnel_port": 18015,
+    "text_only": true,
+    "minimum_free_gpu_mib": 14336,
+    "current_gpu_memory_policy": "blocked",
+    "policy_is_measured_model_minimum": false
+  },
+  "tests": {
+    "command": ".venv/bin/python -m pytest tests/test_qwen_server_preparation.py -q",
+    "passed": 11,
+    "loopback_socket_test_needed_sandbox_network_permission": true,
+    "gpu_model_started": false
+  },
+  "actual_qwen_inference_calls": 0,
+  "pod_created_started_stopped_or_restarted": false,
+  "remote_app_or_model_files_modified": false,
+  "existing_env_modified": false,
+  "operational_database_changed": false,
+  "pending": [
+    "review and publish required Git changes before clone",
+    "isolated runtime installation and quota check",
+    "pinned weights preparation and hash verification",
+    "GPU workload/resource decision before launch",
+    "runtime and A02 protocol validation",
+    "real PDF quality and persistence/explicit approval verification"
+  ],
+  "sources": [
+    "https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "https://pypi.org/pypi/vllm/0.17.1/json",
+    "https://github.com/vllm-project/vllm/blob/v0.17.1/vllm/model_executor/models/qwen3_5.py",
+    "https://docs.runpod.io/pods/storage/types"
+  ],
+  "artifact_sha256": {
+    "deploy/qwen-a02/model-manifest.json": "b17933a023b866b0eaedb55922f0abc1a59978ebf1fc85a3891ed8dbddf06593",
+    "deploy/qwen-a02/requirements-server.txt": "6288e9a9e725d8fabcc6cbab4dbcdccf001e6ff53363384affcca2380cc6719e",
+    "deploy/qwen-a02/server.json": "a1327928ef5a7cf41248a598e929431c152c9806d64c359aef467f8117e9cca0",
+    "deploy/qwen-a02/server.py": "9a84ac5232eaccd4f1709832e05ba4ef3a4ee30346b9bd5ae1e18de537423df7",
+    "deploy/qwen-a02/worker-config.example.json": "9336fdd9fe663aad435574a44c2241925246b355cefb79d028b89bd375c63262"
+  }
+}

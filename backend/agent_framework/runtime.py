@@ -59,7 +59,7 @@ class _GraphState(TypedDict):
 @dataclass
 class _Run:
     document: DocumentRef
-    asset: AssetRef
+    asset: AssetRef | None
     snapshot: RunSnapshot
     lock: Any = field(default_factory=RLock)
     # Commands keep lock for the entire graph; readers never wait on adapters.
@@ -182,10 +182,10 @@ class Workflow:
         self._save(record, execution_status='outcome_unknown' if error.outcome_unknown else 'failed', error=error)
         return _copy(record.snapshot)
 
-    def start(self, context: Context, document: DocumentRef, asset: AssetRef, *, defer=False) -> RunSnapshot:
+    def start(self, context: Context, document: DocumentRef, asset: AssetRef | None = None, *, defer=False) -> RunSnapshot:
         context = _boundary(Context, context)
         document = _boundary(DocumentRef, document)
-        asset = _boundary(AssetRef, asset)
+        asset = _boundary(AssetRef, asset) if asset is not None else None
         if context.parent_run_id is not None:
             raise ValueError('use rereview to create a child run')
         self._input_scope(context, document, asset)
@@ -207,10 +207,10 @@ class Workflow:
             return _copy(record.snapshot)
 
     @staticmethod
-    def _input_scope(context: Context, document: DocumentRef, asset: AssetRef) -> None:
+    def _input_scope(context: Context, document: DocumentRef, asset: AssetRef | None) -> None:
         if context.document_version_id != document.document_version_id:
             raise ValueError('document version differs from context')
-        if context.asset_version_id != asset.asset_version_id:
+        if context.asset_version_id != (asset.asset_version_id if asset else None):
             raise ValueError('asset version differs from context')
 
     def get(self, run_id: str) -> RunSnapshot:
@@ -225,7 +225,7 @@ class Workflow:
             return _copy(StepTimeline(context=state.context, profile=state.profile,
                                      execution_status=state.execution_status, records=state.step_records))
 
-    def restore(self, snapshot: RunSnapshot, document: DocumentRef, asset: AssetRef,
+    def restore(self, snapshot: RunSnapshot, document: DocumentRef, asset: AssetRef | None,
                 *, child_run_id: str | None = None) -> None:
         """Load a trusted durable snapshot without invoking any adapter.
 
@@ -233,7 +233,8 @@ class Workflow:
         contract isolation and fixed input scope; it is not an import API.
         """
         snapshot = _boundary(RunSnapshot, snapshot)
-        document, asset = _boundary(DocumentRef, document), _boundary(AssetRef, asset)
+        document = _boundary(DocumentRef, document)
+        asset = _boundary(AssetRef, asset) if asset is not None else None
         self._input_scope(snapshot.context, document, asset)
         if snapshot.criteria is not None:
             validate_draft(snapshot.context, document, snapshot.criteria)
@@ -252,7 +253,11 @@ class Workflow:
             if any(item.decision == approval.decision for item in state.approvals):
                 raise ValueError('approval already recorded')
             decision = approval.decision
+            if approval.approved_criteria_version_id is not None:
+                raise ValueError('use the immutable criteria review approval endpoint')
             if decision == 'approve_criteria':
+                if record.asset is None:
+                    raise ValueError('PDF-only criteria supplementation and approval are not enabled yet')
                 if state.execution_status != 'waiting_criteria' or state.criteria is None:
                     raise ValueError('criteria approval is not available')
                 from .context import freeze_approved_context
@@ -326,6 +331,7 @@ class Workflow:
             validate_draft(new_context, parent.document, draft)
             child = _Run(_copy(parent.document), asset, RunSnapshot(context=new_context, profile=self.profile,
                 synthetic=old.synthetic, execution_status='waiting_criteria', criteria=draft,
+                baseline=old.baseline,
                 stages=('A08', 'A01', 'A02_draft_reused'),
                 step_records=(StepRecord(ordinal=1, role='A02', status='reused',
                     recorded_at=datetime.now(timezone.utc), source_run_id=parent_run_id,

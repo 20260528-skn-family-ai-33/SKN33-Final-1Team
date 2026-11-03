@@ -1,0 +1,1537 @@
+{
+  "schema_version": "extraction-review-reference-0.1",
+  "stage": 3,
+  "created_at": "2026-11-03",
+  "artifact_role": "reviewer_only_reference_draft",
+  "is_runtime_contract": false,
+  "reference_status": "draft_for_human_review",
+  "human_verified": false,
+  "source_kind": "poster_derived_synthetic_with_explicit_new_gap",
+  "is_independent_evaluation_set": false,
+  "criteria_approval_status": "unapproved",
+  "gold_verdict": null,
+  "a02_inference_executed": false,
+  "database_changed": false,
+  "client_manifest_sha256": "9cc335f0e3e7f612fee8f698674c91d8ffacdd8f9ebab711a1d790e42a03a497",
+  "scenario_sha256": "ada1f735aa906400c366403cc62eec7ce1b851ab9701b2592592bc26aa89701f",
+  "text_extraction": {
+    "tool": "pypdf",
+    "version": "6.10.0",
+    "quote_rule": "quote is an exact raw extracted-page substring; search ignores whitespace only; hashes and offsets use the raw text"
+  },
+  "input_boundary": "Do not pass reviewer references, page-text copies, scenarios or original posters to A02. Use only the submitted client PDF as document input.",
+  "review_policy": [
+    "36개 행은 검토용 기준점이다. 모델의 기준 ID·행 개수를 동일하게 강제하지 않는다. 합치기·나누기가 있어도 의미·기대값·출처의 포함 여부를 검토한다.",
+    "모든 필수 조건·허용 범위와 페이지·인용의 정합성을 확인한다. 순수 JSON 형식 성공과 의미 정확도는 별개다.",
+    "관람시간·관람연령·우천 시 운영 안내의 답변은 없다. 값을 추정하거나 미정 항목을 조용히 누락하지 않는다.",
+    "문서 작성일·업무 메타데이터·권리 증빙을 포스터 자동 통과 조건과 혼동하지 않는다.",
+    "AI가 작성한 검토표 초안이다. 사람의 정답 검토·기준 승인·모델 성능 평가를 수행한 것으로 보고하지 않는다."
+  ],
+  "counts": {
+    "documents": 3,
+    "source_pages": 6,
+    "reference_rows": 36,
+    "provided_values": 33,
+    "required_unresolved": 3,
+    "scope_notes": 13
+  },
+  "cases": [
+    {
+      "case_id": "EXH-NEW004",
+      "title": "수원의 영화, 수원의 극장",
+      "document": "../client-inputs/EXH-NEW004/전시_포스터_제작의뢰서_v0.2.pdf",
+      "document_version": "client-draft-v0.2",
+      "pdf_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "reference_rows": [
+        {
+          "reference_id": "EXH-T01",
+          "kind": "text",
+          "requirement": "전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.",
+          "expected_value": [
+            "수원의 영화",
+            "수원의 극장"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.",
+            "quote_sha256": "ad81dec9da87dba04f0142a1256121307ef8f6f5fc1b094f76e9110da7f70caa",
+            "start": 428,
+            "end": 461,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백·두 구절 사이의 쉼표 차이는 허용하되 두 구절을 누락하지 않는다.",
+              "quote_sha256": "001f80b880d4f8a4e8af81654844306271edb812d88f7ff5e547a1ad74ce2241",
+              "start": 462,
+              "end": 512,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백·두 구절 사이의 쉼표 차이는 허용하되 두 구절을 누락하지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "EXH-T02",
+          "kind": "text",
+          "requirement": "전시 연도는 2026년으로 표기한다.",
+          "expected_value": "2026",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "전시 연도는 2026년으로 표기한다.",
+            "quote_sha256": "5e083b8e823568a73f16ae5700fb64f0b950e4c671b58226748eb672934c5870",
+            "start": 515,
+            "end": 535,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 2026 또는 다른 연도 정보와 함께 해석 가능한 ‘26년’ 표기를 허용한다.",
+              "quote_sha256": "8e44bbe20606697639b78d51aa5fc1e1d1b914651b23c3a09f670c7ae248fffd",
+              "start": 536,
+              "end": 586,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "2026 또는 다른 연도 정보와 함께 해석 가능한 ‘26년’ 표기를 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "EXH-T03",
+          "kind": "text",
+          "requirement": "개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.",
+          "expected_value": {
+            "date": "2026-05-14",
+            "weekday": "목요일",
+            "meaning": "개막일"
+          },
+          "value_semantics": "date_time_fields",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.",
+            "quote_sha256": "78ae4dd75706e70e6a2ba1b069006da27482f54329a74b33999978af94f25f01",
+            "start": 589,
+            "end": 623,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 날짜 구분자와 앞자리 0의 차이는 허용한다. 연도·월·일·요일 의미는 동일해야 한다.",
+              "quote_sha256": "0c28aa5fbdeebb3cc354abbaeacb549db2860a5d76ed9e7b9859211da1ead73b",
+              "start": 624,
+              "end": 678,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "날짜 구분자와 앞자리 0의 차이는 허용한다. 연도·월·일·요일 의미는 동일해야 한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "EXH-T04",
+          "kind": "text",
+          "requirement": "전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.",
+          "expected_value": "열린문화공간 후소 전시실",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.",
+            "quote_sha256": "483c35b97ae94c2ac7832b0b9561c723435ae83a9ddb694776636e210b8f2058",
+            "start": 681,
+            "end": 710,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 장소명 내 줄바꿈·공백 차이는 허용한다.",
+              "quote_sha256": "9e3fbbe8654b067b741d996fd22ca3a7cafd653c12aa380678fc70bdb4b7bdcc",
+              "start": 711,
+              "end": 740,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "장소명 내 줄바꿈·공백 차이는 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "EXH-V01",
+          "kind": "visual",
+          "requirement": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+          "expected_value": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+            "quote_sha256": "d1347b3a8b5df8c0769b0dd1f80a1eeaa41e27b71c944297e6222541dad1f169",
+            "start": 149,
+            "end": 195,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 236,
+              "end": 292,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "EXH-V02",
+          "kind": "visual",
+          "requirement": "청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+          "expected_value": "청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+            "quote_sha256": "b0bba6a4229cfeecd1373d04ba8294db8e4ac9429809afbbc6ede63f26633e47",
+            "start": 199,
+            "end": 235,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 236,
+              "end": 292,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "EXH-F01",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "JPEG (.jpg 또는 .jpeg)",
+            "quote_sha256": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9",
+            "start": 321,
+            "end": 341,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "EXH-F02",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 3000,
+            "height": 3000,
+            "unit": "px"
+          },
+          "value_semantics": "file_dimensions",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "가로 3000픽셀 × 세로 3000픽셀",
+            "quote_sha256": "015918979504a256418ddf6a22d062f84102fe855855ff9b992954ba974b9ada",
+            "start": 348,
+            "end": 369,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "EXH-F03",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "RGB",
+            "quote_sha256": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1",
+            "start": 376,
+            "end": 379,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "EXH-G01",
+          "kind": "text",
+          "requirement": "포스터에 관람 가능 요일과 시간을 안내한다. 구체적인 운영시간은 클라이언트 확인 후 확정한다.",
+          "expected_value": null,
+          "value_semantics": "missing_required_value",
+          "value_status": "needs_client_input",
+          "required": true,
+          "verification_route": "clarification_then_text_comparison",
+          "source": {
+            "page": 2,
+            "quote": "관람시간 - 확인 중\n관람시간은 확인 중입니다. 관람 가능한 요일·시작 시각·종료 시각과 휴관일 안내가 필요합니다. 구체적인 내용은 담당\n자 회신 후 반영해 주세요.",
+            "quote_sha256": "e41185d03195d3138f71e38e5f8bf466fac967597a4c70c4232531205a4ec4fa",
+            "start": 402,
+            "end": 494,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.",
+              "quote_sha256": "6a84500ea73a826059e1906f06dade78bc6dcfaa7724031e4bbee86861977b74",
+              "start": 495,
+              "end": 564,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "field": "관람시간",
+          "clarification_question_draft": "관람 가능한 요일·시작/종료 시간과 휴관일이 있으면 알려주세요.",
+          "client_response": null,
+          "blocks_criteria_approval": true,
+          "review_note": "미정 필수 사항을 경고·질문 또는 미확정 조건으로 남긴다. 값을 추정하거나 빈 문자열의 자동 통과로 바꾸지 않는다."
+        }
+      ],
+      "scope_notes": [
+        {
+          "topic": "문서 작성일",
+          "expected_treatment": "문서 메타데이터로 보관. 행사일·공연일의 기대값으로 사용하지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "2026-11-03",
+            "quote_sha256": "5078719ef4595b8e11268bd4e2f6ee8e06947062f001f3e0e3c472c2a34fff81",
+            "start": 38,
+            "end": 48,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          }
+        },
+        {
+          "topic": "문서 식별·버전",
+          "expected_treatment": "문서 메타데이터로 보관. 포스터에 인쇄할 필수 문구로 만들지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "EXH-NEW004 / client-draft-v0.2",
+            "quote_sha256": "e811671fef8a54683d0ea5bfd77643e7ce43fcd0df9d5fd17bc2d7630463e461",
+            "start": 207,
+            "end": 237,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+          }
+        },
+        {
+          "topic": "계약행정·납기",
+          "expected_treatment": "별도 업무 정보. 금액·지급일 등을 포스터 이미지의 필수 표시 조건으로 강제하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.",
+            "quote_sha256": "6d0833af4b0a9436303f6532fb052ac275b431b356b754cc6681b9a37d77189a",
+            "start": 579,
+            "end": 671,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          }
+        },
+        {
+          "topic": "권리·원본·인쇄물 증빙",
+          "expected_treatment": "별도 증빙 확인 사항으로 보존한다. 포스터 픽셀만으로 권리 보유나 증빙 충족을 확정하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.",
+            "quote_sha256": "90d3f6c8c0e19dc8aa2f8df0d1ad4b1c9412d22b267084ebc4e41c0563807a7e",
+            "start": 672,
+            "end": 760,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "CON-NEW043",
+      "title": "수원시립교향악단 제303회 정기연주회",
+      "document": "../client-inputs/CON-NEW043/연주회_포스터_제작의뢰서_v0.2.pdf",
+      "document_version": "client-draft-v0.2",
+      "pdf_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "reference_rows": [
+        {
+          "reference_id": "CON-T01",
+          "kind": "text",
+          "requirement": "단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.",
+          "expected_value": [
+            "수원시립교향악단",
+            "제303회 정기연주회"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.",
+            "quote_sha256": "d276a92cef916633d08cd5a51a49097fe9c02b8c9b7741e91adeb4ad9e4a47b3",
+            "start": 438,
+            "end": 483,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백 차이는 허용하되 회차 숫자는 바꾸지 않는다.",
+              "quote_sha256": "dd2475e034f4b53d498e0da2c3cf63b3f6ff7a9a30a51ad82913bce4ca45f9b8",
+              "start": 484,
+              "end": 522,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백 차이는 허용하되 회차 숫자는 바꾸지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-T02",
+          "kind": "text",
+          "requirement": "주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.",
+          "expected_value": [
+            "H.Berlioz",
+            "Symphonie fantastique"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.",
+            "quote_sha256": "5d7510b97c47462eacd8c4b8cea3211383d31b6504a11e6d05e746d7480241d4",
+            "start": 525,
+            "end": 578,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.",
+              "quote_sha256": "89de8120fdd8d294e8d82e6b4cfa68ae4c8268c4cffe94a07c8b6759bedcde93",
+              "start": 579,
+              "end": 631,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-T03",
+          "kind": "text",
+          "requirement": "공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.",
+          "expected_value": {
+            "date": "2026-04-29",
+            "weekday": "수요일",
+            "time": "19:30"
+          },
+          "value_semantics": "date_time_fields",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.",
+            "quote_sha256": "103342a8a6a25205a196261c9e0e10d8805c62bbdbe4e043ef25386fad44e194",
+            "start": 634,
+            "end": 673,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 수요일/wed, 날짜 구분자와 0 표기는 허용한다. 날짜와 시각을 변경하지 않는다.",
+              "quote_sha256": "c22ed0ba258314a0638e38169e9dc3201bf9b3cfef4d7421b47590ca3083e230",
+              "start": 674,
+              "end": 727,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "수요일/wed, 날짜 구분자와 0 표기는 허용한다. 날짜와 시각을 변경하지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-T04",
+          "kind": "text",
+          "requirement": "공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.",
+          "expected_value": "수원SK아트리움 대공연장",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.",
+            "quote_sha256": "70e4029e23e3d90927e0b71d780ebe22d8a63f0baef9c75ea4e536aeab378567",
+            "start": 730,
+            "end": 758,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백 차이는 허용한다.",
+              "quote_sha256": "03a59a5623986a4aa108a3f0921ba0117c774a4edd19af37e2bd22baace1b9d3",
+              "start": 759,
+              "end": 782,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-T05",
+          "kind": "text",
+          "requirement": "출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.",
+          "expected_value": {
+            "지휘": "최희준",
+            "첼로": "정우찬"
+          },
+          "value_semantics": "named_roles",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.",
+            "quote_sha256": "e03c9c5b25325c9ded77ea5b11d6f4ae45907032e65eed47e2ea6f0a5a00aa70",
+            "start": 785,
+            "end": 823,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.",
+              "quote_sha256": "d5b7550f59faf09ce6ed0abb53bb3b75b1898d888068c3f4ae6278b930c1d9a5",
+              "start": 824,
+              "end": 876,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-T06",
+          "kind": "text",
+          "requirement": "프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.",
+          "expected_value": [
+            "생상스 첼로 협주곡 1번",
+            "베를리오즈 환상 교향곡"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.",
+            "quote_sha256": "d548430442e3085e9852bb96e2d313865b9e33ddf22778da32e80357599a68c9",
+            "start": 879,
+            "end": 923,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백 차이는 허용한다. 이 항목의 필수 표기는 한글 프로그램명과 작곡가명이며, 영문 부제 전체와 \n작품 번호는 이번 요청 범위에 포함하지 않는다.",
+              "quote_sha256": "47589a23c0eb4ea6e1df5e8434c8f2e6024c3a8b654bd7634263388e183f17c2",
+              "start": 924,
+              "end": 1016,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백 차이는 허용한다. 이 항목의 필수 표기는 한글 프로그램명과 작곡가명이며, 영문 부제 전체와 작품 번호는 이번 요청 범위에 포함하지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "CON-V01",
+          "kind": "visual",
+          "requirement": "산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+          "expected_value": "산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+            "quote_sha256": "b8a9ee0a88999e124cd74b5550481ae1ccd87b68b4e2c7474330149591d41546",
+            "start": 149,
+            "end": 178,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 226,
+              "end": 282,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "CON-V02",
+          "kind": "visual",
+          "requirement": "보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.",
+          "expected_value": "보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.",
+            "quote_sha256": "491b14126fc3af280afc50d48ead98a647eecb8ac5cde86b6515f7a7c698be95",
+            "start": 182,
+            "end": 225,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 226,
+              "end": 282,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "CON-F01",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "JPEG (.jpg 또는 .jpeg)",
+            "quote_sha256": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9",
+            "start": 311,
+            "end": 331,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "CON-F02",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 4500,
+            "height": 4500,
+            "unit": "px"
+          },
+          "value_semantics": "file_dimensions",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "가로 4500픽셀 × 세로 4500픽셀",
+            "quote_sha256": "6acd436226cbb66b6bc041e8f32800be3a1e418ebfeb503ff4d44d5215602779",
+            "start": 338,
+            "end": 359,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "CON-F03",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "RGB",
+            "quote_sha256": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1",
+            "start": 366,
+            "end": 369,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "CON-G01",
+          "kind": "text",
+          "requirement": "포스터에 관람 가능한 연령을 안내한다. 최소 관람연령은 클라이언트 확인 후 확정한다.",
+          "expected_value": null,
+          "value_semantics": "missing_required_value",
+          "value_status": "needs_client_input",
+          "required": true,
+          "verification_route": "clarification_then_text_comparison",
+          "source": {
+            "page": 2,
+            "quote": "관람연령 - 확인 중\n관람연령은 확인 중입니다. 최소 관람연령을 확인한 뒤 포스터에 안내해야 합니다. 구체적인 연령과 표기 문구는 담당자\n 회신 후 반영해 주세요.",
+            "quote_sha256": "af0c700894123bd431583004088db57a6aa043e2c4ad9e72393fdd0bdb6b6af5",
+            "start": 392,
+            "end": 483,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.",
+              "quote_sha256": "6a84500ea73a826059e1906f06dade78bc6dcfaa7724031e4bbee86861977b74",
+              "start": 484,
+              "end": 553,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "field": "관람연령",
+          "clarification_question_draft": "이 공연의 최소 관람연령과 포스터에 사용할 확정 문구를 알려주세요.",
+          "client_response": null,
+          "blocks_criteria_approval": true,
+          "review_note": "미정 필수 사항을 경고·질문 또는 미확정 조건으로 남긴다. 값을 추정하거나 빈 문자열의 자동 통과로 바꾸지 않는다."
+        }
+      ],
+      "scope_notes": [
+        {
+          "topic": "문서 작성일",
+          "expected_treatment": "문서 메타데이터로 보관. 행사일·공연일의 기대값으로 사용하지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "2026-11-03",
+            "quote_sha256": "5078719ef4595b8e11268bd4e2f6ee8e06947062f001f3e0e3c472c2a34fff81",
+            "start": 38,
+            "end": 48,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          }
+        },
+        {
+          "topic": "문서 식별·버전",
+          "expected_treatment": "문서 메타데이터로 보관. 포스터에 인쇄할 필수 문구로 만들지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "CON-NEW043 / client-draft-v0.2",
+            "quote_sha256": "56aaa536cba84528a365e0706a0dc3c03656155c65f99bce04a5e58b3b22a6d8",
+            "start": 214,
+            "end": 244,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          }
+        },
+        {
+          "topic": "계약행정·납기",
+          "expected_treatment": "별도 업무 정보. 금액·지급일 등을 포스터 이미지의 필수 표시 조건으로 강제하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.",
+            "quote_sha256": "6d0833af4b0a9436303f6532fb052ac275b431b356b754cc6681b9a37d77189a",
+            "start": 568,
+            "end": 660,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          }
+        },
+        {
+          "topic": "권리·원본·인쇄물 증빙",
+          "expected_treatment": "별도 증빙 확인 사항으로 보존한다. 포스터 픽셀만으로 권리 보유나 증빙 충족을 확정하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.",
+            "quote_sha256": "90d3f6c8c0e19dc8aa2f8df0d1ad4b1c9412d22b267084ebc4e41c0563807a7e",
+            "start": 661,
+            "end": 749,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "13d029bcf0a518c22c4c8463413a09a638a5fbc6a745298a46e262fcc8edb964"
+          }
+        },
+        {
+          "topic": "영문 부제 전체·작품 번호",
+          "expected_treatment": "현재 필수 표기 범위 밖. 한글 프로그램·작곡가 조건 및 관람연령 미정과 구분한다.",
+          "source": {
+            "page": 1,
+            "quote": "허용 범위: 줄바꿈·공백 차이는 허용한다. 이 항목의 필수 표기는 한글 프로그램명과 작곡가명이며, 영문 부제 전체와 \n작품 번호는 이번 요청 범위에 포함하지 않는다.",
+            "quote_sha256": "47589a23c0eb4ea6e1df5e8434c8f2e6024c3a8b654bd7634263388e183f17c2",
+            "start": 924,
+            "end": 1016,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "95a582b9b8bbbf4612e85dab2de5244ac93eb496170b9876bd543239d567bd8f"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "FES-NEW072",
+      "title": "2025 탄소중립 한마당 축제 오늘무해! FESTIVAL",
+      "document": "../client-inputs/FES-NEW072/축제_포스터_제작의뢰서_v0.2.pdf",
+      "document_version": "client-draft-v0.2",
+      "pdf_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "reference_rows": [
+        {
+          "reference_id": "FES-T01",
+          "kind": "text",
+          "requirement": "공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.",
+          "expected_value": "2025 탄소중립 한마당 축제",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.",
+            "quote_sha256": "7c04c208e659e81df394dc4879da87a9c3c4a0b896e672d5166045e4e62f8d08",
+            "start": 442,
+            "end": 475,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.",
+              "quote_sha256": "bf48bb801c8ef23777d2f49b677c0973a1096a1629b36aaabaf0b6b1cc57459b",
+              "start": 476,
+              "end": 515,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T02",
+          "kind": "text",
+          "requirement": "주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.",
+          "expected_value": [
+            "오늘무해!",
+            "FESTIVAL"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.",
+            "quote_sha256": "8d10eba9e41ccabfa18fc4566cc042c88ffd9ad34563d549970fe54408ad954c",
+            "start": 518,
+            "end": 553,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백과 FESTIVAL 대소문자 차이는 허용한다.",
+              "quote_sha256": "59f6c0e80ac553012b2e0c1e7d13f6df07f500f9219e656673db89ba5aae7864",
+              "start": 554,
+              "end": 592,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백과 FESTIVAL 대소문자 차이는 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T03",
+          "kind": "text",
+          "requirement": "행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.",
+          "expected_value": {
+            "date": "2025-11-02",
+            "weekday": "일요일",
+            "start": "12:00",
+            "end": "19:00"
+          },
+          "value_semantics": "date_time_fields",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.",
+            "quote_sha256": "16b59d1134760f296e08b8332a1b42c6121157977e1e065c1248b6ceadb2f4e9",
+            "start": 595,
+            "end": 637,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 날짜 구분자·앞자리 0·시간 범위 구분자 차이는 허용한다. 시작과 종료 시각을 바꾸지 않는다.",
+              "quote_sha256": "cbca560fb60db5faacc4d516d34943c1173e6805816a954b04f1ec6edb5e53cf",
+              "start": 638,
+              "end": 697,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "날짜 구분자·앞자리 0·시간 범위 구분자 차이는 허용한다. 시작과 종료 시각을 바꾸지 않는다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T04",
+          "kind": "text",
+          "requirement": "행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.",
+          "expected_value": "고색역 상부공원 일원",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.",
+            "quote_sha256": "e0fc32bb64140f6b8a4194b5726abfbf9f1408807d15f1002823b8d45e763266",
+            "start": 700,
+            "end": 728,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백 차이는 허용한다.",
+              "quote_sha256": "03a59a5623986a4aa108a3f0921ba0117c774a4edd19af37e2bd22baace1b9d3",
+              "start": 729,
+              "end": 752,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T05",
+          "kind": "text",
+          "requirement": "프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.",
+          "expected_value": "탄소중립 그린도시 기념식",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.",
+            "quote_sha256": "13d8aa1f13fb4a4a4c71b3e739d5e344a912cf5f56c1a511240f7c35613fcb7f",
+            "start": 755,
+            "end": 783,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 줄바꿈·공백 차이는 허용한다.",
+              "quote_sha256": "03a59a5623986a4aa108a3f0921ba0117c774a4edd19af37e2bd22baace1b9d3",
+              "start": 784,
+              "end": 807,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T06",
+          "kind": "text",
+          "requirement": "‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.",
+          "expected_value": [
+            "탄소중립 어린이 직업체험",
+            "KidZaniaGo!"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.",
+            "quote_sha256": "c10edfb23ba579cde2cb6c0bc129a92a1a7b39d5c6d9427f08ad3b8d81cf9e26",
+            "start": 810,
+            "end": 850,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 영문 대소문자·단어 사이 공백 차이는 허용한다. 상표 사용 허가는 별도 증빙으로 확인한다.",
+              "quote_sha256": "07114b57a2d7e9185767b464c74ba31fe2abcca983eabf8072590b82e13bb898",
+              "start": 851,
+              "end": 908,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "영문 대소문자·단어 사이 공백 차이는 허용한다. 상표 사용 허가는 별도 증빙으로 확인한다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T07",
+          "kind": "text",
+          "requirement": "프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.",
+          "expected_value": [
+            "탄소공감",
+            "버스킹",
+            "영화상영회"
+          ],
+          "value_semantics": "all_listed_parts_required",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.",
+            "quote_sha256": "21c3ed44f3798c38e3914558fa35601374ec3e0208949bf2a1e9ba61bcf52a46",
+            "start": 911,
+            "end": 940,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 공백과 &/및의 차이는 허용하되 버스킹과 영화상영회를 모두 남긴다.",
+              "quote_sha256": "54aa408e2fd5ea9dae8c388cee07dfbde5d519875806767c8806444a33800f87",
+              "start": 941,
+              "end": 985,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "공백과 &/및의 차이는 허용하되 버스킹과 영화상영회를 모두 남긴다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-T08",
+          "kind": "text",
+          "requirement": "주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.",
+          "expected_value": "주차공간 협소로 가급적 대중교통 이용 권장",
+          "value_semantics": "text_meaning_with_stated_allowances",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "text_comparison",
+          "source": {
+            "page": 1,
+            "quote": "주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.",
+            "quote_sha256": "a727ceed96d450da205c2b400ec853b37a3eab5c5683a524d83773bed6e57eb2",
+            "start": 988,
+            "end": 1025,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          },
+          "supporting_sources": [
+            {
+              "page": 1,
+              "quote": "허용 범위: 안내 취지를 유지한 문장 표현은 담당자 확인 후 사용할 수 있다.",
+              "quote_sha256": "65a1f51813bad7f92ec560743a99293eb8569e29265209bd155a35cdac946439",
+              "start": 1026,
+              "end": 1069,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "allowance": "안내 취지를 유지한 문장 표현은 담당자 확인 후 사용할 수 있다.",
+          "review_note": "조건의 의미·기대값과 명시된 허용 범위가 보존되는지 확인한다."
+        },
+        {
+          "reference_id": "FES-V01",
+          "kind": "visual",
+          "requirement": "야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+          "expected_value": "야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+            "quote_sha256": "5172e32a668ee875d469eb7e956b9fdad5f77cc529233ec42ea2a262f0796b2e",
+            "start": 149,
+            "end": 192,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 249,
+              "end": 305,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "FES-V02",
+          "kind": "visual",
+          "requirement": "분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+          "expected_value": "분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+          "value_semantics": "qualitative_description",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "human_review",
+          "source": {
+            "page": 2,
+            "quote": "분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+            "quote_sha256": "8c96d4951dfc71a19958e8fc08ab532ef3c76840e9b75a1b27ef0237ee50b8a1",
+            "start": 196,
+            "end": 248,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.",
+              "quote_sha256": "c56cf7fc423e27fc0f73a34e5e9d959c828ee2edb905d912a4634dcadba10443",
+              "start": 249,
+              "end": 305,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "정성 조건으로 유지한다. 문서가 지정하지 않은 RGB 코드·색차 임계값·확정 통과 판정을 생성하지 않는다."
+        },
+        {
+          "reference_id": "FES-F01",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "JPEG (.jpg 또는 .jpeg)",
+            "quote_sha256": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9",
+            "start": 334,
+            "end": 354,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "FES-F02",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 2382,
+            "height": 3368,
+            "unit": "px"
+          },
+          "value_semantics": "file_dimensions",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "가로 2382픽셀 × 세로 3368픽셀",
+            "quote_sha256": "d2973f5df728071ff435f7e529f55b690c11942b3c6d03d50fc763799a89f3ba",
+            "start": 361,
+            "end": 382,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "FES-F03",
+          "kind": "file_metadata",
+          "requirement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_semantics": "file_property",
+          "value_status": "provided",
+          "required": true,
+          "verification_route": "file_properties",
+          "source": {
+            "page": 2,
+            "quote": "RGB",
+            "quote_sha256": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1",
+            "start": 389,
+            "end": 392,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "review_note": "문서에 적힌 파일 속성·픽셀 치수를 기준으로 확인한다. 이미지 문자 판독과 파일 메타데이터 검사를 구분한다."
+        },
+        {
+          "reference_id": "FES-G01",
+          "kind": "text",
+          "requirement": "포스터에 우천 시 운영 안내를 포함한다. 진행·취소·연기 등 처리 방침은 클라이언트 확인 후 확정한다.",
+          "expected_value": null,
+          "value_semantics": "missing_required_value",
+          "value_status": "needs_client_input",
+          "required": true,
+          "verification_route": "clarification_then_text_comparison",
+          "source": {
+            "page": 2,
+            "quote": "우천 시 운영 안내 - 확인 중\n우천 시 운영 안내는 확인 중입니다. 비가 오는 경우의 운영 방침을 포스터에 안내해야 합니다. 방침과 표기 문구는 담당\n자 회신 후 반영해 주세요.",
+            "quote_sha256": "c0d19740b3b51d2383774cb5a0ea1e79c154fc8bba6fe2439c9dafc6b9be96a9",
+            "start": 415,
+            "end": 515,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          },
+          "supporting_sources": [
+            {
+              "page": 2,
+              "quote": "위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.",
+              "quote_sha256": "6a84500ea73a826059e1906f06dade78bc6dcfaa7724031e4bbee86861977b74",
+              "start": 516,
+              "end": 585,
+              "offset_unit": "unicode_codepoints",
+              "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+            }
+          ],
+          "reference_status": "draft_for_human_review",
+          "human_verified": false,
+          "human_reviewer": null,
+          "human_reviewed_at": null,
+          "poster_verdict": null,
+          "field": "우천 시 운영 안내",
+          "clarification_question_draft": "비가 올 경우 진행·취소·연기 중 어떤 방침인지, 게시할 문구를 알려주세요.",
+          "client_response": null,
+          "blocks_criteria_approval": true,
+          "review_note": "미정 필수 사항을 경고·질문 또는 미확정 조건으로 남긴다. 값을 추정하거나 빈 문자열의 자동 통과로 바꾸지 않는다."
+        }
+      ],
+      "scope_notes": [
+        {
+          "topic": "문서 작성일",
+          "expected_treatment": "문서 메타데이터로 보관. 행사일·공연일의 기대값으로 사용하지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "2026-11-03",
+            "quote_sha256": "5078719ef4595b8e11268bd4e2f6ee8e06947062f001f3e0e3c472c2a34fff81",
+            "start": 38,
+            "end": 48,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          }
+        },
+        {
+          "topic": "문서 식별·버전",
+          "expected_treatment": "문서 메타데이터로 보관. 포스터에 인쇄할 필수 문구로 만들지 않는다.",
+          "source": {
+            "page": 1,
+            "quote": "FES-NEW072 / client-draft-v0.2",
+            "quote_sha256": "1d1a2a34576060bfe400abd7e46d444fc32587b07135748e4ec35c0009e819a4",
+            "start": 224,
+            "end": 254,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+          }
+        },
+        {
+          "topic": "계약행정·납기",
+          "expected_treatment": "별도 업무 정보. 금액·지급일 등을 포스터 이미지의 필수 표시 조건으로 강제하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.",
+            "quote_sha256": "6d0833af4b0a9436303f6532fb052ac275b431b356b754cc6681b9a37d77189a",
+            "start": 600,
+            "end": 692,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          }
+        },
+        {
+          "topic": "권리·원본·인쇄물 증빙",
+          "expected_treatment": "별도 증빙 확인 사항으로 보존한다. 포스터 픽셀만으로 권리 보유나 증빙 충족을 확정하지 않는다.",
+          "source": {
+            "page": 2,
+            "quote": "사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.",
+            "quote_sha256": "90d3f6c8c0e19dc8aa2f8df0d1ad4b1c9412d22b267084ebc4e41c0563807a7e",
+            "start": 693,
+            "end": 781,
+            "offset_unit": "unicode_codepoints",
+            "page_text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+          }
+        }
+      ]
+    }
+  ]
+}

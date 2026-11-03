@@ -1,0 +1,107 @@
+{
+  "workflow_id": "a02-poster-sample-workflow-v1",
+  "updated_at": "2026-11-03",
+  "scope": "현재 채팅의 A02·DB 7단계 순차 작업",
+  "advance_signal": "1",
+  "advance_rule": "설명 없는 단독 1 메시지는 다음 미완료 단계 한 개를 진행한다. 현재 단계가 미완료이면 먼저 마무리한다.",
+  "advance_is_criteria_approval": false,
+  "last_completed_step": 7,
+  "next_step": null,
+  "next_action": "예정한 7단계 개발 연결 시험 완료. 실제 Qwen endpoint/관측 평가·실제 보완 회신/기준 승인·front-v2/운영 적용은 별도 작업이며 단독 1을 새 단계나 승인으로 해석하지 않는다.",
+  "criteria_approval_status": "unapproved",
+  "human_verified": false,
+  "model_inference_executed": false,
+  "database_changed": true,
+  "steps": [
+    {
+      "number": 1,
+      "title": "시나리오·요구사항 설정",
+      "scope": "기존 3종의 문구·시각·파일 조건과 의도적 보완 항목 1개씩 설계",
+      "status": "complete"
+    },
+    {
+      "number": 2,
+      "title": "클라이언트 제출용 PDF 작성",
+      "scope": "설정한 시나리오로 개발용 가상 의뢰서 PDF·수정용 MD 작성",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "client-inputs/index.html",
+        "client-inputs/manifest.json",
+        "02_검증기록.json"
+      ],
+      "evidence": "가상 의뢰서 PDF 3건·수정용 MD 3건 생성, 6쪽 렌더링·한글 글꼴·텍스트·원본 보존 확인. 보완 답변·기준 승인·실모델·DB 작업 없음."
+    },
+    {
+      "number": 3,
+      "title": "추출 결과 검토표 준비",
+      "scope": "PDF별 조건·기대값·페이지·인용·보완 예상 결과를 별도 정리",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "reviewer/index.html",
+        "reviewer/03_추출_검토표.md",
+        "reviewer/03_추출_검토표.json",
+        "reviewer/source-pages.json",
+        "03_검증기록.json"
+      ],
+      "evidence": "조건 후보 36개·미정 필수 3개·범위 메모 13개 준비. 실제 PDF 6쪽의 인용 76곳을 문자 범위·해시로 검증. 사람 정답 검토·기준 승인·실모델·DB 작업 없음."
+    },
+    {
+      "number": 4,
+      "title": "PDF 등록·PostgreSQL 연결",
+      "scope": "기존 파일 저장소 재사용, 문서 버전·해시·프로젝트 접근 연결",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "04_PDF등록_구현기록.md",
+        "04_검증기록.json",
+        "../../../agent-framework/PDF_등록_버전저장_가이드.html"
+      ],
+      "evidence": "새 작업 브랜치에서 기존 M008 인증·프로젝트·LocalStorage 재사용 및 AF002 PDF 버전 API 구현. 공통 테스트 463개·격리 PostgreSQL PDF/기존 worker 통합 38개 통과. 샘플 PDF 3종 실제 저장·재조회·권한·해시·중복·버전·실패 복구 확인. 운영 DB·Qwen·기준 승인 변경 없음."
+    },
+    {
+      "number": 5,
+      "title": "A02 조건 추출 연결",
+      "scope": "모의 응답과 실제 Qwen 실행을 구분하여 추출·출처 검증·저장 연결",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "05_A02추출_구현기록.md",
+        "05_검증기록.json",
+        "extraction-demo/manifest.json",
+        "../../../agent-framework/A02_조건추출_연결가이드.html"
+      ],
+      "evidence": "PDF-only 접수→독립 A02 worker→실제 원문 출처 검증→PostgreSQL 미승인 초안/본문 trace 저장·재조회 구현. 공통 500개·격리 DB 47개 통과. 실제 Qwen은 미호출이며 mock 및 가짜 HTTP transport 검증이다. 보완 답변·기준 승인 없음."
+    },
+    {
+      "number": 6,
+      "title": "보완·승인·재조회 연결",
+      "scope": "사람 보완의 출처·기준 버전·승인 기록과 재시작 후 조회 검증",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "06_보완승인_구현기록.md",
+        "06_검증기록.json",
+        "../../../agent-framework/기준_보완승인_가이드.html"
+      ],
+      "evidence": "AF003 불변 기준 버전·보완 출처·기존 승인 이력/대상 해시·waiting_asset·재조회 구현. 공통 522개·격리 DB 63개 통과. 합성 입력 승인 시험이며 실제 회신/사용자 승인·Qwen 호출·운영 DB 적용은 없음."
+    },
+    {
+      "number": 7,
+      "title": "포스터 검수·재검수 시험",
+      "scope": "승인 기준에 맞춘 정상/날짜 오류/필수 문구 누락 사례로 관통 확인",
+      "status": "complete",
+      "completed_at": "2026-11-03",
+      "artifacts": [
+        "07_포스터검수_구현기록.md",
+        "07_검증기록.json",
+        "poster-tests/index.html",
+        "../../../agent-framework/포스터_검수재검수_가이드.html"
+      ],
+      "evidence": "AF003 승인 기준·해시·출처와 기존 M008 포스터 파일의 새 실행/입력 확인→worker→결정→수정본 재검수 구현. 공통 529개·격리 DB 76개 통과. 12장 합성 시험 관측/승인이며 실제 Qwen·사람 승인·front-v2·운영 DB 적용은 미수행. 원본 포스터/의뢰서 보존, 연주회 원본은 기존 화소 제한으로 거부."
+    }
+  ],
+  "database_change_scope": "isolated_disposable_test_databases_only",
+  "operational_database_changed": false
+}

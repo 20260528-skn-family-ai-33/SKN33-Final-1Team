@@ -68,7 +68,11 @@ class PostgresQueue:
         if (job['state']!='running' or job['worker_token']!=claim.token or job['lease_expires_at']<=now
             or run['configuration_sha256']!=self.store.config_hash or run['runtime_sha256']!=self.store.runtime_hash):
             raise AuthError('FRAMEWORK_AUTHORITY_LOST',409)
-        if authorize:self.store.worker_access(c,run['project_id'],run['actor_id'])
+        if authorize:
+            self.store.worker_access(c,run['project_id'],run['actor_id'])
+            if run['input_json'].get('baseline') is not None:
+                from .poster_review import validate_pinned_review
+                validate_pinned_review(self.store,c,run)
         return run,job,now
 
     def claim_next(self):
@@ -87,9 +91,13 @@ class PostgresQueue:
                 if job['attempt_no']>=3:
                     self._close(c,run,job,FrameworkError(code='ATTEMPT_LIMIT_EXCEEDED',message='The safe claim limit was reached.'))
                     continue
-                try:self.store.worker_access(c,run['project_id'],run['actor_id'])
-                except AuthError:
-                    self._close(c,run,job,FrameworkError(code='FRAMEWORK_ACCESS_REVOKED',message='Project execution access was revoked.'))
+                try:
+                    self.store.worker_access(c,run['project_id'],run['actor_id'])
+                    if run['input_json'].get('baseline') is not None:
+                        from .poster_review import validate_pinned_review
+                        validate_pinned_review(self.store,c,run)
+                except AuthError as error:
+                    self._close(c,run,job,FrameworkError(code=error.code,message='Project access or the pinned input is no longer valid.'))
                     continue
                 token=uuid4()
                 c.execute(update(jobs).where(jobs.c.job_id==job['job_id']).values(state='running',attempt_no=job['attempt_no']+1,
@@ -134,6 +142,13 @@ class PostgresQueue:
             if (record.role!=role or record.status!='running' or stored['state']!='running'
                     or stored['input_sha256']!=digest(request)):raise AuthError('FRAMEWORK_STAGE_CONFLICT',409)
             result=accept_role_output(role,request,result)
+            if role=='A02' and self.store.configuration.pdf_extraction is not None:
+                settings=self.store.configuration.pdf_extraction;trace=result.extraction
+                expected_model='mock-line-fixture-v1' if settings.mode=='mock' else settings.model
+                if (trace is None or trace.mode!=settings.mode or trace.model!=expected_model
+                        or trace.parser!='pymupdf-'+settings.parser_version
+                        or sum(len(s.text) for s in trace.sources)>settings.max_text_chars):
+                    raise ValueError('A02_EXTRACTION_CONFIGURATION_MISMATCH')
             synthetic=snapshot.synthetic or result.synthetic
             result=_boundary(type(result),result.model_copy(update={'synthetic':synthetic}))
             finished=record.model_copy(update={'status':'completed','finished_at':max(now,record.started_at),

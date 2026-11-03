@@ -276,6 +276,7 @@
         "extracting",
         "reviewing",
         "waiting_criteria",
+        "waiting_asset",
         "waiting_review",
         "waiting_revision",
         "completed",

@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-11-03",
+  "status": "passed_document_checks",
+  "model_inference_executed": false,
+  "database_changed": false,
+  "human_verified": false,
+  "gold_verdict": null,
+  "source_pdf_bytes_unchanged": true,
+  "original_posters_bytes_unchanged": true,
+  "pdf_count": 4,
+  "total_authored_pdf_pages": 11,
+  "text_requirement_candidates": 18,
+  "visual_requirement_candidates": 6,
+  "local_links_checked": 32,
+  "all_local_links_resolve": true,
+  "pdf_embedded_korean_fonts_checked": true,
+  "pdf_visual_review": "all 11 authored pages rendered and reviewed; festival requirements page also inspected at full preview resolution",
+  "browser_rendered": false,
+  "browser_note": "Direct file:// open rejected by browser URL policy. No bypass attempted; HTML structure and relative links checked statically.",
+  "actual_windows_execution_verified": false,
+  "pairs": [
+    {
+      "id": "EXH-NEW004",
+      "document_pages": 3,
+      "text_candidates": 4,
+      "visual_candidates": 2,
+      "poster_bytes_unchanged": true
+    },
+    {
+      "id": "CON-NEW043",
+      "document_pages": 3,
+      "text_candidates": 6,
+      "visual_candidates": 2,
+      "poster_bytes_unchanged": true
+    },
+    {
+      "id": "FES-NEW072",
+      "document_pages": 3,
+      "text_candidates": 8,
+      "visual_candidates": 2,
+      "poster_bytes_unchanged": true
+    }
+  ]
+}

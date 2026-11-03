@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "2.0.0",
+      "default": "2.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "text",
+        "number",
+        "visual",
+        "unsupported"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "operator": {
+      "enum": [
+        "equals",
+        "contains",
+        "gte",
+        "lte",
+        "present",
+        "manual"
+      ],
+      "title": "Operator",
+      "type": "string"
+    },
+    "expected": {
+      "maxLength": 4000,
+      "title": "Expected",
+      "type": "string"
+    },
+    "unit": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unit"
+    },
+    "required": {
+      "title": "Required",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "kind",
+    "operator",
+    "expected",
+    "required"
+  ],
+  "title": "CriterionResolution",
+  "type": "object"
+}

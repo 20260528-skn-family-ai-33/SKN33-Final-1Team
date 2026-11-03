@@ -7,7 +7,7 @@ from datetime import timedelta
 from hashlib import sha256
 import json
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4,uuid5,NAMESPACE_URL
 
 from sqlalchemy import Column, Integer, MetaData, String, Table, select, insert, update, func
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID as PGUUID
@@ -106,7 +106,8 @@ class PostgresStore:
         self.event(c,snapshot.context.run_id,'job.queued',phase=phase)
 
     def _create(self,c,snapshot,document,asset,*,phase=None):
-        fixed={'context':payload(snapshot.context),'document':payload(document),'asset':payload(asset)}
+        fixed={'context':payload(snapshot.context),'document':payload(document),'asset':payload(asset) if asset else None}
+        if snapshot.baseline is not None:fixed['baseline']=payload(snapshot.baseline)
         c.execute(insert(runs).values(run_id=snapshot.context.run_id,project_id=UUID(snapshot.context.project_id),
             actor_id=UUID(snapshot.context.actor_id),parent_run_id=snapshot.context.parent_run_id,
             input_json=fixed,input_sha256=digest(fixed),configuration_json=payload(self.configuration),
@@ -120,12 +121,16 @@ class PostgresStore:
     def _restore(self,row):
         flow=coordinator();flow.profile=row['snapshot_json']['profile']
         flow.restore(RunSnapshot.model_validate(row['snapshot_json']),
-            DocumentRef.model_validate(row['input_json']['document']),AssetRef.model_validate(row['input_json']['asset']))
+            DocumentRef.model_validate(row['input_json']['document']),
+            AssetRef.model_validate(row['input_json']['asset']) if row['input_json']['asset'] else None)
         return flow
 
     def start(self,subject,context,document,asset):
-        context,document,asset=_boundary(Context,context),_boundary(DocumentRef,document),_boundary(AssetRef,asset)
-        fixed={'context':payload(context),'document':payload(document),'asset':payload(asset)}
+        context,document=_boundary(Context,context),_boundary(DocumentRef,document)
+        asset=_boundary(AssetRef,asset) if asset is not None else None
+        if asset is not None and self.configuration.roles['A04_A05'].kind=='registered_poster':
+            raise AuthError('USE_POSTER_REVIEW_ENDPOINT',409)
+        fixed={'context':payload(context),'document':payload(document),'asset':payload(asset) if asset else None}
         with unit_of_work(self.engine) as c:
             self._access(c,subject,context)
             # Project locking serializes same-project admission and UUID collisions.
@@ -137,8 +142,26 @@ class PostgresStore:
                 return RunSnapshot.model_validate(old['snapshot_json'])
             flow=coordinator();flow.profile=self.configuration.profile
             snapshot=flow.start(context,document,asset,defer=True)
+            if asset is None and self.configuration.pdf_extraction is not None and self.configuration.pdf_extraction.mode=='mock':
+                snapshot=snapshot.model_copy(update={'synthetic':True})
             self._create(c,snapshot,document,asset,phase='extract')
         return snapshot
+
+    def start_pdf(self,subject,project_id,version_id,request_key):
+        """IDs and immutable PDF reference are resolved by the server, not the model."""
+        from .documents import versions,_dto
+        if self.configuration.pdf_extraction is None:raise AuthError('A02_EXTRACTION_DISABLED',503)
+        with unit_of_work(self.engine) as c:
+            self.authorization.project(c,subject,project_id,action='write')
+            row=c.execute(select(versions).where(versions.c.project_id==project_id,
+                versions.c.document_version_id==version_id)).mappings().one_or_none()
+            if row is None:raise AuthError('RESOURCE_NOT_FOUND',404)
+            document=_dto(row).document
+        name='creative-checker-a02:'+str(project_id)+':'+str(request_key)
+        context=Context(project_id=str(project_id),actor_id=str(subject.user_id),
+            run_id=str(uuid5(NAMESPACE_URL,name)),criteria_version_id=str(uuid5(NAMESPACE_URL,name+':criteria')),
+            document_version_id=str(version_id),asset_version_id=None)
+        return self.start(subject,context,document,None)
 
     def get(self,subject,run_id):
         with unit_of_work(self.engine) as c:
@@ -158,6 +181,9 @@ class PostgresStore:
             self._access(c,subject,approval.context)
             row=self._row(c,run_id,lock=True)
             if row['project_id']!=UUID(approval.context.project_id):raise AuthError('FRAMEWORK_RUN_NOT_FOUND',404)
+            if row['input_json'].get('baseline') is not None:
+                from .poster_review import validate_pinned_review
+                validate_pinned_review(self,c,row)
             existing=c.execute(select(approvals).where(approvals.c.run_id==run_id,
                 approvals.c.decision==approval.decision)).mappings().one_or_none()
             if existing:
@@ -168,6 +194,8 @@ class PostgresStore:
                 raise AuthError('FRAMEWORK_CONFIGURATION_CHANGED',409)
             flow=self._restore(row)
             snapshot=flow.approve(run_id,approval,defer=True)
+            if snapshot.baseline is not None and approval.decision=='approve_criteria':
+                snapshot=snapshot.model_copy(update={'approved_criteria_version_id':snapshot.baseline.criteria_version_id})
             c.execute(insert(approvals).values(approval_id=uuid4(),run_id=run_id,project_id=row['project_id'],
                 actor_id=UUID(approval.actor_id),decision=approval.decision,payload_json=payload(approval),payload_sha256=digest(approval)))
             self._save(c,snapshot)
@@ -181,6 +209,8 @@ class PostgresStore:
             self._access(c,subject,context)
             parent=self._row(c,parent_id,lock=True)
             if parent['project_id']!=UUID(context.project_id):raise AuthError('FRAMEWORK_RUN_NOT_FOUND',404)
+            if parent['input_json'].get('baseline') is not None:
+                raise AuthError('USE_POSTER_REVISION_ENDPOINT',409)
             document=DocumentRef.model_validate(parent['input_json']['document'])
             fixed={'context':payload(context),'document':payload(document),'asset':payload(asset)}
             existing=c.execute(select(runs).where(runs.c.parent_run_id==parent_id)).mappings().one_or_none()

@@ -12,13 +12,14 @@ import json
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator,model_serializer
 
 from .contracts import Contract, ValidateRequest, ValidatedResult
 from .ports import AdapterFailure, Agents
+from .a02_configuration import PDFExtractionConfiguration
 
 RoleId = Literal["A02", "A04_A05", "A06", "A07"]
-BindingKind = Literal["synthetic", "reference", "factory", "unconfigured"]
+BindingKind = Literal["synthetic", "reference", "factory", "unconfigured", "registered_pdf", "registered_poster"]
 Scenario = Literal["pass", "fail", "review", "stale", "unavailable"]
 FactoryRef = Annotated[str, Field(pattern=r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$")]
 ROLE_PORTS = {
@@ -36,9 +37,9 @@ class RoleBinding(Contract):
 
     @model_validator(mode="after")
     def options_match_kind(self):
-        if self.kind == "factory" and self.factory is None:
+        if self.kind in ("factory","registered_poster") and self.factory is None:
             raise ValueError("factory binding requires module:callable")
-        if self.kind != "factory" and self.factory is not None:
+        if self.kind not in ("factory","registered_poster") and self.factory is not None:
             raise ValueError("factory is only allowed for a factory binding")
         if self.kind != "synthetic" and self.scenario is not None:
             raise ValueError("scenario is only allowed for a synthetic binding")
@@ -48,6 +49,13 @@ class RoleBinding(Contract):
 class TeamConfiguration(Contract):
     profile: Literal["development", "test"] = "development"
     roles: dict[RoleId, RoleBinding]
+    pdf_extraction: PDFExtractionConfiguration | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_wire_shape(self,handler):
+        data=handler(self)
+        if self.pdf_extraction is None:data.pop('pdf_extraction',None)
+        return data
 
     @model_validator(mode="after")
     def complete_roles(self):
@@ -55,6 +63,15 @@ class TeamConfiguration(Contract):
             raise ValueError("configuration must explicitly declare all four roles")
         if any(binding.kind == "reference" and role != "A06" for role, binding in self.roles.items()):
             raise ValueError("reference binding is available only for A06")
+        registered=[role for role,binding in self.roles.items() if binding.kind=='registered_pdf']
+        if registered and registered!=['A02']:
+            raise ValueError('registered_pdf is available only for A02')
+        if bool(registered)!=(self.pdf_extraction is not None):
+            raise ValueError('registered_pdf requires an explicit PDF extraction configuration')
+        if any(role!='A04_A05' and binding.kind=='registered_poster' for role,binding in self.roles.items()):
+            raise ValueError('registered_poster is only for A04_A05')
+        if self.roles['A04_A05'].kind=='registered_poster' and not registered:
+            raise ValueError('registered_poster requires the registered PDF baseline profile')
         return self
 
 
@@ -146,6 +163,8 @@ def _build_role(config: TeamConfiguration, role: str):
     if role not in ROLE_PORTS:
         raise ValueError("unknown framework role")
     binding = config.roles[role]
+    if binding.kind in ('registered_pdf','registered_poster'):
+        raise AdapterFailure('ADAPTER_CONTEXT_REQUIRED','Registered PDFs require the PostgreSQL worker and dedicated PDF storage.')
     if binding.kind == "unconfigured":
         return _UnconfiguredRole(role)
     if binding.kind == "reference":
@@ -183,6 +202,10 @@ def describe_configuration(config: TeamConfiguration) -> dict:
             item["factory"] = binding.factory
         if binding.kind == "synthetic":
             item["scenario"] = binding.scenario or "pass"
+        if binding.kind=='registered_pdf':
+            item['mode']=checked.pdf_extraction.mode
+            item['model']='mock-line-fixture-v1' if checked.pdf_extraction.mode=='mock' else checked.pdf_extraction.model
+            item['requires_context']='PostgreSQL worker and dedicated PDF storage'
         roles[role] = item
     return {"contract_version": checked.contract_version, "profile": checked.profile,
             "connection_verified": False, "roles": roles}

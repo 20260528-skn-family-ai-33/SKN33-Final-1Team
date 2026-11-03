@@ -1,9 +1,9 @@
 name: Agent framework PostgreSQL
 on:
   pull_request:
-    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
+    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "docs/poster-baselines/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
   push:
-    branches: [main, feat/agent-framework]
+    branches: [main, feat/agent-framework, feat/37-a02-pdf-registration]
     paths: ["backend/agent_framework/**", "tests/agent_framework/**", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml"]
 permissions:
   contents: read
@@ -44,4 +44,4 @@ jobs:
               for name,password in [('TEST_DB_OWNER_USER','TEST_DB_OWNER_PASSWORD'),('TEST_DB_APP_USER','TEST_DB_APP_PASSWORD')]:
                   connection.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {}').format(sql.Identifier(os.environ[name]),sql.Literal(os.environ[password])))
           PY
-      - run: uv run pytest tests/agent_framework/test_postgres_integration.py -m db_integration -q
+      - run: uv run pytest tests/agent_framework -m db_integration -q

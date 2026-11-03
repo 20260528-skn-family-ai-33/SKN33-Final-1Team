@@ -26,6 +26,16 @@ def _criteria(context, criteria):
             raise ValueError("CRITERION_DOCUMENT_MISMATCH")
         if sha256(source.quote.encode("utf-8")).hexdigest() != source.source_hash:
             raise ValueError("SOURCE_HASH_MISMATCH")
+        value=criterion.value_source
+        if value is not None:
+            if not criterion.human_added or not value.reference.strip() or not value.quote.strip():
+                raise ValueError('VALUE_SOURCE_INVALID')
+            if sha256(value.quote.encode()).hexdigest()!=value.quote_sha256:
+                raise ValueError('VALUE_SOURCE_HASH_MISMATCH')
+            if criterion.expected and criterion.expected not in value.quote:
+                raise ValueError('VALUE_SOURCE_EXPECTED_UNGROUNDED')
+            if criterion.unit is not None and (not criterion.unit.strip() or criterion.unit not in value.quote):
+                raise ValueError('VALUE_SOURCE_UNIT_UNGROUNDED')
 
 
 def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft) -> None:
@@ -35,6 +45,9 @@ def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft
     _criteria(context, draft.criteria)
     if any(c.source.page > document.page_count for c in draft.criteria):
         raise ValueError("SOURCE_PAGE_OUT_OF_RANGE")
+    if draft.extraction is not None:
+        from .a02 import validate_trace
+        validate_trace(document,draft)
 
 
 def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None:
@@ -57,6 +70,11 @@ def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None
             raise ValueError("EVIDENCE_PROJECT_MISMATCH")
         if sha256(evidence.source.quote.encode("utf-8")).hexdigest() != evidence.source.source_hash:
             raise ValueError("EVIDENCE_HASH_MISMATCH")
+        if evidence.value_source is not None:
+            value=evidence.value_source
+            if (not value.quote.strip() or not value.reference.strip()
+                    or sha256(value.quote.encode()).hexdigest()!=value.quote_sha256):
+                raise ValueError('EVIDENCE_VALUE_SOURCE_INVALID')
         if (evidence.kind == "current_requirement"
                 and evidence.source.document_version_id != context.document_version_id):
             raise ValueError("EVIDENCE_SOURCE_MISMATCH")
@@ -77,6 +95,8 @@ def validate_evidence(context, criteria_input, bundle: EvidenceBundle) -> None:
         if evidence.kind == "current_requirement":
             if any(evidence.source != criteria[cid].source for cid in evidence.criterion_ids):
                 raise ValueError("EVIDENCE_SOURCE_MISMATCH")
+            if any(evidence.value_source!=criteria[cid].value_source for cid in evidence.criterion_ids):
+                raise ValueError('EVIDENCE_VALUE_SOURCE_MISMATCH')
 
 
 def validate_inspection(request: InspectRequest, result: InspectionResult) -> None:

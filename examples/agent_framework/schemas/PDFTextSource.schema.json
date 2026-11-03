@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "2.0.0",
+      "default": "2.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "page": {
+      "maximum": 50,
+      "minimum": 1,
+      "title": "Page",
+      "type": "integer"
+    },
+    "block_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Block Id",
+      "type": "string"
+    },
+    "text": {
+      "maxLength": 60000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "text_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Text Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "page",
+    "block_id",
+    "text",
+    "text_sha256"
+  ],
+  "title": "PDFTextSource",
+  "type": "object"
+}

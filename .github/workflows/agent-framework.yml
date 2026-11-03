@@ -1,10 +1,10 @@
 name: Agent framework contracts
 on:
   pull_request:
-    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml"]
+    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "tests/test_qwen_server_preparation.py", "deploy/qwen-a02/**", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml"]
   push:
-    branches: [main, feat/agent-framework]
-    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml"]
+    branches: [main, feat/agent-framework, feat/37-a02-pdf-registration]
+    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "tests/test_qwen_server_preparation.py", "deploy/qwen-a02/**", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml"]
 permissions:
   contents: read
 jobs:
@@ -21,6 +21,7 @@ jobs:
           version: "0.12.10"
       - run: uv sync --locked --group dev
       - run: uv run pytest tests/agent_framework -q
+      - run: uv run pytest tests/test_qwen_server_preparation.py -q
       - run: uv run python -m backend.agent_framework demo
       - run: uv run python -m backend.agent_framework doctor --config examples/agent_framework/team_config.synthetic.json
       - run: uv run python -m backend.agent_framework check A06 --config examples/agent_framework/team_config.synthetic.json --cases examples/agent_framework/checks/A06.suite.json
