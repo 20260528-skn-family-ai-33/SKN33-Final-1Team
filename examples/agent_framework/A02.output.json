@@ -1,7 +1,7 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "context": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -12,7 +12,7 @@
   },
   "criteria": [
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "criterion_id": "requirement-text",
       "text": "포스터에는 MORNING CUP 문구를 정확히 표시해야 합니다.",
       "kind": "text",
@@ -21,7 +21,7 @@
       "unit": null,
       "required": true,
       "source": {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "document_version_id": "document-v1",
         "page": 1,
         "block_id": "synthetic-page-1-block-1",
@@ -31,7 +31,7 @@
       "human_added": false
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "criterion_id": "requirement-number",
       "text": "포스터에는 딸기 3개가 표시되어야 합니다.",
       "kind": "number",
@@ -40,7 +40,7 @@
       "unit": "개",
       "required": true,
       "source": {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "document_version_id": "document-v1",
         "page": 1,
         "block_id": "synthetic-page-1-block-2",

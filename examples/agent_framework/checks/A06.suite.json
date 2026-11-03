@@ -1,33 +1,33 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "role": "A06",
   "cases": [
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "id": "pass",
       "input": "A06.pass.json",
       "expected_verdict": "pass"
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "id": "fail",
       "input": "A06.fail.json",
       "expected_verdict": "fail"
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "id": "review",
       "input": "A06.review.json",
       "expected_verdict": "review"
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "id": "stale",
       "input": "A06.stale.json",
       "expected_verdict": "review"
     },
     {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "id": "unavailable",
       "input": "A06.unavailable.json",
       "expected_verdict": "review"

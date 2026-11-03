@@ -120,7 +120,9 @@ class AdapterContractTests(unittest.TestCase):
         bundle = freeze_approved_context(self.context, draft.criteria, synthetic=True)
         inspect = InspectRequest(context=self.context, criteria=draft.criteria, asset=self.asset, evidence=bundle)
         validated = ValidatedResult(context=self.context, verdict="review",
-            items=tuple(ValidatedItem(criterion_id=item.criterion_id, verdict="review") for item in draft.criteria), synthetic=True)
+            items=tuple(ValidatedItem(criterion_id=item.criterion_id, criterion_text=item.text, kind=item.kind,
+                operator=item.operator, required=item.required, expected=item.expected, expected_unit=item.unit,
+                verdict="review") for item in draft.criteria), synthetic=True)
         report = ReportRequest(context=self.context, validated=validated, evidence=bundle)
         qwen = QwenAdapterStub()
         with patch("socket.create_connection", side_effect=AssertionError("network forbidden")):

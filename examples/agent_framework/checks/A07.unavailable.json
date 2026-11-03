@@ -1,8 +1,8 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "synthetic": true,
   "context": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "project_id": "synthetic-project",
     "run_id": "demo-run-1",
     "actor_id": "synthetic-reviewer",
@@ -12,9 +12,9 @@
     "parent_run_id": null
   },
   "validated": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "context": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "project_id": "synthetic-project",
       "run_id": "demo-run-1",
       "actor_id": "synthetic-reviewer",
@@ -26,35 +26,83 @@
     "verdict": "review",
     "items": [
       {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "criterion_id": "requirement-text",
+        "criterion_text": "포스터에는 MORNING CUP 문구를 정확히 표시해야 합니다.",
+        "kind": "text",
+        "operator": "equals",
+        "required": true,
+        "expected": "MORNING CUP",
+        "expected_unit": null,
+        "observed": "MORNING CUP",
+        "observed_unit": null,
+        "observation_status": "observed",
+        "comparison_expected": null,
+        "comparison_observed": null,
+        "comparison_unit": null,
+        "image": {
+          "contract_version": "3.0.0",
+          "asset_version_id": "poster-v1",
+          "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
+          "bbox": [
+            0.08,
+            0.08,
+            0.88,
+            0.24
+          ]
+        },
+        "evidence_ids": [],
         "verdict": "review",
         "issues": [
-          "missing_citation",
           "missing_requirement_evidence",
-          "context_incomplete"
+          "context_incomplete",
+          "missing_citation"
         ]
       },
       {
-        "contract_version": "2.0.0",
+        "contract_version": "3.0.0",
         "criterion_id": "requirement-number",
+        "criterion_text": "포스터에는 딸기 3개가 표시되어야 합니다.",
+        "kind": "number",
+        "operator": "equals",
+        "required": true,
+        "expected": "3",
+        "expected_unit": "개",
+        "observed": "3",
+        "observed_unit": "개",
+        "observation_status": "observed",
+        "comparison_expected": null,
+        "comparison_observed": null,
+        "comparison_unit": null,
+        "image": {
+          "contract_version": "3.0.0",
+          "asset_version_id": "poster-v1",
+          "asset_hash": "3cc920b3991a50e0558d753bb4429fa2ddd31ceeb3268a9c286e5d2b9c62c511",
+          "bbox": [
+            0.12,
+            0.35,
+            0.78,
+            0.82
+          ]
+        },
+        "evidence_ids": [],
         "verdict": "review",
         "issues": [
-          "missing_citation",
           "missing_requirement_evidence",
-          "context_incomplete"
+          "context_incomplete",
+          "missing_citation"
         ]
       }
     ],
     "limitations": [
-      "Reference policy only; visual accuracy and source authority require real adapters."
+      "Code validation only; visual accuracy and source authority are not independently verified."
     ],
     "synthetic": true
   },
   "evidence": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "context": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "project_id": "synthetic-project",
       "run_id": "demo-run-1",
       "actor_id": "synthetic-reviewer",
@@ -63,7 +111,7 @@
       "asset_version_id": "poster-v1",
       "parent_run_id": null
     },
-    "context_id": "approved-689a4c3bd9b53763bba4e502de1f00e70eb82e3656220abaa62059638fb45f6b",
+    "context_id": "approved-b1108d52a61b778ce5475f1139b2b0cacaf56e66603beff9c30e094d462ffffd",
     "status": "unavailable",
     "evidence": [],
     "warnings": [
