@@ -16,7 +16,7 @@ OCR가 읽은 줄마다 "자막인가, 간판·메뉴판 같은 배경 글자인
 출력  : ocr/roles.jsonl   — 줄마다 1줄. 자막·배경·기타 확률 + kept/사유.
 
 의존성:
-  - 추론: numpy (이미 requirements.txt)
+  - 추론: numpy (공통 pyproject.toml)
   - 학습: scikit-learn (필수, 미설치 시 안내) · lightgbm (선택, 비교용)
 """
 from __future__ import annotations

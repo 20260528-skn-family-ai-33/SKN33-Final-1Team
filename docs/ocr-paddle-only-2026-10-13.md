@@ -41,8 +41,7 @@ $env:OCR_PIPELINE = "paddle-only"
 
 ```bash
 # 서버 패키지 준비. 이미 설치되어 있으면 생략한다.
-.venv/bin/python -m ensurepip --upgrade
-.venv/bin/python -m pip install -r requirements-test.txt
+uv sync --locked --group dev
 
 # Paddle 전용 환경이 없을 때만 생성한다.
 .venv/bin/python -m venv .runtime/paddle-env
@@ -56,8 +55,7 @@ $env:OCR_PIPELINE = "paddle-only"
 Windows PowerShell:
 
 ```powershell
-.\.venv\Scripts\python.exe -m ensurepip --upgrade
-.\.venv\Scripts\python.exe -m pip install -r requirements-test.txt
+uv sync --locked --group dev
 # Paddle 전용 환경이 없을 때만 생성한다.
 .\.venv\Scripts\python.exe -m venv .runtime/paddle-env
 .\.runtime\paddle-env\Scripts\python.exe -m ensurepip --upgrade
@@ -65,7 +63,7 @@ Windows PowerShell:
 .\.venv\Scripts\python.exe -m scripts.prepare_paddle --include-detection
 ```
 
-`requirements-test.txt`는 EasyOCR/PyTorch가 없는 서버·검증 공통 패키지 목록이다. 이미 전체 개발 환경이 준비되어 있으면 설치를 반복하지 않아도 된다. 가상환경·모델·이미지별 실행 결과는 Git에 넣지 않으며, 다른 PC는 최초 준비가 필요하다. 프런트엔드 빌드가 있으면 실행에 Node.js/npm은 필요하지 않다.
+`uv sync --locked --group dev`는 EasyOCR/PyTorch 없이 서버·검증 공통 패키지를 설치한다. 이미 전체 개발 환경이 준비되어 있으면 설치를 반복하지 않아도 된다. 가상환경·모델·이미지별 실행 결과는 Git에 넣지 않으며, 다른 PC는 최초 준비가 필요하다. 프런트엔드 빌드가 있으면 실행에 Node.js/npm은 필요하지 않다.
 
 ## 판정 변경
 

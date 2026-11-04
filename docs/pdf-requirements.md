@@ -21,10 +21,10 @@
 기존 가상환경에서 PDF 패키지를 설치합니다.
 
 ```sh
-.venv/bin/python -m pip install pypdfium2==5.14.0
+uv sync --locked --group dev
 ```
 
-Windows에서는 `.venv\Scripts\python.exe`를 사용합니다. 공통 설치 목록인 `requirements.txt`와 `requirements-test.txt`에도 추가되어 있습니다.
+Windows에서도 같은 명령을 사용합니다. `pypdfium2`는 공통 `pyproject.toml`·`uv.lock`에 포함되어 있습니다.
 
 `run.sh` / `run.cmd`로 로컬 앱을 실행하면 설치된 Ollama도 자동 시작합니다. 앱이 시작한 모델 서버는 앱 종료 시 함께 종료하며, 이미 실행 중인 모델 서버는 재사용하고 종료하지 않습니다. `--check-only`, 원격 실행, 읽기 전용 모드에서는 자동 시작하지 않습니다. 설치와 모델 다운로드는 자동으로 실행하지 않습니다.
 
@@ -40,7 +40,7 @@ Ollama가 공식 설치돼 있어야 하며, 기본 모델 `qwen3.5:4b`가 없�
 .venv/bin/python scripts/local_ollama.py pull
 ```
 
-`OCR_OLLAMA_URL` 기본값은 `http://127.0.0.1:11435`이며 숫자 loopback 주소만 허용합니다. `REQUIREMENTS_LLM_MODEL`로 모델명을 지정할 수 있습니다. 문서의 모든 페이지를 렌더링해 PaddleOCR로 읽고, Qwen3.5-4B에 페이지 PNG 이미지와 OCR 텍스트를 함께 전달합니다. 선택한 모델은 vision 기능이 있어야 하며 `/api/show`로 사전 확인합니다. `pull`도 `REQUIREMENTS_LLM_MODEL` 설정을 따릅니다. Paddle 환경과 탐지·인식 모델은 기존 포스터 검수 환경을 재사용합니다. 환경 변수는 서버 실행 전에 지정합니다. `.env.example`은 설정 예시이며 자동 로드를 보장하지 않습니다.
+`OCR_OLLAMA_URL` 기본값은 `http://127.0.0.1:11435`이며 숫자 loopback 주소만 허용합니다. `REQUIREMENTS_LLM_MODEL`로 모델명을 지정할 수 있습니다. 문서의 모든 페이지를 렌더링해 PaddleOCR로 읽고, Qwen3.5-4B에 페이지 PNG 이미지와 OCR 텍스트를 함께 전달합니다. 선택한 모델은 vision 기능이 있어야 하며 `/api/show`로 사전 확인합니다. `pull`도 `REQUIREMENTS_LLM_MODEL` 설정을 따릅니다. Paddle 환경과 탐지·인식 모델은 기존 포스터 검수 환경을 재사용합니다. 환경 변수는 서버 실행 전에 지정합니다. `.env.example`을 복사한 실행 파일은 `--env-file .env.local`로 명시합니다.
 
 프런트엔드 변경 후 `cd frontend && npm run build`, 백엔드 변경 후 기존 서버를 재시작합니다. PDF 추출과 포스터 OCR의 모델 설정은 독립적이므로 `OCR_PIPELINE`을 변경할 필요는 없습니다.
 

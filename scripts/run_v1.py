@@ -3,8 +3,9 @@ import argparse
 import os
 from pathlib import Path
 from ipaddress import ip_address
-from backend.app.config import ConfigurationError, read_environment_file
+from backend.app.config import ConfigurationError
 from backend.app.v1_config import load_v1_settings
+from backend.runtime_environment import activate_runtime
 
 
 def launch_options(settings, values, host, port):
@@ -32,7 +33,7 @@ def main(argv=None):
     parser.add_argument('--check-only', action='store_true')
     args = parser.parse_args(argv)
     try:
-        values = read_environment_file(args.env_file)
+        values = activate_runtime("v1", args.env_file)
         settings = load_v1_settings(values)
         options = launch_options(settings, values, args.host, args.port)
         if settings.frontend_dist:

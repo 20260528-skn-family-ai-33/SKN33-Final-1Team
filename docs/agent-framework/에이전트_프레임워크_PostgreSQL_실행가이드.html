@@ -19,22 +19,22 @@
 <p>프로젝트 루트에서 실행한다. Python 3.12 또는 3.13과 uv를 사용한다.</p>
 <div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>uv sync --locked --group dev</code></pre></div>
 <p>버전 정본은 <code>pyproject.toml</code>·<code>uv.lock</code>이다. 기존 인증·명시적 마이그레이션을 위해 Alembic·argon2-cffi·email-validator 의존성을 포함한다. 모델 가중치·DB 자체는 이 명령으로 설치되지 않는다.</p>
-<p><a href="postgres-app.env.example">app 설정 예시</a>를 <code>.runtime/framework-app.env</code>로 복사해 <strong>기존 DB의 제한된 app 계정</strong>을 입력한다. <a href="postgres-owner.env.example">owner 설정 예시</a>는 <code>.runtime/framework-owner.env</code>로 별도 준비한다. 두 경로는 새로 준비할 개인 설정이며 자동 생성·탐색하지 않는다.</p>
+<p><a href="../../.env.example">app 설정 예시</a>를 <code>.env.local</code>로 복사해 <strong>기존 DB의 제한된 app 계정</strong>을 입력한다. <a href="../../.env.admin.example">owner 설정 예시</a>는 <code>.env.admin.local</code>로 별도 준비한다. 두 경로는 새로 준비할 개인 설정이며 자동 생성·탐색하지 않는다.</p>
 <p>app/worker 파일에는 owner·관리자 비밀번호를 넣지 않는다. owner 파일은 마이그레이션 명령에만 사용한다. 실제 비밀번호·세션·운영 입력은 Git에 넣지 않는다. 설정 파일은 명시적으로 읽으며 기존 <code>.env</code>를 변경하지 않는다. 프로세스 환경변수가 파일보다 우선하므로 런타임 셸에 owner 자격증명을 export하지 않는다.</p>
 </section><section class="chapter"><h2 id="03-추가-마이그레이션-한-번">03. 추가 마이그레이션 — 한 번</h2>
 <p>대상은 기존 M008 DB다. 변경 전에 팀의 기존 백업·복원 절차로 대상 DB를 확인하고 백업한다. 이 명령은 기존 DB 소유자 계정을 요구하며 public 구조·기존 권한 계약을 확인한 뒤 <strong>추가 스키마만 한 트랜잭션으로</strong> 적용한다.</p>
-<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework migrate-postgres --env-file .runtime/framework-owner.env
-.venv/bin/python -m backend.agent_framework postgres-check --env-file .runtime/framework-app.env</code></pre></div>
+<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework migrate-postgres --env-file .env.admin.local
+.venv/bin/python -m backend.agent_framework postgres-check --env-file .env.local</code></pre></div>
 <p>Windows는 실행 파일만 <code>.\.venv\Scripts\python.exe</code>로 바꾼다. 첫 명령은 명시적 DDL이고 두 번째는 읽기 전용 검사다. 이미 같은 AF001이 적용되어 있으면 구조를 확인하고 반환한다. 앱·worker 시작 시 자동 마이그레이션은 수행하지 않는다. 운영 DB 적용과 운영 worker 시작은 배포 작업으로 별도 수행한다.</p>
 <p>이번 제거는 아직 운영 적용하지 않은 개발 AF001에 반영했다. 이전 해시의 AF001이 적용된 별도 환경은 readiness가 해시 불일치를 거부한다. 저장 실행을 그대로 새 코드로 재개하지 말고 명시적 마이그레이션으로 정리한다.</p>
 <p>AF001 이후 DDL을 바꿀 때는 기존 SQL을 덮어쓰지 말고 새 revision과 명시적 후속 마이그레이션을 추가한다. 이전 M008 도구의 public 전용 백업 검증만으로 새 스키마의 복원까지 검증했다고 간주하지 않는다. 실제 배포 전 전체 DB 백업에 <code>agent_framework</code>도 포함되는지 확인한다.</p>
 </section><section class="chapter"><h2 id="04-api와-worker-실행">04. API와 worker 실행</h2>
 <p>터미널 1 — 기존 세션 인증과 CSRF를 사용하는 프레임워크 API:</p>
-<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework postgres-serve --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json --port 8012</code></pre></div>
+<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework postgres-serve --env-file .env.local --config examples/agent_framework/team_config.synthetic.json --port 8012</code></pre></div>
 <p>터미널 2 — 같은 DB·같은 팀 설정으로 worker 실행:</p>
-<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework worker --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json</code></pre></div>
+<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework worker --env-file .env.local --config examples/agent_framework/team_config.synthetic.json</code></pre></div>
 <p>한 번만 실행하려면 다음을 사용한다. 한 번은 실행 전체가 아니라 현재 접수된 <strong>추출 또는 검수 한 phase</strong>다. 조건 승인은 이후 별도 review phase를 접수한다.</p>
-<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework worker --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json --once</code></pre></div>
+<div class="code-block" data-language="sh"><div class="code-bar"><span>TERMINAL</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m backend.agent_framework worker --env-file .env.local --config examples/agent_framework/team_config.synthetic.json --once</code></pre></div>
 <p>API 주소는 <code>http://localhost:8012</code>다. 현재 UI·front-v2·Swagger 화면을 제공하지 않는다. 기존 <code>GET /api/v1/auth/csrf</code>, <code>POST /api/v1/auth/login</code>, <code>GET /api/v1/auth/me</code>, <code>POST /api/v1/auth/logout</code>을 재사용한다. 기존에 발급한 활성 이메일 계정을 사용하며 신규 계정·프로젝트를 자동 생성하지 않는다. 기존 개발용 admin 흐름은 이 초기 프레임워크 저장 경로의 지원 대상이 아니다.</p>
 <p>API는 역할 factory를 초기화하지 않는다. factory는 worker에서 초기화한다. 담당자 기능 연결 후 두 터미널의 <code>--config</code>를 동일한 팀 설정으로 바꾼다. 초기 예시는 합성 역할이므로 PostgreSQL 저장 성공을 Qwen·RAG 실연결 성공으로 해석하지 않는다.</p>
 </section><section class="chapter"><h2 id="05-접수조회승인-api">05. 접수·조회·승인 API</h2>

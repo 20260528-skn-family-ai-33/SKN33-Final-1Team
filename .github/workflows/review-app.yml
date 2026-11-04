@@ -1,7 +1,7 @@
 name: Integrated review checks
 on:
   pull_request:
-    paths: ["backend/**", "frontend/**", "tests/**", "scripts/**", "requirements*.txt", "pyproject.toml", "uv.lock", "start.py", "deploy/**", ".github/workflows/**"]
+    paths: ["backend/**", "frontend/**", "tests/**", "scripts/**", "requirements*.txt", "pyproject.toml", "uv.lock", "start.py", "setup_local.py", "run.sh", "run.cmd", ".env*.example", "compose*.yaml", "deploy/**", ".github/workflows/**"]
   push:
     branches: [main]
 permissions:
@@ -21,7 +21,6 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: uv sync --locked --group dev
-      - run: uv pip install --python .venv/bin/python -r requirements-test.txt -r requirements-v1.txt
       - run: .venv/bin/python -m pytest -q
       - run: npm ci
         working-directory: frontend

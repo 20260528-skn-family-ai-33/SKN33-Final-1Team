@@ -9,18 +9,20 @@ Python 3.12, uv 0.12.10, Node.js 22.12 이상, Docker Compose, FFmpeg·FFprobe�
 저장소 루트에서 실행합니다.
 
 ```powershell
-Copy-Item .env.rebuild.example .env.rebuild
+Copy-Item .env.example .env.local
+Copy-Item .env.admin.example .env.admin.local
 uv sync --locked --group dev
 npm --prefix frontend ci
-docker compose --env-file .env.rebuild -f compose.rebuild.yaml up -d
+# 두 파일의 비밀번호를 먼저 바꾸고 일치시킨 뒤 실행한다.
+docker compose --env-file .env.admin.local -f compose.rebuild.yaml up -d
 ```
 
-`.env.rebuild`의 `CC_MCP_TOKEN`을 32자 이상의 무작위 값으로 바꾸고, 실제 Qwen endpoint와 인증값을 직접 설정합니다. 예제 DB·Neo4j 비밀번호는 루프백 개발용입니다. 외부 환경에서 그대로 사용하지 않습니다. 모델 endpoint는 OpenAI 호환 `/v1/chat/completions`와 JSON schema 응답을 지원해야 하며 모델 이름은 `Qwen/Qwen3.5-4B`입니다. `CC_QWEN_REVISION`에는 배포한 공식 가중치 revision을 기록합니다. 이 값은 운영자 선언이며 서버 가중치를 자동 검증한 결과가 아닙니다.
+`.env.local`의 `CC_MCP_TOKEN`을 32자 이상의 무작위 값으로 바꾸고, 실제 Qwen endpoint와 인증값을 직접 설정합니다. DB·Neo4j 비밀번호는 `.env.admin.local`의 초기화 값과 일치시킵니다. 예시의 placeholder는 직접 바꿉니다. 기존 개인 파일이 있으면 덮어쓰지 말고 [환경 통합 안내](../environment.md)에 따라 필요한 항목만 반영합니다. 모델 endpoint는 OpenAI 호환 `/v1/chat/completions`와 JSON schema 응답을 지원해야 하며 모델 이름은 `Qwen/Qwen3.5-4B`입니다. `CC_QWEN_REVISION`에는 배포한 공식 가중치 revision을 기록합니다. 이 값은 운영자 선언이며 서버 가중치를 자동 검증한 결과가 아닙니다.
 
 ```powershell
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli init-db
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli graph-init
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli create-user --email operator@example.com --name 운영자 --admin
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli init-db
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli graph-init
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli create-user --email operator@example.com --name 운영자 --admin
 ```
 
 계정 발급은 비밀번호를 대화형으로 입력받습니다. 기본 계정·공개 가입·이메일 재설정은 없습니다. `init-db`는 새 테이블과 checkpoint를 만드는 명시적 초기화 명령이며, 이후 스키마 변경을 자동 이관하는 도구가 아닙니다.
@@ -30,14 +32,14 @@ uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli 
 아래 명령을 각각 별도 터미널에서 실행합니다. API는 모델을 적재하지 않습니다. worker는 MCP를 통해 처리하고, projection 프로세스가 outbox를 Neo4j로 전달합니다. 영상은 묶음 사이에 대기열로 돌아갑니다.
 
 ```powershell
-.\run.cmd api
-.\run.cmd mcp
-.\run.cmd worker
-.\run.cmd projection
-npm --prefix frontend run dev -- --port 5173
+.\run.cmd api --env-file .env.local
+.\run.cmd mcp --env-file .env.local
+.\run.cmd worker --env-file .env.local
+.\run.cmd projection --env-file .env.local
+npm --prefix frontend run dev:rebuild -- --port 5173
 ```
 
-macOS/Linux에서는 `./run.sh api`처럼 실행합니다. 셸 실행 권한이 없으면 `bash run.sh api`를 사용합니다. 프런트 주소는 `http://127.0.0.1:5173`, API는 8000, MCP는 8129입니다. 로컬 DB는 25429, Neo4j HTTP는 57429, Bolt는 57629를 사용합니다. 프로세스는 Ctrl+C로 중지합니다. 데이터 보존을 위해 Compose 중지 시 볼륨 삭제 옵션을 사용하지 않습니다.
+macOS/Linux에서는 `./run.sh api --env-file .env.local`처럼 실행합니다. 셸 실행 권한이 없으면 `bash run.sh api --env-file .env.local`를 사용합니다. 프런트 주소는 `http://127.0.0.1:5173`, API는 8000, MCP는 8129입니다. 로컬 DB는 25429, Neo4j HTTP는 57429, Bolt는 57629를 사용합니다. 프로세스는 Ctrl+C로 중지합니다. 데이터 보존을 위해 Compose 중지 시 볼륨 삭제 옵션을 사용하지 않습니다.
 
 개발 HTTP에서는 `CC_COOKIE_SECURE=false`와 루프백 주소를 함께 사용합니다. 프런트가 `/api`를 프록시하므로 브라우저와 API의 호스트를 임의로 섞지 않습니다. API health의 `ready`는 업무 DB 스키마 준비를 확인하며 GPU·Neo4j 정상 동작을 보장하지 않습니다. endpoint가 없거나 실패하면 실제 실패 상태를 남기며 모의 검사 결과로 대체하지 않습니다.
 
@@ -52,8 +54,8 @@ worker의 lease는 900초, heartbeat는 20초입니다. worker 재시작 후 만
 Neo4j 장애 시 PostgreSQL 원본은 유지하고 동기화 지연/오류를 표시합니다. 연결을 복구한 뒤 projection 프로세스를 실행합니다. 그래프를 잃었다면 다음 명령으로 전체 프로젝트를 다시 반영합니다.
 
 ```powershell
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli graph-init
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli graph-rebuild --all
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli graph-init
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli graph-rebuild --all
 ```
 
 ## 배포 구성
@@ -74,7 +76,7 @@ MCP는 외부 공개 포트 없이 B 내부 네트워크로 연결합니다. 로
 프로젝트는 운영 중 보존하고 화면에서 보관 처리할 수 있습니다. 종료 전에 새 ZIP 경로로 원본 파일과 업무 기록을 내보냅니다. ZIP에는 비밀번호·세션 인증값을 포함하지 않습니다. 이 내보내기는 DB 전체 백업이나 자동 복원 기능이 아닙니다.
 
 ```powershell
-uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli export --project-id PROJECT_UUID --output outputs/project-export.zip
+uv run --no-sync --env-file .env.admin.local python -m backend.creative_checker.cli export --project-id PROJECT_UUID --output outputs/project-export.zip
 ```
 
 영구 삭제 CLI는 보관된 프로젝트, 활성 작업 없음, 정확한 UUID 재입력을 요구합니다. PostgreSQL 업무·checkpoint 기록, 파일 저장소, Neo4j를 대상으로 합니다. 실제 운영자만 서버 명령을 실행할 수 있도록 OS·배포 접근을 제한해야 합니다. 외부 저장소 삭제 도중 오류가 나면 부분 삭제일 수 있으므로 같은 프로젝트의 오류를 해결한 뒤 재시도합니다. 이 가이드를 작성하면서 실제 자료를 삭제하지 않았습니다.
@@ -86,16 +88,16 @@ uv run --no-sync --env-file .env.rebuild python -m backend.creative_checker.cli 
 ## 관련 검사
 
 ```powershell
-uv run pytest tests/rebuild -m "not integration" -q
-npm --prefix frontend run build
+uv run --locked --no-sync pytest tests/creative_checker -m "not integration" -q
+npm --prefix frontend run build:rebuild
 ```
 
-실제 DB 통합 검사는 `CC_INTEGRATION_DATABASE_URL`, `CC_TEST_NEO4J_URI`, `CC_TEST_NEO4J_PASSWORD`가 있을 때 `uv run pytest tests/rebuild -m integration -q`로 실행합니다. 격리 PostgreSQL schema와 프로젝트 범위 Neo4j 데이터를 만들고 정리하므로 테스트 전용 인스턴스를 지정합니다. `.github/workflows/v1-integration.yml`도 같은 검사를 사용합니다. 과거 OCR·v1 테스트는 새 경로의 검증이 아닙니다. 현재 수행 결과는 [작업 현황](docs/rebuild/status.md)에 구분해 기록합니다.
+실제 DB 통합 검사는 `CC_INTEGRATION_DATABASE_URL`, `CC_TEST_NEO4J_URI`, `CC_TEST_NEO4J_PASSWORD`가 있을 때 `uv run --locked --no-sync pytest tests/creative_checker -m integration -q`로 실행합니다. 격리 PostgreSQL schema와 프로젝트 범위 Neo4j 데이터를 만들고 정리하므로 테스트 전용 인스턴스를 지정합니다. `.github/workflows/v1-integration.yml`도 같은 검사를 사용합니다. 과거 OCR·v1 테스트는 새 경로의 검증이 아닙니다. 현재 수행 결과는 [작업 현황](status.md)에 구분해 기록합니다.
 
 실제 모델 검증은 별도 절차입니다. 현재 Pod 연결 검증과 Container Disk 정리는 사용자 요청으로 보류되어 있으며, 모델 주소를 자동으로 찾거나 Pod를 기동하지 않습니다. 사용 가능한 endpoint를 따로 마련한 후 아래 명령으로 전용 개발 DB에서 검증할 수 있습니다.
 
 ```powershell
-uv run --no-sync --env-file .env.rebuild python -m scripts.rebuild.verify_live_workflow --output artifacts/rebuild/live-workflow-새이름
+uv run --no-sync --env-file .env.local python -m scripts.rebuild.verify_live_workflow --output artifacts/rebuild/live-workflow-새이름
 ```
 
-이 스크립트는 가상 PDF·포스터·영상을 만들고 실제 API·MCP 서버·worker·DB·모델로 조건 승인, 수정 요청, 새 버전 재검수와 검증용 예외 승인을 수행합니다. 모델 응답을 주입하지 않으며 결과·파일·격리 schema를 보존합니다. 성공해도 모델 정확도나 일반 업무에 대한 승인 근거가 되지는 않습니다. 실행 결과는 [검증 기록](docs/rebuild/verification-20261030.md)에 구분합니다.
+이 스크립트는 가상 PDF·포스터·영상을 만들고 실제 API·MCP 서버·worker·DB·모델로 조건 승인, 수정 요청, 새 버전 재검수와 검증용 예외 승인을 수행합니다. 모델 응답을 주입하지 않으며 결과·파일·격리 schema를 보존합니다. 성공해도 모델 정확도나 일반 업무에 대한 승인 근거가 되지는 않습니다. 실행 결과는 [검증 기록](verification-20261030.md)에 구분합니다.

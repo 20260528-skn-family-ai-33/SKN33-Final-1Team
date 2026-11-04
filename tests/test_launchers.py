@@ -35,7 +35,8 @@ def windows_project(tmp_path, monkeypatch):
     monkeypatch.setattr(start.sys, "executable", str(python))
     monkeypatch.setattr(start.sys, "argv", ["setup_local.py"])
     npm = r"C:\Program Files\nodejs\npm.cmd"
-    which = Mock(return_value=npm)
+    uv = r"C:\Tools\uv.exe"
+    which = Mock(side_effect=lambda name: uv if name == "uv" else npm)
     monkeypatch.setattr(setup_local.shutil, "which", which)
     probe = json.dumps({"version": [3, 12], "prefix": str(environment), "base_prefix": str(root / "base_python")})
     run = Mock(return_value=subprocess.CompletedProcess([], 0, stdout=probe))
@@ -50,7 +51,7 @@ def windows_project(tmp_path, monkeypatch):
     builder = Mock()
     monkeypatch.setattr(setup_local.venv, "EnvBuilder", Mock(return_value=builder))
     return SimpleNamespace(root=root, environment=environment, python=python,
-                           npm=npm, which=which, run=run, builder=builder,
+                           npm=npm, uv=uv, which=which, run=run, builder=builder,
                            probe=probe, child=child, popen=popen)
 
 
@@ -142,15 +143,16 @@ def test_windows_setup_uses_scripts_python_and_npm_cmd(windows_project, capsys):
     project.builder.create.side_effect = create_environment
     setup_local.main()
 
-    project.which.assert_called_once_with("npm.cmd")
+    assert project.which.call_args_list == [call("npm.cmd"), call("uv")]
     project.builder.create.assert_called_once_with(project.environment)
     commands = [call.args[0] for call in project.run.call_args_list]
     assert commands[1:] == [
-        [str(project.python), "-m", "pip", "install", "-r", "requirements-dev.txt"],
+        [project.uv, "sync", "--locked", "--group", "dev"],
         [project.npm, "--prefix", "frontend", "ci"],
         [project.npm, "--prefix", "frontend", "run", "build"],
     ]
     assert all(call.kwargs["cwd"] == project.root for call in project.run.call_args_list)
+    assert project.run.call_args_list[1].kwargs["env"]["UV_PROJECT_ENVIRONMENT"] == str(project.environment)
     assert r".\run.cmd" in capsys.readouterr().out
 
 
@@ -160,14 +162,14 @@ def test_install_failure_stops_build_and_model_download(windows_project, monkeyp
     monkeypatch.setattr(setup_local.sys, "argv", ["setup_local.py", "--download-models"])
     project.run.side_effect = [
         subprocess.CompletedProcess([], 0, stdout=project.probe),
-        subprocess.CalledProcessError(1, [str(project.python), "-m", "pip", "install"]),
+        subprocess.CalledProcessError(1, [project.uv, "sync", "--locked"]),
     ]
 
     with pytest.raises(SystemExit, match="설치가 중단되었습니다"):
         setup_local.main()
 
     assert project.run.call_count == 2
-    assert project.run.call_args.args[0][1:4] == ["-m", "pip", "install"]
+    assert project.run.call_args.args[0][1:] == ["sync", "--locked", "--group", "dev", "--extra", "legacy-ocr"]
     assert "설치 완료" not in capsys.readouterr().out
 
 
@@ -249,7 +251,7 @@ def test_start_missing_project_environment_prints_windows_setup_command(windows_
     message = capsys.readouterr().out
     assert ".venv" in message
     assert "uv venv --python 3.12 --seed .venv" in message
-    assert r".\.venv\Scripts\python.exe -m pip install -r requirements-test.txt" in message
+    assert "uv sync --locked --group dev" in message
     assert failure.value.code == 1
     windows_project.run.assert_not_called()
     windows_project.popen.assert_not_called()
@@ -375,9 +377,9 @@ def test_paddle_only_server_recovery_uses_requirements_without_easyocr(windows_p
     with pytest.raises(SystemExit):
         start.main()
     output = capsys.readouterr().out
-    assert "-m pip install -r requirements-test.txt" in output
-    assert "-m pip install -r requirements.txt" not in output
-    assert output.index("ensurepip --upgrade") < output.index("pip install")
+    assert "uv sync --locked --group dev" in output
+    assert "--extra legacy-ocr" not in output
+    assert output.index("ensurepip --upgrade") < output.index("\nuv sync --locked --group dev")
     uvicorn.run.assert_not_called()
 
 
@@ -451,7 +453,7 @@ def test_windows_dependency_failures_have_actionable_recovery(windows_project, m
     assert str(project.python) in message
     assert str(error) in message
     assert r".\run.cmd" in message
-    assert r".\.venv\Scripts\python.exe -m pip install -r requirements.txt" in message
+    assert "uv sync --locked --group dev --extra legacy-ocr" in message
     assert failure.value.code == 1
     uvicorn.run.assert_not_called()
     project.run.assert_not_called()
@@ -494,7 +496,7 @@ def test_all_missing_packages_models_and_assets_are_reported_together(windows_pr
     output = capsys.readouterr().out
     for item in ("[누락] torch", "[누락] easyocr", *start.MODEL_FILES, "missing.js", "missing.css"):
         assert item in output
-    assert output.index("ensurepip --upgrade") < output.index("pip install") < output.index("--download-models")
+    assert output.index("ensurepip --upgrade") < output.index("uv sync") < output.index("--download-models")
     assert modules.call_count == len(start.SERVER_PACKAGES) + len(start.OCR_PACKAGES)
     assert failure.value.code == 1
     uvicorn.run.assert_not_called()

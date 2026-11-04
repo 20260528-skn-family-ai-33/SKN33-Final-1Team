@@ -621,7 +621,7 @@ def _read_pages(data, deadline, progress=None):
     try:
         import pypdfium2 as pdfium
     except ImportError:
-        raise DocumentError("PDF 읽기 패키지가 설치되지 않았습니다. requirements-test.txt 설치를 확인해 주세요.", 503) from None
+        raise DocumentError("PDF 읽기 패키지가 설치되지 않았습니다. uv sync --locked 실행를 확인해 주세요.", 503) from None
     try:
         document = pdfium.PdfDocument(data)
     except Exception:

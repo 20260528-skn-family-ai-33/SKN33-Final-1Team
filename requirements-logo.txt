@@ -19,7 +19,7 @@ kornia==0.8.1          # 조합 B 이중검수(DISK + LightGlue), BiRefNet 원�
 timm==1.0.15           # BiRefNet 원격 코드(배경 분리)
 einops==0.8.1          # BiRefNet 원격 코드(배경 분리)
 
-# 영상 로고 Pod HTTP 워커(backend/app/video/logos/worker.py). 버전은 requirements.txt와 같다.
+# 영상 로고 Pod HTTP 워커(backend/app/video/logos/worker.py). 서버 버전은 pyproject.toml의 공통 고정값과 같다.
 fastapi==0.143.0
 uvicorn==0.54.0
 
