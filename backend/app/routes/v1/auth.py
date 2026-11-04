@@ -4,7 +4,7 @@ from fastapi import APIRouter,Request
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse,Response
-from ...contracts.auth import Credentials
+from ...contracts.auth import Credentials,Registration
 from ...security.errors import AuthError
 from ...security.csrf import developer_allowed,session_token
 
@@ -29,7 +29,7 @@ def reject_duplicates(pairs):
     return result
 
 
-async def parse_credentials(request):
+async def parse_credentials(request,contract=Credentials):
     if request.headers.get('content-type','').split(';',1)[0].strip().lower()!='application/json':raise AuthError('UNSUPPORTED_MEDIA_TYPE',415)
     raw=bytearray()
     async for chunk in request.stream():
@@ -40,28 +40,36 @@ async def parse_credentials(request):
     except (ValueError,UnicodeError,RecursionError):raise AuthError('INVALID_JSON',400) from None
     try:
         if not isinstance(value,dict):raise ValueError()
-        credentials=Credentials.model_validate(value)
+        credentials=contract.model_validate(value)
         if any('\x00' in v or any(0xD800<=ord(c)<=0xDFFF for c in v) for v in value.values() if isinstance(v,str)):raise ValueError()
         return credentials
     except (ValueError,ValidationError):raise AuthError('INVALID_AUTH_REQUEST',422) from None
 
 
+def csrf_response(request:Request):
+    settings=request.app.state.settings;signer=request.app.state.csrf
+    purpose,binding=signer.binding(request,settings)
+    fresh_seed=False
+    if not binding:binding=secrets.token_urlsafe(32);fresh_seed=True
+    token=request.cookies.get(settings.csrf_cookie)
+    if not signer.valid(token,purpose,binding):token=signer.issue(purpose,binding)
+    response=JSONResponse(envelope(request,{'csrf_token':token,'developer_login_available':developer_allowed(request,settings)}))
+    # Retain the absolute signature expiry when the cookie is refreshed.
+    set_cookie(response,settings,settings.csrf_cookie,token,httponly=False,max_age=900)
+    if fresh_seed:set_cookie(response,settings,settings.seed_cookie,binding,httponly=True,max_age=900)
+    return response
+
+
 def router():
     result=APIRouter(prefix='/api/v1/auth')
+    result.add_api_route('/csrf',csrf_response,methods=['GET'])
 
-    @result.get('/csrf')
-    def csrf(request:Request):
-        settings=request.app.state.settings;signer=request.app.state.csrf
-        purpose,binding=signer.binding(request,settings)
-        fresh_seed=False
-        if not binding:binding=secrets.token_urlsafe(32);fresh_seed=True
-        token=request.cookies.get(settings.csrf_cookie)
-        if not signer.valid(token,purpose,binding):token=signer.issue(purpose,binding)
-        response=JSONResponse(envelope(request,{'csrf_token':token,'developer_login_available':developer_allowed(request,settings)}))
-        # Do not extend a reused token's absolute signature expiry, even if its browser cookie is refreshed.
-        set_cookie(response,settings,settings.csrf_cookie,token,httponly=False,max_age=900)
-        if fresh_seed:set_cookie(response,settings,settings.seed_cookie,binding,httponly=True,max_age=900)
-        return response
+    @result.post('/signup',status_code=201)
+    async def signup(request:Request):
+        registration=await parse_credentials(request,Registration)
+        user=await run_in_threadpool(request.app.state.auth.signup,registration,
+            ip=request.client.host if request.client else 'unknown',request_id=request.state.request_id)
+        return envelope(request,{'user':user})
 
     @result.post('/login')
     async def login(request:Request):

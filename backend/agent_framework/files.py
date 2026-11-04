@@ -23,9 +23,9 @@ class StoredFileMetadata(Contract):
     file_id: Identifier
     project_id: Identifier
     version_id: Identifier
-    kind: Literal["pdf", "poster"]
+    kind: Literal["pdf", "text", "poster"]
     storage_key: str = Field(min_length=1, repr=False)
-    media_type: Literal["application/pdf", "image/png", "image/jpeg", "image/webp"]
+    media_type: Literal["application/pdf", "text/plain", "image/png", "image/jpeg", "image/webp"]
     byte_size: int = Field(gt=0, strict=True)
     sha256: Hash
     width: int | None = Field(default=None, gt=0, strict=True)
@@ -102,6 +102,31 @@ def _checked(model, value, *, metadata=False):
               "The file metadata or reference does not match its contract.")
 
 
+def inspect_document(content: bytes, limits: FileLimits | None = None) -> int:
+    """Shared upload/read PDF container check; no OCR, model, rendering or writes."""
+    limits = limits or FileLimits()
+    if not isinstance(content, bytes) or not content.startswith(b"%PDF-"):
+        _fail("FILE_FORMAT_INVALID", "The document is not a readable PDF.")
+    if len(content) > limits.max_document_bytes:
+        _fail("FILE_TOO_LARGE", "The PDF exceeds the configured byte limit.")
+    import pymupdf
+    try:
+        with pymupdf.open(stream=content, filetype="pdf") as document:
+            if document.is_encrypted or document.needs_pass or document.page_count < 1:
+                _fail("FILE_FORMAT_INVALID", "An unencrypted PDF with readable pages is required.")
+            if document.page_count > limits.max_document_pages:
+                _fail("FILE_TOO_LARGE", "The PDF exceeds the configured page limit.")
+            count = document.page_count
+            for page in document:
+                if page.rect.is_empty or page.rect.is_infinite:
+                    _fail("FILE_FORMAT_INVALID", "The PDF contains an invalid page.")
+    except AdapterFailure:
+        raise
+    except Exception:
+        _fail("FILE_FORMAT_INVALID", "The PDF container could not be read.")
+    return count
+
+
 class VerifiedFileAccess:
     """Resolve one authorized file/version and verify the bytes actually returned.
 
@@ -114,7 +139,7 @@ Context; the actor_id sent in a role request is not proof of authorization.
 
     def _metadata(self, context, reference, kind):
         try:
-            lookup = self.catalog.lookup_document if kind == "pdf" else self.catalog.lookup_asset
+            lookup = self.catalog.lookup_document if kind in ("pdf","text") else self.catalog.lookup_asset
             metadata = _checked(StoredFileMetadata, lookup(context.model_copy(deep=True),
                                                           reference.model_copy(deep=True)), metadata=True)
         except AdapterFailure:
@@ -125,7 +150,7 @@ Context; the actor_id sent in a role request is not proof of authorization.
             _fail("FILE_SCOPE_MISMATCH", "The file belongs to a different project.")
         if metadata.file_id != reference.file_id or metadata.kind != kind:
             _fail("FILE_REFERENCE_MISMATCH", "The file does not match the requested media reference.")
-        version = reference.document_version_id if kind == "pdf" else reference.asset_version_id
+        version = reference.document_version_id if kind in ("pdf","text") else reference.asset_version_id
         if metadata.version_id != version:
             _fail("FILE_VERSION_MISMATCH", "The file is not bound to the requested version.")
         if metadata.media_type != reference.media_type:
@@ -162,26 +187,10 @@ Context; the actor_id sent in a role request is not proof of authorization.
         context, reference = _checked(Context, context), _checked(DocumentRef, reference)
         if context.document_version_id != reference.document_version_id:
             _fail("DOCUMENT_VERSION_MISMATCH", "The document reference differs from the execution context.")
-        metadata = self._metadata(context, reference, "pdf")
+        metadata = self._metadata(context, reference, "text" if reference.media_type=='text/plain' else "pdf")
         content = self._bytes(metadata, self.limits.max_document_bytes)
-        if not content.startswith(b"%PDF-"):
-            _fail("FILE_FORMAT_INVALID", "The document is not a readable PDF.")
-        import pymupdf
-        try:
-            with pymupdf.open(stream=content, filetype="pdf") as document:
-                if document.is_encrypted or document.needs_pass or document.page_count < 1:
-                    _fail("FILE_FORMAT_INVALID", "An unencrypted PDF with readable pages is required.")
-                if document.page_count > self.limits.max_document_pages:
-                    _fail("FILE_TOO_LARGE", "The PDF exceeds the configured page limit.")
-                count = document.page_count
-                # Load every page's structure without OCR, rendering or inference.
-                for page in document:
-                    if page.rect.is_empty or page.rect.is_infinite:
-                        _fail("FILE_FORMAT_INVALID", "The PDF contains an invalid page.")
-        except AdapterFailure:
-            raise
-        except Exception:
-            _fail("FILE_FORMAT_INVALID", "The PDF container could not be read.")
+        from .requirement_text import inspect_requirement
+        count = inspect_requirement(content,reference.media_type,self.limits)
         if count != reference.page_count:
             _fail("PDF_PAGE_COUNT_MISMATCH", "The PDF page count differs from the reference.")
         return VerifiedDocument(context, reference, content, count)

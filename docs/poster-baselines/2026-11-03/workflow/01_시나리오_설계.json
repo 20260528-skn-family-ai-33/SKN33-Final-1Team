@@ -1,0 +1,564 @@
+{
+  "schema_version": "scenario-design-0.1",
+  "created_at": "2026-11-03",
+  "stage": 1,
+  "status": "scenario_design_complete",
+  "human_verified": false,
+  "criteria_approval_status": "unapproved",
+  "source_kind": "poster_derived_synthetic",
+  "is_independent_evaluation_set": false,
+  "gold_verdict": null,
+  "baseline_data_sha256": "02d7ff57576b9c7c089321cf923a4c969e300cb4a9fb32e2c1014fe8db1992a5",
+  "description": "기존 전시·연주회·축제 3종을 재사용한 개발 설정. 기존 문서는 보존하고 후속 단계에서 새 가상 제출용 PDF를 작성한다.",
+  "counts": {
+    "cases": 3,
+    "requirements": 36,
+    "provided": 33,
+    "intentional_gaps": 3
+  },
+  "input_boundary": "단계 2의 제출용 PDF만 A02에 입력한다. 시나리오 JSON·원본 포스터·단계 3 검토표는 추출 입력에 넣지 않는다.",
+  "cases": [
+    {
+      "id": "EXH-NEW004",
+      "sequence": 1,
+      "category": "전시",
+      "title": "수원의 영화, 수원의 극장",
+      "role": "first_integration_case",
+      "scenario_name": "전시 포스터 제작 의뢰 및 필수정보 보완",
+      "reference_poster": "../cases/EXH-NEW004/poster.jpg",
+      "reference_poster_sha256": "7744f979df13e36e527f4eb9a50baaf78ebcafcd8fd6b0ad687a7f134137be33",
+      "legacy_document": "../cases/EXH-NEW004/기준문서_v0.1.pdf",
+      "legacy_document_sha256": "19bae58b2d92942292253083e38e9c8b4ca520433538516ed156d1e993798b92",
+      "poster_id": "NEW004",
+      "lineage": "poster_derived_synthetic_with_explicit_new_gap",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "requirements": [
+        {
+          "id": "EXH-T01",
+          "kind": "text",
+          "statement": "전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.",
+          "expected_value": [
+            "수원의 영화",
+            "수원의 극장"
+          ],
+          "allowance": "줄바꿈·공백·두 구절 사이의 쉼표 차이는 허용하되 두 구절을 누락하지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "수원의 영화 / 수원의 극장",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "EXH-T02",
+          "kind": "text",
+          "statement": "전시 연도는 2026년으로 표기한다.",
+          "expected_value": "2026",
+          "allowance": "2026 또는 다른 연도 정보와 함께 해석 가능한 ‘26년’ 표기를 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "2026 / 26년",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "EXH-T03",
+          "kind": "text",
+          "statement": "개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.",
+          "expected_value": {
+            "date": "2026-05-14",
+            "weekday": "목요일",
+            "meaning": "개막일"
+          },
+          "allowance": "날짜 구분자와 앞자리 0의 차이는 허용한다. 연도·월·일·요일 의미는 동일해야 한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "26년 5월 14일 목요일 개봉",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "EXH-T04",
+          "kind": "text",
+          "statement": "전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.",
+          "expected_value": "열린문화공간 후소 전시실",
+          "allowance": "장소명 내 줄바꿈·공백 차이는 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "열린문화공간 후소 전시실",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "EXH-V01",
+          "kind": "visual",
+          "statement": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+          "expected_value": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "이미지 근거와 사람 확인. 건물의 역사적 진위·사진 사용권을 이미지에서 확정하지 않는다."
+        },
+        {
+          "id": "EXH-V02",
+          "kind": "visual",
+          "statement": "청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+          "expected_value": "청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "정성 검토. 확정 색상 코드·색차 임계값은 미정이다."
+        },
+        {
+          "id": "EXH-F01",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "EXH-F02",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 3000,
+            "height": 3000,
+            "unit": "px"
+          },
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "EXH-F03",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "EXH-G01",
+          "field": "관람시간",
+          "statement": "포스터에 관람 가능 요일과 시간을 안내한다. 구체적인 운영시간은 클라이언트 확인 후 확정한다.",
+          "question": "관람 가능한 요일·시작/종료 시간과 휴관일이 있으면 알려주세요.",
+          "reason": "개막일과 관람 운영시간을 구분하고, 운영시간을 모델이 임의 생성하지 않는지 확인한다.",
+          "kind": "text",
+          "expected_value": null,
+          "value_status": "needs_client_input",
+          "required_in_scenario": true,
+          "basis": "new_synthetic_development_setting",
+          "blocks_criteria_approval": true,
+          "response_recorded": false,
+          "verification_route": "clarification_then_text_comparison"
+        }
+      ],
+      "business_context_not_image_criteria": [
+        "실제 계약 당사자·대금·지급일·계약 납기는 확정하지 않는다.",
+        "미정 계약행정 항목을 모두 포스터 필수조건으로 추출하거나, 그것만으로 기준 승인을 일괄 차단하지 않는다.",
+        "글꼴·사진·표장 사용권은 별도 증빙 대상이며 포스터 픽셀로 확정하지 않는다."
+      ],
+      "notes": "전시 날짜가 계약 납기라는 뜻은 아니다. 정사각형은 파일에서 확인했으며 세로 4:5로 일괄 지정하지 않는다."
+    },
+    {
+      "id": "CON-NEW043",
+      "sequence": 2,
+      "category": "연주회",
+      "title": "수원시립교향악단 제303회 정기연주회",
+      "role": "extension_case",
+      "scenario_name": "연주회 포스터 제작 의뢰 및 필수정보 보완",
+      "reference_poster": "../cases/CON-NEW043/poster.jpg",
+      "reference_poster_sha256": "4195c0380114b3e4095dbc369fcc14adaba575443700c39dd4ed56d39fc6671d",
+      "legacy_document": "../cases/CON-NEW043/기준문서_v0.1.pdf",
+      "legacy_document_sha256": "c8ab07692f7c7916c085f87d25422fd6f303febe545e2c7800882d628d60810d",
+      "poster_id": "NEW043",
+      "lineage": "poster_derived_synthetic_with_explicit_new_gap",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "requirements": [
+        {
+          "id": "CON-T01",
+          "kind": "text",
+          "statement": "단체명 ‘수원시립교향악단’과 공연 회차 ‘제303회 정기연주회’를 모두 표기한다.",
+          "expected_value": [
+            "수원시립교향악단",
+            "제303회 정기연주회"
+          ],
+          "allowance": "줄바꿈·공백 차이는 허용하되 회차 숫자는 바꾸지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "수원시립교향악단 / 제303회 정기연주회",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-T02",
+          "kind": "text",
+          "statement": "주요 작품 표기로 ‘H.Berlioz’와 ‘Symphonie fantastique’를 포함한다.",
+          "expected_value": [
+            "H.Berlioz",
+            "Symphonie fantastique"
+          ],
+          "allowance": "영문 대소문자·단어 사이 공백·줄바꿈은 허용한다. 고유명·작품명 철자는 유지한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "H.Berlioz / Symphonie fantastique",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-T03",
+          "kind": "text",
+          "statement": "공연 일시는 2026년 4월 29일 수요일 19시 30분으로 표기한다.",
+          "expected_value": {
+            "date": "2026-04-29",
+            "weekday": "수요일",
+            "time": "19:30"
+          },
+          "allowance": "수요일/wed, 날짜 구분자와 0 표기는 허용한다. 날짜와 시각을 변경하지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "2026. 4. 29. wed 19:30",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-T04",
+          "kind": "text",
+          "statement": "공연장은 ‘수원SK아트리움 대공연장’으로 표기한다.",
+          "expected_value": "수원SK아트리움 대공연장",
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "수원SK아트리움 대공연장",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-T05",
+          "kind": "text",
+          "statement": "출연자와 역할을 ‘지휘 최희준’, ‘첼로 정우찬’으로 각각 표기한다.",
+          "expected_value": {
+            "지휘": "최희준",
+            "첼로": "정우찬"
+          },
+          "allowance": "두 사람의 이름과 역할 연결을 유지한다. 인물 사진만으로 이름을 추정하지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "지휘 최희준 / 첼로 정우찬",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-T06",
+          "kind": "text",
+          "statement": "프로그램에 생상스 ‘첼로 협주곡 1번’과 베를리오즈 ‘환상 교향곡’을 포함한다.",
+          "expected_value": [
+            "생상스 첼로 협주곡 1번",
+            "베를리오즈 환상 교향곡"
+          ],
+          "allowance": "줄바꿈·공백 차이는 허용한다. 외국어 부제 전체와 작품 번호의 세부 표기 요구는 후속 확인한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "생상스 첼로 협주곡 1번 / 베를리오즈 환상 교향곡",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "CON-V01",
+          "kind": "visual",
+          "statement": "산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+          "expected_value": "산 풍경 배경과 출연자 인물 사진 두 점을 포함한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "이미지 근거와 사람 확인. 사진만으로 인물 신원이나 초상 이용 허락을 확정하지 않는다."
+        },
+        {
+          "id": "CON-V02",
+          "kind": "visual",
+          "statement": "보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.",
+          "expected_value": "보라색 계열 배경 위에 주요 작품명과 공연 일시가 구분되어 읽히도록 구성한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "정성 검토. 가독성 합격을 임의의 점수로 자동 확정하지 않는다."
+        },
+        {
+          "id": "CON-F01",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "CON-F02",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 4500,
+            "height": 4500,
+            "unit": "px"
+          },
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "CON-F03",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "CON-G01",
+          "field": "관람연령",
+          "statement": "포스터에 관람 가능한 연령을 안내한다. 최소 관람연령은 클라이언트 확인 후 확정한다.",
+          "question": "이 공연의 최소 관람연령과 포스터에 사용할 확정 문구를 알려주세요.",
+          "reason": "주변 공연의 관람연령이나 상식으로 숫자를 보완하지 않는지 확인한다.",
+          "kind": "text",
+          "expected_value": null,
+          "value_status": "needs_client_input",
+          "required_in_scenario": true,
+          "basis": "new_synthetic_development_setting",
+          "blocks_criteria_approval": true,
+          "response_recorded": false,
+          "verification_route": "clarification_then_text_comparison"
+        }
+      ],
+      "business_context_not_image_criteria": [
+        "실제 계약 당사자·대금·지급일·계약 납기는 확정하지 않는다.",
+        "미정 계약행정 항목을 모두 포스터 필수조건으로 추출하거나, 그것만으로 기준 승인을 일괄 차단하지 않는다.",
+        "글꼴·사진·표장 사용권은 별도 증빙 대상이며 포스터 픽셀로 확정하지 않는다."
+      ],
+      "notes": "2026-2027 수원 방문의 해 표장은 공연 일시와 다른 정보다. 공연 연도를 표장의 연도 범위로 대체하지 않는다."
+    },
+    {
+      "id": "FES-NEW072",
+      "sequence": 3,
+      "category": "축제",
+      "title": "2025 탄소중립 한마당 축제 오늘무해! FESTIVAL",
+      "role": "extension_case",
+      "scenario_name": "축제 포스터 제작 의뢰 및 필수정보 보완",
+      "reference_poster": "../cases/FES-NEW072/poster.jpg",
+      "reference_poster_sha256": "82a3587b51963d9ad7eec4e5495bda809d82005f4e9048f96cbc65307442aeee",
+      "legacy_document": "../cases/FES-NEW072/기준문서_v0.1.pdf",
+      "legacy_document_sha256": "4393148a6ba3976e00753dfc533392a11e4da6a1272e946f35478f0749ccacb4",
+      "poster_id": "NEW072",
+      "lineage": "poster_derived_synthetic_with_explicit_new_gap",
+      "human_verified": false,
+      "criteria_approval_status": "unapproved",
+      "gold_verdict": null,
+      "requirements": [
+        {
+          "id": "FES-T01",
+          "kind": "text",
+          "statement": "공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.",
+          "expected_value": "2025 탄소중립 한마당 축제",
+          "allowance": "공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "2025 탄소중립 한마당 축제",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T02",
+          "kind": "text",
+          "statement": "주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.",
+          "expected_value": [
+            "오늘무해!",
+            "FESTIVAL"
+          ],
+          "allowance": "줄바꿈·공백과 FESTIVAL 대소문자 차이는 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "오늘무해! FESTIVAL",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T03",
+          "kind": "text",
+          "statement": "행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.",
+          "expected_value": {
+            "date": "2025-11-02",
+            "weekday": "일요일",
+            "start": "12:00",
+            "end": "19:00"
+          },
+          "allowance": "날짜 구분자·앞자리 0·시간 범위 구분자 차이는 허용한다. 시작과 종료 시각을 바꾸지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "2025.11.2.(일) 12:00~19:00",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T04",
+          "kind": "text",
+          "statement": "행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.",
+          "expected_value": "고색역 상부공원 일원",
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "고색역 상부공원 일원",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T05",
+          "kind": "text",
+          "statement": "프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.",
+          "expected_value": "탄소중립 그린도시 기념식",
+          "allowance": "줄바꿈·공백 차이는 허용한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "탄소중립 그린도시 기념식",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T06",
+          "kind": "text",
+          "statement": "‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.",
+          "expected_value": [
+            "탄소중립 어린이 직업체험",
+            "KidZaniaGo!"
+          ],
+          "allowance": "영문 대소문자·단어 사이 공백 차이는 허용한다. 상표 사용 허가는 별도 증빙으로 확인한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "탄소중립 어린이 직업체험 / KidZaniaGo!",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T07",
+          "kind": "text",
+          "statement": "프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.",
+          "expected_value": [
+            "탄소공감",
+            "버스킹",
+            "영화상영회"
+          ],
+          "allowance": "공백과 &/및의 차이는 허용하되 버스킹과 영화상영회를 모두 남긴다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "탄소공감 버스킹&영화상영회",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-T08",
+          "kind": "text",
+          "statement": "주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.",
+          "expected_value": "주차공간 협소로 가급적 대중교통 이용 권장",
+          "allowance": "같은 의미의 문장 표현은 사람 검토를 거쳐 허용한다. 단순 부분 문자열만으로 충족을 확정하지 않는다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "observed_quote": "주차공간이 협소하오니 가급적 대중교통을 이용하여 주시기 바랍니다.",
+          "verification_route": "text_comparison"
+        },
+        {
+          "id": "FES-V01",
+          "kind": "visual",
+          "statement": "야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+          "expected_value": "야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "이미지 근거와 사람 확인. 정확한 사람 수나 개별 인물 신원은 요구하지 않는다."
+        },
+        {
+          "id": "FES-V02",
+          "kind": "visual",
+          "statement": "분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+          "expected_value": "분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "poster_derived_synthetic",
+          "verification_route": "human_review",
+          "review_note": "정성 검토. 색상 코드와 정확한 영역 비율은 미정이다."
+        },
+        {
+          "id": "FES-F01",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 형식은 JPEG로 제안한다.",
+          "expected_value": "JPEG",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "FES-F02",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 치수는 선택한 참고 원본과 동일하게 제안한다.",
+          "expected_value": {
+            "width": 2382,
+            "height": 3368,
+            "unit": "px"
+          },
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "FES-F03",
+          "kind": "file_metadata",
+          "statement": "개발용 디지털 납품 색상 모드는 RGB로 제안한다.",
+          "expected_value": "RGB",
+          "value_status": "provided",
+          "required_in_scenario": true,
+          "basis": "scenario_proposal_from_observed_file_metadata",
+          "verification_route": "file_properties"
+        },
+        {
+          "id": "FES-G01",
+          "field": "우천 시 운영 안내",
+          "statement": "포스터에 우천 시 운영 안내를 포함한다. 진행·취소·연기 등 처리 방침은 클라이언트 확인 후 확정한다.",
+          "question": "비가 올 경우 진행·취소·연기 중 어떤 방침인지, 게시할 문구를 알려주세요.",
+          "reason": "우천 시 취소나 정상 진행을 근거 없이 가정하지 않는지 확인한다.",
+          "kind": "text",
+          "expected_value": null,
+          "value_status": "needs_client_input",
+          "required_in_scenario": true,
+          "basis": "new_synthetic_development_setting",
+          "blocks_criteria_approval": true,
+          "response_recorded": false,
+          "verification_route": "clarification_then_text_comparison"
+        }
+      ],
+      "business_context_not_image_criteria": [
+        "실제 계약 당사자·대금·지급일·계약 납기는 확정하지 않는다.",
+        "미정 계약행정 항목을 모두 포스터 필수조건으로 추출하거나, 그것만으로 기준 승인을 일괄 차단하지 않는다.",
+        "글꼴·사진·표장 사용권은 별도 증빙 대상이며 포스터 픽셀로 확정하지 않는다."
+      ],
+      "notes": "포스터에 관찰된 2025년은 과거 행사 정보이며 현재 일정 안내가 아니다. JPG 원본의 세로 규격을 1:1 또는 4:5로 일괄 바꾸지 않는다."
+    }
+  ]
+}

@@ -74,6 +74,16 @@ def test_framework_worker_keeps_model_settings_for_the_real_adapter(tmp_path, mo
     assert "CSRF_SECRET" not in os.environ and "CC_MCP_TOKEN" not in os.environ
 
 
+def test_a02_key_is_kept_for_framework_worker_and_cleared_for_web(tmp_path, monkeypatch):
+    path=shared_file(tmp_path)
+    with path.open('a',encoding='utf-8') as stream:stream.write('\nA02_QWEN_API_KEY=synthetic-a02-only\n')
+    assert runtime_values('framework-worker',path,{})['A02_QWEN_API_KEY']=='synthetic-a02-only'
+    assert 'A02_QWEN_API_KEY' not in runtime_values('v1',path,{})
+    monkeypatch.setattr(os,'environ',{'A02_QWEN_API_KEY':'previous-a02-only'})
+    activate_runtime('v1',path)
+    assert 'A02_QWEN_API_KEY' not in os.environ
+
+
 def test_activation_clears_other_role_values_and_preserves_system_environment(tmp_path, monkeypatch):
     monkeypatch.setattr(os, "environ", {"PATH": "system-path", "CSRF_SECRET": "browser-only", "TEST_DB_ADMIN_PASSWORD": "ci-only"})
     activate_runtime("worker", shared_file(tmp_path))

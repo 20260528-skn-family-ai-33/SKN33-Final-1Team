@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "CriterionResolution": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "number",
+            "visual",
+            "unsupported"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "equals",
+            "contains",
+            "gte",
+            "lte",
+            "present",
+            "manual"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "expected": {
+          "maxLength": 4000,
+          "title": "Expected",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "operator",
+        "expected",
+        "required"
+      ],
+      "title": "CriterionResolution",
+      "type": "object"
+    },
+    "SupplementInput": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference",
+        "quote"
+      ],
+      "title": "SupplementInput",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "criterion_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Criterion Id",
+      "type": "string"
+    },
+    "action": {
+      "enum": [
+        "amend",
+        "exclude"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/SupplementInput"
+    },
+    "resolution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CriterionResolution"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "criterion_id",
+    "action",
+    "reason",
+    "source"
+  ],
+  "title": "CriteriaEdit",
+  "type": "object"
+}

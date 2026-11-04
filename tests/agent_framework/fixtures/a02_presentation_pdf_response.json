@@ -1,0 +1,310 @@
+{
+  "_meta": {
+    "scope": "Recorded real Qwen response on a fictional PDF, replay test only, not a gold label or approval",
+    "source_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+    "prompt_sha256": "4b8fdbb1bbdf119e304f62a3406b4434cee3077cbf3fb28c4afe2824c0007252"
+  },
+  "response": {
+    "requirements": [
+      {
+        "source": {
+          "start_line": "p1-text:L22",
+          "end_line": "p1-text:L23"
+        },
+        "target": "poster_text",
+        "field": "event_name",
+        "kind": "text",
+        "operator": "contains",
+        "expected": "수원의 영화",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L23",
+            "end_line": "p1-text:L23"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "전시명",
+          "value": "수원의 영화"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p1-text:L22",
+          "end_line": "p1-text:L23"
+        },
+        "target": "poster_text",
+        "field": "event_name",
+        "kind": "text",
+        "operator": "contains",
+        "expected": "수원의 극장",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L23",
+            "end_line": "p1-text:L23"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "전시명",
+          "value": "수원의 극장"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p1-text:L25",
+          "end_line": "p1-text:L26"
+        },
+        "target": "poster_text",
+        "field": "year",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "2026년",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L26",
+            "end_line": "p1-text:L26"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "전시 연도",
+          "value": "2026년"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p1-text:L28",
+          "end_line": "p1-text:L29"
+        },
+        "target": "poster_text",
+        "field": "start_date",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "2026년 5월 14일",
+        "normalized_expected": "2026-05-14",
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L29",
+            "end_line": "p1-text:L29"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "개막일",
+          "value": "2026년 5월 14일"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p1-text:L28",
+          "end_line": "p1-text:L29"
+        },
+        "target": "poster_text",
+        "field": "weekday",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "목요일",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L29",
+            "end_line": "p1-text:L29"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "요일",
+          "value": "목요일"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p1-text:L31",
+          "end_line": "p1-text:L32"
+        },
+        "target": "poster_text",
+        "field": "venue",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "열린문화공간 후소 전시실",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [
+          {
+            "start_line": "p1-text:L32",
+            "end_line": "p1-text:L32"
+          }
+        ],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "전시 장소",
+          "value": "열린문화공간 후소 전시실"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L7",
+          "end_line": "p2-text:L7"
+        },
+        "target": "poster_visual",
+        "field": "imagery",
+        "kind": "visual",
+        "operator": "present",
+        "expected": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "시각 요소",
+          "value": "옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L8",
+          "end_line": "p2-text:L8"
+        },
+        "target": "poster_visual",
+        "field": "visual_color",
+        "kind": "visual",
+        "operator": "present",
+        "expected": "청록색 바탕, 흰색 주요 제목, 주황색 강조선",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "색상 구성",
+          "value": "청록색 바탕, 흰색 주요 제목, 주황색 강조선"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L16",
+          "end_line": "p2-text:L16"
+        },
+        "target": "file_metadata",
+        "field": "pixel_width",
+        "kind": "number",
+        "operator": "equals",
+        "expected": "3000",
+        "normalized_expected": null,
+        "unit": "픽셀",
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "가로",
+          "value": "3000픽셀"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L16",
+          "end_line": "p2-text:L16"
+        },
+        "target": "file_metadata",
+        "field": "pixel_height",
+        "kind": "number",
+        "operator": "equals",
+        "expected": "3000",
+        "normalized_expected": null,
+        "unit": "픽셀",
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "세로",
+          "value": "3000픽셀"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L14",
+          "end_line": "p2-text:L14"
+        },
+        "target": "file_metadata",
+        "field": "file_format",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "JPEG (.jpg 또는 .jpeg)",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "파일 형식",
+          "value": "JPEG (.jpg 또는 .jpeg)"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L18",
+          "end_line": "p2-text:L18"
+        },
+        "target": "file_metadata",
+        "field": "color_mode",
+        "kind": "text",
+        "operator": "equals",
+        "expected": "RGB",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": false,
+        "qualifiers": [],
+        "presentation": {
+          "contract_version": "2.0.0",
+          "label": "색상 모드",
+          "value": "RGB"
+        }
+      },
+      {
+        "source": {
+          "start_line": "p2-text:L20",
+          "end_line": "p2-text:L24"
+        },
+        "target": "poster_text",
+        "field": "viewing_hours",
+        "kind": "text",
+        "operator": "manual",
+        "expected": "",
+        "normalized_expected": null,
+        "unit": null,
+        "required": true,
+        "unresolved": true,
+        "qualifiers": [],
+        "presentation": null
+      }
+    ]
+  }
+}

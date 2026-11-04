@@ -1,0 +1,33 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "criteria_version_id": {
+      "format": "uuid",
+      "title": "Criteria Version Id",
+      "type": "string"
+    },
+    "expected_criteria_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Expected Criteria Sha256",
+      "type": "string"
+    },
+    "asset_version_id": {
+      "format": "uuid",
+      "title": "Asset Version Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "criteria_version_id",
+    "expected_criteria_sha256",
+    "asset_version_id"
+  ],
+  "title": "PosterReviewRequest",
+  "type": "object"
+}

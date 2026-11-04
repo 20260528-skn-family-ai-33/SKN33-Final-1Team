@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator,model_serializer
 
 Identifier = Annotated[str, Field(min_length=1, max_length=160, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")]
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 Verdict = Literal["pass", "fail", "review"]
 ObservationStatus = Literal["observed", "absent", "unreadable", "not_checked", "unknown"]
-ExecutionStatus = Literal["queued", "extracting", "reviewing", "waiting_criteria", "waiting_review",
+ExecutionStatus = Literal["queued", "extracting", "reviewing", "waiting_criteria", "waiting_asset", "waiting_review",
                           "waiting_revision", "completed", "failed", "outcome_unknown"]
 
 
@@ -32,8 +32,13 @@ class DocumentRef(Contract):
     file_id: Identifier
     document_version_id: Identifier
     sha256: Hash
-    media_type: Literal["application/pdf"] = "application/pdf"
+    media_type: Literal["application/pdf","text/plain"] = "application/pdf"
     page_count: int = Field(ge=1)
+
+    @model_validator(mode='after')
+    def logical_text_block(self):
+        if self.media_type=='text/plain' and self.page_count!=1:raise ValueError('free input has one logical source block')
+        return self
 
 
 class AssetRef(Contract):
@@ -53,6 +58,55 @@ class SourceRef(Contract):
     source_hash: Hash
 
 
+class CriteriaValueSource(Contract):
+    record_id: Identifier
+    purpose: Literal['human_review','synthetic_test']
+    reference: str = Field(min_length=1,max_length=500)
+    quote: str = Field(min_length=1,max_length=4000)
+    quote_sha256: Hash
+    submitted_by: Identifier
+    submitted_at: AwareDatetime
+    synthetic: bool
+
+    @model_validator(mode='after')
+    def keep_test_provenance(self):
+        if self.purpose=='synthetic_test' and not self.synthetic:raise ValueError('test provenance cannot lose its synthetic label')
+        return self
+
+
+class RequirementPresentation(Contract):
+    label: str = Field(min_length=1,max_length=80,pattern=r'^[^:\r\n]+$')
+    value: str = Field(min_length=1,max_length=400)
+
+
+class RequirementDetails(Contract):
+    """Source-grounded compilation metadata, not semantic approval."""
+    compiler: Literal['literal-requirements-v1','qwen-semantic-v1'] = 'literal-requirements-v1'
+    target: Literal['poster_text','poster_visual','file_metadata','delivery','unspecified']
+    field: str = Field(pattern=r'^[a-z][a-z0-9_]{0,63}$')
+    expected_source: SourceRef | None = None
+    normalized_expected: str | None = Field(default=None,max_length=100)
+    presentation: RequirementPresentation | None = None
+    qualifiers: tuple[SourceRef,...] = ()
+    origin: Literal['selected_source','model_structured','retained_unresolved_source'] = 'selected_source'
+
+    @model_validator(mode='after')
+    def field_matches_target(self):
+        scopes={'poster_text':{'wording','title_phrase','event_name','year','event_date','start_date','end_date','event_period','weekday','venue','viewing_hours'},
+            'poster_visual':{'visual_requirements','logo','visual_color','composition','imagery'},'file_metadata':{'pixel_width','pixel_height','file_format','color_mode'},
+            'delivery':{'quantity'},'unspecified':{'unspecified'}}
+        known={field:target for target,fields in scopes.items() for field in fields}
+        if self.field in known and known[self.field]!=self.target:raise ValueError('requirement field does not match its target')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_details(self,handler):
+        data=handler(self)
+        if self.normalized_expected is None:data.pop('normalized_expected',None)
+        if self.presentation is None:data.pop('presentation',None)
+        return data
+
+
 class Criterion(Contract):
     criterion_id: Identifier
     text: str = Field(min_length=1)
@@ -66,6 +120,15 @@ class Criterion(Contract):
     required: bool = True
     source: SourceRef
     human_added: bool = False
+    value_source: CriteriaValueSource | None = None
+    details: RequirementDetails | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_value_shape(self,handler):
+        data=handler(self)
+        if self.value_source is None:data.pop('value_source',None)
+        if self.details is None:data.pop('details',None)
+        return data
 
 
 class RoleRequest(Contract):
@@ -78,11 +141,44 @@ class ExtractRequest(RoleRequest):
     document: DocumentRef
 
 
+class PDFTextSource(Contract):
+    page: int = Field(ge=1,le=50,strict=True)
+    block_id: Identifier
+    text: str = Field(min_length=1,max_length=60000)
+    text_sha256: Hash
+
+
+class ExtractionTrace(Contract):
+    mode: Literal['mock','qwen']
+    model: str = Field(min_length=1,max_length=200)
+    parser: str = Field(min_length=1,max_length=100)
+    policy: Literal['a02-text-v1','a02-source-compile-v2','a02-semantic-v3','a02-semantic-v4'] = 'a02-text-v1'
+    input_kind: Literal['pdf','free_text'] = 'pdf'
+    document_sha256: Hash
+    prompt_sha256: Hash
+    response_sha256: Hash
+    sources: tuple[PDFTextSource,...] = Field(min_length=1,max_length=50)
+    unresolved_criterion_ids: tuple[Identifier,...] = ()
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_trace(self,handler):
+        data=handler(self)
+        if self.input_kind=='pdf':data.pop('input_kind',None)
+        return data
+
+
 class CriteriaDraft(Contract):
     context: Context
     criteria: tuple[Criterion, ...] = Field(min_length=1)
     warnings: tuple[str, ...] = ()
     synthetic: bool = False
+    extraction: ExtractionTrace | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_wire_shape(self,handler):
+        data=handler(self)
+        if self.extraction is None:data.pop('extraction',None)
+        return data
 
 
 class Evidence(Contract):
@@ -95,6 +191,13 @@ class Evidence(Contract):
     approval_id: Identifier | None = None
     # Exception eligibility must be checked by the common context preparation service.
     applicable_asset_version_id: Identifier | None = None
+    value_source: CriteriaValueSource | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_value_shape(self,handler):
+        data=handler(self)
+        if self.value_source is None:data.pop('value_source',None)
+        return data
 
     @model_validator(mode="after")
     def exception_has_scope(self):
@@ -217,9 +320,22 @@ class Approval(Contract):
     decision: Literal["approve_criteria", "approve_changes", "approve_final", "approve_exception"]
     reason: str = ""
     criterion_ids: tuple[Identifier, ...] = ()
+    approved_criteria_version_id: Identifier | None = None
+    criteria_sha256: Hash | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_target_shape(self,handler):
+        data=handler(self)
+        if self.approved_criteria_version_id is None:
+            data.pop('approved_criteria_version_id',None);data.pop('criteria_sha256',None)
+        return data
 
     @model_validator(mode="after")
     def scoped_exception(self):
+        if (self.approved_criteria_version_id is None)!=(self.criteria_sha256 is None):
+            raise ValueError('criteria approval target requires both version and hash')
+        if self.approved_criteria_version_id is not None and self.decision!='approve_criteria':
+            raise ValueError('criteria target is only for criteria approval')
         if self.decision in ("approve_changes", "approve_exception") and not self.reason.strip():
             raise ValueError("a reason is required")
         if self.decision == "approve_exception" and not self.criterion_ids:
@@ -272,6 +388,14 @@ class StepTimeline(Contract):
     records: tuple[StepRecord, ...] = ()
 
 
+class ApprovedBaseline(Contract):
+    source_run_id: Identifier
+    criteria_version_id: Identifier
+    criteria_sha256: Hash
+    approval_id: Identifier
+    document_sha256: Hash
+
+
 class RunSnapshot(Contract):
     context: Context
     profile: Literal["development", "test"]
@@ -288,9 +412,18 @@ class RunSnapshot(Contract):
     stages: tuple[str, ...] = ()
     step_records: tuple[StepRecord, ...] = ()
     error: FrameworkError | None = None
+    approved_criteria_version_id: Identifier | None = None
+    baseline: ApprovedBaseline | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_approval_shape(self,handler):
+        data=handler(self)
+        if self.approved_criteria_version_id is None:data.pop('approved_criteria_version_id',None)
+        if self.baseline is None:data.pop('baseline',None)
+        return data
 
 
-CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion, ExtractRequest, CriteriaDraft,
+CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion,CriteriaValueSource, ExtractRequest, CriteriaDraft,PDFTextSource,ExtractionTrace,
                   EvidenceBundle, InspectRequest, InspectionResult,
                   ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, Approval,
-                  FrameworkError, StepRecord, StepTimeline, RunSnapshot)
+                  FrameworkError, StepRecord, StepTimeline, RunSnapshot,ApprovedBaseline)

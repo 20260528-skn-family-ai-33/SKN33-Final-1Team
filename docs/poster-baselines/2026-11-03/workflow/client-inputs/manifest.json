@@ -1,0 +1,55 @@
+{
+  "artifact_version": "0.2",
+  "stage": 2,
+  "created_at": "2026-11-03",
+  "source_scenario_sha256": "ada1f735aa906400c366403cc62eec7ce1b851ab9701b2592592bc26aa89701f",
+  "source_kind": "poster_derived_synthetic_with_explicit_new_gap",
+  "human_verified": false,
+  "criteria_approval_status": "unapproved",
+  "gold_verdict": null,
+  "model_inference_executed": false,
+  "database_changed": false,
+  "model_input": "Each listed PDF only; other files are not extraction inputs.",
+  "authoring_refinements": [
+    "연주회 프로그램의 영문 부제 전체·작품 번호는 현재 필수 표기 범위에서 제외한다고 명시하여 관람연령 외의 추가 필수 미정 항목으로 해석되지 않게 했다.",
+    "축제 교통 안내의 허용 표현은 담당자 확인 후 사용할 수 있는 문장으로 정리하고 내부 문자열 비교 방식 설명은 PDF에서 제외했다."
+  ],
+  "documents": [
+    {
+      "case_id": "EXH-NEW004",
+      "title": "수원의 영화, 수원의 극장",
+      "document_version": "client-draft-v0.2",
+      "pdf": "EXH-NEW004/전시_포스터_제작의뢰서_v0.2.pdf",
+      "pdf_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+      "markdown": "EXH-NEW004/전시_포스터_제작의뢰서_v0.2.md",
+      "markdown_sha256": "304e4cd0afd1463fc887c7e112e66fed9db118e4404564faec93c24f5fd6a6ac",
+      "page_count": 2,
+      "input_role": "a02_source_document",
+      "approval_status": "unapproved"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "title": "수원시립교향악단 제303회 정기연주회",
+      "document_version": "client-draft-v0.2",
+      "pdf": "CON-NEW043/연주회_포스터_제작의뢰서_v0.2.pdf",
+      "pdf_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7",
+      "markdown": "CON-NEW043/연주회_포스터_제작의뢰서_v0.2.md",
+      "markdown_sha256": "c5c9674800b0d303a4d8f1ed177c60868a1b3bd49c22c2163f4da189d3a01b9f",
+      "page_count": 2,
+      "input_role": "a02_source_document",
+      "approval_status": "unapproved"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "title": "2025 탄소중립 한마당 축제 오늘무해! FESTIVAL",
+      "document_version": "client-draft-v0.2",
+      "pdf": "FES-NEW072/축제_포스터_제작의뢰서_v0.2.pdf",
+      "pdf_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614",
+      "markdown": "FES-NEW072/축제_포스터_제작의뢰서_v0.2.md",
+      "markdown_sha256": "de6311430d0d31219568fcb1a784471c3e4bd8ef290268f055b304612b99ba66",
+      "page_count": 2,
+      "input_role": "a02_source_document",
+      "approval_status": "unapproved"
+    }
+  ]
+}

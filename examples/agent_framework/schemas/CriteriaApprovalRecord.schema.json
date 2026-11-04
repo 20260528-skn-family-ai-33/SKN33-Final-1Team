@@ -1,0 +1,958 @@
+{
+  "$defs": {
+    "Approval": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "actor_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "approve_criteria",
+            "approve_changes",
+            "approve_final",
+            "approve_exception"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "approved_criteria_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Criteria Version Id"
+        },
+        "criteria_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Criteria Sha256"
+        }
+      },
+      "required": [
+        "context",
+        "actor_id",
+        "decision"
+      ],
+      "title": "Approval",
+      "type": "object"
+    },
+    "Context": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "actor_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "document_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "criteria_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Criteria Version Id",
+          "type": "string"
+        },
+        "asset_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Version Id"
+        },
+        "parent_run_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Run Id"
+        }
+      },
+      "required": [
+        "project_id",
+        "run_id",
+        "actor_id",
+        "document_version_id",
+        "criteria_version_id"
+      ],
+      "title": "Context",
+      "type": "object"
+    },
+    "CriteriaValueSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "human_review",
+            "synthetic_test"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "quote_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Quote Sha256",
+          "type": "string"
+        },
+        "submitted_by": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "title": "Submitted At",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "record_id",
+        "purpose",
+        "reference",
+        "quote",
+        "quote_sha256",
+        "submitted_by",
+        "submitted_at",
+        "synthetic"
+      ],
+      "title": "CriteriaValueSource",
+      "type": "object"
+    },
+    "CriteriaVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "criteria_version_id": {
+          "format": "uuid",
+          "title": "Criteria Version Id",
+          "type": "string"
+        },
+        "source_run_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Source Run Id",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "parent_version_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Parent Version Id"
+        },
+        "version_no": {
+          "minimum": 1,
+          "title": "Version No",
+          "type": "integer"
+        },
+        "source_draft_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Draft Sha256",
+          "type": "string"
+        },
+        "document_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Sha256",
+          "type": "string"
+        },
+        "criteria": {
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          },
+          "maxItems": 128,
+          "minItems": 1,
+          "title": "Criteria",
+          "type": "array"
+        },
+        "exclusions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RecordedCriteriaEdit"
+          },
+          "maxItems": 128,
+          "title": "Exclusions",
+          "type": "array"
+        },
+        "changes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RecordedCriteriaEdit"
+          },
+          "maxItems": 128,
+          "title": "Changes",
+          "type": "array"
+        },
+        "created_by": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Created By",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "human_review",
+            "synthetic_test"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "criteria_version_id",
+        "source_run_id",
+        "context",
+        "parent_version_id",
+        "version_no",
+        "source_draft_sha256",
+        "document_sha256",
+        "criteria",
+        "created_by",
+        "created_at",
+        "purpose",
+        "synthetic"
+      ],
+      "title": "CriteriaVersion",
+      "type": "object"
+    },
+    "CriteriaVersionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/$defs/CriteriaVersion"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "approval_blockers": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Approval Blockers",
+          "type": "object"
+        }
+      },
+      "required": [
+        "version",
+        "sha256",
+        "approval_blockers"
+      ],
+      "title": "CriteriaVersionRecord",
+      "type": "object"
+    },
+    "Criterion": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "criterion_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "number",
+            "visual",
+            "unsupported"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "expected": {
+          "description": "Text equals/contains comparisons need a non-whitespace expected value. Blank expectations remain unresolved (review) and cannot pass.",
+          "title": "Expected",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "equals",
+            "contains",
+            "gte",
+            "lte",
+            "present",
+            "manual"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "human_added": {
+          "default": false,
+          "title": "Human Added",
+          "type": "boolean"
+        },
+        "value_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CriteriaValueSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "details": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementDetails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "criterion_id",
+        "text",
+        "kind",
+        "expected",
+        "operator",
+        "source"
+      ],
+      "title": "Criterion",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "evidence_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "project_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "current_requirement",
+            "approved_exception",
+            "historical_context"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "criterion_ids": {
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Criterion Ids",
+          "type": "array"
+        },
+        "source_record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Source Record Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "approval_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Id"
+        },
+        "applicable_asset_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applicable Asset Version Id"
+        },
+        "value_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CriteriaValueSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "evidence_id",
+        "project_id",
+        "kind",
+        "criterion_ids",
+        "source_record_id",
+        "source"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceBundle": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "context_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "empty",
+            "stale",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "postgres_revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Postgres Revision",
+          "type": "integer"
+        },
+        "graph_revision": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Graph Revision"
+        },
+        "synthetic": {
+          "default": false,
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "context",
+        "context_id",
+        "status"
+      ],
+      "title": "EvidenceBundle",
+      "type": "object"
+    },
+    "RecordedCriteriaEdit": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "criterion_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "amend",
+            "exclude"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/CriteriaValueSource"
+        }
+      },
+      "required": [
+        "criterion_id",
+        "action",
+        "reason",
+        "source"
+      ],
+      "title": "RecordedCriteriaEdit",
+      "type": "object"
+    },
+    "RequirementDetails": {
+      "additionalProperties": false,
+      "description": "Source-grounded compilation metadata, not semantic approval.",
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "compiler": {
+          "default": "literal-requirements-v1",
+          "enum": [
+            "literal-requirements-v1",
+            "qwen-semantic-v1"
+          ],
+          "title": "Compiler",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "poster_text",
+            "poster_visual",
+            "file_metadata",
+            "delivery",
+            "unspecified"
+          ],
+          "title": "Target",
+          "type": "string"
+        },
+        "field": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Field",
+          "type": "string"
+        },
+        "expected_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "normalized_expected": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalized Expected"
+        },
+        "presentation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "origin": {
+          "default": "selected_source",
+          "enum": [
+            "selected_source",
+            "model_structured",
+            "retained_unresolved_source"
+          ],
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "field"
+      ],
+      "title": "RequirementDetails",
+      "type": "object"
+    },
+    "RequirementPresentation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "^[^:\\r\\n]+$",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "RequirementPresentation",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "document_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "block_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Block Id",
+          "type": "string"
+        },
+        "quote": {
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "source_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_version_id",
+        "page",
+        "block_id",
+        "quote",
+        "source_hash"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "approval_id": {
+      "format": "uuid",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "approval": {
+      "$ref": "#/$defs/Approval"
+    },
+    "approved_at": {
+      "format": "date-time",
+      "title": "Approved At",
+      "type": "string"
+    },
+    "criteria": {
+      "$ref": "#/$defs/CriteriaVersionRecord"
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceBundle"
+    },
+    "purpose": {
+      "enum": [
+        "human_review",
+        "synthetic_test"
+      ],
+      "title": "Purpose",
+      "type": "string"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "approval_id",
+    "approval",
+    "approved_at",
+    "criteria",
+    "evidence",
+    "purpose",
+    "synthetic"
+  ],
+  "title": "CriteriaApprovalRecord",
+  "type": "object"
+}

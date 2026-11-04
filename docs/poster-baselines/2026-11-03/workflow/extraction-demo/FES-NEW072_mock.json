@@ -1,0 +1,357 @@
+{
+  "contract_version": "2.0.0",
+  "context": {
+    "contract_version": "2.0.0",
+    "project_id": "bbda360f-4414-4d65-beb0-9292c2172de1",
+    "run_id": "29144f93-6496-4079-96d4-15064673e86a",
+    "actor_id": "bf0f7e5e-88b4-4195-be60-3a5326ccd9b5",
+    "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+    "criteria_version_id": "486cc176-06ec-447f-8ce6-ac6a0467b45f",
+    "asset_version_id": null,
+    "parent_run_id": null
+  },
+  "criteria": [
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c001",
+      "text": "공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.",
+        "source_hash": "7c04c208e659e81df394dc4879da87a9c3c4a0b896e672d5166045e4e62f8d08"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c002",
+      "text": "허용 범위: 공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "허용 범위: 공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.",
+        "source_hash": "bf48bb801c8ef23777d2f49b677c0973a1096a1629b36aaabaf0b6b1cc57459b"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c003",
+      "text": "주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.",
+        "source_hash": "8d10eba9e41ccabfa18fc4566cc042c88ffd9ad34563d549970fe54408ad954c"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c004",
+      "text": "행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.",
+        "source_hash": "16b59d1134760f296e08b8332a1b42c6121157977e1e065c1248b6ceadb2f4e9"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c005",
+      "text": "행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.",
+        "source_hash": "e0fc32bb64140f6b8a4194b5726abfbf9f1408807d15f1002823b8d45e763266"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c006",
+      "text": "프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.",
+        "source_hash": "13d8aa1f13fb4a4a4c71b3e739d5e344a912cf5f56c1a511240f7c35613fcb7f"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c007",
+      "text": "‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.",
+        "source_hash": "c10edfb23ba579cde2cb6c0bc129a92a1a7b39d5c6d9427f08ad3b8d81cf9e26"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c008",
+      "text": "프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.",
+        "source_hash": "21c3ed44f3798c38e3914558fa35601374ec3e0208949bf2a1e9ba61bcf52a46"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c009",
+      "text": "주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.",
+        "source_hash": "a727ceed96d450da205c2b400ec853b37a3eab5c5683a524d83773bed6e57eb2"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c010",
+      "text": "1. 야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "1. 야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.",
+        "source_hash": "3b7a06f7f1c60a4ce80a366a43bbb4ea9b42b447ed8fabe673cb7631f610141a"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c011",
+      "text": "2. 분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "2. 분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.",
+        "source_hash": "dbd22ebde4f9e491a34ec7f67d1223afc5b4698f0e695531d9d6cbf05ca91e3a"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c012",
+      "text": "JPEG (.jpg 또는 .jpeg)",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "JPEG (.jpg 또는 .jpeg)",
+        "source_hash": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c013",
+      "text": "가로 2382픽셀 × 세로 3368픽셀",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "가로 2382픽셀 × 세로 3368픽셀",
+        "source_hash": "d2973f5df728071ff435f7e529f55b690c11942b3c6d03d50fc763799a89f3ba"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c014",
+      "text": "RGB",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "RGB",
+        "source_hash": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c015",
+      "text": "우천 시 운영 안내 - 확인 중",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "우천 시 운영 안내 - 확인 중",
+        "source_hash": "6e47792d24d121358e0fecf1d6069971868f369681e133fb07c748144161701d"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c016",
+      "text": "우천 시 운영 안내는 확인 중입니다. 비가 오는 경우의 운영 방침을 포스터에 안내해야 합니다. 방침과 표기 문구는 담당",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "eabd9bfe-bcae-4b8d-839c-31e5a2955c58",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "우천 시 운영 안내는 확인 중입니다. 비가 오는 경우의 운영 방침을 포스터에 안내해야 합니다. 방침과 표기 문구는 담당",
+        "source_hash": "d1e799bb267f28e611feef9a6e7ef9247fcf336d502251b6bd8d94e87c622a47"
+      },
+      "human_added": false
+    }
+  ],
+  "warnings": [
+    "unapproved_draft",
+    "exact_source_check_is_not_semantic_accuracy",
+    "text_layer_only_visual_layout_not_verified",
+    "synthetic_mock_manual_candidates_not_qwen_results",
+    "missing_values_require_client_clarification"
+  ],
+  "synthetic": true,
+  "extraction": {
+    "contract_version": "2.0.0",
+    "mode": "mock",
+    "model": "mock-line-fixture-v1",
+    "parser": "pymupdf-1.28.2",
+    "policy": "a02-text-v1",
+    "document_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614",
+    "prompt_sha256": "2aa3e669dc40ea82efb21ec54ad8df0a2df44097749b47fccd29b16538d58a79",
+    "response_sha256": "743b92aa6aecf686220c744b04c045aa17dc4d5a3882a7d8204ad868e9b05ba6",
+    "sources": [
+      {
+        "contract_version": "2.0.0",
+        "page": 1,
+        "block_id": "p1-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  1 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n축제 포스터 제작 의뢰서\n2025 탄소중립 한마당 축제 오늘무해! FESTIVAL\n기존 포스터를 참고하여 작성한 개발용 가상 의뢰서입니다. 실제 기관이나 인물의 발주·승인 사실을 나타내지 않습니다.\n의뢰 개요\n내용\n문서 식별\nFES-NEW072 / client-draft-v0.2\n과업 분야\n시각디자인 / 디지털 홍보 포스터\n결과물\n아래 요구사항을 반영한 디지털 포스터 파일 1점\n1. 제작 목적\n탄소중립 행사와 체험·공연 프로그램을 알리는 디지털 홍보 포스터를 의뢰합니다. 주요 제목, 행사 시간·장소, 프로그램과\n교통 안내가 구분되도록 구성해 주세요.\n2. 포스터에 표기할 내용\n항목\n표기 내용과 허용 범위\n1\n공식 행사명에 ‘2025 탄소중립 한마당 축제’를 표기한다.\n허용 범위: 공백·줄바꿈 차이는 허용한다. 연도는 2025로 유지한다.\n2\n주요 제목 ‘오늘무해!’와 ‘FESTIVAL’을 모두 표기한다.\n허용 범위: 줄바꿈·공백과 FESTIVAL 대소문자 차이는 허용한다.\n3\n행사 일시는 2025년 11월 2일 일요일 12시부터 19시까지로 표기한다.\n허용 범위: 날짜 구분자·앞자리 0·시간 범위 구분자 차이는 허용한다. 시작과 종료 시각을 바꾸지 않는다.\n4\n행사 장소는 ‘고색역 상부공원 일원’으로 표기한다.\n허용 범위: 줄바꿈·공백 차이는 허용한다.\n5\n프로그램명 ‘탄소중립 그린도시 기념식’을 포함한다.\n허용 범위: 줄바꿈·공백 차이는 허용한다.\n6\n‘탄소중립 어린이 직업체험’과 ‘KidZaniaGo!’ 표기를 포함한다.\n허용 범위: 영문 대소문자·단어 사이 공백 차이는 허용한다. 상표 사용 허가는 별도 증빙으로 확인한다.\n7\n프로그램명 ‘탄소공감 버스킹&영화상영회’를 포함한다.\n허용 범위: 공백과 &/및의 차이는 허용하되 버스킹과 영화상영회를 모두 남긴다.\n8\n주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.\n허용 범위: 안내 취지를 유지한 문장 표현은 담당자 확인 후 사용할 수 있다.\n",
+        "text_sha256": "6e53789e599cf6de7f695224ff745583381e24c7ffd6aeca3bf7343bf55c31a9"
+      },
+      {
+        "contract_version": "2.0.0",
+        "page": 2,
+        "block_id": "p2-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  2 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n시각 구성·납품·확인 사항\nFES-NEW072 / 제작 의뢰 세부내역\n3. 시각 구성\n1. 야외 무대·사람·나무가 있는 축제 일러스트를 하단 주요 시각 요소로 배치한다.\n2. 분홍색 바탕의 제목 영역, 밝은 프로그램 안내 영역, 녹색 계열의 하단 야외 장면을 구분한다.\n색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.\n4. 디지털 납품 규격\n항목\n요청 규격\n파일 형식\nJPEG (.jpg 또는 .jpeg)\n픽셀 크기\n가로 2382픽셀 × 세로 3368픽셀\n색상 모드\nRGB\n5. 담당자 확인 후 반영할 필수 사항\n우천 시 운영 안내 - 확인 중\n우천 시 운영 안내는 확인 중입니다. 비가 오는 경우의 운영 방침을 포스터에 안내해야 합니다. 방침과 표기 문구는 담당\n자 회신 후 반영해 주세요.\n위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.\n6. 협의 및 확인 범위\n행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.\n사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.\n변경 내용은 새 문서 버전으로 기록하고 담당자와 표기 기준을 확인합니다. 이전 초안의 확인 기록을 변경된 기준의 승인으\n로 사용하지 않습니다.\n",
+        "text_sha256": "6647a12dd979fae7e6fee9f6190462caa2066709df818cbdd9e52f1047f62813"
+      }
+    ],
+    "unresolved_criterion_ids": [
+      "c015",
+      "c016"
+    ]
+  }
+}

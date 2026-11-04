@@ -27,6 +27,34 @@ def _criteria(context, criteria):
             raise ValueError("CRITERION_DOCUMENT_MISMATCH")
         if sha256(source.quote.encode("utf-8")).hexdigest() != source.source_hash:
             raise ValueError("SOURCE_HASH_MISMATCH")
+        if criterion.details is not None:
+            details=criterion.details
+            for reference in details.qualifiers+((details.expected_source,) if details.expected_source is not None else ()):
+                if (reference.document_version_id!=context.document_version_id or reference.page!=source.page
+                        or reference.block_id!=source.block_id or reference.quote not in source.quote
+                        or not reference.quote.strip() or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+                    raise ValueError('DETAILS_SOURCE_MISMATCH')
+            if (details.expected_source is not None and details.expected_source.quote!=criterion.expected
+                    and details.normalized_expected!=criterion.expected):
+                raise ValueError('DETAILS_EXPECTED_MISMATCH')
+            if criterion.expected and not criterion.human_added and details.expected_source is None:
+                raise ValueError('DETAILS_EXPECTED_SOURCE_MISSING')
+            if details.normalized_expected is not None:
+                from .a02_semantic import verify_normalized_date
+                from .ports import AdapterFailure
+                try:verify_normalized_date(details.expected_source.quote if details.expected_source is not None else criterion.expected,
+                    details.normalized_expected,details.field,source.quote)
+                except AdapterFailure:raise ValueError('DETAILS_NORMALIZED_VALUE_INVALID') from None
+        value=criterion.value_source
+        if value is not None:
+            if not criterion.human_added or not value.reference.strip() or not value.quote.strip():
+                raise ValueError('VALUE_SOURCE_INVALID')
+            if sha256(value.quote.encode()).hexdigest()!=value.quote_sha256:
+                raise ValueError('VALUE_SOURCE_HASH_MISMATCH')
+            if criterion.expected and criterion.expected not in value.quote:
+                raise ValueError('VALUE_SOURCE_EXPECTED_UNGROUNDED')
+            if criterion.unit is not None and (not criterion.unit.strip() or criterion.unit not in value.quote):
+                raise ValueError('VALUE_SOURCE_UNIT_UNGROUNDED')
 
 
 def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft) -> None:
@@ -36,6 +64,9 @@ def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft
     _criteria(context, draft.criteria)
     if any(c.source.page > document.page_count for c in draft.criteria):
         raise ValueError("SOURCE_PAGE_OUT_OF_RANGE")
+    if draft.extraction is not None:
+        from .a02 import validate_trace
+        validate_trace(document,draft)
 
 
 def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None:
@@ -58,6 +89,11 @@ def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None
             raise ValueError("EVIDENCE_PROJECT_MISMATCH")
         if sha256(evidence.source.quote.encode("utf-8")).hexdigest() != evidence.source.source_hash:
             raise ValueError("EVIDENCE_HASH_MISMATCH")
+        if evidence.value_source is not None:
+            value=evidence.value_source
+            if (not value.quote.strip() or not value.reference.strip()
+                    or sha256(value.quote.encode()).hexdigest()!=value.quote_sha256):
+                raise ValueError('EVIDENCE_VALUE_SOURCE_INVALID')
         if (evidence.kind == "current_requirement"
                 and evidence.source.document_version_id != context.document_version_id):
             raise ValueError("EVIDENCE_SOURCE_MISMATCH")
@@ -78,6 +114,8 @@ def validate_evidence(context, criteria_input, bundle: EvidenceBundle) -> None:
         if evidence.kind == "current_requirement":
             if any(evidence.source != criteria[cid].source for cid in evidence.criterion_ids):
                 raise ValueError("EVIDENCE_SOURCE_MISMATCH")
+            if any(evidence.value_source!=criteria[cid].value_source for cid in evidence.criterion_ids):
+                raise ValueError('EVIDENCE_VALUE_SOURCE_MISMATCH')
 
 
 def validate_inspection(request: InspectRequest, result: InspectionResult) -> None:
@@ -220,6 +258,12 @@ class ReferenceValidator:
         items = []
         for criterion in request.criteria:
             issues = []
+            if criterion.details is not None:
+                if criterion.details.target!='poster_text':issues.append('typed_attribute_review_required')
+                if criterion.details.qualifiers:issues.append('qualifier_interpretation_required')
+                if criterion.details.normalized_expected is not None:issues.append('normalized_value_review_required')
+                if criterion.details.field in {'start_date','end_date','event_date','event_period'}:
+                    issues.append('date_comparison_review_required')
             observation = observations.get(criterion.criterion_id)
             verdict = "review"
             comparison_expected = comparison_observed = comparison_unit = None

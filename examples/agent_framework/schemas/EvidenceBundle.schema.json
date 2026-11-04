@@ -85,6 +85,77 @@
       "title": "Context",
       "type": "object"
     },
+    "CriteriaValueSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "human_review",
+            "synthetic_test"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "quote_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Quote Sha256",
+          "type": "string"
+        },
+        "submitted_by": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "title": "Submitted At",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "record_id",
+        "purpose",
+        "reference",
+        "quote",
+        "quote_sha256",
+        "submitted_by",
+        "submitted_at",
+        "synthetic"
+      ],
+      "title": "CriteriaValueSource",
+      "type": "object"
+    },
     "Evidence": {
       "additionalProperties": false,
       "properties": {
@@ -167,6 +238,17 @@
           ],
           "default": null,
           "title": "Applicable Asset Version Id"
+        },
+        "value_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CriteriaValueSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [

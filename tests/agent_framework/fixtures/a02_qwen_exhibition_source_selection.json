@@ -1,0 +1,188 @@
+{
+  "fixture_kind": "recorded_protocol_response_on_fictional_pdf_not_gold",
+  "model": "Qwen/Qwen3.5-4B",
+  "document_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+  "selection": {
+    "candidates": [
+      {
+        "start_line": "p1-text:L14",
+        "end_line": "p1-text:L14",
+        "kind": "number",
+        "operator": "equals",
+        "expected": {
+          "start": "p1-text:L14:T7",
+          "end": "p1-text:L14:T7"
+        },
+        "required": true,
+        "unit": {
+          "start": "p1-text:L14:T8",
+          "end": "p1-text:L14:T8"
+        },
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L16",
+        "end_line": "p1-text:L17",
+        "kind": "visual",
+        "operator": "present",
+        "expected": {
+          "start": "p1-text:L16:T1",
+          "end": "p1-text:L16:T18"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L16",
+        "end_line": "p1-text:L17",
+        "kind": "visual",
+        "operator": "present",
+        "expected": {
+          "start": "p1-text:L16:T14",
+          "end": "p1-text:L16:T18"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L22",
+        "end_line": "p1-text:L23",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p1-text:L22:T1",
+          "end": "p1-text:L22:T14"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L25",
+        "end_line": "p1-text:L26",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p1-text:L25:T1",
+          "end": "p1-text:L25:T5"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L28",
+        "end_line": "p1-text:L29",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p1-text:L28:T1",
+          "end": "p1-text:L28:T11"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p1-text:L31",
+        "end_line": "p1-text:L32",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p1-text:L31:T1",
+          "end": "p1-text:L31:T9"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L7",
+        "end_line": "p2-text:L7",
+        "kind": "visual",
+        "operator": "present",
+        "expected": {
+          "start": "p2-text:L7:T3",
+          "end": "p2-text:L7:T15"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L8",
+        "end_line": "p2-text:L8",
+        "kind": "visual",
+        "operator": "present",
+        "expected": {
+          "start": "p2-text:L8:T3",
+          "end": "p2-text:L8:T12"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L14",
+        "end_line": "p2-text:L14",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p2-text:L14:T1",
+          "end": "p2-text:L14:T7"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L16",
+        "end_line": "p2-text:L16",
+        "kind": "number",
+        "operator": "equals",
+        "expected": {
+          "start": "p2-text:L16:T2",
+          "end": "p2-text:L16:T2"
+        },
+        "required": true,
+        "unit": {
+          "start": "p2-text:L16:T3",
+          "end": "p2-text:L16:T3"
+        },
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L16",
+        "end_line": "p2-text:L16",
+        "kind": "number",
+        "operator": "equals",
+        "expected": {
+          "start": "p2-text:L16:T6",
+          "end": "p2-text:L16:T6"
+        },
+        "required": true,
+        "unit": {
+          "start": "p2-text:L16:T7",
+          "end": "p2-text:L16:T7"
+        },
+        "unresolved": false
+      },
+      {
+        "start_line": "p2-text:L18",
+        "end_line": "p2-text:L18",
+        "kind": "text",
+        "operator": "contains",
+        "expected": {
+          "start": "p2-text:L18:T1",
+          "end": "p2-text:L18:T1"
+        },
+        "required": true,
+        "unit": null,
+        "unresolved": false
+      }
+    ]
+  },
+  "note": "Captured source-selection protocol on the development exhibition PDF. Not a human-approved checklist or semantic accuracy label. No session or actor metadata."
+}

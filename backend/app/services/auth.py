@@ -56,6 +56,23 @@ class AuthService:
                 return principal(row)
         except PersistenceError:raise AuthError('AUTH_UNAVAILABLE',503) from None
 
+    def signup(self,registration,*,ip,request_id):
+        key=self.limits.before(ip,'signup',registration.email)
+        success=False
+        try:
+            encoded=self.passwords.hash(registration.password)
+            with unit_of_work(self.engine) as connection:
+                row=repository.new_email_user(connection,registration.email,registration.display_name,encoded)
+                result=public_user(row)
+            success=True
+            logger.info('auth_signup_success',extra={'event':'auth_signup_success','request_id':request_id,'user_id':result['id']})
+            return result
+        except PersistenceError as error:
+            if error.outcome=='rolled_back' and error.sqlstate=='23505':
+                raise AuthError('EMAIL_ALREADY_EXISTS',409) from None
+            raise AuthError('AUTH_UNAVAILABLE',503) from None
+        finally:self.limits.finished(key,success)
+
     def login(self,credentials,old_raw,*,ip,developer_allowed,request_id):
         kind='email' if credentials.email is not None else 'developer'
         identifier=credentials.email if kind=='email' else credentials.username

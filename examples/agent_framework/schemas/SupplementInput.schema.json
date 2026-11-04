@@ -1,0 +1,29 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "reference": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Reference",
+      "type": "string"
+    },
+    "quote": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Quote",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reference",
+    "quote"
+  ],
+  "title": "SupplementInput",
+  "type": "object"
+}

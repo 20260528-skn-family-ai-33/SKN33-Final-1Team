@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "PDFTextSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "page": {
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "block_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Block Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 60000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "text_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page",
+        "block_id",
+        "text",
+        "text_sha256"
+      ],
+      "title": "PDFTextSource",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "mock",
+        "qwen"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "model": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
+    "parser": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Parser",
+      "type": "string"
+    },
+    "policy": {
+      "default": "a02-text-v1",
+      "enum": [
+        "a02-text-v1",
+        "a02-source-compile-v2",
+        "a02-semantic-v3",
+        "a02-semantic-v4"
+      ],
+      "title": "Policy",
+      "type": "string"
+    },
+    "input_kind": {
+      "default": "pdf",
+      "enum": [
+        "pdf",
+        "free_text"
+      ],
+      "title": "Input Kind",
+      "type": "string"
+    },
+    "document_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Document Sha256",
+      "type": "string"
+    },
+    "prompt_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Prompt Sha256",
+      "type": "string"
+    },
+    "response_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Response Sha256",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/PDFTextSource"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "unresolved_criterion_ids": {
+      "default": [],
+      "items": {
+        "maxLength": 160,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+        "type": "string"
+      },
+      "title": "Unresolved Criterion Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "mode",
+    "model",
+    "parser",
+    "document_sha256",
+    "prompt_sha256",
+    "response_sha256",
+    "sources"
+  ],
+  "title": "ExtractionTrace",
+  "type": "object"
+}

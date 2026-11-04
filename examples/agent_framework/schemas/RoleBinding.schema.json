@@ -12,7 +12,9 @@
         "synthetic",
         "reference",
         "factory",
-        "unconfigured"
+        "unconfigured",
+        "registered_pdf",
+        "registered_poster"
       ],
       "title": "Kind",
       "type": "string"

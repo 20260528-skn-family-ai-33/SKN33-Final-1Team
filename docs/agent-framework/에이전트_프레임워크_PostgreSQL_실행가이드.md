@@ -2,6 +2,8 @@
 
 Creative Checker · 2026-11-02 · 기존 M008 DB + 추가 스키마 AF001
 
+2026-11-03 추가: PDF 등록에는 명시적 후속 **AF002**와 PDF 전용 저장 경로를 사용한다. [PDF 등록·버전 저장 가이드](PDF_등록_버전저장_가이드.html)를 따른다. 아래 AF001 실행·worker 명령도 유지되며 PDF 등록만으로 추출 작업이 실행되지는 않는다.
+
 새 실행 경로는 **PostgreSQL API와 독립 worker 두 프로세스**다. API는 기존 사용자 세션·CSRF·프로젝트 권한을 검사하고 작업을 접수하며, 모델 역할은 worker에서 실행한다. 기존 `run.sh`, OCR worker, front-v2를 시작하지 않고 공통 프레임워크만 실행할 수 있다.
 
 개발·테스트 프로필용 구현이며 현재 `production` 프로필은 허용하지 않는다. 메모리 기반 `demo`·`serve`·`check-flow`도 독립 개발 도구로 유지한다. 실제 PostgreSQL 검증과 실모델 정확도·운영 배포는 구분한다.

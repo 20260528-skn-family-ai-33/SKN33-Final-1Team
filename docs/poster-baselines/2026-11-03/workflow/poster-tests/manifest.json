@@ -1,0 +1,198 @@
+{
+  "artifact_role": "synthetic_poster_wiring_fixtures",
+  "real_model_calls": 0,
+  "records": [
+    {
+      "case_id": "EXH-NEW004",
+      "variant": "normal",
+      "svg": "EXH-NEW004.normal.svg",
+      "png": "EXH-NEW004.normal.png",
+      "svg_sha256": "d951ba7550a54aa67363d91d88bdbad9558a4027c8c9fd66f3d5e801edc9b221",
+      "png_sha256": "56c280dea0d04cbe1336259ba8197af972c100464b10c2a34e4b6c3a81364d1f",
+      "display_sha256": "f87e71ca7e68c3d9151be6a9d6688ec3631f1e32b04a0d987b999b4b095b9c60",
+      "fields": {
+        "title": "EXH-NEW004 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "EXH-NEW004",
+      "variant": "wrong_date",
+      "svg": "EXH-NEW004.wrong_date.svg",
+      "png": "EXH-NEW004.wrong_date.png",
+      "svg_sha256": "c3af48d0b384334b9e6b83495158790f4d716eaa359cf464df09ba47a15b6af1",
+      "png_sha256": "fbfe8ab877b805b1bd15d179d9efddaf38b412b020baeb2893f91f2098835f46",
+      "display_sha256": "a92819a8616b6af1abe7a10179c10640469666c1bbbdaed3030928b252433960",
+      "fields": {
+        "title": "EXH-NEW004 TEST POSTER",
+        "date": "2099-01-16",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "EXH-NEW004",
+      "variant": "missing_notice",
+      "svg": "EXH-NEW004.missing_notice.svg",
+      "png": "EXH-NEW004.missing_notice.png",
+      "svg_sha256": "e2586816ffd3d5b1dd04313b27c0432a42e25da6be6926cae28c5eaa7c3f2337",
+      "png_sha256": "13e82378872eb96028ca19d542c55aacffdc0af89feac392daf588ad8e0942b7",
+      "display_sha256": "825a89c4ec978e80578cb6a9ed80d509270dd46abb052f9e93683f88bb73c07f",
+      "fields": {
+        "title": "EXH-NEW004 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": ""
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "EXH-NEW004",
+      "variant": "revised",
+      "svg": "EXH-NEW004.revised.svg",
+      "png": "EXH-NEW004.revised.png",
+      "svg_sha256": "9a83202bec65b06643d638ec3efcbe6a7d6e015a44d3ed281e9695a6a2ab0a5e",
+      "png_sha256": "b17bd3e2e90cc3f08fb553de79ffc3e94d396aa9add52e0e188a1729f7b464dc",
+      "display_sha256": "c6bed0a2b93f3a45bc44770e6b7424e45ce9ac730b1c2902c1ad9cb296138dfe",
+      "fields": {
+        "title": "EXH-NEW004 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "variant": "normal",
+      "svg": "CON-NEW043.normal.svg",
+      "png": "CON-NEW043.normal.png",
+      "svg_sha256": "b30d2a2ca353cbbffbd7488a6416a421a54d22a37b472d42702efd07c3fa47f0",
+      "png_sha256": "419e4a1578f38f6ea1124680d9c2832247bacaf5b0a5a143261ab4402ee52fd6",
+      "display_sha256": "0654a265c54cc610fcdfd6cd80885ff3440a23f656dd44112e6f546d915a68b5",
+      "fields": {
+        "title": "CON-NEW043 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "variant": "wrong_date",
+      "svg": "CON-NEW043.wrong_date.svg",
+      "png": "CON-NEW043.wrong_date.png",
+      "svg_sha256": "9353d03c252d13088f0266b14e53487a03fbb93a9a02de07471de0c7bc217cc4",
+      "png_sha256": "ec601317acfc062ca43ec9c666fc021d82e20c47965d68d8418adca4f5ad6fdf",
+      "display_sha256": "e3f7139d0097a67edfa1db0fded8605cd8dfbd02e90a5be08d708cf551145053",
+      "fields": {
+        "title": "CON-NEW043 TEST POSTER",
+        "date": "2099-01-16",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "variant": "missing_notice",
+      "svg": "CON-NEW043.missing_notice.svg",
+      "png": "CON-NEW043.missing_notice.png",
+      "svg_sha256": "a22b02f0389e97e5d3f119c5ca9764037b7884bffb30969e2b753ea2946378b8",
+      "png_sha256": "56d774bc04f1ec3e7e608735f7f409520a00fd5d39ac2be8b60ddcdb88a4887f",
+      "display_sha256": "e6b74df140cee346bf6330e48c73d4afecb2bb4b1654092fdc6e746b9e136a55",
+      "fields": {
+        "title": "CON-NEW043 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": ""
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "CON-NEW043",
+      "variant": "revised",
+      "svg": "CON-NEW043.revised.svg",
+      "png": "CON-NEW043.revised.png",
+      "svg_sha256": "0ea40da06eb4e7dec16e03004d5f7f22a19aabe39906fc34cf54716917f94307",
+      "png_sha256": "b8a5db9abd313533039ad4ca554cf367f958e44ec1d39665d5a29c0f1493b515",
+      "display_sha256": "259fce35e2233a7ab5c49a7ed7f1c1e7dc507716f5ce9160e88a6bdb0aeca728",
+      "fields": {
+        "title": "CON-NEW043 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "variant": "normal",
+      "svg": "FES-NEW072.normal.svg",
+      "png": "FES-NEW072.normal.png",
+      "svg_sha256": "146aae6bcf2d903a08a33c4078348ad1cb614d3da636739b7cc18c7e9c9e8c84",
+      "png_sha256": "85a2acfb4a8fdf8c7a459526bfe2ae09a0326ed65cc69504993caad05914ba07",
+      "display_sha256": "ff9cf58b8eddeaea2e664bef52d32832dddbe36c090601eb31c0728ffa39e746",
+      "fields": {
+        "title": "FES-NEW072 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "variant": "wrong_date",
+      "svg": "FES-NEW072.wrong_date.svg",
+      "png": "FES-NEW072.wrong_date.png",
+      "svg_sha256": "8bdc6772dfa06635ca8bfcfbbfead37c53e8d9542d546dfbfc69da02623510aa",
+      "png_sha256": "c93db5a5b053baa6e370a3406beded91e0ac8d66df20ebc1b8d55c53ba48c22b",
+      "display_sha256": "89ca6a53d03320be9e91ee6f18165c02f10f58f06a2c0c663efa30c9907a305c",
+      "fields": {
+        "title": "FES-NEW072 TEST POSTER",
+        "date": "2099-01-16",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "variant": "missing_notice",
+      "svg": "FES-NEW072.missing_notice.svg",
+      "png": "FES-NEW072.missing_notice.png",
+      "svg_sha256": "82d1f93e08a3121737d3351007190e96adadb9388153d44e2a724806aa599b04",
+      "png_sha256": "228a62179eedd0b115830c87ae050cf902f744a2111574be7bb7f74629ec87bc",
+      "display_sha256": "814da70379e983c50b1e606e4437c1b6886f2bfb8078a573ca0bfbc7daaee674",
+      "fields": {
+        "title": "FES-NEW072 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": ""
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    },
+    {
+      "case_id": "FES-NEW072",
+      "variant": "revised",
+      "svg": "FES-NEW072.revised.svg",
+      "png": "FES-NEW072.revised.png",
+      "svg_sha256": "e39e7fcf4b2389dd1da723f8431e41fec17741d25121581fa77dd4ab241a9861",
+      "png_sha256": "e1a9325ec58e4a6d2a91585adfabca250f5ec0381b345f17b6952abb95918e09",
+      "display_sha256": "f4d1663f0e6008873471bfa3d1623db98257fdb4e87eee048ee74d12fed02463",
+      "fields": {
+        "title": "FES-NEW072 TEST POSTER",
+        "date": "2099-01-15",
+        "notice": "ENTRY NOTICE REQUIRED"
+      },
+      "synthetic": true,
+      "observation_source": "scripted sidecar, not OCR or model output"
+    }
+  ]
+}

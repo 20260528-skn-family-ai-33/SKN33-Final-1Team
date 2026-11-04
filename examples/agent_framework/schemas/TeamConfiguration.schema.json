@@ -1,5 +1,89 @@
 {
   "$defs": {
+    "PDFExtractionConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "mock",
+            "qwen"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "structuring": {
+          "default": "semantic",
+          "enum": [
+            "semantic",
+            "literal_legacy"
+          ],
+          "title": "Structuring",
+          "type": "string"
+        },
+        "presentation": {
+          "default": false,
+          "title": "Presentation",
+          "type": "boolean"
+        },
+        "endpoint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endpoint"
+        },
+        "model": {
+          "default": "Qwen/Qwen3.5-4B",
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "parser_version": {
+          "default": "1.28.2",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "max_text_chars": {
+          "default": 32000,
+          "maximum": 60000,
+          "minimum": 100,
+          "title": "Max Text Chars",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "default": 120,
+          "maximum": 600,
+          "minimum": 1,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "max_output_tokens": {
+          "default": 8192,
+          "maximum": 16384,
+          "minimum": 128,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "title": "PDFExtractionConfiguration",
+      "type": "object"
+    },
     "RoleBinding": {
       "additionalProperties": false,
       "properties": {
@@ -14,7 +98,9 @@
             "synthetic",
             "reference",
             "factory",
-            "unconfigured"
+            "unconfigured",
+            "registered_pdf",
+            "registered_poster"
           ],
           "title": "Kind",
           "type": "string"
@@ -90,6 +176,17 @@
       },
       "title": "Roles",
       "type": "object"
+    },
+    "pdf_extraction": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PDFExtractionConfiguration"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

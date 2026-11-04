@@ -1,0 +1,3 @@
+# Isolated GPU server only. Do not install into the existing app/OCR environments.
+# Candidate pinned from official v0.17.1 source; live GPU compatibility pending.
+vllm==0.17.1

@@ -44,6 +44,34 @@
           },
           "title": "Criterion Ids",
           "type": "array"
+        },
+        "approved_criteria_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved Criteria Version Id"
+        },
+        "criteria_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Criteria Sha256"
         }
       },
       "required": [
@@ -52,6 +80,57 @@
         "decision"
       ],
       "title": "Approval",
+      "type": "object"
+    },
+    "ApprovedBaseline": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "source_run_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Source Run Id",
+          "type": "string"
+        },
+        "criteria_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Criteria Version Id",
+          "type": "string"
+        },
+        "criteria_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Criteria Sha256",
+          "type": "string"
+        },
+        "approval_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "document_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_run_id",
+        "criteria_version_id",
+        "criteria_sha256",
+        "approval_id",
+        "document_sha256"
+      ],
+      "title": "ApprovedBaseline",
       "type": "object"
     },
     "Context": {
@@ -171,6 +250,17 @@
           "default": false,
           "title": "Synthetic",
           "type": "boolean"
+        },
+        "extraction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractionTrace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -178,6 +268,77 @@
         "criteria"
       ],
       "title": "CriteriaDraft",
+      "type": "object"
+    },
+    "CriteriaValueSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "human_review",
+            "synthetic_test"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "quote_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Quote Sha256",
+          "type": "string"
+        },
+        "submitted_by": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "title": "Submitted At",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "record_id",
+        "purpose",
+        "reference",
+        "quote",
+        "quote_sha256",
+        "submitted_by",
+        "submitted_at",
+        "synthetic"
+      ],
+      "title": "CriteriaValueSource",
       "type": "object"
     },
     "Criterion": {
@@ -252,6 +413,28 @@
           "default": false,
           "title": "Human Added",
           "type": "boolean"
+        },
+        "value_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CriteriaValueSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "details": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementDetails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -347,6 +530,17 @@
           ],
           "default": null,
           "title": "Applicable Asset Version Id"
+        },
+        "value_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CriteriaValueSource"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -436,6 +630,103 @@
         "status"
       ],
       "title": "EvidenceBundle",
+      "type": "object"
+    },
+    "ExtractionTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "mock",
+            "qwen"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "parser": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Parser",
+          "type": "string"
+        },
+        "policy": {
+          "default": "a02-text-v1",
+          "enum": [
+            "a02-text-v1",
+            "a02-source-compile-v2",
+            "a02-semantic-v3",
+            "a02-semantic-v4"
+          ],
+          "title": "Policy",
+          "type": "string"
+        },
+        "input_kind": {
+          "default": "pdf",
+          "enum": [
+            "pdf",
+            "free_text"
+          ],
+          "title": "Input Kind",
+          "type": "string"
+        },
+        "document_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Sha256",
+          "type": "string"
+        },
+        "prompt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Prompt Sha256",
+          "type": "string"
+        },
+        "response_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Response Sha256",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/PDFTextSource"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "unresolved_criterion_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Unresolved Criterion Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "model",
+        "parser",
+        "document_sha256",
+        "prompt_sha256",
+        "response_sha256",
+        "sources"
+      ],
+      "title": "ExtractionTrace",
       "type": "object"
     },
     "FrameworkError": {
@@ -651,6 +942,49 @@
       "title": "Observation",
       "type": "object"
     },
+    "PDFTextSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "page": {
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "block_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Block Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 60000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "text_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page",
+        "block_id",
+        "text",
+        "text_sha256"
+      ],
+      "title": "PDFTextSource",
+      "type": "object"
+    },
     "ReportDraft": {
       "additionalProperties": false,
       "properties": {
@@ -708,6 +1042,132 @@
         "summary"
       ],
       "title": "ReportDraft",
+      "type": "object"
+    },
+    "RequirementDetails": {
+      "additionalProperties": false,
+      "description": "Source-grounded compilation metadata, not semantic approval.",
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "compiler": {
+          "default": "literal-requirements-v1",
+          "enum": [
+            "literal-requirements-v1",
+            "qwen-semantic-v1"
+          ],
+          "title": "Compiler",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "poster_text",
+            "poster_visual",
+            "file_metadata",
+            "delivery",
+            "unspecified"
+          ],
+          "title": "Target",
+          "type": "string"
+        },
+        "field": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Field",
+          "type": "string"
+        },
+        "expected_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "normalized_expected": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalized Expected"
+        },
+        "presentation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "origin": {
+          "default": "selected_source",
+          "enum": [
+            "selected_source",
+            "model_structured",
+            "retained_unresolved_source"
+          ],
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "field"
+      ],
+      "title": "RequirementDetails",
+      "type": "object"
+    },
+    "RequirementPresentation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "^[^:\\r\\n]+$",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "RequirementPresentation",
       "type": "object"
     },
     "SourceRef": {
@@ -1147,6 +1607,7 @@
         "extracting",
         "reviewing",
         "waiting_criteria",
+        "waiting_asset",
         "waiting_review",
         "waiting_revision",
         "completed",
@@ -1267,6 +1728,32 @@
       "anyOf": [
         {
           "$ref": "#/$defs/FrameworkError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "approved_criteria_version_id": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approved Criteria Version Id"
+    },
+    "baseline": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ApprovedBaseline"
         },
         {
           "type": "null"

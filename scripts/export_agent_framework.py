@@ -7,8 +7,13 @@ from backend.agent_framework.adapters.generate_examples import generate, role_ex
 from backend.agent_framework.api import create_app
 from backend.agent_framework.contracts import CONTRACT_TYPES
 from backend.agent_framework.composition import RoleBinding, TeamConfiguration, ROLE_PORTS
+from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
 from backend.agent_framework.checks import RoleCheckCase, RoleCheckSuite
 from backend.agent_framework.flow_checks import FlowCheckCase
+from backend.agent_framework.criteria_contracts import (SupplementInput,CriterionResolution,CriteriaEdit,CriteriaVersionRequest,
+    RecordedCriteriaEdit,CriteriaVersion,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord)
+from backend.agent_framework.poster_review import PosterReviewRequest
+from backend.agent_framework.documents import TextDocumentInput
 
 
 def export_checks(destination: Path) -> None:
@@ -52,7 +57,9 @@ def export(destination: Path) -> None:
     generate(destination)
     schemas = destination / "schemas"
     schemas.mkdir(parents=True, exist_ok=True)
-    for contract in (*CONTRACT_TYPES, RoleBinding, TeamConfiguration, RoleCheckCase, RoleCheckSuite, FlowCheckCase):
+    for contract in (*CONTRACT_TYPES, RoleBinding, TeamConfiguration, RoleCheckCase, RoleCheckSuite, FlowCheckCase,
+            SupplementInput,CriterionResolution,CriteriaEdit,CriteriaVersionRequest,RecordedCriteriaEdit,CriteriaVersion,
+            CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord,PosterReviewRequest,TextDocumentInput):
         (schemas / f"{contract.__name__}.schema.json").write_text(
             json.dumps(contract.model_json_schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     for name, kind in (("synthetic", "synthetic"), ("template", "unconfigured")):
@@ -61,6 +68,20 @@ def export(destination: Path) -> None:
         (destination / f"team_config.{name}.json").write_text(
             json.dumps(config.model_dump(mode="json", exclude_none=True), ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8", newline="\n")
+    for name,mode in (('pdf-mock','mock'),('pdf-qwen.example','qwen')):
+        config=TeamConfiguration(roles={role:RoleBinding(kind='registered_pdf' if role=='A02' else
+            'reference' if role=='A06' else 'unconfigured') for role in ROLE_PORTS},
+            pdf_extraction=PDFExtractionConfiguration(mode=mode,
+                endpoint='http://127.0.0.1:8001/v1/chat/completions' if mode=='qwen' else None))
+        (destination/f'team_config.{name}.json').write_text(
+            json.dumps(config.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
+    poster=TeamConfiguration(roles={'A02':RoleBinding(kind='registered_pdf'),
+        'A04_A05':RoleBinding(kind='registered_poster',factory='examples.agent_framework.poster_adapters:make_inspector'),
+        'A06':RoleBinding(kind='reference'),
+        'A07':RoleBinding(kind='factory',factory='backend.agent_framework.poster_review:make_reporter')},
+        pdf_extraction=PDFExtractionConfiguration(mode='mock'))
+    (destination/'team_config.poster-review.template.json').write_text(
+        json.dumps(poster.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     (destination / "openapi.json").write_text(
         json.dumps(create_app().openapi(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     export_checks(destination)

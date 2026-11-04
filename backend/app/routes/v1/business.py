@@ -62,8 +62,9 @@ def created(request, data, location):
     return JSONResponse(envelope(request, data), status_code=201, headers={'Location': location})
 
 
-def router():
-    result = APIRouter(prefix='/api/v1')
+def project_router():
+    """Project metadata only; usable without an image store or review executor."""
+    result = APIRouter()
 
     @result.get('/projects')
     def projects(request: Request): return listing(request, 'projects')
@@ -84,6 +85,13 @@ def router():
         body = await parse(request, ProjectPatch)
         who, dev = await run_in_threadpool(subject, request)
         return envelope(request, await run_in_threadpool(request.app.state.business.patch_project, who, dev, identifier(project_id), body, request.state.request_id))
+
+    return result
+
+
+def router():
+    result = APIRouter(prefix='/api/v1')
+    result.include_router(project_router())
 
     @result.get('/projects/{project_id}/images')
     def images(request: Request, project_id: str): return listing(request, 'images', identifier(project_id))

@@ -9,6 +9,11 @@ def user_by_email(connection,email):
     return connection.execute(select(users).where(users.c.email==email,users.c.account_kind=='email')).mappings().one_or_none()
 
 
+def new_email_user(connection,email,display_name,password_hash):
+    return connection.execute(users.insert().values(user_id=uuid4(),account_kind='email',email=email,
+        display_name=display_name,password_hash=password_hash).returning(users)).mappings().one()
+
+
 def developer(connection):
     return connection.execute(select(users).where(users.c.account_kind=='developer')).mappings().one_or_none()
 

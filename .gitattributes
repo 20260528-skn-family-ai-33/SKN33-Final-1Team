@@ -13,6 +13,17 @@ scripts/build_agent_code_graph.py text eol=lf
 scripts/package_agent_framework.py text eol=lf
 scripts/export_agent_framework.py text eol=lf
 scripts/templates/agent-flow.* text eol=lf
+# Host launchers and shared artifacts also carry exact-byte SHA256 records.
+scripts/*.py text eol=lf
+tests/test_framework_desktop.py text eol=lf
+tests/test_qwen_server_preparation.py text eol=lf
+deploy/agent-framework/** text eol=lf
+deploy/qwen-a02/** text eol=lf
+docs/poster-baselines/**/*.json text eol=lf
+docs/poster-baselines/**/*.md text eol=lf
+docs/poster-baselines/**/*.html text eol=lf
+docs/poster-baselines/**/*.svg text eol=lf
+docs/poster-baselines/**/*.py text eol=lf
 share/*.md text eol=lf
 share/*.sha256 text eol=lf
 share/*.zip binary

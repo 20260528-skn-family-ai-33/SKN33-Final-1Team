@@ -129,6 +129,34 @@
       },
       "title": "Criterion Ids",
       "type": "array"
+    },
+    "approved_criteria_version_id": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approved Criteria Version Id"
+    },
+    "criteria_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Criteria Sha256"
     }
   },
   "required": [

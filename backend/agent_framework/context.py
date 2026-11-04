@@ -26,6 +26,7 @@ def freeze_approved_context(
             project_id=context.project_id, kind='current_requirement',
             criterion_ids=(criterion.criterion_id,),
             source_record_id=criterion.source.block_id, source=criterion.source,
+            value_source=criterion.value_source,
         ) for criterion in criteria),
         warnings=('Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed.',),
     )

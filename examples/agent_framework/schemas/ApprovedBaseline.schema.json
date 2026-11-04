@@ -1,0 +1,51 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "source_run_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "criteria_version_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Criteria Version Id",
+      "type": "string"
+    },
+    "criteria_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Criteria Sha256",
+      "type": "string"
+    },
+    "approval_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Approval Id",
+      "type": "string"
+    },
+    "document_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Document Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_run_id",
+    "criteria_version_id",
+    "criteria_sha256",
+    "approval_id",
+    "document_sha256"
+  ],
+  "title": "ApprovedBaseline",
+  "type": "object"
+}

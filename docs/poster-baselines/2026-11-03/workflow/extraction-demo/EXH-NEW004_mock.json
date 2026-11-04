@@ -1,0 +1,262 @@
+{
+  "contract_version": "2.0.0",
+  "context": {
+    "contract_version": "2.0.0",
+    "project_id": "c0110be0-13e4-48f8-8f36-70a3c7c1e65b",
+    "run_id": "7644f19d-c50d-4325-9181-0a39835bb4a7",
+    "actor_id": "bc41b5b5-7e43-48cc-9134-33890a4fd1ff",
+    "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+    "criteria_version_id": "3476eb45-177e-44d7-9692-ddfadd3509dc",
+    "asset_version_id": null,
+    "parent_run_id": null
+  },
+  "criteria": [
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c001",
+      "text": "전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.",
+        "source_hash": "ad81dec9da87dba04f0142a1256121307ef8f6f5fc1b094f76e9110da7f70caa"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c002",
+      "text": "전시 연도는 2026년으로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "전시 연도는 2026년으로 표기한다.",
+        "source_hash": "5e083b8e823568a73f16ae5700fb64f0b950e4c671b58226748eb672934c5870"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c003",
+      "text": "개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.",
+        "source_hash": "78ae4dd75706e70e6a2ba1b069006da27482f54329a74b33999978af94f25f01"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c004",
+      "text": "전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 1,
+        "block_id": "p1-text",
+        "quote": "전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.",
+        "source_hash": "483c35b97ae94c2ac7832b0b9561c723435ae83a9ddb694776636e210b8f2058"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c005",
+      "text": "1. 옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "1. 옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.",
+        "source_hash": "4d6db256c01574ab516200928358f9c46a24d0443c2c22340eb3b6ddf60c2a7e"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c006",
+      "text": "2. 청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "2. 청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.",
+        "source_hash": "d53a9e0dfb493051d0c49536b1bd4a164850b8f01752cb355a65634acd111ebb"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c007",
+      "text": "JPEG (.jpg 또는 .jpeg)",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "JPEG (.jpg 또는 .jpeg)",
+        "source_hash": "27aa44d8db9c89c4d6ab09f58f0d5e29d93df799d8008830638cabf4ecd8eae9"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c008",
+      "text": "가로 3000픽셀 × 세로 3000픽셀",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "가로 3000픽셀 × 세로 3000픽셀",
+        "source_hash": "015918979504a256418ddf6a22d062f84102fe855855ff9b992954ba974b9ada"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c009",
+      "text": "RGB",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "RGB",
+        "source_hash": "88b5990f3ff597306bb82cf38ac0d3ecbb7117d57d7424eab20cc938a5083bb1"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c010",
+      "text": "관람시간 - 확인 중",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "관람시간 - 확인 중",
+        "source_hash": "7e23fd49128185c28c6fdcd15510759c3d04a3bb86a091e19811659adbe5c874"
+      },
+      "human_added": false
+    },
+    {
+      "contract_version": "2.0.0",
+      "criterion_id": "c011",
+      "text": "관람시간은 확인 중입니다. 관람 가능한 요일·시작 시각·종료 시각과 휴관일 안내가 필요합니다. 구체적인 내용은 담당",
+      "kind": "unsupported",
+      "expected": "",
+      "operator": "manual",
+      "unit": null,
+      "required": true,
+      "source": {
+        "contract_version": "2.0.0",
+        "document_version_id": "73960b0d-ea82-4d6d-91c2-ebceb6505df1",
+        "page": 2,
+        "block_id": "p2-text",
+        "quote": "관람시간은 확인 중입니다. 관람 가능한 요일·시작 시각·종료 시각과 휴관일 안내가 필요합니다. 구체적인 내용은 담당",
+        "source_hash": "985c97934a8dfa782f089b219aba1de1216cc1a7693216efe79a98d3b4a2c8fc"
+      },
+      "human_added": false
+    }
+  ],
+  "warnings": [
+    "unapproved_draft",
+    "exact_source_check_is_not_semantic_accuracy",
+    "text_layer_only_visual_layout_not_verified",
+    "synthetic_mock_manual_candidates_not_qwen_results",
+    "missing_values_require_client_clarification"
+  ],
+  "synthetic": true,
+  "extraction": {
+    "contract_version": "2.0.0",
+    "mode": "mock",
+    "model": "mock-line-fixture-v1",
+    "parser": "pymupdf-1.28.2",
+    "policy": "a02-text-v1",
+    "document_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+    "prompt_sha256": "2aa3e669dc40ea82efb21ec54ad8df0a2df44097749b47fccd29b16538d58a79",
+    "response_sha256": "76d57efad088efa6d59d68350ba39c9440d1d5712f46a118d057451e8d5db046",
+    "sources": [
+      {
+        "contract_version": "2.0.0",
+        "page": 1,
+        "block_id": "p1-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  1 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n전시 포스터 제작 의뢰서\n수원의 영화, 수원의 극장\n기존 포스터를 참고하여 작성한 개발용 가상 의뢰서입니다. 실제 기관이나 인물의 발주·승인 사실을 나타내지 않습니다.\n의뢰 개요\n내용\n문서 식별\nEXH-NEW004 / client-draft-v0.2\n과업 분야\n시각디자인 / 디지털 홍보 포스터\n결과물\n아래 요구사항을 반영한 디지털 포스터 파일 1점\n1. 제작 목적\n전시의 주제와 개막일, 관람 장소가 명확하게 전달되는 디지털 홍보 포스터를 의뢰합니다. 옛 극장과 영화 자료의 분위기를\n 살리되 제목과 안내 정보를 구분해 주세요.\n2. 포스터에 표기할 내용\n항목\n표기 내용과 허용 범위\n1\n전시명에 ‘수원의 영화’와 ‘수원의 극장’을 모두 표기한다.\n허용 범위: 줄바꿈·공백·두 구절 사이의 쉼표 차이는 허용하되 두 구절을 누락하지 않는다.\n2\n전시 연도는 2026년으로 표기한다.\n허용 범위: 2026 또는 다른 연도 정보와 함께 해석 가능한 ‘26년’ 표기를 허용한다.\n3\n개막일은 2026년 5월 14일로, 요일은 목요일로 표기한다.\n허용 범위: 날짜 구분자와 앞자리 0의 차이는 허용한다. 연도·월·일·요일 의미는 동일해야 한다.\n4\n전시 장소는 ‘열린문화공간 후소 전시실’로 표기한다.\n허용 범위: 장소명 내 줄바꿈·공백 차이는 허용한다.\n",
+        "text_sha256": "2cc5f3e34cae41121cf98671df2795b53d763890eac1abb557b10a2d17eeb516"
+      },
+      {
+        "contract_version": "2.0.0",
+        "page": 2,
+        "block_id": "p2-text",
+        "text": "가상 클라이언트 제작 의뢰서 v0.2 / 개발용 / 실제 발주 아님\n2026-11-03  |  2 / 2\nPOSTER DESIGN BRIEF / FICTIONAL CLIENT\n시각 구성·납품·확인 사항\nEXH-NEW004 / 제작 의뢰 세부내역\n3. 시각 구성\n1. 옛 극장 건물과 영화 관련 자료를 결합한 사진 콜라주를 주요 시각 요소로 사용한다.\n2. 청록색 바탕, 흰색 주요 제목, 주황색 강조선의 조합을 유지한다.\n색감·구성·가독성은 시안에서 함께 확인합니다. 특정 색상 코드나 정량 점수를 지정한 조건은 아닙니다.\n4. 디지털 납품 규격\n항목\n요청 규격\n파일 형식\nJPEG (.jpg 또는 .jpeg)\n픽셀 크기\n가로 3000픽셀 × 세로 3000픽셀\n색상 모드\nRGB\n5. 담당자 확인 후 반영할 필수 사항\n관람시간 - 확인 중\n관람시간은 확인 중입니다. 관람 가능한 요일·시작 시각·종료 시각과 휴관일 안내가 필요합니다. 구체적인 내용은 담당\n자 회신 후 반영해 주세요.\n위 필수 사항의 회신을 받은 뒤 표기 내용을 확정합니다. 확인되지 않은 값은 임의로 정하지 말고 담당자에게 문의해 주세\n요.\n6. 협의 및 확인 범위\n행사에 표시할 정보와 계약상 납품기한은 구분합니다. 실제 계약 당사자·대금·지급 일정·수정 횟수는 별도 협의할 업무 정\n보이며 포스터 표시 요청에 포함하지 않습니다.\n사진·인물·기관 표장·글꼴 등의 사용권과 편집 원본·인쇄물 납품 범위는 별도 자료로 확인합니다. 이 문서는 권리 보유나 사\n용 허락을 확정한 문서가 아닙니다.\n변경 내용은 새 문서 버전으로 기록하고 담당자와 표기 기준을 확인합니다. 이전 초안의 확인 기록을 변경된 기준의 승인으\n로 사용하지 않습니다.\n",
+        "text_sha256": "5cfd24feeb574540188912e1cbd733646ee799b4b7c00dd15e62173e40a53011"
+      }
+    ],
+    "unresolved_criterion_ids": [
+      "c010",
+      "c011"
+    ]
+  }
+}

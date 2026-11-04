@@ -1,0 +1,95 @@
+{
+  "stage": 6,
+  "status": "passed_synthetic_criteria_revision_approval_and_reread_checks",
+  "date": "2026-11-03",
+  "branch": "feat/37-a02-pdf-registration",
+  "implementation": [
+    "AF003 immutable criteria revisions and bindings to existing AF001 approvals",
+    "separate attributed human value sources retaining original PDF anchors",
+    "explicit latest version/hash approval and waiting_asset",
+    "same-transaction approval/binding/evidence/run updates",
+    "idempotent manual retries and readback after app restart"
+  ],
+  "schema_revision": "AF003",
+  "existing_public_M008_unchanged_by_this_stage": true,
+  "AF001_and_AF002_sql_preserved": true,
+  "new_dependencies_added_by_this_stage": false,
+  "samples": [
+    {
+      "case_id": "EXH-NEW004",
+      "pdf_sha256": "a9e4f1659e6d06b7455623d4344ebe9edddf54c2a8cef04c09a26e8433713219",
+      "source_pdf_and_md_unchanged": true
+    },
+    {
+      "case_id": "CON-NEW043",
+      "pdf_sha256": "2ae72721cafc9af3e8ccb0d58726b9d55eba1d2bbd24d4434f561a2f2277fbc7",
+      "source_pdf_and_md_unchanged": true
+    },
+    {
+      "case_id": "FES-NEW072",
+      "pdf_sha256": "25abd335861d19938585e281fa8e6ef0a85ff6b5b768bdc7ed24a205c2038614",
+      "source_pdf_and_md_unchanged": true
+    }
+  ],
+  "tests": [
+    {
+      "command": ".venv/bin/python -m pytest tests/agent_framework -q",
+      "passed": 522,
+      "deselected_db_integration": 63,
+      "subtests_passed": 8
+    },
+    {
+      "command": "TEST_DB_ENV_FILE=<test-only.env> .venv/bin/python -m pytest tests/agent_framework -m db_integration -q",
+      "passed": 63,
+      "deselected_non_db": 522
+    }
+  ],
+  "new_revision_unit_tests": 22,
+  "new_criteria_and_migration_integration_tests": 16,
+  "existing_framework_database_tests": 47,
+  "criteria_test_approvals_executed": true,
+  "criteria_test_approval_origin": "synthetic fixtures in disposable DBs only",
+  "criteria_approval_status": "unapproved",
+  "real_client_clarifications_supplied": false,
+  "human_verified": false,
+  "gold_verdict": null,
+  "live_model_calls": 0,
+  "model_inference_executed": false,
+  "gpu_provisioned": false,
+  "operational_database_changed": false,
+  "existing_user_env_files_modified_by_this_stage": false,
+  "front_v2_modified_by_this_stage": false,
+  "generated_test_databases_removed": true,
+  "temporary_test_container_stopped_and_removed": true,
+  "new_poster_review_jobs_generated_by_criteria_approval": false,
+  "post_approval_status": "waiting_asset",
+  "concurrent_workspace_changes_detected_outside_this_stage": true,
+  "concurrent_change_examples": [
+    "backend/app/config.py",
+    "backend/environment.py",
+    "start.py",
+    "scripts/run_rebuild.py",
+    "pyproject.toml",
+    "uv.lock",
+    "requirements/"
+  ],
+  "concurrent_changes_reverted": false,
+  "browser_rendered": false,
+  "windows_backend_verified": false,
+  "remote_CI_executed": false,
+  "warnings": [
+    "Existing pytest asyncio configuration warnings",
+    "PyMuPDF SWIG deprecation warnings"
+  ],
+  "limitations": [
+    "No actual client responses or user criteria approval",
+    "Synthetic fixture can narrow to one condition with explicit exclusions, not full-scope approval",
+    "No Qwen quality evaluation or operational DB deployment",
+    "Separate environment/launcher changes are outside this stage validation scope"
+  ],
+  "last_completed_step": 6,
+  "next_step": 7,
+  "offline_html_pages_checked": 5,
+  "offline_html_local_links_checked": 47,
+  "original_posters_and_legacy_pdfs_unchanged": true
+}

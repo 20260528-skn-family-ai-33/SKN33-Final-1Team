@@ -7,6 +7,7 @@
 <div class="hero"><span class="eyebrow">M008 DATABASE / AF001 EXTENSION</span><h1>실행을 저장하고,<br>승인에서 이어갑니다.</h1><p>기존 PostgreSQL·사용자·프로젝트·인증을 재사용하는<br>새 프레임워크 API와 독립 worker의 시작 방법.</p><div class="meta"><span>02 PROCESSES</span><span>06 EXTENSION TABLES</span><span>EXPLICIT MIGRATION</span></div></div>
 <article><section class="intro"><h1 id="postgresql-프레임워크-실행승인worker">PostgreSQL 프레임워크 실행·승인·worker</h1>
 <p>Creative Checker · 2026-11-02 · 기존 M008 DB + 추가 스키마 AF001</p>
+<p>2026-11-03 추가: PDF 등록에는 명시적 후속 <strong>AF002</strong>와 PDF 전용 저장 경로를 사용한다. <a href="PDF_등록_버전저장_가이드.html">PDF 등록·버전 저장 가이드</a>를 따른다. 아래 AF001 실행·worker 명령도 유지되며 PDF 등록만으로 추출 작업이 실행되지는 않는다.</p>
 <p>새 실행 경로는 <strong>PostgreSQL API와 독립 worker 두 프로세스</strong>다. API는 기존 사용자 세션·CSRF·프로젝트 권한을 검사하고 작업을 접수하며, 모델 역할은 worker에서 실행한다. 기존 <code>run.sh</code>, OCR worker, front-v2를 시작하지 않고 공통 프레임워크만 실행할 수 있다.</p>
 <p>개발·테스트 프로필용 구현이며 현재 <code>production</code> 프로필은 허용하지 않는다. 메모리 기반 <code>demo</code>·<code>serve</code>·<code>check-flow</code>도 독립 개발 도구로 유지한다. 실제 PostgreSQL 검증과 실모델 정확도·운영 배포는 구분한다.</p>
 </section><section class="chapter"><h2 id="01-무엇을-재사용하고-추가했는가">01. 무엇을 재사용하고 추가했는가</h2>

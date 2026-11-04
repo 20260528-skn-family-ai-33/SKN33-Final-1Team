@@ -1,5 +1,202 @@
 {
   "$defs": {
+    "CriteriaValueSource": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "human_review",
+            "synthetic_test"
+          ],
+          "title": "Purpose",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "quote_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Quote Sha256",
+          "type": "string"
+        },
+        "submitted_by": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "title": "Submitted At",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "record_id",
+        "purpose",
+        "reference",
+        "quote",
+        "quote_sha256",
+        "submitted_by",
+        "submitted_at",
+        "synthetic"
+      ],
+      "title": "CriteriaValueSource",
+      "type": "object"
+    },
+    "RequirementDetails": {
+      "additionalProperties": false,
+      "description": "Source-grounded compilation metadata, not semantic approval.",
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "compiler": {
+          "default": "literal-requirements-v1",
+          "enum": [
+            "literal-requirements-v1",
+            "qwen-semantic-v1"
+          ],
+          "title": "Compiler",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "poster_text",
+            "poster_visual",
+            "file_metadata",
+            "delivery",
+            "unspecified"
+          ],
+          "title": "Target",
+          "type": "string"
+        },
+        "field": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Field",
+          "type": "string"
+        },
+        "expected_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "normalized_expected": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalized Expected"
+        },
+        "presentation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "origin": {
+          "default": "selected_source",
+          "enum": [
+            "selected_source",
+            "model_structured",
+            "retained_unresolved_source"
+          ],
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "field"
+      ],
+      "title": "RequirementDetails",
+      "type": "object"
+    },
+    "RequirementPresentation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "^[^:\\r\\n]+$",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "RequirementPresentation",
+      "type": "object"
+    },
     "SourceRef": {
       "additionalProperties": false,
       "properties": {
@@ -121,6 +318,28 @@
       "default": false,
       "title": "Human Added",
       "type": "boolean"
+    },
+    "value_source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CriteriaValueSource"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "details": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RequirementDetails"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

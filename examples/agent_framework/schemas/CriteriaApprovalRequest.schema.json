@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "criteria_version_id": {
+      "format": "uuid",
+      "title": "Criteria Version Id",
+      "type": "string"
+    },
+    "expected_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Expected Sha256",
+      "type": "string"
+    },
+    "purpose": {
+      "enum": [
+        "human_review",
+        "synthetic_test"
+      ],
+      "title": "Purpose",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "reviewed_all_criteria": {
+      "title": "Reviewed All Criteria",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "criteria_version_id",
+    "expected_sha256",
+    "purpose",
+    "reason",
+    "reviewed_all_criteria"
+  ],
+  "title": "CriteriaApprovalRequest",
+  "type": "object"
+}
