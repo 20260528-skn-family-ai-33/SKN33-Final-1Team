@@ -1,28 +1,28 @@
 {
-  "contract_version": "2.0.0",
+  "contract_version": "3.0.0",
   "profile": "development",
   "roles": {
     "A02": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "kind": "registered_pdf"
     },
     "A04_A05": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "kind": "registered_poster",
       "factory": "examples.agent_framework.poster_adapters:make_inspector"
     },
     "A06": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "kind": "reference"
     },
     "A07": {
-      "contract_version": "2.0.0",
+      "contract_version": "3.0.0",
       "kind": "factory",
       "factory": "backend.agent_framework.poster_review:make_reporter"
     }
   },
   "pdf_extraction": {
-    "contract_version": "2.0.0",
+    "contract_version": "3.0.0",
     "mode": "mock",
     "structuring": "semantic",
     "presentation": false,

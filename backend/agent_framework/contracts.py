@@ -8,13 +8,14 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validato
 Identifier = Annotated[str, Field(min_length=1, max_length=160, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$")]
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 Verdict = Literal["pass", "fail", "review"]
+ObservationStatus = Literal["observed", "absent", "unreadable", "not_checked", "unknown"]
 ExecutionStatus = Literal["queued", "extracting", "reviewing", "waiting_criteria", "waiting_asset", "waiting_review",
                           "waiting_revision", "completed", "failed", "outcome_unknown"]
 
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    contract_version: Literal["2.0.0"] = "2.0.0"
+    contract_version: Literal["3.0.0"] = "3.0.0"
 
 
 class Context(Contract):
@@ -241,6 +242,8 @@ class ImageEvidence(Contract):
 class Observation(Contract):
     criterion_id: Identifier
     observed: str
+    observation_status: ObservationStatus = "unknown"
+    observed_unit: str | None = None
     verdict: Verdict
     image: ImageEvidence
     evidence_ids: tuple[Identifier, ...] = ()
@@ -263,6 +266,20 @@ class ValidateRequest(RoleRequest):
 
 class ValidatedItem(Contract):
     criterion_id: Identifier
+    criterion_text: str
+    kind: Literal["text", "number", "visual", "unsupported"]
+    operator: Literal["equals", "contains", "gte", "lte", "present", "manual"]
+    required: bool
+    expected: str
+    expected_unit: str | None = None
+    observed: str | None = None
+    observed_unit: str | None = None
+    observation_status: ObservationStatus = "unknown"
+    comparison_expected: str | None = None
+    comparison_observed: str | None = None
+    comparison_unit: str | None = None
+    image: ImageEvidence | None = None
+    evidence_ids: tuple[Identifier, ...] = ()
     verdict: Verdict
     issues: tuple[str, ...] = ()
 

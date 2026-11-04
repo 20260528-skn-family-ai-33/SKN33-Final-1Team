@@ -1,6 +1,7 @@
 """Create a dedicated local review environment, install dependencies, build React."""
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -8,6 +9,7 @@ import sys
 import venv
 
 from backend.app.ocr.config import selected_pipeline
+from start import install_command
 
 ROOT = Path(__file__).resolve().parent
 
@@ -25,6 +27,9 @@ def main():
     npm = shutil.which("npm.cmd" if windows else "npm")
     if not npm:
         raise SystemExit("Node.js 22.12 이상과 npm을 먼저 설치하세요.")
+    uv = shutil.which("uv")
+    if not uv:
+        raise SystemExit("uv를 먼저 설치하세요. 의존성은 pyproject.toml과 uv.lock으로 관리합니다.")
     environment = ROOT / ".venv"
     python = environment / ("Scripts/python.exe" if windows else "bin/python")
     if not python.is_file():
@@ -55,8 +60,11 @@ def main():
             f"기존 .venv는 Python {'.'.join(map(str, version))}입니다. 이 프로젝트에는 Python 3.12가 필요합니다.\n"
             "기존 .venv를 다른 이름으로 보관한 뒤 Python 3.12로 설치를 다시 실행하세요. 자동으로 덮어쓰지 않습니다."
         )
+    sync = [uv, *install_command().split()[1:]]
+    if args.download_models and "--extra" not in sync:
+        sync.extend(["--extra", "legacy-ocr"])
     commands = [
-        [str(python), "-m", "pip", "install", "-r", "requirements-dev.txt"],
+        sync,
         [npm, "--prefix", "frontend", "ci"],
         [npm, "--prefix", "frontend", "run", "build"],
     ]
@@ -65,7 +73,8 @@ def main():
     for command in commands:
         print(f"실행: {subprocess.list2cmdline(command)}", flush=True)
         try:
-            subprocess.run(command, cwd=ROOT, check=True)
+            subprocess.run(command, cwd=ROOT, check=True,
+                           env=dict(os.environ, UV_PROJECT_ENVIRONMENT=str(environment), UV_PYTHON=str(python)))
         except (OSError, subprocess.CalledProcessError) as exc:
             raise SystemExit(
                 f"설치가 중단되었습니다: {subprocess.list2cmdline(command)}\n"

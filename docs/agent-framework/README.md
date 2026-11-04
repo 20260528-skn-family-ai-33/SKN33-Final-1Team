@@ -30,15 +30,17 @@
 
 브라우저에서 열 파일은 **`docs/agent-framework/flow.html`**이다. 업무 흐름의 원본은 `flow-data.json`과 빌드 전용 `scripts/templates/agent-flow.html.in`이며 `python -m scripts.build_agent_flow_html`로 단일 HTML을 재생성한다. 이전 `scripts/templates/agent-flow.html` 경로는 완성본으로 이동하는 안내 페이지다. Graphify 코드 지도는 별도 임시 환경의 공식 `graphifyy==0.9.100`으로 생성했다. 프로젝트 의존성에는 추가하지 않았다. 두 HTML은 자동 외부 자원을 로드하지 않도록 만들었으며 정적 구조·JavaScript 문법을 검사했다. 브라우저 렌더링은 미검증이다.
 
-현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 개발 실행, 승인·재검수·단계 기록, 파일 접근, CLI다. 메모리 개발 도구와 별도로 **기존 M008 DB·세션 인증·CSRF를 재사용하는 PostgreSQL API 및 독립 worker**를 제공한다. API는 파일 등록·접수·승인·조회를 처리하고 worker가 역할을 실행한다. A02 자유 입력·PDF의 실제 Qwen 연결은 11/04 개발 환경에서 확인했다. **포스터 검사 실모델, PostgreSQL/Neo4j 관계 검색·RAG, MCP, Neo4j projection, front-v2 업무 연결 및 운영 배포는 후속 범위다.** 실행·문서·기준 버전·자유 입력에는 AF001부터 AF004까지의 명시적 마이그레이션을 사용한다.
+현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 실행, 승인·재검수·파일 접근·CLI다. **기존 M008 인증·PostgreSQL API·독립 worker**가 PDF·자유 입력을 접수하고 Qwen으로 조건·문단을 추출해 front-v2에 전달한다. 기준 버전·승인·자유 입력은 AF001~AF004를 명시적으로 적용한다. 실제 A02 연결과 화면 반영은 11/04에 확인했다.
 
-11/03 PDF 등록 구현과 검증은 [PDF 등록 가이드](PDF_등록_버전저장_가이드.html), 기존 역할 변경은 [A03 제거 정리](a03-retirement-2026-11-02.md)를 따른다. [이전 검증 기록](verification-2026-11-02.md)은 변경 전 이력이다.
+main의 A04·A05 검사 어댑터, A06 근거·단위 검증, A07 보고기와 A01·A08 에이전트도 함께 유지한다. **개발용 MCP 서버는 합성 어댑터·메모리 Workflow 위에서 실행되며 PostgreSQL API·worker를 제어하는 운영 MCP 연결과 구분한다.** 전체 포스터 실모델 검사·PostgreSQL/Neo4j 관계 검색·RAG·projection·최종 승인·AWS 배포 완료를 뜻하지 않는다.
+
+현재 공통 계약은 **3.0.0**이다. A02의 원문·의미·문단 필드와 A06의 관측 상태·단위·판정 상세를 함께 보존한다. [A06 계약 가이드](a06-contract-v3.md)와 [A02 실행 가이드](A02_실행_사용가이드.html)를 따른다. 구버전 설정·저장 실행은 자동 변환하지 않으며 원본 기록을 보존한다. [PDF 등록 가이드](PDF_등록_버전저장_가이드.html), [A03 제거 정리](a03-retirement-2026-11-02.md)와 [이전 검증 기록](verification-2026-11-02.md)은 시점을 구분한다.
 
 제품 목표는 **PDF·Qwen3.5-4B·PostgreSQL/Neo4j 근거 검색 및 RAG·데스크톱 front-v2**다. PaddleOCR를 포함한 별도 OCR 대체 경로, 벡터 DB·임베딩·벡터 인덱스를 추가하지 않는다. 실제 어댑터 구현 범위는 [전체 계획](../planning/pdf-qwen-rag-workflow-plan-2026-11-02.md)을 따른다.
 
 ## 최신 역할 결정
 
-**독립 A03 검색·근거 에이전트는 폐기했다.** [11월 2일 통합문서](reference/프로젝트_통합문서_20261102.html#section-014)를 따른다. 네 역할(A02·A04_A05·A06·A07)과 공통 A01·A08만 유지한다. 승인 조건 출처는 `context.freeze_approved_context`로 고정하며 이 함수는 외부 조회를 하지 않는다. PostgreSQL→Neo4j→PostgreSQL 관계 조회·RAG는 후속 공통 문맥 준비 기능이고 별도 GraphDB 에이전트 배치는 미확정이다. 구버전 JSON과 설정은 계약 2.0.0으로 교체한다.
+**독립 A03 검색·근거 에이전트는 폐기했다.** [11월 2일 통합문서](reference/프로젝트_통합문서_20261102.html#section-014)를 따른다. 네 역할(A02·A04_A05·A06·A07)과 공통 A01·A08만 유지한다. 승인 조건 출처는 `context.freeze_approved_context`로 고정하며 이 함수는 외부 조회를 하지 않는다. PostgreSQL→Neo4j→PostgreSQL 관계 조회·RAG는 후속 공통 문맥 준비 기능이고 별도 GraphDB 에이전트 배치는 미확정이다. 새 요청과 설정은 계약 3.0.0을 사용하며 구버전 저장 실행은 자동 변환·재개하지 않는다.
 
 ## 설치와 첫 실행
 
@@ -74,12 +76,12 @@ Windows PowerShell:
 
 | 역할 | 호출 포트 | 입력 → 출력 | 담당 범위 |
 |---|---|---|---|
-| A01 | `Workflow.start/approve/get` | 실행 문맥·파일 참조·승인 → `RunSnapshot` | 공통 실행·상태 전환·계약 연결 |
+| A01 | `Workflow.start/approve/get` · `agents.RunCoordinator.assess` | 실행 문맥·파일 참조·승인 → `RunSnapshot` / 실행 ID → `CoordinationNote` | 공통 실행·상태 전환·계약 연결, 상태 해석·다음 조치 안내 에이전트 |
 | A02 | `Extractor.extract` | `ExtractRequest` → `CriteriaDraft` | 자유 입력·PDF 조건 구조화·원문 출처 |
 | A04·A05 | `Inspector.inspect` | `InspectRequest` → `InspectionResult` | 현재 포스터 관측·조건별 판정 초안 |
 | A06 | `Validator.validate` | `ValidateRequest` → `ValidatedResult` | 전체 조건 커버리지·관측·인용·판정 검증 |
 | A07 | `Reporter.report` | `ReportRequest` → `ReportDraft` | 검증된 판정의 설명·수정 요청 초안 |
-| A08 | `Workflow.rereview` | 부모 실행·새 문맥·새 산출물 → 새 `RunSnapshot` | 수정 요청 승인 확인·전체 재검수 |
+| A08 | `Workflow.rereview` · `agents.RereviewAgent.request/compare` | 부모 실행·새 문맥·새 산출물 → 새 `RunSnapshot` / `RereviewSummary` | 수정 요청 승인 확인·전체 재검수, 재검수 요청 판단·수정 전후 비교 에이전트 |
 
 소유 파일은 다음처럼 나눈다.
 
@@ -165,6 +167,27 @@ API를 실행하지 않아도 `examples/agent_framework/openapi.json`으로 계�
 `actor_id`는 테스트 문맥이며 로그인·권한의 증명이 아니다. `127.0.0.1`에만 바인딩한다. Host 검사만으로 외부 노출을 안전하게 만들 수 없다. 메모리 상태를 쓰므로 다중 worker·다중 인스턴스로 실행하지 않는다.
 
 현재 Workflow는 동기식이다. 시작·조건 승인 요청은 해당 역할 실행이 끝난 뒤 반환한다. 실행 명령용 잠금과 조회용 잠금을 분리하여 같은 실행의 GET은 어댑터 종료를 기다리지 않고 일관된 최신 스냅샷을 반환한다. 실행 중 상태는 `extracting` 또는 `reviewing`이며 실제 시작한 역할을 아래 단계 기록으로 확인한다. 제품용 비동기 작업 접수·작업 큐 API는 후속 범위다.
+
+## A01·A08 에이전트와 MCP 도구
+
+A01·A08은 공통 상태 전환 코드 위의 **Qwen3.5-4B 도구 호출 에이전트**다. 모델은 도구를 고르고 설명을 쓰며, 상태 전환·승인·버전 검사는 계속 `Workflow`가 결정한다. 사람 승인을 대신하지 않고 A02~A07 단계 기록에도 포함되지 않는다.
+
+| 구성 | 파일 | 내용 |
+|---|---|---|
+| MCP 서버 | `mcp_server.py` | `get_run`, `get_steps`, `get_approval_history`, `start_run`, `request_rereview`. Bearer 토큰(32자 이상) 필수, **승인 도구 미노출**. `McpToolClient`는 도구 예외·빈 응답을 `McpToolError`(결과 불명)로 올린다 |
+| 도구 호출 루프 | `agents/loop.py` | vLLM OpenAI 호환 API. 턴 수 제한, 쓰기 도구 1회 실행, 결과 불명 쓰기는 `outcome_unknown`으로 남기고 재호출하지 않는다 |
+| A01 `RunCoordinator` | `agents/coordinator.py` | 읽기 도구만 쓴다. 현재 상태에서 허용되는 `next_action`만 받아들인다 |
+| A08 `RereviewAgent` | `agents/rereview.py` | `request`: 재검수 요청 판단(새 문맥·산출물은 코드가 고정), 거절된 요청은 `request_error`로 구분. `compare`: 부모·자식 판정 비교 |
+
+모델 답이 실행 결과·기록과 다르면 `AGENT_ACTION_NOT_ALLOWED`·`AGENT_OUTPUT_INCONSISTENT`로 실패한다. JSON 형식이 틀린 답과 실행하지 않은 도구를 했다고 한 답에만 각각 한 번 정정 기회를 준다. 코드가 검증하는 것은 구조화 필드뿐이다. 사용자용 `summary`는 코드가 실행 사실로 만들고, `model_summary`·`model_blockers`는 **검증하지 않은 모델 문장**이므로 구분해 표시한다.
+
+개발용 MCP 서버(합성 어댑터·메모리 상태, PostgreSQL API·worker와 미연결)는 `AGENT_FRAMEWORK_MCP_TOKEN`을 주고 다음처럼 실행한다. `PostgresStore` 연결은 서비스 계정 권한 설계가 필요한 후속 범위다.
+
+```sh
+.venv/bin/python -m uvicorn backend.agent_framework.mcp_server:create_development_app --factory --host 127.0.0.1 --port 8013
+```
+
+테스트는 두 가지다. `test_agents_mcp.py`는 스크립트 모델과 로컬 HTTP MCP 서버로 검증하며 Qwen을 호출하지 않는다. `test_agents_live.py`(`live_model` 마커, 기본 제외)는 `AGENT_FRAMEWORK_QWEN_BASE_URL`·`AGENT_FRAMEWORK_QWEN_API_KEY`를 주고 `pytest -m live_model tests/agent_framework/test_agents_live.py`로 실행한다. 2026-11-03 vLLM 0.33.0(`--enable-auto-tool-choice --tool-call-parser qwen3_coder`)의 Qwen3.5-4B로 4개 시나리오가 통과했다. live 테스트는 프로세스 안 `FrameworkTools`로 도구를 부르므로 Qwen과 HTTP MCP를 묶은 종단 간 검증은 아니며, 합성 시나리오 통과가 실제 업무 정확도를 보장하지 않는다.
 
 ## 단계별 실행 기록
 

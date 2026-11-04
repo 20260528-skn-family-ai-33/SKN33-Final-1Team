@@ -23,6 +23,7 @@ class ScriptedPosterInspector:
             observed=entry['fields'][field]
             observations.append(Observation(criterion_id=criterion.criterion_id,
                 observed=observed or '[synthetic confirmed absence]',verdict='pass' if observed else 'fail',
+                observation_status='observed' if observed else 'absent',
                 image=ImageEvidence(asset_version_id=poster.reference.asset_version_id,asset_hash=poster.reference.sha256),
                 evidence_ids=tuple(e.evidence_id for e in request.evidence.evidence if criterion.criterion_id in e.criterion_ids)))
         return InspectionResult(context=request.context,observations=tuple(observations),synthetic=True)

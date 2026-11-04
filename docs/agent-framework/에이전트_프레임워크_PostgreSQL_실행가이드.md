@@ -37,7 +37,7 @@ uv sync --locked --group dev
 
 버전 정본은 `pyproject.toml`·`uv.lock`이다. 기존 인증·명시적 마이그레이션을 위해 Alembic·argon2-cffi·email-validator 의존성을 포함한다. 모델 가중치·DB 자체는 이 명령으로 설치되지 않는다.
 
-[app 설정 예시](postgres-app.env.example)를 `.runtime/framework-app.env`로 복사해 **기존 DB의 제한된 app 계정**을 입력한다. [owner 설정 예시](postgres-owner.env.example)는 `.runtime/framework-owner.env`로 별도 준비한다. 두 경로는 새로 준비할 개인 설정이며 자동 생성·탐색하지 않는다.
+[app 설정 예시](../../.env.example)를 `.env.local`로 복사해 **기존 DB의 제한된 app 계정**을 입력한다. [owner 설정 예시](../../.env.admin.example)는 `.env.admin.local`로 별도 준비한다. 두 경로는 새로 준비할 개인 설정이며 자동 생성·탐색하지 않는다.
 
 app/worker 파일에는 owner·관리자 비밀번호를 넣지 않는다. owner 파일은 마이그레이션 명령에만 사용한다. 실제 비밀번호·세션·운영 입력은 Git에 넣지 않는다. 설정 파일은 명시적으로 읽으며 기존 `.env`를 변경하지 않는다. 프로세스 환경변수가 파일보다 우선하므로 런타임 셸에 owner 자격증명을 export하지 않는다.
 
@@ -46,8 +46,8 @@ app/worker 파일에는 owner·관리자 비밀번호를 넣지 않는다. owner
 대상은 기존 M008 DB다. 변경 전에 팀의 기존 백업·복원 절차로 대상 DB를 확인하고 백업한다. 이 명령은 기존 DB 소유자 계정을 요구하며 public 구조·기존 권한 계약을 확인한 뒤 **추가 스키마만 한 트랜잭션으로** 적용한다.
 
 ```sh
-.venv/bin/python -m backend.agent_framework migrate-postgres --env-file .runtime/framework-owner.env
-.venv/bin/python -m backend.agent_framework postgres-check --env-file .runtime/framework-app.env
+.venv/bin/python -m backend.agent_framework migrate-postgres --env-file .env.admin.local
+.venv/bin/python -m backend.agent_framework postgres-check --env-file .env.local
 ```
 
 Windows는 실행 파일만 `.\.venv\Scripts\python.exe`로 바꾼다. 첫 명령은 명시적 DDL이고 두 번째는 읽기 전용 검사다. 이미 같은 AF001이 적용되어 있으면 구조를 확인하고 반환한다. 앱·worker 시작 시 자동 마이그레이션은 수행하지 않는다. 운영 DB 적용과 운영 worker 시작은 배포 작업으로 별도 수행한다.
@@ -61,19 +61,19 @@ AF001 이후 DDL을 바꿀 때는 기존 SQL을 덮어쓰지 말고 새 revision
 터미널 1 — 기존 세션 인증과 CSRF를 사용하는 프레임워크 API:
 
 ```sh
-.venv/bin/python -m backend.agent_framework postgres-serve --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json --port 8012
+.venv/bin/python -m backend.agent_framework postgres-serve --env-file .env.local --config examples/agent_framework/team_config.synthetic.json --port 8012
 ```
 
 터미널 2 — 같은 DB·같은 팀 설정으로 worker 실행:
 
 ```sh
-.venv/bin/python -m backend.agent_framework worker --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json
+.venv/bin/python -m backend.agent_framework worker --env-file .env.local --config examples/agent_framework/team_config.synthetic.json
 ```
 
 한 번만 실행하려면 다음을 사용한다. 한 번은 실행 전체가 아니라 현재 접수된 **추출 또는 검수 한 phase**다. 조건 승인은 이후 별도 review phase를 접수한다.
 
 ```sh
-.venv/bin/python -m backend.agent_framework worker --env-file .runtime/framework-app.env --config examples/agent_framework/team_config.synthetic.json --once
+.venv/bin/python -m backend.agent_framework worker --env-file .env.local --config examples/agent_framework/team_config.synthetic.json --once
 ```
 
 API 주소는 `http://localhost:8012`다. 현재 UI·front-v2·Swagger 화면을 제공하지 않는다. 기존 `GET /api/v1/auth/csrf`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`을 재사용한다. 기존에 발급한 활성 이메일 계정을 사용하며 신규 계정·프로젝트를 자동 생성하지 않는다. 기존 개발용 admin 흐름은 이 초기 프레임워크 저장 경로의 지원 대상이 아니다.

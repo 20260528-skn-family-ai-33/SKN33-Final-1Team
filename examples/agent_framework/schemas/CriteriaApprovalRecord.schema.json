@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -86,8 +86,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -171,8 +171,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -242,8 +242,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -362,8 +362,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -398,8 +398,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -505,8 +505,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -611,8 +611,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -689,8 +689,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -733,8 +733,8 @@
       "description": "Source-grounded compilation metadata, not semantic approval.",
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -828,8 +828,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -858,8 +858,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -907,8 +907,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "2.0.0",
-      "default": "2.0.0",
+      "const": "3.0.0",
+      "default": "3.0.0",
       "title": "Contract Version",
       "type": "string"
     },

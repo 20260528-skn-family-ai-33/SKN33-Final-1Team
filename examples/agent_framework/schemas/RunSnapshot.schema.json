@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -86,8 +86,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -137,8 +137,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -222,8 +222,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -274,8 +274,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -345,8 +345,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -452,8 +452,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -558,8 +558,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -636,8 +636,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -733,8 +733,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -768,8 +768,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -825,8 +825,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -857,8 +857,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -872,6 +872,30 @@
         "observed": {
           "title": "Observed",
           "type": "string"
+        },
+        "observation_status": {
+          "default": "unknown",
+          "enum": [
+            "observed",
+            "absent",
+            "unreadable",
+            "not_checked",
+            "unknown"
+          ],
+          "title": "Observation Status",
+          "type": "string"
+        },
+        "observed_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Unit"
         },
         "verdict": {
           "enum": [
@@ -922,8 +946,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -965,8 +989,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1025,8 +1049,8 @@
       "description": "Source-grounded compilation metadata, not semantic approval.",
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1120,8 +1144,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1150,8 +1174,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1200,8 +1224,8 @@
       "description": "One role boundary, including validation; never a raw provider payload.",
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1320,8 +1344,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1331,6 +1355,146 @@
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
           "title": "Criterion Id",
           "type": "string"
+        },
+        "criterion_text": {
+          "title": "Criterion Text",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "number",
+            "visual",
+            "unsupported"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "equals",
+            "contains",
+            "gte",
+            "lte",
+            "present",
+            "manual"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "expected": {
+          "title": "Expected",
+          "type": "string"
+        },
+        "expected_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Unit"
+        },
+        "observed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed"
+        },
+        "observed_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Unit"
+        },
+        "observation_status": {
+          "default": "unknown",
+          "enum": [
+            "observed",
+            "absent",
+            "unreadable",
+            "not_checked",
+            "unknown"
+          ],
+          "title": "Observation Status",
+          "type": "string"
+        },
+        "comparison_expected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comparison Expected"
+        },
+        "comparison_observed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comparison Observed"
+        },
+        "comparison_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comparison Unit"
+        },
+        "image": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
         },
         "verdict": {
           "enum": [
@@ -1352,6 +1516,11 @@
       },
       "required": [
         "criterion_id",
+        "criterion_text",
+        "kind",
+        "operator",
+        "required",
+        "expected",
         "verdict"
       ],
       "title": "ValidatedItem",
@@ -1361,8 +1530,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -1412,8 +1581,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "2.0.0",
-      "default": "2.0.0",
+      "const": "3.0.0",
+      "default": "3.0.0",
       "title": "Contract Version",
       "type": "string"
     },

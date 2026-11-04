@@ -376,7 +376,7 @@ compose.yaml                      # PostgreSQL 기반. 업무 schema M008/worker
 |---|---|
 | React 개발 서버 | 현재 `127.0.0.1:5173`, API는 FastAPI에 프록시 |
 | FastAPI 업무 API | 현재 기본 `127.0.0.1:8000`, 빌드된 React 제공 |
-| 독립 Python worker | C13 `python -m backend.app.worker --env-file .env.worker`, HTTP 포트 없음. 별도 v1 접수 프로필과 같은 DB/파일 루트 |
+| 독립 Python worker | C13 `python -m backend.app.worker --env-file .env.local`, HTTP 포트 없음. 별도 v1 접수 프로필과 같은 DB/파일 루트 |
 | PostgreSQL | 기초 컨테이너/역할·접속·보존 검증 기록 있음. C01~C06 M001~M006와 C07a 인덱스·C07b 가드·C07c M008 최소 권한/최종 스키마 격리 DB 검증 완료. 정식 head M008, 일상 DB/API 저장 연결은 후속 |
 
 현재 `run.sh`·`run.cmd`는 준비 상태를 검사하고 **FastAPI만 시작**한다. PostgreSQL이나 영속 worker를 자동 설치·실행하지 않는다. 현재 실행 옵션·포트는 [실행가이드](../실행가이드.md)를 따른다. worker 실행/설정은 [C13 가이드](DB_Settings/DB_통합설계서.html#source-27)를 따른다. [C15 Linux 배포 리허설/전환 가이드](DB_Settings/DB_통합설계서.html#source-29)까지 완료했다. 실제 운영 서버·모델·보관 정책을 정한 뒤 운영 전환을 별도로 진행한다.

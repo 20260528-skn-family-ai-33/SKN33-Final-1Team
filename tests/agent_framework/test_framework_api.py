@@ -59,7 +59,7 @@ def test_rejects_foreign_context_schema_drift_and_early_approval():
         assert client.post(path, json=approval(payload["context"], "approve_final")).status_code == 409
         bad = approval({**payload["context"], "project_id": "foreign"}, "approve_criteria")
         assert client.post(path, json=bad).status_code == 409
-        payload["context"]["contract_version"] = "3.0.0"
+        payload["context"]["contract_version"] = "2.0.0"
         assert client.post(PREFIX + "/runs", json=payload).status_code == 422
         assert client.get(PREFIX + "/runs/missing").status_code == 404
 

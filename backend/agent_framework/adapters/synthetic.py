@@ -112,6 +112,8 @@ class SyntheticAdapters:
                 observed, verdict = "2", "fail"
             observations.append(Observation(
                 criterion_id=criterion.criterion_id, observed=observed, verdict=verdict,
+                observation_status="unreadable" if uncertainty else "observed",
+                observed_unit=criterion.unit,
                 image=ImageEvidence(
                     asset_version_id=request.asset.asset_version_id, asset_hash=request.asset.sha256,
                     bbox=(0.08, 0.08, 0.88, 0.24) if index % 2 == 0 else (0.12, 0.35, 0.78, 0.82),

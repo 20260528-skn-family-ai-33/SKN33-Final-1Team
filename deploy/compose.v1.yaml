@@ -6,7 +6,23 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.v1
-    env_file: ../.env.rebuild
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Select a runtime file with --env-file}
+      CC_DATA_DIR: ${CC_DATA_DIR:-/app/data/creative_checker}
+      CC_STORAGE_BACKEND: ${CC_STORAGE_BACKEND:-local}
+      CC_S3_BUCKET: ${CC_S3_BUCKET:-}
+      CC_S3_REGION: ${CC_S3_REGION:-ap-northeast-2}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      CC_COOKIE_SECURE: ${CC_COOKIE_SECURE:-true}
+      CC_SESSION_COOKIE: ${CC_SESSION_COOKIE:-cc_session}
+      CC_SESSION_HOURS: ${CC_SESSION_HOURS:-12}
+      CC_QWEN_MODEL: ${CC_QWEN_MODEL:-Qwen/Qwen3.5-4B}
+      CC_QWEN_REVISION: ${CC_QWEN_REVISION:-unverified}
+      CC_NEO4J_URI: ${CC_NEO4J_URI:-}
+      CC_NEO4J_USER: ${CC_NEO4J_USER:-neo4j}
+      CC_NEO4J_PASSWORD: ${CC_NEO4J_PASSWORD:-}
     restart: unless-stopped
     expose: ["8000"]
     read_only: true

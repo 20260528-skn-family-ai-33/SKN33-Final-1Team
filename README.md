@@ -2,6 +2,8 @@
 
 **문서의 요구사항과 광고 납품물을 대조하고, 판단 근거를 바탕으로 수정 요청·재검수·최종 승인을 돕는 검수 업무 자동화 프로젝트입니다.**
 
+환경 파일 선택과 설치 방법은 [환경 설정과 Python 의존성](docs/environment.md)을 참고하세요. 실행·관리·테스트 예시 세 개와 공통 잠금 파일을 사용합니다.
+
 개발 파일의 위치와 이름은 [코드 구조와 명명 규칙](docs/code-structure.md)을 참고하세요. 실행 프로필별 코드·테스트 위치와 기존 명령의 호환 범위를 정리했습니다.
 
 ## 공통 에이전트 개발 시작점 · 2026-11-02
@@ -26,7 +28,7 @@
 | --- | --- | --- |
 | 기존 이미지·PDF·영상·모델 테스트 | `cd frontend && npm run dev` | 기존 `./run.sh` 또는 `python start.py` |
 | 기존 PostgreSQL v1 | `cd frontend && npm run dev:v1` | 기존 `python -m scripts.run_v1` |
-| 재구축 문서·수정·승인 업무 | `cd frontend && npm run dev:rebuild` | `UV_PROJECT_ENVIRONMENT=.venv-rebuild uv run --no-sync --env-file .env.rebuild python start.py api` |
+| 재구축 문서·수정·승인 업무 | `cd frontend && npm run dev:rebuild` | `uv run --locked --no-sync python start.py api --env-file .env.local` |
 
 API 계약이 다른 화면은 해당 프로필의 백엔드와 함께 사용합니다. 재구축 업무는 PostgreSQL·별도 worker·필요 시 Neo4j 및 모델 엔드포인트를 준비해야 합니다. 자동 검사 판정과 사람의 최종 승인은 별도 기록입니다. [통합 실행·검증 안내](docs/front-v2-integration-2026-10-30.md)를 참고하세요.
 

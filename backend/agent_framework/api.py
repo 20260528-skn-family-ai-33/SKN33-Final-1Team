@@ -5,6 +5,7 @@ are test context, not proof of identity. Bind to 127.0.0.1, never a shared host.
 """
 from fastapi import FastAPI, HTTPException
 
+from . import CONTRACT_VERSION
 from .composition import TeamConfiguration, build_agents, describe_agents, describe_configuration
 from .contracts import Approval, AssetRef, Context, Contract, DocumentRef, RunSnapshot, StepTimeline
 from .ports import Agents
@@ -38,7 +39,7 @@ def create_app(agents: Agents | None = None, *, profile: str | None = None,
         agents = make_agents()
     workflow = Workflow(agents, profile=profile)
     app = FastAPI(title="Creative Checker — Development Framework",
-                  version="2.0.0",
+                  version=CONTRACT_VERSION,
                   description="Development only. In-memory state, synthetic default adapters, no authentication. "
                               "Not the front-v2/M008 production API. Bind to loopback only.")
     app.state.workflow = workflow
@@ -73,7 +74,7 @@ def create_app(agents: Agents | None = None, *, profile: str | None = None,
 
     @app.get(prefix + "/health")
     def health():
-        return {"contract_version": "2.0.0", "profile": profile, "storage": "memory",
+        return {"contract_version": CONTRACT_VERSION, "profile": profile, "storage": "memory",
                 "authenticated": False, "production_ready": False,
                 **adapter_status()}
 

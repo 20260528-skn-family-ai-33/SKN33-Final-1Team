@@ -8,7 +8,7 @@
 
 재구축 프론트도 공용 Fairweather 랜딩, 가로 업무 메뉴, 검수 목록·이미지·상세의 3열 배치, 확대·이동·선택 근거 확대를 사용한다. 승인·수정 요청·재검수 API와 상태·권한 조건은 재구축 구현을 유지한다. `frontend/dist`는 기본 화면, `dist-v1`과 `dist-rebuild`는 각 프로필 빌드다. 후자는 Git에서 제외하고 필요할 때 생성한다.
 
-재구축 API는 `UV_PROJECT_ENVIRONMENT=.venv-rebuild uv sync --locked` 후 `.env.rebuild.example`을 참고해 로컬 설정을 준비하고 `UV_PROJECT_ENVIRONMENT=.venv-rebuild uv run --no-sync --env-file .env.rebuild python start.py api`로 실행한다. worker/projection/mcp도 같은 명시적 컴포넌트 인수를 쓴다. 기존 OCR 환경 `.venv`를 보존하기 위해 재구축 의존성은 `.venv-rebuild`에 설치한다. 기존 OCR 준비 옵션과 기존 v1 실행·배포 진단은 기존 진입점을 보존했다. 데이터베이스 마이그레이션·계정 발급은 해당 재구축 문서의 명시적 절차로만 수행한다.
+재구축 API는 `uv sync --locked --group dev` 후 `.env.example`을 참고해 `.env.local`을 준비하고 `uv run --locked --no-sync python start.py api --env-file .env.local`로 실행한다. worker/projection/mcp도 같은 파일을 명시한다. 기존 OCR 환경을 보존해야 하면 [환경 통합 안내](environment.md)에 따라 별도 환경을 선택한다. 기존 OCR 준비 옵션과 기존 v1 실행·배포 진단은 기존 진입점을 보존했다. 데이터베이스 마이그레이션·계정 발급은 해당 재구축 문서의 명시적 절차로만 수행한다.
 
 ## 검증 범위
 

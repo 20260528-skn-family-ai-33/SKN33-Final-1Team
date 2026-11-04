@@ -13,11 +13,12 @@ from backend.app.security.errors import AuthError
 from .composition import load_config,build_agents
 from .postgres import PostgresStore
 from .postgres_schema import check_extension,check_app_permissions
+from backend.runtime_environment import activate_runtime
 
 
-def _values(filename):
+def _values(filename, component='v1'):
     # An explicit file is required; never discover or modify the user's .env.
-    values=read_environment_file(Path(filename))
+    values=activate_runtime(component, Path(filename))
     if any(values.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise ConfigurationError('Runtime requires app-only credentials.')
     if values.get('APP_ENV') not in ('development','test'):
@@ -54,7 +55,7 @@ def postgres_serve(args):
 
 def postgres_worker(args):
     from .durable_worker import PostgresQueue,execute_claim
-    values,settings=_values(args.env_file)
+    values,settings=_values(args.env_file, 'framework-worker')
     configuration=load_config(args.config)
     engine=create_app_engine(settings)
     stop=Event()

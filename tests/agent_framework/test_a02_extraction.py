@@ -105,7 +105,8 @@ def test_undecided_source_cannot_be_filled_even_when_provider_claims_resolved():
     assert error.value.code=='A02_UNRESOLVED_VALUE_INVENTED'
 
 
-@pytest.mark.parametrize('raw', (b'{',b'{"candidates":[],"candidates":[]}',b'{"candidates":[]}',b'{"candidates":NaN}',b'x'*(256*1024+1)))
+@pytest.mark.parametrize('raw', (b'{',b'{"candidates":[],"candidates":[]}',b'{"candidates":[]}',b'{"candidates":NaN}',b'x'*(256*1024+1)),
+    ids=('invalid-json','duplicate-key','empty-candidates','nonfinite-json','oversized-response'))
 def test_invalid_or_oversized_json_never_becomes_a_draft(raw):
     doc=document();adapter=RegisteredPDFExtractor(lambda _:doc,PDFExtractionConfiguration(mode='mock'),provider=lambda _:raw)
     with pytest.raises(AdapterFailure):adapter.extract(request(doc))

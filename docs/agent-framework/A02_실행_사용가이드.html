@@ -10,7 +10,7 @@
 <div class="side-foot">2026.11.04 · Mac / Windows<br>Docker · Qwen · PostgreSQL<br>기존 front-v2 데스크톱</div></aside>
 <div class="content"><header class="topbar"><span class="crumb">DOCKER → QWEN → PDF → REVIEW BRIEF</span>
 <a href="A02_실행_사용가이드.md">Markdown 원본 ↗</a></header><article><section class="intro"><h1 id="a02-실행사용-가이드">A02 실행·사용 가이드</h1>
-<p>2026-11-04 · Docker Desktop → RunPod Qwen → PDF 요구사항 추출 → front-v2 표시</p>
+<p>2026-11-04 · 계약 3.0.0 · Docker Desktop → RunPod Qwen → PDF 요구사항 추출 → front-v2 표시</p>
 </section><section class="chapter"><h2 id="1-이-가이드에서-실행하는-것">1. 이 가이드에서 실행하는 것</h2>
 <p>기존 Qwen3.5-4B가 PDF의 검수 요구사항과 화면용 문단을 한 번에 생성한다. API는 원문·파일 버전·접수·조회를, worker는 모델 호출과 검증된 초안 저장을 맡는다. 결과는 기존 PostgreSQL에 저장하고 front-v2의 <strong>3. 검수 요구사항</strong>에 추가한다.</p>
 <p>이번 실행 구성은 <strong>A02 추출과 화면 반영 확인용</strong>이다. 포스터 이미지는 비교할 자료로 화면에 준비한다. 이미지 업로드나 요구사항 표시만으로 A04·A05의 실제 포스터 검사, 사람의 기준 승인, 최종 승인이 완료된 것은 아니다. AWS 배포나 실행 자동화는 이 문서에서 수행하지 않는다.</p>
@@ -27,7 +27,7 @@
 <p>Windows PowerShell에서는 본인이 Git으로 받은 저장소 폴더에서 터미널을 연다. 개인 PC의 Mac 절대 경로를 붙여 넣지 않는다. 이후 PDF·이미지·설정 경로는 모두 저장소 상대 경로다.</p>
 <h3 id="다른-조원의-windows-pc에서-처음-실행할-때">다른 조원의 Windows PC에서 처음 실행할 때</h3>
 <p>이 문서의 Windows PowerShell 명령으로 같은 Linux 컨테이너 구성을 실행한다. 다만 작성자의 Mac 설정과 파일 저장소가 다른 PC에 자동 복제되는 것은 아니다. 최초 준비 후에는 본문의 같은 실행 순서를 따른다. Windows 실기기의 전체 실행은 아직 별도 검증 대상이다.</p>
-<ol><li>이번 A02 코드와 문서가 게시된 브랜치·커밋을 받는다. 11/04 이 문서 작성 시점의 작업 브랜치는 <code>feat/37-a02-pdf-registration</code>이며, 추가 문서·문단 연결 파일 일부는 로컬 미커밋 상태였다. 게시 전의 로컬 변경은 Git clone/pull로 받을 수 없다.</li><li>Docker Desktop의 Linux 엔진, Python 3.12, Node.js·npm, OpenSSH Client를 준비한다. 본인의 저장소 폴더에서 PowerShell을 연다.</li><li>본인의 SSH 공개 키를 RunPod 접속에 등록하고 개인 키는 본인 PC에 둔다. 기존 RunPod Qwen 서버가 실행 중이면 함께 사용하고 추가 서버를 켜지 않는다.</li><li>개발 DB 접속과 로그인 계정·프로젝트 권한을 준비한다. <code>host.docker.internal</code>은 그 Windows PC를 가리키므로 작성자 Mac의 DB를 자동으로 가리키지 않는다. 공용 DB를 쓴다면 담당자가 제공한 실제 접속 주소·app 계정을 사용한다.</li><li>아래 절차로 본인 app env와 presentation 설정을 만든다. 비밀 설정은 Git에 없으며, 새 설정에는 기존 RunPod 서버와 같은 Qwen 인증 키가 필요하다.</li><li>이미지 빌드 후 해당 PC의 새 PDF 볼륨을 한 번 초기화한다. 4절의 최초 초기화 명령을 따른다. 기존 저장소는 재초기화하지 않는다.</li></ol>
+<ol><li>이번 A02 코드와 문서가 게시된 브랜치·커밋을 받는다. 작업 브랜치는 <code>feat/37-a02-pdf-registration</code>이며, A02·문단 연결·회원가입은 <code>345d802</code>에 커밋했다. main 통합의 기준·검증·기존 설정 처리 방법은 <a href="main_병합_검증_20261104.md">병합 검증 기록</a>을 따른다. 로컬 병합 결과는 push 전까지 다른 PC에서 받을 수 없다.</li><li>Docker Desktop의 Linux 엔진, Python 3.12, Node.js·npm, OpenSSH Client를 준비한다. 본인의 저장소 폴더에서 PowerShell을 연다.</li><li>본인의 SSH 공개 키를 RunPod 접속에 등록하고 개인 키는 본인 PC에 둔다. 기존 RunPod Qwen 서버가 실행 중이면 함께 사용하고 추가 서버를 켜지 않는다.</li><li>개발 DB 접속과 로그인 계정·프로젝트 권한을 준비한다. <code>host.docker.internal</code>은 그 Windows PC를 가리키므로 작성자 Mac의 DB를 자동으로 가리키지 않는다. 공용 DB를 쓴다면 담당자가 제공한 실제 접속 주소·app 계정을 사용한다.</li><li>아래 절차로 본인 app env와 presentation 설정을 만든다. 비밀 설정은 Git에 없으며, 새 설정에는 기존 RunPod 서버와 같은 Qwen 인증 키가 필요하다.</li><li>이미지 빌드 후 해당 PC의 새 PDF 볼륨을 한 번 초기화한다. 4절의 최초 초기화 명령을 따른다. 기존 저장소는 재초기화하지 않는다.</li></ol>
 <h3 id="여러-pc가-같은-db를-사용하는-경우">여러 PC가 같은 DB를 사용하는 경우</h3>
 <p><code>cc-framework-data</code>는 <strong>각 Docker 엔진 안의 로컬 볼륨</strong>이다. 이름이 같아도 Mac과 Windows의 PDF 파일이 공유되지 않는다. 현재 worker는 같은 설정·런타임 해시의 DB 작업을 가져오며 PC별 파일 보유 여부로 큐를 나누지 않는다. 따라서 공용 DB에 각 PC의 API·worker를 동시에 연결하면 다른 PC가 등록한 PDF를 읽지 못할 수 있다.</p>
 <p>각자 독립 실행할 때는 담당자가 준비한 별도의 개발 DB와 각 PC의 파일 볼륨을 사용한다. 공용 실행 환경을 사용하는 경우에는 원문 파일을 읽을 수 있는 공용 API·worker·저장소 구성을 마련해 그 서버를 이용한다. 이 문서의 로컬 실행 명령만으로 다중 PC의 공유 파일 저장소·작업 라우팅이 구성되지는 않는다.</p>
@@ -45,6 +45,13 @@
 <div class="code-block" data-language="powershell"><div class="code-bar"><span>POWERSHELL</span><button class="copy" type="button">복사</button></div><pre><code>.\.venv\Scripts\python.exe -m scripts.prepare_a02_presentation --env-file .runtime/framework-desktop.env --config deploy/qwen-a02/worker-config.presentation.example.json</code></pre></div>
 <p>공개 예시는 A02 전용 설정이다. 기존 팀 설정에 별도 역할 연결이 있으면 <code>--config</code>에 그 기존 Qwen 설정을 지정해 복사한다. 준비 도구는 출력 파일을 덮어쓰지 않는다. 출력 파일 한 개만 있거나 다른 설정을 준비하려면 별도 출력 이름을 정해 API·worker에 동일하게 지정한다.</p>
 <p>새 DB의 계정·M008·AF004·저장소 준비는 <a href="Mac_Windows_공통실행_가이드.html">Mac·Windows 공통 실행 가이드</a>를 따른다. DB가 준비되지 않았다는 이유로 새 DB나 기존 볼륨을 지우지 않는다. 마이그레이션은 DB 전체 백업 후 별도 owner 설정으로 명시적으로 수행하고, API·worker에는 app 설정만 전달한다. 기존 환경에서는 초기화·마이그레이션을 매번 반복하지 않는다.</p>
+<h3 id="main-병합-뒤-기존-200-설정을-사용하는-경우">main 병합 뒤 기존 2.0.0 설정을 사용하는 경우</h3>
+<p>main의 새 계약은 3.0.0이다. 기존 2.0.0 설정·저장 실행은 자동 변환하거나 새 코드로 재개하지 않는다. 기존 개인 파일과 실행 기록은 보존한다. 새 공개 presentation 예시로 별도의 v3 설정 복사본을 만들고 새 PDF 추출을 접수한다. 이 작업에는 추가 DB 마이그레이션이 없다.</p>
+<p>Mac, 두 v3 출력 파일이 없을 때:</p>
+<div class="code-block" data-language="bash"><div class="code-bar"><span>BASH</span><button class="copy" type="button">복사</button></div><pre><code>.venv/bin/python -m scripts.prepare_a02_presentation --env-file .runtime/framework-desktop.env --config deploy/qwen-a02/worker-config.presentation.example.json --output-env .runtime/framework-desktop-presentation-v3.env --output-config .runtime/team_config.qwen-presentation-v3.json</code></pre></div>
+<p>Windows PowerShell, 두 v3 출력 파일이 없을 때:</p>
+<div class="code-block" data-language="powershell"><div class="code-bar"><span>POWERSHELL</span><button class="copy" type="button">복사</button></div><pre><code>.\.venv\Scripts\python.exe -m scripts.prepare_a02_presentation --env-file .runtime/framework-desktop.env --config deploy/qwen-a02/worker-config.presentation.example.json --output-env .runtime/framework-desktop-presentation-v3.env --output-config .runtime/team_config.qwen-presentation-v3.json</code></pre></div>
+<p>이 경우 아래 check·API·worker 명령의 env와 config를 각각 <code>.runtime/framework-desktop-presentation-v3.env</code>, <code>.runtime/team_config.qwen-presentation-v3.json</code>으로 바꿔 같은 쌍으로 실행한다. 기존 역할을 추가 연결한 사용자는 자기 역할 설정도 계약 3.0.0으로 명시적으로 준비한다. 원본 2.0.0 기록을 새 모델 실행이나 새 승인 기록으로 표시하지 않는다.</p>
 </section><section class="chapter"><h2 id="4-docker-실행-확인과-이미지-빌드">4. Docker 실행 확인과 이미지 빌드</h2>
 <p>Docker Desktop을 열고 엔진이 준비될 때까지 기다린다. 기존 PostgreSQL도 Docker 컨테이너로 사용 중이라면 Docker Desktop의 Containers에서 해당 기존 DB 컨테이너를 시작한다. 새 DB나 새 볼륨을 대신 만들지 않는다. 저장소 루트에서 확인한다.</p>
 <div class="code-block" data-language="bash"><div class="code-bar"><span>BASH</span><button class="copy" type="button">복사</button></div><pre><code>docker version</code></pre></div>

@@ -53,7 +53,7 @@ def create_app_engine(settings: Settings) -> Engine:
         from sqlalchemy import URL, create_engine, event
         import psycopg  # noqa: F401 -- fail clearly before a first connection
     except ImportError:
-        raise PersistenceError("DB_DEPENDENCIES_MISSING", "Install requirements-db.txt for PostgreSQL support.") from None
+        raise PersistenceError("DB_DEPENDENCIES_MISSING", "Install uv sync --locked for PostgreSQL support.") from None
     url = URL.create("postgresql+psycopg", username=db.username, password=db.password.reveal(),
                      host=db.host, port=db.port, database=db.database)
     engine = create_engine(

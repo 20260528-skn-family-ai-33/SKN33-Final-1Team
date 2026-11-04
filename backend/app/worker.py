@@ -8,9 +8,10 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 import json,os,signal,sys,threading
-from .config import ConfigurationError,Settings,load_settings,read_environment_file
+from .config import ConfigurationError,Settings,load_settings
 from .execution.queue import WorkerQueue,HEARTBEAT_SECONDS
 from .security.errors import AuthError
+from backend.runtime_environment import activate_runtime
 
 
 @dataclass(frozen=True,slots=True)
@@ -124,7 +125,7 @@ def main(argv=None):
     args=parser.parse_args(argv)
     try:
         if args.check_only and args.write_config:raise ConfigurationError('Choose one action.')
-        settings=load_worker_settings(read_environment_file(args.env_file))
+        settings=load_worker_settings(activate_runtime("v1-worker", args.env_file))
         if args.check_only:event('worker_configuration_valid');return 0
         if args.write_config:
             from .execution.pipeline import PaddlePipeline

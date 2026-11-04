@@ -220,6 +220,7 @@ def test_model_paragraphs_persist_and_project_to_frontend_without_approval(seman
 def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semantic):
     from pathlib import Path
     from hashlib import sha256
+    from tests.agent_framework.replay_contract import current_contract_copy
     r=semantic
     config=r.config.model_copy(update={'pdf_extraction':r.config.pdf_extraction.model_copy(update={'presentation':True})})
     app=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
@@ -230,7 +231,8 @@ def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semant
         client.headers['Origin']='http://localhost:8000';client.cookies.update(r.client.cookies)
         current=SimpleNamespace(**(vars(r)|{'client':client,'app':app,'config':config}))
         uploaded=upload(current,raw,filename=pdf.name);assert uploaded.status_code==201,uploaded.text
-        rid,snapshot,_,calls=run_extraction(current,uploaded.json(),recorded['response'])
+        # Preserve the v2 model recording; replay only its copied version tags at v3.
+        rid,snapshot,_,calls=run_extraction(current,uploaded.json(),current_contract_copy(recorded['response']))
         assert len(calls)==1 and len(snapshot['criteria']['criteria'])==13
         response=client.get('/api/framework/v1/runs/'+rid+'/requirements')
         assert response.status_code==200,response.text

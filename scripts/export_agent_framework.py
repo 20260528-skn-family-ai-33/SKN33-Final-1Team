@@ -27,7 +27,7 @@ def export_checks(destination: Path) -> None:
         for scenario in scenarios:
             request, expected = role_examples(scenario)[role]
             filename = f"{role}.{scenario}.json"
-            (checks / filename).write_text(request.model_dump_json(indent=2) + "\n", encoding="utf-8")
+            (checks / filename).write_text(request.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
             options = {"expected_verdict": expected.verdict} if role in {"A06", "A07"} else {}
             cases.append(RoleCheckCase(id=scenario, input=filename, **options))
         request = baseline[role][0].model_dump(mode="json")
@@ -43,12 +43,12 @@ def export_checks(destination: Path) -> None:
             code = "EVIDENCE_PROJECT_MISMATCH"
         if code is not None:
             filename = f"{role}.invalid-scope.json"
-            (checks / filename).write_text(json.dumps(request, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            (checks / filename).write_text(json.dumps(request, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
             cases.append(RoleCheckCase(id="invalid-scope", input=filename, expected_error=code))
         suite = RoleCheckSuite(role=role, cases=tuple(cases))
         (checks / f"{role}.suite.json").write_text(
             json.dumps(suite.model_dump(mode="json", exclude_none=True), ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
 
 
 def export(destination: Path) -> None:
@@ -61,29 +61,29 @@ def export(destination: Path) -> None:
             SupplementInput,CriterionResolution,CriteriaEdit,CriteriaVersionRequest,RecordedCriteriaEdit,CriteriaVersion,
             CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord,PosterReviewRequest,TextDocumentInput):
         (schemas / f"{contract.__name__}.schema.json").write_text(
-            json.dumps(contract.model_json_schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            json.dumps(contract.model_json_schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     for name, kind in (("synthetic", "synthetic"), ("template", "unconfigured")):
         config = TeamConfiguration(roles={role: RoleBinding(kind="reference" if role == "A06" else kind)
                                          for role in ROLE_PORTS})
         (destination / f"team_config.{name}.json").write_text(
             json.dumps(config.model_dump(mode="json", exclude_none=True), ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8")
+            encoding="utf-8", newline="\n")
     for name,mode in (('pdf-mock','mock'),('pdf-qwen.example','qwen')):
         config=TeamConfiguration(roles={role:RoleBinding(kind='registered_pdf' if role=='A02' else
             'reference' if role=='A06' else 'unconfigured') for role in ROLE_PORTS},
             pdf_extraction=PDFExtractionConfiguration(mode=mode,
                 endpoint='http://127.0.0.1:8001/v1/chat/completions' if mode=='qwen' else None))
         (destination/f'team_config.{name}.json').write_text(
-            json.dumps(config.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            json.dumps(config.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     poster=TeamConfiguration(roles={'A02':RoleBinding(kind='registered_pdf'),
         'A04_A05':RoleBinding(kind='registered_poster',factory='examples.agent_framework.poster_adapters:make_inspector'),
         'A06':RoleBinding(kind='reference'),
         'A07':RoleBinding(kind='factory',factory='backend.agent_framework.poster_review:make_reporter')},
         pdf_extraction=PDFExtractionConfiguration(mode='mock'))
     (destination/'team_config.poster-review.template.json').write_text(
-        json.dumps(poster.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        json.dumps(poster.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     (destination / "openapi.json").write_text(
-        json.dumps(create_app().openapi(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        json.dumps(create_app().openapi(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     export_checks(destination)
     from backend.agent_framework.adapters.synthetic import sample_inputs
     context, document, asset = sample_inputs()
@@ -91,7 +91,7 @@ def export(destination: Path) -> None:
     case = FlowCheckCase(id="synthetic-approval-rereview", context=context, document=document, asset=asset,
         revision_context=revised, revision_asset=revised_asset, expected_initial_verdict="pass",
         change_reason="합성 개발 입력: 수정 승인과 새 버전의 전체 재검수를 확인합니다.")
-    (destination / "workflow.synthetic.json").write_text(case.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    (destination / "workflow.synthetic.json").write_text(case.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def main(argv=None):

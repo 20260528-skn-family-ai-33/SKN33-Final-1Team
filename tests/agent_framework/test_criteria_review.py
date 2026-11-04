@@ -17,7 +17,12 @@ from backend.agent_framework.validation import validate_evidence
 SOURCE=Path(__file__).resolve().parents[2]/'docs/poster-baselines/2026-11-03/workflow/extraction-demo/EXH-NEW004_mock.json'
 
 
-def draft():return CriteriaDraft.model_validate_json(SOURCE.read_text(encoding='utf-8'))
+def draft():
+    import json
+    from tests.agent_framework.replay_contract import current_contract_copy
+    recorded=json.loads(SOURCE.read_text(encoding='utf-8'))
+    assert recorded['synthetic'] is True
+    return CriteriaDraft.model_validate(current_contract_copy(recorded))
 
 
 def edit(cid,*,action='amend',expected='개발 테스트용 확인값',kind='text',operator='contains'):

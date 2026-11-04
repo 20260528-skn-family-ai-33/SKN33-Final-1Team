@@ -36,14 +36,14 @@ def generate(destination: Path) -> tuple[Path, ...]:
     for role, (request, response) in role_examples().items():
         for suffix, payload in (("", request), (".output", response)):
             file = destination / f"{role}{suffix}.json"
-            file.write_text(payload.model_dump_json(indent=2) + "\n", encoding="utf-8")
+            file.write_text(payload.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
             files.append(file)
     scenarios = destination / "scenarios"
     scenarios.mkdir(exist_ok=True)
     for scenario in SCENARIOS:
         validated = role_examples(scenario)["A06"][1]
         file = scenarios / f"{scenario}.validated.json"
-        file.write_text(validated.model_dump_json(indent=2) + "\n", encoding="utf-8")
+        file.write_text(validated.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
         files.append(file)
     return tuple(files)
 

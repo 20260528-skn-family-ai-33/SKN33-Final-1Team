@@ -6,7 +6,7 @@ import pytest
 
 from backend.agent_framework.contracts import (
     Context, SourceRef, Criterion, AssetRef, Evidence, EvidenceBundle, ImageEvidence,
-    Observation, InspectionResult, ValidateRequest, ValidatedItem, ReportDraft,
+    Observation, InspectionResult, ValidateRequest, ReportDraft,
     ReportRequest,
 )
 from backend.agent_framework.invocation import InvocationFailure, invoke_role
@@ -24,7 +24,7 @@ def request():
     evidence = Evidence(evidence_id="e1", project_id="p1", kind="current_requirement", criterion_ids=("count",),
                         source_record_id="b1", source=source)
     bundle = EvidenceBundle(context=context, context_id="q1", status="complete", evidence=(evidence,), synthetic=True)
-    observation = Observation(criterion_id="count", observed="3", verdict="pass",
+    observation = Observation(criterion_id="count", observed="3", observation_status="observed", verdict="pass",
                               image=ImageEvidence(asset_version_id="a1", asset_hash="a" * 64), evidence_ids=("e1",))
     return ValidateRequest(context=context, criteria=(criterion,), asset=asset, evidence=bundle,
                            inspection=InspectionResult(context=context, observations=(observation,), synthetic=True))
@@ -144,7 +144,7 @@ def test_duplicate_observation_is_not_double_counted():
 def test_a06_cannot_hide_missing_observation():
     req = changed(request(), ["inspection", "observations"], [])
     result = ReferenceValidator().validate(req)
-    forged = result.model_copy(update={"verdict": "pass", "items": (ValidatedItem(criterion_id="count", verdict="pass"),)})
+    forged = result.model_copy(update={"verdict": "pass", "items": (result.items[0].model_copy(update={"verdict": "pass", "issues": ()}),)})
     with pytest.raises(ValueError, match="UNSUPPORTED_PASS"):
         validate_validated(req, forged)
 
@@ -223,7 +223,8 @@ def text_request(expected, operator, model_verdict="pass", observed="unrelated p
 def test_blank_text_expectation_requires_review(expected, operator, model_verdict):
     result = ReferenceValidator().validate(text_request(expected, operator, model_verdict))
     assert result.verdict == result.items[0].verdict == "review"
-    assert result.items[0].issues == ("missing_expected_value",)
+    assert result.items[0].issues == (("missing_expected_value", "model_review") if model_verdict == "review"
+                                      else ("missing_expected_value",))
 
 
 @pytest.mark.parametrize("operator", ["equals", "contains"])
@@ -231,7 +232,7 @@ def test_custom_validator_cannot_pass_a_blank_text_expectation(operator):
     req = text_request(" ", operator)
     result = ReferenceValidator().validate(req)
     forged = result.model_copy(update={"verdict": "pass", "items": (
-        ValidatedItem(criterion_id="count", verdict="pass"),)})
+        result.items[0].model_copy(update={"verdict": "pass", "issues": ()}),)})
     with pytest.raises(ValueError, match="VALIDATOR_UNSUPPORTED_PASS"):
         validate_validated(req, forged)
     adapter = SimpleNamespace(validate=lambda _request: forged.model_dump(mode="json"))
@@ -274,6 +275,6 @@ def test_custom_validator_cannot_fail_an_unresolved_text_expectation(operator):
     req = text_request("", operator)
     result = ReferenceValidator().validate(req)
     forged = result.model_copy(update={"verdict": "fail", "items": (
-        ValidatedItem(criterion_id="count", verdict="fail", issues=("missing_expected_value",)),)})
+        result.items[0].model_copy(update={"verdict": "fail"}),)})
     with pytest.raises(ValueError, match="VALIDATOR_UNRESOLVED_EXPECTATION"):
         validate_validated(req, forged)

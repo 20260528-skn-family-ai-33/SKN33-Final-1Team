@@ -20,9 +20,9 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
         if settings is None:
             import os
             from pathlib import Path
-            from .config import read_environment_file
+            from backend.runtime_environment import runtime_values
             selected=os.environ.get('CC_APP_ENV_FILE')
-            settings=load_v1_settings(read_environment_file(Path(selected)) if selected else None)
+            settings=load_v1_settings(runtime_values("v1", Path(selected) if selected else None))
     except ConfigurationError:
         logger.warning('profile_rejected',extra={'event':'profile_rejected','reason':'APP_CONFIGURATION_INVALID'})
         raise

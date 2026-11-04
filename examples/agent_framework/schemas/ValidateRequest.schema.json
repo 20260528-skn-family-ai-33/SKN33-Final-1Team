@@ -4,8 +4,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -63,8 +63,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -148,8 +148,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -219,8 +219,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -326,8 +326,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -432,8 +432,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -510,8 +510,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -567,8 +567,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -599,8 +599,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -614,6 +614,30 @@
         "observed": {
           "title": "Observed",
           "type": "string"
+        },
+        "observation_status": {
+          "default": "unknown",
+          "enum": [
+            "observed",
+            "absent",
+            "unreadable",
+            "not_checked",
+            "unknown"
+          ],
+          "title": "Observation Status",
+          "type": "string"
+        },
+        "observed_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Unit"
         },
         "verdict": {
           "enum": [
@@ -665,8 +689,8 @@
       "description": "Source-grounded compilation metadata, not semantic approval.",
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -760,8 +784,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -790,8 +814,8 @@
       "additionalProperties": false,
       "properties": {
         "contract_version": {
-          "const": "2.0.0",
-          "default": "2.0.0",
+          "const": "3.0.0",
+          "default": "3.0.0",
           "title": "Contract Version",
           "type": "string"
         },
@@ -839,8 +863,8 @@
   "additionalProperties": false,
   "properties": {
     "contract_version": {
-      "const": "2.0.0",
-      "default": "2.0.0",
+      "const": "3.0.0",
+      "default": "3.0.0",
       "title": "Contract Version",
       "type": "string"
     },

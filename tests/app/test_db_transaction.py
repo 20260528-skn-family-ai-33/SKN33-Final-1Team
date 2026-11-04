@@ -12,7 +12,7 @@ from tests.app.test_db_config import app_environment
 
 @pytest.fixture
 def sqlalchemy():
-    return pytest.importorskip("sqlalchemy", reason="Optional DB unit tests require requirements-db.txt")
+    return pytest.importorskip("sqlalchemy", reason="Optional DB unit tests require uv sync --locked")
 
 
 def driver_error(sqlalchemy, state=None):
