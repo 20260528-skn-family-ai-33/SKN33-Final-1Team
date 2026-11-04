@@ -15,7 +15,8 @@ export function mergeDocumentRequirements(current, document, filename) {
     if (existing.has(item.text.trim())) continue;
     existing.add(item.text.trim());
     added.push(item.text.trim());
-    const provenance = item.source_kind === 'pdf_page+paddleocr' ? ' · PDF 이미지 + OCR 판독문' : item.source_kind === 'paddleocr' ? ' · OCR 판독문' : '';
+    const provenance = item.source_kind === 'a02_qwen' ? ' · Qwen 요구사항 초안'
+      : item.source_kind === 'pdf_page+paddleocr' ? ' · PDF 이미지 + OCR 판독문' : item.source_kind === 'paddleocr' ? ' · OCR 판독문' : '';
     const references = Array.isArray(item.source_references) ? item.source_references
       .filter(ref => typeof ref.source_id === 'string' && Number.isInteger(ref.page) && typeof ref.source === 'string')
       .map(({ source_id, page, source }) => ({ source_id, page, source }))
@@ -28,7 +29,7 @@ export function mergeDocumentRequirements(current, document, filename) {
     sources.push({ text: item.text.trim(), type: item.type, ...structured,
       source: `${filename.slice(0, 100)} · ${pages}페이지${provenance}\n${item.source.slice(0, 350)}`.slice(0, 500) });
   }
-  const requirements = [current.trim(), ...added].filter(Boolean).join('\n');
+  const requirements = [current.trim(), ...added].filter(Boolean).join(document.framework ? '\n\n' : '\n');
   if (requirements.length > 6000 || existing.size > 100) {
     throw new Error('기존 입력과 PDF 조건을 합치면 6,000자 또는 100개를 넘습니다. 입력을 정리한 뒤 다시 올려 주세요.');
   }

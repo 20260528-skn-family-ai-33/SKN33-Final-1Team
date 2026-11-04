@@ -31,8 +31,13 @@ class DocumentRef(Contract):
     file_id: Identifier
     document_version_id: Identifier
     sha256: Hash
-    media_type: Literal["application/pdf"] = "application/pdf"
+    media_type: Literal["application/pdf","text/plain"] = "application/pdf"
     page_count: int = Field(ge=1)
+
+    @model_validator(mode='after')
+    def logical_text_block(self):
+        if self.media_type=='text/plain' and self.page_count!=1:raise ValueError('free input has one logical source block')
+        return self
 
 
 class AssetRef(Contract):
@@ -68,6 +73,39 @@ class CriteriaValueSource(Contract):
         return self
 
 
+class RequirementPresentation(Contract):
+    label: str = Field(min_length=1,max_length=80,pattern=r'^[^:\r\n]+$')
+    value: str = Field(min_length=1,max_length=400)
+
+
+class RequirementDetails(Contract):
+    """Source-grounded compilation metadata, not semantic approval."""
+    compiler: Literal['literal-requirements-v1','qwen-semantic-v1'] = 'literal-requirements-v1'
+    target: Literal['poster_text','poster_visual','file_metadata','delivery','unspecified']
+    field: str = Field(pattern=r'^[a-z][a-z0-9_]{0,63}$')
+    expected_source: SourceRef | None = None
+    normalized_expected: str | None = Field(default=None,max_length=100)
+    presentation: RequirementPresentation | None = None
+    qualifiers: tuple[SourceRef,...] = ()
+    origin: Literal['selected_source','model_structured','retained_unresolved_source'] = 'selected_source'
+
+    @model_validator(mode='after')
+    def field_matches_target(self):
+        scopes={'poster_text':{'wording','title_phrase','event_name','year','event_date','start_date','end_date','event_period','weekday','venue','viewing_hours'},
+            'poster_visual':{'visual_requirements','logo','visual_color','composition','imagery'},'file_metadata':{'pixel_width','pixel_height','file_format','color_mode'},
+            'delivery':{'quantity'},'unspecified':{'unspecified'}}
+        known={field:target for target,fields in scopes.items() for field in fields}
+        if self.field in known and known[self.field]!=self.target:raise ValueError('requirement field does not match its target')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_details(self,handler):
+        data=handler(self)
+        if self.normalized_expected is None:data.pop('normalized_expected',None)
+        if self.presentation is None:data.pop('presentation',None)
+        return data
+
+
 class Criterion(Contract):
     criterion_id: Identifier
     text: str = Field(min_length=1)
@@ -82,11 +120,13 @@ class Criterion(Contract):
     source: SourceRef
     human_added: bool = False
     value_source: CriteriaValueSource | None = None
+    details: RequirementDetails | None = None
 
     @model_serializer(mode='wrap')
     def preserve_legacy_value_shape(self,handler):
         data=handler(self)
         if self.value_source is None:data.pop('value_source',None)
+        if self.details is None:data.pop('details',None)
         return data
 
 
@@ -111,12 +151,19 @@ class ExtractionTrace(Contract):
     mode: Literal['mock','qwen']
     model: str = Field(min_length=1,max_length=200)
     parser: str = Field(min_length=1,max_length=100)
-    policy: Literal['a02-text-v1'] = 'a02-text-v1'
+    policy: Literal['a02-text-v1','a02-source-compile-v2','a02-semantic-v3','a02-semantic-v4'] = 'a02-text-v1'
+    input_kind: Literal['pdf','free_text'] = 'pdf'
     document_sha256: Hash
     prompt_sha256: Hash
     response_sha256: Hash
     sources: tuple[PDFTextSource,...] = Field(min_length=1,max_length=50)
     unresolved_criterion_ids: tuple[Identifier,...] = ()
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_trace(self,handler):
+        data=handler(self)
+        if self.input_kind=='pdf':data.pop('input_kind',None)
+        return data
 
 
 class CriteriaDraft(Contract):

@@ -22,6 +22,8 @@
   "pdf_extraction": {
     "contract_version": "2.0.0",
     "mode": "qwen",
+    "structuring": "semantic",
+    "presentation": false,
     "endpoint": "http://127.0.0.1:8001/v1/chat/completions",
     "model": "Qwen/Qwen3.5-4B",
     "parser_version": "1.28.2",

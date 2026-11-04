@@ -3,7 +3,7 @@ import { useLocation, useSearchParams } from 'react-router';
 import { fetchJson, fetchResponse } from '../../api/client.js';
 import { initialState, workflowReducer, canConfirm, canRun, parseRequirements } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
-import { extractDocumentWithProgress } from './documentProgress.js';
+import { extractDocumentWithProgress } from './frameworkDocument.js';
 
 const ReviewContext = createContext(null);
 
@@ -57,6 +57,7 @@ export function ReviewProvider({ children }) {
   const fileInput = useRef(null);
   const documentInput = useRef(null);
   const documentRequest = useRef(null);
+  const documentAttempts = useRef(new Map());
   const currentState = useRef(state);
   currentState.current = state;
   const generation = useRef(0);
@@ -136,11 +137,12 @@ export function ReviewProvider({ children }) {
     setDocumentError('');
   }, []);
 
-  async function selectDocument(files) {
+  async function selectDocument(files, projectId) {
     cancelDocument();
     invalidateSample();
     if (documentInput.current) documentInput.current.value = '';
     if (files.length !== 1) { setDocumentError('PDF는 한 번에 1개만 선택해 주세요.'); return; }
+    if (!projectId) { setDocumentError('PDF를 저장할 프로젝트를 선택해 주세요.'); return; }
     const file = files[0];
     if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF를 선택해 주세요.'); return; }
     const controller = new AbortController();
@@ -154,7 +156,7 @@ export function ReviewProvider({ children }) {
       const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
       if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
       if (controller.signal.aborted) return;
-      const result = await extractDocumentWithProgress(file, { signal: controller.signal, onProgress: update => {
+      const result = await extractDocumentWithProgress(file, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
           setDocumentProgress(previous => ({ ...previous, ...update }));
         }
@@ -163,7 +165,7 @@ export function ReviewProvider({ children }) {
       const merged = mergeDocumentRequirements(currentState.current.requirements, result, file.name);
       dispatch({ type: 'document', ...merged });
       setDocumentProgress(previous => ({ ...previous, percent: 100, stage: 'completed', message: `${merged.addedCount}개 조건을 입력에 반영했습니다.` }));
-      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${merged.addedCount}개 조건을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
+      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${merged.addedCount}개 요구사항 문단을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentNotice('');
@@ -392,6 +394,7 @@ export function ReviewProvider({ children }) {
     invalidateSample();
     cancelDocument();
     fileValidation.current += 1;
+    documentAttempts.current.clear();
     runRequest.current?.abort();
     runRequest.current = null;
     dispatch({ type: 'reset' });

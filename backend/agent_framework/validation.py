@@ -26,6 +26,24 @@ def _criteria(context, criteria):
             raise ValueError("CRITERION_DOCUMENT_MISMATCH")
         if sha256(source.quote.encode("utf-8")).hexdigest() != source.source_hash:
             raise ValueError("SOURCE_HASH_MISMATCH")
+        if criterion.details is not None:
+            details=criterion.details
+            for reference in details.qualifiers+((details.expected_source,) if details.expected_source is not None else ()):
+                if (reference.document_version_id!=context.document_version_id or reference.page!=source.page
+                        or reference.block_id!=source.block_id or reference.quote not in source.quote
+                        or not reference.quote.strip() or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+                    raise ValueError('DETAILS_SOURCE_MISMATCH')
+            if (details.expected_source is not None and details.expected_source.quote!=criterion.expected
+                    and details.normalized_expected!=criterion.expected):
+                raise ValueError('DETAILS_EXPECTED_MISMATCH')
+            if criterion.expected and not criterion.human_added and details.expected_source is None:
+                raise ValueError('DETAILS_EXPECTED_SOURCE_MISSING')
+            if details.normalized_expected is not None:
+                from .a02_semantic import verify_normalized_date
+                from .ports import AdapterFailure
+                try:verify_normalized_date(details.expected_source.quote if details.expected_source is not None else criterion.expected,
+                    details.normalized_expected,details.field,source.quote)
+                except AdapterFailure:raise ValueError('DETAILS_NORMALIZED_VALUE_INVALID') from None
         value=criterion.value_source
         if value is not None:
             if not criterion.human_added or not value.reference.strip() or not value.quote.strip():
@@ -200,6 +218,12 @@ class ReferenceValidator:
         items = []
         for criterion in request.criteria:
             issues = []
+            if criterion.details is not None:
+                if criterion.details.target!='poster_text':issues.append('typed_attribute_review_required')
+                if criterion.details.qualifiers:issues.append('qualifier_interpretation_required')
+                if criterion.details.normalized_expected is not None:issues.append('normalized_value_review_required')
+                if criterion.details.field in {'start_date','end_date','event_date','event_period'}:
+                    issues.append('date_comparison_review_required')
             missing_text_expectation = (criterion.kind == "text"
                 and criterion.operator in {"equals", "contains"}
                 and not criterion.expected.strip())
@@ -260,6 +284,8 @@ class ReferenceValidator:
                 issues.append("context_incomplete")
             if issues and verdict == "pass":
                 verdict = "review"
+            if any(issue in issues for issue in ('typed_attribute_review_required','qualifier_interpretation_required','normalized_value_review_required','date_comparison_review_required')):
+                verdict = 'review'
             items.append(ValidatedItem(criterion_id=criterion.criterion_id, verdict=verdict, issues=tuple(issues)))
         return ValidatedResult(context=request.context, verdict=aggregate(request.criteria, items),
                                items=tuple(items),

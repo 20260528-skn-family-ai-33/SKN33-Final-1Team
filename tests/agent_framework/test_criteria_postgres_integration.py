@@ -55,6 +55,15 @@ def post(r,path,body,key=None):
     return r.client.post(r.route+path,json=body,headers={**csrf(r.client),'Idempotency-Key':str(key or uuid4())})
 
 
+def test_af003_pdf_profile_requires_explicit_migration_before_free_input(review):
+    r=review;health=r.client.get('/api/framework/v1/health').json()
+    assert health['schema']=='AF003' and not health['free_text_registration']
+    response=r.client.post(r.base+'/text-documents',json={'text':'행사명: 개발용 행사'},
+        headers={**csrf(r.client),'Idempotency-Key':str(uuid4())})
+    assert response.status_code==503 and response.json()['error']['code']=='FRAMEWORK_TEXT_SCHEMA_NOT_READY'
+    assert r.client.get(r.route).json()['criteria']==r.draft
+
+
 def version_body(r,parent=None,*,resolve=False,purpose='synthetic_test'):
     overview=r.client.get(r.route+'/criteria-review').json()
     edits=[]
@@ -76,6 +85,58 @@ def approval_body(version,**changes):
     return {'criteria_version_id':version['version']['criteria_version_id'],'expected_sha256':version['sha256'],
         'purpose':'synthetic_test','reason':'격리 DB의 개발용 승인 시뮬레이션. 실제 발주자 결정 아님.',
         'reviewed_all_criteria':True}|changes
+
+
+def test_compiled_qwen_protocol_fixture_persists_details_and_cannot_approve_missing_values(a02):
+    import json
+    from pathlib import Path
+    import httpx
+    from backend.agent_framework.a02 import QwenProvider,build_postgres_agents
+    from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
+    from backend.agent_framework.documents import open_document_storage
+    from backend.agent_framework.durable_worker import PostgresQueue,execute_claim
+    r=a02;record,_=register(r)
+    config=r.config.model_copy(update={'pdf_extraction':PDFExtractionConfiguration(mode='qwen',structuring='literal_legacy',endpoint='https://qwen.invalid/v1/chat/completions')})
+    fixture=json.loads((Path(__file__).parent/'fixtures/a02_qwen_exhibition_source_selection.json').read_text())
+    content=json.dumps(fixture['selection'],ensure_ascii=False)
+    api=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
+    with TestClient(api,base_url='http://localhost:8000') as client:
+        client.headers['Origin']='http://localhost:8000';client.cookies.update(r.client.cookies)
+        response=client.post(r.base+'/document-versions/'+record['document']['document_version_id']+'/extractions',
+            headers={**csrf(client),'Idempotency-Key':str(uuid4())})
+        assert response.status_code==202,response.text
+        rid=response.json()['context']['run_id'];route='/api/framework/v1/runs/'+rid
+        store=api.state.framework;queue=PostgresQueue(store);storage=open_document_storage(r.root)
+        try:
+            agents=build_postgres_agents(config,store,storage)
+            agents.extractor.provider=QwenProvider(config.pdf_extraction,transport=httpx.MockTransport(lambda _:httpx.Response(200,json={
+                'model':config.pdf_extraction.model,'choices':[{'finish_reason':'stop','message':{'content':content}}]})))
+            claim=queue.claim_next();assert claim is not None
+            assert execute_claim(queue,claim,agents)=='completed'
+        finally:storage.close()
+        saved=client.get(route).json();draft=saved['criteria']
+        assert saved['execution_status']=='waiting_criteria' and len(draft['criteria'])==15
+        assert draft['extraction']['policy']=='a02-source-compile-v2'
+        assert draft['extraction']['response_sha256']==__import__('hashlib').sha256(content.encode()).hexdigest()
+        pending=draft['extraction']['unresolved_criterion_ids'];assert len(pending)==1
+        fields={c['details']['field'] for c in draft['criteria']}
+        assert {'pixel_width','pixel_height','event_date','weekday','title_phrase'}<=fields
+        overview=client.get(route+'/criteria-review').json()
+        response=client.post(route+'/criteria-versions',json={'parent_version_id':None,
+            'expected_base_sha256':overview['source_draft_sha256'],'purpose':'synthetic_test','edits':[]},
+            headers={**csrf(client),'Idempotency-Key':str(uuid4())})
+        assert response.status_code==201,response.text
+        version=response.json();assert 'missing_expected_value' in version['approval_blockers'][pending[0]]
+        response=client.post(route+'/criteria-approvals',json=approval_body(version),
+            headers={**csrf(client),'Idempotency-Key':str(uuid4())})
+        assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_UNRESOLVED'
+        assert client.get(route+'/approvals').json()==[]
+        assert client.get(route).json()['criteria']==draft
+    restarted=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
+    with TestClient(restarted,base_url='http://localhost:8000') as client:
+        client.cookies.update(r.client.cookies)
+        assert client.get(route).json()['criteria']==draft
+        assert client.get(route+'/approvals').json()==[]
 
 
 def counts(r):

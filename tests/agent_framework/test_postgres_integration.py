@@ -18,8 +18,7 @@ from sqlalchemy import select,insert,update,func
 from tests.app.test_db_integration import database
 from tests.app.test_v1_auth_integration import auth_database,email_user,login,csrf
 from backend.migrations.configuration import load_migration_settings
-from backend.app.contracts.business import ProjectCreate
-from backend.app.services.business import Business,table
+from backend.app.services.business import table
 from backend.app.persistence.database import PersistenceError
 from backend.app.persistence.schema_inventory import check_schema
 from backend.app.persistence.transaction import unit_of_work
@@ -61,8 +60,9 @@ def runtime(framework_database):
         client.headers['Origin']='http://localhost:8000'
         assert login(client,email=user['email']).status_code==200
         subject=app.state.auth.current(client.cookies[settings.session_cookie])
-        business=Business(db.engine,app.state.authorization,settings)
-        project=business.create_project(subject,False,ProjectCreate(name='Framework test project'),str(uuid4()))
+        reply=client.post('/api/v1/projects',json={'name':'Framework test project'},headers=csrf(client))
+        assert reply.status_code==201,reply.text
+        project=reply.json()
         context,document,asset=sample_inputs(run_id='pg-'+uuid4().hex)
         context=context.model_copy(update={'project_id':project['id'],'actor_id':user['id']})
         store=app.state.framework
@@ -102,6 +102,33 @@ def work(r,agents=None):
 def expire(r,claim):
     with r.owner.begin() as c:
         c.execute(update(jobs).where(jobs.c.job_id==claim.job_id).values(lease_expires_at=func.clock_timestamp()-__import__('datetime').timedelta(seconds=1)))
+
+
+def test_project_metadata_routes_reuse_session_csrf_and_membership_without_media(runtime):
+    r=runtime;path='/api/v1/projects/'+r.context.project_id
+    assert not hasattr(r.client.app.state,'storage')
+    assert not hasattr(r.client.app.state,'files')
+    assert not hasattr(r.client.app.state,'review_executor')
+    listing=r.client.get('/api/v1/projects?limit=100')
+    assert listing.status_code==200,listing.text
+    assert r.context.project_id in {p['id'] for p in listing.json()['items']}
+    assert r.client.get(path).json()['my_role']=='owner'
+    assert r.client.post('/api/v1/projects',json={'name':'Missing CSRF'}).status_code==403
+    assert r.client.patch(path,json={'name':'Missing CSRF'}).status_code==403
+    changed=r.client.patch(path,json={'name':'Renamed framework project'},headers=csrf(r.client))
+    assert changed.status_code==200 and changed.json()['name']=='Renamed framework project'
+    assert r.client.get(path+'/images').status_code==404
+
+    app=create_postgres_app(r.settings,r.configuration,engine=r.db.engine)
+    with TestClient(app,base_url='http://localhost:8000',client=('127.0.0.1',46)) as other:
+        other.headers['Origin']='http://localhost:8000'
+        assert other.get('/api/v1/projects').status_code==401
+        outsider=email_user(r.auth_database)
+        assert login(other,email=outsider['email']).status_code==200
+        assert other.get('/api/v1/projects').json()['items']==[]
+        assert other.get(path).status_code==404
+        assert other.patch(path,json={'name':'Denied'},headers=csrf(other)).status_code==404
+    assert r.client.get(path).json()['name']=='Renamed framework project'
 
 
 def test_api_worker_approvals_and_rereview_survive_new_instances(runtime):

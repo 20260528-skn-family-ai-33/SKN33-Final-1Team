@@ -14,13 +14,11 @@ from sqlalchemy import func,insert,select,update
 from tests.app.test_db_integration import database  # noqa: F401
 from tests.app.test_v1_auth_integration import auth_database,email_user,login,csrf
 from backend.migrations.configuration import load_migration_settings
-from backend.app.contracts.business import ProjectCreate
 from backend.app.persistence.database import PersistenceError
 from backend.app.persistence.schema.identity import project_members,projects
 from backend.app.persistence.schema_inventory import check_schema
 from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
-from backend.app.services.business import Business
 from backend.app.storage.local import LocalStorage,StorageError
 from backend.agent_framework.adapters.project_files import LegacyStorageReader
 from backend.agent_framework.adapters.synthetic import sample_inputs
@@ -76,8 +74,9 @@ def runtime(document_database,tmp_path):
         client.headers['Origin']='http://localhost:8000'
         assert login(client,email=user['email']).status_code==200
         subject=app.state.auth.current(client.cookies[settings.session_cookie])
-        business=Business(db.engine,app.state.authorization,settings)
-        project=business.create_project(subject,False,ProjectCreate(name='Creative poster PDF test'),str(uuid4()))
+        reply=client.post('/api/v1/projects',json={'name':'Creative poster PDF test'},headers=csrf(client))
+        assert reply.status_code==201,reply.text
+        project=reply.json()
         yield SimpleNamespace(client=client,app=app,service=app.state.documents,subject=subject,
             pid=UUID(project['id']),base='/api/framework/v1/projects/'+project['id'],db=db,owner=owner,
             root=root,settings=settings,config=config,auth_database=auth_database,migration=migration)

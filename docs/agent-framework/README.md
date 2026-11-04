@@ -2,6 +2,8 @@
 
 각 담당자가 같은 JSON 계약으로 자신의 역할을 단독 개발하고, 합성 입력으로 전체 흐름을 연결하는 개발용 기반이다. `backend/agent_framework`는 기존 제품 앱과 분리되어 있다.
 
+**[A02 실행·사용 가이드](A02_실행_사용가이드.html)** · [MD](A02_실행_사용가이드.md) — Docker 준비·이미지 빌드·RunPod 확인·SSH·API·worker·프론트를 순서대로 실행한다. Mac·Windows 명령, 이번 전시 PDF와 원본 포스터 경로, 정상 출력·진행률·오류 확인을 한 문서에 모았다. A02 문단 반영과 후속 포스터 검사·승인 범위를 구분한다.
+
 **[Mac·Windows 공통 실행 가이드](Mac_Windows_공통실행_가이드.html)** · [MD](Mac_Windows_공통실행_가이드.md) — 두 OS에서 같은 Python 실행기로 Docker Linux API·worker·저장 볼륨을 사용한다. RunPod SSH 터널과 비밀 설정·DB 접속 방법을 함께 설명한다. Windows 네이티브 POSIX 저장소 실행과 구분한다.
 
 **[담당자별 연결 위치·실행법 HTML](에이전트_프레임워크_가이드.html)** · [Markdown 원본](에이전트_프레임워크_가이드.md) — 역할별 수정 파일·factory·입출력·테스트 명령과 Git 기준 인수 절차를 정리했다.
@@ -10,13 +12,17 @@
 
 **[PDF 등록·버전 저장 실행가이드](PDF_등록_버전저장_가이드.html)** · [MD](PDF_등록_버전저장_가이드.md) — 2026-11-03 4단계 구현. AF002와 전용 PDF 경로를 명시적으로 활성화하면 같은 DB·로그인·프로젝트에서 원본 등록과 재조회가 가능하다. 추출 연결은 아래 5단계 가이드로 이어진다.
 
-**[A02 조건 추출 연결가이드](A02_조건추출_연결가이드.html)** · [MD](A02_조건추출_연결가이드.md) — 5단계 PDF-only 접수→별도 worker→출처 검증→PostgreSQL 미승인 초안·본문 trace 저장·재조회. 실제 파일·DB와 mock 공급자로 검증했고 Qwen endpoint는 아직 미구축이다. 보완·기준 승인은 6단계다.
+**[A02 조건 추출 연결가이드](A02_조건추출_연결가이드.html)** · [MD](A02_조건추출_연결가이드.md) — 현재 기본은 Qwen이 자유 입력·텍스트 PDF의 의미·유형·기대값을 직접 구조화하는 `a02-semantic-v3`다. 기존 worker·PostgreSQL 보완/승인/재조회 흐름을 재사용하며, 자유 입력 저장에는 AF004가 필요하다. 모델 실호출 진단과 격리 DB의 가짜 HTTP 검증을 구분한다.
+
+**[A02 실제 연결 검증 기록](A02_실제연결_검증기록_20261104.md)** — 11/04 사용자 환경에 AF004를 적용한 뒤 실제 Qwen으로 자유 입력 5개·PDF 13개 조건을 추출하고 기존 DB에 저장·재조회했다. 두 실행은 기준 검토 대기 상태이며 관람시간 미정 안내와 원문 누락 검토가 남아 있다. 미정 항목의 제외를 자동 결정하지 않는다. 후속 v4 문단 출력·사용자 화면 확인도 기록했다.
+
+**[A02 → 3. 검수 요구사항 문단 연결](A02_프론트_요구사항_문단연결.html)** · [MD](A02_프론트_요구사항_문단연결.md) — 기존 Qwen이 조건 추출과 화면용 문단을 한 번에 반환하는 v4 프로필이다. 임의 항목·여러 장소·시각 조건·규격을 대상으로 하며, 기존 PostgreSQL 저장·출처와 front-v2 입력을 연결한다. 새 이미지와 명시적인 presentation 프로필이 필요하다.
 
 **[기준 보완·승인 가이드](기준_보완승인_가이드.html)** · [MD](기준_보완승인_가이드.md) — 6단계 AF003 불변 기준 버전·보완 출처·승인 대상 해시·기존 승인 이력·재조회. 개발용 승인 시험이며 실제 클라이언트의 회신/승인은 아니다. 승인 후 포스터 대기 상태에서 멈춘다.
 
 **[포스터 검수·재검수 가이드](포스터_검수재검수_가이드.html)** · [MD](포스터_검수재검수_가이드.md) — 7단계 승인 기준·해시·출처를 기존 저장 이미지와 새 실행에 고정한다. 포스터별 입력 확인·독립 worker·검수/최종 결정·수정본 재확인을 실파일·격리 PostgreSQL·합성 관측으로 검증했다. 실제 모델/클라이언트 승인·front-v2 연결은 후속이다. [개발 시험 포스터 12장](../poster-baselines/2026-11-03/workflow/poster-tests/index.html).
 
-**[Qwen 서버 준비 가이드](Qwen_서버_준비가이드.md)** — 기존 RunPod GPU·서비스·HF 캐시·Git 상태를 읽기 전용으로 확인하고 `deploy/qwen-a02`에 전용 경로·고정 모델/런타임 후보·메모리/포트/해시 사전 검사를 준비했다. 현재 여유 VRAM은 초기 정책에 부족하며 설치·다운로드·서버 기동·실제 A02 호출은 미수행이다. [점검 기록](qwen-server-preparation-2026-11-03.json).
+**[Qwen 서버 준비 가이드](Qwen_서버_준비가이드.md)** — 11/03 초기 GPU·서비스·HF 캐시·Git 및 메모리/포트/해시 점검 기록이다. 이후 서버 준비·실제 A02 연결 결과는 위 11/04 실제 연결 검증 기록을 따른다. [초기 점검 기록](qwen-server-preparation-2026-11-03.json).
 
 **[A02 PDF·Qwen·저장·승인 구조 설계](A02_PDF_Qwen_저장승인_구조설계.html)** · [MD](A02_PDF_Qwen_저장승인_구조설계.md) — 모델 서버가 아직 없는 상태에서 정리한 후속 설계안이다. API·worker·GPU 서버 경계, PDF 등록·승인 조회, 구현 순서를 설명하며 실제 연결 완료를 뜻하지 않는다.
 
@@ -24,7 +30,7 @@
 
 브라우저에서 열 파일은 **`docs/agent-framework/flow.html`**이다. 업무 흐름의 원본은 `flow-data.json`과 빌드 전용 `scripts/templates/agent-flow.html.in`이며 `python -m scripts.build_agent_flow_html`로 단일 HTML을 재생성한다. 이전 `scripts/templates/agent-flow.html` 경로는 완성본으로 이동하는 안내 페이지다. Graphify 코드 지도는 별도 임시 환경의 공식 `graphifyy==0.9.100`으로 생성했다. 프로젝트 의존성에는 추가하지 않았다. 두 HTML은 자동 외부 자원을 로드하지 않도록 만들었으며 정적 구조·JavaScript 문법을 검사했다. 브라우저 렌더링은 미검증이다.
 
-현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 개발 실행, 승인·재검수·단계 기록, 파일 접근, CLI다. 메모리 개발 도구와 별도로 **기존 M008 DB·세션 인증·CSRF를 재사용하는 PostgreSQL API 및 독립 worker**를 제공한다. API는 파일 등록·접수·승인·조회를 처리하고 worker가 역할을 실행한다. **Qwen·PostgreSQL/Neo4j RAG 실모델·실검색 어댑터, MCP, Neo4j projection, front-v2 및 운영 배포는 후속 범위다.** 실행 저장은 명시적 AF001, 선택적 PDF 등록은 후속 AF002 마이그레이션을 사용한다.
+현재 제공하는 것은 Pydantic 계약, 역할 포트, LangGraph 개발 실행, 승인·재검수·단계 기록, 파일 접근, CLI다. 메모리 개발 도구와 별도로 **기존 M008 DB·세션 인증·CSRF를 재사용하는 PostgreSQL API 및 독립 worker**를 제공한다. API는 파일 등록·접수·승인·조회를 처리하고 worker가 역할을 실행한다. A02 자유 입력·PDF의 실제 Qwen 연결은 11/04 개발 환경에서 확인했다. **포스터 검사 실모델, PostgreSQL/Neo4j 관계 검색·RAG, MCP, Neo4j projection, front-v2 업무 연결 및 운영 배포는 후속 범위다.** 실행·문서·기준 버전·자유 입력에는 AF001부터 AF004까지의 명시적 마이그레이션을 사용한다.
 
 11/03 PDF 등록 구현과 검증은 [PDF 등록 가이드](PDF_등록_버전저장_가이드.html), 기존 역할 변경은 [A03 제거 정리](a03-retirement-2026-11-02.md)를 따른다. [이전 검증 기록](verification-2026-11-02.md)은 변경 전 이력이다.
 
@@ -69,7 +75,7 @@ Windows PowerShell:
 | 역할 | 호출 포트 | 입력 → 출력 | 담당 범위 |
 |---|---|---|---|
 | A01 | `Workflow.start/approve/get` | 실행 문맥·파일 참조·승인 → `RunSnapshot` | 공통 실행·상태 전환·계약 연결 |
-| A02 | `Extractor.extract` | `ExtractRequest` → `CriteriaDraft` | PDF 전체 처리·조건·원문 출처 |
+| A02 | `Extractor.extract` | `ExtractRequest` → `CriteriaDraft` | 자유 입력·PDF 조건 구조화·원문 출처 |
 | A04·A05 | `Inspector.inspect` | `InspectRequest` → `InspectionResult` | 현재 포스터 관측·조건별 판정 초안 |
 | A06 | `Validator.validate` | `ValidateRequest` → `ValidatedResult` | 전체 조건 커버리지·관측·인용·판정 검증 |
 | A07 | `Reporter.report` | `ReportRequest` → `ReportDraft` | 검증된 판정의 설명·수정 요청 초안 |

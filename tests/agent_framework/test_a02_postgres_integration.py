@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from uuid import UUID,uuid4
 
 import pytest
+import httpx
 from fastapi.testclient import TestClient
 from sqlalchemy import select,update
 
@@ -18,7 +19,8 @@ from tests.app.test_db_integration import database  # noqa: F401
 from tests.app.test_v1_auth_integration import auth_database,csrf
 from tests.app.auth_fixtures import auth_environment
 from tests.agent_framework.test_pdf_postgres_integration import document_database,runtime,upload,PDFS
-from backend.agent_framework.a02 import build_postgres_agents
+from backend.agent_framework.a02 import build_postgres_agents,QwenProvider,QWEN_PROMPT_HASH
+from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
 from backend.agent_framework.composition import load_config
 from backend.agent_framework.contracts import FrameworkError
 from backend.agent_framework.documents import open_document_storage
@@ -190,3 +192,57 @@ def test_separate_worker_cli_process_reads_registered_pdf_and_persists_output(a0
     assert 'completed' in result.stdout
     current=r.client.get('/api/framework/v1/runs/'+rid).json()
     assert current['execution_status']=='waiting_criteria' and current['criteria']['extraction']['mode']=='mock'
+
+
+@pytest.mark.parametrize('value_selection',[False,True])
+def test_qwen_line_selection_fake_transport_persists_exact_quote_and_original_reply_hash(a02,value_selection):
+    r=a02;record,_=register(r);responses=[]
+    config=r.config.model_copy(update={'pdf_extraction':PDFExtractionConfiguration(
+        mode='qwen',structuring='literal_legacy',endpoint='https://qwen.invalid/v1/chat/completions')})
+    app=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
+    def respond(request):
+        body=json.loads(request.content)
+        line=next(line for source in json.loads(body['messages'][1]['content'])['sources']
+            for line in source['lines'] if ('3000픽셀' if value_selection else '표기한다') in line['text'])
+        candidate={'start_line':line['id'],'end_line':line['id'],
+            'kind':'unsupported','operator':'manual','expected':None,'required':True,'unit':None,'unresolved':False}
+        if value_selection:
+            number=next(p['id'] for p in line['parts'] if p['text']=='3000')
+            unit=next(p['id'] for p in line['parts'] if p['text']=='픽셀')
+            candidate.update(kind='number',operator='equals',expected={'start':number,'end':number},unit={'start':unit,'end':unit})
+        raw=json.dumps({'candidates':[candidate]},ensure_ascii=False)
+        responses.append((raw,line['text']))
+        return httpx.Response(200,json={'model':config.pdf_extraction.model,
+            'choices':[{'finish_reason':'stop','message':{'content':raw}}]})
+    with TestClient(app,base_url='http://localhost:8000') as client:
+        client.headers['Origin']='http://localhost:8000';client.cookies.update(r.client.cookies)
+        reply=client.post(r.base+'/document-versions/'+record['document']['document_version_id']+'/extractions',
+            headers={**csrf(client),'Idempotency-Key':str(uuid4())})
+        assert reply.status_code==202,reply.text
+        rid=reply.json()['context']['run_id'];store=app.state.framework;queue=PostgresQueue(store)
+        storage=open_document_storage(r.root)
+        try:
+            agents=build_postgres_agents(config,store,storage)
+            agents.extractor.provider=QwenProvider(config.pdf_extraction,transport=httpx.MockTransport(respond))
+            claim=queue.claim_next();assert claim is not None and claim.run_id==rid
+            assert execute_claim(queue,claim,agents)=='completed'
+        finally:storage.close()
+        saved=client.get('/api/framework/v1/runs/'+rid).json()
+        assert saved['execution_status']=='waiting_criteria' and not saved['synthetic']
+        assert len(responses)==1 and not saved['approvals'] and saved['machine_verdict'] is None
+        draft=saved['criteria'];criterion=draft['criteria'][0];trace=draft['extraction']
+        assert criterion['text']==criterion['source']['quote'] and responses[0][1] in criterion['text']
+        assert criterion['source']['source_hash']==sha256(criterion['source']['quote'].encode()).hexdigest()
+        assert trace['mode']=='qwen' and trace['prompt_sha256']==QWEN_PROMPT_HASH
+        assert trace['policy']=='a02-source-compile-v2' and trace['unresolved_criterion_ids']
+        assert trace['response_sha256']==sha256(responses[0][0].encode()).hexdigest()
+        if value_selection:
+            assert criterion['expected']=='3000' and criterion['unit']=='픽셀' and criterion['kind']=='number'
+            assert [c['details']['field'] for c in draft['criteria'][:2]]==['pixel_width','pixel_height']
+        else:
+            assert [c['expected'] for c in draft['criteria'][:2]]==['수원의 영화','수원의 극장']
+            assert all(c['operator']=='manual' for c in draft['criteria'][:2])
+    app=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
+    with TestClient(app,base_url='http://localhost:8000') as restarted:
+        restarted.cookies.update(r.client.cookies)
+        assert restarted.get('/api/framework/v1/runs/'+rid).json()['criteria']==draft

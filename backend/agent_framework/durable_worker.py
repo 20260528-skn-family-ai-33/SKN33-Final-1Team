@@ -145,8 +145,11 @@ class PostgresQueue:
             if role=='A02' and self.store.configuration.pdf_extraction is not None:
                 settings=self.store.configuration.pdf_extraction;trace=result.extraction
                 expected_model='mock-line-fixture-v1' if settings.mode=='mock' else settings.model
+                expected_policy=('a02-text-v1' if settings.mode=='mock' else
+                    ('a02-semantic-v4' if settings.presentation else 'a02-semantic-v3') if settings.structuring=='semantic' else 'a02-source-compile-v2')
                 if (trace is None or trace.mode!=settings.mode or trace.model!=expected_model
-                        or trace.parser!='pymupdf-'+settings.parser_version
+                        or trace.policy!=expected_policy
+                        or trace.parser!=('utf8-source-v1' if request.document.media_type=='text/plain' else 'pymupdf-'+settings.parser_version)
                         or sum(len(s.text) for s in trace.sources)>settings.max_text_chars):
                     raise ValueError('A02_EXTRACTION_CONFIGURATION_MISMATCH')
             synthetic=snapshot.synthetic or result.synthetic

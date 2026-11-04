@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_serial
 class DocumentSource(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True, str_strip_whitespace=True)
     source_id: str = Field(pattern=r'^p\d+-s\d+$')
-    page: int = Field(ge=1, le=12)
+    page: int = Field(ge=1, le=50)
     source: str = Field(min_length=1, max_length=350)
 
 

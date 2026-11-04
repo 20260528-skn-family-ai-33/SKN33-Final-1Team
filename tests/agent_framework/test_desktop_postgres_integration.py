@@ -45,12 +45,18 @@ def test_container_api_pdf_storage_and_worker_use_existing_db_and_same_linux_vol
                 assert time.monotonic()<deadline,'Container API startup deadline exceeded'
                 time.sleep(0.2)
             client.cookies.update(dict(r.client.cookies))
+            response=client.post('/api/v1/projects',json={'name':'Container PDF project '+token},headers=csrf(client))
+            assert response.status_code==201,response.text
+            project=response.json();base='/api/framework/v1/projects/'+project['id']
+            listing=client.get('/api/v1/projects?limit=100')
+            assert listing.status_code==200,listing.text
+            assert project['id'] in {item['id'] for item in listing.json()['items']}
             raw=next((ROOT/'docs/poster-baselines/2026-11-03/workflow/client-inputs/EXH-NEW004').glob('*.pdf')).read_bytes()
-            response=client.post(r.base+'/documents',params={'filename':'synthetic development source.pdf'},content=raw,
+            response=client.post(base+'/documents',params={'filename':'synthetic development source.pdf'},content=raw,
                 headers={**csrf(client),'Content-Type':'application/pdf','Idempotency-Key':str(uuid4())})
             assert response.status_code==201,response.text
             record=response.json()
-            response=client.post(r.base+'/document-versions/'+record['document']['document_version_id']+'/extractions',
+            response=client.post(base+'/document-versions/'+record['document']['document_version_id']+'/extractions',
                 headers={**csrf(client),'Idempotency-Key':str(uuid4())})
             assert response.status_code==202,response.text
             rid=response.json()['context']['run_id']

@@ -13,6 +13,7 @@ from backend.agent_framework.flow_checks import FlowCheckCase
 from backend.agent_framework.criteria_contracts import (SupplementInput,CriterionResolution,CriteriaEdit,CriteriaVersionRequest,
     RecordedCriteriaEdit,CriteriaVersion,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord)
 from backend.agent_framework.poster_review import PosterReviewRequest
+from backend.agent_framework.documents import TextDocumentInput
 
 
 def export_checks(destination: Path) -> None:
@@ -58,7 +59,7 @@ def export(destination: Path) -> None:
     schemas.mkdir(parents=True, exist_ok=True)
     for contract in (*CONTRACT_TYPES, RoleBinding, TeamConfiguration, RoleCheckCase, RoleCheckSuite, FlowCheckCase,
             SupplementInput,CriterionResolution,CriteriaEdit,CriteriaVersionRequest,RecordedCriteriaEdit,CriteriaVersion,
-            CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord,PosterReviewRequest):
+            CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord,PosterReviewRequest,TextDocumentInput):
         (schemas / f"{contract.__name__}.schema.json").write_text(
             json.dumps(contract.model_json_schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     for name, kind in (("synthetic", "synthetic"), ("template", "unconfigured")):

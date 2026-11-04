@@ -292,7 +292,7 @@ def parser():
             command.add_argument('--host',choices=('127.0.0.1','0.0.0.0'),default='127.0.0.1',help='Use 0.0.0.0 only inside a container with a loopback-only published host port.')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF root initialized with init-pdf-storage; requires AF002')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; registered poster reviews require AF003')
-        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003'),default='AF001')
+        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003','AF004'),default='AF001')
         if name=='worker':
             command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF storage; required by registered_pdf A02 configuration')

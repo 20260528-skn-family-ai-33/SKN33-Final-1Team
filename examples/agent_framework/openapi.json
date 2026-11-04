@@ -730,6 +730,16 @@
                 "type": "null"
               }
             ]
+          },
+          "details": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequirementDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -773,7 +783,10 @@
           },
           "media_type": {
             "type": "string",
-            "const": "application/pdf",
+            "enum": [
+              "application/pdf",
+              "text/plain"
+            ],
             "title": "Media Type",
             "default": "application/pdf"
           },
@@ -1003,9 +1016,23 @@
           },
           "policy": {
             "type": "string",
-            "const": "a02-text-v1",
+            "enum": [
+              "a02-text-v1",
+              "a02-source-compile-v2",
+              "a02-semantic-v3",
+              "a02-semantic-v4"
+            ],
             "title": "Policy",
             "default": "a02-text-v1"
+          },
+          "input_kind": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "free_text"
+            ],
+            "title": "Input Kind",
+            "default": "pdf"
           },
           "document_sha256": {
             "type": "string",
@@ -1357,6 +1384,129 @@
           "summary"
         ],
         "title": "ReportDraft"
+      },
+      "RequirementDetails": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "compiler": {
+            "type": "string",
+            "enum": [
+              "literal-requirements-v1",
+              "qwen-semantic-v1"
+            ],
+            "title": "Compiler",
+            "default": "literal-requirements-v1"
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "poster_text",
+              "poster_visual",
+              "file_metadata",
+              "delivery",
+              "unspecified"
+            ],
+            "title": "Target"
+          },
+          "field": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "title": "Field"
+          },
+          "expected_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "normalized_expected": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalized Expected"
+          },
+          "presentation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequirementPresentation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "qualifiers": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "type": "array",
+            "title": "Qualifiers",
+            "default": []
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "selected_source",
+              "model_structured",
+              "retained_unresolved_source"
+            ],
+            "title": "Origin",
+            "default": "selected_source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target",
+          "field"
+        ],
+        "title": "RequirementDetails",
+        "description": "Source-grounded compilation metadata, not semantic approval."
+      },
+      "RequirementPresentation": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "2.0.0",
+            "title": "Contract Version",
+            "default": "2.0.0"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[^:\\r\\n]+$",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1,
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "value"
+        ],
+        "title": "RequirementPresentation"
       },
       "RevisionRequest": {
         "properties": {

@@ -23,6 +23,7 @@ from backend.app.storage.local import LocalStorage, StorageError, key, operation
 from .contracts import Contract, DocumentRef
 from .files import FileLimits, StoredFileMetadata, inspect_document
 from .ports import AdapterFailure
+from .requirement_text import inspect_requirement
 
 PDF_MARKER = b'creative-checker-framework-pdf-v1\n'
 metadata = MetaData(schema='agent_framework')
@@ -48,6 +49,10 @@ class RegisteredDocument(Contract):
     document: DocumentRef
 
 
+class TextDocumentInput(Contract):
+    text: str = Field(strict=True,min_length=1,max_length=60000)
+
+
 def initialize_document_storage(root):
     """Explicit command only; LocalStorage.initialize refuses existing roots."""
     LocalStorage.initialize(root)
@@ -68,10 +73,11 @@ def open_document_storage(root):
         raise
 
 
-def _name(value):
+def _name(value,media_type='application/pdf'):
     if not isinstance(value,str): raise AuthError('PDF_FILENAME_INVALID',422)
     value=unicodedata.normalize('NFC',value)
-    if (not 1<=len(value)<=255 or value!=value.strip() or not value.lower().endswith('.pdf')
+    suffix='.txt' if media_type=='text/plain' else '.pdf'
+    if (not 1<=len(value)<=255 or value!=value.strip() or not value.lower().endswith(suffix)
             or re.search(r'[/\\\x00-\x1f\x7f\ud800-\udfff]',value)):
         raise AuthError('PDF_FILENAME_INVALID',422)
     return value
@@ -82,7 +88,7 @@ def _dto(row):
         version_no=row['version_no'],previous_version_id=row['previous_version_id'],
         original_name=row['original_name'],byte_size=row['byte_size'],created_by=row['created_by'],
         created_at=row['created_at'],document=DocumentRef(file_id=str(row['file_id']),
-            document_version_id=str(row['document_version_id']),sha256=row['sha256'],page_count=row['page_count']))
+            document_version_id=str(row['document_version_id']),sha256=row['sha256'],page_count=row['page_count'],media_type=row['media_type']))
 
 
 class PostgresDocuments:
@@ -131,7 +137,7 @@ class PostgresDocuments:
             with self.storage.verified(row['storage_key'],row['byte_size'],row['sha256']) as stream:
                 raw=stream.read(self.limits.max_document_bytes+1)
             if (len(raw)!=row['byte_size'] or sha256(raw).hexdigest()!=row['sha256']
-                    or inspect_document(raw,self.limits)!=row['page_count']):
+                    or inspect_requirement(raw,row['media_type'],self.limits)!=row['page_count']):
                 raise AuthError('PDF_INTEGRITY_MISMATCH',503)
             return _dto(row),raw
         except PersistenceError:raise AuthError('DATABASE_UNAVAILABLE',503) from None
@@ -140,10 +146,12 @@ class PostgresDocuments:
     def catalog(self,subject,dev,pid,version_id):
         row=self._get(subject,dev,pid,version_id)
         return StoredFileMetadata(file_id=str(row['file_id']),project_id=str(pid),
-            version_id=str(version_id),kind='pdf',storage_key=row['storage_key'],
-            media_type='application/pdf',byte_size=row['byte_size'],sha256=row['sha256'])
+            version_id=str(version_id),kind='text' if row['media_type']=='text/plain' else 'pdf',storage_key=row['storage_key'],
+            media_type=row['media_type'],byte_size=row['byte_size'],sha256=row['sha256'])
 
-    def _intent(self,op,pid,actor,request_key,input_hash,name,count,raw,document_id,previous):
+    def _intent(self,op,pid,actor,request_key,input_hash,name,count,raw,document_id,previous,media_type='application/pdf'):
+        journal_version='af-text-journal-v1' if media_type=='text/plain' else 'af-pdf-journal-v1'
+        operation='register_text' if media_type=='text/plain' else 'register_pdf'
         try:
             with self.storage.read('operations/'+str(op)+'/journal.json') as stream:
                 data=stream.read(65537)
@@ -152,18 +160,20 @@ class PostgresDocuments:
             except AuthError:raise StorageError('PDF_JOURNAL_INVALID') from None
         except FileNotFoundError:
             file_id=uuid4()
-            intent={'contract_version':'af-pdf-journal-v1','operation_id':str(op),
-                'operation':'register_pdf','project_id':str(pid),'actor_id':str(actor),
+            intent={'contract_version':journal_version,'operation_id':str(op),
+                'operation':operation,'project_id':str(pid),'actor_id':str(actor),
                 'request_key':str(request_key),'input_sha256':input_hash,
                 'document_id':str(document_id or uuid4()),'previous_version_id':str(previous) if previous else None,
                 'document_version_id':str(uuid4()),'original_name':name,'page_count':count,
                 'phase':'planned','db_outcome':'not_started','files':[{
                     'file_id':str(file_id),'project_id':str(pid),'storage_key':key(pid,file_id),
                     'byte_size':str(len(raw)),'sha256':sha256(raw).hexdigest()}]}
+            if media_type!='application/pdf':intent['media_type']=media_type
             self.storage.journal(intent)
         try:
-            if (intent['contract_version']!='af-pdf-journal-v1' or intent['operation_id']!=str(op)
-                    or intent['operation']!='register_pdf' or intent['project_id']!=str(pid)):
+            if (intent['contract_version']!=journal_version or intent['operation_id']!=str(op)
+                    or intent['operation']!=operation or intent['project_id']!=str(pid)
+                    or intent.get('media_type','application/pdf')!=media_type):
                 raise StorageError('PDF_JOURNAL_INVALID')
             if intent['actor_id']!=str(actor) or intent['input_sha256']!=input_hash:
                 raise AuthError('DOCUMENT_IDEMPOTENCY_CONFLICT',409)
@@ -208,7 +218,7 @@ class PostgresDocuments:
             'input_sha256':intent['input_sha256'],'original_name':intent['original_name'],
             'page_count':str(intent['page_count']),'file_id':item['file_id'],
             'byte_size':item['byte_size'],'sha256':item['sha256'],'storage_key':item['storage_key'],
-            'media_type':'application/pdf',
+            'media_type':intent.get('media_type','application/pdf'),
         }
         return all((str(row[k]) if row[k] is not None else None)==v for k,v in expected.items())
 
@@ -236,7 +246,7 @@ class PostgresDocuments:
             row=c.execute(insert(versions).values(document_version_id=UUID(intent['document_version_id']),
                 document_id=doc_id,project_id=pid,version_no=number,
                 previous_version_id=UUID(previous) if previous else None,file_id=UUID(item['file_id']),
-                storage_key=item['storage_key'],original_name=intent['original_name'],media_type='application/pdf',
+                storage_key=item['storage_key'],original_name=intent['original_name'],media_type=intent.get('media_type','application/pdf'),
                 byte_size=int(item['byte_size']),sha256=item['sha256'],page_count=intent['page_count'],
                 created_by=subject.user_id,request_key=UUID(intent['request_key']),input_sha256=intent['input_sha256']
             ).returning(versions)).mappings().one()
@@ -252,19 +262,25 @@ class PostgresDocuments:
                 versions.c.request_key==UUID(intent['request_key']))).mappings().one_or_none()
             return dict(row) if row and self._matches(row,intent) else None
 
-    def register(self,subject,dev,pid,request_key,raw,*,filename='document.pdf',document_id=None,previous_version_id=None):
+    def register(self,subject,dev,pid,request_key,raw,*,filename='document.pdf',document_id=None,previous_version_id=None,media_type='application/pdf'):
         self.preflight(subject,dev,pid,document_id,previous_version_id)
-        name=_name(filename)
-        try:count=inspect_document(raw,self.limits)
+        if media_type not in ('application/pdf','text/plain'):raise AuthError('UNSUPPORTED_MEDIA_TYPE',415)
+        if media_type=='text/plain':
+            from .postgres_schema import check_extension
+            with unit_of_work(self.engine) as c:
+                if check_extension(c)['revision']!='AF004':raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        name=_name(filename,media_type)
+        try:count=inspect_requirement(raw,media_type,self.limits)
         except AdapterFailure as e:raise AuthError(e.code,413 if e.code=='FILE_TOO_LARGE' else 422) from None
         fixed={'project_id':str(pid),'actor_id':str(subject.user_id),'sha256':sha256(raw).hexdigest(),
             'byte_size':len(raw),'page_count':count,'filename':name,'document_id':str(document_id) if document_id else None,
             'previous_version_id':str(previous_version_id) if previous_version_id else None}
+        if media_type!='application/pdf':fixed['media_type']=media_type
         fingerprint=sha256(json.dumps(fixed,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
-        op=uuid5(NAMESPACE_URL,'creative-checker-pdf:'+str(pid)+':'+str(request_key))
+        op=uuid5(NAMESPACE_URL,('creative-checker-text:' if media_type=='text/plain' else 'creative-checker-pdf:')+str(pid)+':'+str(request_key))
         try:
             with self.storage.lock('operation-'+str(op)):
-                intent=self._intent(op,pid,subject.user_id,request_key,fingerprint,name,count,raw,document_id,previous_version_id)
+                intent=self._intent(op,pid,subject.user_id,request_key,fingerprint,name,count,raw,document_id,previous_version_id,media_type)
                 self._publish(intent,raw)
                 intent.update(phase='finalized',db_outcome='unconfirmed');self.storage.journal(intent)
                 try:row=self._persist(subject,dev,intent)

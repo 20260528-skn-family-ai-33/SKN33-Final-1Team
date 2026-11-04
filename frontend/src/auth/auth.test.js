@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { authErrorMessage, csrfToken, isAnonymousError, loginDestination, sessionUser } from './helpers.js';
 import { ApiError, fetchJson } from '../api/client.js';
-import { getSession, loginSession, logoutSession } from '../api/auth.js';
+import { getSession, loginSession, logoutSession, registerAccount } from '../api/auth.js';
+import { registrationIssue, registrationErrorMessage } from './registration.js';
 
 // 응답 목록을 순서대로 소비해 실제 인증 서버 없이 요청 계약을 확인한다.
 function mockRequests(context, responses) {
@@ -16,6 +17,25 @@ function mockRequests(context, responses) {
   });
   return requests;
 }
+
+test('회원가입은 이름·이메일·비밀번호와 CSRF만 보내고 로그인은 별도로 한다', async context => {
+  const user = { id: 'new-user', email: 'member@example.com', display_name: '조원' };
+  const requests = mockRequests(context, [{ body: { csrf_token: 'signup-csrf' } }, { status: 201, body: { user } }]);
+  assert.deepEqual(await registerAccount({ email: ' member@example.com ', displayName: ' 조원 ', password: 'synthetic-password-123' }), user);
+  assert.deepEqual(requests.map(item => item.url), ['/api/v1/auth/csrf', '/api/v1/auth/signup']);
+  assert.equal(requests[1].options.headers['X-CSRFToken'], 'signup-csrf');
+  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'member@example.com', display_name: '조원', password: 'synthetic-password-123' });
+});
+
+test('회원가입 입력은 확인 비밀번호와 기존 비밀번호 길이를 검증한다', () => {
+  const value = { displayName: '조원', email: 'member@example.com', password: '  password-123456  ', confirmation: '  password-123456  ' };
+  assert.equal(registrationIssue(value), null);
+  for (const [change, field] of [[{ displayName: '  ' }, 'name'], [{ email: 'bad' }, 'email'], [{ password: 'short' }, 'password'], [{ confirmation: 'different' }, 'confirmation']]) {
+    assert.equal(registrationIssue({ ...value, ...change }).field, field);
+  }
+  assert.match(registrationErrorMessage({ code: 'EMAIL_ALREADY_EXISTS', status: 409 }), /이미 가입/);
+  assert.match(registrationErrorMessage({ status: 503 }), /먼저 로그인/);
+});
 
 test('외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용하지 않는다', () => {
   assert.equal(loginDestination({ pathname: '/review/new', search: '?sample=1', hash: '#result' }), '/review/new?sample=1#result');
@@ -92,6 +112,15 @@ test('CSRF 토큰 누락과 로그인 후 익명 세션은 성공으로 처리�
   await assert.rejects(loginSession({ username: 'tester', password: 'secret' }), error => error.code === 'csrf_token_missing');
   assert.equal(requests.length, 1);
   await assert.rejects(loginSession({ username: 'tester', password: 'secret' }), error => error.code === 'session_not_established');
+});
+
+test('이메일 계정은 프레임워크와 같은 M008 이메일 로그인 계약을 사용한다', async context => {
+  const user = { id: 'u1', email: 'person@example.test' };
+  const requests = mockRequests(context, [
+    { body: { csrf_token: 'token' } }, { status: 200, body: { user } }, { body: { authenticated: true, user } },
+  ]);
+  assert.deepEqual(await loginSession({ username: ' person@example.test ', password: 'secret' }), user);
+  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'person@example.test', password: 'secret' });
 });
 
 test('로그아웃은 최신 CSRF 토큰을 사용하고 204 응답을 허용한다', async context => {

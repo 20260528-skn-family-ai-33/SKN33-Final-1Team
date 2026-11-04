@@ -46,6 +46,67 @@ def test_wrong_count_cannot_be_passed_by_model():
     assert result.items[0].issues == ("value_mismatch",)
 
 
+@pytest.mark.parametrize('observed',['3000','2400'])
+def test_typed_metadata_is_review_until_the_inspection_contract_supports_the_attribute(observed):
+    from backend.agent_framework.contracts import RequirementDetails
+    req=request();quote='가로 3000픽셀';source=SourceRef(document_version_id='d1',page=1,block_id='b1',quote=quote,source_hash=sha256(quote.encode()).hexdigest())
+    value=source.model_copy(update={'quote':'3000','source_hash':sha256(b'3000').hexdigest()})
+    criterion=req.criteria[0].model_copy(update={'text':quote,'source':source,'expected':'3000',
+        'details':RequirementDetails(target='file_metadata',field='pixel_width',expected_source=value)})
+    bundle=req.evidence.model_copy(update={'evidence':(req.evidence.evidence[0].model_copy(update={'source':source}),)})
+    inspection=req.inspection.model_copy(update={'observations':(req.inspection.observations[0].model_copy(update={'observed':observed}),)})
+    req=req.model_copy(update={'criteria':(criterion,),'evidence':bundle,'inspection':inspection})
+    result=ReferenceValidator().validate(req)
+    assert result.verdict=='review' and 'typed_attribute_review_required' in result.items[0].issues
+    forged=result.model_copy(update={'verdict':'pass','items':(result.items[0].model_copy(update={'verdict':'pass','issues':()}),)})
+    with pytest.raises(ValueError):validate_validated(req,forged)
+
+
+@pytest.mark.parametrize('observed',['밤의 도서관','밤의도서관'])
+def test_unimplemented_allowance_interpretation_cannot_become_a_literal_pass_or_fail(observed):
+    from backend.agent_framework.contracts import RequirementDetails
+    req=request();quote='제목 밤의 도서관. 허용 범위: 공백 차이를 허용한다.'
+    source=SourceRef(document_version_id='d1',page=1,block_id='b1',quote=quote,source_hash=sha256(quote.encode()).hexdigest())
+    value=source.model_copy(update={'quote':'밤의 도서관','source_hash':sha256('밤의 도서관'.encode()).hexdigest()})
+    qualifier=source.model_copy(update={'quote':'허용 범위: 공백 차이를 허용한다.','source_hash':sha256('허용 범위: 공백 차이를 허용한다.'.encode()).hexdigest()})
+    criterion=req.criteria[0].model_copy(update={'text':quote,'kind':'text','operator':'contains','expected':'밤의 도서관','source':source,
+        'details':RequirementDetails(target='poster_text',field='title_phrase',expected_source=value,qualifiers=(qualifier,))})
+    bundle=req.evidence.model_copy(update={'evidence':(req.evidence.evidence[0].model_copy(update={'source':source}),)})
+    inspection=req.inspection.model_copy(update={'observations':(req.inspection.observations[0].model_copy(update={'observed':observed}),)})
+    result=ReferenceValidator().validate(req.model_copy(update={'criteria':(criterion,),'evidence':bundle,'inspection':inspection}))
+    assert result.verdict=='review' and 'qualifier_interpretation_required' in result.items[0].issues
+
+
+@pytest.mark.parametrize('normalized', [None, '2026-10-25'])
+def test_partial_date_cannot_pass_a_different_year_by_substring_match(normalized):
+    from backend.agent_framework.contracts import RequirementDetails
+    req = request()
+    quote = '기간: 2026.10.23 ~ 10.25'
+    source = SourceRef(document_version_id='d1', page=1, block_id='b1', quote=quote,
+                       source_hash=sha256(quote.encode()).hexdigest())
+    value = source.model_copy(update={'quote': '10.25', 'source_hash': sha256(b'10.25').hexdigest()})
+    criterion = req.criteria[0].model_copy(update={
+        'text': quote, 'kind': 'text', 'operator': 'contains', 'expected': '10.25', 'source': source,
+        'details': RequirementDetails(target='poster_text', field='end_date',
+                                      expected_source=value, normalized_expected=normalized),
+    })
+    bundle = req.evidence.model_copy(update={'evidence': (
+        req.evidence.evidence[0].model_copy(update={'source': source}),
+    )})
+    inspection = req.inspection.model_copy(update={'observations': (
+        req.inspection.observations[0].model_copy(update={'observed': '2027.10.25', 'verdict': 'pass'}),
+    )})
+    req = req.model_copy(update={'criteria': (criterion,), 'evidence': bundle, 'inspection': inspection})
+    result = ReferenceValidator().validate(req)
+    assert result.verdict == 'review'
+    assert 'date_comparison_review_required' in result.items[0].issues
+    forged = result.model_copy(update={'verdict': 'pass', 'items': (
+        result.items[0].model_copy(update={'verdict': 'pass', 'issues': ()}),
+    )})
+    with pytest.raises(ValueError):
+        validate_validated(req, forged)
+
+
 @pytest.mark.parametrize("path,value", [
     (["inspection", "observations"], []),
     (["inspection", "observations", 0, "uncertainty"], "occluded"),

@@ -56,6 +56,11 @@
 .rv-workspace .rv-input-document .document-input-heading .btn .icon { width: 13px; height: 13px; }
 .rv-workspace .rv-input-document .document-input > .help { font-size: 10px; line-height: 1.7; margin-top: 10px; }
 .rv-workspace .rv-input-document .document-notice { font-size: 11px; line-height: 1.8; }
+.rv-workspace .document-project { display: grid; gap: 7px; margin-bottom: 16px; }
+.rv-workspace .document-project > label { font-size: 11px; font-weight: 600; }
+.rv-workspace .document-project select { width: 100%; min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper, #fff); color: inherit; font: inherit; font-size: 11px; }
+.rv-workspace .document-project-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.rv-workspace .document-project-actions .text-btn { font-size: 10px; }
 .rv-workspace .rv-input-document .document-progress-heading { font-size: 11px; }
 .rv-workspace .rv-input-document .document-progress-heading strong { font-size: 16px; }
 .rv-workspace .rv-input-document .document-progress-meta { font-size: 10px; gap: 10px; flex-wrap: wrap; }

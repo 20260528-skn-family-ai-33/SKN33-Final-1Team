@@ -18,11 +18,13 @@ from backend.app.persistence.database import PersistenceError
 from backend.app.security.csrf import developer_allowed
 from backend.app.security.errors import AuthError
 from backend.app.config import ConfigurationError
+from backend.app.services.business import Business
+from backend.app.routes.v1.business import project_router
 from .api import StartRequest,RevisionRequest
 from .contracts import Approval,RunSnapshot,StepTimeline
 from .postgres import PostgresStore
 from .postgres_schema import check_extension,check_app_permissions,check_document_extension
-from .documents import PostgresDocuments,RegisteredDocument,open_document_storage
+from .documents import PostgresDocuments,RegisteredDocument,TextDocumentInput,open_document_storage
 from .files import FileLimits
 from .criteria_review import PostgresCriteriaReview
 from .criteria_contracts import CriteriaVersionRequest,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord
@@ -46,6 +48,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                     revision=check_extension(c);check_app_permissions(c)
                     if pdf_storage_root is not None:check_document_extension(c)
                 current.state.framework_revision=revision['revision']
+                current.state.business=Business(current.state.engine,current.state.authorization,settings)
                 return PostgresStore(current.state.engine,configuration,current.state.authorization)
             current.state.framework=await run_in_threadpool(prepare)
             storage=None
@@ -57,7 +60,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 if pdf_storage_root is not None:
                     storage=await run_in_threadpool(open_document_storage,pdf_storage_root)
                     current.state.documents=PostgresDocuments(current.state.engine,current.state.authorization,storage)
-                if current.state.framework_revision=='AF003':
+                if current.state.framework_revision in ('AF003','AF004'):
                     current.state.criteria_review=PostgresCriteriaReview(current.state.framework,current.state.documents)
                 if poster_storage_root is not None:
                     if current.state.criteria_review is None or storage is None:
@@ -71,6 +74,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 if storage is not None:await run_in_threadpool(storage.close)
     app.router.lifespan_context=lifespan
     app.title='Creative Checker — PostgreSQL agent framework'
+    app.include_router(project_router(),prefix='/api/v1')
 
     def subject(request):
         user=app.state.auth.current(request.cookies.get(settings.session_cookie),
@@ -83,11 +87,16 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         except ValueError:raise AuthError('FRAMEWORK_CONFLICT',409) from None
 
     prefix='/api/framework/v1'
+    app.include_router(project_router(),prefix=prefix)
+    from backend.app.routes.v1.auth import csrf_response
+    app.add_api_route(prefix+'/csrf',csrf_response,methods=['GET'])
     @app.get(prefix+'/health')
     def health():
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
+                'free_text_registration':app.state.documents is not None and app.state.framework_revision=='AF004',
                 'pdf_extraction_mode':configuration.pdf_extraction.mode if configuration.pdf_extraction and app.state.documents else None,
+                'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
@@ -96,6 +105,11 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         return invoke(app.state.framework.start,subject(request),body.context,body.document,body.asset)
     @app.get(prefix+'/runs/{run_id}',response_model=RunSnapshot)
     def read(request:Request,run_id:str):return invoke(app.state.framework.get,subject(request),run_id)
+    @app.get(prefix+'/runs/{run_id}/requirements')
+    def requirements(request:Request,run_id:str):
+        from .requirements_presentation import present_requirements
+        snapshot=invoke(app.state.framework.get,subject(request),run_id)
+        return present_requirements(snapshot)
     @app.get(prefix+'/runs/{run_id}/steps',response_model=StepTimeline)
     def timeline(request:Request,run_id:str):return invoke(app.state.framework.get_steps,subject(request),run_id)
     @app.get(prefix+'/runs/{run_id}/approvals')
@@ -183,6 +197,27 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         try:return await run_in_threadpool(app.state.framework.start_pdf,actor,project_id,version_id,idempotency_key)
         except PersistenceError:raise AuthError('A02_ADMISSION_UNCONFIRMED',503) from None
 
+    async def text_document(request,pid,request_key,document_id=None,previous=None):
+        from backend.app.routes.v1.business import parse
+        service=documents();actor=await run_in_threadpool(subject,request)
+        await run_in_threadpool(service.preflight,actor,developer_allowed(request,settings),pid,document_id,previous)
+        if app.state.framework_revision!='AF004':raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        body=await parse(request,TextDocumentInput)
+        try:raw=body.text.encode('utf-8')
+        except UnicodeError:raise AuthError('REQUIREMENT_TEXT_INVALID',422) from None
+        return await run_in_threadpool(partial(service.register,actor,developer_allowed(request,settings),pid,request_key,raw,
+            filename='requirements.txt',document_id=document_id,previous_version_id=previous,media_type='text/plain'))
+
+    text_body_schema={'requestBody':{'required':True,'content':{'application/json':{'schema':TextDocumentInput.model_json_schema()}}}}
+    @app.post(prefix+'/projects/{project_id}/text-documents',response_model=RegisteredDocument,status_code=201,openapi_extra=text_body_schema)
+    async def register_text(request:Request,project_id:UUID,idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await text_document(request,project_id,idempotency_key)
+
+    @app.post(prefix+'/projects/{project_id}/text-documents/{document_id}/versions',response_model=RegisteredDocument,status_code=201,openapi_extra=text_body_schema)
+    async def register_text_version(request:Request,project_id:UUID,document_id:UUID,previous_version_id:UUID,
+                                    idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await text_document(request,project_id,idempotency_key,document_id,previous_version_id)
+
     async def upload(request,pid,request_key,filename,document_id=None,previous=None):
         service=documents()
         actor=await run_in_threadpool(subject,request)
@@ -225,6 +260,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     @app.get(prefix+'/projects/{project_id}/document-versions/{version_id}/content')
     def document_content(request:Request,project_id:UUID,version_id:UUID):
         record,raw=documents().content(subject(request),developer_allowed(request,settings),project_id,version_id)
-        return Response(raw,media_type='application/pdf',headers={
-            'Content-Disposition':"attachment; filename=\"document.pdf\"; filename*=UTF-8''"+quote(record.original_name,safe='')})
+        fallback='requirements.txt' if record.document.media_type=='text/plain' else 'document.pdf'
+        return Response(raw,media_type=record.document.media_type,headers={
+            'Content-Disposition':f'attachment; filename="{fallback}"; filename*=UTF-8\'\''+quote(record.original_name,safe='')})
     return app

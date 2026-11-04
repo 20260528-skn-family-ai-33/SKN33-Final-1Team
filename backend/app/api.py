@@ -344,7 +344,7 @@ def create_app(
                         from .management.maintenance import active
                         if await run_in_threadpool(active,postgres_store.engine):
                             raise AuthError('MAINTENANCE_ACTIVE',503)
-                    if request.method not in ('GET','HEAD','OPTIONS'):
+                    if request.method not in ('GET','HEAD','OPTIONS') and not request.url.path.startswith('/api/framework/'):
                         application.state.csrf.verify(request,postgres_store.settings)
                     if request.url.path.startswith(('/api/reviews','/api/requirements','/api/video-reviews','/api/video-logos')):
                         from .routes.v1.business import subject
@@ -366,6 +366,9 @@ def create_app(
             return JSONResponse({'error':{'code':'DATABASE_UNAVAILABLE','message':'DB 저장·조회에 실패했습니다. 연결 상태를 확인해 주세요.'}},status_code=503)
 
         application.include_router(postgres_auth_router())
+    if not readonly:
+        from .framework_proxy import framework_proxy_router
+        application.include_router(framework_proxy_router())
     if readonly:
         from .legacy_boundary import local_read_request, review_path, retired_response
         from starlette.responses import JSONResponse

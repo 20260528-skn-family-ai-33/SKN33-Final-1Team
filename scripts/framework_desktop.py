@@ -127,7 +127,7 @@ def parser():
     p.add_argument('--config',type=Path,default=ROOT/'examples/agent_framework/team_config.pdf-mock.json')
     p.add_argument('--port',type=int,default=8012)
     p.add_argument('--once',action='store_true')
-    p.add_argument('--revision',choices=('AF001','AF002','AF003'),default='AF003')
+    p.add_argument('--revision',choices=('AF001','AF002','AF003','AF004'),default='AF003')
     p.add_argument('--ssh-host')
     p.add_argument('--ssh-user',default='root')
     p.add_argument('--ssh-port',type=int,default=20719)

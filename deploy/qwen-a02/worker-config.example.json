@@ -2,10 +2,22 @@
   "contract_version": "2.0.0",
   "profile": "development",
   "roles": {
-    "A02": {"contract_version": "2.0.0", "kind": "registered_pdf"},
-    "A04_A05": {"contract_version": "2.0.0", "kind": "unconfigured"},
-    "A06": {"contract_version": "2.0.0", "kind": "reference"},
-    "A07": {"contract_version": "2.0.0", "kind": "unconfigured"}
+    "A02": {
+      "contract_version": "2.0.0",
+      "kind": "registered_pdf"
+    },
+    "A04_A05": {
+      "contract_version": "2.0.0",
+      "kind": "unconfigured"
+    },
+    "A06": {
+      "contract_version": "2.0.0",
+      "kind": "reference"
+    },
+    "A07": {
+      "contract_version": "2.0.0",
+      "kind": "unconfigured"
+    }
   },
   "pdf_extraction": {
     "contract_version": "2.0.0",
@@ -14,7 +26,8 @@
     "model": "Qwen/Qwen3.5-4B",
     "parser_version": "1.28.2",
     "max_text_chars": 32000,
-    "timeout_seconds": 120,
-    "max_output_tokens": 8192
+    "timeout_seconds": 600,
+    "max_output_tokens": 8192,
+    "structuring": "semantic"
   }
 }

@@ -173,8 +173,11 @@
           "type": "string"
         },
         "media_type": {
-          "const": "application/pdf",
           "default": "application/pdf",
+          "enum": [
+            "application/pdf",
+            "text/plain"
+          ],
           "title": "Media Type",
           "type": "string"
         },

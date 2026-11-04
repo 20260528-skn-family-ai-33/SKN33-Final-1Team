@@ -52,10 +52,16 @@ py -3.12 scripts/framework_desktop.py init-config
 
 PC의 PostgreSQL 또는 PC에 포트가 공개된 PostgreSQL 컨테이너를 사용하면 `DB_HOST=host.docker.internal`과 실제 공개 포트를 사용한다. 원본 설정이 `localhost/127.0.0.1/::1`이면 실행기가 컨테이너용 임시 파일에서만 host 주소로 바꾼다. 같은 Docker network의 DB 서비스 이름을 쓸 때는 `--network 실제네트워크이름`을 추가한다. 외부 DB hostname은 유지한다. Linux 호스트 실행에서는 Docker host-gateway 별칭을 추가하며, Mac/Windows Docker Desktop은 자체 별칭을 사용한다.
 
-이 명령은 DB를 새로 만들거나 M008을 자동 bootstrap하지 않는다. DB 담당자는 기존 개발 DB에 AF003이 준비됐는지 확인한다. 추가 마이그레이션이 필요할 때만 별도 owner 파일로 명시적으로 실행한다.
+이 명령은 DB를 새로 만들거나 M008을 자동 bootstrap하지 않는다. PDF 기준 승인에는 AF003, 자유 입력의 원문·버전 저장에는 AF004가 필요하다. 추가 마이그레이션은 백업 확인 후 별도 owner 파일로 명시적으로 실행한다. [A02 자유 입력·PDF 의미 구조화](A02_조건추출_연결가이드.html)를 따른다.
 
 ```bash
 python3 scripts/framework_desktop.py migrate --env-file .runtime/framework-owner.env --revision AF003
+```
+
+자유 입력도 사용할 때는 새 이미지를 빌드하고 기존 DB 백업을 확인한 뒤 AF004를 지정한다. Windows에서는 같은 인자 앞에 `py -3.12`를 사용한다.
+
+```bash
+python3 scripts/framework_desktop.py migrate --env-file .runtime/framework-owner.env --revision AF004
 ```
 
 Windows에서는 앞부분만 `py -3.12`로 바꾼다. owner 파일은 해당 일회성 컨테이너에만 읽기 전용으로 전달하며 API/worker에 넘기지 않는다.
@@ -108,7 +114,9 @@ Windows의 두 번째 PowerShell:
 py -3.12 scripts/framework_desktop.py worker --env-file .runtime/framework-desktop.env
 ```
 
-브라우저는 두 OS 모두 `http://localhost:8012/docs`다. 기존 DB 로그인·세션·CSRF·프로젝트 권한을 사용한다. 기본 팀 설정은 `team_config.pdf-mock.json`이며 실모델 호출을 하지 않는다. 창을 닫거나 Ctrl+C로 실행을 종료해도 named volume의 payload는 보존한다.
+API 상태 확인 주소는 두 OS 모두 `http://localhost:8012/api/framework/v1/health`다. 기존 DB 로그인·세션·CSRF·프로젝트 권한을 사용한다. 기본 팀 설정은 `team_config.pdf-mock.json`이며 실모델 호출을 하지 않는다. 창을 닫거나 Ctrl+C로 실행을 종료해도 named volume의 payload는 보존한다.
+
+프레임워크는 화면 대신 HTTP API를 제공한다. 로그인 후 `/api/v1/projects`에서 프로젝트 목록 조회·생성, `/api/v1/projects/{project_id}`에서 상세 조회·수정을 할 수 있다. 기존 M008의 세션·CSRF·프로젝트 권한과 업무 서비스를 재사용하며 이미지 저장소나 예전 OCR 실행기를 시작하지 않는다. PDF 등록은 `/api/framework/v1/projects/{project_id}/documents`를 사용한다. 프로젝트 경로가 404를 반환하는 이전 이미지에서는 코드를 갱신해 `build`한 뒤 API와 worker를 모두 재시작한다. 같은 env·볼륨을 유지하며 `init-config`, `init-pdf`, 마이그레이션을 반복하지 않는다.
 
 컨테이너 내부 API만 명시적으로 `0.0.0.0:8012`에 bind하고 PC에는 `127.0.0.1:8012`만 공개한다. 기존 네이티브 `postgres-serve` 기본값은 `127.0.0.1`을 유지한다. `--port`로 PC 공개 포트를 바꾸면 비밀 설정의 허용 Origin도 같은 포트로 맞춘다. 프레임워크 API를 실행하는 것이 front-v2 제품 화면 전체를 새로 배포하는 것은 아니다.
 

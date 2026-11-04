@@ -7,6 +7,8 @@ from .contracts import Contract
 
 class PDFExtractionConfiguration(Contract):
     mode: Literal['mock','qwen']
+    structuring: Literal['semantic','literal_legacy'] = 'semantic'
+    presentation: bool = Field(default=False,strict=True)
     endpoint: str | None = None
     model: str = Field(default='Qwen/Qwen3.5-4B',min_length=1,max_length=200)
     parser_version: str = Field(default='1.28.2',pattern=r'^\d+\.\d+\.\d+$')
@@ -16,6 +18,8 @@ class PDFExtractionConfiguration(Contract):
 
     @model_validator(mode='after')
     def endpoint_matches_mode(self):
+        if self.presentation and (self.mode!='qwen' or self.structuring!='semantic'):
+            raise ValueError('Presentation requires Qwen semantic extraction')
         if self.mode=='mock':
             if self.endpoint is not None:raise ValueError('mock mode must not have a model endpoint')
         else:

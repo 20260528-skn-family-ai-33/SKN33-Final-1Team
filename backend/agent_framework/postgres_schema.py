@@ -11,10 +11,11 @@ from backend.app.persistence.schema_inventory import _STRUCTURE_QUERIES,validate
 DDL = Path(__file__).with_name('AF001.sql')
 DOCUMENT_DDL = Path(__file__).with_name('AF002.sql')
 CRITERIA_DDL = Path(__file__).with_name('AF003.sql')
+TEXT_DDL = Path(__file__).with_name('AF004.sql')
 TABLES = ('schema_version', 'runs', 'jobs', 'steps', 'approvals', 'events')
 DOCUMENT_TABLES = ('document_versions',)
 CRITERIA_TABLES = ('criteria_versions','criteria_approval_bindings')
-MIGRATIONS={'AF001':(DDL,TABLES),'AF002':(DOCUMENT_DDL,DOCUMENT_TABLES),'AF003':(CRITERIA_DDL,CRITERIA_TABLES)}
+MIGRATIONS={'AF001':(DDL,TABLES),'AF002':(DOCUMENT_DDL,DOCUMENT_TABLES),'AF003':(CRITERIA_DDL,CRITERIA_TABLES),'AF004':(TEXT_DDL,())}
 UPDATES = {'runs': ('snapshot_json','updated_at'),
            'jobs': ('state','attempt_no','worker_token','lease_expires_at','heartbeat_at','finished_at','error_json'),
            'steps': ('state','record_json','output_json','output_sha256')}
@@ -51,7 +52,7 @@ def check_extension(connection):
 
 def check_document_extension(connection):
     result=check_extension(connection)
-    if result['revision'] not in ('AF002','AF003'):
+    if result['revision'] not in ('AF002','AF003','AF004'):
         raise PersistenceError('FRAMEWORK_DOCUMENT_SCHEMA_NOT_READY',
                                'Apply the explicit AF002 extension before enabling PDF registration.')
     return result
@@ -59,7 +60,7 @@ def check_document_extension(connection):
 
 def check_criteria_extension(connection):
     result=check_extension(connection)
-    if result['revision']!='AF003':
+    if result['revision'] not in ('AF003','AF004'):
         raise PersistenceError('FRAMEWORK_CRITERIA_SCHEMA_NOT_READY','Apply AF003 explicitly before criteria revision/approval commands.')
     return result
 

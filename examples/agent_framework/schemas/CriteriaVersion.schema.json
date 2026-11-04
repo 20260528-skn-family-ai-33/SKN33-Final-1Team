@@ -239,6 +239,17 @@
             }
           ],
           "default": null
+        },
+        "details": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementDetails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -293,6 +304,132 @@
         "source"
       ],
       "title": "RecordedCriteriaEdit",
+      "type": "object"
+    },
+    "RequirementDetails": {
+      "additionalProperties": false,
+      "description": "Source-grounded compilation metadata, not semantic approval.",
+      "properties": {
+        "contract_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "compiler": {
+          "default": "literal-requirements-v1",
+          "enum": [
+            "literal-requirements-v1",
+            "qwen-semantic-v1"
+          ],
+          "title": "Compiler",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "poster_text",
+            "poster_visual",
+            "file_metadata",
+            "delivery",
+            "unspecified"
+          ],
+          "title": "Target",
+          "type": "string"
+        },
+        "field": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Field",
+          "type": "string"
+        },
+        "expected_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "normalized_expected": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalized Expected"
+        },
+        "presentation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "origin": {
+          "default": "selected_source",
+          "enum": [
+            "selected_source",
+            "model_structured",
+            "retained_unresolved_source"
+          ],
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "field"
+      ],
+      "title": "RequirementDetails",
+      "type": "object"
+    },
+    "RequirementPresentation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "^[^:\\r\\n]+$",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "RequirementPresentation",
       "type": "object"
     },
     "SourceRef": {

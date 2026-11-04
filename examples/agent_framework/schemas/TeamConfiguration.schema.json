@@ -17,6 +17,20 @@
           "title": "Mode",
           "type": "string"
         },
+        "structuring": {
+          "default": "semantic",
+          "enum": [
+            "semantic",
+            "literal_legacy"
+          ],
+          "title": "Structuring",
+          "type": "string"
+        },
+        "presentation": {
+          "default": false,
+          "title": "Presentation",
+          "type": "boolean"
+        },
         "endpoint": {
           "anyOf": [
             {

@@ -72,7 +72,8 @@ def revise_criteria(draft,parent,request,*,version_id,created_by,created_at):
         else:
             original=originals[edit.criterion_id]
             current[edit.criterion_id]=Criterion(**(original.model_dump(mode='python')|
-                edit.resolution.model_dump(mode='python')|{'human_added':True,'value_source':source}))
+                edit.resolution.model_dump(mode='python')|{'human_added':True,'value_source':source,
+                'details':original.details.model_copy(update={'expected_source':None,'normalized_expected':None,'presentation':None}) if original.details is not None else None}))
             excluded.pop(edit.criterion_id,None)
     if not current:raise ValueError('cannot exclude all criteria')
     criteria=tuple(current[cid] for cid in originals if cid in current)
