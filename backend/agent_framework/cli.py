@@ -292,12 +292,21 @@ def parser():
             command.add_argument('--host',choices=('127.0.0.1','0.0.0.0'),default='127.0.0.1',help='Use 0.0.0.0 only inside a container with a loopback-only published host port.')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF root initialized with init-pdf-storage; requires AF002')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; registered poster reviews require AF003')
-        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003','AF004'),default='AF001')
+        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003','AF004','AF005'),default='AF001')
         if name=='worker':
             command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF storage; required by registered_pdf A02 configuration')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; required by registered_poster inspector')
         command.set_defaults(handler=handler)
+    from .graph_commands import graph_command
+    for name in ('graph-init','graph-projector','graph-rebuild'):
+        command=commands.add_parser(name,help='Explicit framework graph operation; never migrates a database')
+        command.add_argument('--env-file',required=True)
+        if name=='graph-projector':command.add_argument('--once',action='store_true')
+        if name=='graph-rebuild':
+            from uuid import UUID
+            command.add_argument('--project-id',type=UUID,required=True)
+        command.set_defaults(handler=graph_command)
     return cli
 
 

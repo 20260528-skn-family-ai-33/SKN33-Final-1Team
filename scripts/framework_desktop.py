@@ -54,6 +54,8 @@ def settings(args):
     values=read_env(args.env_file)
     if args.action!='migrate' and any(values.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise ValueError('APP_CREDENTIALS_ONLY')
+    if values.get('CC_NEO4J_URI'):
+        values['CC_NEO4J_URI']=mapped_endpoint(values['CC_NEO4J_URI'])
     if values.get('DB_HOST') in ('localhost','127.0.0.1','::1'):values['DB_HOST']='host.docker.internal'
     config=None
     if args.action in ('api','worker'):
@@ -102,7 +104,8 @@ def docker_command(args,folder=None):
         base+=['--config','/run/framework/team.json','--pdf-storage-root','/data/pdf']
         if args.poster_volume:base+=['--poster-storage-root',str(PurePosixPath('/poster')/args.poster_subdir)]
     if args.action=='api':base+=['--host','0.0.0.0','--port','8012']
-    if args.action=='worker' and args.once:base+=['--once']
+    if args.action in ('worker','graph-projector') and args.once:base+=['--once']
+    if args.action=='graph-rebuild':base+=['--project-id',str(args.project_id)]
     return base
 
 
@@ -116,8 +119,9 @@ def ssh_command(args):
 
 def parser():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action',choices=('doctor','build','demo','init-config','init-pdf','check','api','worker','migrate','tunnel'))
+    p.add_argument('action',choices=('doctor','build','demo','init-config','init-pdf','check','api','worker','migrate','tunnel','graph-init','graph-projector','graph-rebuild'))
     p.add_argument('--image',default=IMAGE)
+    p.add_argument('--project-id')
     p.add_argument('--volume',type=name,default=VOLUME)
     p.add_argument('--poster-volume',type=name)
     p.add_argument('--poster-subdir',default='images')
@@ -127,7 +131,7 @@ def parser():
     p.add_argument('--config',type=Path,default=ROOT/'examples/agent_framework/team_config.pdf-mock.json')
     p.add_argument('--port',type=int,default=8012)
     p.add_argument('--once',action='store_true')
-    p.add_argument('--revision',choices=('AF001','AF002','AF003','AF004'),default='AF003')
+    p.add_argument('--revision',choices=('AF001','AF002','AF003','AF004','AF005'),default='AF003')
     p.add_argument('--ssh-host')
     p.add_argument('--ssh-user',default='root')
     p.add_argument('--ssh-port',type=int,default=20719)
@@ -141,7 +145,7 @@ def main(argv=None):
     p=parser();args=p.parse_args(argv)
     for value in (args.port,args.ssh_port,args.local_port,args.remote_port):
         if not 1<=value<=65535:p.error('Port must be between 1 and 65535.')
-    if args.action in ('check','api','worker','migrate') and args.env_file is None:p.error('--env-file is required.')
+    if args.action in ('check','api','worker','migrate','graph-init','graph-projector','graph-rebuild') and args.env_file is None:p.error('--env-file is required.')
     if args.action=='tunnel' and not args.ssh_host:p.error('--ssh-host is required.')
     try:
         if args.action=='init-config':

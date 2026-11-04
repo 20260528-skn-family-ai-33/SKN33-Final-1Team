@@ -47,6 +47,8 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 with unit_of_work(current.state.engine) as c:
                     revision=check_extension(c);check_app_permissions(c)
                     if pdf_storage_root is not None:check_document_extension(c)
+                if configuration.context_preparation is not None and revision['revision']!='AF005':
+                    raise ConfigurationError('Neo4j evidence preparation requires explicit AF005 migration.')
                 current.state.framework_revision=revision['revision']
                 current.state.business=Business(current.state.engine,current.state.authorization,settings)
                 return PostgresStore(current.state.engine,configuration,current.state.authorization)
@@ -60,7 +62,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 if pdf_storage_root is not None:
                     storage=await run_in_threadpool(open_document_storage,pdf_storage_root)
                     current.state.documents=PostgresDocuments(current.state.engine,current.state.authorization,storage)
-                if current.state.framework_revision in ('AF003','AF004'):
+                if current.state.framework_revision in ('AF003','AF004','AF005'):
                     current.state.criteria_review=PostgresCriteriaReview(current.state.framework,current.state.documents)
                 if poster_storage_root is not None:
                     if current.state.criteria_review is None or storage is None:
@@ -94,12 +96,36 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     def health():
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
-                'free_text_registration':app.state.documents is not None and app.state.framework_revision=='AF004',
+                'free_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
                 'pdf_extraction_mode':configuration.pdf_extraction.mode if configuration.pdf_extraction and app.state.documents else None,
                 'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
+                'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
+                'graph_projection':app.state.framework_revision=='AF005',
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
+    @app.get(prefix+'/projects/{project_id}/graph-status')
+    def graph_status_view(request:Request,project_id:UUID):
+        from .graph_projection import graph_status,installed
+        actor=subject(request)
+        with unit_of_work(app.state.engine) as c:
+            app.state.authorization.project(c,actor,project_id,action='read')
+            if not installed(c):raise AuthError('FRAMEWORK_GRAPH_SCHEMA_NOT_READY',503)
+            return graph_status(c,project_id)
+
+    @app.get(prefix+'/projects/{project_id}/criteria-impact')
+    def impact_view(request:Request,project_id:UUID,criteria_version_id:UUID,criterion_id:str):
+        from .graph_projection import criteria_impact
+        actor=subject(request)
+        with unit_of_work(app.state.engine) as c:
+            app.state.authorization.project(c,actor,project_id,action='read')
+            return criteria_impact(c,project_id,criteria_version_id,criterion_id)
+
+    @app.get(prefix+'/runs/{run_id}/evidence-context')
+    def evidence_view(request:Request,run_id:str):
+        from .evidence_context import read_context
+        return read_context(app.state.framework,subject(request),run_id)
+
     @app.post(prefix+'/runs',response_model=RunSnapshot,status_code=202)
     def start(request:Request,body:StartRequest):
         return invoke(app.state.framework.start,subject(request),body.context,body.document,body.asset)
@@ -201,7 +227,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         from backend.app.routes.v1.business import parse
         service=documents();actor=await run_in_threadpool(subject,request)
         await run_in_threadpool(service.preflight,actor,developer_allowed(request,settings),pid,document_id,previous)
-        if app.state.framework_revision!='AF004':raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if app.state.framework_revision not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         body=await parse(request,TextDocumentInput)
         try:raw=body.text.encode('utf-8')
         except UnicodeError:raise AuthError('REQUIREMENT_TEXT_INVALID',422) from None

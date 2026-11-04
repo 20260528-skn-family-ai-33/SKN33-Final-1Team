@@ -1,0 +1,17 @@
+name: creative-checker-agent-framework
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    environment:
+      NEO4J_AUTH: neo4j/${AF_NEO4J_PASSWORD:?Set a separate local graph password}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    ports:
+      - "127.0.0.1:57431:7474"
+      - "127.0.0.1:57631:7687"
+    volumes:
+      - framework-neo4j:/data
+    restart: "no"
+volumes:
+  framework-neo4j:
