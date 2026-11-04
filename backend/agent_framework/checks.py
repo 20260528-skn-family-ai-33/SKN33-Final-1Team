@@ -15,6 +15,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from . import CONTRACT_VERSION
 from .composition import RoleId, TeamConfiguration, build_role
 from .contracts import Contract, Identifier, Verdict
 from .invocation import ROLE_CONTRACTS, InvocationFailure, invoke_role
@@ -178,7 +179,7 @@ exception messages. Contract acceptance does not establish semantic accuracy.
         results.append(item)
     counts = {status: sum(item["status"] == status for item in results)
               for status in ("passed", "failed", "skipped")}
-    return {"contract_version": "2.0.0", "check": "role_contract_suite", "role": role,
+    return {"contract_version": CONTRACT_VERSION, "check": "role_contract_suite", "role": role,
             "profile": configuration.profile, "adapter_kind": binding.kind,
             "passed": counts["passed"] == len(results), "stopped_on_outcome_unknown": stopped,
             "summary": {"total": len(results), **counts, "contract_outputs_checked": outputs_checked},
