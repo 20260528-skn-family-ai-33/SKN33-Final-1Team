@@ -1,0 +1,23 @@
+{
+  "contract_version": "3.0.0",
+  "profile": "development",
+  "roles": {
+    "A02": {
+      "contract_version": "3.0.0",
+      "kind": "unconfigured"
+    },
+    "A04_A05": {
+      "contract_version": "3.0.0",
+      "kind": "unconfigured"
+    },
+    "A06": {
+      "contract_version": "3.0.0",
+      "kind": "reference"
+    },
+    "A07": {
+      "contract_version": "3.0.0",
+      "kind": "factory",
+      "factory": "backend.a07_reporter.adapter:create_reporter"
+    }
+  }
+}
