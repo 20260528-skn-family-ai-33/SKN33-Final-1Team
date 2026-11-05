@@ -53,6 +53,7 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
     return route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new?framework=' + context.run_id);
+  await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
   await page.getByRole('heading', { name: '담당자 직접 확인' }).waitFor();
   const final = page.getByRole('button', { name: '사람 확인 후 최종 승인' });
   assert.ok(await final.isDisabled());
@@ -76,6 +77,7 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
   assert.deepEqual(sent[0].human_reviews, [{ criterion_id: 'date', verdict, observed: '포스터 날짜를 원문과 대조했습니다.',
     reference: '현재 포스터 상단 날짜', reason: '합성 데이터로 직접 확인 흐름 검증', checked_asset: true }]);
   await page.reload();
+  await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
   await page.getByText('기계 판정 · 확인 필요', { exact: true }).waitFor();
   await page.getByRole('heading', { name: `담당자 확인 · date · ${verdict === 'pass' ? '충족' : '불충족'}` }).waitFor();
   if (verdict === 'fail') await page.getByLabel('수정 포스터', { exact: true }).waitFor();

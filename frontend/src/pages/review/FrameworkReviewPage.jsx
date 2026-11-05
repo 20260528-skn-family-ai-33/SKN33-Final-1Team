@@ -1,10 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
+import { Icon } from '../../components/Icon.jsx';
+import ResultsPage from './ResultsPage.jsx';
+import { frameworkResults } from './frameworkResults.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
-import { frameworkPrefix, frameworkJson } from './frameworkClient.js';
+import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
+import '../../styles/review-editor-v2.css';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = new Set(['queued', 'extracting', 'reviewing']);
@@ -14,7 +18,7 @@ function command(path, body, key, signal) {
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
 
-export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew }) {
+export default function FrameworkReviewPage({ runId, initialFile, projectName, openRun, onNew }) {
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
@@ -26,6 +30,13 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
+  const [showCriteria, setShowCriteria] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [activeId, setActiveId] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [activeEvidence, setActiveEvidence] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [imageSize, setImageSize] = useState(null);
   const active = useRef(null);
   const keys = useRef(new Map());
   const uploaded = useRef(null);
@@ -35,6 +46,12 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   const status = run?.execution_status;
   const sourceDraft = status === 'waiting_criteria' && !run.baseline;
   const criteria = latest?.version.criteria || run?.criteria?.criteria || [];
+  const selected = criteria.find(item => item.criterion_id === (amendment?.criterion_id || activeId)) || criteria[0];
+  const imageUrl = run?.baseline ? frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content' : null;
+  const image = useMemo(() => ({ url: imageUrl, ...(imageSize?.url === imageUrl ? imageSize : {}) }), [imageUrl, imageSize]);
+  const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
+  const hasResults = !!run?.validated;
+  const step = hasResults && !showCriteria ? 'results' : running.has(status) ? 'running' : 'criteria';
   const reviewItems = run ? reviewableItems(run) : [];
   const requiredItems = (run?.validated?.items || []).filter(item => item.required);
   const canFinalize = requiredItems.length > 0 && requiredItems.every(item => item.verdict === 'pass' ||
@@ -42,6 +59,19 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
       humanReviews[item.criterion_id]?.verdict === 'pass')) && !Object.values(humanReviews).some(item => item.verdict === 'fail');
 
   useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    if (!file) { setPreview(null); return; }
+    const url = URL.createObjectURL(file);
+    setPreview({ file, url });
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  useEffect(() => {
+    if (!imageUrl) return;
+    const img = new Image();
+    img.onload = () => setImageSize({ url: imageUrl, width: img.naturalWidth, height: img.naturalHeight });
+    img.src = imageUrl;
+    return () => { img.onload = null; };
+  }, [imageUrl]);
   useEffect(() => { setHumanReviews({}); }, [runId]);
   useEffect(() => {
     const controller = new AbortController();
@@ -91,6 +121,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   }
   async function registerPoster(signal) {
     if (!file) return;
+    await requirePosterReview({ signal });
     if (uploaded.current?.file !== file) {
       const form = new FormData(); form.append('image', file);
       const image = await frameworkJson('/projects/' + encodeURIComponent(run.context.project_id) + '/images',
@@ -105,6 +136,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
     openRun(child.context.run_id);
   }
   async function decide(decision, signal) {
+    if (decision === 'approve_criteria') await requirePosterReview({ signal });
     const reviews = Object.values(humanReviews).filter(item => item.verdict);
     if (reviews.length && !humanReviewForm.current.reportValidity()) return;
     const snapshot = await command(path + '/approvals', { context: run.context, actor_id: run.context.actor_id, decision,
@@ -114,46 +146,71 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
 
-  return <div className="rv-workspace"><WorkspaceTopbar current="/review/new" />
-    <main className="rv-main"><section className="rv-panel rv-framework-review" aria-busy={busy}>
-      <h1>PDF 기준 포스터 검수</h1>
-      {run && <p>실행 {runId}{run.synthetic && ' · 합성 검증 데이터'}</p>}
-      {run?.context.parent_run_id && <p>수정 전 실행 <a href={'?framework=' + encodeURIComponent(run.context.parent_run_id)}>{run.context.parent_run_id}</a></p>}
-      {criteria.length > 0 && <details open={sourceDraft || undefined}><summary>검수 기준 {criteria.length}개{latest && ' · v' + latest.version.version_no}</summary>
-        <ul>{criteria.map(c => <li key={c.criterion_id}><strong>{c.criterion_id} · {c.text}</strong> · {c.expected || '기대값 미정'} {c.unit || ''}
-          <p>{c.source.page}쪽 · {c.source.quote}</p>
-          {c.value_source && <p>보완 회신: {c.value_source.quote} · 출처: {c.value_source.reference}</p>}
-          {sourceDraft && <>
-            <label><input type="checkbox" disabled={busy || amendment?.criterion_id === c.criterion_id} checked={excluded.includes(c.criterion_id)}
-              onChange={e => setExcluded(ids => e.target.checked ? [...ids, c.criterion_id] : ids.filter(id => id !== c.criterion_id))} /> 이 버전에서 제외</label>
-            {amendment?.criterion_id === c.criterion_id ? <>
-              <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveVersion); }}>
-                <CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} />
-              </form>
-              <button type="button" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
-            </> : <button type="button" disabled={busy || !!amendment || excluded.includes(c.criterion_id)} onClick={() => {
-              const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
-              setAmendment({
-              action: 'amend', criterion_id: c.criterion_id, reason: '',
-              source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
-              resolution: { kind,
-                operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
-                expected: c.expected, unit: c.unit || null, required: c.required,
-                target: c.details?.target === 'unspecified' ? '' : c.details?.target || '',
-                field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' },
-            }); }}>기준 보완</button>}
-          </>}</li>)}</ul>
-      </details>}
-      {latest?.version.exclusions.length > 0 && <details><summary>제외한 기준 {latest.version.exclusions.length}개</summary>
-        <ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
-      {sourceDraft && overview && <>
-        {excluded.length > 0 && <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}
-        {(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())}
-          onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
-        {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ?
-          <p role="status">승인 전 보완하거나 사유를 적어 제외할 항목: {Object.keys(latest.approval_blockers).join(', ')}</p> :
-          <button className="rv-button primary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
-      </>}
+  return <div className={`rv-workspace rv-workspace--${showActions ? 'tool' : step}`}>
+    <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
+    <WorkspaceTopbar current="/review/new" locked={busy} lockReason="요청을 처리하고 있습니다." />
+    <div className="rv-projectbar"><div className="rv-project-identity"><Icon name="file" /><div><span className="rv-eyebrow">내 검수 프로젝트</span><strong>{projectName || '포스터 검수'}</strong></div><span className="rv-version">{latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}</span></div>
+      <nav className="rv-step-nav" aria-label="검수 단계">{[['input', '자료 입력'], ['criteria', '기준 확인'], ['running', '검수 실행'], ['results', '결과 확인']].map(([key, label], index) =>
+        <button key={key} className={step === key ? 'is-active' : ''} aria-current={step === key ? 'step' : undefined}
+          disabled={busy || key === 'input' || key === 'running' || key === 'results' && !hasResults || key === 'criteria' && !criteria.length}
+          onClick={() => { setShowActions(false); setShowCriteria(key === 'criteria'); }}><span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}</nav>
+    </div>
+    <main id="review-content" className="rv-main rv-framework-workspace" aria-busy={busy}>
+      {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
+      {run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
+      {showActions ? <div className="rv-workspace-intro"><div><span className="rv-eyebrow">REVIEW REPORT</span><h1 id="page-title">보고서와 담당자 승인</h1><p>자동 검수 결과를 검토하고 최종 판단을 기록하세요.</p></div><button type="button" className="rv-button secondary" disabled={busy} onClick={() => setShowActions(false)}>검수 결과로 돌아가기</button></div>
+      : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy}
+        filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
+        edit={() => setShowCriteria(true)} newReview={onNew}
+        actions={<button type="button" className="rv-button primary" disabled={busy} onClick={() => setShowActions(true)}>보고서·담당자 승인<Icon name="arrow" /></button>} /> : <section className="rv-criteria-page" aria-labelledby="page-title">
+        <div className="rv-workspace-intro"><div><span className="rv-eyebrow">02 / 기준 확인</span><h1 id="page-title" tabIndex={-1}>검수할 항목을 확인해 주세요.</h1><p>포스터와 요구사항 원문을 함께 보며 기준을 검토하세요.</p></div><span className="rv-criteria-version"><Icon name={sourceDraft ? 'list' : 'lock'} />{sourceDraft ? '승인 전 검토' : '검수 기준'}</span></div>
+        <div className="rv-editor-grid">
+          <div className="rv-criteria-canvas-column"><ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
+            title="검수 포스터" alt="현재 버전의 검수 포스터" subtitle={file?.name}
+            empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
+            <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
+          </div>
+          <aside className="rv-panel rv-criteria-inspector" aria-label="검수 기준 검토">
+            <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
+            <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
+            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}`}>
+              <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
+                checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
+              <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
+                disabled={!!amendment && amendment.criterion_id !== c.criterion_id} onClick={() => setActiveId(c.criterion_id)}>
+                <span className="rv-criteria-item-index">{String(index + 1).padStart(2, '0')}</span><span className="rv-criteria-item-text">{c.text}</span><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
+              </button>
+            </li>)}</ul>
+            {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
+              <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
+              <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
+              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>요구사항 원문 · {selected.source.page}쪽</summary><p>{selected.source.quote}</p>
+                {selected.value_source && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
+              {sourceDraft && (amendment ? <>
+                <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveVersion); }}><CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} /></form>
+                <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
+              </> : <button type="button" className="rv-button secondary rv-framework-amend" disabled={busy || excluded.includes(selected.criterion_id)} onClick={() => {
+                const c = selected;
+                const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
+                setAmendment({ action: 'amend', criterion_id: c.criterion_id, reason: '',
+                  source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
+                  resolution: { kind, operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
+                    expected: c.expected, unit: c.unit || null, required: c.required,
+                    target: c.details?.target === 'unspecified' ? '' : c.details?.target || '', field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' } });
+              }}>기준 보완</button>)}
+            </div>}
+            {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
+            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
+          </aside>
+        </div>
+        {sourceDraft && overview && <div className="rv-actionbar rv-criteria-actionbar">
+          <div className="rv-criteria-action-context">{excluded.length > 0 ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label> : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요.</p>}</div>
+          <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
+            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <p role="status">승인 전 보완하거나 사유를 적어 제외할 항목: {Object.keys(latest.approval_blockers).join(', ')}</p> : <button className="rv-button primary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+          </div>
+        </div>}
+      </section>}
+      {(!hasResults || showActions) && <section className="rv-panel rv-framework-actions" aria-label="검수 진행과 담당자 승인">
       {(status === 'waiting_asset' || status === 'waiting_revision') && <>
         <label>{status === 'waiting_revision' ? '수정 포스터' : '검수 포스터'} <input type="file" accept="image/png,image/jpeg,image/webp"
           disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
@@ -161,13 +218,9 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
         <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
           onClick={() => perform(registerPoster)}>{status === 'waiting_revision' ? '수정본 재검수 접수' : '승인 기준에 포스터 등록'}</button>
       </>}
-      {run?.baseline && <ImageStage title="검수 포스터" alt="현재 버전의 검수 포스터"
-        src={frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content'} />}
-      {run?.baseline && <p>승인 기준 {run.baseline.criteria_version_id} · 포스터 버전 {run.context.asset_version_id}</p>}
       {status === 'waiting_criteria' && run.baseline && <button className="rv-button primary" disabled={busy}
         onClick={() => perform(signal => decide('approve_criteria', signal))}>이 포스터와 기준을 확인하고 검수 시작</button>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
-      {run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
       {run?.report && <section><h2>검수 보고서</h2><p>기계 판정 · {verdicts[run.machine_verdict]}</p>
         <p style={{ whiteSpace: 'pre-wrap' }}>{run.report.summary}</p>
         <ul>{run.report.change_requests.map((item, i) => <li key={i}>{item}</li>)}</ul></section>}
@@ -187,6 +240,11 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
       </section>))}
       <ErrorMessage message={error} />
       {error && <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>}
-      <button className="text-btn" disabled={busy} onClick={onNew}>새 검수</button>
-    </section></main><WorkspaceFooter /></div>;
+      {!hasResults && <button className="text-btn" disabled={busy} onClick={onNew}>새 검수</button>}
+      {run && <details className="rv-framework-record"><summary>실행·기준 이력</summary><p>실행 {runId}</p>
+        {run.baseline && <p>승인 기준 {run.baseline.criteria_version_id} · 포스터 버전 {run.context.asset_version_id}</p>}
+        {run.context.parent_run_id && <p>수정 전 실행 <a href={'?framework=' + encodeURIComponent(run.context.parent_run_id)}>{run.context.parent_run_id}</a></p>}
+      </details>}
+      </section>}
+    </main><WorkspaceFooter /></div>;
 }

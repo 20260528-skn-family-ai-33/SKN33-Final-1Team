@@ -3,10 +3,9 @@ import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { loadDocumentProjects, createDocumentProject } from './frameworkClient.js';
 
-export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy, projectName }) {
+export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy, projectName, projectId, setProjectId }) {
   const [now, setNow] = useState(Date.now);
   const [projects, setProjects] = useState([]);
-  const [projectId, setProjectId] = useState('');
   const [projectsBusy, setProjectsBusy] = useState(true);
   const [projectsError, setProjectsError] = useState('');
   const [reload, setReload] = useState(0);
@@ -22,10 +21,10 @@ export default function DocumentInput({ documentBusy, documentProgress, document
       setProjectId(current => items.some(item => item.id === current) ? current : items.length === 1 ? items[0].id : '');
     }).catch(error => {
       if (!controller.signal.aborted) setProjectsError(error.status === 401
-        ? 'PDF 분석 서버에 같은 PostgreSQL 계정으로 로그인해야 합니다. 서버 연결 설정을 확인해 주세요.' : error.message);
+        ? '검수 서버에 같은 PostgreSQL 계정으로 로그인해야 합니다. 서버 연결 설정을 확인해 주세요.' : error.message);
     }).finally(() => { if (!controller.signal.aborted) setProjectsBusy(false); });
     return () => controller.abort();
-  }, [reload]);
+  }, [reload, setProjectId]);
   async function createProject() {
     if (!projectName?.trim()) { setProjectsError('위의 프로젝트 이름을 입력한 뒤 만들어 주세요.'); return; }
     setCreating(true); setProjectsError('');
@@ -44,7 +43,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const seconds = Math.max(0, Math.floor((now - (documentProgress?.startedAt || now)) / 1000));
   const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
   return <div className="document-input" aria-busy={documentBusy}>
-    <div className="document-project"><label htmlFor="document-project">PDF를 저장할 프로젝트</label>
+    <div className="document-project"><label htmlFor="document-project">요구사항을 저장할 프로젝트</label>
       <select id="document-project" value={projectId} onChange={event => setProjectId(event.target.value)} disabled={documentBusy || projectsBusy || creating}>
         <option value="">{projectsBusy ? '프로젝트 불러오는 중…' : '프로젝트 선택'}</option>
         {projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
@@ -61,7 +60,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
     <p className="help">텍스트 PDF 1개 · 최대 10MiB / 50페이지 · 기존 입력은 유지됩니다.</p>
     {documentProgress && <div className={`document-progress ${documentProgress.stage === 'completed' ? 'completed' : ''}`}>
       <div className="document-progress-heading" role="status"><span>{documentProgress.message}</span><strong>{documentProgress.percent}%</strong></div>
-      <div className="document-progress-track" role="progressbar" aria-label="PDF 조건 읽기 진행률" aria-valuemin={0} aria-valuemax={100}
+      <div className="document-progress-track" role="progressbar" aria-label="요구사항 분석 진행률" aria-valuemin={0} aria-valuemax={100}
         aria-valuenow={documentProgress.percent} aria-valuetext={`${documentProgress.percent}% · ${documentProgress.message}`}>
         <div className="document-progress-fill" style={{ width: `${documentProgress.percent}%` }} />
       </div>

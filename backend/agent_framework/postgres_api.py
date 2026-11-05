@@ -22,6 +22,7 @@ from backend.app.services.business import Business
 from backend.app.routes.v1.business import project_router, image_router
 from backend.app.services.files import Files
 from .api import StartRequest,RevisionRequest
+from .composition import poster_review_configuration_blockers
 from .contracts import Approval,RunSnapshot,StepTimeline
 from .postgres import PostgresStore
 from .postgres_schema import check_extension,check_app_permissions,check_document_extension
@@ -103,6 +104,12 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     app.add_api_route(prefix+'/csrf',csrf_response,methods=['GET'])
     @app.get(prefix+'/health')
     def health():
+        blockers=[code for ready,code in (
+            (app.state.documents is not None,'DOCUMENT_STORAGE_NOT_READY'),
+            (app.state.criteria_review is not None,'CRITERIA_REVIEW_NOT_READY'),
+            (app.state.poster_reviews is not None,'POSTER_STORAGE_NOT_READY'),
+        ) if not ready]
+        blockers.extend(poster_review_configuration_blockers(configuration))
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
                 'free_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
@@ -112,6 +119,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 'graph_projection':app.state.framework_revision=='AF005',
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
+                'poster_review_ready':not blockers,'poster_review_blockers':blockers,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
     @app.get('/api/health')
     def frontend_health():

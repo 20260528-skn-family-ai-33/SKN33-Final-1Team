@@ -59,7 +59,7 @@ export default function ReviewLayout({ state, busy, health, healthBusy, checkHea
   const currentIndex = Object.keys(labels).indexOf(state.step);
   return <div className={`rv-workspace rv-workspace--${state.step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/review/new"><button className={`rv-connection ${connection}`} onClick={checkHealth} disabled={healthBusy} title="연결 상태 새로 확인"><i />{healthBusy || !health ? '연결 확인 중' : health.status === 'offline' ? '서버 연결 필요' : health.ready ? '검수 서버 연결됨' : '서버 연결 · 준비 필요'}</button></WorkspaceTopbar>
+    <WorkspaceTopbar current="/review/new"><button className={`rv-connection ${connection}`} onClick={checkHealth} disabled={healthBusy} title="검수 구성 다시 확인"><i />{healthBusy || !health ? '구성 확인 중' : health.status === 'offline' ? '서버 연결 필요' : health.ready ? '검수 구성 준비됨' : '검수 구성 확인 필요'}</button></WorkspaceTopbar>
     <div className="rv-projectbar"><div className="rv-project-identity"><button className="rv-icon-button" aria-label="서비스 메인으로" onClick={() => go('/')}><Icon name="grid" /></button><div><span className="rv-eyebrow">내 검수 프로젝트</span><strong>{state.projectName || '새로운 검수'}</strong></div><span className="rv-version">{state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중'}</span></div>
       <nav className="rv-step-nav" aria-label="검수 단계">{Object.entries(labels).map(([key,label],index) => {
         const enabled = key === 'input' || key === 'criteria' && state.criteria.length > 0 || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed';
