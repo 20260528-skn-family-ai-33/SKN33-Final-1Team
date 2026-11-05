@@ -125,6 +125,7 @@ class DisposableDatabases:
             'TEST_DB_OWNER_USER':'af_owner','TEST_DB_OWNER_PASSWORD':self.owner_password,
             'TEST_DB_APP_USER':'af_app','TEST_DB_APP_PASSWORD':self.app_password}
         self.test_environment=self.environment|values|{
+            'AF_TEST_DOCKER_NETWORK':self.project+'_default',
             'AF_TEST_NEO4J_URI':self.graph_uri,'AF_TEST_NEO4J_PASSWORD':self.graph_password,
             'AF_TEST_NEO4J_RUN_ID':self.project,'AF_TEST_NEO4J_TOKEN':self.token}
         sys.path.insert(0,str(ROOT))
