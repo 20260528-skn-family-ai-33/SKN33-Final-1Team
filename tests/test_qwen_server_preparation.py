@@ -89,3 +89,25 @@ def test_worker_config_uses_same_model_and_local_tunnel(config):
     assert worker.pdf_extraction.model==config['model'] and worker.pdf_extraction.mode=='qwen'
     assert endpoint.hostname=='127.0.0.1' and endpoint.port==config['local_tunnel_port']
     assert endpoint.path=='/v1/chat/completions'
+
+
+def test_shared_text_server_accepts_auto_tool_requests_without_changing_model(config):
+    argv=server.command(config)
+    assert '--enable-auto-tool-choice' in argv
+    assert argv[argv.index('--tool-call-parser')+1]=='qwen3_coder'
+    assert '--language-model-only' in argv
+    assert argv[argv.index('--model')+1]==config['model_directory']
+
+
+def test_legacy_a02_only_configuration_keeps_its_previous_behavior(config,tmp_path):
+    config.pop('enable_auto_tool_choice');config.pop('tool_call_parser')
+    path=tmp_path/'legacy.json';path.write_text(json.dumps(config))
+    argv=server.command(server.load_config(path))
+    assert '--enable-auto-tool-choice' not in argv and '--tool-call-parser' not in argv
+
+
+@pytest.mark.parametrize('automatic,parser',[(True,None),(True,'hermes'),('true','qwen3_coder'),(False,'qwen3_coder')])
+def test_inconsistent_tool_options_are_rejected_before_start(config,tmp_path,automatic,parser):
+    config.update(enable_auto_tool_choice=automatic,tool_call_parser=parser)
+    path=tmp_path/'invalid.json';path.write_text(json.dumps(config))
+    with pytest.raises(ValueError,match='INVALID_TOOL_CALLING_CONFIGURATION'):server.load_config(path)

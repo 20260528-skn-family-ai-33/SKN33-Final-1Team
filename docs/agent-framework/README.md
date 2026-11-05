@@ -187,7 +187,9 @@ A01·A08은 공통 상태 전환 코드 위의 **Qwen3.5-4B 도구 호출 에이
 .venv/bin/python -m uvicorn backend.agent_framework.mcp_server:create_development_app --factory --host 127.0.0.1 --port 8013
 ```
 
-테스트는 두 가지다. `test_agents_mcp.py`는 스크립트 모델과 로컬 HTTP MCP 서버로 검증하며 Qwen을 호출하지 않는다. `test_agents_live.py`(`live_model` 마커, 기본 제외)는 `AGENT_FRAMEWORK_QWEN_BASE_URL`·`AGENT_FRAMEWORK_QWEN_API_KEY`를 주고 `pytest -m live_model tests/agent_framework/test_agents_live.py`로 실행한다. 2026-11-03 vLLM 0.33.0(`--enable-auto-tool-choice --tool-call-parser qwen3_coder`)의 Qwen3.5-4B로 4개 시나리오가 통과했다. live 테스트는 프로세스 안 `FrameworkTools`로 도구를 부르므로 Qwen과 HTTP MCP를 묶은 종단 간 검증은 아니며, 합성 시나리오 통과가 실제 업무 정확도를 보장하지 않는다.
+테스트는 두 가지다. `test_agents_mcp.py`는 스크립트 모델과 로컬 HTTP MCP 서버로 검증하며 Qwen을 호출하지 않는다. `test_agents_live.py`(`live_model` 마커, 기본 제외)는 worker와 같은 `CC_QWEN_BASE_URL`·`CC_QWEN_API_KEY`를 프로세스 설정에서 재사용하고 `pytest -m live_model tests/agent_framework/test_agents_live.py`로 실행한다. 별도 테스트 전용 주소·키 변수는 사용하지 않으며 개인 env 파일을 자동 탐색하지 않는다. 공통 주소가 없으면 실모델 검사는 건너뛴다.
+
+2026-11-03 vLLM 0.33.0(`--enable-auto-tool-choice --tool-call-parser qwen3_coder`)의 Qwen3.5-4B로 4개 시나리오가 통과한 것은 당시 기록이다. 11/05 서버 옵션 적용 직후에는 3개 통과·A08 출력 계약 1개 실패였고, [A08 출력 계약 수정·실모델 검증](A08_출력계약_수정검증_20261105.md) 후에는 네 실모델 사례가 모두 통과했다. live 테스트는 프로세스 안 `FrameworkTools`로 도구를 부르므로 Qwen과 HTTP MCP를 묶은 종단 간 검증은 아니며, 합성 시나리오 통과가 실제 업무 정확도를 보장하지 않는다.
 
 ## 단계별 실행 기록
 
@@ -511,3 +513,5 @@ AF005는 graph_state·graph_outbox·불변 evidence_contexts를 추가하며 own
 지연·반복 실패·실제 그래프 반영 상태의 지속 감시는 [동기화 감시 가이드](Neo4j_동기화_감시_가이드.md)를 따른다. `framework_graph_runtime.py status`에서 synchronization 요약, `monitor`에서 최신 상세 관측을 확인한다. 감시는 읽기 전용이며 자동 복구·승인·외부 통지는 하지 않는다.
 
 **[Neo4j 프로젝트 자동 복구](Neo4j_프로젝트_자동복구_가이드.md)** — 유실·불일치를 두 번 확인한 뒤 원장을 검증하고 프로젝트별 outbox로 재구축한다. 외부 관계·원장 불일치·앞선 그래프는 자동 덮어쓰기를 차단한다. 기존 monitor는 읽기 전용을 유지한다.
+
+**[Qwen 도구 호출 옵션 적용](Qwen_도구호출_설정_20261105.md)** — A01·A08의 HTTP 400 원인인 서버 옵션을 적용했다. 원격 보존·수동 재실행 방법과 당시 실모델 결과를 기록했다. 후속 [A08 출력 계약 수정](A08_출력계약_수정검증_20261105.md)으로 실모델 네 사례가 모두 통과했다.

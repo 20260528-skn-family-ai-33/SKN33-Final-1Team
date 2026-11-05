@@ -148,3 +148,7 @@ Linux EC2 worker로 옮기면 그 worker 호스트에서 터널을 유지하거�
 이번 파일은 **서버 준비 1단계**다. 앞서 완료한 합성 7단계의 기준을 실제 사람 승인으로 바꾸지 않으며 그 진행 기록을 새 단계 번호로 덮어쓰지 않는다.
 
 근거: [RunPod Global Volume의 Git·venv 제약](https://www.runpod.io/blog/global-volumes-arent-network-volumes), [Qwen 공식 고정 모델](https://huggingface.co/Qwen/Qwen3.5-4B/tree/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a), [vLLM 공식 v0.17.1 Qwen3.5 구현](https://github.com/vllm-project/vllm/blob/v0.17.1/vllm/model_executor/models/qwen3_5.py), [RunPod 저장소 안내](https://docs.runpod.io/pods/storage/types).
+
+## 11/05 후속 — A01·A08 도구 호출 옵션
+
+현재 저장소 기본 서버 JSON은 `--enable-auto-tool-choice --tool-call-parser qwen3_coder`를 추가한다. GPU·가중치·포트·텍스트 전용 조건과 기존 JSON 호환성은 유지한다. 실제 RunPod에 적용했고 기존 도구 요청 HTTP 400은 해소됐다. 원격 백업·수동 재실행 위치와 남은 A08 출력 계약 검증 실패는 [도구 호출 적용 기록](Qwen_도구호출_설정_20261105.md)을 따른다. 이전 절의 초기 점검 상태와 이번 실실행 결과를 구분한다.

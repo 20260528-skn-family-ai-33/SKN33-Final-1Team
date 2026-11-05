@@ -113,7 +113,8 @@ def parse_final(content: str, output: type[T]) -> T:
 
 def run_agent(model: ChatModel, *, system: str, task: str, tools: list[ToolSpec], output: type[T],
               revise: Callable[[T, list[str]], str | None] | None = None,
-              completed_tools: list[str] | None = None) -> tuple[T, list[str]]:
+              completed_tools: list[str] | None = None,
+              format_guidance: str | None = None) -> tuple[T, list[str]]:
     """Return the parsed answer and the names of tools that completed.
 
     `revise` may return a correction once when the answer contradicts what was
@@ -139,7 +140,7 @@ def run_agent(model: ChatModel, *, system: str, task: str, tools: list[ToolSpec]
                 reformatted = True  # Small models drift into prose or object lists; ask for the contract once.
                 messages += [{'role': 'assistant', 'content': content}, {'role': 'user', 'content': (
                     '최종 답이 요구한 JSON 형식이 아니다. 설명 없이 시스템 지시의 JSON 객체 하나만 다시 출력하라. '
-                    '목록에는 ID 문자열만 넣는다.')}]
+                    + (format_guidance or '목록에는 ID 문자열만 넣는다.'))}]
                 continue
             correction = revise(draft, used) if revise else None
             if correction is None:

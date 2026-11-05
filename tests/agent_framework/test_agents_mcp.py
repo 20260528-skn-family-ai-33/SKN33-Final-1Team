@@ -180,6 +180,42 @@ def test_a08_rejected_request_keeps_the_error_code():
         workflow.get('demo-run-2')
 
 
+def test_a08_invalid_denial_gets_request_specific_correction_without_a_write():
+    workflow, parent = started('fail', 'approve_criteria')
+    child, _, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)
+    invalid = answer(rereview_requested=False, unresolved=["human_decision != 'changes_approved'"],
+                     summary='수정 요청 승인이 필요합니다.')
+
+    def corrected(messages):
+        instruction = messages[-1]['content']
+        assert all(name in instruction for name in ('resolved', 'unresolved', 'new_violations', 'summary'))
+        assert '[]' in instruction
+        return answer(rereview_requested=False, summary='수정 요청 승인이 없어 재검수를 요청하지 않았습니다.')
+
+    model = Scripted(invalid, corrected)
+    result = RereviewAgent(model, FrameworkTools(workflow)).request(parent.run_id, child, asset)
+    assert not result.rereview_requested and result.child_run_id is None and result.request_error is None
+    assert not result.resolved and not result.unresolved and not result.new_violations
+    assert 'request_rereview' not in result.tools_used and len(model.tool_names) == 2
+    with pytest.raises(KeyError):workflow.get(child.run_id)
+
+
+@pytest.mark.parametrize('reason,expected',[
+    ("human_decision != 'changes_approved'", 'AGENT_OUTPUT_INVALID'),
+    ('approval_missing', 'AGENT_OUTPUT_INCONSISTENT'),
+])
+def test_a08_denial_does_not_silently_discard_invalid_comparison_lists(reason, expected):
+    workflow, parent = started('fail', 'approve_criteria')
+    child, _, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)
+    invalid = answer(rereview_requested=False, unresolved=[reason], summary='수정 요청 승인이 필요합니다.')
+    model = Scripted(invalid, invalid)
+    with pytest.raises(AdapterFailure) as error:
+        RereviewAgent(model, FrameworkTools(workflow)).request(parent.run_id, child, asset)
+    assert error.value.code == expected
+    assert len(model.tool_names) == (2 if expected == 'AGENT_OUTPUT_INVALID' else 1)
+    with pytest.raises(KeyError):workflow.get(child.run_id)
+
+
 def test_a08_claimed_request_must_match_executed_command():
     workflow, parent = waiting_revision()
     child, _, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)

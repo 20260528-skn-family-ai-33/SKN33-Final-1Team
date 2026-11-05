@@ -1,7 +1,8 @@
 """A01/A08 against a real Qwen3.5-4B vLLM endpoint; excluded by default (live_model).
 
-Set AGENT_FRAMEWORK_QWEN_BASE_URL (and optionally AGENT_FRAMEWORK_QWEN_API_KEY),
-then run: pytest -m live_model tests/agent_framework/test_agents_live.py
+Reuse the worker's CC_QWEN_BASE_URL and CC_QWEN_API_KEY process settings, then
+run: pytest -m live_model tests/agent_framework/test_agents_live.py
+No separate test endpoint/key variables or implicit .env discovery are used.
 Workflow adapters stay synthetic; only the agent reasoning uses the real model.
 """
 import os
@@ -18,10 +19,10 @@ pytestmark = pytest.mark.live_model
 
 @pytest.fixture
 def model():
-    url = os.environ.get('AGENT_FRAMEWORK_QWEN_BASE_URL')
+    url = os.environ.get('CC_QWEN_BASE_URL')
     if not url:
-        pytest.skip('AGENT_FRAMEWORK_QWEN_BASE_URL is not configured')
-    chat = OpenAICompatibleChat(url, os.environ.get('AGENT_FRAMEWORK_QWEN_API_KEY'))
+        pytest.skip('Shared CC_QWEN_BASE_URL is not configured')
+    chat = OpenAICompatibleChat(url, os.environ.get('CC_QWEN_API_KEY'))
     yield chat
     chat.close()
 
