@@ -18,6 +18,8 @@ DB Compose는 `docker compose --env-file .env -f compose.yaml up -d`로 명시�
 
 staging/production은 `CC_ENV_MODE=separate`로 바꾸고, 실행 파일에서 관리자 비밀번호를 제거해 관리 파일에 별도 보관한다. 기본 검사에서는 통합 표시가 없는 관리자 파일과 환경변수로 export된 관리자 비밀번호를 계속 거부한다.
 
+Docker API·worker 실행기는 컨테이너에 마운트할 임시 파일을 만들기 전에 공통 역할 허용 목록을 적용한다. API에는 DB·세션 값을, 검수 worker에는 DB·모델·그래프 값을 담으며 다른 역할의 비밀값은 임시 파일에도 복사하지 않는다.
+
 공통 파일에서 사용하지 않는 주석 예시는 [선택 설정 참고](environment-options.md)로 분리했다. 활성 Qwen·DB·인증 설정은 유지한다. 이 문서에는 실행·관리·시험 역할별 사용처와 정리·원본 백업 확인도 기록했다.
 
 ## 로컬 개발
@@ -73,6 +75,12 @@ npm --prefix frontend run dev:rebuild
 v1 API와 OCR worker는 기본값이 다르므로 공통 파일에서 `REVIEW_PIPELINE`을 생략한다. API는 `disabled`, OCR worker는 `paddle-only`를 선택하며 worker의 `REVIEW_EXECUTOR=postgres_worker`, `RUN_TARGET=local`, `LOCAL_ADMIN_LOGIN=0` 조건을 유지한다. 명시적으로 잘못 지정한 값은 기존 검증에서 거부한다.
 
 프런트엔드는 상대 경로 `/api`와 기존 Vite 프로필을 사용한다. Vite는 루트 `.env`에서 세 프록시 주소만 읽고, 터미널에 지정한 값이 우선한다. 설정을 바꾼 뒤 Vite를 재시작한다. 서버 비밀번호를 `VITE_*`에 복사하지 않는다.
+
+## 같은 네트워크에서 로컬 시연
+
+로컬 시연을 다른 PC에서 볼 때는 서버 PC의 사설 IPv4 주소를 `AUTH_ALLOWED_HOSTS`에, `http://서버IP:5173`을 `AUTH_ALLOWED_ORIGINS`에 추가한다. `APP_ENV=development`, `LOCAL_ADMIN_LOGIN=0`을 유지하고, 수정한 API 이미지와 영상 API를 같은 env로 재실행한다. 프런트는 `npm --prefix frontend run dev:lan`으로 실행한다. 같은 네트워크의 PC에서는 출력된 Network 주소를 열고 기존 계정으로 로그인한다. `127.0.0.1`은 접속하는 PC 자신을 뜻하므로 공유 주소로 사용하지 않는다.
+
+이 구성은 5173 프런트만 LAN에 바인딩한다. 포스터·영상 API와 GPU 터널은 서버 PC의 loopback에 유지하며 Vite가 요청을 중계한다. 인증된 영상 경로도 명시적으로 허용한 Host와 로컬 프록시 요청만 받는다. 개발자 우회 로그인·임의 HTTP 도메인·공개 IP 허용은 추가하지 않는다. 내부 IP가 바뀌면 env의 호스트·Origin도 갱신하고 재시작한다.
 
 ## 배포 테스트
 

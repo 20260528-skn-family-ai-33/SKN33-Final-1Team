@@ -83,6 +83,12 @@ for name in ('O_DIRECTORY', 'O_NOFOLLOW'):
 class Results:
     skipped = []
     passed = []
+    expected_skips = set()
+
+    def pytest_collection_finish(self, session):
+        self.expected_skips = {
+            item.nodeid for item in session.items if 'posix_storage' in item.fixturenames
+        }
 
     def pytest_runtest_logreport(self, report):
         if report.skipped:
@@ -98,7 +104,8 @@ code = pytest.main([
     'tests/app/test_operations.py',
 ], plugins=[results])
 assert code == 0, f'Offline tests failed without POSIX storage primitives: {code}'
-assert len(results.skipped) == 27, f'Expected only the 27 private POSIX filesystem cases to skip: {results.skipped}'
+assert results.expected_skips, 'No POSIX filesystem cases were collected'
+assert set(results.skipped) == results.expected_skips, f'Only POSIX fixture cases may skip: {results.skipped}'
 assert any('test_minimal_worker_needs_no_browser_or_session_secrets' in node for node in results.passed)
 assert any('test_web_worker_admission_preserves_developer_login_without_local_model' in node for node in results.passed)
 assert any('test_cli_checks_configuration_without_db_or_model' in node for node in results.passed)

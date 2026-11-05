@@ -82,6 +82,7 @@ def missing_text(missing: list[int], total: int) -> str:
 
 def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: bool = False,
                       authenticate: Callable[[Request], object] | None = None,
+                      allowed_hosts: tuple[str, ...] | None = None,
                       candidates: Callable | None = None, comparer: Callable | None = None) -> APIRouter:
     """candidates·comparer는 테스트에서 실제 모델 대신 주입한다."""
     if not readonly:
@@ -105,7 +106,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             local = bool(request.client and ip_address(request.client.host).is_loopback)
         except ValueError:
             local = False
-        if not local or request.url.hostname not in {"localhost", "127.0.0.1", "::1"}:
+        hosts=allowed_hosts if authenticate is not None and allowed_hosts is not None else {"localhost", "127.0.0.1", "::1"}
+        if not local or request.url.hostname not in hosts:
             raise HTTPException(404, "찾을 수 없습니다.")
         if authenticate is not None and authenticate(request) is None:
             raise HTTPException(401, {"code": "authentication_required", "message": "로그인이 필요합니다."})

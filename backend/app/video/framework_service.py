@@ -40,8 +40,9 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None):
     app.router.lifespan_context = lifespan
     inference_lock = Lock()
     app.include_router(video_review_router(root=reviews, inference_lock=inference_lock,
-                                           authenticate=subject, readiness=readiness))
+                                           authenticate=subject, readiness=readiness,
+                                           allowed_hosts=settings.hosts))
     app.include_router(video_logo_router(root=logos, inference_lock=inference_lock,
-                                         authenticate=subject))
+                                         authenticate=subject, allowed_hosts=settings.hosts))
     app.title = 'Creative Checker local video service'
     return app

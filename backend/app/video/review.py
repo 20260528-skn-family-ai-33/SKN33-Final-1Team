@@ -453,17 +453,19 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                         readiness: Callable[[], tuple[bool, str]] | None = None,
                         logo_review: Callable[[list[dict], Path], dict] | None = None,
                         logo_readiness: Callable[[], tuple[bool, str]] | None = None,
-                        authenticate: Callable[[Request], object] | None = None) -> APIRouter:
+                        authenticate: Callable[[Request], object] | None = None,
+                        allowed_hosts: tuple[str, ...] | None = None) -> APIRouter:
     """ocr·readiness·logo_*는 테스트에서 실제 모델 대신 주입한다. authenticate는 로컬 로그인 세션 확인 함수다."""
 
     def guard(request: Request) -> None:
-        """로그인 경로(local_auth)와 같은 경계: localhost 접속만 받고, 로그인 기능이 켜져 있으면 세션도 확인한다.
-        서버를 네트워크 주소에 바인딩해도 영상·프레임·결과가 인증 없이 열리지 않게 한다."""
+        """Loopback peer only; authenticated local facade may keep a configured LAN Host.
+        Legacy callers keep the loopback-only host rule and existing auth boundary."""
         try:
             local = bool(request.client and ip_address(request.client.host).is_loopback)
         except ValueError:
             local = False
-        if not local or request.url.hostname not in {"localhost", "127.0.0.1", "::1"}:
+        hosts=allowed_hosts if authenticate is not None and allowed_hosts is not None else {"localhost", "127.0.0.1", "::1"}
+        if not local or request.url.hostname not in hosts:
             raise HTTPException(404, "찾을 수 없습니다.")
         if authenticate is not None and authenticate(request) is None:
             raise HTTPException(401, {"code": "authentication_required", "message": "로그인이 필요합니다."})

@@ -17,7 +17,7 @@ from urllib.parse import urlsplit,urlunsplit
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from backend.environment_source import service_file_values
+from backend.environment_source import select_service_values,service_file_values
 
 IMAGE='creative-checker-framework:local'
 VOLUME='cc-framework-data'
@@ -59,13 +59,10 @@ def settings(args):
     if args.action!='migrate' and any(values.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise ValueError('APP_CREDENTIALS_ONLY')
     if args.action in ('api','worker'):
-        # Video uses a separate local service; never mount its worker token here.
-        for key in tuple(values):
-            if key.startswith('VIDEO_'):values.pop(key)
-    if args.action=='api':
-        # Remove worker secrets from the mounted file, not just process env.
-        for key in ('CC_NEO4J_URI','CC_NEO4J_USER','CC_NEO4J_PASSWORD','A02_QWEN_API_KEY','CC_QWEN_API_KEY'):
-            values.pop(key,None)
+        # Apply the same role allowlist before writing the mounted file.
+        # Filtering only inside the container would leave other roles' secrets readable.
+        role='v1' if args.action=='api' else 'framework-worker'
+        values=select_service_values(role,values)
     if values.get('CC_NEO4J_URI'):
         values['CC_NEO4J_URI']=mapped_endpoint(values['CC_NEO4J_URI'])
     if values.get('CC_QWEN_BASE_URL'):

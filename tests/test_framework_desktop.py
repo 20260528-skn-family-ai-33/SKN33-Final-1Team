@@ -80,6 +80,24 @@ def test_owner_credentials_cannot_be_sent_to_api(tmp_path):
         with desktop.settings(args('api','--env-file',str(env))):pytest.fail('must not create API settings')
 
 
+@pytest.mark.parametrize('action,expected',[
+    ('api',{'DB_APP_PASSWORD','CSRF_SECRET','CURSOR_SECRET'}),
+    ('worker',{'DB_APP_PASSWORD','A02_QWEN_API_KEY','CC_QWEN_API_KEY','CC_NEO4J_PASSWORD'}),
+])
+def test_mounted_file_contains_only_the_service_role_secrets(tmp_path,action,expected):
+    env=tmp_path/'shared.env'
+    secrets={'DB_APP_PASSWORD':'app-only','CSRF_SECRET':'web-only','CURSOR_SECRET':'web-only-2',
+        'A02_QWEN_API_KEY':'a02-only','CC_QWEN_API_KEY':'model-only',
+        'CC_NEO4J_PASSWORD':'graph-only','CC_MCP_TOKEN':'mcp-only',
+        'VIDEO_LOGO_WORKER_TOKEN':'video-only','UNRELATED_SECRET':'unrelated-only'}
+    env.write_text(''.join(k+'='+v+'\n' for k,v in secrets.items()))
+    with desktop.settings(args(action,'--env-file',str(env))) as folder:
+        mounted=desktop.read_env(folder/'app.env')
+        assert mounted.keys() & secrets.keys()==expected
+        raw=(folder/'app.env').read_text()
+        for key in secrets.keys()-expected:assert secrets[key] not in raw
+
+
 def test_explicit_local_unified_file_filters_management_values_from_mount(tmp_path):
     env=tmp_path/'all.env'
     env.write_text('CC_ENV_MODE=local_unified\nAPP_ENV=development\nDB_APP_PASSWORD=app-only\nDB_OWNER_PASSWORD=owner-only\nPOSTGRES_PASSWORD=admin-only\nAF_NEO4J_PASSWORD=compose-only\n')

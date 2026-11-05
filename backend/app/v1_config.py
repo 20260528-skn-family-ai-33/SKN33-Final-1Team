@@ -1,7 +1,7 @@
 """Explicit v1 web settings. Existing C01/legacy settings remain unchanged."""
 from dataclasses import dataclass
 from pathlib import Path
-from ipaddress import ip_address
+from ipaddress import ip_address,ip_network
 import os
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -45,6 +45,13 @@ def is_loopback(host):
     except ValueError:return False
 
 
+def is_private_lan(host):
+    try:
+        address=ip_address(host)
+        return any(address in ip_network(network) for network in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16'))
+    except ValueError:return False
+
+
 def origin(value):
     try:
         parsed=urlsplit(value)
@@ -76,7 +83,9 @@ def load_v1_settings(environ=None):
     origins=tuple(origin(v.strip()) for v in raw)
     if not origins or any(v is None for v in origins) or len(set(origins))!=len(origins):raise ConfigurationError('Explicit unique AUTH_ALLOWED_ORIGINS are required.')
     if environment=='production' and any(not v.startswith('https://') for v in origins):raise ConfigurationError('Production origins require HTTPS.')
-    if environment!='production' and any(not is_loopback(urlsplit(v).hostname) for v in origins):raise ConfigurationError('Development origins must be loopback.')
+    lan=environment=='development' and flag=='0'
+    if environment!='production' and any(not is_loopback(urlsplit(v).hostname) and not (lan and is_private_lan(urlsplit(v).hostname)) for v in origins):
+        raise ConfigurationError('Development origins require loopback or an explicit private LAN IP with LOCAL_ADMIN_LOGIN=0.')
     hosts=tuple(v.strip().lower() for v in values.get('AUTH_ALLOWED_HOSTS',','.join(sorted({urlsplit(v).hostname for v in origins}))).split(','))
     if not hosts or any(not h or '*' in h or '/' in h or any(c.isspace() for c in h) for h in hosts):raise ConfigurationError('Explicit exact hosts are required.')
     if any(urlsplit(v).hostname not in hosts for v in origins):raise ConfigurationError('Configured origin hosts must be allowed.')

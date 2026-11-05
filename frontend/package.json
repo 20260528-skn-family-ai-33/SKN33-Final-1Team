@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:lan": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --test src/pages/review/workflow.test.js src/pages/review/documentRequirements.test.js src/pages/review/documentProgress.test.js src/pages/review/frameworkDocument.test.js src/pages/review/frameworkResults.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js src/pages/video/videoFormat.test.js src/pages/video/proxy-config.test.js src/pages/modeltest/modeltest.test.js src/pages/modeltest/modeltestBoard.test.js",

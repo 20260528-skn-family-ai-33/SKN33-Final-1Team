@@ -43,6 +43,23 @@ def test_default_production_cookies_and_explicit_https():
     assert not hasattr(settings,'owner_password')
 
 
+@pytest.mark.parametrize('host',['192.168.0.144','10.1.2.3','172.16.1.2'])
+def test_explicit_lan_origin_requires_development_and_normal_login(host):
+    values=auth_environment(APP_ENV='development',LOCAL_ADMIN_LOGIN='0',
+        AUTH_ALLOWED_ORIGINS=f'http://{host}:5173',AUTH_ALLOWED_HOSTS=host)
+    settings=load_v1_settings(values)
+    assert settings.origins==(f'http://{host}:5173',) and not settings.developer_login
+    for patch in ({'LOCAL_ADMIN_LOGIN':'1'},{'APP_ENV':'test'},{'APP_ENV':'production'}):
+        with pytest.raises(ConfigurationError):load_v1_settings(values|patch)
+
+
+@pytest.mark.parametrize('host',['0.0.0.0','169.254.1.2','8.8.8.8','remote.example.com'])
+def test_lan_demo_does_not_allow_arbitrary_http_origins(host):
+    values=auth_environment(APP_ENV='development',LOCAL_ADMIN_LOGIN='0',
+        AUTH_ALLOWED_ORIGINS=f'http://{host}:5173',AUTH_ALLOWED_HOSTS=host)
+    with pytest.raises(ConfigurationError):load_v1_settings(values)
+
+
 @pytest.mark.parametrize('email,expected',[
  ('  USER@Example.COM  ','user@example.com'),('user+tag@example.com','user+tag@example.com'),
  ('not-an-email',None),('사용자@example.com',None),('user@도메인.com',None),('user@localhost',None),('a'*255+'@example.com',None)])
