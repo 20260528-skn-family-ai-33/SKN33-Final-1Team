@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from './Icon.jsx';
 import { evidenceBoxStyle } from '../pages/review/workflow.js';
-import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
+import { imageStageSize, imageStageBounds, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import '../styles/image-stage.css';
 
 // Evidence and image share one sized surface at every zoom level.
@@ -23,9 +23,8 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
   useEffect(() => { setView({ zoom: 'fit', target: null }); setFailed(false); drag.current = null; setPanning(false); }, [src]);
   useEffect(() => {
     const element = viewport.current;
-    const measure = () => setBounds({ width: element.clientWidth, height: element.clientHeight });
-    measure();
-    const observer = new ResizeObserver(measure);
+    // contentRect is fractional and excludes scrollbars; the first callback arrives before paint.
+    const observer = new ResizeObserver(([entry]) => setBounds(imageStageBounds(entry.contentRect.width, entry.contentRect.height)));
     observer.observe(element);
     return () => observer.disconnect();
   }, []);

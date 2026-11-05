@@ -1,11 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
+import { imageStageSize, imageStageBounds, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import { evidenceBoxStyle } from '../pages/review/workflow.js';
 test('fit preserves aspect ratio and keeps portrait inside canvas', () => {
   const size = imageStageSize(600, 848, 700, 650);
   assert.ok(size.width <= 636 && size.height <= 586);
   assert.ok(Math.abs(size.width / size.height - 600 / 848) < 1e-10);
+});
+test('fit canvas stays inside a fractional viewport so scrollbars never toggle', () => {
+  assert.deepEqual(imageStageBounds(498.64, 429.59), { width: 498, height: 429 });
+  assert.deepEqual(imageStageBounds(585.6, 440), { width: 585, height: 440 });
+  assert.deepEqual(imageStageBounds(0, -1), { width: 0, height: 0 });
+  // Widths measured where the poster stage flickered; 300.6 x 820 covers a width-limited fit.
+  for (const [realWidth, realHeight] of [[498.64, 440], [501.65, 440], [585.6, 440], [585.6, 439.6], [300.6, 820]]) {
+    const bounds = imageStageBounds(realWidth, realHeight);
+    const size = imageStageSize(2480, 3503, bounds.width, bounds.height);
+    assert.ok(Math.max(bounds.width, size.width + 64) <= realWidth);
+    assert.ok(Math.max(bounds.height, size.height + 64) <= realHeight);
+  }
 });
 test('evidence stays attached to original pixels through zoom', () => {
   const box = evidenceBoxStyle([60, 84.8, 300, 424], 600, 848);

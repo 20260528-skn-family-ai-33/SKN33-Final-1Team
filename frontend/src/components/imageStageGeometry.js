@@ -4,6 +4,13 @@ export function imageStageSize(width, height, viewportWidth, viewportHeight, zoo
   const scale = zoom === 'fit' ? fit : Math.max(.25, Math.min(3, Number.isFinite(Number(zoom)) ? Number(zoom) : 1));
   return { width: width * scale, height: height * scale, scale };
 }
+// clientWidth/clientHeight round the real content box (498.64px -> 499). A canvas
+// sized from the rounded value overflows by under a pixel, shows a scrollbar,
+// refits smaller, drops the scrollbar and repeats every frame. Keep only the
+// whole pixels that really fit inside the measured content box.
+export function imageStageBounds(contentWidth, contentHeight) {
+  return { width: Math.max(0, Math.floor(contentWidth)), height: Math.max(0, Math.floor(contentHeight)) };
+}
 export function canShowImageEvidence(naturalWidth, naturalHeight, declaredWidth, declaredHeight) {
   if (![naturalWidth, naturalHeight].every(value => Number.isFinite(value) && value > 0)) return false;
   if (declaredWidth == null && declaredHeight == null) return true;
