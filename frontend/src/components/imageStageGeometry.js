@@ -11,6 +11,11 @@ export function imageStageSize(width, height, viewportWidth, viewportHeight, zoo
 export function imageStageBounds(contentWidth, contentHeight) {
   return { width: Math.max(0, Math.floor(contentWidth)), height: Math.max(0, Math.floor(contentHeight)) };
 }
+// Labels of boxes centred in the right half open toward the image, so they stay readable
+// instead of running past the canvas edge, where the stage clips decorations.
+export function evidenceLabelOnRight(bbox, width) {
+  return Array.isArray(bbox) && bbox.length === 4 && Number.isFinite(width) && width > 0 && (bbox[0] + bbox[2]) / 2 > width / 2;
+}
 export function canShowImageEvidence(naturalWidth, naturalHeight, declaredWidth, declaredHeight) {
   if (![naturalWidth, naturalHeight].every(value => Number.isFinite(value) && value > 0)) return false;
   if (declaredWidth == null && declaredHeight == null) return true;
