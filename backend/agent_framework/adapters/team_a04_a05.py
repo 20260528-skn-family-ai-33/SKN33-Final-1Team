@@ -413,7 +413,7 @@ class OpenAICompatibleVisionModel:
     def inspect(self, criteria: tuple[Criterion, ...], image: ModelImage) -> list[ModelAnswer]:
         import httpx
 
-        headers = {"Accept": "application/json"}
+        headers = {"Accept": "application/json",'Accept-Encoding':'identity'}
         if self.settings.api_key:
             headers["Authorization"] = f"Bearer {self.settings.api_key}"
         part, width, height = self._image_part(image)
@@ -430,9 +430,13 @@ class OpenAICompatibleVisionModel:
 
         try:
             with http.stream("POST", chat_completions_url(self.settings.base_url), json=payload) as response:
+                if response.status_code>=500:
+                    raise AdapterFailure('MODEL_OUTCOME_UNKNOWN','A04/A05 서버 오류로 호출 결과를 알 수 없습니다.',outcome_unknown=True)
                 if response.status_code != 200:
                     raise AdapterFailure("MODEL_HTTP_ERROR", f"A04/A05 모델 서버가 요청을 거절했습니다(HTTP {response.status_code}).",
-                                         retryable=response.status_code == 429 or response.status_code >= 500)
+                                         retryable=response.status_code == 429)
+                if response.headers.get('content-encoding','identity').lower()!='identity':
+                    _invalid_output('압축된 A04/A05 모델 응답은 허용하지 않습니다.')
                 content = bytearray()
                 for chunk in response.iter_bytes():
                     if len(content) + len(chunk) > MAX_RESPONSE_BYTES:

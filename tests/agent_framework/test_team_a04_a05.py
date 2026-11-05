@@ -387,7 +387,7 @@ def test_client_downscales_to_its_pixel_budget_and_batches_criteria():
 
 
 @pytest.mark.parametrize(("response", "code", "retryable"), (
-    (httpx.Response(503), "MODEL_HTTP_ERROR", True),
+    (httpx.Response(429), "MODEL_HTTP_ERROR", True),
     (httpx.Response(400), "MODEL_HTTP_ERROR", False),
     (httpx.Response(200, json=chat_response([], finish_reason="length")), "MODEL_OUTPUT_INVALID", False),
     (httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "not json"}}]}),
@@ -451,10 +451,10 @@ def test_client_bounds_streaming_response_and_closes_it_without_retry(mode):
     else:
         with pytest.raises(AdapterFailure) as failure:
             client(handler).inspect(CRITERIA[:1], model_image())
-        code = {'over_limit': 'MODEL_OUTPUT_INVALID', 'http_error': 'MODEL_HTTP_ERROR', 'read_error': 'MODEL_OUTCOME_UNKNOWN'}[mode]
+        code = {'over_limit': 'MODEL_OUTPUT_INVALID', 'http_error': 'MODEL_OUTCOME_UNKNOWN', 'read_error': 'MODEL_OUTCOME_UNKNOWN'}[mode]
         assert failure.value.code == code
-        assert failure.value.outcome_unknown == (mode == 'read_error')
-        assert failure.value.retryable == (mode == 'http_error')
+        assert failure.value.outcome_unknown == (mode in ('read_error','http_error'))
+        assert failure.value.retryable is False
     assert len(calls) == 1 and closed == [True]
     assert consumed == ([] if mode == 'http_error' else [a04.MAX_RESPONSE_BYTES, 1] if mode == 'over_limit' else [a04.MAX_RESPONSE_BYTES])
 
