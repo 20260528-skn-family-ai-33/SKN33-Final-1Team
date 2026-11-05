@@ -62,7 +62,9 @@ def create_app_engine(settings: Settings) -> Engine:
         echo=False, echo_pool=False,
         connect_args={"connect_timeout": db.connect_timeout,
                       "options": "-c timezone=UTC -c client_encoding=UTF8",
-                      "application_name": "creative_checker_app"},
+                      "application_name": "creative_checker_app",
+                      **({"sslmode": db.sslmode} if db.sslmode else {}),
+                      **({"sslrootcert": db.sslrootcert} if db.sslrootcert else {})},
     )
 
     @event.listens_for(engine, "connect")

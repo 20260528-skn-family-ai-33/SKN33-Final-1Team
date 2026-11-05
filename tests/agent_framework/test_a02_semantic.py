@@ -176,6 +176,66 @@ def test_allowances_are_preserved_without_rewriting_the_models_expected_value():
     assert 'source_qualifier_retained_by_policy' in draft.warnings
 
 
+@pytest.mark.parametrize('text,field,value,literal,normalized',[
+    ('행사일: 2025년 11월 2일','event_date','2025 년 11 월 2 일','2025년 11월 2일','2025-11-02'),
+    ('행사 시간: 12시부터 19시까지','viewing_hours','12 시부터 19 시까지','12시부터 19시까지',None),
+    ('행사명: 수원의\n영화','event_name','수원의 영화','수원의\n영화',None),
+])
+def test_spacing_only_values_keep_the_unique_original_spelling_and_trace(text,field,value,literal,normalized):
+    item=requirement(1,field,value,normalized_expected=normalized,
+        presentation={'contract_version':'3.0.0','label':'검수 항목','value':value})
+    item['source']['end_line']='input-text:L'+str(len(text.splitlines()))
+    _,draft,calls,_=extract({'requirements':[item]},text_document(text),presentation=True)
+    c=draft.criteria[0]
+    assert len(calls)==1 and c.expected==c.details.expected_source.quote==literal
+    assert c.details.normalized_expected==normalized and c.source.quote==text
+    assert c.details.presentation.value==value
+    assert 'expected_spacing_copied_from_source' in draft.warnings
+
+
+@pytest.mark.parametrize('source,expected',[
+    ('주차공간이 협소하므로 가급적 대중교통을 이용하라는 안내를 포함한다.','대중교통 이용 안내'),
+    ('행사 연도: 2025','2026'),('주요 제목: 오늘무해!','오늘무해?'),
+    ('주요 제목: FESTIVAL','festival'),('장소: 서울시 / 서울 시','서울  시'),
+])
+def test_source_spacing_support_never_accepts_paraphrases_changed_values_or_ambiguous_spellings(source,expected):
+    with pytest.raises(AdapterFailure) as error:
+        extract({'requirements':[requirement(1,'wording',expected)]},text_document(source))
+    assert error.value.code=='A02_EXPECTED_UNGROUNDED'
+
+
+def test_normalized_date_generation_cannot_bundle_a_weekday_or_time_into_expected():
+    from jsonschema import Draft202012Validator
+    from backend.agent_framework.a02_source_selection import index_sources
+    from backend.agent_framework.a02_semantic import semantic_schema
+    doc=text_document('행사일: 2025년 11월 2일 일요일 12시부터 19시까지')
+    settings=PDFExtractionConfiguration(mode='qwen',endpoint='https://qwen.invalid/v1/chat/completions')
+    index,_=index_sources(prepare_sources(doc,settings))
+    validator=Draft202012Validator(semantic_schema(index))
+    item=requirement(1,'event_date','2025 년 11 월 2 일',normalized_expected='2025-11-02')
+    validator.validate({'requirements':[item]})
+    item['expected']+=' 일요일'
+    assert not validator.is_valid({'requirements':[item]})
+
+
+@pytest.mark.parametrize('presentation',[False,True])
+def test_old_prompt_records_remain_readable_but_unknown_and_other_policy_hashes_are_rejected(presentation):
+    from backend.agent_framework.a02 import validate_trace
+    from backend.agent_framework.a02_semantic import LEGACY_SEMANTIC_PROMPT_HASH,LEGACY_PRESENTATION_PROMPT_HASH
+    reply=model_reply()
+    if presentation:
+        for item in reply['requirements']:
+            item['presentation']={'contract_version':'3.0.0','label':'검수 항목','value':item['expected']}
+    request,draft,_,_=extract(reply,presentation=presentation)
+    old=LEGACY_PRESENTATION_PROMPT_HASH if presentation else LEGACY_SEMANTIC_PROMPT_HASH
+    assert old!=draft.extraction.prompt_sha256
+    historic=draft.model_copy(update={'extraction':draft.extraction.model_copy(update={'prompt_sha256':old})})
+    validate_trace(request.document,historic)
+    for wrong in ('0'*64,LEGACY_SEMANTIC_PROMPT_HASH if presentation else LEGACY_PRESENTATION_PROMPT_HASH):
+        changed=draft.model_copy(update={'extraction':draft.extraction.model_copy(update={'prompt_sha256':wrong})})
+        with pytest.raises(ValueError,match='EXTRACTION_PROMPT_MISMATCH'):validate_trace(request.document,changed)
+
+
 def test_pdf_uses_the_same_semantic_contract_as_free_input():
     from tests.agent_framework.test_a02_extraction import document
     from backend.agent_framework.a02_source_selection import index_sources
@@ -202,6 +262,34 @@ def test_recorded_pdf_protocol_preserves_model_values_with_verified_date_citatio
     assert date_item.expected==date_item.details.normalized_expected=='2026-05-14'
     assert date_item.details.expected_source.quote=='2026년 5월 14일'
     assert all(c.details.origin=='model_structured' for c in draft.criteria)
+
+
+def test_recorded_festival_pdf_keeps_short_values_normalized_date_and_pending_rain_policy():
+    from pathlib import Path
+    from backend.agent_framework.a02_semantic import SemanticProviderReply,SemanticReply
+    root=Path(__file__).resolve().parents[2]
+    fixture=json.loads((Path(__file__).parent/'fixtures/a02_festival_semantic_response.json').read_text(encoding='utf-8'))
+    raw=(root/'docs/poster-baselines/2026-11-03/workflow/client-inputs/FES-NEW072/축제_포스터_제작의뢰서_v0.2.pdf').read_bytes()
+    assert sha256(raw).hexdigest()==fixture['document_sha256']
+    context,_,_=sample_inputs();context=context.model_copy(update={'asset_version_id':None})
+    ref=DocumentRef(file_id='recorded-festival',document_version_id=context.document_version_id,
+        sha256=fixture['document_sha256'],media_type='application/pdf',page_count=2)
+    doc=VerifiedDocument(context,ref,raw,2)
+    settings=PDFExtractionConfiguration(mode='qwen',endpoint='https://recorded.invalid/v1/chat/completions',presentation=True)
+    reply=SemanticProviderReply(SemanticReply.model_validate(fixture['reply']),fixture['response_sha256'])
+    request=ExtractRequest(context=context,document=ref,synthetic=True)
+    draft=invoke_role('A02',RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:reply),request)
+    values={c.details.field:c.expected for c in draft.criteria}
+    assert len(draft.criteria)==19 and values['event_name']=='2025 탄소중립 한마당 축제'
+    assert values['event_date']=='2025년 11월 2일' and values['venue']=='고색역 상부공원 일원'
+    assert values['viewing_hours']=='12시부터 19시까지' and 'end_date' not in values
+    assert values['pixel_width']=='2382' and values['pixel_height']=='3368'
+    dates=[c for c in draft.criteria if c.details.field=='event_date']
+    assert dates[0].details.normalized_expected=='2025-11-02'
+    pending=[c for c in draft.criteria if c.criterion_id in draft.extraction.unresolved_criterion_ids]
+    assert len(pending)==1 and pending[0].expected=='' and pending[0].operator=='manual'
+    assert '우천' in pending[0].source.quote and 'expected_spacing_copied_from_source' in draft.warnings
+    assert draft.extraction.response_sha256==fixture['response_sha256']
 
 
 @pytest.mark.parametrize('raw',[b'',b'  ',b'\xff',b'a\x00b',b'\xef\xbb\xbfhello'])

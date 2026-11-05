@@ -1,0 +1,17 @@
+**
+!frontend/
+!frontend/**
+!backend/
+!backend/app/
+!backend/app/modeltest/
+!backend/app/modeltest/prompts.json
+!deploy/
+!deploy/agent-framework/
+!deploy/agent-framework/aws-nginx.conf.template
+**/node_modules/
+**/dist/
+**/dist-v1/
+**/dist-rebuild/
+**/.env*
+**/*.env
+**/*.log

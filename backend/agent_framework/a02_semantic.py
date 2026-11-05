@@ -63,8 +63,21 @@ Keep a grounded expected value even for manual/complex cases when one is explici
 If a requirement is missing, undecided or awaiting confirmation: unresolved=true,
 operator=manual, expected="", unit=null, normalized_expected=null. Retain its full
 source and DO NOT invent an answer. A vague qualitative requirement may be manual.
-Every result is an unapproved draft for a person to compare with the original.'''
+Every result is an unapproved draft for a person to compare with the original.
+
+Before returning, verify that expected is a short SOURCE VALUE, not a heading,
+summary or the whole instruction. Copy spelling, spaces, particles and punctuation.
+For example, source '대중교통을 이용하라는 안내를 포함한다.' cannot become
+expected '대중교통 이용 안내'. Select an actual contiguous source excerpt instead.
+A permission to reword the POSTER is a qualifier for human review, not permission
+to paraphrase expected or presentation.value. Copy '2027년 3월 6일', never
+'2027 년 3 월 6 일'. For normalized dates select ONLY the date as expected;
+exclude weekdays and hours and put those independently required values in their
+own items. Do not invent an end date when the source specifies a single event day.
+Only presentation.label may summarize a heading; its value retains source words.'''
 SEMANTIC_PROMPT_HASH=sha256(SEMANTIC_PROMPT.encode()).hexdigest()
+LEGACY_SEMANTIC_PROMPT_HASH='74da6274328c8c92725088a420333af8710938cac8fc0395337a27bdcab0f937'
+LEGACY_PRESENTATION_PROMPT_HASH='4b8fdbb1bbdf119e304f62a3406b4434cee3077cbf3fb28c4afe2824c0007252'
 
 PRESENTATION_PROMPT=SEMANTIC_PROMPT+'''
 Also provide presentation for EACH resolved requirement: a short Korean label and
@@ -159,6 +172,9 @@ def semantic_schema(index,*,presentation=False):
                 normalized=deepcopy(variant)
                 normalized['properties']['field']={'type':'string','enum':['start_date','end_date','event_date']}
                 normalized['properties']['normalized_expected']={'type':'string','pattern':r'^\d{4}-\d{2}-\d{2}$'}
+                normalized['properties']['expected']={'type':'string','maxLength':2000,'pattern':
+                    r'^(?:\d{4}(?:\s*년\s*|\s*[./-]\s*)\d{1,2}(?:\s*월\s*|\s*[./-]\s*)\d{1,2}\s*일?'
+                    r'|\d{1,2}(?:\s*월\s*|\s*[./-]\s*)\d{1,2}\s*일?)$'}
                 variants.append(normalized)
     schema['properties']['requirements']['items']={'anyOf':variants}
     return schema
@@ -200,16 +216,41 @@ def verify_normalized_date(expected,normalized,field,quote):
     except ValueError:invalid('A02_NORMALIZED_VALUE_UNGROUNDED')
 
 
+def source_spacing_literal(expected,quote):
+    """Locate one exact spelling with identical non-whitespace characters.
+
+    Search only the model-selected excerpt. Never change letters, punctuation,
+    numbers or units, and refuse distinct source spellings of the same compact
+    value. Return original source bytes as text, not a repaired model quote.
+    """
+    needle=''.join(expected.split())
+    if not needle:return None
+    positions=[i for i,char in enumerate(quote) if not char.isspace()]
+    compact=''.join(quote[i] for i in positions)
+    candidates=set();offset=0
+    while (found:=compact.find(needle,offset))!=-1:
+        literal=quote[positions[found]:positions[found+len(needle)-1]+1]
+        if len(literal)<=2000:candidates.add(literal)
+        if len(candidates)>1:invalid('A02_EXPECTED_UNGROUNDED')
+        offset=found+1
+    return next(iter(candidates)) if candidates else None
+
+
 def grounded_literal(expected,normalized,field,quote):
     """Verify the model's value, retaining a literal citation for ISO dates.
 
     This never changes the model value. A canonical date is accepted only when
     the same explicit normalized value has one verifiable source spelling.
-    Other text/visual/numeric values still require literal substring grounding.
+    Whitespace-only differences use the unique original source spelling. No
+    paraphrase, punctuation correction or semantic inference is accepted.
     """
     if expected in quote:
         verify_normalized_date(expected,normalized,field,quote)
         return expected
+    literal=source_spacing_literal(expected,quote)
+    if literal is not None:
+        verify_normalized_date(literal,normalized,field,quote)
+        return literal
     if normalized is None or normalized!=expected:invalid('A02_EXPECTED_UNGROUNDED')
     if field not in ('start_date','end_date','event_date'):invalid('A02_NORMALIZATION_UNSUPPORTED')
     patterns=(r'(?<!\d)\d{4}(?:년\s*|[./-])\d{1,2}(?:월\s*|[./-])\d{1,2}일?(?!\d)',
@@ -253,6 +294,9 @@ def materialize_semantics(reply,index,sources,version,*,presentation=False):
             invalid('A02_UNRESOLVED_VALUE_INVENTED')
         if item.expected and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
         literal=grounded_literal(item.expected,item.normalized_expected,item.field,quote)
+        expected=item.expected
+        if expected and literal!=expected and expected!=item.normalized_expected:
+            expected=literal;warnings.append('expected_spacing_copied_from_source')
         if presentation and not missing and item.presentation is None:invalid('A02_PRESENTATION_MISSING')
         if missing and item.presentation is not None:invalid('A02_UNRESOLVED_VALUE_INVENTED')
         validate_presentation(item.presentation,quote,literal,item.unit,item.field)
@@ -286,10 +330,10 @@ def materialize_semantics(reply,index,sources,version,*,presentation=False):
             expected_source=reference(version,source,literal) if item.expected else None,
             presentation=item.presentation,
             normalized_expected=item.normalized_expected,qualifiers=tuple(qualifiers),origin='model_structured')
-        key=(source.block_id,quote,item.target,item.field,item.expected,item.normalized_expected,item.unit,item.required,missing)
+        key=(source.block_id,quote,item.target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
         if key in seen:invalid('A02_DUPLICATE_REQUIREMENT')
         seen.add(key)
-        result.append(CompiledRequirement(quote,item.kind,item.operator,item.expected,item.unit,item.required,
+        result.append(CompiledRequirement(quote,item.kind,item.operator,expected,item.unit,item.required,
             source.block_id,source.page,quote,missing,details))
     # Supporting coverage check retains only literal undecided source passages.
     # It does not fill an answer or replace any semantic choice made above.

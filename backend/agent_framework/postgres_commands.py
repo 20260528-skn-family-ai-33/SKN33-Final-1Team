@@ -21,10 +21,13 @@ def _values(filename, component='v1'):
     values=activate_runtime(component, Path(filename))
     if any(values.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise ConfigurationError('Runtime requires app-only credentials.')
-    if values.get('APP_ENV') not in ('development','test'):
-        raise ConfigurationError('Select APP_ENV=development or test explicitly.')
+    if values.get('APP_ENV') not in ('development','test','production'):
+        raise ConfigurationError('Select APP_ENV=development, test or production explicitly.')
     settings=load_settings(values)
     if settings.persistence_mode!='postgres':raise ConfigurationError('Select PostgreSQL explicitly.')
+    if values.get('APP_ENV')=='production':
+        from .deployment import require_verified_database
+        require_verified_database(settings)
     return values,settings
 
 
@@ -46,10 +49,13 @@ def postgres_serve(args):
     from .postgres_api import create_postgres_app
     import uvicorn
     values,_settings=_values(args.env_file)
+    from .deployment import trusted_proxies
+    proxies=trusted_proxies(values.get('TRUSTED_PROXY_IPS',''))
     root=Path(args.pdf_storage_root).expanduser().resolve() if args.pdf_storage_root else None
     posters=Path(args.poster_storage_root).expanduser().resolve() if args.poster_storage_root else None
     app=create_postgres_app(load_v1_settings(values),load_config(args.config),pdf_storage_root=root,poster_storage_root=posters)
-    uvicorn.run(app,host=getattr(args,'host','127.0.0.1'),port=args.port,workers=1,reload=False)
+    uvicorn.run(app,host=getattr(args,'host','127.0.0.1'),port=args.port,workers=1,reload=False,
+                proxy_headers=bool(proxies),forwarded_allow_ips=proxies)
     return 0
 
 
@@ -57,6 +63,9 @@ def postgres_worker(args):
     from .durable_worker import PostgresQueue,execute_claim
     values,settings=_values(args.env_file, 'framework-worker')
     configuration=load_config(args.config)
+    if values.get('APP_ENV')=='production':
+        from .deployment import require_live_configuration
+        require_live_configuration(configuration)
     engine=create_app_engine(settings)
     stop=Event()
     storage=None

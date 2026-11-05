@@ -26,6 +26,8 @@ Qwen API라는 이름은 직접 실행한 vLLM 서버에 접속하는 HTTP 통�
 
 ## 모델·웹 선택 설정
 
+프레임워크의 AWS HTTPS 배포에는 `DB_SSLMODE=verify-full`, `DB_SSLROOTCERT=/run/certs/rds-ca.pem`을 명시한다. app·worker·graph와 별도 관리 마이그레이션에 같은 TLS 검증 옵션을 전달한다. 로컬에서 생략하면 기존 연결 방식을 유지한다. 배포용 역할 분리·인증서 마운트는 [AWS 전체 검수 가이드](agent-framework/AWS_전체검수_HTTPS_배포준비.md)를 따른다.
+
 필요한 기능을 선택했을 때만 기존 개인 실행 파일에 추가한다. 같은 키가 이미 있으면 해당 줄을 수정하고 중복 선언하지 않는다. 아래 줄은 설명용 예시이며 자동으로 적용되지 않는다.
 
 ```dotenv

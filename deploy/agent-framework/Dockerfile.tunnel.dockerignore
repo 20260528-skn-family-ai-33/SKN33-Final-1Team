@@ -1,0 +1,4 @@
+**
+!deploy/
+!deploy/agent-framework/
+!deploy/agent-framework/runpod-tunnel.sh
