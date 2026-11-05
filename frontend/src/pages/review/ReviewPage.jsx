@@ -11,6 +11,7 @@ import ResultsPage from './ResultsPage.jsx';
 // 공유된 검수 상태를 현재 단계에 맞는 화면으로 표시한다.
 export default function ReviewPage() {
   const {
+    projectId, setProjectId,
     documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
@@ -32,7 +33,7 @@ export default function ReviewPage() {
     openRun={id => setParams({ framework: id })} onNew={() => { newReview(); setParams({}); }} />;
 
   return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
-    {state.step === 'input' && <InputPage {...{ state, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} />}
+    {state.step === 'input' && <InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage

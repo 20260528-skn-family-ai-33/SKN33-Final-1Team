@@ -60,7 +60,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     let body;
     if (path === '/api/v1/auth/me') body = { authenticated: true, user: { id: 'user-fixture', display_name: '개발 검증' } };
     else if (path === '/api/health') body = { status: 'ok', ready: true };
-    else if (path === '/api/framework/v1/health') body = { requirements_presentation: true, pdf_extraction_mode: 'qwen' };
+    else if (path === '/api/framework/v1/health') body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true };
     else if (path === '/api/framework/v1/projects') body = { items: [{ id: 'project-fixture', name: 'PDF 검증', my_role: 'owner' }], next_cursor: null };
     else if (path === '/api/framework/v1/csrf') body = { csrf_token: 'framework-browser-token' };
     else if (path.endsWith('/documents')) {
@@ -120,7 +120,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   assert.equal(await page.locator('#requirements').inputValue(), expected);
   if (pendingOnly) {
     await page.getByRole('button', { name: mode === 'pending_empty' ? 'PDF 검수 기준 확인하기' : 'brief.pdf 원문 기준 승인하기' }).click();
-    await page.getByRole('heading', { name: 'PDF 기준 포스터 검수' }).waitFor();
+    await page.getByRole('heading', { name: '승인 기준 포스터 검수' }).waitFor();
     await page.getByText('1쪽 · ' + pending[0].source, { exact: true }).waitFor();
     assert.equal(new URL(page.url()).searchParams.get('framework'), 'run-fixture');
     assert.equal(await page.getByRole('button', { name: '이 버전의 전체 기준 승인' }).count(), 0);

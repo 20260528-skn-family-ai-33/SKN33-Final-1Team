@@ -4,7 +4,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
-import { frameworkPrefix, frameworkJson } from './frameworkClient.js';
+import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = new Set(['queued', 'extracting', 'reviewing']);
@@ -91,6 +91,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   }
   async function registerPoster(signal) {
     if (!file) return;
+    await requirePosterReview({ signal });
     if (uploaded.current?.file !== file) {
       const form = new FormData(); form.append('image', file);
       const image = await frameworkJson('/projects/' + encodeURIComponent(run.context.project_id) + '/images',
@@ -105,6 +106,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
     openRun(child.context.run_id);
   }
   async function decide(decision, signal) {
+    if (decision === 'approve_criteria') await requirePosterReview({ signal });
     const reviews = Object.values(humanReviews).filter(item => item.verdict);
     if (reviews.length && !humanReviewForm.current.reportValidity()) return;
     const snapshot = await command(path + '/approvals', { context: run.context, actor_id: run.context.actor_id, decision,
@@ -116,7 +118,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
 
   return <div className="rv-workspace"><WorkspaceTopbar current="/review/new" />
     <main className="rv-main"><section className="rv-panel rv-framework-review" aria-busy={busy}>
-      <h1>PDF 기준 포스터 검수</h1>
+      <h1>승인 기준 포스터 검수</h1>
       {run && <p>실행 {runId}{run.synthetic && ' · 합성 검증 데이터'}</p>}
       {run?.context.parent_run_id && <p>수정 전 실행 <a href={'?framework=' + encodeURIComponent(run.context.parent_run_id)}>{run.context.parent_run_id}</a></p>}
       {criteria.length > 0 && <details open={sourceDraft || undefined}><summary>검수 기준 {criteria.length}개{latest && ' · v' + latest.version.version_no}</summary>

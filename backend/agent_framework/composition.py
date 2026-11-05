@@ -224,6 +224,31 @@ def describe_configuration(config: TeamConfiguration) -> dict:
     return result
 
 
+def poster_review_configuration_blockers(config: TeamConfiguration) -> list[str]:
+    """Check declarations only; never import factories or verify worker/model access."""
+    checked = _configuration(config)
+
+    # shortcut: known stubs only; extend exclusions when adding framework stub factories.
+    def real_factory(binding):
+        module, _, name = (binding.factory or '').partition(':')
+        return (bool(module) and module.split('.')[0] not in ('examples', 'tests')
+                and module not in ('backend.agent_framework.adapters.templates',
+                                   'backend.agent_framework.adapters.synthetic')
+                and name not in ('QwenAdapterStub', '_UnconfiguredRole', '_SyntheticValidator'))
+
+    pdf = checked.pdf_extraction
+    inspector, validator, reporter = (checked.roles[role] for role in ('A04_A05', 'A06', 'A07'))
+    return [code for ready, code in (
+        (checked.roles['A02'].kind == 'registered_pdf' and pdf is not None
+         and pdf.mode == 'qwen' and pdf.structuring == 'semantic' and pdf.presentation,
+         'A02_QWEN_NOT_CONFIGURED'),
+        (inspector.kind == 'registered_poster' and real_factory(inspector), 'A04_A05_POSTER_NOT_CONFIGURED'),
+        (validator.kind == 'reference' or validator.kind == 'factory' and real_factory(validator),
+         'A06_VALIDATOR_NOT_CONFIGURED'),
+        (reporter.kind == 'factory' and real_factory(reporter), 'A07_REPORTER_NOT_CONFIGURED'),
+    ) if not ready]
+
+
 def describe_agents(agents: Agents) -> dict:
     """Describe exact known adapters; a custom type is never proof of connectivity."""
     from .adapters.synthetic import SyntheticAdapters

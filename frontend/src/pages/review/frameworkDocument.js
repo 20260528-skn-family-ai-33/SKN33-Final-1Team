@@ -10,28 +10,31 @@ const wait = (ms, signal) => new Promise((resolve, reject) => {
 // 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
 export async function extractDocumentWithProgress(file, { projectId, attempt, attempts, signal, onProgress,
   pollInterval = 1500, waitFor = wait } = {}) {
-  if (!projectId) throw new Error('PDF를 저장할 프로젝트를 선택해 주세요.');
+  const isText = file.type === 'text/plain';
+  const source = isText ? '입력문' : 'PDF';
+  if (!projectId) throw new Error('요구사항을 저장할 프로젝트를 선택해 주세요.');
   signal?.throwIfAborted();
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())))
     .map(byte => byte.toString(16).padStart(2, '0')).join('');
   signal?.throwIfAborted();
-  const cacheKey = `${projectId}:${digest}`;
+  const cacheKey = `${projectId}:${file.type}:${digest}`;
   attempt = attempt || attempts?.get(cacheKey) || {};
   attempts?.set(cacheKey, attempt);
-  if (attempt.sha256 && (attempt.sha256 !== digest || attempt.projectId !== projectId)) {
-    throw new Error('이전 문서 요청과 파일 또는 프로젝트가 다릅니다. 새 PDF 요청으로 진행해 주세요.');
+  if (attempt.sha256 && (attempt.sha256 !== digest || attempt.projectId !== projectId
+    || (attempt.mediaType && attempt.mediaType !== file.type))) {
+    throw new Error('이전 문서 요청과 원문 또는 프로젝트가 다릅니다. 새 요청으로 진행해 주세요.');
   }
-  Object.assign(attempt, { sha256: digest, projectId,
+  Object.assign(attempt, { sha256: digest, projectId, mediaType: file.type,
     uploadKey: attempt.uploadKey || crypto.randomUUID(), extractionKey: attempt.extractionKey || crypto.randomUUID() });
   const project = `/projects/${encodeURIComponent(projectId)}`;
   if (!attempt.documentVersionId) {
-    onProgress?.({ stage: 'uploading', percent: 5, message: 'PDF 원문과 버전을 저장하고 있습니다.' });
-    const response = await frameworkResponse(project + `/documents?filename=${encodeURIComponent(file.name)}`, {
-      method: 'POST', signal, body: file,
-      headers: { 'Content-Type': 'application/pdf', 'Idempotency-Key': attempt.uploadKey },
+    onProgress?.({ stage: 'uploading', percent: 5, message: `${source} 원문과 버전을 저장하고 있습니다.` });
+    const response = await frameworkResponse(project + (isText ? '/text-documents' : `/documents?filename=${encodeURIComponent(file.name)}`), {
+      method: 'POST', signal, body: isText ? JSON.stringify({ text: await file.text() }) : file,
+      headers: { 'Content-Type': isText ? 'application/json' : 'application/pdf', 'Idempotency-Key': attempt.uploadKey },
     });
     const record = await response.json();
-    if (!record?.document?.document_version_id || record.document.sha256 !== digest) throw new Error('PDF 원문 저장 결과를 확인하지 못했습니다.');
+    if (!record?.document?.document_version_id || record.document.sha256 !== digest) throw new Error(`${source} 원문 저장 결과를 확인하지 못했습니다.`);
     attempt.documentVersionId = record.document.document_version_id;
   }
   signal?.throwIfAborted();
@@ -65,7 +68,12 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
     throw new Error('분석 결과의 문서 버전을 확인하지 못했습니다. 기존 입력은 유지됩니다.');
   }
   if (!Array.isArray(result.conditions) || (!result.conditions.length && !(Array.isArray(result.pending) && result.pending.length))) {
-    throw new Error('PDF에서 검토할 요구사항을 찾지 못했습니다. 기존 입력은 유지됩니다.');
+    throw new Error(`${source}에서 검토할 요구사항을 찾지 못했습니다. 기존 입력은 유지됩니다.`);
   }
   return result;
+}
+
+export function extractTextWithProgress(text, options) {
+  if (!text.trim() || text.length > 60000) throw new Error('요구사항은 공백을 제외한 내용이 있어야 하며 60,000자 이하여야 합니다.');
+  return extractDocumentWithProgress(new File([text], 'requirements.txt', { type: 'text/plain' }), options);
 }

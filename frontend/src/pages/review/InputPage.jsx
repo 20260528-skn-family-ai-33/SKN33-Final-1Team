@@ -7,7 +7,7 @@ import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 기존 업로드·문서 처리 흐름을 큰 이미지 캔버스와 입력 inspector에 연결한다.
-export default function InputPage({ state, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }) {
+export default function InputPage({ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }) {
   const requirementCount = parseRequirements(state.requirements).length;
   const mixed = state.documentRun && state.requirements.trim() !== state.documentRun.paragraphs;
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
@@ -38,13 +38,14 @@ export default function InputPage({ state, prepare, openDocumentRun, inputChange
           <div className="rv-input-fields">
             <div className="rv-input-field"><label htmlFor="project-name">1. 프로젝트 이름 <span>선택</span></label><input id="project-name" value={state.projectName} onChange={e => inputChange('projectName', e.target.value)} maxLength={60} placeholder="예: 김천김밥축제 포스터 검수" autoComplete="off" /></div>
             <div className="rv-input-field rv-input-requirements"><div className="rv-input-field-heading"><label htmlFor="requirements">3. 검수 요구사항 <b>*</b></label><span>한 줄에 한 항목</span></div><p className="rv-input-writing-hint">행사명·기간·장소, 필수 문구와 시각 조건을 구체적으로 적어 주세요.</p><textarea id="requirements" disabled={documentBusy} value={state.requirements} maxLength={6000} rows={8} onChange={e => inputChange('requirements', e.target.value)} placeholder={'행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n김천시 로고가 포함되어야 합니다.'} aria-describedby="requirements-hint" /><div className="rv-input-counter"><span id="requirements-hint">다음 단계에서 항목을 수정하거나 제외할 수 있어요.</span><span>{state.requirements.length.toLocaleString()} / 6,000</span></div></div>
-            <div className="rv-input-document"><DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy }} projectName={state.projectName} /></div>
+            <div className="rv-input-document"><DocumentInput {...{ projectId, setProjectId, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy }} projectName={state.projectName} /></div>
           </div>
         </aside>
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} /></div>
+      {mixed && <p role="note">원문 기준을 수정하려면 ‘{state.documentRun.filename} 원문 기준 승인하기’에서 기준 보완과 변경 출처를 기록하세요. ‘입력문으로 새 기준 분석’은 입력란 전체를 별도 원문으로 저장하며, 기존 원문의 승인과 출처를 승계하지 않습니다.</p>}
       <div className="rv-actionbar rv-input-actionbar"><div className="rv-input-next-note"><Icon name="lock" /><div><strong>자료 준비 후, 검수 기준을 확인합니다.</strong><p>{requirementCount}개 입력 · {versionText} · 기준을 확정한 뒤 검수가 실행됩니다.</p></div></div>{mixed && <button type="button" className="rv-button primary" disabled={busy} onClick={openDocumentRun}>{state.documentRun.filename} 원문 기준 승인하기</button>}
-        <button type="submit" className={mixed ? 'rv-button secondary' : 'rv-button primary'} disabled={busy}>{mixed ? '편집한 문구로 간편 검수' : state.documentRun ? 'PDF 검수 기준 확인하기' : '검수 항목 확인하기'}<Icon name="arrow" /></button></div>
+        <button type="submit" className={mixed ? 'rv-button secondary' : 'rv-button primary'} disabled={busy}>{mixed ? '입력문으로 새 기준 분석' : state.documentRun ? state.documentRun.kind === 'text' ? '입력 기준 확인하기' : 'PDF 검수 기준 확인하기' : '검수 항목 확인하기'}<Icon name="arrow" /></button></div>
     </form>
   </section>;
 }

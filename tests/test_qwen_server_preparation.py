@@ -16,12 +16,13 @@ server=importlib.util.module_from_spec(SPEC);SPEC.loader.exec_module(server)
 def config():return server.load_config(ROOT/'deploy/qwen-a02/server.json')
 
 
-def test_plan_never_queries_gpu_starts_a_process_or_prints_secret(config,monkeypatch,capsys):
+@pytest.mark.parametrize('filename',['server.json','server-poster.json'])
+def test_plan_never_queries_gpu_starts_a_process_or_prints_secret(filename,monkeypatch,capsys):
     def forbidden(*args,**kwargs):raise AssertionError('Plan must have no process side effects')
     monkeypatch.setattr(server.subprocess,'run',forbidden)
     monkeypatch.setattr(server.os,'execve',forbidden)
     monkeypatch.setenv('VLLM_API_KEY','secret-that-must-not-appear-in-output')
-    assert server.main(['plan'])==0
+    assert server.main(['plan','--config',str(ROOT/'deploy/qwen-a02'/filename)])==0
     output=capsys.readouterr().out
     assert 'secret-that-must-not-appear-in-output' not in output
     assert json.loads(output)['server_started'] is False
@@ -98,6 +99,26 @@ def test_shared_text_server_accepts_auto_tool_requests_without_changing_model(co
     assert argv[argv.index('--tool-call-parser')+1]=='qwen3_coder'
     assert '--language-model-only' in argv
     assert argv[argv.index('--model')+1]==config['model_directory']
+
+
+def test_poster_profile_only_changes_multimodal_flag_and_preserves_pinned_limits(config):
+    poster=server.load_config(ROOT/'deploy/qwen-a02/server-poster.json')
+    assert poster==config|{'language_model_only':False}
+    text_command=server.command(config)
+    text_command.remove('--language-model-only')
+    assert server.command(poster)==text_command
+    from backend.agent_framework.composition import load_config
+    worker=load_config(ROOT/'deploy/qwen-a02/worker-config.poster.example.json')
+    from urllib.parse import urlsplit
+    assert worker.pdf_extraction.model==poster['model']
+    assert urlsplit(worker.pdf_extraction.endpoint).port==poster['local_tunnel_port']
+
+
+@pytest.mark.parametrize('value',[None,0,1,'false','true'])
+def test_language_model_only_requires_an_explicit_boolean(config,tmp_path,value):
+    config['language_model_only']=value
+    path=tmp_path/'invalid.json';path.write_text(json.dumps(config))
+    with pytest.raises(ValueError,match='INITIAL_A02_PROFILE_REQUIRED'):server.load_config(path)
 
 
 def test_legacy_a02_only_configuration_keeps_its_previous_behavior(config,tmp_path):

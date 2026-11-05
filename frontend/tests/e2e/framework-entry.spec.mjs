@@ -1,0 +1,110 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import test from 'node:test';
+import { chromium } from 'playwright';
+import { createServer } from 'vite';
+
+// API replies are scripted; this checks the real input/approval/report UI, not model quality.
+test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 60000 }, async t => {
+  const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+  t.after(() => vite.close()); await vite.listen();
+  const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
+  t.after(() => browser.close());
+  for (const mode of ['text', 'pdf', 'edited_pdf', 'not_ready']) {
+    const page = await browser.newPage(); page.setDefaultTimeout(8000);
+    const errors = [], legacy = [], textInputs = [];
+    let latest = null, approved = false, reviewed = false, extractedText = false;
+    const context = { run_id: 'draft', project_id: 'project', actor_id: 'user' };
+    const criterion = { criterion_id: 'title', text: '행사명은 봄', kind: 'text', operator: 'contains',
+      expected: '봄', required: true, source: { page: 1, quote: '행사명은 봄' } };
+    const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
+    let png;
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route(base + '/api/**', async route => {
+      const request = route.request(), path = new URL(request.url()).pathname;
+      let body;
+      if (path === '/api/reviews') { legacy.push(request.method()); return route.fulfill({ status: 500 }); }
+      if (path === '/api/v1/auth/me') body = { authenticated: true, user: { id: 'user', display_name: '회귀 검사' } };
+      else if (path === '/api/health') body = { status: 'ok', ready: true };
+      else if (path.endsWith('/health')) body = { requirements_presentation: true, pdf_extraction_mode: 'qwen',
+        poster_review_ready: mode !== 'not_ready', free_text_registration: true };
+      else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
+      else if (path.endsWith('/projects')) body = { items: [{ id: 'project', name: '검수', my_role: 'owner' }] };
+      else if (path.endsWith('/documents')) body = { document: { document_version_id: 'pdf-document',
+        sha256: createHash('sha256').update(request.postDataBuffer()).digest('hex') } };
+      else if (path.endsWith('/text-documents')) {
+        const input = request.postDataJSON(); textInputs.push(input); extractedText = true;
+        body = { document: { document_version_id: 'text-document', sha256: createHash('sha256').update(input.text).digest('hex') } };
+      } else if (path.endsWith('/extractions')) body = { context };
+      else if (path.endsWith('/requirements')) body = { conditions: [{ text: '행사명은 봄', type: 'information', page: 1, source: '행사명은 봄' }],
+        pending: [], page_count: 1, framework: { run_id: 'draft', document_version_id: extractedText ? 'text-document' : 'pdf-document' } };
+      else if (path.endsWith('/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
+      else if (path.endsWith('/criteria-versions')) {
+        assert.equal(request.postDataJSON().purpose, 'human_review');
+        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
+        body = latest;
+      } else if (path.endsWith('/criteria-approvals')) {
+        assert.equal(request.postDataJSON().reviewed_all_criteria, true); approved = true; body = {};
+      } else if (path.endsWith('/images')) {
+        assert.ok(approved, 'image registration follows criteria approval'); body = { id: 'image' };
+      } else if (path.endsWith('/poster-reviews')) {
+        assert.equal(request.postDataJSON().asset_version_id, 'image');
+        assert.equal(request.postDataJSON().criteria_version_id, baseline.criteria_version_id);
+        assert.equal(request.postDataJSON().expected_criteria_sha256, baseline.criteria_sha256);
+        body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' } };
+      } else if (path.endsWith('/approvals')) {
+        assert.equal(request.postDataJSON().decision, 'approve_criteria'); reviewed = true;
+        body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
+      } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
+      else if (path.endsWith('/runs/draft')) body = { context, execution_status: approved ? 'waiting_asset' : 'waiting_criteria', criteria: { criteria: [criterion] } };
+      else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
+        execution_status: reviewed ? 'waiting_review' : 'waiting_criteria', criteria: { criteria: [criterion] },
+        ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, verdict: 'fail', issues: ['value_mismatch'] }] },
+          report: { summary: 'A07 보고: 행사명이 기준과 다릅니다.', change_requests: ['행사명을 봄으로 수정해 주세요.'] } } : {}) };
+      else throw new Error('unexpected test route: ' + path);
+      await route.fulfill({ json: body });
+    });
+    await page.goto(base + '/review/new');
+    await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+    await page.waitForFunction(() => document.querySelector('#document-project')?.value === 'project');
+    await page.getByRole('button', { name: mode === 'not_ready' ? '검수 구성 확인 필요' : '검수 구성 준비됨', exact: true }).waitFor();
+    png = Buffer.from(await page.evaluate(() => {
+      const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
+      return canvas.toDataURL().split(',')[1];
+    }), 'base64');
+    await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
+    if (mode === 'pdf' || mode === 'edited_pdf') {
+      await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
+      await page.waitForFunction(() => document.querySelector('#requirements').value === '행사명은 봄');
+    }
+    if (mode !== 'pdf') await page.locator('#requirements').fill(mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄');
+    if (mode === 'pdf') {
+      await page.locator('#document-project').selectOption('');
+      await page.getByRole('button', { name: 'PDF 검수 기준 확인하기', exact: true }).click();
+      await page.getByText(/이 원문을 저장한 프로젝트를 선택/).waitFor();
+      assert.equal(textInputs.length, 0, 'a project change must not silently convert PDF criteria to a new text source');
+      await page.locator('#document-project').selectOption('project');
+    }
+    if (mode === 'edited_pdf') await page.getByRole('note').filter({ hasText: '별도 원문' }).waitFor();
+    await page.getByRole('button', { name: mode === 'pdf' ? 'PDF 검수 기준 확인하기' : mode === 'edited_pdf' ? '입력문으로 새 기준 분석' : '검수 항목 확인하기', exact: true }).click();
+    if (mode === 'not_ready') {
+      await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
+      assert.equal(textInputs.length, 0);
+    } else {
+      await page.getByRole('heading', { name: '승인 기준 포스터 검수' }).waitFor();
+      assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄' }]);
+      assert.equal(reviewed, false);
+      await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
+      await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
+      await page.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true }).click();
+      await page.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true }).click();
+      await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
+      await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
+      await page.reload();
+      await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
+    }
+    assert.deepEqual(legacy, [], mode); assert.deepEqual(errors, [], mode);
+    await page.close();
+  }
+});
