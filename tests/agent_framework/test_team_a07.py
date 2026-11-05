@@ -150,7 +150,9 @@ def test_synthetic_inputs_are_labelled_and_real_inputs_are_not():
 
 
 V3_ISSUES = ("unreadable_observation", "unit_mismatch", "observed_absence", "observation_status_unknown",
-             "observation_not_checked", "numeric_expectation_invalid", "model_review")
+             "observation_not_checked", "numeric_expectation_invalid", "model_review",
+             "typed_attribute_review_required", "qualifier_interpretation_required",
+             "normalized_value_review_required", "date_comparison_review_required")
 
 
 def test_issue_codes_added_by_contract_3_read_as_korean_sentences():
@@ -159,3 +161,13 @@ def test_issue_codes_added_by_contract_3_read_as_korean_sentences():
     draft = report(request.model_copy(update={"validated": request.validated.model_copy(update={"items": items})}))
     assert "기타 사유" not in draft.summary
     assert all(ISSUE[code] in draft.summary and ISSUE[code] in draft.change_requests[0] for code in V3_ISSUES)
+
+
+def test_visual_conflict_is_explained_as_inconsistent_presence_not_a_value_comparison():
+    request=fixture('review')
+    item=request.validated.items[0].model_copy(update={'kind':'visual','issues':('verdict_conflict',)})
+    request=request.model_copy(update={'validated':request.validated.model_copy(update={'items':(item,*request.validated.items[1:])})})
+    draft=report(request)
+    message='시각 요소의 존재·부재 보고와 검사 판정이 서로 맞지 않습니다.'
+    assert draft.verdict=='review' and message in draft.summary and message in draft.change_requests[0]
+    assert message in str(prompt_items(items(request)))

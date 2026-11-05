@@ -45,6 +45,13 @@ def polisher(*responses):
     return QwenPolisher("http://127.0.0.1:18290", transport=transport), sent
 
 
+def assert_rule_report_with_notice(draft,request,status='failed'):
+    plain=invoke_role('A07',TeamA07Reporter(),request)
+    assert draft.polish_status==status
+    assert (draft.verdict,draft.evidence_ids,draft.change_requests)==(plain.verdict,plain.evidence_ids,plain.change_requests)
+    assert draft.summary.startswith(plain.summary+'\n') and '규칙 기반 보고서' in draft.summary
+
+
 def test_polished_sentences_are_added_without_changing_facts():
     request = fixture("fail")
     qwen, sent = polisher(envelope(GOOD))
@@ -74,7 +81,7 @@ def test_any_failure_falls_back_to_the_rule_report(responses, problem):
     request = fixture("fail")
     qwen, _ = polisher(*responses)
     draft = invoke_role("A07", TeamA07Reporter(qwen), request)
-    assert draft == invoke_role("A07", TeamA07Reporter(), request)
+    assert_rule_report_with_notice(draft,request,'outcome_unknown' if responses[0].__class__ is httpx.Response and responses[0].status_code>=500 else 'failed')
     assert any(problem in p for p in qwen.last_problems)
 
 
@@ -83,17 +90,17 @@ def test_any_failure_falls_back_to_the_rule_report(responses, problem):
 def test_known_failure_falls_back_without_automatic_resubmission(response):
     qwen, sent = polisher(response, envelope(GOOD))
     request = fixture('fail')
-    assert invoke_role('A07', TeamA07Reporter(qwen), request) == invoke_role('A07', TeamA07Reporter(), request)
+    draft=invoke_role('A07',TeamA07Reporter(qwen),request)
+    assert_rule_report_with_notice(draft,request,'outcome_unknown' if isinstance(response,httpx.Response) and response.status_code>=500 else 'failed')
     assert len(sent) == qwen.calls == 1
 
 
 @pytest.mark.parametrize('failure', [httpx.ReadTimeout, httpx.WriteTimeout, httpx.ReadError,
     httpx.WriteError, httpx.RemoteProtocolError])
-def test_uncertain_completion_propagates_without_retry_or_success_report(failure):
+def test_uncertain_optional_polish_keeps_rule_report_without_retry(failure):
     qwen, sent = polisher(failure('unknown'), envelope(GOOD))
-    with pytest.raises(AdapterFailure) as error:
-        invoke_role('A07', TeamA07Reporter(qwen), fixture('fail'))
-    assert error.value.code == 'MODEL_OUTCOME_UNKNOWN' and error.value.outcome_unknown
+    request=fixture('fail');draft=invoke_role('A07',TeamA07Reporter(qwen),request)
+    assert_rule_report_with_notice(draft,request,'outcome_unknown')
     assert len(sent) == qwen.calls == 1
     assert qwen.last_problems
 
@@ -104,7 +111,7 @@ def test_passing_report_never_calls_the_server():
     assert sent == [] and POLISH_NOTICE not in draft.summary
 
 
-def test_workflow_records_a07_timeout_as_outcome_unknown():
+def test_optional_polish_timeout_does_not_block_correction_approval():
     from tests.agent_framework.test_runtime import Examples,context,document,asset,approval
     from backend.agent_framework.ports import Agents
     from backend.agent_framework.runtime import Workflow
@@ -112,9 +119,9 @@ def test_workflow_records_a07_timeout_as_outcome_unknown():
     flow=Workflow(Agents(extractor=example,inspector=example,validator=example,reporter=TeamA07Reporter(qwen)),profile='test')
     ctx=context();flow.start(ctx,document(),asset())
     result=flow.approve(ctx.run_id,approval(ctx,'approve_criteria'))
-    assert result.execution_status=='outcome_unknown' and result.error.outcome_unknown
-    assert result.error.code=='MODEL_OUTCOME_UNKNOWN' and result.report is None
-    with pytest.raises(ValueError):flow.approve(ctx.run_id,approval(ctx,'approve_criteria'))
+    assert result.execution_status=='waiting_review' and result.error is None
+    assert result.machine_verdict=='fail' and result.report.polish_status=='outcome_unknown'
+    assert flow.approve(ctx.run_id,approval(ctx,'approve_changes',reason='수정 요청')).execution_status=='waiting_revision'
     assert len(sent)==qwen.calls==1
 
 
@@ -123,7 +130,7 @@ def test_an_unexpected_polisher_error_does_not_stop_the_report():
         def polish(self, reports):
             raise RuntimeError("bug")
     request = fixture("review")
-    assert invoke_role("A07", TeamA07Reporter(Broken()), request) == invoke_role("A07", TeamA07Reporter(), request)
+    assert_rule_report_with_notice(invoke_role('A07',TeamA07Reporter(Broken()),request),request)
 
 
 @pytest.mark.parametrize("url", ["ftp://host", "http://user:pw@host", "http://host?x=1", "not a url", None])

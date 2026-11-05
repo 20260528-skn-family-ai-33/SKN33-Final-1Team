@@ -17,6 +17,8 @@ from backend.a07_reporter.adapter import ItemReport
 from backend.a07_reporter.prompt import MAX_ITEMS_PER_CALL, MODEL, build_payload, check, prompt_items
 from backend.agent_framework.ports import AdapterFailure
 
+MAX_RESPONSE_BYTES = 1024 * 1024
+
 
 def _endpoint(base_url) -> str:
     parsed = urlsplit(base_url) if isinstance(base_url, str) else None
@@ -35,7 +37,7 @@ class QwenPolisher:
     def __init__(self, base_url: str, *, api_key: str | None = None, model: str = MODEL, timeout: float = 60.0,
                  example: bool = False, transport: httpx.BaseTransport | None = None):
         self.url, self.model, self.example = _endpoint(base_url), model, example
-        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        headers = {'Accept-Encoding':'identity',**({"Authorization": f"Bearer {api_key}"} if api_key else {})}
         self.http = httpx.Client(headers=headers, timeout=httpx.Timeout(timeout, connect=10.0), transport=transport,
                                  trust_env=False, follow_redirects=False)
         self.calls = 0
@@ -47,17 +49,29 @@ class QwenPolisher:
     def _post(self, payload: dict) -> dict | None:
         self.calls += 1
         try:
-            response = self.http.post(self.url, json=payload)
-        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout):
+            with self.http.stream('POST',self.url,json=payload) as response:
+                if response.status_code>=500:
+                    self.last_problems=(f'Qwen 호출 결과를 알 수 없습니다(HTTP {response.status_code}).',)
+                    raise AdapterFailure('MODEL_OUTCOME_UNKNOWN',self.last_problems[0],outcome_unknown=True)
+                if response.status_code!=200:
+                    self.last_problems=(f'Qwen 서버가 요청을 거절했습니다(HTTP {response.status_code}).',)
+                    return None
+                if response.headers.get('content-encoding','identity').lower()!='identity':
+                    self.last_problems=('압축된 Qwen 응답은 허용하지 않습니다.',)
+                    return None
+                content=bytearray()
+                for chunk in response.iter_bytes():
+                    if len(content)+len(chunk)>MAX_RESPONSE_BYTES:
+                        self.last_problems=('Qwen 응답이 크기 제한을 넘었습니다.',)
+                        return None
+                    content.extend(chunk)
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout, httpx.UnsupportedProtocol):
             self.last_problems = ("Qwen 서버에 연결하지 못했습니다.",)
             return None
         except httpx.TransportError:
             self.last_problems = ("Qwen 호출 결과를 알 수 없습니다. 자동으로 다시 호출하지 않습니다.",)
             raise AdapterFailure("MODEL_OUTCOME_UNKNOWN", self.last_problems[0], outcome_unknown=True) from None
-        if response.status_code != 200:
-            self.last_problems = (f"Qwen 서버가 요청을 거절했습니다(HTTP {response.status_code}).",)
-            return None
-        return response.json()
+        return json.loads(content)
 
     def polish(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]] | None:
         self.last_problems = ()

@@ -1464,6 +1464,21 @@
             "type": "boolean",
             "title": "Synthetic",
             "default": false
+          },
+          "polish_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "failed",
+                  "outcome_unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polish Status"
           }
         },
         "additionalProperties": false,

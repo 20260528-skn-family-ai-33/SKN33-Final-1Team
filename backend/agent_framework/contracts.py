@@ -305,6 +305,13 @@ class ReportDraft(Contract):
     evidence_ids: tuple[Identifier, ...] = ()
     change_requests: tuple[str, ...] = ()
     synthetic: bool = False
+    polish_status: Literal['failed','outcome_unknown'] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_polish_shape(self,handler):
+        data=handler(self)
+        if self.polish_status is None:data.pop('polish_status',None)
+        return data
 
 
 class FrameworkError(Contract):
