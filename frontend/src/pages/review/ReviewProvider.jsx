@@ -5,6 +5,7 @@ import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js
 import { mergeDocumentRequirements } from './documentRequirements.js';
 import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
+import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 
 const ReviewContext = createContext(null);
 
@@ -32,7 +33,7 @@ async function validateImage(file, limits = {}) {
   return dimensions;
 }
 
-// 로그인 세션 동안 검수 상태와 요청을 유지해 서비스 소개 왕복에도 작업을 이어 간다.
+// 같은 검수의 단계 이동에는 상태를 유지하고 상단 도구 이동에는 초기화한다.
 export function ReviewProvider({ children }) {
   const [state, dispatch] = useReducer(workflowReducer, initialState);
   const [health, setHealth] = useState(null);
@@ -66,6 +67,13 @@ export function ReviewProvider({ children }) {
   const fileValidation = useRef(0);
   const healthRequest = useRef(null);
   const sampleRequest = useRef(null);
+  useWorkspaceReset(() => {
+    generation.current += 1;
+    fileValidation.current += 1;
+    healthRequest.current?.abort();
+    sampleRequest.current?.abort();
+    documentRequest.current?.abort();
+  });
   const wantsSample = location.pathname.replace(/\/$/, '') === '/review/new' && searchParams.get('sample') === '1';
   const savedReviewId = searchParams.get('review');
   const busy = state.step === 'running' && ['queued', 'running', 'submitting'].includes(state.review?.status);
@@ -216,7 +224,7 @@ export function ReviewProvider({ children }) {
     }
   }, [health?.limits, cancelDocument, setSearchParams]);
 
-  // 로그아웃이나 계정 변경으로 제공자가 해제되면 요청과 파일 검증을 무효화한다.
+  // 상단 메뉴 이동·로그아웃·계정 변경으로 해제되면 요청과 파일 검증을 무효화한다.
   useEffect(() => {
     checkHealth();
     return () => {
@@ -444,7 +452,7 @@ export function ReviewProvider({ children }) {
   return <ReviewContext.Provider value={value}>{children}</ReviewContext.Provider>;
 }
 
-// 검수 화면에 세션 동안 공유되는 상태와 기능을 전달한다.
+// 같은 검수의 단계 사이에서 공유하는 상태와 기능을 전달한다.
 export function useReviewContext() {
   const value = useContext(ReviewContext);
   if (!value) throw new Error('useReviewContext는 ReviewProvider 안에서 사용해야 합니다.');

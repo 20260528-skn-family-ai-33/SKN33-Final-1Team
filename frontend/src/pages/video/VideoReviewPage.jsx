@@ -4,6 +4,7 @@ import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { LogoFlowCard, LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
 import { evidenceBoxStyle, parseRequirements } from '../review/workflow.js';
 import {
@@ -15,13 +16,17 @@ import {
 function useVideoStatus() {
   const [status, setStatus] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const active = useRef(null);
   const refresh = useCallback(async () => {
+    active.current?.abort();
+    const controller = new AbortController(); active.current = controller;
     try {
-      const [ready, list] = await Promise.all([fetchJson('/api/video-reviews/status'), fetchJson('/api/video-reviews')]);
+      const [ready, list] = await Promise.all([fetchJson('/api/video-reviews/status', { signal: controller.signal }), fetchJson('/api/video-reviews', { signal: controller.signal })]);
+      if (controller.signal.aborted) return;
       setStatus(ready); setJobs(list.items || []);
-    } catch (error) { setStatus({ ready: false, detail: error.message }); }
+    } catch (error) { if (!controller.signal.aborted) setStatus({ ready: false, detail: error.message }); }
   }, []);
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { refresh(); return () => active.current?.abort(); }, [refresh]);
   return { status, jobs, refresh };
 }
 
@@ -36,10 +41,11 @@ function useVideoJob(id, onFinish) {
     async function poll() {
       try {
         const value = await fetchJson(`/api/video-reviews/${encodeURIComponent(id)}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
         setJob(value); setError('');
         if (isTerminal(value.status)) onFinish(); else timer = setTimeout(poll, 1500);
       } catch (failure) {
-        if (failure.name === 'AbortError') return;
+        if (controller.signal.aborted) return;
         setError(failure.message);
         // 일시적인 연결 오류는 다시 확인하고, 없는 기록(404)만 멈춘다.
         if (failure.status !== 404) timer = setTimeout(poll, 3000);
@@ -63,6 +69,9 @@ function UploadCard({ status, onSubmitted }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const input = useRef(null);
+  const active = useRef(null);
+  useWorkspaceReset(() => active.current?.abort());
+  useEffect(() => () => active.current?.abort(), []);
   const logoStatus = useLogoStatus();
   const limits = status?.limits;
   const criteria = useMemo(() => parseRequirements(requirements), [requirements]);
@@ -80,6 +89,8 @@ function UploadCard({ status, onSubmitted }) {
 
   async function submit() {
     if (!file || busy) return;
+    const controller = new AbortController(); active.current = controller;
+    const { signal } = controller;
     setBusy(true); setError('');
     try {
       const form = new FormData();
@@ -88,16 +99,19 @@ function UploadCard({ status, onSubmitted }) {
       form.append('criteria_version', '1');
       form.append('project_name', projectName.trim() || '숏폼 검수');
       form.append('disclosure', JSON.stringify(ad));
-      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form });
+      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form, signal });
+      if (signal.aborted) return;
       // 원본 로고를 올렸으면 같은 영상으로 영상 로고 작업도 만든다. 실패해도 동영상 검수는 그대로 진행한다.
       let logoError = '';
       if (logos.length) {
-        try { await submitLogoJob({ video: file, logos, title: projectName.trim() || '숏폼 검수', reviewId: created.id }); setLogos([]); }
+        try { await submitLogoJob({ video: file, logos, title: projectName.trim() || '숏폼 검수', reviewId: created.id, signal }); setLogos([]); }
         catch (failure) { logoError = `동영상 검수는 접수했지만 로고 검수를 접수하지 못했습니다: ${failure.message}`; }
       }
+      if (signal.aborted) return;
       setFile(null); if (input.current) input.current.value = '';
       onSubmitted(created.id, logoError);
-    } catch (failure) { setError(failure.message); } finally { setBusy(false); }
+    } catch (failure) { if (!signal.aborted) setError(failure.message); }
+    finally { if (!signal.aborted) { active.current = null; setBusy(false); } }
   }
 
   const field = (key, value) => { setError(''); setAd(previous => ({ ...previous, [key]: value })); };

@@ -27,7 +27,7 @@ function AppRoutes() {
   </Routes>;
 }
 
-// 로그인 세션 동안 초안과 진행 중인 검수를 유지하고 로그아웃하면 해제한다.
+// 상단 도구 이동의 WorkspaceSession 초기화 또는 로그아웃 때 검수 상태를 해제한다.
 export default function App() {
   const { status, user } = useAuth();
   if (status === 'authenticated') {

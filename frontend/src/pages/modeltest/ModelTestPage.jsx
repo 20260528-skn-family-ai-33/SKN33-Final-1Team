@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { useFreshWorkspace, useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import {
   CONTRACT, STAGES, MODEL_OPTIONS, FILE_TYPES, FILE_LIMITS, STATUS_LABELS, TERMINAL, allowedTypes, fileLimit, fileError, formatBytes,
@@ -143,7 +144,8 @@ export default function ModelTestPage() {
     try { return localStorage.getItem('creative-checker-modeltest-theme') === 'dark' ? 'dark' : 'light'; } catch { return 'light'; }
   });
   useEffect(() => { try { localStorage.setItem('creative-checker-modeltest-theme', theme); } catch { /* Theme switching still works without storage. */ } }, [theme]);
-  const draft = useModeltestDraft();
+  const freshWorkspace = useFreshWorkspace();
+  const draft = useModeltestDraft({ restore: !freshWorkspace });
   const { flow, setFlow, flows, setFlows } = draft;
   const state = flows[flow]; const boardHistory = useRef({ image: [], video: [], similarity: [] }); const boardRedo = useRef({ image: [], video: [], similarity: [] });
   const [confirmation, setConfirmation] = useState(null);
@@ -244,10 +246,11 @@ export default function ModelTestPage() {
     viewResults();
   }, [job?.id, libraryOpen]);
 
+  useWorkspaceReset(() => requestRef.current?.abort());
   useEffect(() => () => requestRef.current?.abort(), []);
   useEffect(() => { if (job?.status === 'completed') reloadCatalog(); }, [job?.id, job?.status]);
   useEffect(() => {
-    if (!draft.ready) return;
+    if (!draft.ready || freshWorkspace) return;
     if (draft.savedRun && (!savedSSH.endpoint || draft.savedRun.endpoint === savedSSH.endpoint)) restoreRun(draft.savedRun);
     else if (savedSSH.endpoint) restoreSSH();
   }, [draft.ready]);
@@ -372,6 +375,7 @@ export default function ModelTestPage() {
     setSubmitting(true); setUnknown(false); setRunError(''); setPaused(false);
     try {
       await draft.rememberRun(context);
+      if (controller.signal.aborted) return;
       const next = validateRun(await modeltestRequest(context, '/runs', {
         method: 'POST', body: context.body, headers: { 'Idempotency-Key': context.requestId },
         signal: controller.signal, timeout: 120000,
