@@ -323,6 +323,24 @@ def sent_criteria(request):
     return [row["criterion_id"] for row in json.loads(text.split("CRITERIA_JSON:\n", 1)[1])]
 
 
+def test_human_supplement_reaches_model_with_the_original_pending_source():
+    from datetime import datetime, timezone
+    from backend.agent_framework.contracts import CriteriaValueSource
+    quote='관람시간은 10:00로 확정합니다.'
+    supplement=CriteriaValueSource(record_id='reply-1',purpose='synthetic_test',reference='담당자 회신',quote=quote,
+        quote_sha256=sha256(quote.encode()).hexdigest(),submitted_by='reviewer-1',submitted_at=datetime.now(timezone.utc),synthetic=True)
+    c=criterion('time','text','contains','10:00','관람시간은 확인 중입니다.').model_copy(
+        update={'human_added':True,'value_source':supplement})
+    seen=[]
+    def handler(request):
+        text=json.loads(request.content)['messages'][1]['content'][0]['text']
+        seen.extend(json.loads(text.split('CRITERIA_JSON:\n',1)[1]))
+        return httpx.Response(200,json=chat_response([row('time','10:00','pass',None)]))
+    client(handler).inspect((c,),model_image())
+    assert seen[0]['expected']=='10:00' and seen[0]['text']==c.text
+    assert seen[0]['supplement']=={'quote':quote,'reference':supplement.reference}
+
+
 @pytest.mark.parametrize(("box_format", "raw_box"), (("normalized", [0.1, 0.2, 0.5, 0.6]),
                                                      ("relative_1000", [100, 200, 500, 600]),
                                                      ("pixel", [20, 20, 100, 60])))
@@ -369,7 +387,7 @@ def test_client_downscales_to_its_pixel_budget_and_batches_criteria():
 
 
 @pytest.mark.parametrize(("response", "code", "retryable"), (
-    (httpx.Response(503), "MODEL_HTTP_ERROR", True),
+    (httpx.Response(429), "MODEL_HTTP_ERROR", True),
     (httpx.Response(400), "MODEL_HTTP_ERROR", False),
     (httpx.Response(200, json=chat_response([], finish_reason="length")), "MODEL_OUTPUT_INVALID", False),
     (httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": "not json"}}]}),
@@ -402,6 +420,43 @@ def test_transport_errors_separate_unsent_requests_from_unknown_outcomes(error, 
     with pytest.raises(AdapterFailure) as failure:
         client(handler).inspect(CRITERIA[:1], model_image())
     assert (failure.value.code, failure.value.outcome_unknown) == (code, unknown)
+
+
+@pytest.mark.parametrize('mode', ('at_limit', 'over_limit', 'http_error', 'read_error'))
+def test_client_bounds_streaming_response_and_closes_it_without_retry(mode):
+    content = json.dumps(chat_response([row('title', '가을 문화축제', 'pass')])).encode()
+    consumed, calls, closed = [], [], []
+
+    class Stream(httpx.SyncByteStream):
+        def __iter__(self):
+            consumed.append(a04.MAX_RESPONSE_BYTES)
+            yield content.ljust(a04.MAX_RESPONSE_BYTES, b' ')
+            if mode == 'read_error':
+                raise httpx.ReadTimeout('interrupted response')
+            if mode == 'over_limit':
+                consumed.append(1)
+                yield b' '
+                raise AssertionError('must stop reading as soon as the limit is exceeded')
+
+        def close(self):
+            closed.append(True)
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(503 if mode == 'http_error' else 200, stream=Stream())
+
+    if mode == 'at_limit':
+        answer, = client(handler).inspect(CRITERIA[:1], model_image())
+        assert answer.observed == '가을 문화축제'
+    else:
+        with pytest.raises(AdapterFailure) as failure:
+            client(handler).inspect(CRITERIA[:1], model_image())
+        code = {'over_limit': 'MODEL_OUTPUT_INVALID', 'http_error': 'MODEL_OUTCOME_UNKNOWN', 'read_error': 'MODEL_OUTCOME_UNKNOWN'}[mode]
+        assert failure.value.code == code
+        assert failure.value.outcome_unknown == (mode in ('read_error','http_error'))
+        assert failure.value.retryable is False
+    assert len(calls) == 1 and closed == [True]
+    assert consumed == ([] if mode == 'http_error' else [a04.MAX_RESPONSE_BYTES, 1] if mode == 'over_limit' else [a04.MAX_RESPONSE_BYTES])
 
 
 def test_adapter_and_client_together_return_a_contract_inspection():

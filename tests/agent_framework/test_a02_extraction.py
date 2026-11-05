@@ -354,6 +354,7 @@ def test_model_cannot_return_value_strings_instead_of_source_references(field):
 
 
 @pytest.mark.parametrize('failure,unknown,code',(
+    ('connect',False,'QWEN_UNAVAILABLE'),('connect_timeout',False,'QWEN_UNAVAILABLE'),
     ('timeout',True,'QWEN_OUTCOME_UNKNOWN'),('server',True,'QWEN_OUTCOME_UNKNOWN'),
     ('rate',False,'QWEN_HTTP_REJECTED'),('redirect',False,'QWEN_HTTP_REJECTED'),
     ('incomplete',False,'QWEN_OUTPUT_INCOMPLETE'),('badjson',False,'A02_RESPONSE_INVALID')))
@@ -361,6 +362,8 @@ def test_http_failure_never_retries_repairs_or_falls_back(failure,unknown,code):
     calls=[];settings=qwen_settings();doc=document()
     def respond(req):
         calls.append(1)
+        if failure=='connect':raise httpx.ConnectError('DO_NOT_LEAK_SECRET',request=req)
+        if failure=='connect_timeout':raise httpx.ConnectTimeout('DO_NOT_LEAK_SECRET',request=req)
         if failure=='timeout':raise httpx.ReadTimeout('DO_NOT_LEAK_SECRET',request=req)
         if failure=='server':return httpx.Response(500,text='DO_NOT_LEAK_SECRET')
         if failure=='rate':return httpx.Response(429)
@@ -371,6 +374,7 @@ def test_http_failure_never_retries_repairs_or_falls_back(failure,unknown,code):
     with pytest.raises(AdapterFailure) as error:
         RegisteredPDFExtractor(lambda _:doc,settings,provider=provider).extract(request(doc))
     assert len(calls)==1 and error.value.code==code and error.value.outcome_unknown is unknown
+    assert error.value.retryable is (failure in ('connect','connect_timeout','rate'))
     assert 'DO_NOT_LEAK_SECRET' not in str(error.value)
 
 

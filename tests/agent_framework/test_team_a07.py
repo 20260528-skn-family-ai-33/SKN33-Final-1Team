@@ -2,13 +2,16 @@
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import datetime, timezone
+from hashlib import sha256
 
 import pytest
 
-from backend.a07_reporter.adapter import DRAFT_NOTICE, ISSUE, SYNTHETIC_NOTICE, create_reporter
+from backend.a07_reporter.adapter import DRAFT_NOTICE, ISSUE, SYNTHETIC_NOTICE, create_reporter, items
+from backend.a07_reporter.prompt import prompt_items
 from backend.agent_framework.checks import load_suite, run_checks
 from backend.agent_framework.composition import load_config
-from backend.agent_framework.contracts import ReportRequest
+from backend.agent_framework.contracts import CriteriaValueSource, ReportRequest
 from backend.agent_framework.invocation import invoke_role
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,6 +110,35 @@ def test_history_is_labelled_and_never_used_as_the_current_requirement():
     assert draft.verdict == "fail"
 
 
+@pytest.mark.parametrize('kind', ('current_requirement', 'historical_context', 'approved_exception'))
+def test_supplement_quotes_and_references_reach_report_and_current_requirement_prompt(kind):
+    request = fixture('fail')
+    current = next(e for e in request.evidence.evidence if 'requirement-number' in e.criterion_ids)
+    original = '표시 개수는 발주처 확인 중입니다.'
+    quote = '확정 회신: 딸기는 3개를 표시합니다.'
+    supplement = CriteriaValueSource(record_id='reply-1', purpose='synthetic_test', reference='client-reply-20261105',
+        quote=quote, quote_sha256=sha256(quote.encode()).hexdigest(), submitted_by=request.context.actor_id,
+        submitted_at=datetime(2026, 11, 5, tzinfo=timezone.utc), synthetic=True)
+    amended = current.model_copy(update={'kind': kind, 'value_source': supplement,
+        'evidence_id': current.evidence_id if kind == 'current_requirement' else 'supplement-' + kind,
+        'approval_id': 'approval-1' if kind == 'approved_exception' else None,
+        'applicable_asset_version_id': request.context.asset_version_id if kind == 'approved_exception' else None,
+        'source': current.source.model_copy(update={'quote': original, 'source_hash': sha256(original.encode()).hexdigest()})})
+    evidence = (tuple(amended if e == current else e for e in request.evidence.evidence)
+                if kind == 'current_requirement' else (*request.evidence.evidence, amended))
+    revised = request.model_copy(update={'evidence': request.evidence.model_copy(update={'evidence': evidence})})
+    draft = report(revised)
+    assert original in draft.summary and quote in draft.summary and supplement.reference in draft.summary
+    assert '보완 회신:' in draft.summary and draft.verdict == request.validated.verdict
+    sent, = prompt_items(items(revised))
+    for text in (quote, supplement.reference):
+        assert (text in draft.change_requests[0]) == (kind == 'current_requirement')
+        assert (text in sent.get('standard', '')) == (kind == 'current_requirement')
+    if kind == 'current_requirement':
+        assert original in draft.change_requests[0] and original in sent['standard']
+        assert '보완 회신:' in sent['standard']
+
+
 def test_synthetic_inputs_are_labelled_and_real_inputs_are_not():
     request = fixture("pass")
     assert SYNTHETIC_NOTICE in report(request).summary
@@ -118,7 +150,9 @@ def test_synthetic_inputs_are_labelled_and_real_inputs_are_not():
 
 
 V3_ISSUES = ("unreadable_observation", "unit_mismatch", "observed_absence", "observation_status_unknown",
-             "observation_not_checked", "numeric_expectation_invalid", "model_review")
+             "observation_not_checked", "numeric_expectation_invalid", "model_review",
+             "typed_attribute_review_required", "qualifier_interpretation_required",
+             "normalized_value_review_required", "date_comparison_review_required")
 
 
 def test_issue_codes_added_by_contract_3_read_as_korean_sentences():
@@ -127,3 +161,13 @@ def test_issue_codes_added_by_contract_3_read_as_korean_sentences():
     draft = report(request.model_copy(update={"validated": request.validated.model_copy(update={"items": items})}))
     assert "기타 사유" not in draft.summary
     assert all(ISSUE[code] in draft.summary and ISSUE[code] in draft.change_requests[0] for code in V3_ISSUES)
+
+
+def test_visual_conflict_is_explained_as_inconsistent_presence_not_a_value_comparison():
+    request=fixture('review')
+    item=request.validated.items[0].model_copy(update={'kind':'visual','issues':('verdict_conflict',)})
+    request=request.model_copy(update={'validated':request.validated.model_copy(update={'items':(item,*request.validated.items[1:])})})
+    draft=report(request)
+    message='시각 요소의 존재·부재 보고와 검사 판정이 서로 맞지 않습니다.'
+    assert draft.verdict=='review' and message in draft.summary and message in draft.change_requests[0]
+    assert message in str(prompt_items(items(request)))

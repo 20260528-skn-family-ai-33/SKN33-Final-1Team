@@ -305,6 +305,13 @@ class ReportDraft(Contract):
     evidence_ids: tuple[Identifier, ...] = ()
     change_requests: tuple[str, ...] = ()
     synthetic: bool = False
+    polish_status: Literal['failed','outcome_unknown'] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_polish_shape(self,handler):
+        data=handler(self)
+        if self.polish_status is None:data.pop('polish_status',None)
+        return data
 
 
 class FrameworkError(Contract):
@@ -312,6 +319,21 @@ class FrameworkError(Contract):
     message: str
     retryable: bool = False
     outcome_unknown: bool = False
+
+
+class HumanReview(Contract):
+    criterion_id: Identifier
+    verdict: Literal['pass','fail']
+    observed: str = Field(strict=True,min_length=1,max_length=4000)
+    reference: str = Field(strict=True,min_length=1,max_length=1000)
+    reason: str = Field(strict=True,min_length=1,max_length=4000)
+    checked_asset: bool = Field(strict=True)
+
+    @model_validator(mode='after')
+    def verified_review(self):
+        if not self.checked_asset or not all(v.strip() for v in (self.observed,self.reference,self.reason)):
+            raise ValueError('direct asset inspection and nonblank evidence are required')
+        return self
 
 
 class Approval(Contract):
@@ -322,16 +344,23 @@ class Approval(Contract):
     criterion_ids: tuple[Identifier, ...] = ()
     approved_criteria_version_id: Identifier | None = None
     criteria_sha256: Hash | None = None
+    human_reviews: tuple[HumanReview,...] = Field(default=(),max_length=128)
 
     @model_serializer(mode='wrap')
     def preserve_legacy_target_shape(self,handler):
         data=handler(self)
         if self.approved_criteria_version_id is None:
             data.pop('approved_criteria_version_id',None);data.pop('criteria_sha256',None)
+        if not self.human_reviews:data.pop('human_reviews',None)
         return data
 
     @model_validator(mode="after")
     def scoped_exception(self):
+        if self.human_reviews:
+            if self.decision not in ('approve_final','approve_changes') or not self.reason.strip():
+                raise ValueError('human reviews require a final/change approval and reason')
+            if len({r.criterion_id for r in self.human_reviews})!=len(self.human_reviews):
+                raise ValueError('duplicate human review')
         if (self.approved_criteria_version_id is None)!=(self.criteria_sha256 is None):
             raise ValueError('criteria approval target requires both version and hash')
         if self.approved_criteria_version_id is not None and self.decision!='approve_criteria':
@@ -425,5 +454,5 @@ class RunSnapshot(Contract):
 
 CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion,CriteriaValueSource, ExtractRequest, CriteriaDraft,PDFTextSource,ExtractionTrace,
                   EvidenceBundle, InspectRequest, InspectionResult,
-                  ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, Approval,
+                  ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, HumanReview, Approval,
                   FrameworkError, StepRecord, StepTimeline, RunSnapshot,ApprovedBaseline)

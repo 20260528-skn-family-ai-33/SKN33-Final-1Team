@@ -69,6 +69,23 @@ def test_free_input_is_semantically_structured_by_the_model_without_literal_comp
     assert draft.extraction.response_sha256==sha256(raw.encode()).hexdigest()
 
 
+@pytest.mark.parametrize('value',['10,000','1,000,000','10,000장'])
+def test_number_separators_preserve_literal_source_and_match_a06_syntax(value):
+    from backend.agent_framework.validation import _number
+    unit='장';text='납품 수량: '+value+('' if value.endswith(unit) else unit)
+    _,draft,calls,_=extract({'requirements':[requirement(1,'quantity',value,target='delivery',kind='number',operator='equals',unit=unit)]},text_document(text))
+    assert len(calls)==1 and draft.criteria[0].expected==value
+    assert draft.criteria[0].details.expected_source.quote==value
+    assert _number(value,unit)[1]==unit
+
+
+@pytest.mark.parametrize('value',['0,001','001,000','1,00','1e3'])
+def test_invalid_numeric_separators_remain_rejected(value):
+    with pytest.raises(AdapterFailure) as error:
+        extract({'requirements':[requirement(1,'quantity',value,target='delivery',kind='number',operator='equals')]},text_document('납품 수량: '+value))
+    assert error.value.code=='A02_RESPONSE_INVALID'
+
+
 def test_new_free_form_field_and_visual_meaning_are_preserved_instead_of_rule_reclassification():
     doc=text_document('서체 분위기: 잉크가 번진 듯한 손글씨')
     reply={'requirements':[requirement(1,'typography_style','잉크가 번진 듯한 손글씨',target='poster_visual',kind='visual',operator='present')]}

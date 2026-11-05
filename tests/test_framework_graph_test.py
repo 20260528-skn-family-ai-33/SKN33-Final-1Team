@@ -117,6 +117,18 @@ def test_host_port_must_be_loopback(tmp_path,monkeypatch):
     with pytest.raises(runner.IsolatedTestError,match='NON_LOOPBACK'):databases.port('neo4j',7687)
 
 
+def test_host_tests_keep_loopback_and_pass_the_owned_network_to_container_tests(tmp_path,monkeypatch):
+    from scripts import framework_graph_test_container
+    databases=runner.DisposableDatabases(tmp_path,{});databases.pg_port='12345';databases.graph_port='12346'
+    seen=[]
+    monkeypatch.setattr(framework_graph_test_container,'initialize',lambda env:seen.append(env))
+    databases.initialize()
+    env,=seen
+    assert env['TEST_DB_HOST']=='127.0.0.1' and env['TEST_DB_PORT']=='12345'
+    assert env['AF_TEST_DOCKER_NETWORK']==databases.project+'_default'
+    assert 'AF_TEST_DOCKER_NETWORK' not in databases.environment
+
+
 def test_default_command_runs_pytest_inside_linux_container(monkeypatch):
     events=[];seen=[]
     class Databases:

@@ -64,6 +64,8 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
   if (result.framework?.run_id !== attempt.runId || result.framework?.document_version_id !== attempt.documentVersionId) {
     throw new Error('분석 결과의 문서 버전을 확인하지 못했습니다. 기존 입력은 유지됩니다.');
   }
-  if (!Array.isArray(result.conditions) || !result.conditions.length) throw new Error('PDF에 확정된 검수 요구사항이 없습니다. 기존 입력은 유지됩니다.');
+  if (!Array.isArray(result.conditions) || (!result.conditions.length && !(Array.isArray(result.pending) && result.pending.length))) {
+    throw new Error('PDF에서 검토할 요구사항을 찾지 못했습니다. 기존 입력은 유지됩니다.');
+  }
   return result;
 }

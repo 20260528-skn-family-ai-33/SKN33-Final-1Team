@@ -25,10 +25,15 @@ ROOT=Path(__file__).resolve().parents[2]
 def test_container_api_pdf_storage_and_worker_use_existing_db_and_same_linux_volume(runtime,tmp_path):
     r=runtime;token=uuid4().hex;volume='cc-fw-test-'+token;container='cc-fw-api-'+token
     env=tmp_path/'container.env'
-    env.write_text(''.join(k+'='+str(v)+'\n' for k,v in auth_environment(r.db).items()));env.chmod(0o600)
+    network=os.environ.get('AF_TEST_DOCKER_NETWORK')
+    values=auth_environment(r.db)
+    if network:values.update(DB_HOST='postgres',DB_PORT='5432')
+    env.write_text(''.join(k+'='+str(v)+'\n' for k,v in values.items()));env.chmod(0o600)
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
     launcher=[sys.executable,str(ROOT/'scripts/framework_desktop.py')]
     common=['--image',IMAGE,'--volume',volume]
+    # Linux host-gateway cannot reach a DB port published only on host loopback.
+    if network:common+=['--network',network]
     proc=None
     try:
         initialized=subprocess.run(launcher+['init-pdf',*common],capture_output=True,text=True,timeout=30)
@@ -41,7 +46,9 @@ def test_container_api_pdf_storage_and_worker_use_existing_db_and_same_linux_vol
                 try:
                     if client.get('/api/framework/v1/health').status_code==200:break
                 except httpx.TransportError:pass
-                assert proc.poll() is None,'Container API exited before startup'
+                if proc.poll() is not None:
+                    detail=proc.stderr.read().replace(values['DB_APP_PASSWORD'],'***')
+                    pytest.fail('Container API exited before startup:\n'+detail)
                 assert time.monotonic()<deadline,'Container API startup deadline exceeded'
                 time.sleep(0.2)
             client.cookies.update(dict(r.client.cookies))

@@ -9,6 +9,7 @@ COPY examples/ ./examples/
 COPY tests/ ./tests/
 COPY scripts/ ./scripts/
 COPY docs/poster-baselines/ ./docs/poster-baselines/
+COPY deploy/qwen-a02/worker-config*.example.json ./deploy/qwen-a02/
 ARG TEST_RUN_ID
 LABEL io.creativechecker.environment="test" io.creativechecker.test-run=$TEST_RUN_ID
 ENTRYPOINT ["/app/.venv/bin/python", "-m", "scripts.framework_graph_test_container"]

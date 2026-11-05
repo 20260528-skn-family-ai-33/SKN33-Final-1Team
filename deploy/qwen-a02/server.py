@@ -46,7 +46,6 @@ def command(config):
         '--tensor-parallel-size','1','--max-model-len',str(config['max_model_len']),
         '--max-num-seqs',str(config['max_num_seqs']),'--gpu-memory-utilization',str(config['gpu_memory_utilization']),
         '--language-model-only','--enforce-eager','--reasoning-parser','qwen3',
-        '--enable-auto-tool-choice','--tool-call-parser','qwen3_coder',
         '--default-chat-template-kwargs','{"enable_thinking":false}']
     if config.get('enable_auto_tool_choice',False):
         result+=['--enable-auto-tool-choice','--tool-call-parser',config['tool_call_parser']]

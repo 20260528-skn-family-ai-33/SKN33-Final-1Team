@@ -3,7 +3,6 @@
 No model calls or implicit approvals. File checks happen outside DB transactions;
 project/run locks serialize optimistic version and approval commands.
 """
-from decimal import Decimal,InvalidOperation
 from hashlib import sha256
 from uuid import UUID,uuid5,NAMESPACE_URL
 
@@ -12,13 +11,13 @@ from sqlalchemy.dialects.postgresql import JSONB,TIMESTAMP,UUID as PGUUID
 
 from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
-from .contracts import Approval,Context,Criterion,CriteriaValueSource,DocumentRef,EvidenceBundle,RunSnapshot
+from .contracts import Approval,Context,Criterion,CriteriaValueSource,DocumentRef,EvidenceBundle,RunSnapshot,RequirementDetails
 from .criteria_contracts import (CriteriaApprovalRecord,CriteriaApprovalRequest,CriteriaVersion,
     CriteriaVersionRecord,CriteriaVersionRequest,RecordedCriteriaEdit)
 from .context import freeze_approved_context
 from .documents import versions as documents
 from .postgres import approvals,runs,steps,payload,digest
-from .validation import _criteria,validate_draft,validate_evidence
+from .validation import _criteria,_number,validate_draft,validate_evidence
 
 metadata=MetaData(schema='agent_framework')
 versions=Table('criteria_versions',metadata,*(Column(n,t) for n,t in (
@@ -44,15 +43,16 @@ def approval_blockers(criteria):
         if not criterion.expected.strip():issues.append('missing_expected_value')
         if criterion.kind=='number' and criterion.expected.strip():
             try:
-                if not Decimal(criterion.expected).is_finite():raise InvalidOperation
-            except InvalidOperation:issues.append('numeric_expected_invalid')
+                _number(criterion.expected,criterion.unit)
+            except ValueError:issues.append('numeric_expected_invalid')
         if criterion.human_added and criterion.value_source is None:issues.append('missing_value_source')
+        if criterion.details is not None and criterion.details.target=='unspecified':issues.append('missing_inspection_target')
         if issues:result[criterion.criterion_id]=tuple(issues)
     return result
 
 
 def revise_criteria(draft,parent,request,*,version_id,created_by,created_at):
-    """Pure revision logic. Never changes original draft, text or PDF anchors."""
+    """Pure revision logic. Preserves the original draft and PDF anchors across versions."""
     originals={c.criterion_id:c for c in draft.criteria}
     current={c.criterion_id:c for c in (parent.criteria if parent else draft.criteria)}
     excluded={c.criterion_id:c for c in parent.exclusions} if parent else {}
@@ -71,9 +71,16 @@ def revise_criteria(draft,parent,request,*,version_id,created_by,created_at):
             current.pop(edit.criterion_id);excluded[edit.criterion_id]=change
         else:
             original=originals[edit.criterion_id]
+            previous=current.get(edit.criterion_id,original)
+            details=previous.details
+            scope=({'target':edit.resolution.target,'field':edit.resolution.field} if edit.resolution.target is not None else {})
+            if details is not None or scope:
+                details=RequirementDetails(**((details.model_dump(mode='python') if details is not None else {})|
+                    scope|{'expected_source':None,'normalized_expected':None,'presentation':None}|
+                    ({'qualifiers':()} if edit.resolution.replacement_text is not None else {})))
             current[edit.criterion_id]=Criterion(**(original.model_dump(mode='python')|
-                edit.resolution.model_dump(mode='python')|{'human_added':True,'value_source':source,
-                'details':original.details.model_copy(update={'expected_source':None,'normalized_expected':None,'presentation':None}) if original.details is not None else None}))
+                edit.resolution.model_dump(mode='python',exclude={'target','field','replacement_text'})|
+                {'text':edit.resolution.replacement_text or previous.text,'human_added':True,'value_source':source,'details':details}))
             excluded.pop(edit.criterion_id,None)
     if not current:raise ValueError('cannot exclude all criteria')
     criteria=tuple(current[cid] for cid in originals if cid in current)

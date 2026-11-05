@@ -23,6 +23,7 @@ from .contracts import (
     ReportRequest, RunSnapshot, StepRecord, StepTimeline, ValidatedResult, ValidateRequest,
 )
 from .ports import AdapterFailure, Agents
+from .human_review import validate_human_reviews
 from .invocation import ROLE_CONTRACTS, InvocationFailure, invoke_role
 from .validation import (
     validate_draft,
@@ -272,12 +273,11 @@ class Workflow:
             else:
                 if state.execution_status != 'waiting_review' or state.validated is None or state.report is None:
                     raise ValueError('review approval is not available')
+                validate_human_reviews(state,approval)
                 if decision == 'approve_changes':
                     self._save(record, execution_status='waiting_revision', human_decision='changes_approved',
                                approvals=state.approvals + (approval,))
                 elif decision == 'approve_final':
-                    if state.machine_verdict != 'pass':
-                        raise ValueError('normal final approval requires a pass; exceptions need explicit scope')
                     self._save(record, execution_status='completed', human_decision='final_approved',
                                approvals=state.approvals + (approval,))
                 elif decision == 'approve_exception':

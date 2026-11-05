@@ -93,7 +93,8 @@ def test_worker_config_uses_same_model_and_local_tunnel(config):
 
 def test_shared_text_server_accepts_auto_tool_requests_without_changing_model(config):
     argv=server.command(config)
-    assert '--enable-auto-tool-choice' in argv
+    assert argv.count('--enable-auto-tool-choice')==1
+    assert argv.count('--tool-call-parser')==1
     assert argv[argv.index('--tool-call-parser')+1]=='qwen3_coder'
     assert '--language-model-only' in argv
     assert argv[argv.index('--model')+1]==config['model_directory']

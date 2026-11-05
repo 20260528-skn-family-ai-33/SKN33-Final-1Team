@@ -262,7 +262,10 @@ def materialize_semantics(reply,index,sources,version,*,presentation=False):
         if item.operator not in supported[item.kind]:invalid('A02_RESPONSE_INVALID')
         if item.operator!='manual' and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
         if item.kind in ('text','visual','unsupported') and item.unit is not None:invalid('A02_UNIT_UNGROUNDED')
-        if item.kind=='number' and item.expected and not re.fullmatch(r'[+-]?\d+(?:\.\d+)?',item.expected):invalid('A02_RESPONSE_INVALID')
+        if item.kind=='number' and item.expected:
+            from .validation import _number
+            try:_number(item.expected,item.unit)
+            except ValueError:invalid('A02_RESPONSE_INVALID')
         if item.target=='poster_visual' and item.kind not in ('visual','unsupported'):invalid('A02_RESPONSE_INVALID')
         if item.target=='poster_text' and item.kind not in ('text','unsupported'):invalid('A02_RESPONSE_INVALID')
         if item.field in ('pixel_width','pixel_height','resolution_dpi','file_size_bytes') and item.kind not in ('number','unsupported'):

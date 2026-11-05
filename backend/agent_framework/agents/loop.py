@@ -60,7 +60,7 @@ class OpenAICompatibleChat:
         if not path.endswith('/chat/completions'):
             path += '/chat/completions' if path.endswith('/v1') else '/v1/chat/completions'
         self.url = urlunsplit((parsed.scheme, parsed.netloc, path, '', ''))
-        headers = {'Accept': 'application/json'} | ({'Authorization': f'Bearer {api_key}'} if api_key else {})
+        headers = {'Accept': 'application/json','Accept-Encoding':'identity'} | ({'Authorization': f'Bearer {api_key}'} if api_key else {})
         self._http = httpx.Client(headers=headers, follow_redirects=False, trust_env=False,
                                   timeout=httpx.Timeout(min(timeout, 120), connect=10))
 
@@ -73,14 +73,24 @@ class OpenAICompatibleChat:
         if tools:
             payload.update(tools=tools, tool_choice='auto')
         try:
-            response = self._http.post(self.url, json=payload)
-        except httpx.HTTPError:
+            with self._http.stream('POST',self.url,json=payload) as response:
+                if response.status_code>=500:
+                    raise AdapterFailure('MODEL_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True)
+                if response.status_code!=200:
+                    raise AdapterFailure('MODEL_REQUEST_FAILED','The model endpoint rejected the request.',retryable=response.status_code==429)
+                if response.headers.get('content-encoding','identity').lower()!='identity':
+                    raise AdapterFailure('MODEL_INVALID_RESPONSE','Compressed model responses are not accepted.')
+                content=bytearray()
+                for chunk in response.iter_bytes():
+                    if len(content)+len(chunk)>MAX_RESPONSE_BYTES:
+                        raise AdapterFailure('MODEL_REQUEST_FAILED','The model response exceeds the size limit.')
+                    content.extend(chunk)
+        except (httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout,httpx.UnsupportedProtocol):
             raise AdapterFailure('MODEL_UNAVAILABLE', 'The model endpoint did not respond.', retryable=True) from None
-        if response.status_code != 200 or len(response.content) > MAX_RESPONSE_BYTES:
-            raise AdapterFailure('MODEL_REQUEST_FAILED', 'The model endpoint rejected the request.',
-                                 retryable=response.status_code == 429 or response.status_code >= 500)
+        except httpx.HTTPError:
+            raise AdapterFailure('MODEL_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True) from None
         try:
-            message = response.json()['choices'][0]['message']
+            message = json.loads(content)['choices'][0]['message']
         except (ValueError, KeyError, IndexError, TypeError):
             message = None
         if not isinstance(message, dict):

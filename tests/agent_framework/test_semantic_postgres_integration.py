@@ -173,6 +173,37 @@ def test_new_text_version_invalidates_approval_of_a_stale_document(semantic):
     assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_DOCUMENT_STALE'
 
 
+def test_pending_scope_amendment_roundtrips_with_approval_evidence(semantic):
+    from tests.agent_framework.test_criteria_review import edit
+    r=semantic;record=register(r,text='행사명: 가을 축제\n관람시간은 확인 중입니다.').json()
+    rid,saved,_,_=run_extraction(r,record,{'requirements':[requirement(1,'event_name','가을 축제')]})
+    route='/api/framework/v1/runs/'+rid;draft=saved['criteria'];pending=draft['extraction']['unresolved_criterion_ids'][0]
+    amendment=edit(pending,expected='10:00~18:00')
+    body={'parent_version_id':None,'expected_base_sha256':digest(draft),'purpose':'synthetic_test','edits':[amendment]}
+    # Partial classifications are rejected at the API boundary.
+    amendment['resolution']['target']='poster_text'
+    assert r.client.post(route+'/criteria-versions',json=body,headers={**csrf(r.client),'Idempotency-Key':str(uuid4())}).status_code==422
+    amendment['resolution']['field']='viewing_hours'
+    headers={**csrf(r.client),'Idempotency-Key':str(uuid4())}
+    response=r.client.post(route+'/criteria-versions',json=body,headers=headers)
+    assert response.status_code==201,response.text
+    first=response.json();assert not first['approval_blockers']
+    assert r.client.post(route+'/criteria-versions',json=body,headers=headers).json()==first
+    assert r.client.get(route+'/criteria-review').json()['latest_version']==first
+    body.update(parent_version_id=first['version']['criteria_version_id'],expected_base_sha256=first['sha256'],
+        edits=[edit(pending,expected='09:00~17:00')])
+    response=r.client.post(route+'/criteria-versions',json=body,headers={**csrf(r.client),'Idempotency-Key':str(uuid4())})
+    assert response.status_code==201,response.text
+    second=response.json();criterion=next(c for c in second['version']['criteria'] if c['criterion_id']==pending)
+    assert criterion['details']['target']=='poster_text' and criterion['details']['field']=='viewing_hours'
+    assert criterion['source']==next(c['source'] for c in draft['criteria'] if c['criterion_id']==pending)
+    approved=approve(r,rid,second);assert approved.status_code==200,approved.text
+    evidence=next(e for e in approved.json()['evidence']['evidence'] if pending in e['criterion_ids'])
+    assert evidence['value_source']==criterion['value_source']
+    assert r.client.get(route).json()['criteria']==draft
+    assert r.client.get(route+'/criteria-approval').json()==approved.json()
+
+
 def test_semantic_pdf_uses_same_worker_and_keeps_missing_condition_unapproved(semantic):
     r=semantic;pdf=next((PDFS/'EXH-NEW004').glob('*.pdf'))
     response=upload(r,pdf.read_bytes(),filename=pdf.name);assert response.status_code==201,response.text
@@ -185,6 +216,28 @@ def test_semantic_pdf_uses_same_worker_and_keeps_missing_condition_unapproved(se
     version=create_version(r,rid,draft);assert version['approval_blockers']
     response=approve(r,rid,version)
     assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_UNRESOLVED'
+
+
+def test_replacement_requirement_is_a_new_approved_version_with_preserved_history(semantic):
+    from tests.agent_framework.test_criteria_review import edit
+    r=semantic;record=register(r,text='제목: 밤의 도서관\n허용 범위: 공백 차이를 허용한다.').json()
+    rid,saved,_,_=run_extraction(r,record,{'requirements':[requirement(1,'title_phrase','밤의 도서관')]})
+    route='/api/framework/v1/runs/'+rid;first=create_version(r,rid,saved['criteria']);old=first['version']['criteria'][0]
+    assert old['details']['qualifiers']
+    change=edit(old['criterion_id'],expected='밤의 도서관');change['resolution'].update(
+        target='poster_text',field='title_phrase',replacement_text='제목은 밤의 도서관으로 표기한다.')
+    change['source']['quote']='담당자 회신: 제목은 밤의 도서관으로 표기한다.'
+    body={'parent_version_id':first['version']['criteria_version_id'],'expected_base_sha256':first['sha256'],
+        'purpose':'synthetic_test','edits':[change]}
+    response=r.client.post(route+'/criteria-versions',json=body,headers={**csrf(r.client),'Idempotency-Key':str(uuid4())})
+    assert response.status_code==201,response.text
+    second=response.json();current=second['version']['criteria'][0]
+    assert current['text']==change['resolution']['replacement_text'] and not current['details']['qualifiers']
+    assert current['source']==old['source'] and current['value_source']['quote']==change['source']['quote']
+    approved=approve(r,rid,second);assert approved.status_code==200,approved.text
+    assert approved.json()['criteria']==second
+    assert r.client.get(route+'/criteria-versions/'+first['version']['criteria_version_id']).json()==first
+    assert r.client.get(route).json()['criteria']==saved['criteria']
 
 
 def test_model_paragraphs_persist_and_project_to_frontend_without_approval(semantic):

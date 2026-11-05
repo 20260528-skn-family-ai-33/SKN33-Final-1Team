@@ -104,8 +104,8 @@ def test_missing_status_is_unknown_not_an_inferred_observation():
 @pytest.mark.parametrize("kind,operator,expected,model_verdict,verdict", [
     ("text", "contains", "Hello", "fail", "fail"),
     ("text", "equals", "Hello", "pass", "review"),
-    ("visual", "present", "", "fail", "fail"),
-    ("visual", "present", "", "pass", "review"),
+    ("visual", "present", "Logo", "fail", "fail"),
+    ("visual", "present", "Logo", "pass", "review"),
     ("number", "equals", "0", "fail", "review"),
 ])
 def test_explicit_absence_is_not_unreadability_or_numeric_zero(kind, operator, expected, model_verdict, verdict):
@@ -144,6 +144,15 @@ def test_unsupported_visual_measurements_require_review(kind, operator):
     result = validate(req)
     assert result.verdict == "review"
     assert "unsupported_criterion" in result.items[0].issues
+
+
+def test_blank_visual_expectation_is_unresolved_at_both_approval_and_a06():
+    from backend.agent_framework.criteria_review import approval_blockers
+    req=request();req=changed(req,['criteria',0,'kind'],'visual')
+    req=changed(req,['criteria',0,'operator'],'present');req=changed(req,['criteria',0,'expected'],'')
+    assert validate(req).verdict=='review'
+    assert 'missing_expected_value' in validate(req).items[0].issues
+    assert 'missing_expected_value' in approval_blockers(req.criteria)[req.criteria[0].criterion_id]
 
 
 @pytest.mark.parametrize("required,uncertain,verdict", [(False, False, "pass"), (False, True, "pass"),

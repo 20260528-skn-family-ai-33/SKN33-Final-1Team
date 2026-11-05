@@ -260,7 +260,8 @@ class ReferenceValidator:
             issues = []
             if criterion.details is not None:
                 if criterion.details.target!='poster_text':issues.append('typed_attribute_review_required')
-                if criterion.details.qualifiers:issues.append('qualifier_interpretation_required')
+                if criterion.details.qualifiers or criterion.human_added and re.search(r'허용|예외|또는|줄바꿈|공백',criterion.text):
+                    issues.append('qualifier_interpretation_required')
                 if criterion.details.normalized_expected is not None:issues.append('normalized_value_review_required')
                 if criterion.details.field in {'start_date','end_date','event_date','event_period'}:
                     issues.append('date_comparison_review_required')
@@ -271,7 +272,7 @@ class ReferenceValidator:
                          "visual": {"present"}}
             if criterion.operator not in supported.get(criterion.kind, set()):
                 issues.append("unsupported_criterion")
-            if criterion.kind in {"text", "number"} and not criterion.expected.strip():
+            if not criterion.expected.strip():
                 issues.append("missing_expected_value")
             if not any(e.kind == "current_requirement" and criterion.criterion_id in e.criterion_ids
                        for e in evidence.values()):

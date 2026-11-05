@@ -134,6 +134,22 @@
       "default": false,
       "title": "Synthetic",
       "type": "boolean"
+    },
+    "polish_status": {
+      "anyOf": [
+        {
+          "enum": [
+            "failed",
+            "outcome_unknown"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Polish Status"
     }
   },
   "required": [

@@ -166,7 +166,9 @@ export function ReviewProvider({ children }) {
       dispatch({ type: 'document', ...merged, documentRun: { id: result.framework.run_id,
         paragraphs: [...new Set(result.conditions.map(item => item.text.trim()))].join('\n\n'), filename: file.name } });
       setDocumentProgress(previous => ({ ...previous, percent: 100, stage: 'completed', message: `${merged.addedCount}개 조건을 입력에 반영했습니다.` }));
-      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${merged.addedCount}개 요구사항 문단을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
+      const notice = !result.conditions.length ? `미확정 항목 ${result.pending.length}개가 있습니다. PDF 검수 기준에서 원문을 확인해 주세요.`
+        : `${merged.addedCount}개 요구사항 문단을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.`;
+      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${notice}${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentNotice('');

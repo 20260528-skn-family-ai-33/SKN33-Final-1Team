@@ -182,6 +182,33 @@ def test_two_workers_claim_once_and_late_tokens_cannot_write(runtime):
     with pytest.raises(AuthError):r.queue.heartbeat(live[0])
 
 
+@pytest.mark.parametrize('verdict,decision,status',[('pass','approve_final','completed'),('fail','approve_changes','waiting_revision')])
+def test_human_review_is_authorized_persisted_and_replayed_without_changing_machine_result(runtime,verdict,decision,status):
+    from tests.agent_framework.test_human_review import example,human
+    r=runtime;agents=example().agents();start(r);work(r,agents)
+    assert approve(r,'approve_criteria').status_code==200;work(r,agents)
+    before=r.store.get(r.subject,r.context.run_id)
+    assert before.machine_verdict=='review' and before.report is not None
+    assert approve(r,'approve_final').status_code==409
+    bad={'context':payload(r.context),'actor_id':r.context.actor_id,'decision':decision,'reason':'test',
+        'human_reviews':[human(verdict,checked_asset=False)]}
+    assert r.client.post(PREFIX+'/'+r.context.run_id+'/approvals',json=bad,headers=csrf(r.client)).status_code==422
+    review=human(verdict);response=approve(r,decision,reason='담당자 직접 확인',human_reviews=[review])
+    assert response.status_code==200,response.text
+    assert response.json()['execution_status']==status and response.json()['machine_verdict']=='review'
+    assert approve(r,decision,reason='담당자 직접 확인',human_reviews=[review]).json()==response.json()
+    assert approve(r,decision,reason='changed',human_reviews=[review]).status_code==409
+    app=create_postgres_app(r.settings,r.configuration,engine=r.db.engine)
+    with TestClient(app,base_url='http://localhost:8000') as restarted:
+        restarted.cookies.update(r.client.cookies)
+        current=restarted.get(PREFIX+'/'+r.context.run_id).json()
+        assert current==response.json() and current['validated']==payload(before.validated) and current['report']==payload(before.report)
+        history=restarted.get(PREFIX+'/'+r.context.run_id+'/approvals').json()
+        recorded=history[-1]
+        assert recorded['approved_at'] and recorded['approval']['human_reviews'][0]['verdict']==verdict
+        assert recorded['approval']['context']==payload(r.context) and recorded['approval']['actor_id']==r.context.actor_id
+
+
 def test_expired_before_dispatch_is_safe_but_after_dispatch_is_unknown(runtime):
     r=runtime;start(r)
     first=r.queue.claim_next();expire(r,first)
