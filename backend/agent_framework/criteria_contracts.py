@@ -1,9 +1,9 @@
 """Human review commands are separate from untrusted model responses."""
 from typing import Annotated,Literal
 from uuid import UUID
-from pydantic import AwareDatetime,Field,model_validator
+from pydantic import AwareDatetime,Field,model_serializer,model_validator
 
-from .contracts import (Approval,Context,Contract,Criterion,CriteriaValueSource,EvidenceBundle,Hash,Identifier)
+from .contracts import (Approval,Context,Contract,Criterion,CriteriaValueSource,EvidenceBundle,Hash,Identifier,RequirementDetails)
 
 Purpose=Literal['human_review','synthetic_test']
 Text=Annotated[str,Field(strict=True,min_length=1,max_length=4000)]
@@ -25,6 +25,32 @@ class CriterionResolution(Contract):
     expected: str = Field(strict=True,max_length=4000)
     unit: str | None = Field(default=None,strict=True,max_length=80)
     required: bool = Field(strict=True)
+    target: Literal['poster_text','poster_visual','file_metadata','delivery','unspecified'] | None = None
+    field: str | None = Field(default=None,pattern=r'^[a-z][a-z0-9_]{0,63}$')
+    replacement_text: str | None = Field(default=None,strict=True,min_length=1,max_length=4000)
+
+    @model_validator(mode='after')
+    def consistent_scope(self):
+        if self.replacement_text is not None:
+            if not self.replacement_text.strip() or self.target is None:
+                raise ValueError('a replacement requirement needs text and inspection scope')
+            if self.expected and self.expected not in self.replacement_text or self.unit and self.unit not in self.replacement_text:
+                raise ValueError('replacement requirement must include expected value and unit')
+        if (self.target is None)!=(self.field is None):raise ValueError('target and field must be supplied together')
+        if self.target is not None:
+            RequirementDetails(target=self.target,field=self.field)
+            kinds={'poster_text':{'text','number','unsupported'},'poster_visual':{'visual','unsupported'},
+                'file_metadata':{'text','number','unsupported'},'delivery':{'text','number','unsupported'},'unspecified':{'unsupported'}}
+            if self.kind not in kinds[self.target]:raise ValueError('kind does not match inspection target')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_scope(self,handler):
+        data=handler(self)
+        if self.target is None:
+            data.pop('target',None);data.pop('field',None)
+        if self.replacement_text is None:data.pop('replacement_text',None)
+        return data
 
 
 class CriteriaEdit(Contract):
@@ -40,6 +66,8 @@ class CriteriaEdit(Contract):
         if (self.action=='amend')!=(self.resolution is not None):raise ValueError('only amendments require a resolution')
         if self.resolution is not None:
             r=self.resolution
+            if r.replacement_text is not None and r.replacement_text not in self.source.quote:
+                raise ValueError('replacement requirement must occur in supplement')
             if r.expected and r.expected not in self.source.quote:raise ValueError('expected must occur in supplement')
             if r.unit is not None and (not r.unit.strip() or r.unit not in self.source.quote):raise ValueError('unit must occur in supplement')
         return self

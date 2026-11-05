@@ -80,6 +80,25 @@ def test_approval_blocks_unresolved_or_unsupported_conditions(kind,operator,expe
     assert issue in approval_blockers((c,))[c.criterion_id]
 
 
+@pytest.mark.parametrize('expected,unit,observed,valid',(
+    ('10,000',None,'10000',True),('10,000원','원','10000',True),
+    ('10,000원',None,'10000원',True),('-1.50','kg','-1.5',True),
+    ('1e3',None,'1000',False),('1e-3',None,'0.001',False),
+    ('1_000',None,'1000',False),('0,001',None,'1',False),
+    ('001,000',None,'1000',False),('3kg','개','3',False),
+    ('3',' ','3',False),('NaN',None,'3',False),('Infinity',None,'3',False)))
+def test_approval_and_a06_share_numeric_syntax_and_unit_rules(expected,unit,observed,valid):
+    from tests.agent_framework.test_a06_policy import number_request,validate
+    request=number_request(expected,unit,observed,unit)
+    blockers=approval_blockers(request.criteria)
+    item,=validate(request).items
+    if valid:
+        assert blockers=={} and item.verdict=='pass'
+    else:
+        assert blockers=={request.criteria[0].criterion_id:('numeric_expected_invalid',)}
+        assert item.verdict=='review' and 'numeric_expectation_invalid' in item.issues
+
+
 @pytest.mark.parametrize('mutation',('unknown','all_excluded','duplicate','ungrounded','blank_reference','spoof_actor'))
 def test_invalid_edits_cannot_hide_scope_or_attribute_false_provenance(mutation):
     source=draft();value=edit(source.criteria[0].criterion_id)
@@ -123,3 +142,103 @@ def test_legacy_workflow_cannot_bypass_version_review_by_supplying_target_fields
     with pytest.raises(ValueError,match='immutable criteria review'):
         flow.approve(context.run_id,Approval(context=context,actor_id=context.actor_id,decision='approve_criteria',
             approved_criteria_version_id=str(uuid4()),criteria_sha256='a'*64))
+
+
+@pytest.mark.parametrize('with_scope',[False,True])
+def test_retained_unresolved_source_can_be_classified_and_checked_by_a06(with_scope):
+    from tests.agent_framework.test_a02_semantic import extract,text_document,requirement
+    from backend.agent_framework.adapters.synthetic import sample_inputs
+    from backend.agent_framework.contracts import ValidateRequest,InspectionResult,Observation,ImageEvidence
+    from backend.agent_framework.invocation import invoke_role
+    from backend.agent_framework.validation import ReferenceValidator
+    _,source,_,_=extract({'requirements':[requirement(1,'event_name','가을 축제')]},
+        text_document('행사명: 가을 축제\n관람시간은 확인 중입니다.'))
+    before=source.model_dump_json();pending=source.extraction.unresolved_criterion_ids[0]
+    amendment=edit(pending,expected='10:00~18:00')
+    if with_scope:amendment['resolution'].update(target='poster_text',field='viewing_hours')
+    edits=[edit(c.criterion_id,action='exclude') for c in source.criteria if c.criterion_id!=pending]+[amendment]
+    request=CriteriaVersionRequest(parent_version_id=None,expected_base_sha256=digest(source),purpose='synthetic_test',edits=edits)
+    revised=revise_criteria(source,None,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert source.model_dump_json()==before
+    criterion,=revised.criteria
+    assert criterion.source==next(c.source for c in source.criteria if c.criterion_id==pending)
+    if not with_scope:
+        assert approval_blockers(revised.criteria)=={pending:('missing_inspection_target',)}
+        return
+    assert not approval_blockers(revised.criteria)
+    # A later value-only amendment must retain the human-selected classification.
+    request=CriteriaVersionRequest(parent_version_id=revised.criteria_version_id,expected_base_sha256=digest(revised),
+        purpose='synthetic_test',edits=[edit(pending,expected='09:00~17:00')])
+    later=revise_criteria(source,revised,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert later.criteria[0].details.target=='poster_text' and later.criteria[0].details.field=='viewing_hours'
+    assert revised.criteria[0].expected=='10:00~18:00'
+    _,_,asset=sample_inputs();context=later.context.model_copy(update={'asset_version_id':asset.asset_version_id})
+    evidence=freeze_approved_context(context,later.criteria,synthetic=True)
+    observation=Observation(criterion_id=pending,observed='09:00~17:00',observation_status='observed',verdict='pass',
+        image=ImageEvidence(asset_version_id=asset.asset_version_id,asset_hash=asset.sha256),
+        evidence_ids=tuple(e.evidence_id for e in evidence.evidence))
+    result=invoke_role('A06',ReferenceValidator(),ValidateRequest(context=context,criteria=later.criteria,asset=asset,
+        evidence=evidence,inspection=InspectionResult(context=context,observations=(observation,),synthetic=True)))
+    assert result.verdict==result.items[0].verdict=='pass'
+
+
+@pytest.mark.parametrize('scope',[{'target':'poster_text'},{'field':'viewing_hours'},
+    {'target':'file_metadata','field':'viewing_hours'},{'target':'poster_visual','field':'logo'},
+    {'target':'poster_text','field':'bad field'}])
+def test_amendment_rejects_partial_or_inconsistent_inspection_scope(scope):
+    from backend.agent_framework.criteria_contracts import CriterionResolution
+    with pytest.raises(ValidationError):
+        CriterionResolution.model_validate(edit('c')['resolution']|scope)
+
+
+def test_old_amendment_payload_keeps_its_idempotency_fingerprint():
+    from backend.agent_framework.criteria_contracts import CriterionResolution
+    old={'contract_version':'3.0.0',**edit('c')['resolution']}
+    assert CriterionResolution.model_validate(old).model_dump(mode='json')==old
+
+
+@pytest.mark.parametrize('replace',[False,True])
+def test_only_explicit_grounded_replacement_changes_original_allowances(replace):
+    from tests.agent_framework.test_a02_semantic import extract,text_document,requirement
+    _,source,_,_=extract({'requirements':[requirement(1,'title_phrase','밤의 도서관')]},
+        text_document('제목: 밤의 도서관\n허용 범위: 공백 차이를 허용한다.'))
+    before=source.model_dump_json();c=source.criteria[0]
+    value=edit(c.criterion_id,expected='밤의 도서관');value['resolution'].update(target='poster_text',field='title_phrase')
+    if replace:
+        value['resolution']['replacement_text']='제목은 밤의 도서관으로 표기한다.'
+        value['source']['quote']='담당자 회신: 제목은 밤의 도서관으로 표기한다.'
+    request=CriteriaVersionRequest(parent_version_id=None,expected_base_sha256=digest(source),purpose='synthetic_test',edits=[value])
+    revised=revise_criteria(source,None,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    current=revised.criteria[0]
+    assert source.model_dump_json()==before and current.source==c.source
+    assert bool(current.details.qualifiers) is not replace
+    assert current.text==(value['resolution']['replacement_text'] if replace else c.text)
+    assert revised.changes[0].source.quote==value['source']['quote']
+    again=CriteriaVersionRequest(parent_version_id=revised.criteria_version_id,expected_base_sha256=digest(revised),
+        purpose='synthetic_test',edits=[edit(c.criterion_id,expected='밤의 도서관')])
+    later=revise_criteria(source,revised,again,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert later.criteria[0].text==current.text and later.criteria[0].details.qualifiers==current.details.qualifiers
+    from backend.agent_framework.adapters.synthetic import sample_inputs
+    from backend.agent_framework.contracts import ValidateRequest,InspectionResult,Observation,ImageEvidence
+    from backend.agent_framework.validation import ReferenceValidator
+    _,_,asset=sample_inputs();context=revised.context.model_copy(update={'asset_version_id':asset.asset_version_id})
+    evidence=freeze_approved_context(context,revised.criteria,synthetic=True)
+    observations=tuple(Observation(criterion_id=c.criterion_id,observed=c.expected,observation_status='observed',verdict='pass',
+        image=ImageEvidence(asset_version_id=asset.asset_version_id,asset_hash=asset.sha256),
+        evidence_ids=tuple(e.evidence_id for e in evidence.evidence if c.criterion_id in e.criterion_ids)) for c in revised.criteria)
+    request=ValidateRequest(context=context,criteria=revised.criteria,asset=asset,evidence=evidence,
+        inspection=InspectionResult(context=context,observations=observations,synthetic=True))
+    result=ReferenceValidator().validate(request)
+    assert result.items[0].verdict==('pass' if replace else 'review')
+    if replace:
+        qualified=current.model_copy(update={'text':'제목은 밤의 도서관으로 표기한다. 공백 차이는 허용한다.'})
+        qualified_request=request.model_copy(update={'criteria':(qualified,*revised.criteria[1:])})
+        assert 'qualifier_interpretation_required' in ReferenceValidator().validate(qualified_request).items[0].issues
+
+
+@pytest.mark.parametrize('replacement,quote',[('다른 제목','담당자 회신'),('새 조건','새 조건 밤의 도서관'),(' ','밤의 도서관')])
+def test_replacement_cannot_drop_the_expected_value_or_forge_a_reply(replacement,quote):
+    from backend.agent_framework.criteria_contracts import CriteriaEdit
+    value=edit('c',expected='밤의 도서관');value['source']['quote']=quote
+    value['resolution'].update(target='poster_text',field='title_phrase',replacement_text=replacement)
+    with pytest.raises(ValidationError):CriteriaEdit.model_validate(value)

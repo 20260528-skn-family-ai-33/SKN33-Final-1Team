@@ -2,9 +2,9 @@
 
 - 서버는 팀 공용 Qwen3.5-4B를 쓴다(A07이 따로 띄우지 않는다). create_reporter()는 팀 공용 설정 CC_QWEN_BASE_URL이
   있을 때만 붙인다.
-- 실패(연결·거절·잘린 응답·형식·check 위반)는 예외로 올리지 않고 None을 돌려준다. 보고기는 규칙 문장을 쓴다.
+- 연결 실패·거절·잘린 응답·형식·check 위반은 None을 돌려준다. 보고기는 규칙 문장을 쓴다.
   이유는 last_problems에 남긴다.
-- 추론은 부작용이 없어 연결 오류·429·5xx만 한 번 다시 보낸다. 형식이 틀린 응답은 다시 묻지 않는다.
+- 배치마다 한 번만 전송한다. 전송 후 통신 오류는 결과 불명으로 올리고 자동 재호출하지 않는다.
 """
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ import httpx
 from backend.a07_reporter.adapter import ItemReport
 from backend.a07_reporter.prompt import MAX_ITEMS_PER_CALL, MODEL, build_payload, check, prompt_items
 from backend.agent_framework.ports import AdapterFailure
+
+MAX_RESPONSE_BYTES = 1024 * 1024
 
 
 def _endpoint(base_url) -> str:
@@ -35,7 +37,7 @@ class QwenPolisher:
     def __init__(self, base_url: str, *, api_key: str | None = None, model: str = MODEL, timeout: float = 60.0,
                  example: bool = False, transport: httpx.BaseTransport | None = None):
         self.url, self.model, self.example = _endpoint(base_url), model, example
-        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        headers = {'Accept-Encoding':'identity',**({"Authorization": f"Bearer {api_key}"} if api_key else {})}
         self.http = httpx.Client(headers=headers, timeout=httpx.Timeout(timeout, connect=10.0), transport=transport,
                                  trust_env=False, follow_redirects=False)
         self.calls = 0
@@ -45,20 +47,31 @@ class QwenPolisher:
         self.http.close()
 
     def _post(self, payload: dict) -> dict | None:
-        for _ in range(2):
-            self.calls += 1
-            try:
-                response = self.http.post(self.url, json=payload)
-            except httpx.TransportError:
-                continue
-            if response.status_code == 429 or response.status_code >= 500:
-                continue
-            if response.status_code != 200:
-                self.last_problems = (f"Qwen 서버가 요청을 거절했습니다(HTTP {response.status_code}).",)
-                return None
-            return response.json()
-        self.last_problems = ("Qwen 서버에 연결하지 못했습니다.",)
-        return None
+        self.calls += 1
+        try:
+            with self.http.stream('POST',self.url,json=payload) as response:
+                if response.status_code>=500:
+                    self.last_problems=(f'Qwen 호출 결과를 알 수 없습니다(HTTP {response.status_code}).',)
+                    raise AdapterFailure('MODEL_OUTCOME_UNKNOWN',self.last_problems[0],outcome_unknown=True)
+                if response.status_code!=200:
+                    self.last_problems=(f'Qwen 서버가 요청을 거절했습니다(HTTP {response.status_code}).',)
+                    return None
+                if response.headers.get('content-encoding','identity').lower()!='identity':
+                    self.last_problems=('압축된 Qwen 응답은 허용하지 않습니다.',)
+                    return None
+                content=bytearray()
+                for chunk in response.iter_bytes():
+                    if len(content)+len(chunk)>MAX_RESPONSE_BYTES:
+                        self.last_problems=('Qwen 응답이 크기 제한을 넘었습니다.',)
+                        return None
+                    content.extend(chunk)
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout, httpx.UnsupportedProtocol):
+            self.last_problems = ("Qwen 서버에 연결하지 못했습니다.",)
+            return None
+        except httpx.TransportError:
+            self.last_problems = ("Qwen 호출 결과를 알 수 없습니다. 자동으로 다시 호출하지 않습니다.",)
+            raise AdapterFailure("MODEL_OUTCOME_UNKNOWN", self.last_problems[0], outcome_unknown=True) from None
+        return json.loads(content)
 
     def polish(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]] | None:
         self.last_problems = ()

@@ -106,6 +106,52 @@
         "required": {
           "title": "Required",
           "type": "boolean"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "enum": [
+                "poster_text",
+                "poster_visual",
+                "file_metadata",
+                "delivery",
+                "unspecified"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "replacement_text": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Replacement Text"
         }
       },
       "required": [

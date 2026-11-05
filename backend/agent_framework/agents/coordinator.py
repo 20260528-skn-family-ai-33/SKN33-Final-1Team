@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 
 from ..ports import AdapterFailure
+from ..human_review import can_review
 from .contracts import CoordinationDraft, CoordinationNote
 from .loop import ChatModel, ToolClient, ToolSpec, bound, read_fact, run_agent
 
@@ -15,6 +16,7 @@ ACTIONS = {
     'wait_for_worker': 'worker가 역할을 실행 중이거나 대기 중이다.',
     'request_criteria_approval': 'A02 조건 초안을 사람이 확정해야 한다.',
     'request_final_approval': '기계 판정 pass, 최종 승인을 요청한다.',
+    'request_human_review': '보류 항목을 사람이 직접 확인하고 판단·관측 내용·근거를 기록해야 한다.',
     'request_change_approval': '수정 요청 승인을 요청한다.',
     'request_exception_approval': '확정 fail에 대한 예외 승인 검토를 요청한다.',
     'submit_poster': '승인한 기준으로 검수할 포스터를 등록한다.',
@@ -50,6 +52,8 @@ def allowed_actions(facts: dict) -> set[str]:
     if status != 'waiting_review':
         return _STATES[status][1]
     actions = set(_REVIEW_ALLOWED.get(facts['machine_verdict'] or '', ()))
+    if any(item['verdict']=='review' and can_review(item['issues']) for item in facts['validated_items']):
+        actions.add('request_human_review')
     # Mirrors Workflow._exception_scope: only plain value mismatches can be excepted.
     if any(item['verdict'] == 'review' or set(item['issues']) - {'value_mismatch'} for item in facts['validated_items']):
         actions.discard('request_exception_approval')

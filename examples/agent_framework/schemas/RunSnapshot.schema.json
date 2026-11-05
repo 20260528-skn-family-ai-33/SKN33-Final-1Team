@@ -72,6 +72,15 @@
           ],
           "default": null,
           "title": "Criteria Sha256"
+        },
+        "human_reviews": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/HumanReview"
+          },
+          "maxItems": 128,
+          "title": "Human Reviews",
+          "type": "array"
         }
       },
       "required": [
@@ -764,6 +773,64 @@
       "title": "FrameworkError",
       "type": "object"
     },
+    "HumanReview": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "criterion_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "observed": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Observed",
+          "type": "string"
+        },
+        "reference": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "checked_asset": {
+          "title": "Checked Asset",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "criterion_id",
+        "verdict",
+        "observed",
+        "reference",
+        "reason",
+        "checked_asset"
+      ],
+      "title": "HumanReview",
+      "type": "object"
+    },
     "ImageEvidence": {
       "additionalProperties": false,
       "properties": {
@@ -1034,6 +1101,22 @@
           "default": false,
           "title": "Synthetic",
           "type": "boolean"
+        },
+        "polish_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "failed",
+                "outcome_unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Polish Status"
         }
       },
       "required": [

@@ -12,6 +12,9 @@
 !docs/
 !docs/poster-baselines/
 !docs/poster-baselines/**
+!deploy/
+!deploy/qwen-a02/
+!deploy/qwen-a02/worker-config*.example.json
 **/__pycache__/
 **/*.pyc
 **/.venv*/

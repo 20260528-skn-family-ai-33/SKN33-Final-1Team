@@ -18,7 +18,7 @@ from typing import Protocol
 
 from backend.a07_reporter.details import detail_lines, facts
 from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest, ValidatedItem
-from backend.agent_framework.ports import Reporter
+from backend.agent_framework.ports import AdapterFailure, Reporter
 
 VERDICT = {"pass": "통과", "fail": "불충족", "review": "확인 필요"}
 ORDER = {"fail": 0, "review": 1, "pass": 2}
@@ -41,6 +41,10 @@ ISSUE = {   # backend/agent_framework/validation.py ReferenceValidator의 사유
     "observation_not_checked": "이 항목은 검사하지 않았습니다.",
     "numeric_expectation_invalid": "기준 값을 숫자로 읽을 수 없어 비교할 수 없습니다.",
     "model_review": "검사 모델이 사람 확인이 필요하다고 표시했습니다.",
+    "typed_attribute_review_required": "이 시각 요소·파일 정보·납품 조건은 담당자의 직접 확인이 필요합니다.",
+    "qualifier_interpretation_required": "허용 범위나 추가 조건의 적용 여부를 담당자가 확인해야 합니다.",
+    "normalized_value_review_required": "변환된 값이 원문 조건과 같은 뜻인지 담당자가 확인해야 합니다.",
+    "date_comparison_review_required": "날짜의 연도·기간·표기가 기준과 일치하는지 담당자가 확인해야 합니다.",
 }
 EVIDENCE_STATUS = {
     "empty": "이 실행에는 기준 근거가 없습니다.",
@@ -82,7 +86,9 @@ def items(request: ReportRequest) -> tuple[ItemReport, ...]:
         for criterion_id in evidence.criterion_ids:
             sources.setdefault(criterion_id, []).append(evidence)
     ordered = sorted(request.validated.items, key=lambda item: ORDER[item.verdict])
-    return tuple(ItemReport(item.criterion_id, item.verdict, tuple(reason(issue) for issue in item.issues),
+    return tuple(ItemReport(item.criterion_id, item.verdict, tuple(
+                            '시각 요소의 존재·부재 보고와 검사 판정이 서로 맞지 않습니다.'
+                            if item.kind=='visual' and issue=='verdict_conflict' else reason(issue) for issue in item.issues),
                             tuple(sources.get(item.criterion_id, ())), _facts(item), item.criterion_text)
                  for item in ordered)
 
@@ -103,6 +109,11 @@ def _source_line(evidence: Evidence) -> str:
     return f'{EVIDENCE_KIND[evidence.kind]}: "{source.quote}" ({source.document_version_id} {source.page}쪽)'
 
 
+def supplement_lines(sources: tuple[Evidence, ...]) -> list[str]:
+    return [f'{EVIDENCE_KIND[e.kind]} 보완 회신: "{e.value_source.quote}" (출처: {e.value_source.reference})'
+            for e in sources if e.value_source is not None]
+
+
 def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: bool,
             sentences: dict[str, tuple[str, str]] | None = None) -> str:
     counts = Counter(report.verdict for report in reports)
@@ -117,6 +128,7 @@ def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: 
         lines.append(f"[{VERDICT[report.verdict]}] {report.criterion_id}")
         lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다.",
                                                                      *_approved(report, "  ")]
+        lines += [f"  {line}" for line in supplement_lines(report.sources)]
         lines += [f"  {line}" for line in detail_lines(report.details)] if report.details else []
         lines += [f"  사유: {text}" for text in report.reasons]
         if report.criterion_id in sentences:
@@ -140,6 +152,8 @@ def change_requests(reports: tuple[ItemReport, ...],
         quotes = [f'"{e.source.quote}"' for e in report.sources if e.kind == "current_requirement"]
         basis = (f" 기준 원문: {' / '.join(quotes)}" if quotes
                  else " 기준 원문이 근거 묶음에 없습니다." + "".join(_approved(report, " ")))
+        basis += "".join(f" {line}" for line in supplement_lines(
+            tuple(e for e in report.sources if e.kind == "current_requirement")))
         basis += f" {'. '.join(detail_lines(report.details))}." if report.details else ""
         why = f" 사유: {' / '.join(report.reasons)}" if report.reasons else ""
         if report.criterion_id in (sentences or {}):
@@ -159,22 +173,29 @@ class TeamA07Reporter:
     def __init__(self, polisher: Polisher | None = None):
         self.polisher = polisher
 
-    def _sentences(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]]:
+    def _sentences(self, reports: tuple[ItemReport, ...]):
         if self.polisher is None or all(report.verdict == "pass" for report in reports):
-            return {}
+            return {},None
         try:
-            return self.polisher.polish(reports) or {}
+            sentences=self.polisher.polish(reports)
+            return sentences or {},'failed' if sentences is None else None
+        except AdapterFailure as error:
+            return {},'outcome_unknown' if error.outcome_unknown else 'failed'
         except Exception:   # 문장 다듬기 실패가 보고를 막지 않는다(규칙 문장으로 보고)
-            return {}
+            return {},'failed'
 
     def report(self, request: ReportRequest) -> ReportDraft:
         reports = items(request)
         synthetic = request.synthetic or request.validated.synthetic or request.evidence.synthetic
         cited = tuple(dict.fromkeys(e.evidence_id for report in reports for e in report.sources))
-        sentences = self._sentences(reports)
+        sentences,polish_status = self._sentences(reports)
+        notice=''
+        if polish_status:
+            notice='\n문장 다듬기 '+('호출 결과를 확인하지 못했습니다.' if polish_status=='outcome_unknown' else '요청을 완료하지 못했습니다.')
+            notice+=' 자동 재호출 없이 검증된 판정과 근거로 규칙 기반 보고서를 제공합니다.'
         return ReportDraft(context=request.context, verdict=request.validated.verdict,
-                           summary=summary(request, reports, synthetic, sentences), evidence_ids=cited,
-                           change_requests=change_requests(reports, sentences), synthetic=synthetic)
+                           summary=summary(request, reports, synthetic, sentences)+notice, evidence_ids=cited,
+                           change_requests=change_requests(reports, sentences), synthetic=synthetic,polish_status=polish_status)
 
 
 def create_reporter() -> Reporter:

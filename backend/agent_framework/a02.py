@@ -215,7 +215,8 @@ class QwenProvider:
                 with client.stream('POST',settings.endpoint,json=data) as response:
                     if response.status_code>=500:
                         raise AdapterFailure('QWEN_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True)
-                    if response.status_code!=200:_fail('QWEN_HTTP_REJECTED')
+                    if response.status_code!=200:
+                        raise AdapterFailure('QWEN_HTTP_REJECTED','The model endpoint rejected the request.',retryable=response.status_code==429)
                     if response.headers.get('content-encoding','identity').lower()!='identity':_fail('QWEN_RESPONSE_ENCODING_UNSUPPORTED')
                     raw=bytearray()
                     for chunk in response.iter_bytes():
@@ -223,6 +224,8 @@ class QwenProvider:
                             raise AdapterFailure('QWEN_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True)
                         if len(raw)+len(chunk)>MAX_RESPONSE*2:_fail('A02_RESPONSE_TOO_LARGE')
                         raw.extend(chunk)
+        except (httpx.ConnectError,httpx.ConnectTimeout,httpx.PoolTimeout,httpx.UnsupportedProtocol):
+            raise AdapterFailure('QWEN_UNAVAILABLE','The model endpoint did not respond.',retryable=True) from None
         except httpx.TransportError:
             raise AdapterFailure('QWEN_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True) from None
         envelope=_json(bytes(raw),MAX_RESPONSE*2)
