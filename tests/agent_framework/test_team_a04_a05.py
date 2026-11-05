@@ -404,6 +404,43 @@ def test_transport_errors_separate_unsent_requests_from_unknown_outcomes(error, 
     assert (failure.value.code, failure.value.outcome_unknown) == (code, unknown)
 
 
+@pytest.mark.parametrize('mode', ('at_limit', 'over_limit', 'http_error', 'read_error'))
+def test_client_bounds_streaming_response_and_closes_it_without_retry(mode):
+    content = json.dumps(chat_response([row('title', '가을 문화축제', 'pass')])).encode()
+    consumed, calls, closed = [], [], []
+
+    class Stream(httpx.SyncByteStream):
+        def __iter__(self):
+            consumed.append(a04.MAX_RESPONSE_BYTES)
+            yield content.ljust(a04.MAX_RESPONSE_BYTES, b' ')
+            if mode == 'read_error':
+                raise httpx.ReadTimeout('interrupted response')
+            if mode == 'over_limit':
+                consumed.append(1)
+                yield b' '
+                raise AssertionError('must stop reading as soon as the limit is exceeded')
+
+        def close(self):
+            closed.append(True)
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(503 if mode == 'http_error' else 200, stream=Stream())
+
+    if mode == 'at_limit':
+        answer, = client(handler).inspect(CRITERIA[:1], model_image())
+        assert answer.observed == '가을 문화축제'
+    else:
+        with pytest.raises(AdapterFailure) as failure:
+            client(handler).inspect(CRITERIA[:1], model_image())
+        code = {'over_limit': 'MODEL_OUTPUT_INVALID', 'http_error': 'MODEL_HTTP_ERROR', 'read_error': 'MODEL_OUTCOME_UNKNOWN'}[mode]
+        assert failure.value.code == code
+        assert failure.value.outcome_unknown == (mode == 'read_error')
+        assert failure.value.retryable == (mode == 'http_error')
+    assert len(calls) == 1 and closed == [True]
+    assert consumed == ([] if mode == 'http_error' else [a04.MAX_RESPONSE_BYTES, 1] if mode == 'over_limit' else [a04.MAX_RESPONSE_BYTES])
+
+
 def test_adapter_and_client_together_return_a_contract_inspection():
     access, request = setup(size=(200, 100))
 

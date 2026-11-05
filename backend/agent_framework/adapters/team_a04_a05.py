@@ -425,20 +425,23 @@ class OpenAICompatibleVisionModel:
         import httpx
 
         try:
-            response = http.post(chat_completions_url(self.settings.base_url), json=payload)
+            with http.stream("POST", chat_completions_url(self.settings.base_url), json=payload) as response:
+                if response.status_code != 200:
+                    raise AdapterFailure("MODEL_HTTP_ERROR", f"A04/A05 모델 서버가 요청을 거절했습니다(HTTP {response.status_code}).",
+                                         retryable=response.status_code == 429 or response.status_code >= 500)
+                content = bytearray()
+                for chunk in response.iter_bytes():
+                    if len(content) + len(chunk) > MAX_RESPONSE_BYTES:
+                        _invalid_output("A04/A05 모델 응답이 크기 제한을 넘었습니다.")
+                    content.extend(chunk)
         except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout, httpx.UnsupportedProtocol):
             raise AdapterFailure("MODEL_UNAVAILABLE", "A04/A05 모델 서버에 연결하지 못했습니다.", retryable=True) from None
         except httpx.HTTPError:
             # The request may have reached the model; it is never resent automatically.
             raise AdapterFailure("MODEL_OUTCOME_UNKNOWN", "A04/A05 모델 호출 결과를 알 수 없습니다.",
                                  outcome_unknown=True) from None
-        if response.status_code != 200:
-            raise AdapterFailure("MODEL_HTTP_ERROR", f"A04/A05 모델 서버가 요청을 거절했습니다(HTTP {response.status_code}).",
-                                 retryable=response.status_code == 429 or response.status_code >= 500)
-        if len(response.content) > MAX_RESPONSE_BYTES:
-            _invalid_output("A04/A05 모델 응답이 크기 제한을 넘었습니다.")
         try:
-            choices = json.loads(response.content)["choices"]
+            choices = json.loads(content)["choices"]
             if not isinstance(choices, list) or len(choices) != 1 or choices[0].get("finish_reason") != "stop":
                 raise ValueError
             parsed = ResponseSchema.model_validate_json(choices[0]["message"]["content"])
