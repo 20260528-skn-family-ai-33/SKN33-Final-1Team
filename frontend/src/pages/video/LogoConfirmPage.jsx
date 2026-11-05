@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { handoff, intervalText, LINK_RATIO, linkCandidates, toIntervals, topGroups } from './logoFlow.js';
 import './logoConfirm.css';
@@ -532,6 +533,9 @@ export default function LogoConfirmPage() {
   const [manuals, setManuals] = useState([]);
   const [mode, setMode] = useState('candidates');
   const [busy, setBusy] = useState(false);
+  const active = useRef(null);
+  useWorkspaceReset(() => active.current?.abort());
+  useEffect(() => () => active.current?.abort(), []);
 
   useEffect(() => {
     if (!job) {
@@ -687,17 +691,19 @@ export default function LogoConfirmPage() {
     setParams(query);
   }
   async function runCompare() {
+    const controller = new AbortController(); active.current = controller;
     setBusy(true); setError('');
     try {
       const body = refNames.map((_, i) => answerMatchesSelection(i) ? answers[i] : null).filter(Boolean)
         .map(({ frame_size, selection, ...answer }) => answer);
-      await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
+      if (controller.signal.aborted) return;
       setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued' } : previous);
       changeView('compare');
     } catch (failure) {
-      setError(failure.message);
+      if (!controller.signal.aborted) setError(failure.message);
     } finally {
-      setBusy(false);
+      if (!controller.signal.aborted) { active.current = null; setBusy(false); }
     }
   }
 

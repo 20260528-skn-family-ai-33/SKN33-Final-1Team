@@ -11,6 +11,7 @@ import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
+import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
@@ -41,6 +42,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const [preview, setPreview] = useState(null);
   const [imageSize, setImageSize] = useState(null);
   const active = useRef(null);
+  useWorkspaceReset(() => active.current?.abort());
   const keys = useRef(new Map());
   const uploaded = useRef(null);
   const amendmentForm = useRef(null);
@@ -137,7 +139,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     const body = { criteria_version_id: baseline.criteria_version_id, expected_criteria_sha256: baseline.criteria_sha256,
       asset_version_id: uploaded.current.id };
     const child = await command(path + (revision ? '/poster-revisions' : '/poster-reviews'), body, requestKey(JSON.stringify(body)), signal);
-    openRun(child.context.run_id);
+    if (!signal.aborted) openRun(child.context.run_id);
   }
   async function decide(decision, signal) {
     if (decision === 'approve_criteria') await requirePosterReview({ signal });

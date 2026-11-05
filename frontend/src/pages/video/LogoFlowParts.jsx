@@ -13,7 +13,11 @@ export const compareStatusLabels = { queued: '정밀 대조 대기', running: '�
 export function useLogoStatus() {
   const [status, setStatus] = useState(null);
   useEffect(() => {
-    fetchJson('/api/video-logos/status').then(setStatus).catch(error => setStatus({ ready: false, detail: error.message }));
+    const controller = new AbortController();
+    fetchJson('/api/video-logos/status', { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setStatus(value); })
+      .catch(error => { if (!controller.signal.aborted) setStatus({ ready: false, detail: error.message }); });
+    return () => controller.abort();
   }, []);
   return status;
 }
@@ -46,14 +50,14 @@ export function LogoInputs({ logos, onChange, status, disabled }) {
 }
 
 // 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다.
-export async function submitLogoJob({ video, logos, title, reviewId }) {
+export async function submitLogoJob({ video, logos, title, reviewId, signal }) {
   const form = new FormData();
   form.append('video', video);
   logos.forEach(item => form.append('logos', item.file));
   form.append('logo_texts', JSON.stringify(logos.map(item => item.text.trim())));
   form.append('title', title);
   form.append('review_id', reviewId);
-  return fetchJson('/api/video-logos', { method: 'POST', body: form });
+  return fetchJson('/api/video-logos', { method: 'POST', body: form, signal });
 }
 
 // 동영상 검수와 함께 올린 로고 작업의 상태. 후보 찾기·정밀 대조가 도는 동안 다시 읽는다.
@@ -64,10 +68,11 @@ export function LogoFlowCard({ reviewId }) {
     async function poll() {
       try {
         const list = await fetchJson(`/api/video-logos?review_id=${encodeURIComponent(reviewId)}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
         setJobs(list.items || []); setError('');
         if ((list.items || []).some(j => RUNNING.has(j.status) || RUNNING.has(j.compare_status))) timer = setTimeout(poll, 2000);
       } catch (failure) {
-        if (failure.name === 'AbortError') return;
+        if (controller.signal.aborted) return;
         setError(failure.message); timer = setTimeout(poll, 4000);
       }
     }

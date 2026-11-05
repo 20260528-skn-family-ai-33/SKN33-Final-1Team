@@ -69,7 +69,7 @@ function restoredFlow(flow, data) {
   return state;
 }
 
-export function useModeltestDraft() {
+export function useModeltestDraft({ restore = true } = {}) {
   const [flow, setFlow] = useState('image');
   const [flows, setFlows] = useState(initialFlows);
   const [ready, setReady] = useState(false); const [savedRun, setSavedRun] = useState(null);
@@ -79,19 +79,19 @@ export function useModeltestDraft() {
   useEffect(() => {
     let live = true;
     openDraftDB().then(async db => {
-      const data = await readDraft(db);
+      const data = restore ? await readDraft(db) : {};
       if (!live) return;
       dbRef.current = db;
       const next = Object.fromEntries(FLOWS.map(flow => [flow, restoredFlow(flow, data)]));
       const nextFlow = FLOWS.includes(data.flow) ? data.flow : 'image';
       previous.current = { flow: nextFlow, flows: next };
       setFlow(nextFlow); setFlows(next); setSavedRun(data.run || null); setReady(true);
-      setStorage('첨부·모델 설정은 이 브라우저에 자동 저장됩니다.');
+      setStorage(restore ? '첨부·모델 설정은 이 브라우저에 자동 저장됩니다.' : '새 작업입니다. 새 입력부터 이 브라우저에 자동 저장됩니다.');
     }).catch(() => {
       if (live) { setReady(true); setStorage('브라우저 저장소를 열지 못했습니다. 현재 입력은 새로고침하면 사라집니다.'); }
     });
     return () => { live = false; };
-  }, []);
+  }, [restore]);
   useEffect(() => {
     if (!ready || !dbRef.current) return;
     const old = previous.current; const entries = [];

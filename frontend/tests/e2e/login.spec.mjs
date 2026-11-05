@@ -251,7 +251,7 @@ test('로그아웃 실패는 현재 세션을 유지하고 재시도 성공 후 
   await page.waitForURL('**/login');
 });
 
-test('이미지 입력·기준 확정·검수·결과 근거와 서비스 소개 왕복 후 결과를 보존한다', async t => {
+test('이미지 입력·검수 결과를 확인하고 서비스 메인 왕복 시 새 입력으로 초기화한다', async t => {
   const { page, state } = await fixture(t, { authenticated: true });
   await page.goto(`${baseURL}/review/new`);
   await page.getByLabel('1. 프로젝트 이름').fill('화면 통합 검증');
@@ -276,8 +276,10 @@ test('이미지 입력·기준 확정·검수·결과 근거와 서비스 소개
   await page.getByRole('button', { name: '서비스 메인으로', exact: true }).click();
   await page.waitForURL(`${baseURL}/`);
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).first().click();
-  await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
-  assert.equal(await resultList.getByRole('button', { name: /행사명: 테스트 축제/ }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?', exact: true }).waitFor();
+  assert.equal(await page.locator('#project-name').inputValue(), '');
+  assert.equal(await page.locator('#requirements').inputValue(), '');
+  assert.equal(await page.getByRole('list', { name: '검수 항목 목록', exact: true }).count(), 0);
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
 });
 

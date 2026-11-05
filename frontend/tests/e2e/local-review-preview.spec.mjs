@@ -56,6 +56,11 @@ test('UI 전용 모드는 기존 검수 URL에서도 인증·Qwen·상태 조회
   await page.getByRole('heading', { name: '검수 진행 화면 미리보기' }).waitFor();
   await toolbar.getByRole('button', { name: '다음 화면으로 →', exact: true }).click();
   await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
+  await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
+  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  assert.equal(await page.locator('#project-name').inputValue(), '');
+  assert.equal(await page.locator('#requirements').inputValue(), '');
+  assert.equal(await page.getByRole('progressbar').count(), 0);
   assert.deepEqual(requests, []);
   assert.deepEqual(errors, []);
 });
