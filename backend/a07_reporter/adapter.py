@@ -103,6 +103,11 @@ def _source_line(evidence: Evidence) -> str:
     return f'{EVIDENCE_KIND[evidence.kind]}: "{source.quote}" ({source.document_version_id} {source.page}쪽)'
 
 
+def supplement_lines(sources: tuple[Evidence, ...]) -> list[str]:
+    return [f'{EVIDENCE_KIND[e.kind]} 보완 회신: "{e.value_source.quote}" (출처: {e.value_source.reference})'
+            for e in sources if e.value_source is not None]
+
+
 def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: bool,
             sentences: dict[str, tuple[str, str]] | None = None) -> str:
     counts = Counter(report.verdict for report in reports)
@@ -117,6 +122,7 @@ def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: 
         lines.append(f"[{VERDICT[report.verdict]}] {report.criterion_id}")
         lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다.",
                                                                      *_approved(report, "  ")]
+        lines += [f"  {line}" for line in supplement_lines(report.sources)]
         lines += [f"  {line}" for line in detail_lines(report.details)] if report.details else []
         lines += [f"  사유: {text}" for text in report.reasons]
         if report.criterion_id in sentences:
@@ -140,6 +146,8 @@ def change_requests(reports: tuple[ItemReport, ...],
         quotes = [f'"{e.source.quote}"' for e in report.sources if e.kind == "current_requirement"]
         basis = (f" 기준 원문: {' / '.join(quotes)}" if quotes
                  else " 기준 원문이 근거 묶음에 없습니다." + "".join(_approved(report, " ")))
+        basis += "".join(f" {line}" for line in supplement_lines(
+            tuple(e for e in report.sources if e.kind == "current_requirement")))
         basis += f" {'. '.join(detail_lines(report.details))}." if report.details else ""
         why = f" 사유: {' / '.join(report.reasons)}" if report.reasons else ""
         if report.criterion_id in (sentences or {}):
