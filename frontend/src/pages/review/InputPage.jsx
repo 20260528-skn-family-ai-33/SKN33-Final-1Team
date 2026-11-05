@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 import DocumentInput from './DocumentInput.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
@@ -7,7 +8,7 @@ import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 기존 업로드·문서 처리 흐름을 큰 이미지 캔버스와 입력 inspector에 연결한다.
-export default function InputPage({ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }) {
+export default function InputPage({ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, previewMode = false }) {
   const requirementCount = parseRequirements(state.requirements).length;
   const mixed = state.documentRun && state.requirements.trim() !== state.documentRun.paragraphs;
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
@@ -18,6 +19,7 @@ export default function InputPage({ state, projectId, setProjectId, prepare, ope
 
   return <section className="rv-input-page" aria-labelledby="page-title">
     <div className="rv-workspace-intro"><div><span className="rv-eyebrow">01 / 자료 등록</span><h1 id="page-title" tabIndex={-1}>어떤 광고물을 검수할까요?</h1><p>포스터를 펼쳐 놓고, 확인할 내용을 준비하세요.</p></div><button type="button" className="rv-button secondary" onClick={sample} disabled={busy}>{sampleBusy ? '불러오는 중…' : '샘플 불러오기'}<Icon name="arrow" /></button></div>
+    {import.meta.env.DEV && !previewMode && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>}
     <form className="rv-input-form" onSubmit={prepare}>
       <div className="rv-editor-grid">
         <div className="rv-input-canvas-column">
@@ -38,7 +40,12 @@ export default function InputPage({ state, projectId, setProjectId, prepare, ope
           <div className="rv-input-fields">
             <div className="rv-input-field"><label htmlFor="project-name">1. 프로젝트 이름 <span>선택</span></label><input id="project-name" value={state.projectName} onChange={e => inputChange('projectName', e.target.value)} maxLength={60} placeholder="예: 김천김밥축제 포스터 검수" autoComplete="off" /></div>
             <div className="rv-input-field rv-input-requirements"><div className="rv-input-field-heading"><label htmlFor="requirements">3. 검수 요구사항 <b>*</b></label><span>한 줄에 한 항목</span></div><p className="rv-input-writing-hint">행사명·기간·장소, 필수 문구와 시각 조건을 구체적으로 적어 주세요.</p><textarea id="requirements" disabled={documentBusy} value={state.requirements} maxLength={6000} rows={8} onChange={e => inputChange('requirements', e.target.value)} placeholder={'행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n김천시 로고가 포함되어야 합니다.'} aria-describedby="requirements-hint" /><div className="rv-input-counter"><span id="requirements-hint">다음 단계에서 항목을 수정하거나 제외할 수 있어요.</span><span>{state.requirements.length.toLocaleString()} / 6,000</span></div></div>
-            <div className="rv-input-document"><DocumentInput {...{ projectId, setProjectId, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy }} projectName={state.projectName} /></div>
+            <div className="rv-input-document">{previewMode ? <p className="document-input">미리보기에서는 이미지·PDF·입력 없이 다음 화면으로 넘어갈 수 있습니다.</p> : <DocumentInput {...{ projectId, setProjectId, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, sampleBusy }} projectName={state.projectName} />}</div>
+            {state.documentRun && !documentBusy && <div className="rv-document-ready" role="status">
+              <strong><Icon name="check" />요구사항 분석을 완료했습니다.</strong>
+              <p>{state.documentRun.filename}의 원문과 추출된 기준을 확인해 주세요. 미정 항목과 승인 여부도 다음 화면에서 검토합니다.</p>
+              <button type="button" className="rv-button secondary" disabled={busy} onClick={openDocumentRun}>추출된 검수 기준 확인</button>
+            </div>}
           </div>
         </aside>
       </div>

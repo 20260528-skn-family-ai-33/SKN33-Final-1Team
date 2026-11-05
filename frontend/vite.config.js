@@ -12,7 +12,8 @@ export function resolveProxyTargets(processValues, rootValues) {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  if (mode === 'ui' && command === 'build') throw new Error('UI 전용 모드는 개발 서버에서만 사용할 수 있습니다.');
   // Only proxy/profile settings are read from the repository root; no secrets
   // are exposed to Vite's client environment or emitted to browser code.
   const rootEnv = loadEnv(mode, root, ['API_PROXY_TARGET', 'FRAMEWORK_API_PROXY_TARGET', 'VIDEO_API_PROXY_TARGET', 'VITE_API_PROFILE']);
@@ -28,7 +29,7 @@ export default defineConfig(({ mode }) => {
   return {
   define: { 'import.meta.env.VITE_API_PROFILE': JSON.stringify(profile) },
   plugins: [{ name: 'cc-frontend-profile', generateBundle() { this.emitFile({ type: 'asset', fileName: 'cc-frontend.json', source: JSON.stringify({ contract: 'cc-web-v1', profile }) }); } }],
-  server: { proxy },
+  server: { proxy: mode === 'ui' ? {} : proxy },
   preview: { proxy },
   };
 });

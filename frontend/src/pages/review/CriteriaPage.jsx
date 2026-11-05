@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import DocumentConditionDetails from './DocumentConditionDetails.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import { canConfirm, canRun } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
@@ -49,16 +49,13 @@ export default function CriteriaPage({ state, locked, selected, selectedInfo, ve
     setActiveId(id);
   }
 
-  return <section className="rv-criteria-page" aria-labelledby="page-title">
-    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">02 / 기준 확정</span><h1 id="page-title" tabIndex={-1}>검수할 항목을 확정해 주세요.</h1><p>이미지를 보며 항목을 검토하세요. 체크한 항목만 검수에 포함됩니다.</p></div><span className={`rv-criteria-version${locked ? ' is-locked' : ''}`}><Icon name={locked ? 'lock' : 'list'} />{versionText}</span></div>
-    <div className="rv-editor-grid">
-      <div className="rv-criteria-canvas-column">
-        <ImageStage src={preview} alt="검수 대상 이미지" title={state.projectName || '검수 대상 이미지'} subtitle={state.file?.name || '이미지 1개'} />
+  return <CriteriaWorkspace versionText={versionText} locked={locked} error={error}
+    canvas={<>
+      <ImageStage src={preview} alt="검수 대상 이미지" title={state.projectName || '검수 대상 이미지'} subtitle={state.file?.name || '이미지 1개'} />
         <div className={`rv-criteria-context${locked ? ' is-locked' : ''}`}><Icon name={locked ? 'lock' : 'info'} /><div>{locked ? <><strong>검수 기준 v{state.snapshot.version}이 확정되었습니다.</strong><p>검수 시작 시 이 기준 버전을 사용합니다. 변경하려면 확정을 풀고 다시 검토하세요.</p></> : <><strong>{state.version ? '기준을 수정하고 다시 확정해 주세요.' : '입력한 요구사항을 항목별로 정리했어요.'}</strong><p>{state.version ? '이전 결과는 무효화되었습니다. 재확정 후 새 기준으로 검수할 수 있습니다.' : '모호한 문구는 구체적인 값으로 보완하세요. 원문과 상세 기준도 함께 확인할 수 있습니다.'}</p></>}</div>{locked && <button type="button" onClick={unlock}>기준 다시 편집</button>}</div>
-      </div>
-
-      <aside className="rv-panel rv-criteria-inspector" aria-label="검수 기준 검토">
-        <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{state.criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{selected.length}개 선택</span></div>
+    </>}
+    actions={<div className="rv-actionbar rv-criteria-actionbar"><div className="rv-criteria-action-context"><button type="button" className="rv-button secondary" onClick={() => navigate('input')}>자료 다시 입력</button><div><strong>{locked ? `v${state.snapshot.version} 기준 확정 완료` : `${selected.length}개 항목을 검수에 포함합니다.`}</strong><p>{locked ? '확정한 기준 전체로 검수합니다.' : '먼저 선택한 기준을 확정해 주세요.'}</p></div></div><div className="rv-criteria-action-buttons">{!locked && <button type="button" className="rv-button primary" onClick={confirm} disabled={!canConfirm(state)}>선택한 기준 확정하기</button>}<button type="button" className={`rv-button ${locked ? 'primary' : 'secondary'}`} ref={runRef} onClick={run} disabled={!canRun(state)}>검수 시작하기<Icon name="arrow" /></button></div></div>}>
+      <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{state.criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{selected.length}개 선택</span></div>
         <div className="rv-criteria-toolbar"><span>정보 {selectedInfo} · 시각 {selected.length - selectedInfo} · 제외 {state.criteria.length - selected.length}</span>{!locked && <div><button type="button" onClick={() => dispatch({ type: 'select', selected: true })}>전체 선택</button><button type="button" onClick={() => dispatch({ type: 'select', selected: false })}>전체 해제</button></div>}</div>
         <ul className="rv-criteria-list" aria-label="검수 항목 목록">{state.criteria.map((item, i) => <li className={`rv-criteria-item${item.id === active?.id ? ' is-active' : ''}${item.selected ? '' : ' is-excluded'}`} key={item.id}>
           <label className="rv-criteria-check"><input type="checkbox" checked={item.selected} disabled={locked} onChange={e => { setActiveId(item.id); dispatch({ type: 'update', id: item.id, patch: { selected: e.target.checked } }); }} /><span className="sr-only">검수 항목 {String(i + 1).padStart(2, '0')}</span></label>
@@ -72,9 +69,5 @@ export default function CriteriaPage({ state, locked, selected, selectedInfo, ve
           <div className="rv-criteria-source"><Icon name="file" /><details><summary>요구사항 원문</summary><p>{active.source}</p></details></div>
         </div> : <div className="rv-criteria-empty"><Icon name="list" /><p>검수할 항목이 없습니다.<br />자료를 다시 입력하거나 항목을 추가해 주세요.</p></div>}
         {!locked && <details className="rv-criteria-add" open={newCriterion.trim() ? true : undefined}><summary><span aria-hidden="true">＋</span> 검수 항목 직접 추가</summary><form onSubmit={addCriterion}><input value={newCriterion} onChange={e => setNewCriterion(e.target.value)} maxLength={500} aria-label="추가할 검수 항목" placeholder="필요한 검수 항목 추가" /><div><select aria-label="추가할 검수 유형" value={newCategory} onChange={e => setNewCategory(e.target.value)}><option value="information">정보 검수</option><option value="visual">시각 검수</option></select><button type="submit" className="rv-button secondary" disabled={!newCriterion.trim()}>항목 추가</button></div></form></details>}
-      </aside>
-    </div>
-    <div className="rv-criteria-error"><ErrorMessage message={error} /></div>
-    <div className="rv-actionbar rv-criteria-actionbar"><div className="rv-criteria-action-context"><button type="button" className="rv-button secondary" onClick={() => navigate('input')}>자료 다시 입력</button><div><strong>{locked ? `v${state.snapshot.version} 기준 확정 완료` : `${selected.length}개 항목을 검수에 포함합니다.`}</strong><p>{locked ? '확정한 기준 전체로 검수합니다.' : '먼저 선택한 기준을 확정해 주세요.'}</p></div></div><div className="rv-criteria-action-buttons">{!locked && <button type="button" className="rv-button primary" onClick={confirm} disabled={!canConfirm(state)}>선택한 기준 확정하기</button>}<button type="button" className={`rv-button ${locked ? 'primary' : 'secondary'}`} ref={runRef} onClick={run} disabled={!canRun(state)}>검수 시작하기<Icon name="arrow" /></button></div></div>
-  </section>;
+  </CriteriaWorkspace>;
 }

@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+test('UI 전용 서버는 API 프록시를 열지 않으며 배포 빌드를 거부한다', async () => {
+  const { default: config } = await import('../../../vite.config.js');
+  assert.deepEqual(config({ mode: 'ui', command: 'serve' }).server.proxy, {});
+  assert.throws(() => config({ mode: 'ui', command: 'build' }), /개발 서버/);
+});
+
 test('root environment proxy settings are used, with process overrides taking priority', async () => {
   const { resolveProxyTargets } = await import('../../../vite.config.js');
   const file = { API_PROXY_TARGET: 'http://127.0.0.1:8012', VIDEO_API_PROXY_TARGET: 'http://127.0.0.1:8013', DB_APP_PASSWORD: 'not-a-proxy' };

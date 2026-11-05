@@ -11,7 +11,7 @@
     "dev:lan": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test src/pages/review/workflow.test.js src/pages/review/documentRequirements.test.js src/pages/review/documentProgress.test.js src/pages/review/frameworkDocument.test.js src/pages/review/frameworkResults.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js src/pages/video/videoFormat.test.js src/pages/video/proxy-config.test.js src/pages/modeltest/modeltest.test.js src/pages/modeltest/modeltestBoard.test.js",
+    "test": "node --test src/pages/review/workflow.test.js src/pages/review/documentRequirements.test.js src/pages/review/documentProgress.test.js src/pages/review/frameworkDocument.test.js src/pages/review/frameworkProgress.test.js src/pages/review/frameworkResults.test.js src/auth/auth.test.js src/hooks/useScrollScene.test.js src/components/imageStageGeometry.test.js src/pages/review/resultSelection.test.js src/pages/video/videoFormat.test.js src/pages/video/proxy-config.test.js src/pages/modeltest/modeltest.test.js src/pages/modeltest/modeltestBoard.test.js",
     "test:requirements:ui": "node --test tests/e2e/document-paragraphs.spec.mjs tests/e2e/framework-entry.spec.mjs",
     "test:image-stage:ui": "node --test tests/e2e/image-stage-stability.spec.mjs",
     "test:signup:ui": "node --test tests/e2e/signup.spec.mjs",
@@ -26,7 +26,9 @@
     "build:rebuild": "tsc --noEmit && vite build --mode rebuild --outDir dist-rebuild",
     "preview:rebuild": "vite preview --mode rebuild --outDir dist-rebuild --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test:modeltest:ui": "node --test --test-concurrency=1 tests/e2e/modeltest.spec.mjs tests/e2e/modeltest-board.spec.mjs"
+    "test:modeltest:ui": "node --test --test-concurrency=1 tests/e2e/modeltest.spec.mjs tests/e2e/modeltest-board.spec.mjs",
+    "test:preview:ui": "node --test tests/e2e/local-review-preview.spec.mjs",
+    "dev:ui": "vite --mode ui --host 0.0.0.0 --port 5173 --strictPort"
   },
   "dependencies": {
     "react": "^19.1.1",
