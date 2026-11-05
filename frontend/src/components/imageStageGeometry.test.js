@@ -1,11 +1,45 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
+import { imageStageSize, imageStageBounds, evidenceLabelOnRight, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import { evidenceBoxStyle } from '../pages/review/workflow.js';
 test('fit preserves aspect ratio and keeps portrait inside canvas', () => {
   const size = imageStageSize(600, 848, 700, 650);
   assert.ok(size.width <= 636 && size.height <= 586);
   assert.ok(Math.abs(size.width / size.height - 600 / 848) < 1e-10);
+});
+test('fit canvas stays inside a fractional viewport so scrollbars never toggle', () => {
+  assert.deepEqual(imageStageBounds(498.64, 429.59), { width: 498, height: 429 });
+  assert.deepEqual(imageStageBounds(585.6, 440), { width: 585, height: 440 });
+  assert.deepEqual(imageStageBounds(0, -1), { width: 0, height: 0 });
+  // Widths measured where the poster stage flickered; 300.6 x 820 covers a width-limited fit.
+  for (const [realWidth, realHeight] of [[498.64, 440], [501.65, 440], [585.6, 440], [585.6, 439.6], [300.6, 820]]) {
+    const bounds = imageStageBounds(realWidth, realHeight);
+    const size = imageStageSize(2480, 3503, bounds.width, bounds.height);
+    assert.ok(Math.max(bounds.width, size.width + 64) <= realWidth);
+    assert.ok(Math.max(bounds.height, size.height + 64) <= realHeight);
+  }
+});
+test('fit stays inside the viewport for every poster shape and fractional viewport size', () => {
+  // Square, portrait, landscape, extreme strips, icons smaller than the stage and oversized originals.
+  const shapes = [[32, 32], [446, 627], [720, 1018], [1122, 1402], [2480, 3503], [3000, 3000], [4500, 4500],
+    [1920, 600], [600, 3000], [8192, 1000], [1000, 8192], [9624, 13380], [1, 1], [5000, 1]];
+  for (const [width, height] of shapes) for (let realWidth = 120.3; realWidth < 1500; realWidth += 13.37) {
+    for (const realHeight of [399.5, 400, 430.25, 440, 512.6, 819.99, 820]) {
+      const bounds = imageStageBounds(realWidth, realHeight);
+      const size = imageStageSize(width, height, bounds.width, bounds.height);
+      const label = `${width}x${height} in ${realWidth.toFixed(2)}x${realHeight}`;
+      assert.ok(Math.max(bounds.width, size.width + 64) <= realWidth + 1e-6, label);
+      assert.ok(Math.max(bounds.height, size.height + 64) <= realHeight + 1e-6, label);
+      assert.ok(Math.abs(size.width / size.height - width / height) < 1e-9, label);
+    }
+  }
+});
+test('evidence labels in the right half open toward the image', () => {
+  assert.equal(evidenceLabelOnRight([860, 400, 970, 460], 1000), true);
+  assert.equal(evidenceLabelOnRight([20, 900, 300, 970], 1000), false);
+  assert.equal(evidenceLabelOnRight([400, 0, 600, 10], 1000), false);
+  assert.equal(evidenceLabelOnRight(null, 1000), false);
+  assert.equal(evidenceLabelOnRight([860, 400, 970, 460], 0), false);
 });
 test('evidence stays attached to original pixels through zoom', () => {
   const box = evidenceBoxStyle([60, 84.8, 300, 424], 600, 848);

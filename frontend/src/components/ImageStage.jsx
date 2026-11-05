@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from './Icon.jsx';
 import { evidenceBoxStyle } from '../pages/review/workflow.js';
-import { imageStageSize, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
+import { imageStageSize, imageStageBounds, evidenceLabelOnRight, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import '../styles/image-stage.css';
 
 // Evidence and image share one sized surface at every zoom level.
@@ -23,9 +23,8 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
   useEffect(() => { setView({ zoom: 'fit', target: null }); setFailed(false); drag.current = null; setPanning(false); }, [src]);
   useEffect(() => {
     const element = viewport.current;
-    const measure = () => setBounds({ width: element.clientWidth, height: element.clientHeight });
-    measure();
-    const observer = new ResizeObserver(measure);
+    // contentRect is fractional and excludes scrollbars; the first callback arrives before paint.
+    const observer = new ResizeObserver(([entry]) => setBounds(imageStageBounds(entry.contentRect.width, entry.contentRect.height)));
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
@@ -84,7 +83,7 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
             <img src={src} alt={alt} draggable={false} onLoad={event => setNatural({ src, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} onError={() => setFailed(true)} />
             {safeEvidence && showEvidence && overlays.map((overlay, index) => {
               const style = evidenceBoxStyle(overlay.bbox_xyxy, natural.width, natural.height);
-              return style ? <button type="button" key={`${overlay.id}-${index}`} data-testid="evidence-box" className={`image-stage-box ${selectedOverlayId === overlay.id ? 'is-selected' : ''}`} style={style} aria-label={`근거 영역: ${overlay.text || overlay.label || index + 1}`} aria-pressed={selectedOverlayId === overlay.id} onClick={() => onOverlaySelect?.(overlay.id)}><span>{overlay.label || String(index + 1).padStart(2, '0')}</span></button> : null;
+              return style ? <button type="button" key={`${overlay.id}-${index}`} data-testid="evidence-box" className={`image-stage-box ${selectedOverlayId === overlay.id ? 'is-selected' : ''} ${evidenceLabelOnRight(overlay.bbox_xyxy, natural.width) ? 'is-right' : ''}`} style={style} aria-label={`근거 영역: ${overlay.text || overlay.label || index + 1}`} aria-pressed={selectedOverlayId === overlay.id} onClick={() => onOverlaySelect?.(overlay.id)}><span>{overlay.label || String(index + 1).padStart(2, '0')}</span></button> : null;
             })}
           </div>
         </div>}
