@@ -3,11 +3,12 @@ import { mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
+import { createServer } from 'vite';
 
 // 별도 설치된 Playwright 또는 NODE_PATH의 도구를 사용하며 실행 중 다운로드하지 않는다.
 const { chromium } = createRequire(import.meta.url)('playwright');
-const baseURL = process.env.E2E_BASE_URL || 'http://127.0.0.1:8123';
-const origin = new URL(baseURL).origin;
+let baseURL = process.env.E2E_BASE_URL;
+let origin;
 const user = { id: 'test-user', username: 'tester', display_name: '검증 사용자' };
 
 // 업로드가 받는 범위(1,000만 픽셀·한 변 8,192px 이하)의 아이콘·세로·정사각·가로 배너·극단 띠 모양.
@@ -18,9 +19,15 @@ const STAGE_WIDTHS = [380.4, 455.75, 512.6, 586.6, 640.5, 777.9, 903.2, 1010.65]
 const VIEWPORT_HEIGHTS = [440, 600.6];
 // 반올림 방향은 화면 배율에 따라 달라진다(알파테스트 떨림은 Windows 125% 배율에서 발견). Mac 기본 200%도 함께 본다.
 const SCALES = (process.env.E2E_SCALES || '1,1.25,1.5,2').split(',').map(Number);
-let browser;
+let browser, vite;
 
 before(async () => {
+  if (!baseURL) {
+    vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+    await vite.listen();
+    baseURL = `http://127.0.0.1:${vite.httpServer.address().port}`;
+  }
+  origin = new URL(baseURL).origin;
   // 개인 브라우저 세션 대신 격리된 임시 프로필을 실행한다.
   browser = await chromium.launch({
     headless: true,
@@ -30,7 +37,7 @@ before(async () => {
   });
 });
 
-after(async () => { await browser?.close(); });
+after(async () => { await browser?.close(); await vite?.close(); });
 
 // 인증·검수 응답을 브라우저 안에서만 대체해 실제 계정·OCR 없이 이미지 칸만 검증한다.
 async function fixture(t, scale) {
@@ -49,14 +56,18 @@ async function fixture(t, scale) {
     const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
     if (path === '/api/v1/auth/me') return json({ authenticated: true, user });
     if (path === '/api/v1/auth/csrf') return json({ csrf_token: 'test-csrf-token' });
-    if (path === '/api/health') return json({ runtime: { ready: true, engine: 'easyocr' }, limits: {} });
-    if (path === '/api/reviews' && request.method() === 'POST') return json({ id: 'test-review', status: 'queued' }, 202);
-    if (path === '/api/reviews/test-review/image' && state.review) return route.fulfill({ contentType: 'image/jpeg', body: state.review.body });
-    if (path === '/api/reviews/test-review' && state.review) return json({
-      id: 'test-review', status: 'completed', stage: 'completed', progress: 100,
-      project_name: '이미지 칸 안정성 검증', criteria_version: 1,
-      image: { url: '/api/reviews/test-review/image', width: state.review.width, height: state.review.height },
-      criteria: [], results: state.review.results,
+    if (path === '/api/health') return json({ ready: true, limits: {} });
+    if (path === '/api/framework/v1/health') return json({ poster_review_ready: true });
+    if (path === '/api/framework/v1/images/test-poster/content' && state.review) return route.fulfill({ contentType: 'image/jpeg', body: state.review.body });
+    if (path === '/api/framework/v1/runs/test-review' && state.review) return json({
+      context: { run_id: 'test-review', project_id: 'test-project', actor_id: user.id, asset_version_id: 'test-poster' },
+      baseline: { criteria_version_id: 'test-criteria' }, execution_status: 'waiting_review', machine_verdict: 'fail',
+      criteria: { criteria: [] },
+      validated: { items: state.review.results.map(item => ({ criterion_id: item.criterion_id, criterion_text: item.criterion,
+        kind: 'text', verdict: item.status, observed: item.observed_text, required: true, issues: [],
+        image: { asset_version_id: 'test-poster', bbox: item.evidence[0].bbox_xyxy.map((v, i) => v / (i % 2 ? state.review.height : state.review.width)) },
+      })) },
+      report: { summary: '합성 이미지의 칸 안정성 검증', change_requests: [] },
     });
     // PDF 프로젝트 목록 등 이 시험과 무관한 요청은 서버로 보내지 않고 없는 것으로 답한다.
     return json({ error: { code: 'not_found', message: '시험에서 다루지 않는 요청' } }, 404);
@@ -137,14 +148,9 @@ for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장�
       { criterion_id: 'bottom-left', criterion: '주최: 김천시 · 주관: 김천문화재단 · 후원: 경상북도', type: 'information',
         status: 'review', observed_text: '주최', reason: '시험용', evidence: [{ text: '왼쪽 아래', bbox_xyxy: box(.02, .9, .3, .97) }] },
     ] };
-    await page.goto(`${baseURL}/review/new`);
-    await page.getByLabel('1. 프로젝트 이름').fill('이미지 칸 안정성 검증');
-    await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles(file);
-    await page.getByLabel('3. 검수 요구사항').fill('기간\n장소\n주최');
-    await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).click();
-    await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
-    await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-    await page.getByRole('heading', { name: '이미지 칸 안정성 검증', level: 1, exact: true }).waitFor();
+    // 공통 실행의 저장된 결과를 표시한다. 접수·승인 흐름은 framework-entry가 별도로 검증한다.
+    await page.goto(`${baseURL}/review/new?framework=test-review`);
+    await page.locator('.rv-result-workbench').waitFor();
     await page.waitForFunction(w => document.querySelector('.image-stage-surface img')?.naturalWidth === w, width);
     assert.equal(await page.getByTestId('evidence-box').count(), 3);
     if (process.env.E2E_SCREENSHOT_DIR && width === 2480 && scale === SCALES[0]) {

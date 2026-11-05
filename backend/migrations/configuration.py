@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from typing import Mapping
 
-from backend.app.config import ConfigurationError, Secret, read_environment_file
+from backend.app.config import ConfigurationError, Secret, read_environment_file, database_tls
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +18,8 @@ class MigrationSettings:
     owner_user: str
     owner_password: Secret
     app_user: str
+    sslmode: str | None = None
+    sslrootcert: str | None = None
 
 
 def load_migration_settings(environ: Mapping[str, str] | None = None) -> MigrationSettings:
@@ -41,7 +43,8 @@ def load_migration_settings(environ: Mapping[str, str] | None = None) -> Migrati
     if not password.strip() or password.startswith("change-me-"):
         raise ConfigurationError("DB_OWNER_PASSWORD must be replaced with a nonblank secret.")
     return MigrationSettings(values["DB_HOST"], int(raw_port), values["POSTGRES_DB"],
-                             values["DB_OWNER_USER"], Secret(password), values["DB_APP_USER"])
+                             values["DB_OWNER_USER"], Secret(password), values["DB_APP_USER"],
+                             **database_tls(values))
 
 
 def create_migration_engine(settings: MigrationSettings):
@@ -52,7 +55,9 @@ def create_migration_engine(settings: MigrationSettings):
                    host=settings.host, port=settings.port, database=settings.database),
         poolclass=NullPool, hide_parameters=True, echo=False,
         connect_args={"connect_timeout": 5, "options": "-c timezone=UTC -c client_encoding=UTF8",
-                      "application_name": "creative_checker_migration"},
+                      "application_name": "creative_checker_migration",
+                      **({"sslmode": settings.sslmode} if settings.sslmode else {}),
+                      **({"sslrootcert": settings.sslrootcert} if settings.sslrootcert else {})},
     )
 
 

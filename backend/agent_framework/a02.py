@@ -16,7 +16,8 @@ from .a02_configuration import PDFExtractionConfiguration
 from .a02_source_selection import (SelectedProviderReply,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE)
 from .a02_requirements import compile_requirements,unresolved_passages
 from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticProviderReply,
-    PRESENTATION_PROMPT,PRESENTATION_PROMPT_HASH,semantic_schema,materialize_semantics,verify_normalized_date,validate_presentation)
+    PRESENTATION_PROMPT,PRESENTATION_PROMPT_HASH,LEGACY_SEMANTIC_PROMPT_HASH,LEGACY_PRESENTATION_PROMPT_HASH,
+    semantic_schema,materialize_semantics,verify_normalized_date,validate_presentation)
 from .contracts import CriteriaDraft,Criterion,ExtractionTrace,PDFTextSource,SourceRef
 from .files import inspect_document
 from .ports import AdapterFailure,Agents
@@ -250,7 +251,10 @@ def validate_trace(document,draft):
     if trace.mode=='mock' and not draft.synthetic:raise ValueError('SYNTHETIC_LABEL_MISSING')
     expected_prompt=(PRESENTATION_PROMPT_HASH if trace.policy=='a02-semantic-v4' else
         SEMANTIC_PROMPT_HASH if trace.policy=='a02-semantic-v3' else QWEN_PROMPT_HASH if trace.mode=='qwen' else PROMPT_HASH)
-    if trace.prompt_sha256!=expected_prompt:raise ValueError('EXTRACTION_PROMPT_MISMATCH')
+    allowed_prompts={expected_prompt}
+    if trace.mode=='qwen' and trace.policy=='a02-semantic-v4':allowed_prompts.add(LEGACY_PRESENTATION_PROMPT_HASH)
+    if trace.mode=='qwen' and trace.policy=='a02-semantic-v3':allowed_prompts.add(LEGACY_SEMANTIC_PROMPT_HASH)
+    if trace.prompt_sha256 not in allowed_prompts:raise ValueError('EXTRACTION_PROMPT_MISMATCH')
     if trace.input_kind!=('free_text' if document.media_type=='text/plain' else 'pdf'):raise ValueError('EXTRACTION_INPUT_KIND_MISMATCH')
     sources={s.block_id:s for s in trace.sources}
     if (len(sources)!=len(trace.sources) or len(trace.sources)!=document.page_count

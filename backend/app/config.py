@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 from typing import Mapping
 
@@ -36,6 +36,8 @@ class DatabaseSettings:
     connect_timeout: int = 5
     pool_size: int = 5
     pool_timeout: int = 5
+    sslmode: str | None = None
+    sslrootcert: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +61,24 @@ def _integer(values: Mapping[str, str], name: str, default: int, maximum: int) -
     if not 1 <= value <= maximum:
         raise ConfigurationError(f"{name} must be between 1 and {maximum}.")
     return value
+
+
+def database_tls(values: Mapping[str, str]) -> dict[str, str]:
+    """Optional libpq TLS settings; omission preserves existing local behavior."""
+    mode = values.get("DB_SSLMODE", "").strip()
+    certificate = values.get("DB_SSLROOTCERT", "").strip()
+    if not mode and not certificate:
+        return {}
+    if mode not in {"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}:
+        raise ConfigurationError("DB_SSLMODE is not a supported libpq TLS mode.")
+    paths = (PurePosixPath(certificate), PureWindowsPath(certificate))
+    if certificate and (not any(p.is_absolute() for p in paths)
+                        or any(".." in p.parts for p in paths)
+                        or any(c in certificate for c in "\x00\r\n")):
+        raise ConfigurationError("DB_SSLROOTCERT must be an absolute certificate path.")
+    if mode in {"verify-ca", "verify-full"} and not certificate:
+        raise ConfigurationError("Certificate-verifying DB TLS requires DB_SSLROOTCERT.")
+    return {"sslmode": mode, **({"sslrootcert": certificate} if certificate else {})}
 
 
 def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
@@ -88,6 +108,7 @@ def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
         connect_timeout=_integer(values, "DB_CONNECT_TIMEOUT", 5, 60),
         pool_size=_integer(values, "DB_POOL_SIZE", 5, 20),
         pool_timeout=_integer(values, "DB_POOL_TIMEOUT", 5, 60),
+        **database_tls(values),
     ))
 
 

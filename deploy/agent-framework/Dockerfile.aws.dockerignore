@@ -1,0 +1,16 @@
+**
+!pyproject.toml
+!uv.lock
+!backend/
+!backend/**
+!examples/
+!examples/agent_framework/
+!examples/agent_framework/**
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*.env
+**/*.safetensors
+**/*.pt
+**/*.bin
+**/*.log

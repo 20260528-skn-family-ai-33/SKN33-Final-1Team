@@ -34,8 +34,12 @@ from .poster_review import PosterReviewRequest,PostgresPosterReviews,open_poster
 
 
 def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=None,poster_storage_root=None):
-    if settings.environment not in ('development','test'):
-        raise ConfigurationError('The initial framework PostgreSQL profile supports development/test only.')
+    if settings.environment not in ('development','test','production'):
+        raise ConfigurationError('Unsupported framework environment.')
+    if settings.environment=='production':
+        from .deployment import require_verified_database,require_live_configuration
+        require_verified_database(settings)
+        require_live_configuration(configuration)
     # The existing authentication app deliberately skips all legacy media and
     # review executors when storage/frontend are unset.
     settings=replace(settings,storage_root=None,frontend_dist=None,review_pipeline='disabled',
@@ -117,6 +121,12 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 'poster_reviews':app.state.poster_reviews is not None,
                 'poster_review_ready':not blockers,'poster_review_blockers':blockers,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
+    @app.get('/api/health')
+    def frontend_health():
+        # front-v2 probes this legacy-compatible path. Readiness is API-only;
+        # no inference request or claim of model connectivity is made here.
+        return {'status':'ok','ready':app.state.ready,'runtime':{'profile':'agent_framework'},
+                'model_connection_verified':False,**health()}
     @app.get(prefix+'/projects/{project_id}/graph-status')
     def graph_status_view(request:Request,project_id:UUID):
         from .graph_projection import graph_status,installed

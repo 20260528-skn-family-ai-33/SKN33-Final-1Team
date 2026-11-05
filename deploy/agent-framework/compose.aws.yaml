@@ -1,0 +1,187 @@
+name: creative-checker-framework-aws
+
+x-framework: &framework
+  image: ${AF_FRAMEWORK_IMAGE:?Run scripts.framework_deployment first}
+  build:
+    context: ../..
+    dockerfile: deploy/agent-framework/Dockerfile.aws
+  init: true
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  networks: [application]
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: '3'}
+
+services:
+  web:
+    image: ${AF_WEB_IMAGE:?Run scripts.framework_deployment first}
+    build:
+      context: ../..
+      dockerfile: deploy/agent-framework/Dockerfile.web
+    environment:
+      AF_PUBLIC_HOST: ${AF_PUBLIC_HOST:?Set the HTTPS hostname}
+    ports: ['80:80', '443:443']
+    volumes:
+      - type: bind
+        source: ${AF_TLS_DIRECTORY:?Provide fullchain.pem and privkey.pem}
+        target: /etc/nginx/tls
+        read_only: true
+        bind: {create_host_path: false}
+    depends_on: [api]
+    restart: unless-stopped
+    networks:
+      application: {ipv4_address: 172.30.66.10}
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+
+  api:
+    <<: *framework
+    command: [postgres-serve, --env-file, /run/secrets/api_env, --config, /run/config/team.json,
+              --pdf-storage-root, /data/pdf, --poster-storage-root, /data/posters,
+              --host, 0.0.0.0, --port, '8012']
+    secrets: [api_env]
+    volumes:
+      - &team-config
+        type: bind
+        source: ${AF_RUNTIME_DIR:?Run preparation}/team.json
+        target: /run/config/team.json
+        read_only: true
+        bind: {create_host_path: false}
+      - &rds-ca
+        type: bind
+        source: ${AF_RDS_CA_FILE:?Provide the AWS RDS CA bundle}
+        target: /run/certs/rds-ca.pem
+        read_only: true
+        bind: {create_host_path: false}
+      - &files
+        type: bind
+        source: ${AF_DATA_ROOT:?Use a dedicated EBS directory}/files
+        target: /data
+        bind: {create_host_path: false}
+    healthcheck:
+      test: [CMD, /app/.venv/bin/python, -m, backend.agent_framework, postgres-check, --env-file, /run/secrets/api_env]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
+  worker:
+    <<: *framework
+    command: [worker, --env-file, /run/secrets/worker_env, --config, /run/config/team.json,
+              --pdf-storage-root, /data/pdf, --poster-storage-root, /data/posters]
+    secrets: [worker_env]
+    volumes: [*team-config, *rds-ca, *files]
+    depends_on:
+      neo4j: {condition: service_healthy}
+      qwen-tunnel: {condition: service_healthy}
+    stop_grace_period: 30s
+
+  neo4j:
+    image: neo4j:5.26-community
+    init: true
+    entrypoint: [/bin/bash, /run/config/neo4j-entrypoint.sh]
+    command: [neo4j]
+    secrets: [neo4j_password]
+    environment:
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    volumes:
+      - type: bind
+        source: ${AF_DATA_ROOT}/neo4j
+        target: /data
+        bind: {create_host_path: false}
+      - type: bind
+        source: ./neo4j-secret-entrypoint.sh
+        target: /run/config/neo4j-entrypoint.sh
+        read_only: true
+    restart: unless-stopped
+    networks: [application]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://localhost:7474]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  projector:
+    <<: *framework
+    command: [graph-projector, --env-file, /run/secrets/graph_env]
+    secrets: [graph_env]
+    volumes: [*rds-ca]
+    depends_on:
+      neo4j: {condition: service_healthy}
+
+  monitor:
+    <<: *framework
+    command: [graph-monitor, --env-file, /run/secrets/graph_env, --state-file, /state/monitor/latest.json]
+    secrets: [graph_env]
+    volumes:
+      - *rds-ca
+      - &graph-state
+        type: bind
+        source: ${AF_DATA_ROOT}/state
+        target: /state
+        bind: {create_host_path: false}
+    depends_on: [projector]
+    healthcheck:
+      test: [CMD, /app/.venv/bin/python, -m, backend.agent_framework, graph-monitor-status,
+             --state-file, /state/monitor/latest.json, --max-age, '60']
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  recovery:
+    <<: *framework
+    command: [graph-recovery, --env-file, /run/secrets/graph_env, --state-file, /state/recovery/latest.json]
+    secrets: [graph_env]
+    volumes: [*rds-ca, *graph-state]
+    depends_on: [projector]
+    healthcheck:
+      test: [CMD, /app/.venv/bin/python, -m, backend.agent_framework, graph-recovery-status,
+             --state-file, /state/recovery/latest.json, --max-age, '120']
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  qwen-tunnel:
+    image: ${AF_TUNNEL_IMAGE:-creative-checker-qwen-tunnel:aws}
+    build:
+      context: ../..
+      dockerfile: deploy/agent-framework/Dockerfile.tunnel
+    environment:
+      AF_RUNPOD_HOST: ${AF_RUNPOD_HOST:?Set the current RunPod SSH host}
+      AF_RUNPOD_PORT: ${AF_RUNPOD_PORT:?Set the current RunPod SSH port}
+    secrets: [runpod_identity, runpod_known_hosts]
+    read_only: true
+    tmpfs: [/run/ssh]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    networks: [application]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:18015/health]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+networks:
+  application:
+    ipam:
+      config: [{subnet: 172.30.66.0/24}]
+
+secrets:
+  api_env: {file: '${AF_RUNTIME_DIR}/api.env'}
+  worker_env: {file: '${AF_RUNTIME_DIR}/worker.env'}
+  graph_env: {file: '${AF_RUNTIME_DIR}/graph.env'}
+  neo4j_password: {file: '${AF_RUNTIME_DIR}/neo4j-password'}
+  runpod_identity: {file: '${AF_SSH_KEY_FILE:?Use a dedicated server identity}'}
+  runpod_known_hosts: {file: '${AF_KNOWN_HOSTS_FILE:?Pin the verified server host key}'}
