@@ -81,7 +81,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
       const edit = request.postDataJSON().edits[0];
       assert.equal(edit.action, 'amend');
       assert.deepEqual(edit.resolution, { ...scope, kind: visual ? 'visual' : 'text', operator: visual ? 'present' : 'contains',
-        expected: value, unit: null, required: true });
+        expected: value, unit: null, required: true, ...(visual ? { replacement_text: reply } : {}) });
       assert.equal(edit.source.quote, reply);
       assert.equal(edit.source.reference, '개발용 담당자 회신');
       assert.equal(edit.reason, reason);
@@ -139,6 +139,12 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     await page.getByLabel('보완 사유', { exact: true }).fill(reason);
     await page.getByLabel('회신 출처', { exact: true }).fill('개발용 담당자 회신');
     await page.getByLabel('회신 원문', { exact: true }).fill(reply);
+    if (visual) {
+      await page.getByLabel('회신에 따라 조건 자체를 변경', { exact: true }).check();
+      await save.click();
+      assert.equal(saves.length, 0);
+      await page.getByLabel('변경한 전체 조건', { exact: true }).fill(reply);
+    }
     await save.click();
     if (mode === 'pending_existing') {
       await page.getByRole('button', { name: '서버 상태 다시 확인' }).waitFor();

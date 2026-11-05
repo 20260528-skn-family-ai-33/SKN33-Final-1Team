@@ -7,7 +7,7 @@ from pydantic import Field
 
 from ..contracts import Contract, ExecutionStatus, FrameworkError, Identifier, Verdict
 
-NextAction = Literal['wait_for_worker', 'request_criteria_approval', 'request_final_approval',
+NextAction = Literal['wait_for_worker', 'request_criteria_approval', 'request_final_approval', 'request_human_review',
                      'request_change_approval', 'request_exception_approval', 'submit_revision', 'submit_poster',
                      'start_new_run', 'reconcile_manually', 'none']
 

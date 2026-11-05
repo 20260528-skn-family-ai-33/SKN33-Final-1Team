@@ -324,6 +324,15 @@
               }
             ],
             "title": "Criteria Sha256"
+          },
+          "human_reviews": {
+            "items": {
+              "$ref": "#/components/schemas/HumanReview"
+            },
+            "type": "array",
+            "maxItems": 128,
+            "title": "Human Reviews",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -1130,6 +1139,64 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HumanReview": {
+        "properties": {
+          "contract_version": {
+            "type": "string",
+            "const": "3.0.0",
+            "title": "Contract Version",
+            "default": "3.0.0"
+          },
+          "criterion_id": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "title": "Criterion Id"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "title": "Verdict"
+          },
+          "observed": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Observed"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Reference"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "checked_asset": {
+            "type": "boolean",
+            "title": "Checked Asset"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "verdict",
+          "observed",
+          "reference",
+          "reason",
+          "checked_asset"
+        ],
+        "title": "HumanReview"
       },
       "ImageEvidence": {
         "properties": {

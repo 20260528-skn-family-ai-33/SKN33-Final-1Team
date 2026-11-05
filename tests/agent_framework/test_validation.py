@@ -263,11 +263,12 @@ def test_nonblank_text_expectations_preserve_comparison_semantics(operator, expe
     assert "missing_expected_value" not in result.items[0].issues
 
 
-def test_visual_presence_does_not_require_a_text_expectation():
+def test_visual_presence_requires_a_named_expectation_before_comparison():
     req = changed(request(), ["criteria", 0, "kind"], "visual")
     req = changed(req, ["criteria", 0, "operator"], "present")
     req = changed(req, ["criteria", 0, "expected"], "")
-    assert ReferenceValidator().validate(req).verdict == "pass"
+    result=ReferenceValidator().validate(req)
+    assert result.verdict=='review' and 'missing_expected_value' in result.items[0].issues
 
 
 @pytest.mark.parametrize("operator", ["equals", "contains"])

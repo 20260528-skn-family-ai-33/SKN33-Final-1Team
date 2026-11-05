@@ -3,6 +3,7 @@ import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
+import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import { frameworkPrefix, frameworkJson } from './frameworkClient.js';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
@@ -20,6 +21,7 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   const [file, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
+  const [humanReviews, setHumanReviews] = useState({});
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -28,12 +30,19 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
   const keys = useRef(new Map());
   const uploaded = useRef(null);
   const amendmentForm = useRef(null);
+  const humanReviewForm = useRef(null);
   const latest = overview?.latest_version;
   const status = run?.execution_status;
   const sourceDraft = status === 'waiting_criteria' && !run.baseline;
   const criteria = latest?.version.criteria || run?.criteria?.criteria || [];
+  const reviewItems = run ? reviewableItems(run) : [];
+  const requiredItems = (run?.validated?.items || []).filter(item => item.required);
+  const canFinalize = requiredItems.length > 0 && requiredItems.every(item => item.verdict === 'pass' ||
+    (item.verdict === 'review' && reviewItems.some(candidate => candidate.criterion_id === item.criterion_id) &&
+      humanReviews[item.criterion_id]?.verdict === 'pass')) && !Object.values(humanReviews).some(item => item.verdict === 'fail');
 
   useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => { setHumanReviews({}); }, [runId]);
   useEffect(() => {
     const controller = new AbortController();
     let timer;
@@ -96,9 +105,12 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
     openRun(child.context.run_id);
   }
   async function decide(decision, signal) {
+    const reviews = Object.values(humanReviews).filter(item => item.verdict);
+    if (reviews.length && !humanReviewForm.current.reportValidity()) return;
     const snapshot = await command(path + '/approvals', { context: run.context, actor_id: run.context.actor_id, decision,
-      reason: decision === 'approve_changes' ? reason.trim() : '' }, null, signal);
-    setRun(snapshot); setReason('');
+      ...(reviews.length ? { human_reviews: reviews } : {}),
+      reason: decision === 'approve_changes' ? reason.trim() : reviews.length ? '항목별 직접 확인 결과와 근거를 검토하고 승인했습니다.' : '' }, null, signal);
+    setRun(snapshot); setReason(''); setHumanReviews({});
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
 
@@ -160,12 +172,19 @@ export default function FrameworkReviewPage({ runId, initialFile, openRun, onNew
         <p style={{ whiteSpace: 'pre-wrap' }}>{run.report.summary}</p>
         <ul>{run.report.change_requests.map((item, i) => <li key={i}>{item}</li>)}</ul></section>}
       {status === 'waiting_review' && <>
-        {run.machine_verdict === 'pass' && <button className="rv-button primary" disabled={busy}
-          onClick={() => perform(signal => decide('approve_final', signal))}>최종 승인</button>}
+        {reviewItems.length > 0 && <form ref={humanReviewForm} onSubmit={e => e.preventDefault()}>
+          <HumanReview items={reviewItems} values={humanReviews} onChange={setHumanReviews} disabled={busy} />
+        </form>}
+        {(run.machine_verdict === 'pass' || reviewItems.length > 0) && <button className="rv-button primary" disabled={busy || !canFinalize}
+          onClick={() => perform(signal => decide('approve_final', signal))}>{run.machine_verdict === 'pass' ? '최종 승인' : '사람 확인 후 최종 승인'}</button>}
         <label>수정 요청 사유 <input disabled={busy} value={reason} onChange={e => setReason(e.target.value)} /></label>
         <button className="rv-button secondary" disabled={busy || !reason.trim()} onClick={() => perform(signal => decide('approve_changes', signal))}>수정 요청 승인</button>
       </>}
       {status === 'completed' && <p role="status">담당자 승인 완료</p>}
+      {run?.approvals?.flatMap(approval => (approval.human_reviews || []).map(item => <section key={approval.decision + item.criterion_id}>
+        <h3>담당자 확인 · {item.criterion_id} · {verdicts[item.verdict]}</h3>
+        <p>{item.observed}</p><p>근거: {item.reference} · 사유: {item.reason}</p><p>검토자: {approval.actor_id}</p>
+      </section>))}
       <ErrorMessage message={error} />
       {error && <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>}
       <button className="text-btn" disabled={busy} onClick={onNew}>새 검수</button>

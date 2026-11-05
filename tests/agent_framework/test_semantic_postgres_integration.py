@@ -218,6 +218,28 @@ def test_semantic_pdf_uses_same_worker_and_keeps_missing_condition_unapproved(se
     assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_UNRESOLVED'
 
 
+def test_replacement_requirement_is_a_new_approved_version_with_preserved_history(semantic):
+    from tests.agent_framework.test_criteria_review import edit
+    r=semantic;record=register(r,text='제목: 밤의 도서관\n허용 범위: 공백 차이를 허용한다.').json()
+    rid,saved,_,_=run_extraction(r,record,{'requirements':[requirement(1,'title_phrase','밤의 도서관')]})
+    route='/api/framework/v1/runs/'+rid;first=create_version(r,rid,saved['criteria']);old=first['version']['criteria'][0]
+    assert old['details']['qualifiers']
+    change=edit(old['criterion_id'],expected='밤의 도서관');change['resolution'].update(
+        target='poster_text',field='title_phrase',replacement_text='제목은 밤의 도서관으로 표기한다.')
+    change['source']['quote']='담당자 회신: 제목은 밤의 도서관으로 표기한다.'
+    body={'parent_version_id':first['version']['criteria_version_id'],'expected_base_sha256':first['sha256'],
+        'purpose':'synthetic_test','edits':[change]}
+    response=r.client.post(route+'/criteria-versions',json=body,headers={**csrf(r.client),'Idempotency-Key':str(uuid4())})
+    assert response.status_code==201,response.text
+    second=response.json();current=second['version']['criteria'][0]
+    assert current['text']==change['resolution']['replacement_text'] and not current['details']['qualifiers']
+    assert current['source']==old['source'] and current['value_source']['quote']==change['source']['quote']
+    approved=approve(r,rid,second);assert approved.status_code==200,approved.text
+    assert approved.json()['criteria']==second
+    assert r.client.get(route+'/criteria-versions/'+first['version']['criteria_version_id']).json()==first
+    assert r.client.get(route).json()['criteria']==saved['criteria']
+
+
 def test_model_paragraphs_persist_and_project_to_frontend_without_approval(semantic):
     from tests.agent_framework.test_requirements_presentation import presentation_reply
     r=semantic

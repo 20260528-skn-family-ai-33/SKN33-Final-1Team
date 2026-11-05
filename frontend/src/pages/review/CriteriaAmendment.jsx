@@ -33,6 +33,14 @@ export default function CriteriaAmendment({ value, onChange, disabled }) {
       {Object.entries(operators[resolution.kind]).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
     </select></label>
     <label>보완값 <input required maxLength={4000} value={resolution.expected} onChange={e => updateResolution({ expected: e.target.value })} /></label>
+    <label><input type="checkbox" checked={resolution.replacement_text !== undefined} onChange={e => {
+      const next = { ...resolution };
+      if (e.target.checked) next.replacement_text = ''; else delete next.replacement_text;
+      onChange({ ...value, resolution: next });
+    }} /> 회신에 따라 조건 자체를 변경</label>
+    {resolution.replacement_text !== undefined && <label>변경한 전체 조건 <textarea required maxLength={4000}
+      value={resolution.replacement_text} onChange={e => updateResolution({ replacement_text: e.target.value })} /></label>}
+    {resolution.replacement_text !== undefined && <p>기존 허용 조건을 포함해 대체할 조건 전체를 회신 원문 그대로 입력하세요. 새 버전의 원문·변경 이력을 보존하고 전체 기준을 다시 승인받습니다.</p>}
     {resolution.kind === 'number' && <label>단위 <input maxLength={80} value={resolution.unit || ''} onChange={e => updateResolution({ unit: e.target.value || null })} /></label>}
     <label><input type="checkbox" checked={resolution.required} onChange={e => updateResolution({ required: e.target.checked })} /> 필수 조건</label>
     <label>보완 사유 <input required maxLength={4000} value={value.reason} onChange={e => onChange({ ...value, reason: e.target.value })} /></label>

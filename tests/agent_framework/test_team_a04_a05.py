@@ -323,6 +323,24 @@ def sent_criteria(request):
     return [row["criterion_id"] for row in json.loads(text.split("CRITERIA_JSON:\n", 1)[1])]
 
 
+def test_human_supplement_reaches_model_with_the_original_pending_source():
+    from datetime import datetime, timezone
+    from backend.agent_framework.contracts import CriteriaValueSource
+    quote='관람시간은 10:00로 확정합니다.'
+    supplement=CriteriaValueSource(record_id='reply-1',purpose='synthetic_test',reference='담당자 회신',quote=quote,
+        quote_sha256=sha256(quote.encode()).hexdigest(),submitted_by='reviewer-1',submitted_at=datetime.now(timezone.utc),synthetic=True)
+    c=criterion('time','text','contains','10:00','관람시간은 확인 중입니다.').model_copy(
+        update={'human_added':True,'value_source':supplement})
+    seen=[]
+    def handler(request):
+        text=json.loads(request.content)['messages'][1]['content'][0]['text']
+        seen.extend(json.loads(text.split('CRITERIA_JSON:\n',1)[1]))
+        return httpx.Response(200,json=chat_response([row('time','10:00','pass',None)]))
+    client(handler).inspect((c,),model_image())
+    assert seen[0]['expected']=='10:00' and seen[0]['text']==c.text
+    assert seen[0]['supplement']=={'quote':quote,'reference':supplement.reference}
+
+
 @pytest.mark.parametrize(("box_format", "raw_box"), (("normalized", [0.1, 0.2, 0.5, 0.6]),
                                                      ("relative_1000", [100, 200, 500, 600]),
                                                      ("pixel", [20, 20, 100, 60])))

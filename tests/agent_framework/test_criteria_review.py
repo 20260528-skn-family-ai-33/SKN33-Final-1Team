@@ -195,3 +195,50 @@ def test_old_amendment_payload_keeps_its_idempotency_fingerprint():
     from backend.agent_framework.criteria_contracts import CriterionResolution
     old={'contract_version':'3.0.0',**edit('c')['resolution']}
     assert CriterionResolution.model_validate(old).model_dump(mode='json')==old
+
+
+@pytest.mark.parametrize('replace',[False,True])
+def test_only_explicit_grounded_replacement_changes_original_allowances(replace):
+    from tests.agent_framework.test_a02_semantic import extract,text_document,requirement
+    _,source,_,_=extract({'requirements':[requirement(1,'title_phrase','밤의 도서관')]},
+        text_document('제목: 밤의 도서관\n허용 범위: 공백 차이를 허용한다.'))
+    before=source.model_dump_json();c=source.criteria[0]
+    value=edit(c.criterion_id,expected='밤의 도서관');value['resolution'].update(target='poster_text',field='title_phrase')
+    if replace:
+        value['resolution']['replacement_text']='제목은 밤의 도서관으로 표기한다.'
+        value['source']['quote']='담당자 회신: 제목은 밤의 도서관으로 표기한다.'
+    request=CriteriaVersionRequest(parent_version_id=None,expected_base_sha256=digest(source),purpose='synthetic_test',edits=[value])
+    revised=revise_criteria(source,None,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    current=revised.criteria[0]
+    assert source.model_dump_json()==before and current.source==c.source
+    assert bool(current.details.qualifiers) is not replace
+    assert current.text==(value['resolution']['replacement_text'] if replace else c.text)
+    assert revised.changes[0].source.quote==value['source']['quote']
+    again=CriteriaVersionRequest(parent_version_id=revised.criteria_version_id,expected_base_sha256=digest(revised),
+        purpose='synthetic_test',edits=[edit(c.criterion_id,expected='밤의 도서관')])
+    later=revise_criteria(source,revised,again,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert later.criteria[0].text==current.text and later.criteria[0].details.qualifiers==current.details.qualifiers
+    from backend.agent_framework.adapters.synthetic import sample_inputs
+    from backend.agent_framework.contracts import ValidateRequest,InspectionResult,Observation,ImageEvidence
+    from backend.agent_framework.validation import ReferenceValidator
+    _,_,asset=sample_inputs();context=revised.context.model_copy(update={'asset_version_id':asset.asset_version_id})
+    evidence=freeze_approved_context(context,revised.criteria,synthetic=True)
+    observations=tuple(Observation(criterion_id=c.criterion_id,observed=c.expected,observation_status='observed',verdict='pass',
+        image=ImageEvidence(asset_version_id=asset.asset_version_id,asset_hash=asset.sha256),
+        evidence_ids=tuple(e.evidence_id for e in evidence.evidence if c.criterion_id in e.criterion_ids)) for c in revised.criteria)
+    request=ValidateRequest(context=context,criteria=revised.criteria,asset=asset,evidence=evidence,
+        inspection=InspectionResult(context=context,observations=observations,synthetic=True))
+    result=ReferenceValidator().validate(request)
+    assert result.items[0].verdict==('pass' if replace else 'review')
+    if replace:
+        qualified=current.model_copy(update={'text':'제목은 밤의 도서관으로 표기한다. 공백 차이는 허용한다.'})
+        qualified_request=request.model_copy(update={'criteria':(qualified,*revised.criteria[1:])})
+        assert 'qualifier_interpretation_required' in ReferenceValidator().validate(qualified_request).items[0].issues
+
+
+@pytest.mark.parametrize('replacement,quote',[('다른 제목','담당자 회신'),('새 조건','새 조건 밤의 도서관'),(' ','밤의 도서관')])
+def test_replacement_cannot_drop_the_expected_value_or_forge_a_reply(replacement,quote):
+    from backend.agent_framework.criteria_contracts import CriteriaEdit
+    value=edit('c',expected='밤의 도서관');value['source']['quote']=quote
+    value['resolution'].update(target='poster_text',field='title_phrase',replacement_text=replacement)
+    with pytest.raises(ValidationError):CriteriaEdit.model_validate(value)

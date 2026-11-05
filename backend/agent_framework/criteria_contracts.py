@@ -27,9 +27,15 @@ class CriterionResolution(Contract):
     required: bool = Field(strict=True)
     target: Literal['poster_text','poster_visual','file_metadata','delivery','unspecified'] | None = None
     field: str | None = Field(default=None,pattern=r'^[a-z][a-z0-9_]{0,63}$')
+    replacement_text: str | None = Field(default=None,strict=True,min_length=1,max_length=4000)
 
     @model_validator(mode='after')
     def consistent_scope(self):
+        if self.replacement_text is not None:
+            if not self.replacement_text.strip() or self.target is None:
+                raise ValueError('a replacement requirement needs text and inspection scope')
+            if self.expected and self.expected not in self.replacement_text or self.unit and self.unit not in self.replacement_text:
+                raise ValueError('replacement requirement must include expected value and unit')
         if (self.target is None)!=(self.field is None):raise ValueError('target and field must be supplied together')
         if self.target is not None:
             RequirementDetails(target=self.target,field=self.field)
@@ -43,6 +49,7 @@ class CriterionResolution(Contract):
         data=handler(self)
         if self.target is None:
             data.pop('target',None);data.pop('field',None)
+        if self.replacement_text is None:data.pop('replacement_text',None)
         return data
 
 
@@ -59,6 +66,8 @@ class CriteriaEdit(Contract):
         if (self.action=='amend')!=(self.resolution is not None):raise ValueError('only amendments require a resolution')
         if self.resolution is not None:
             r=self.resolution
+            if r.replacement_text is not None and r.replacement_text not in self.source.quote:
+                raise ValueError('replacement requirement must occur in supplement')
             if r.expected and r.expected not in self.source.quote:raise ValueError('expected must occur in supplement')
             if r.unit is not None and (not r.unit.strip() or r.unit not in self.source.quote):raise ValueError('unit must occur in supplement')
         return self
