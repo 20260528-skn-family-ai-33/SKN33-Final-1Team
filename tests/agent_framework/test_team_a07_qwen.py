@@ -1,4 +1,4 @@
-"""A07 Qwen 문장 다듬기 호출: 가짜 서버(httpx.MockTransport)로 성공·재시도·실패 시 규칙 문장. 실제 서버 없음."""
+"""A07 Qwen 문장 다듬기: 단일 호출·결과 불명·확정 실패 시 규칙 문장. 실제 서버 없음."""
 from __future__ import annotations
 
 import json
@@ -67,8 +67,8 @@ def test_polished_sentences_are_added_without_changing_facts():
     ((envelope("이건 JSON이 아닙니다"),), "형식"),
     ((httpx.Response(200, text="<html>"),), "형식"),
     ((httpx.Response(400),), "HTTP 400"),
-    ((httpx.Response(503), httpx.Response(500)), "연결하지 못했습니다"),
-    ((httpx.ConnectError("down"), httpx.ConnectError("down")), "연결하지 못했습니다"),
+    ((httpx.Response(503),), "HTTP 503"),
+    ((httpx.ConnectError("down"),), "연결하지 못했습니다"),
 ])
 def test_any_failure_falls_back_to_the_rule_report(responses, problem):
     request = fixture("fail")
@@ -78,19 +78,44 @@ def test_any_failure_falls_back_to_the_rule_report(responses, problem):
     assert any(problem in p for p in qwen.last_problems)
 
 
-def test_connection_errors_and_5xx_are_retried_once_but_4xx_is_not():
-    qwen, sent = polisher(httpx.Response(503), envelope(GOOD))
-    assert qwen.polish(items(fixture("fail"))) == {"requirement-number": (GOOD["items"][0]["explanation"],
-                                                                         GOOD["items"][0]["action"])}
-    assert len(sent) == 2 and qwen.calls == 2
-    rejected, sent = polisher(httpx.Response(400), envelope(GOOD))
-    assert rejected.polish(items(fixture("fail"))) is None and len(sent) == 1
+@pytest.mark.parametrize('response', [httpx.Response(503), httpx.Response(429), httpx.Response(400),
+    httpx.ConnectError('down'), httpx.ConnectTimeout('connect'), httpx.PoolTimeout('pool')])
+def test_known_failure_falls_back_without_automatic_resubmission(response):
+    qwen, sent = polisher(response, envelope(GOOD))
+    request = fixture('fail')
+    assert invoke_role('A07', TeamA07Reporter(qwen), request) == invoke_role('A07', TeamA07Reporter(), request)
+    assert len(sent) == qwen.calls == 1
+
+
+@pytest.mark.parametrize('failure', [httpx.ReadTimeout, httpx.WriteTimeout, httpx.ReadError,
+    httpx.WriteError, httpx.RemoteProtocolError])
+def test_uncertain_completion_propagates_without_retry_or_success_report(failure):
+    qwen, sent = polisher(failure('unknown'), envelope(GOOD))
+    with pytest.raises(AdapterFailure) as error:
+        invoke_role('A07', TeamA07Reporter(qwen), fixture('fail'))
+    assert error.value.code == 'MODEL_OUTCOME_UNKNOWN' and error.value.outcome_unknown
+    assert len(sent) == qwen.calls == 1
+    assert qwen.last_problems
 
 
 def test_passing_report_never_calls_the_server():
     qwen, sent = polisher()
     draft = invoke_role("A07", TeamA07Reporter(qwen), fixture("pass"))
     assert sent == [] and POLISH_NOTICE not in draft.summary
+
+
+def test_workflow_records_a07_timeout_as_outcome_unknown():
+    from tests.agent_framework.test_runtime import Examples,context,document,asset,approval
+    from backend.agent_framework.ports import Agents
+    from backend.agent_framework.runtime import Workflow
+    example=Examples(observed='Different');qwen,sent=polisher(httpx.ReadTimeout('unknown'),envelope(GOOD))
+    flow=Workflow(Agents(extractor=example,inspector=example,validator=example,reporter=TeamA07Reporter(qwen)),profile='test')
+    ctx=context();flow.start(ctx,document(),asset())
+    result=flow.approve(ctx.run_id,approval(ctx,'approve_criteria'))
+    assert result.execution_status=='outcome_unknown' and result.error.outcome_unknown
+    assert result.error.code=='MODEL_OUTCOME_UNKNOWN' and result.report is None
+    with pytest.raises(ValueError):flow.approve(ctx.run_id,approval(ctx,'approve_criteria'))
+    assert len(sent)==qwen.calls==1
 
 
 def test_an_unexpected_polisher_error_does_not_stop_the_report():

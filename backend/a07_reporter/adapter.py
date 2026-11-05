@@ -18,7 +18,7 @@ from typing import Protocol
 
 from backend.a07_reporter.details import detail_lines, facts
 from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest, ValidatedItem
-from backend.agent_framework.ports import Reporter
+from backend.agent_framework.ports import AdapterFailure, Reporter
 
 VERDICT = {"pass": "통과", "fail": "불충족", "review": "확인 필요"}
 ORDER = {"fail": 0, "review": 1, "pass": 2}
@@ -172,6 +172,10 @@ class TeamA07Reporter:
             return {}
         try:
             return self.polisher.polish(reports) or {}
+        except AdapterFailure as error:
+            if error.outcome_unknown:
+                raise
+            return {}
         except Exception:   # 문장 다듬기 실패가 보고를 막지 않는다(규칙 문장으로 보고)
             return {}
 
