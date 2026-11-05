@@ -16,5 +16,7 @@
   "minimum_free_gpu_mib": 14336,
   "language_model_only": true,
   "enforce_eager": true,
+  "enable_auto_tool_choice": true,
+  "tool_call_parser": "qwen3_coder",
   "api_key_environment": "VLLM_API_KEY"
 }

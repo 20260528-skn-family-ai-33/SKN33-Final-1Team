@@ -15,13 +15,18 @@ from .loop import ChatModel, ToolClient, ToolSpec, bound, read_fact, required, r
 
 _ROLE = '너는 포스터 검수 워크플로의 A08 재검수 에이전트다.\n'
 _ANSWER = '마지막 답은 JSON 객체 하나만 출력한다:\n'
+_REQUEST_OUTPUT_GUIDANCE = (
+    '지금은 재검수 요청 여부를 판단하는 단계이며 전후 검사 결과를 비교하는 단계가 아니다. '
+    'resolved, unresolved, new_violations는 비교 결과의 조건 ID 목록이므로 '
+    '요청 성공·거절 여부와 관계없이 세 목록을 항상 빈 배열 []로 출력한다. '
+    '승인 누락·거절 이유·실행 상태는 summary 문자열에만 적고 세 목록에는 넣지 않는다.\n')
 REQUEST_SYSTEM = _ROLE + """부모 실행을 조회해 재검수 조건을 확인한다. 조건은 두 가지가 모두 참일 때만 충족된다:
 1) execution_status == "waiting_revision"  2) human_decision == "changes_approved"
 approve_criteria는 조건 초안 확정이며 수정 요청 승인이 아니다. 수정 요청 승인은 approve_changes다.
 조건이 충족되면 request_rereview를 한 번 호출한다. 충족되지 않으면 호출하지 말고 이유를 설명한다.
 rereview_requested는 request_rereview를 실제로 호출해 completed 결과를 받았을 때만 true다.
 과거 pass나 승인은 새 버전에 승계되지 않으며, 새 실행에서 조건을 다시 승인하고 전체 조건을 다시 검사한다.
-""" + _ANSWER + '{"rereview_requested": true|false, "resolved": [], "unresolved": [], "new_violations": [], "summary": "한국어 설명"}'
+""" + _REQUEST_OUTPUT_GUIDANCE + _ANSWER + '{"rereview_requested": true|false, "resolved": [], "unresolved": [], "new_violations": [], "summary": "한국어 설명"}'
 COMPARE_SYSTEM = _ROLE + """부모 실행(수정 전)과 자식 실행(수정 후)의 validated_items를 조건 ID별로 비교해 설명한다.
 - resolved: 부모에서 pass가 아니었고 자식에서 pass인 조건
 - unresolved: 부모에서 pass가 아니었고 자식에서도 pass가 아닌 조건
@@ -79,11 +84,11 @@ class RereviewAgent:
                     '호출하라. 요청하지 않을 거라면 rereview_requested를 false로 하여 ' + _FINAL)
 
         task = (f'부모 실행 {json.dumps(parent_run_id)}에 새 포스터 버전 {json.dumps(asset.asset_version_id)}이 '
-                f'제출되었다. 재검수를 요청할지 판단하고 JSON으로 답하라.')
+                f'제출되었다. 재검수를 요청할지 판단하고 JSON으로 답하라. ' + _REQUEST_OUTPUT_GUIDANCE)
         used: list[str] = []
         try:
             draft, _ = run_agent(self.model, system=REQUEST_SYSTEM, task=task, tools=specs, output=RereviewDraft,
-                                    revise=revise, completed_tools=used)
+                                    revise=revise, completed_tools=used, format_guidance=_REQUEST_OUTPUT_GUIDANCE)
             requested = 'request_rereview' in used
             if draft.rereview_requested != requested:
                 raise AdapterFailure('AGENT_OUTPUT_INCONSISTENT', 'The agent answer differs from the executed command.')

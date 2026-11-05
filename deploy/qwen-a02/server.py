@@ -27,20 +27,29 @@ def load_config(path):
         raise ValueError('INVALID_SERVER_LIMIT')
     if config['max_num_seqs']!=1 or not config['language_model_only'] or not config['enforce_eager']:
         raise ValueError('INITIAL_A02_PROFILE_REQUIRED')
+    # Old A02-only JSON files remain valid. The pinned Qwen3.5/vLLM profile
+    # requires a matching parser whenever automatic tool selection is enabled.
+    automatic=config.get('enable_auto_tool_choice',False)
+    tool_parser=config.get('tool_call_parser')
+    if (type(automatic) is not bool or (automatic and tool_parser!='qwen3_coder')
+            or (not automatic and tool_parser is not None)):
+        raise ValueError('INVALID_TOOL_CALLING_CONFIGURATION')
     manifest=json.loads((HERE/'model-manifest.json').read_text(encoding='utf-8'))
     if any(config[k]!=manifest[k] for k in ('model','revision')):raise ValueError('MODEL_REVISION_MISMATCH')
     return config
 
 
 def command(config):
-    return [str(PurePosixPath(config['venv_directory'])/'bin/python'),'-m','vllm.entrypoints.openai.api_server',
+    result=[str(PurePosixPath(config['venv_directory'])/'bin/python'),'-m','vllm.entrypoints.openai.api_server',
         '--model',config['model_directory'],'--served-model-name',config['model'],
         '--host',config['host'],'--port',str(config['port']),'--dtype',config['dtype'],
         '--tensor-parallel-size','1','--max-model-len',str(config['max_model_len']),
         '--max-num-seqs',str(config['max_num_seqs']),'--gpu-memory-utilization',str(config['gpu_memory_utilization']),
         '--language-model-only','--enforce-eager','--reasoning-parser','qwen3',
-        '--enable-auto-tool-choice','--tool-call-parser','qwen3_coder',
         '--default-chat-template-kwargs','{"enable_thinking":false}']
+    if config.get('enable_auto_tool_choice',False):
+        result+=['--enable-auto-tool-choice','--tool-call-parser',config['tool_call_parser']]
+    return result
 
 
 def gpu_rows():
