@@ -10,13 +10,15 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const base = process.env.E2E_REQUIREMENTS_URL || 'http://127.0.0.1:5177';
 
-test('PDF 분석 문단 전체를 3. 검수 요구사항에 추가하고 재선택으로 중복 접수하지 않는다', { timeout: 60000 }, async t => {
+for (const mode of ['resolved', 'pending_empty', 'pending_existing']) {
+test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한다 (${mode})`, { timeout: 60000 }, async t => {
+  const pendingOnly = mode !== 'resolved';
   if (!process.env.E2E_REQUIREMENTS_URL) {
     const child = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5177', '--strictPort'], {
       cwd: root, stdio: 'pipe', env: { ...process.env, VITE_API_PROFILE: 'legacy' },
     });
     let output = ''; child.stdout.on('data', data => { output += data; }); child.stderr.on('data', data => { output += data; });
-    t.after(() => { if (child.exitCode === null) child.kill(); });
+    t.after(() => child.exitCode === null ? new Promise(resolve => { child.once('exit', resolve); child.kill(); }) : undefined);
     let ready = false;
     for (let i = 0; i < 80; i++) {
       if (child.exitCode !== null) throw new Error(output);
@@ -41,7 +43,8 @@ test('PDF 분석 문단 전체를 3. 검수 요구사항에 추가하고 재선�
     text: type === 'visual' ? requirement : `${label}: ${requirement}`, page: index < 5 ? 1 : 2, source: requirement }));
   const recorded = process.env.E2E_REQUIREMENTS_RESULT_FILE
     ? JSON.parse(readFileSync(process.env.E2E_REQUIREMENTS_RESULT_FILE, 'utf8')).presentation : null;
-  const items = recorded?.conditions || fixtureItems;
+  const items = pendingOnly ? [] : recorded?.conditions || fixtureItems;
+  const pending = pendingOnly ? [{ criterion_id: 'pending-1', page: 1, source: '행사 날짜는 확인 중입니다.' }] : [];
   await page.route(base + '/api/**', async route => {
     const request = route.request(); const path = new URL(request.url()).pathname;
     let body;
@@ -59,8 +62,12 @@ test('PDF 분석 문단 전체를 3. 검수 요구사항에 추가하고 재선�
       admissions++;
       assert.equal(request.postData(), null);
       body = { context: { run_id: 'run-fixture' }, execution_status: 'queued' };
-    } else if (path === '/api/framework/v1/runs/run-fixture') body = { execution_status: 'waiting_criteria' };
-    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, page_count: 2, warnings: recorded?.warnings || [],
+    } else if (path === '/api/framework/v1/runs/run-fixture') body = { execution_status: 'waiting_criteria',
+      context: { run_id: 'run-fixture' }, criteria: { criteria: pending.map(item => ({
+        criterion_id: item.criterion_id, text: item.source, expected: '', source: { page: item.page, quote: item.source },
+      })) } };
+    else if (path.endsWith('/run-fixture/criteria-review')) body = { latest_version: null, source_draft_sha256: 'a'.repeat(64) };
+    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2, warnings: recorded?.warnings || [],
       framework: { run_id: 'run-fixture', document_version_id: 'document-fixture' } };
     else { oldRequests++; return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } }); }
     return route.fulfill({ json: body });
@@ -68,19 +75,28 @@ test('PDF 분석 문단 전체를 3. 검수 요구사항에 추가하고 재선�
   await page.goto(base + '/review/new');
   try { await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor(); }
   catch (error) { throw new Error(`${error.message}\n${page.url()}\n${(await page.locator('body').innerText()).slice(0, 1800)}\n${errors.join('\n')}`); }
-  await page.locator('#requirements').fill('직접 입력: 보존');
+  const current = mode === 'pending_empty' ? '' : '직접 입력: 보존';
+  await page.locator('#requirements').fill(current);
   await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 PDF 선택"]').disabled);
   const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
   await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
   const expectedTexts = [...new Set(items.map(item => item.text))];
-  const expected = ['직접 입력: 보존', ...expectedTexts].join('\n\n');
+  const expected = [current, ...expectedTexts].filter(Boolean).join('\n\n');
   await page.waitForFunction(value => document.querySelector('#requirements').value === value, expected);
   assert.equal(await page.locator('#requirements').inputValue(), expected);
-  await page.getByText(new RegExp(`${expectedTexts.length}개 요구사항 문단을 추가했습니다`)).waitFor();
+  await page.getByText(pendingOnly ? /미확정 항목 1개/ : new RegExp(`${expectedTexts.length}개 요구사항 문단을 추가했습니다`)).waitFor();
   if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
   await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
-  await page.getByText(/0개 요구사항 문단을 추가했습니다/).waitFor();
+  await page.getByText(pendingOnly ? /미확정 항목 1개/ : /0개 요구사항 문단을 추가했습니다/).waitFor();
   assert.equal(await page.locator('#requirements').inputValue(), expected);
+  if (pendingOnly) {
+    await page.getByRole('button', { name: mode === 'pending_empty' ? 'PDF 검수 기준 확인하기' : 'brief.pdf 원문 기준 승인하기' }).click();
+    await page.getByRole('heading', { name: 'PDF 기준 포스터 검수' }).waitFor();
+    await page.getByText('1쪽 · 행사 날짜는 확인 중입니다.', { exact: true }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get('framework'), 'run-fixture');
+    assert.equal(await page.getByRole('button', { name: '이 버전의 전체 기준 승인' }).count(), 0);
+  }
   assert.equal(uploads, 1); assert.equal(admissions, 1); assert.equal(oldRequests, 0);
   assert.deepEqual(errors, []);
 });
+}

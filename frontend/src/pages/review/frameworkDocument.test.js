@@ -14,7 +14,7 @@ const result = { framework: { run_id: 'run-1', document_version_id: 'doc-1' }, p
   { text: '문구와 이미지가 잘리지 않아야 합니다.', type: 'visual', label: '잘림', requirement: '문구와 이미지가 잘리지 않아야 합니다.', inspection: '', level: '필수', page: 2, source: '문구와 이미지가 잘리지 않아야 합니다.' },
 ] };
 
-function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], upload, admit } = {}) {
+function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], upload, admit, requirements = result } = {}) {
   const calls = [];
   t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
     calls.push({ url, options });
@@ -37,7 +37,7 @@ function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], upl
       return Response.json({ context: { run_id: 'run-1' }, execution_status: 'queued' }, { status: 202 });
     }
     if (url === prefix + runPath) return Response.json({ execution_status: statuses.length > 1 ? statuses.shift() : statuses[0], error: { code: 'QWEN_OUTCOME_UNKNOWN' } });
-    if (url === prefix + runPath + '/requirements') return Response.json(result);
+    if (url === prefix + runPath + '/requirements') return Response.json(requirements);
     throw new Error('unexpected request: ' + url);
   });
   return calls;
@@ -54,6 +54,29 @@ test('등록·해시 확인·단일 접수·조회 후 다양한 문단을 기�
   assert.equal(merged.requirements, '직접 입력: 유지\n\n필수 고지: 무료 관람\n\n문구와 이미지가 잘리지 않아야 합니다.');
   assert.equal(merged.sources[1].type, 'visual');
 });
+
+for (const current of ['', '  직접 입력: 유지\n']) {
+  test(`미확정 항목만 있어도 기존 입력과 실행 ID를 보존한다 (${current ? '기존 입력' : '빈 입력'})`, async t => {
+    const pending = [{ criterion_id: 'pending-1', page: 1, source: '행사 날짜는 확인 중입니다.' }];
+    const calls = setup(t, { statuses: ['waiting_criteria'], requirements: { ...result, conditions: [], pending } });
+    const attempt = {};
+    const response = await extractDocumentWithProgress(file, { projectId: 'p', attempt });
+    assert.deepEqual(mergeDocumentRequirements(current, response, file.name), { requirements: current, sources: [], addedCount: 0 });
+    assert.equal(response.framework.run_id, 'run-1');
+    assert.deepEqual(response.pending, pending);
+    await extractDocumentWithProgress(file, { projectId: 'p', attempt });
+    assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 1);
+  });
+}
+
+for (const pending of [[], 'invalid', null]) {
+  test(`검토 항목 없는 응답은 기존 입력으로 반영하지 않는다 (${JSON.stringify(pending)})`, async t => {
+    const requirements = { ...result, conditions: [], pending };
+    setup(t, { statuses: ['waiting_criteria'], requirements });
+    await assert.rejects(extractDocumentWithProgress(file, { projectId: 'p' }), /검토할 요구사항/);
+    assert.throws(() => mergeDocumentRequirements('기존 입력', requirements, file.name));
+  });
+}
 
 test('접수 응답이 유실되면 같은 키를 재사용하고 성공 뒤에는 조회만 한다', async t => {
   let first = true;

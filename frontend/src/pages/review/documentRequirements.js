@@ -1,6 +1,10 @@
 // 기존 입력은 보존하고 PDF 조건을 합친다. 한도 초과 시 조용히 자르지 않는다.
 export function mergeDocumentRequirements(current, document, filename) {
   if (!Array.isArray(document?.conditions) || !document.conditions.length) {
+    if (Array.isArray(document?.conditions) && document.framework?.run_id
+      && Array.isArray(document.pending) && document.pending.length) {
+      return { requirements: current, sources: [], addedCount: 0 };
+    }
     throw new Error('PDF에서 요구조건을 찾지 못했습니다. 기존 입력은 유지됩니다.');
   }
   const existing = new Set(current.split(/\r?\n/).map(line => line.trim()).filter(Boolean));
