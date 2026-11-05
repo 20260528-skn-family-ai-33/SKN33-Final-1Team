@@ -80,6 +80,25 @@ def test_approval_blocks_unresolved_or_unsupported_conditions(kind,operator,expe
     assert issue in approval_blockers((c,))[c.criterion_id]
 
 
+@pytest.mark.parametrize('expected,unit,observed,valid',(
+    ('10,000',None,'10000',True),('10,000원','원','10000',True),
+    ('10,000원',None,'10000원',True),('-1.50','kg','-1.5',True),
+    ('1e3',None,'1000',False),('1e-3',None,'0.001',False),
+    ('1_000',None,'1000',False),('0,001',None,'1',False),
+    ('001,000',None,'1000',False),('3kg','개','3',False),
+    ('3',' ','3',False),('NaN',None,'3',False),('Infinity',None,'3',False)))
+def test_approval_and_a06_share_numeric_syntax_and_unit_rules(expected,unit,observed,valid):
+    from tests.agent_framework.test_a06_policy import number_request,validate
+    request=number_request(expected,unit,observed,unit)
+    blockers=approval_blockers(request.criteria)
+    item,=validate(request).items
+    if valid:
+        assert blockers=={} and item.verdict=='pass'
+    else:
+        assert blockers=={request.criteria[0].criterion_id:('numeric_expected_invalid',)}
+        assert item.verdict=='review' and 'numeric_expectation_invalid' in item.issues
+
+
 @pytest.mark.parametrize('mutation',('unknown','all_excluded','duplicate','ungrounded','blank_reference','spoof_actor'))
 def test_invalid_edits_cannot_hide_scope_or_attribute_false_provenance(mutation):
     source=draft();value=edit(source.criteria[0].criterion_id)

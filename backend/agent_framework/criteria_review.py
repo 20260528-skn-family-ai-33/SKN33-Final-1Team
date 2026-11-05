@@ -3,7 +3,6 @@
 No model calls or implicit approvals. File checks happen outside DB transactions;
 project/run locks serialize optimistic version and approval commands.
 """
-from decimal import Decimal,InvalidOperation
 from hashlib import sha256
 from uuid import UUID,uuid5,NAMESPACE_URL
 
@@ -18,7 +17,7 @@ from .criteria_contracts import (CriteriaApprovalRecord,CriteriaApprovalRequest,
 from .context import freeze_approved_context
 from .documents import versions as documents
 from .postgres import approvals,runs,steps,payload,digest
-from .validation import _criteria,validate_draft,validate_evidence
+from .validation import _criteria,_number,validate_draft,validate_evidence
 
 metadata=MetaData(schema='agent_framework')
 versions=Table('criteria_versions',metadata,*(Column(n,t) for n,t in (
@@ -44,8 +43,8 @@ def approval_blockers(criteria):
         if not criterion.expected.strip():issues.append('missing_expected_value')
         if criterion.kind=='number' and criterion.expected.strip():
             try:
-                if not Decimal(criterion.expected).is_finite():raise InvalidOperation
-            except InvalidOperation:issues.append('numeric_expected_invalid')
+                _number(criterion.expected,criterion.unit)
+            except ValueError:issues.append('numeric_expected_invalid')
         if criterion.human_added and criterion.value_source is None:issues.append('missing_value_source')
         if issues:result[criterion.criterion_id]=tuple(issues)
     return result
