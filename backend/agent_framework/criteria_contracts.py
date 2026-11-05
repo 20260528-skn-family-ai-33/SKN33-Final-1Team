@@ -1,9 +1,9 @@
 """Human review commands are separate from untrusted model responses."""
 from typing import Annotated,Literal
 from uuid import UUID
-from pydantic import AwareDatetime,Field,model_validator
+from pydantic import AwareDatetime,Field,model_serializer,model_validator
 
-from .contracts import (Approval,Context,Contract,Criterion,CriteriaValueSource,EvidenceBundle,Hash,Identifier)
+from .contracts import (Approval,Context,Contract,Criterion,CriteriaValueSource,EvidenceBundle,Hash,Identifier,RequirementDetails)
 
 Purpose=Literal['human_review','synthetic_test']
 Text=Annotated[str,Field(strict=True,min_length=1,max_length=4000)]
@@ -25,6 +25,25 @@ class CriterionResolution(Contract):
     expected: str = Field(strict=True,max_length=4000)
     unit: str | None = Field(default=None,strict=True,max_length=80)
     required: bool = Field(strict=True)
+    target: Literal['poster_text','poster_visual','file_metadata','delivery','unspecified'] | None = None
+    field: str | None = Field(default=None,pattern=r'^[a-z][a-z0-9_]{0,63}$')
+
+    @model_validator(mode='after')
+    def consistent_scope(self):
+        if (self.target is None)!=(self.field is None):raise ValueError('target and field must be supplied together')
+        if self.target is not None:
+            RequirementDetails(target=self.target,field=self.field)
+            kinds={'poster_text':{'text','number','unsupported'},'poster_visual':{'visual','unsupported'},
+                'file_metadata':{'text','number','unsupported'},'delivery':{'text','number','unsupported'},'unspecified':{'unsupported'}}
+            if self.kind not in kinds[self.target]:raise ValueError('kind does not match inspection target')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_scope(self,handler):
+        data=handler(self)
+        if self.target is None:
+            data.pop('target',None);data.pop('field',None)
+        return data
 
 
 class CriteriaEdit(Contract):

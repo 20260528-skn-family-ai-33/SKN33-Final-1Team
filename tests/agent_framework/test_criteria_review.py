@@ -142,3 +142,56 @@ def test_legacy_workflow_cannot_bypass_version_review_by_supplying_target_fields
     with pytest.raises(ValueError,match='immutable criteria review'):
         flow.approve(context.run_id,Approval(context=context,actor_id=context.actor_id,decision='approve_criteria',
             approved_criteria_version_id=str(uuid4()),criteria_sha256='a'*64))
+
+
+@pytest.mark.parametrize('with_scope',[False,True])
+def test_retained_unresolved_source_can_be_classified_and_checked_by_a06(with_scope):
+    from tests.agent_framework.test_a02_semantic import extract,text_document,requirement
+    from backend.agent_framework.adapters.synthetic import sample_inputs
+    from backend.agent_framework.contracts import ValidateRequest,InspectionResult,Observation,ImageEvidence
+    from backend.agent_framework.invocation import invoke_role
+    from backend.agent_framework.validation import ReferenceValidator
+    _,source,_,_=extract({'requirements':[requirement(1,'event_name','가을 축제')]},
+        text_document('행사명: 가을 축제\n관람시간은 확인 중입니다.'))
+    before=source.model_dump_json();pending=source.extraction.unresolved_criterion_ids[0]
+    amendment=edit(pending,expected='10:00~18:00')
+    if with_scope:amendment['resolution'].update(target='poster_text',field='viewing_hours')
+    edits=[edit(c.criterion_id,action='exclude') for c in source.criteria if c.criterion_id!=pending]+[amendment]
+    request=CriteriaVersionRequest(parent_version_id=None,expected_base_sha256=digest(source),purpose='synthetic_test',edits=edits)
+    revised=revise_criteria(source,None,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert source.model_dump_json()==before
+    criterion,=revised.criteria
+    assert criterion.source==next(c.source for c in source.criteria if c.criterion_id==pending)
+    if not with_scope:
+        assert approval_blockers(revised.criteria)=={pending:('missing_inspection_target',)}
+        return
+    assert not approval_blockers(revised.criteria)
+    # A later value-only amendment must retain the human-selected classification.
+    request=CriteriaVersionRequest(parent_version_id=revised.criteria_version_id,expected_base_sha256=digest(revised),
+        purpose='synthetic_test',edits=[edit(pending,expected='09:00~17:00')])
+    later=revise_criteria(source,revised,request,version_id=uuid4(),created_by=source.context.actor_id,created_at=datetime.now(timezone.utc))
+    assert later.criteria[0].details.target=='poster_text' and later.criteria[0].details.field=='viewing_hours'
+    assert revised.criteria[0].expected=='10:00~18:00'
+    _,_,asset=sample_inputs();context=later.context.model_copy(update={'asset_version_id':asset.asset_version_id})
+    evidence=freeze_approved_context(context,later.criteria,synthetic=True)
+    observation=Observation(criterion_id=pending,observed='09:00~17:00',observation_status='observed',verdict='pass',
+        image=ImageEvidence(asset_version_id=asset.asset_version_id,asset_hash=asset.sha256),
+        evidence_ids=tuple(e.evidence_id for e in evidence.evidence))
+    result=invoke_role('A06',ReferenceValidator(),ValidateRequest(context=context,criteria=later.criteria,asset=asset,
+        evidence=evidence,inspection=InspectionResult(context=context,observations=(observation,),synthetic=True)))
+    assert result.verdict==result.items[0].verdict=='pass'
+
+
+@pytest.mark.parametrize('scope',[{'target':'poster_text'},{'field':'viewing_hours'},
+    {'target':'file_metadata','field':'viewing_hours'},{'target':'poster_visual','field':'logo'},
+    {'target':'poster_text','field':'bad field'}])
+def test_amendment_rejects_partial_or_inconsistent_inspection_scope(scope):
+    from backend.agent_framework.criteria_contracts import CriterionResolution
+    with pytest.raises(ValidationError):
+        CriterionResolution.model_validate(edit('c')['resolution']|scope)
+
+
+def test_old_amendment_payload_keeps_its_idempotency_fingerprint():
+    from backend.agent_framework.criteria_contracts import CriterionResolution
+    old={'contract_version':'3.0.0',**edit('c')['resolution']}
+    assert CriterionResolution.model_validate(old).model_dump(mode='json')==old

@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSONB,TIMESTAMP,UUID as PGUUID
 
 from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
-from .contracts import Approval,Context,Criterion,CriteriaValueSource,DocumentRef,EvidenceBundle,RunSnapshot
+from .contracts import Approval,Context,Criterion,CriteriaValueSource,DocumentRef,EvidenceBundle,RunSnapshot,RequirementDetails
 from .criteria_contracts import (CriteriaApprovalRecord,CriteriaApprovalRequest,CriteriaVersion,
     CriteriaVersionRecord,CriteriaVersionRequest,RecordedCriteriaEdit)
 from .context import freeze_approved_context
@@ -46,6 +46,7 @@ def approval_blockers(criteria):
                 _number(criterion.expected,criterion.unit)
             except ValueError:issues.append('numeric_expected_invalid')
         if criterion.human_added and criterion.value_source is None:issues.append('missing_value_source')
+        if criterion.details is not None and criterion.details.target=='unspecified':issues.append('missing_inspection_target')
         if issues:result[criterion.criterion_id]=tuple(issues)
     return result
 
@@ -70,9 +71,14 @@ def revise_criteria(draft,parent,request,*,version_id,created_by,created_at):
             current.pop(edit.criterion_id);excluded[edit.criterion_id]=change
         else:
             original=originals[edit.criterion_id]
+            details=current.get(edit.criterion_id,original).details
+            scope=({'target':edit.resolution.target,'field':edit.resolution.field} if edit.resolution.target is not None else {})
+            if details is not None or scope:
+                details=RequirementDetails(**((details.model_dump(mode='python') if details is not None else {})|
+                    scope|{'expected_source':None,'normalized_expected':None,'presentation':None}))
             current[edit.criterion_id]=Criterion(**(original.model_dump(mode='python')|
-                edit.resolution.model_dump(mode='python')|{'human_added':True,'value_source':source,
-                'details':original.details.model_copy(update={'expected_source':None,'normalized_expected':None,'presentation':None}) if original.details is not None else None}))
+                edit.resolution.model_dump(mode='python',exclude={'target','field'})|
+                {'human_added':True,'value_source':source,'details':details}))
             excluded.pop(edit.criterion_id,None)
     if not current:raise ValueError('cannot exclude all criteria')
     criteria=tuple(current[cid] for cid in originals if cid in current)
