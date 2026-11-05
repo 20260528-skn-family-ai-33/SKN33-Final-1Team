@@ -29,6 +29,7 @@ export default function ReviewPage() {
   const [params, setParams] = useSearchParams();
   const runId = params.get('framework');
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
+    projectName={state.projectName}
     initialFile={runId === state.documentRun?.id ? state.file : null}
     openRun={id => setParams({ framework: id })} onNew={() => { newReview(); setParams({}); }} />;
 

@@ -47,7 +47,7 @@ function RetryNote({ retry }) {
 }
 
 // The list, canvas and inspector always share one criterion ID.
-export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview }) {
+export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview, busy = false, exportData = review, actions }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const list = useRef(null);
@@ -99,7 +99,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     if (result) chooseResult(result);
   }
   function exportJson() {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(review, null, 2)], { type: 'application/json' }));
+    const url = URL.createObjectURL(new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' }));
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = `baro-review-${review.id}.json`;
@@ -109,14 +109,14 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
   return <section className="rv-results" aria-labelledby="page-title">
     <header className="rv-result-header">
-      <div><p className="rv-eyebrow">REVIEW RESULTS · 기준 v{review.criteria_version}</p>
+      <div><p className="rv-eyebrow">REVIEW RESULTS · {review.criteria_version_label || `기준 v${review.criteria_version}`}</p>
         <h1 id="page-title" tabIndex={-1}>{review.project_name || '새로운 검수'}</h1>
         <p className="rv-result-header-note">기준과 이미지 근거를 나란히 확인하세요.</p></div>
       <button type="button" className="rv-button secondary" onClick={exportJson}><Icon name="file" />결과 JSON 저장</button>
     </header>
 
     <div className="rv-result-summary" aria-label="자동 검수 결과 요약">
-      <span className="rv-result-completed"><Icon name="check" />자동 검수 완료</span>
+      <span className="rv-result-completed"><Icon name="check" />{review.status_label || '자동 검수 완료'}</span>
       <span className="rv-result-total">전체 <strong>{results.length}</strong></span>
       {Object.entries(statuses).map(([status, label]) => <span className={`rv-result-summary-count ${status}`} key={status}>
         <span className="rv-result-dot" aria-hidden="true" />{label}<strong>{counts[status]}</strong>
@@ -199,8 +199,8 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
       </aside>
     </div>
     <footer className="rv-result-footer"><p><Icon name="shield" />검수 실행 완료는 최종 승인을 의미하지 않습니다.</p>
-      <div><button type="button" className="rv-button secondary" onClick={edit}>기준 다시 확인하기</button>
-        <button type="button" className="rv-button primary" onClick={newReview}>새 검수 시작하기<Icon name="arrow" /></button></div>
+      <div><button type="button" className="rv-button secondary" disabled={busy} onClick={edit}>기준 다시 확인하기</button>
+        <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>
   </section>;
 }
