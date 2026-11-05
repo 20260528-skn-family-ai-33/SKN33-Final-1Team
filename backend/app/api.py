@@ -17,7 +17,7 @@ import os
 from pathlib import Path
 import queue
 import threading
-from typing import Callable, Literal
+from typing import Callable
 from uuid import UUID, uuid4
 import warnings
 
@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from PIL import Image, ImageOps, UnidentifiedImageError
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from backend.app.reviews.rules import review_criteria
 from .sample import sample_image_path
@@ -36,8 +36,7 @@ from backend.app.ocr.config import selected_pipeline
 from backend.app.documents.pdf import DocumentError
 from backend.app.documents.pdf import MAX_PDF_BYTES
 from backend.app.documents.pdf import extract_document
-from backend.app.documents.conditions import DocumentCondition
-from backend.app.documents.conditions import matches_condition_text
+from backend.app.criteria_contracts import Criterion, CRITERIA_MAX_JSON
 
 from .ocr.results import MULTILINE_PIPELINES, RECOGNITION_ENGINES, SELECTION_REASONS, _map_records, _safe_runtime
 
@@ -47,24 +46,8 @@ MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 MAX_IMAGE_PIXELS = 10_000_000
 MAX_IMAGE_SIDE = 8192
 ALLOWED_FORMATS = {"PNG", "JPEG", "WEBP"}
-CRITERIA_MAX_JSON = 250_000
 PIPELINE_NAMES = {"baseline", "multiline", "adaptive", "paddle", "paddle-only", "qwen"}
 LOCAL_PIPELINES = {"adaptive", "paddle", "paddle-only", "qwen"}
-
-
-class Criterion(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    id: str = Field(min_length=1, max_length=100)
-    text: str = Field(min_length=1, max_length=500)
-    type: Literal["information", "visual"]
-    source: str = Field(default="user", min_length=1, max_length=500)
-    document_condition: DocumentCondition | None = None
-
-    @model_validator(mode='after')
-    def consistent_document_condition(self):
-        if self.document_condition and not matches_condition_text(self.document_condition.model_dump(), self.text):
-            raise ValueError('PDF 조건 기대값과 표시 문구가 다릅니다. 편집한 항목의 이전 문서 구조를 제거하세요.')
-        return self
 
 
 class CriteriaSnapshot(BaseModel):

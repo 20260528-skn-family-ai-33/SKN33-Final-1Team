@@ -312,19 +312,17 @@ export function ReviewProvider({ children }) {
     setDimensions(null);
   }
 
-  async function openDocumentRun() {
+  function openDocumentRun() {
     if (documentRequest.current || sampleBusy || fileBusy) return;
-    const controller = new AbortController();
-    documentRequest.current = controller;
-    setError(''); setDocumentBusy(true); setDocumentProgress(null);
-    try {
-      if (projectId !== state.documentRun.projectId) throw new Error('이 원문을 저장한 프로젝트를 선택해 주세요. 다른 프로젝트에서는 원문을 새로 등록해야 합니다.');
-      await requirePosterReview({ signal: controller.signal });
-      if (!controller.signal.aborted && documentRequest.current === controller) setSearchParams({ framework: state.documentRun.id });
-    } catch (err) { if (!controller.signal.aborted) setError(err.message); }
-    finally {
-      if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
+    setError('');
+    if (!state.documentRun) return;
+    if (projectId !== state.documentRun.projectId) {
+      setError('이 원문을 저장한 프로젝트를 선택해 주세요. 다른 프로젝트에서는 원문을 새로 등록해야 합니다.');
+      return;
     }
+    // Reviewing an extracted draft does not require the poster model to be ready.
+    // Registration and review execution still perform their readiness checks.
+    setSearchParams({ framework: state.documentRun.id });
   }
 
   function prepare(event) {

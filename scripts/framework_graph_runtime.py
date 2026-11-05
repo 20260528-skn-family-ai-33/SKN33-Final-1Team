@@ -16,6 +16,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from scripts.framework_desktop import read_env,write_private,mount_file
+from backend.environment_source import service_file_values
 
 PROJECT='creative-checker-agent-framework'
 DATABASE_KEYS=set('PERSISTENCE_MODE DB_HOST DB_PORT POSTGRES_DB DB_APP_USER DB_APP_PASSWORD DB_OWNER_USER DB_CONNECT_TIMEOUT DB_POOL_SIZE DB_POOL_TIMEOUT APP_ENV'.split())
@@ -26,6 +27,7 @@ class RuntimeErrorCode(RuntimeError):pass
 
 
 def worker_values(app,graph):
+    app=service_file_values(app)
     if any(app.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise RuntimeErrorCode('APP_CREDENTIALS_ONLY')
     required=('DB_HOST','DB_PORT','POSTGRES_DB','DB_APP_USER','DB_APP_PASSWORD')

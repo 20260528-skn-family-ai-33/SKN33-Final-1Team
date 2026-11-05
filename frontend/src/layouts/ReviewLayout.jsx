@@ -53,20 +53,21 @@ export function WorkspaceFooter() {
   return <footer className="rv-footer"><span><i />Creative Checker</span><p>자동 판정과 담당자의 최종 승인은 구분됩니다.</p><span>기준 · 이미지 · 근거</span></footer>;
 }
 
-export default function ReviewLayout({ state, busy, health, healthBusy, checkHealth, navigate, children }) {
+export default function ReviewLayout({ state, busy, health, healthBusy, checkHealth, navigate, children, previewMode = false,
+  canNavigate, versionLabel, showConnection = true, mainClassName = '', workspaceStep, topbarLocked = false }) {
   const go = useNavigate();
   const connection = health?.status === 'offline' ? 'offline' : health?.ready ? 'online' : 'pending';
   const currentIndex = Object.keys(labels).indexOf(state.step);
-  return <div className={`rv-workspace rv-workspace--${state.step}`}>
+  return <div className={`rv-workspace rv-workspace--${workspaceStep || state.step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/review/new"><button className={`rv-connection ${connection}`} onClick={checkHealth} disabled={healthBusy} title="검수 구성 다시 확인"><i />{healthBusy || !health ? '구성 확인 중' : health.status === 'offline' ? '서버 연결 필요' : health.ready ? '검수 구성 준비됨' : '검수 구성 확인 필요'}</button></WorkspaceTopbar>
-    <div className="rv-projectbar"><div className="rv-project-identity"><button className="rv-icon-button" aria-label="서비스 메인으로" onClick={() => go('/')}><Icon name="grid" /></button><div><span className="rv-eyebrow">내 검수 프로젝트</span><strong>{state.projectName || '새로운 검수'}</strong></div><span className="rv-version">{state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중'}</span></div>
+    <WorkspaceTopbar current="/review/new" locked={topbarLocked} lockReason="요청을 처리하고 있습니다.">{showConnection && <button className={`rv-connection ${connection}`} onClick={checkHealth} disabled={previewMode || healthBusy} title="검수 구성 다시 확인"><i />{previewMode ? '화면 미리보기' : healthBusy || !health ? '구성 확인 중' : health.status === 'offline' ? '서버 연결 필요' : health.ready ? '검수 구성 준비됨' : '검수 구성 확인 필요'}</button>}</WorkspaceTopbar>
+    <div className="rv-projectbar"><div className="rv-project-identity"><button className="rv-icon-button" aria-label="서비스 메인으로" onClick={() => go('/')}><Icon name="grid" /></button><div><span className="rv-eyebrow">내 검수 프로젝트</span><strong>{state.projectName || '새로운 검수'}</strong></div><span className="rv-version">{versionLabel || (state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중')}</span></div>
       <nav className="rv-step-nav" aria-label="검수 단계">{Object.entries(labels).map(([key,label],index) => {
-        const enabled = key === 'input' || key === 'criteria' && state.criteria.length > 0 || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed';
+        const enabled = canNavigate ? canNavigate(key) : key === 'input' || key === 'criteria' && state.criteria.length > 0 || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed';
         return <button key={key} disabled={!enabled || busy && key !== state.step} className={`${key === state.step ? 'is-active' : ''} ${index < currentIndex ? 'is-done' : ''}`} onClick={() => navigate(key)} aria-current={key === state.step ? 'step' : undefined}><span>{index < currentIndex ? <Icon name="check" /> : String(index + 1).padStart(2,'0')}</span>{label}</button>;
       })}</nav>
     </div>
-    <main id="review-content" className="rv-main" tabIndex={-1}>{children}</main>
+    <main id="review-content" className={`rv-main ${mainClassName}`.trim()} tabIndex={-1} aria-busy={busy || undefined}>{children}</main>
     <WorkspaceFooter />
   </div>;
 }

@@ -116,6 +116,15 @@ test('원문 해시가 다르면 모델 추출을 접수하지 않는다', async
   assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 0);
 });
 
+test('비보안 HTTP에서 원문 해시 검증을 우회하지 않고 접속 방법을 안내한다', async t => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+  Object.defineProperty(globalThis, 'crypto', { configurable: true, value: {} });
+  t.after(() => Object.defineProperty(globalThis, 'crypto', descriptor));
+  const calls = setup(t);
+  await assert.rejects(extractDocumentWithProgress(file, { projectId: 'p' }), /HTTPS.*localhost/);
+  assert.equal(calls.length, 0);
+});
+
 test('프로젝트 목록은 쓰기 역할만 보여주고 페이지를 모두 읽는다', async t => {
   t.mock.method(globalThis, 'fetch', async url => {
     if (url.endsWith('/health')) return Response.json({ requirements_presentation: true, pdf_extraction_mode: 'qwen' });

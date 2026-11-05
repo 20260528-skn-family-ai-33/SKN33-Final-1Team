@@ -9,6 +9,7 @@ import { ReviewProvider } from './pages/review/ReviewProvider.jsx';
 import VideoReviewPage from './pages/video/VideoReviewPage.jsx';
 const ModelTestPage = React.lazy(() => import('./pages/modeltest/ModelTestPage.jsx'));
 const LogoConfirmPage = React.lazy(() => import('./pages/video/LogoConfirmPage.jsx'));
+const LocalReviewPreview = import.meta.env.DEV ? React.lazy(() => import('./pages/review/LocalReviewPreview.jsx')) : null;
 
 // 소개·로그인·검수를 URL로 구분하고 검수 진입 전에 서버 세션을 확인한다.
 function AppRoutes() {
@@ -16,6 +17,7 @@ function AppRoutes() {
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/review/new" element={<RequireAuth><ReviewPage /></RequireAuth>} />
+    {import.meta.env.DEV && <Route path="/review/preview" element={<React.Suspense fallback={<p role="status">미리보기 준비 중…</p>}><LocalReviewPreview /></React.Suspense>} />}
     <Route path="/video" element={<RequireAuth><VideoReviewPage /></RequireAuth>} />
     <Route path="/video/logo" element={<RequireAuth><React.Suspense fallback={<p role="status">로고 확정 화면을 준비하고 있어요.</p>}><LogoConfirmPage /></React.Suspense></RequireAuth>} />
     <Route path="/modeltest" element={<React.Suspense fallback={<p role="status">모델 테스트를 준비하고 있어요.</p>}><ModelTestPage /></React.Suspense>} />

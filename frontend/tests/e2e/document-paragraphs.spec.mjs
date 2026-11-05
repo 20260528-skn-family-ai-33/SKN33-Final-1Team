@@ -120,7 +120,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   assert.equal(await page.locator('#requirements').inputValue(), expected);
   if (pendingOnly) {
     await page.getByRole('button', { name: mode === 'pending_empty' ? 'PDF 검수 기준 확인하기' : 'brief.pdf 원문 기준 승인하기' }).click();
-    await page.getByRole('heading', { name: '검수할 항목을 확인해 주세요.' }).waitFor();
+    await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
     await page.getByText('요구사항 원문 · 1쪽', { exact: true }).waitFor();
     await page.locator('.rv-criteria-source').getByText(pending[0].source, { exact: true }).waitFor();
     assert.equal(new URL(page.url()).searchParams.get('framework'), 'run-fixture');

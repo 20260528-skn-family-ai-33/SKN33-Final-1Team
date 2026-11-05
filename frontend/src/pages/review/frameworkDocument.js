@@ -14,6 +14,9 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
   const source = isText ? '입력문' : 'PDF';
   if (!projectId) throw new Error('요구사항을 저장할 프로젝트를 선택해 주세요.');
   signal?.throwIfAborted();
+  if (!globalThis.crypto?.subtle?.digest || !globalThis.crypto?.randomUUID) {
+    throw new Error('문서 분석에는 HTTPS 연결이 필요합니다. 개발 PC에서는 http://localhost:5173으로 접속해 주세요.');
+  }
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())))
     .map(byte => byte.toString(16).padStart(2, '0')).join('');
   signal?.throwIfAborted();
