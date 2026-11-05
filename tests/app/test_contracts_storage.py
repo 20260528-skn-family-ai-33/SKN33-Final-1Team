@@ -82,6 +82,48 @@ def intent(data=b'payload'):
     return op, dict(project_id=project,file_id=file_id,storage_key=key(project,file_id),byte_size=str(len(data)),sha256=hashlib.sha256(data).hexdigest())
 
 
+def test_finalized_legacy_reference_seed_is_read_without_replay(storage):
+    op, item = intent()
+    record = dict(contract_version='cc-storage-journal-v1', operation='reference_document_seed',
+        operation_id=op, project_id=item['project_id'], import_id=str(uuid4()), files=[item],
+        phase='finalized', db_outcome='committed')
+    storage.journal(record)
+    path = storage.path / 'operations' / op / 'journal.json'
+    before = path.read_bytes()
+    assert list(storage.journals()) == [record]
+    assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize('change', [
+    {'phase': 'staged'}, {'db_outcome': 'unconfirmed'}, {'files': []},
+    {'contract_version': 'unknown'}, {'operation': 'unknown'},
+])
+def test_incomplete_or_unknown_legacy_journals_remain_rejected(storage, change):
+    op, item = intent()
+    record = dict(contract_version='cc-storage-journal-v1', operation='reference_document_seed',
+        operation_id=op, project_id=item['project_id'], import_id=str(uuid4()), files=[item],
+        phase='finalized', db_outcome='committed')
+    record.update(change)
+    storage.journal(record)
+    with pytest.raises(StorageError):
+        list(storage.journals())
+
+
+@pytest.mark.parametrize('change', [
+    {'storage_key': 'objects/other'}, {'project_id': str(uuid4())},
+    {'sha256': 'invalid'}, {'byte_size': '-1'},
+])
+def test_legacy_seed_rejects_inconsistent_file_metadata(storage, change):
+    op, item = intent()
+    file = dict(item, **change)
+    record = dict(contract_version='cc-storage-journal-v1', operation='reference_document_seed',
+        operation_id=op, project_id=item['project_id'], import_id=str(uuid4()), files=[file],
+        phase='finalized', db_outcome='committed')
+    storage.journal(record)
+    with pytest.raises(StorageError):
+        list(storage.journals())
+
+
 def test_publish_fsync_verify_no_replacement(storage):
     op, item = intent()
     storage.write_new('staging/'+op+'/'+item['file_id'], b'payload')

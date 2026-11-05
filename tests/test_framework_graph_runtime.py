@@ -30,6 +30,15 @@ def test_mismatched_graph_password_is_not_silently_overridden():
         runtime.worker_values(app()|{'CC_NEO4J_PASSWORD':'different'},{'AF_NEO4J_PASSWORD':'graph-only'})
 
 
+def test_unified_local_file_is_projected_without_admin_or_model_secrets():
+    source=app()|{'CC_ENV_MODE':'local_unified','APP_ENV':'development',
+        'DB_OWNER_PASSWORD':'owner-only','POSTGRES_PASSWORD':'admin-only',
+        'AF_NEO4J_PASSWORD':'graph-only'}
+    values=runtime.worker_values(source,source)
+    assert values['CC_NEO4J_PASSWORD']=='graph-only'
+    assert not {'DB_OWNER_PASSWORD','POSTGRES_PASSWORD','AF_NEO4J_PASSWORD','A02_QWEN_API_KEY'} & values.keys()
+
+
 def test_prepare_preserves_originals_and_derived_settings_survive_function_exit(tmp_path):
     source=tmp_path/'원본.env';graph=tmp_path/'graph.env'
     source.write_text(''.join(k+'='+v+'\n' for k,v in app().items()))

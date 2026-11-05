@@ -53,6 +53,30 @@ def test_test_file_cannot_be_selected_as_runtime(tmp_path):
         runtime_values("v1", path, {})
 
 
+def test_unified_local_file_filters_admin_values_and_keeps_role_secrets(tmp_path, monkeypatch):
+    path=shared_file(tmp_path)
+    with path.open('a',encoding='utf-8') as stream:
+        stream.write('\nCC_ENV_MODE=local_unified\nDB_OWNER_PASSWORD=owner-only\nPOSTGRES_PASSWORD=admin-only\nAF_NEO4J_PASSWORD=compose-only\n')
+    path.write_text(path.read_text().replace('APP_ENV=test','APP_ENV=development'),encoding='utf-8')
+    values=runtime_values('framework-worker',path,{})
+    assert values['CC_QWEN_API_KEY']=='model-only'
+    assert not {'DB_OWNER_PASSWORD','POSTGRES_PASSWORD','AF_NEO4J_PASSWORD','CSRF_SECRET'} & values.keys()
+    monkeypatch.setattr(os,'environ',{'AF_NEO4J_PASSWORD':'previous-graph-value'})
+    activate_runtime('framework-worker',path)
+    assert 'AF_NEO4J_PASSWORD' not in os.environ
+    with pytest.raises(ConfigurationError,match='DEVELOPMENT'):
+        runtime_values('framework-worker',path,{'APP_ENV':'production'})
+    with pytest.raises(ConfigurationError,match='owner/admin'):
+        runtime_values('framework-worker',path,{'DB_OWNER_PASSWORD':'exported-owner'})
+
+
+def test_unified_file_cannot_opt_in_outside_development(tmp_path):
+    path=tmp_path/'production.env'
+    path.write_text('CC_ENV_MODE=local_unified\nAPP_ENV=production\nDB_OWNER_PASSWORD=owner-only\n')
+    with pytest.raises(ConfigurationError,match='DEVELOPMENT'):
+        runtime_values('api',path,{})
+
+
 def test_worker_defaults_do_not_hide_explicit_invalid_settings(tmp_path):
     path = shared_file(tmp_path)
     values = runtime_values("v1-worker", path, {})

@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from backend.app.config import ConfigurationError, read_environment_file
+from backend.environment_source import PRIVILEGED, service_file_values
 
 
 DATABASE = frozenset("PERSISTENCE_MODE DB_HOST DB_PORT POSTGRES_DB DB_APP_USER DB_APP_PASSWORD DB_OWNER_USER DB_CONNECT_TIMEOUT DB_POOL_SIZE DB_POOL_TIMEOUT DB_SSLMODE DB_SSLROOTCERT APP_ENV".split())
@@ -31,9 +32,8 @@ PREFIXES = {
     "v1-worker": ("OCR_",),
     "framework-worker": ("A04_A05_MODEL_",),
 }
-PRIVILEGED = frozenset({"DB_OWNER_PASSWORD", "POSTGRES_PASSWORD", "CC_LOCAL_DB_PASSWORD", "CC_LOCAL_GRAPH_PASSWORD"})
 MANAGED_PREFIXES = ("CC_", "DB_", "POSTGRES_", "TEST_DB_", "AUTH_", "REVIEW_", "OCR_", "REQUIREMENTS_", "RUNPOD_", "LOGO_", "VIDEO_", "MODELTEST_", "AWS_", "PG_TOOLS_", "C12_", "C13_", "A02_", "A04_A05_MODEL_")
-MANAGED = frozenset().union(*PROFILES.values(), PRIVILEGED, {"IMPORT_ALLOWED_ROOT", "TEST_DB_ENV_FILE"})
+MANAGED = frozenset().union(*PROFILES.values(), PRIVILEGED, {"IMPORT_ALLOWED_ROOT", "TEST_DB_ENV_FILE", "AF_NEO4J_PASSWORD"})
 
 
 def runtime_values(component, filename=None, environ=None):
@@ -42,6 +42,12 @@ def runtime_values(component, filename=None, environ=None):
     if any(value and (key.startswith(("TEST_DB_", "CC_TEST_", "CC_INTEGRATION_")) or key == "TEST_DB_ENV_FILE")
            for key, value in source.items()):
         raise ConfigurationError("A disposable-test environment must not be used for a service.")
+    if source.get("CC_ENV_MODE") == "local_unified" and inherited.get("APP_ENV", source.get("APP_ENV")) != "development":
+        raise ConfigurationError("LOCAL_UNIFIED_ENV_REQUIRES_DEVELOPMENT")
+    try:
+        source = service_file_values(source)
+    except ValueError as error:
+        raise ConfigurationError(str(error)) from None
     values = source | dict(inherited)
     if any(source.get(key) or inherited.get(key) for key in PRIVILEGED):
         raise ConfigurationError("Service startup requires a runtime file without owner/admin credentials.")

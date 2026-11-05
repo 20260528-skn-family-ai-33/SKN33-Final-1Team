@@ -172,6 +172,27 @@ class LocalStorage:
             except FileNotFoundError:
                 # Crash before an intent is durable: no publication is possible.
                 continue
+            # An older, explicit reference-document seed used its own journal
+            # type. Preserve finalized records for inspection/GC, but never
+            # replay an incomplete or unconfirmed seed as a normal upload.
+            if value.get('operation') == 'reference_document_seed':
+                files = value.get('files')
+                if (value.get('contract_version') != 'cc-storage-journal-v1'
+                        or value.get('operation_id') != name
+                        or value.get('phase') != 'finalized'
+                        or value.get('db_outcome') != 'committed'
+                        or not isinstance(files, list) or not 1 <= len(files) <= 502):
+                    raise StorageError('STORAGE_JOURNAL_INVALID')
+                project = uuid(value.get('project_id'))
+                uuid(value.get('import_id'))
+                for item in files:
+                    if (not isinstance(item, dict) or item.get('project_id') != project
+                            or item.get('storage_key') != key(project, item.get('file_id'))
+                            or not re.fullmatch(r'[0-9a-f]{64}', str(item.get('sha256', '')))
+                            or not str(item.get('byte_size', '')).isdigit()):
+                        raise StorageError('STORAGE_JOURNAL_INVALID')
+                yield value
+                continue
             if (value.get('contract_version') != 'cc-storage-journal-v1' or value.get('operation_id') != name
                     or value.get('operation') not in ('upload_image','review_result','import_package')
                     or (not 1<=len(value.get('files', []))<=502 if value.get('operation')=='import_package'

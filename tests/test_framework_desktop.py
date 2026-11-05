@@ -61,7 +61,7 @@ def test_shared_worker_model_tunnel_uses_docker_host(tmp_path):
 
 def test_api_mount_excludes_graph_and_model_worker_secrets(tmp_path):
     env=tmp_path/'shared.env'
-    original='DB_HOST=localhost\nDB_APP_PASSWORD=app-only\nCC_NEO4J_URI=bolt://localhost:57631\nCC_NEO4J_USER=neo4j\nCC_NEO4J_PASSWORD=graph-test-only\nA02_QWEN_API_KEY=model-test-only\nCC_QWEN_API_KEY=model-test-only\n'
+    original='DB_HOST=localhost\nDB_APP_PASSWORD=app-only\nCC_NEO4J_URI=bolt://localhost:57631\nCC_NEO4J_USER=neo4j\nCC_NEO4J_PASSWORD=graph-test-only\nA02_QWEN_API_KEY=model-test-only\nCC_QWEN_API_KEY=model-test-only\nVIDEO_LOGO_WORKER_TOKEN=video-test-only\n'
     env.write_text(original)
     with desktop.settings(args('api','--env-file',str(env))) as folder:
         values=desktop.read_env(folder/'app.env')
@@ -70,6 +70,7 @@ def test_api_mount_excludes_graph_and_model_worker_secrets(tmp_path):
         values=desktop.read_env(folder/'app.env')
         assert values['CC_NEO4J_URI']=='bolt://host.docker.internal:57631'
         assert values['CC_NEO4J_PASSWORD']=='graph-test-only' and values['A02_QWEN_API_KEY']=='model-test-only'
+        assert 'VIDEO_LOGO_WORKER_TOKEN' not in values
     assert env.read_text()==original
 
 
@@ -77,6 +78,16 @@ def test_owner_credentials_cannot_be_sent_to_api(tmp_path):
     env=tmp_path/'owner.env';env.write_text('DB_OWNER_PASSWORD=private-test-only\n')
     with pytest.raises(ValueError,match='APP_CREDENTIALS_ONLY'):
         with desktop.settings(args('api','--env-file',str(env))):pytest.fail('must not create API settings')
+
+
+def test_explicit_local_unified_file_filters_management_values_from_mount(tmp_path):
+    env=tmp_path/'all.env'
+    env.write_text('CC_ENV_MODE=local_unified\nAPP_ENV=development\nDB_APP_PASSWORD=app-only\nDB_OWNER_PASSWORD=owner-only\nPOSTGRES_PASSWORD=admin-only\nAF_NEO4J_PASSWORD=compose-only\n')
+    with desktop.settings(args('api','--env-file',str(env))) as folder:
+        values=desktop.read_env(folder/'app.env')
+        assert values=={'APP_ENV':'development','DB_APP_PASSWORD':'app-only'}
+    with desktop.settings(args('migrate','--env-file',str(env))) as folder:
+        assert desktop.read_env(folder/'app.env')['DB_OWNER_PASSWORD']=='owner-only'
 
 
 def test_migration_is_explicit_and_has_no_server_or_storage_initialization(tmp_path):

@@ -1,0 +1,3 @@
+# Install into the same isolated environment after the vendor GPU wheel.
+-r ../../requirements-paddle-common.txt
+numpy==2.2.6

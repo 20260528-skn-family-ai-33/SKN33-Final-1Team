@@ -575,8 +575,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             try:
                 if "content-length" not in request.headers:
                     raise HTTPException(411, "Content-Length가 필요합니다.")
-                from backend.app.api import CRITERIA_MAX_JSON
-                from backend.app.api import Criterion  # 포스터와 같은 기준 형식
+                from backend.app.criteria_contracts import CRITERIA_MAX_JSON, Criterion
                 try:
                     parsed = json.loads(criteria) if len(criteria) <= CRITERIA_MAX_JSON else None
                     if not isinstance(parsed, list) or len(parsed) > 100:

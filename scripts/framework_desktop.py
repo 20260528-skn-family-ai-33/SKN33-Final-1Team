@@ -16,6 +16,9 @@ import tempfile
 from urllib.parse import urlsplit,urlunsplit
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from backend.environment_source import service_file_values
+
 IMAGE='creative-checker-framework:local'
 VOLUME='cc-framework-data'
 
@@ -52,8 +55,13 @@ def write_private(path,raw):
 @contextmanager
 def settings(args):
     values=read_env(args.env_file)
+    if args.action!='migrate':values=service_file_values(values)
     if args.action!='migrate' and any(values.get(k) for k in ('DB_OWNER_PASSWORD','POSTGRES_PASSWORD')):
         raise ValueError('APP_CREDENTIALS_ONLY')
+    if args.action in ('api','worker'):
+        # Video uses a separate local service; never mount its worker token here.
+        for key in tuple(values):
+            if key.startswith('VIDEO_'):values.pop(key)
     if args.action=='api':
         # Remove worker secrets from the mounted file, not just process env.
         for key in ('CC_NEO4J_URI','CC_NEO4J_USER','CC_NEO4J_PASSWORD','A02_QWEN_API_KEY','CC_QWEN_API_KEY'):

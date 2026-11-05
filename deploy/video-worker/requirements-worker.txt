@@ -1,0 +1,5 @@
+# Linux video logo worker venv, separate from the app and Paddle GPU venvs.
+# The matching CUDA 12.8 torch/torchvision wheels must already be available.
+-c constraints-cu128.txt
+-r ../../requirements-logo.txt
+-r ../../requirements-paddle.txt

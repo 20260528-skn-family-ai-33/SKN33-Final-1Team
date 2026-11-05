@@ -1,0 +1,3 @@
+# Shared PaddleOCR versions for the separate CPU and GPU environments.
+paddleocr==3.7.0
+paddlex==3.7.2
