@@ -21,7 +21,7 @@ def graph_command(args):
         if args.command=='graph-init':
             graph.initialize();print(json.dumps({'graph':'AFProjection','initialized':True}));return 0
         engine=create_app_engine(settings)
-        _ready(engine,settings)
+        readiness=_ready(engine,settings)
         with unit_of_work(engine) as c:
             if not installed(c):raise ConfigurationError('Apply AF005 explicitly before graph commands.')
             if args.command=='graph-rebuild':
@@ -31,6 +31,10 @@ def graph_command(args):
                 mark_project_changed(c,args.project_id,'graph.rebuild_requested',args.project_id)
                 result=graph_status(c,args.project_id)
                 print(json.dumps({'project_id':str(args.project_id),'status':result['status'],'required_revision':result['required_revision']}));return 0
+        if args.command=='graph-check':
+            graph.check()
+            print(json.dumps({'postgres':'ready','neo4j':'ready','schema':readiness['revision'],
+                'read_only':True}));return 0
         stop=Event()
         for name in (signal.SIGINT,signal.SIGTERM):signal.signal(name,lambda *_:stop.set())
         worker=ProjectionWorker(engine,graph)

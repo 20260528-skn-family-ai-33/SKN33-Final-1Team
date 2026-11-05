@@ -17,6 +17,7 @@ ACTIONS = {
     'request_final_approval': '기계 판정 pass, 최종 승인을 요청한다.',
     'request_change_approval': '수정 요청 승인을 요청한다.',
     'request_exception_approval': '확정 fail에 대한 예외 승인 검토를 요청한다.',
+    'submit_poster': '승인한 기준으로 검수할 포스터를 등록한다.',
     'submit_revision': '제작자가 수정한 새 포스터 버전을 제출해야 한다.',
     'start_new_run': '실패한 실행이다. 원인을 확인한 뒤 새 실행이 필요하다.',
     'reconcile_manually': '외부 호출 결과가 불명이다. 자동 재시도 없이 사람이 확인해야 한다.',
@@ -26,6 +27,7 @@ ACTIONS = {
 _STATES = {
     'queued': ('worker', {'wait_for_worker'}), 'extracting': ('worker', {'wait_for_worker'}),
     'reviewing': ('worker', {'wait_for_worker'}), 'waiting_criteria': ('human', {'request_criteria_approval'}),
+    'waiting_asset': ('creator', {'submit_poster'}),
     'waiting_review': ('human', set()), 'waiting_revision': ('creator', {'submit_revision'}),
     'completed': ('none', {'none'}), 'failed': ('human', {'start_new_run'}),
     'outcome_unknown': ('human', {'reconcile_manually'}),

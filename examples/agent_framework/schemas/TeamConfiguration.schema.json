@@ -1,5 +1,30 @@
 {
   "$defs": {
+    "ContextPreparation": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "mode": {
+          "const": "neo4j_rag",
+          "default": "neo4j_rag",
+          "title": "Mode",
+          "type": "string"
+        },
+        "policy": {
+          "const": "af-approved-sources-v1",
+          "default": "af-approved-sources-v1",
+          "title": "Policy",
+          "type": "string"
+        }
+      },
+      "title": "ContextPreparation",
+      "type": "object"
+    },
     "PDFExtractionConfiguration": {
       "additionalProperties": false,
       "properties": {
@@ -181,6 +206,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/PDFExtractionConfiguration"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "context_preparation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContextPreparation"
         },
         {
           "type": "null"

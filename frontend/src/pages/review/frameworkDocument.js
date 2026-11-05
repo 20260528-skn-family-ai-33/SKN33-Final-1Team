@@ -47,7 +47,7 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
   while (true) {
     signal?.throwIfAborted();
     const run = await frameworkJson(runPath, { signal });
-    if (run.execution_status === 'waiting_criteria') break;
+    if (['waiting_criteria', 'waiting_asset'].includes(run.execution_status)) break;
     if (!['queued', 'extracting'].includes(run.execution_status)) {
       const error = new Error(`문서 분석을 완료하지 못했습니다. 실행 기록을 확인해 주세요. (${run.error?.code || run.execution_status})`);
       error.runId = attempt.runId;

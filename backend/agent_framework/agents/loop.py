@@ -112,7 +112,8 @@ def parse_final(content: str, output: type[T]) -> T:
 
 
 def run_agent(model: ChatModel, *, system: str, task: str, tools: list[ToolSpec], output: type[T],
-              revise: Callable[[T, list[str]], str | None] | None = None) -> tuple[T, list[str]]:
+              revise: Callable[[T, list[str]], str | None] | None = None,
+              completed_tools: list[str] | None = None) -> tuple[T, list[str]]:
     """Return the parsed answer and the names of tools that completed.
 
     `revise` may return a correction once when the answer contradicts what was
@@ -120,7 +121,7 @@ def run_agent(model: ChatModel, *, system: str, task: str, tools: list[ToolSpec]
     """
     specs = {tool.name: tool for tool in tools}
     messages: list[dict] = [{'role': 'system', 'content': system}, {'role': 'user', 'content': task}]
-    used: list[str] = []
+    used = completed_tools if completed_tools is not None else []
     attempted: list[str] = []
     reformatted = False
     for _turn in range(MAX_TURNS):

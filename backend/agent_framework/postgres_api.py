@@ -19,7 +19,8 @@ from backend.app.security.csrf import developer_allowed
 from backend.app.security.errors import AuthError
 from backend.app.config import ConfigurationError
 from backend.app.services.business import Business
-from backend.app.routes.v1.business import project_router
+from backend.app.routes.v1.business import project_router, image_router
+from backend.app.services.files import Files
 from .api import StartRequest,RevisionRequest
 from .contracts import Approval,RunSnapshot,StepTimeline
 from .postgres import PostgresStore
@@ -69,6 +70,8 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                         raise ConfigurationError('Poster reviews require AF003 and registered PDF storage.')
                     poster_storage=await run_in_threadpool(open_poster_storage,poster_storage_root)
                     if configuration.roles['A04_A05'].kind=='registered_poster':
+                        current.state.files = Files(current.state.engine, poster_storage, current.state.business)
+                        await run_in_threadpool(current.state.files.recover, concurrent=True)
                         current.state.poster_reviews=PostgresPosterReviews(current.state.framework,current.state.criteria_review,poster_storage)
                 yield
             finally:
@@ -90,6 +93,8 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
 
     prefix='/api/framework/v1'
     app.include_router(project_router(),prefix=prefix)
+    if poster_storage_root is not None and configuration.roles['A04_A05'].kind == 'registered_poster':
+        app.include_router(image_router(), prefix=prefix)
     from backend.app.routes.v1.auth import csrf_response
     app.add_api_route(prefix+'/csrf',csrf_response,methods=['GET'])
     @app.get(prefix+'/health')

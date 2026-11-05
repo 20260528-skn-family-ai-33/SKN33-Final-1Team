@@ -6,7 +6,7 @@ from pathlib import Path
 from backend.agent_framework.adapters.generate_examples import generate, role_examples
 from backend.agent_framework.api import create_app
 from backend.agent_framework.contracts import CONTRACT_TYPES
-from backend.agent_framework.composition import RoleBinding, TeamConfiguration, ROLE_PORTS
+from backend.agent_framework.composition import ContextPreparation, RoleBinding, TeamConfiguration, ROLE_PORTS
 from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
 from backend.agent_framework.checks import RoleCheckCase, RoleCheckSuite
 from backend.agent_framework.flow_checks import FlowCheckCase
@@ -76,12 +76,20 @@ def export(destination: Path) -> None:
         (destination/f'team_config.{name}.json').write_text(
             json.dumps(config.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     poster=TeamConfiguration(roles={'A02':RoleBinding(kind='registered_pdf'),
-        'A04_A05':RoleBinding(kind='registered_poster',factory='examples.agent_framework.poster_adapters:make_inspector'),
+        'A04_A05':RoleBinding(kind='registered_poster',factory='backend.agent_framework.adapters.team_a04_a05:create_inspector'),
         'A06':RoleBinding(kind='reference'),
-        'A07':RoleBinding(kind='factory',factory='backend.agent_framework.poster_review:make_reporter')},
+        'A07':RoleBinding(kind='factory',factory='backend.a07_reporter.adapter:create_reporter')},
         pdf_extraction=PDFExtractionConfiguration(mode='mock'))
     (destination/'team_config.poster-review.template.json').write_text(
         json.dumps(poster.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
+    # This graph fixture uses synthetic adapters, not the team's model services.
+    graph=TeamConfiguration(roles={'A02':RoleBinding(kind='registered_pdf'),
+        'A04_A05':RoleBinding(kind='registered_poster',factory='examples.agent_framework.poster_adapters:make_inspector'),
+        'A06':RoleBinding(kind='reference'),
+        'A07':RoleBinding(kind='factory',factory='backend.agent_framework.poster_review:make_reporter')},
+        pdf_extraction=PDFExtractionConfiguration(mode='mock'),context_preparation=ContextPreparation())
+    (destination/'team_config.neo4j-rag.example.json').write_text(
+        json.dumps(graph.model_dump(mode='json',exclude_none=True),ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
     (destination / "openapi.json").write_text(
         json.dumps(create_app().openapi(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     export_checks(destination)

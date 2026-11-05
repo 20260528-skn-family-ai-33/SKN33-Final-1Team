@@ -51,6 +51,56 @@ class FrameworkGraph:
             raise GraphUnavailable('GRAPH_SCHEMA_NOT_READY')
         self._schema_ready=True
 
+    def check(self):
+        """Authenticated, read-only schema/connectivity probe. Never initializes."""
+        try:
+            self._check_schema()
+            with self._session() as session:
+                row=session.run('RETURN 1 AS ready').single()
+                if not row or row['ready']!=1:raise GraphUnavailable()
+        except GraphUnavailable:raise
+        except Exception:raise GraphUnavailable() from None
+
+    def projection_revisions(self,project_ids):
+        """Bounded monitoring query; never enumerates or modifies foreign graphs."""
+        if len(project_ids)>500:raise GraphUnavailable('GRAPH_RESULT_LIMIT')
+        try:
+            from neo4j import Query
+            self._check_schema()
+            with self._session() as session:
+                rows=session.run(Query('UNWIND $ids AS id OPTIONAL MATCH(p:AFProjection {project_id:id}) '
+                    'RETURN id AS project_id,p.revision AS revision',timeout=5),ids=project_ids)
+                return {r['project_id']:r['revision'] for r in rows}
+        except GraphUnavailable:raise
+        except Exception:raise GraphUnavailable() from None
+
+    @staticmethod
+    def _unmanaged(tx,project_id):
+        row=tx.run('MATCH(n:AFEntity {project_id:$pid}) '
+            'OPTIONAL MATCH(n)-[r]-(other) '
+            'WITH n,r,other WHERE size(labels(n))<>1 OR '
+            '(r IS NOT NULL AND (type(r)<>"AF_RELATION" OR NOT other:AFEntity OR '
+            'other.project_id IS NULL OR other.project_id<>$pid)) RETURN count(*) AS count',pid=project_id).single()
+        return bool(row['count'])
+
+    def read_projection(self,project_id):
+        def read(tx):
+            root=tx.run('MATCH(p:AFProjection {project_id:$pid}) RETURN p.revision AS revision',pid=project_id).single()
+            nodes=list(tx.run('MATCH(n:AFEntity {project_id:$pid}) '
+                'RETURN n.entity_key AS key,properties(n) AS properties ORDER BY key LIMIT 10001',pid=project_id))
+            edges=list(tx.run('MATCH(a:AFEntity {project_id:$pid})-[r:AF_RELATION]->(b:AFEntity {project_id:$pid}) '
+                'RETURN a.entity_key AS source,b.entity_key AS target,r.kind AS kind '
+                'ORDER BY source,target,kind LIMIT 20001',pid=project_id))
+            if len(nodes)>10000 or len(edges)>20000:raise GraphUnavailable('GRAPH_RESULT_LIMIT')
+            return {'revision':root['revision'] if root else None,
+                'nodes':[{'key':r['key'],**{k:v for k,v in r['properties'].items() if k not in ('entity_key','project_id')}} for r in nodes],
+                'edges':[dict(r) for r in edges],'unmanaged':self._unmanaged(tx,project_id)}
+        try:
+            self._check_schema()
+            with self._session() as session:return session.execute_read(read)
+        except GraphUnavailable:raise
+        except Exception:raise GraphUnavailable() from None
+
     def replace_project(self, project_id, nodes, edges, revision):
         keys = {n['key'] for n in nodes}
         if len(keys) != len(nodes) or any(e['source'] not in keys or e['target'] not in keys for e in edges):
@@ -63,6 +113,7 @@ class FrameworkGraph:
                 'SET p.lock_revision=p.revision RETURN p.revision AS revision', pid=project_id).single()
             if row['revision'] >= revision:
                 return False
+            if self._unmanaged(tx,project_id):raise GraphUnavailable('GRAPH_UNMANAGED_RELATIONSHIPS')
             tx.run('MATCH (n:AFEntity {project_id:$pid}) DETACH DELETE n',pid=project_id).consume()
             tx.run('UNWIND $nodes AS row CREATE (n:AFEntity {project_id:$pid,entity_key:row.key}) '
                 'SET n += row.properties',pid=project_id,nodes=prepared).consume()
@@ -76,6 +127,7 @@ class FrameworkGraph:
             self._check_schema()
             with self._session() as session:
                 return session.execute_write(write)
+        except GraphUnavailable:raise
         except Exception:
             raise GraphUnavailable() from None
 

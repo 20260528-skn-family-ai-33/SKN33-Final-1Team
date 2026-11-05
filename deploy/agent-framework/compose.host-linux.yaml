@@ -1,0 +1,11 @@
+# Docker Desktop already supplies this name on Mac/Windows.
+services:
+  projector:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  monitor:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  recovery:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

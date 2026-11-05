@@ -20,7 +20,7 @@ def mark_project_changed(c, project_id, kind, target_id):
     revision=c.execute(text('INSERT INTO agent_framework.graph_state(project_id,revision) VALUES(:p,1) '
         'ON CONFLICT(project_id) DO UPDATE SET revision=agent_framework.graph_state.revision+1, '
         'available_at=CASE WHEN :reset THEN clock_timestamp() ELSE agent_framework.graph_state.available_at END '
-        'RETURNING revision'),{'p':pid,'reset':kind=='graph.rebuild_requested'}).scalar_one()
+        'RETURNING revision'),{'p':pid,'reset':kind in ('graph.rebuild_requested','graph.recovery_requested')}).scalar_one()
     c.execute(text('INSERT INTO agent_framework.graph_outbox(event_id,project_id,revision,kind,target_id) '
         'VALUES(:e,:p,:r,:k,:t)'),{'e':uuid4(),'p':pid,'r':revision,'k':kind,'t':str(target_id)})
 
@@ -113,7 +113,13 @@ class ProjectionWorker:
                     c.execute(text('SET TRANSACTION READ ONLY'))
                     revision=c.execute(text('SELECT revision FROM agent_framework.graph_state WHERE project_id=:p'),{'p':pid}).scalar_one()
                     nodes,edges=project_snapshot(c,pid)
-            self.graph.replace_project(str(pid),nodes,edges,revision)
+            result=self.graph.replace_project(str(pid),nodes,edges,revision)
+            if result is False:
+                from .graph_recovery import content_hash
+                from .graph_store import GraphUnavailable
+                observed=self.graph.read_projection(str(pid))
+                if observed['revision']!=revision or observed['unmanaged'] or content_hash(observed['nodes'],observed['edges'])!=content_hash(nodes,edges):
+                    raise GraphUnavailable('GRAPH_DELIVERY_NOT_CONFIRMED')
         except Exception:
             self.last_outcome='deferred'
             with unit_of_work(self.engine) as c:

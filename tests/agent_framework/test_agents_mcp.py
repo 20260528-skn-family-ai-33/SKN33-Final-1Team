@@ -102,6 +102,18 @@ def test_a01_explains_state_with_read_tools_only():
     assert workflow.get(context.run_id).approvals == ()
 
 
+def test_a01_waiting_asset_after_pdf_approval():
+    workflow, context = started()
+
+    class ApprovedPDF(FrameworkTools):
+        def get_run(self, run_id):
+            return super().get_run(run_id) | {'execution_status': 'waiting_asset'}
+
+    model = Scripted(answer(next_action='submit_poster', summary='포스터를 등록해 주세요.'))
+    note = RunCoordinator(model, ApprovedPDF(workflow)).assess(context.run_id)
+    assert (note.next_action, note.waiting_on) == ('submit_poster', 'creator')
+
+
 def test_a01_rejects_action_the_state_does_not_allow():
     workflow, context = started()
     model = Scripted(answer(next_action='request_final_approval', summary='최종 승인하세요.'))
@@ -144,6 +156,16 @@ def test_a08_requests_rereview_once_with_bound_arguments():
     assert summary.rereview_requested and summary.child_run_id == 'demo-run-2'
     assert summary.child_status == 'waiting_criteria'
     assert workflow.get('demo-run-2').context.parent_run_id == parent.run_id
+
+
+def test_a08_created_child_survives_invalid_followup():
+    workflow, parent = waiting_revision()
+    context, _, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)
+    model = Scripted(call('get_parent_run', 'request_rereview'), {'content': 'invalid'}, {'content': 'invalid'})
+    result = RereviewAgent(model, FrameworkTools(workflow)).request(parent.run_id, context, asset)
+    assert result.rereview_requested and result.child_run_id == context.run_id
+    assert result.child_status == workflow.get(context.run_id).execution_status == 'waiting_criteria'
+    assert result.tools_used == ('get_parent_run', 'request_rereview')
 
 
 def test_a08_rejected_request_keeps_the_error_code():

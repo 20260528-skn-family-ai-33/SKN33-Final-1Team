@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router';
+import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
@@ -14,7 +16,7 @@ export default function ReviewPage() {
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
-    addCriterion, navigate, retryPoll, newReview, changeFilter,
+    addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,
   } = useReviewContext();
 
   // 단계 이동 후 제목으로 초점을 옮겨 키보드와 스크린 리더 사용을 돕는다.
@@ -23,8 +25,14 @@ export default function ReviewPage() {
     window.scrollTo({ top: 0 });
   }, [state.step]);
 
+  const [params, setParams] = useSearchParams();
+  const runId = params.get('framework');
+  if (runId) return <FrameworkReviewPage key={runId} runId={runId}
+    initialFile={runId === state.documentRun?.id ? state.file : null}
+    openRun={id => setParams({ framework: id })} onNew={() => { newReview(); setParams({}); }} />;
+
   return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
-    {state.step === 'input' && <InputPage {...{ state, prepare, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} />}
+    {state.step === 'input' && <InputPage {...{ state, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage
