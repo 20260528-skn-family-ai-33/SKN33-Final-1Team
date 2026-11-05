@@ -52,7 +52,7 @@ try {
   await button('검토한 기준 버전 저장').click();
   await page.getByText(/승인 전 보완/).waitFor();
   assert.equal(await button('이 버전의 전체 기준 승인').count(), 0);
-  await page.getByRole('listitem').filter({ hasText: '기대값 미정' }).getByRole('checkbox').check();
+  await page.getByRole('listitem').filter({ hasText: '기대값 미정' }).getByRole('checkbox').uncheck();
   await page.getByLabel('제외 사유').fill('이번 합성 시험은 전시명만 확인합니다.');
   await button('검토한 기준 버전 저장').click();
   await button('이 버전의 전체 기준 승인').click();
@@ -69,6 +69,7 @@ try {
   async function review(expected) {
     await page.waitForFunction(() => document.querySelector('img[alt="현재 버전의 검수 포스터"]')?.naturalWidth === 32);
     await button('이 포스터와 기준을 확인하고 검수 시작').click();
+    await button('보고서·담당자 승인').click();
     await page.getByText('기계 판정 · ' + expected, { exact: true }).waitFor();
     const id = new URL(page.url()).searchParams.get('framework');
     const run = await (await page.request.get(base + '/api/framework/v1/runs/' + id)).json();
@@ -84,6 +85,7 @@ try {
   await button('수정 요청 승인').click();
   await page.getByLabel('수정 포스터', { exact: true }).waitFor();
   await page.reload();
+  await button('보고서·담당자 승인').click();
   await image('수정 포스터', 'lime');
   await button('수정본 재검수 접수').click();
   await review('충족');
@@ -93,6 +95,7 @@ try {
   await button('최종 승인').click();
   await page.getByText('담당자 승인 완료').waitFor();
   await page.reload();
+  await button('보고서·담당자 승인').click();
   await page.getByText('담당자 승인 완료').waitFor();
   assert.deepEqual(errors, []); assert.deepEqual(legacy, []);
   console.log('PDF approved, first poster failed, revision passed and final approval survived reload.');

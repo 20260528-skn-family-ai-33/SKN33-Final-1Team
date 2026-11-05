@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { extractDocumentWithProgress } from './frameworkDocument.js';
-import { loadDocumentProjects } from './frameworkClient.js';
+import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
+import { loadDocumentProjects, requirePosterReview } from './frameworkClient.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 
 const file = new File(['%PDF-test'], '전체요구사항.pdf', { type: 'application/pdf' });
@@ -123,4 +123,58 @@ test('프로젝트 목록은 쓰기 역할만 보여주고 페이지를 모두 �
       : Response.json({ items: [{ id: 'o', my_role: 'owner' }, { id: 'v', my_role: 'viewer' }], next_cursor: 'next' });
   });
   assert.deepEqual((await loadDocumentProjects()).map(p => p.id), ['o', 'e']);
+});
+
+test('직접 입력은 원문 바이트를 보존하고 같은 접수의 조회를 재사용한다', async t => {
+  const text = '  행사명: 봄의 기록\r\n날짜는 담당자 확인 후 확정\n';
+  const attempts = new Map(); const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
+    calls.push({ url, options });
+    assert.ok(url.startsWith(prefix));
+    if (url.endsWith('/csrf')) return Response.json({ csrf_token: 'text-token' });
+    if (options.method === 'POST') {
+      assert.equal(new Headers(options.headers).get('X-CSRFToken'), 'text-token');
+      assert.ok(new Headers(options.headers).get('Idempotency-Key'));
+    }
+    if (url.endsWith('/text-documents')) {
+      assert.deepEqual(JSON.parse(options.body), { text });
+      return Response.json({ document: { document_version_id: 'text-1', sha256: createHash('sha256').update(text).digest('hex') } });
+    }
+    if (url.endsWith('/extractions')) return Response.json({ context: { run_id: 'text-run' } });
+    if (url.endsWith('/requirements')) return Response.json({ conditions: [], pending: [{ criterion_id: 'pending' }],
+      framework: { run_id: 'text-run', document_version_id: 'text-1' } });
+    if (url.endsWith('/text-run')) return Response.json({ execution_status: 'waiting_criteria' });
+    throw new Error('unexpected URL: ' + url);
+  });
+  const first = await extractTextWithProgress(text, { projectId: 'p', attempts });
+  assert.equal(first.framework.run_id, 'text-run');
+  await extractTextWithProgress(text, { projectId: 'p', attempts });
+  assert.equal(calls.filter(c => c.url.endsWith('/text-documents')).length, 1);
+  assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 1);
+});
+
+test('직접 입력의 저장 해시가 다르면 추출을 접수하지 않는다', async t => {
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    calls.push(url);
+    if (url.endsWith('/csrf')) return Response.json({ csrf_token: 'text-token' });
+    return Response.json({ document: { document_version_id: 'wrong', sha256: '0'.repeat(64) } });
+  });
+  await assert.rejects(extractTextWithProgress('행사명: 봄', { projectId: 'p' }), /원문 저장 결과/);
+  assert.equal(calls.some(url => url.endsWith('/extractions')), false);
+  assert.throws(() => extractTextWithProgress('   ', { projectId: 'p' }), /공백/);
+});
+
+test('PDF 분석 가능 여부를 포스터 검수 준비나 텍스트 등록 준비로 간주하지 않는다', async t => {
+  let health = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_reviews: true };
+  t.mock.method(globalThis, 'fetch', async url => {
+    assert.equal(url, prefix + '/health');
+    return Response.json(health);
+  });
+  await assert.rejects(requirePosterReview(), /포스터 검사·보고/);
+  health.poster_review_ready = true;
+  await requirePosterReview();
+  await assert.rejects(requirePosterReview({ freeText: true }), /텍스트 원문 저장/);
+  health.free_text_registration = true;
+  await requirePosterReview({ freeText: true });
 });

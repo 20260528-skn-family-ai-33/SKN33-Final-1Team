@@ -25,7 +25,7 @@ def load_config(path):
             raise ValueError('DEDICATED_PATH_REQUIRED')
     if not 1024<=config['port']<=65535 or not 0<config['gpu_memory_utilization']<1:
         raise ValueError('INVALID_SERVER_LIMIT')
-    if config['max_num_seqs']!=1 or not config['language_model_only'] or not config['enforce_eager']:
+    if config['max_num_seqs']!=1 or type(config['language_model_only']) is not bool or not config['enforce_eager']:
         raise ValueError('INITIAL_A02_PROFILE_REQUIRED')
     # Old A02-only JSON files remain valid. The pinned Qwen3.5/vLLM profile
     # requires a matching parser whenever automatic tool selection is enabled.
@@ -44,8 +44,9 @@ def command(config):
         '--model',config['model_directory'],'--served-model-name',config['model'],
         '--host',config['host'],'--port',str(config['port']),'--dtype',config['dtype'],
         '--tensor-parallel-size','1','--max-model-len',str(config['max_model_len']),
-        '--max-num-seqs',str(config['max_num_seqs']),'--gpu-memory-utilization',str(config['gpu_memory_utilization']),
-        '--language-model-only','--enforce-eager','--reasoning-parser','qwen3',
+        '--max-num-seqs',str(config['max_num_seqs']),'--gpu-memory-utilization',str(config['gpu_memory_utilization'])]
+    if config['language_model_only']:result.append('--language-model-only')
+    result+=['--enforce-eager','--reasoning-parser','qwen3',
         '--default-chat-template-kwargs','{"enable_thinking":false}']
     if config.get('enable_auto_tool_choice',False):
         result+=['--enable-auto-tool-choice','--tool-call-parser',config['tool_call_parser']]

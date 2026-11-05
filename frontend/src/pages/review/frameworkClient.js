@@ -19,6 +19,16 @@ export async function frameworkJson(path, options = {}) {
   return response.json();
 }
 
+export async function requirePosterReview({ signal, freeText = false } = {}) {
+  const health = await frameworkJson('/health', { signal });
+  if (health.poster_review_ready !== true) {
+    throw new Error('포스터 검사·보고 구성이 준비되지 않았습니다. 서버의 검사·보고 설정과 저장소 연결을 확인해 주세요.');
+  }
+  if (freeText && health.free_text_registration !== true) {
+    throw new Error('직접 입력한 요구사항을 저장할 수 없습니다. 서버의 텍스트 원문 저장 설정을 확인해 주세요.');
+  }
+}
+
 export async function loadDocumentProjects({ signal } = {}) {
   const health = await frameworkJson('/health', { signal });
   if (!health.requirements_presentation || health.pdf_extraction_mode !== 'qwen') {
