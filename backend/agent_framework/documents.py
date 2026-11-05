@@ -250,6 +250,8 @@ class PostgresDocuments:
                 byte_size=int(item['byte_size']),sha256=item['sha256'],page_count=intent['page_count'],
                 created_by=subject.user_id,request_key=UUID(intent['request_key']),input_sha256=intent['input_sha256']
             ).returning(versions)).mappings().one()
+            from .graph_projection import mark_project_changed
+            mark_project_changed(c,pid,'document.registered',row['document_version_id'])
             return dict(row)
 
     def _reconcile(self,intent):
@@ -268,7 +270,7 @@ class PostgresDocuments:
         if media_type=='text/plain':
             from .postgres_schema import check_extension
             with unit_of_work(self.engine) as c:
-                if check_extension(c)['revision']!='AF004':raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+                if check_extension(c)['revision'] not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         name=_name(filename,media_type)
         try:count=inspect_requirement(raw,media_type,self.limits)
         except AdapterFailure as e:raise AuthError(e.code,413 if e.code=='FILE_TOO_LARGE' else 422) from None

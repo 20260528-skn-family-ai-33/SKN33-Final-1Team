@@ -89,9 +89,8 @@ def project_router():
     return result
 
 
-def router():
-    result = APIRouter(prefix='/api/v1')
-    result.include_router(project_router())
+def image_router():
+    result = APIRouter()
 
     @result.get('/projects/{project_id}/images')
     def images(request: Request, project_id: str): return listing(request, 'images', identifier(project_id))
@@ -125,7 +124,7 @@ def router():
             else:
                 # Starlette 1.7 closes these on parse errors; also close on disconnect/cancellation.
                 for temporary in parser._files_to_close_on_error: temporary.close()
-        return created(request, data, '/api/v1/images/' + data['id'])
+        return created(request, data, request.url.path.split('/projects/')[0] + '/images/' + data['id'])
 
     @result.get('/images/{image_id}')
     def image(request: Request, image_id: str):
@@ -134,7 +133,7 @@ def router():
     @result.get('/images/{image_id}/content')
     def content(request: Request, image_id: str):
         file = request.app.state.business.get_image(*subject(request), identifier(image_id), content=True)
-        try: stream = request.app.state.storage.verified(file['storage_key'], file['byte_size'], file['sha256'])
+        try: stream = request.app.state.files.storage.verified(file['storage_key'], file['byte_size'], file['sha256'])
         except (StorageError, OSError): raise AuthError('FILE_UNAVAILABLE', 503) from None
         def chunks():
             try:
@@ -143,6 +142,15 @@ def router():
         return StreamingResponse(chunks(), media_type='image/png', headers={'Content-Length': str(file['byte_size']),
             'X-Content-Type-Options': 'nosniff', 'Content-Disposition': 'inline; filename="' + str(identifier(image_id)) + '.png"'},
             background=BackgroundTask(stream.close))
+
+    return result
+
+
+def router():
+    result = APIRouter(prefix='/api/v1')
+    result.include_router(project_router())
+
+    result.include_router(image_router())
 
     @result.get('/projects/{project_id}/criteria-sets')
     def sets(request: Request, project_id: str): return listing(request, 'criteria-sets', identifier(project_id))

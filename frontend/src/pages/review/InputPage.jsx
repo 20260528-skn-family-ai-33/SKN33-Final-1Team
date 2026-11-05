@@ -7,8 +7,9 @@ import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 기존 업로드·문서 처리 흐름을 큰 이미지 캔버스와 입력 inspector에 연결한다.
-export default function InputPage({ state, prepare, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }) {
+export default function InputPage({ state, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }) {
   const requirementCount = parseRequirements(state.requirements).length;
+  const mixed = state.documentRun && state.requirements.trim() !== state.documentRun.paragraphs;
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
   const imagePixels = ((health?.limits?.image_pixels || 10_000_000) / 10_000).toLocaleString();
   const imageSide = (health?.limits?.image_side || 8192).toLocaleString();
@@ -42,7 +43,8 @@ export default function InputPage({ state, prepare, inputChange, sample, sampleB
         </aside>
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} /></div>
-      <div className="rv-actionbar rv-input-actionbar"><div className="rv-input-next-note"><Icon name="lock" /><div><strong>자료 준비 후, 검수 기준을 확인합니다.</strong><p>{requirementCount}개 입력 · {versionText} · 기준을 확정한 뒤 검수가 실행됩니다.</p></div></div><button type="submit" className="rv-button primary" disabled={busy}>검수 항목 확인하기<Icon name="arrow" /></button></div>
+      <div className="rv-actionbar rv-input-actionbar"><div className="rv-input-next-note"><Icon name="lock" /><div><strong>자료 준비 후, 검수 기준을 확인합니다.</strong><p>{requirementCount}개 입력 · {versionText} · 기준을 확정한 뒤 검수가 실행됩니다.</p></div></div>{mixed && <button type="button" className="rv-button primary" disabled={busy} onClick={openDocumentRun}>{state.documentRun.filename} 원문 기준 승인하기</button>}
+        <button type="submit" className={mixed ? 'rv-button secondary' : 'rv-button primary'} disabled={busy}>{mixed ? '편집한 문구로 간편 검수' : state.documentRun ? 'PDF 검수 기준 확인하기' : '검수 항목 확인하기'}<Icon name="arrow" /></button></div>
     </form>
   </section>;
 }

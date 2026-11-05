@@ -494,3 +494,20 @@ Windows PowerShell:
 이 예제는 생성한 실제 PDF·PNG를 **기존 `services.store_file`과 `LocalStorage`**에 저장하고, 격리된 메모리 SQLite의 기존 모델로 연결한 뒤 파일 접근 포트로 읽는다. 정상 해시·페이지·치수를 확인하고 잘못된 해시 참조를 거부한다. 임시 저장소는 실행 후 정리된다. 사용자 파일·운영 DB·`.env`를 읽거나 변경하지 않고, Qwen·Neo4j를 호출하지 않는다. 생성 파일과 테스트 사용자이므로 결과를 실모델 평가·제품 인증 검증으로 해석하지 않는다.
 
 M008의 기존 로컬 저장소는 POSIX 디렉터리 기능을 사용하므로 해당 저장소 실행은 macOS/Linux 대상이다. Windows용 새 저장소를 만들지 않았으며, Windows에서는 재구축의 기존 LocalStorage 기반 예제를 사용한다. 실제 Windows 실행은 별도 검증 대상이다.
+
+
+## PostgreSQL·Neo4j 원문 근거 RAG — AF005 opt-in
+
+[Neo4j 근거 검색·RAG 연결 가이드](Neo4j_근거검색_RAG_연결가이드.md)를 따른다. `context_preparation`을 명시한 registered_poster 프로필은 A04·A05 직전에 PG→Neo4j→PG 검증으로 원문·보완 출처를 고정하고 A07에도 같은 근거를 전달한다. 역할 계약 3.0.0과 기존 기본 동작은 유지한다. 독립 A03이나 벡터DB는 추가하지 않는다.
+
+AF005는 graph_state·graph_outbox·불변 evidence_contexts를 추가하며 owner 마이그레이션을 명시적으로 선택한다. 새 개발용 Neo4j만 별도 볼륨·57431/57631 포트에 실행한다. graph-init·graph-projector·graph-rebuild 명령은 DB 초기화·운영 모델 호출·사람 승인을 자동 수행하지 않는다. 기존 재구축 cc_* 그래프와 사용자 데이터는 보존한다.
+
+실제 격리 DB 검사와 기존 로컬 DB 적용 범위는 [11/04 Neo4j RAG 구현·검증 기록](Neo4j_RAG_구현검증_20261104.md)을 참고한다. 미승인 전시 PDF는 그대로 유지하며 실제 모델 전체 검수와 합성 연결 시험을 구분한다.
+
+시험 실행은 [Neo4j 개발용·시험용 분리 가이드](Neo4j_개발시험_분리_가이드.md)를 따른다. Mac은 `python3 scripts/framework_graph_test.py`, Windows PowerShell은 `py -3.12 scripts/framework_graph_test.py`로 같은 Linux 시험 컨테이너를 실행한다. 기존 개발 DB·볼륨은 재사용하지 않는다.
+
+개발 Neo4j·동기화 worker의 한 명령 실행·프로세스 재시작·실제 접속 확인은 [자동 실행·재시작 가이드](Neo4j_자동실행_재시작_가이드.md)를 따른다. 기본 설정에서 `python3 scripts/framework_graph_runtime.py up`으로 시작하고 `status`로 확인한다. Windows는 `py -3.12`를 사용한다.
+
+지연·반복 실패·실제 그래프 반영 상태의 지속 감시는 [동기화 감시 가이드](Neo4j_동기화_감시_가이드.md)를 따른다. `framework_graph_runtime.py status`에서 synchronization 요약, `monitor`에서 최신 상세 관측을 확인한다. 감시는 읽기 전용이며 자동 복구·승인·외부 통지는 하지 않는다.
+
+**[Neo4j 프로젝트 자동 복구](Neo4j_프로젝트_자동복구_가이드.md)** — 유실·불일치를 두 번 확인한 뒤 원장을 검증하고 프로젝트별 outbox로 재구축한다. 외부 관계·원장 불일치·앞선 그래프는 자동 덮어쓰기를 차단한다. 기존 monitor는 읽기 전용을 유지한다.

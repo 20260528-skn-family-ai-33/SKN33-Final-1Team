@@ -12,7 +12,8 @@ from backend.agent_framework.ports import AdapterFailure
 from examples.agent_framework.poster_testdata import generate
 
 
-def test_template_never_fakes_a_real_inspection():
+def test_template_never_fakes_a_real_inspection(monkeypatch):
+    monkeypatch.delenv("CC_QWEN_BASE_URL", raising=False)
     config=load_config('examples/agent_framework/team_config.poster-review.template.json')
     with pytest.raises(AdapterFailure) as error:build_role(config,'A04_A05')
     assert error.value.code=='ADAPTER_CONTEXT_REQUIRED'

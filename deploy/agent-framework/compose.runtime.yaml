@@ -1,0 +1,93 @@
+# Overlay for the existing development project/volume. Never starts PostgreSQL.
+services:
+  neo4j:
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+  projector:
+    image: ${AF_FRAMEWORK_IMAGE:?Use framework_graph_runtime.py}
+    init: true
+    command: ["graph-projector", "--env-file", "/run/framework/app.env"]
+    volumes:
+      - type: bind
+        source: ${AF_GRAPH_APP_ENV_FILE:?Use framework_graph_runtime.py}
+        target: /run/framework/app.env
+        read_only: true
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-m", "backend.agent_framework", "graph-check", "--env-file", "/run/framework/app.env"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 20s
+    labels:
+      io.creativechecker.environment: development
+      io.creativechecker.role: framework-projection
+  monitor:
+    image: ${AF_FRAMEWORK_IMAGE:?Use framework_graph_runtime.py}
+    init: true
+    command: ["graph-monitor", "--env-file", "/run/framework/app.env", "--state-file", "/data/monitor/latest.json"]
+    volumes:
+      - type: bind
+        source: ${AF_GRAPH_APP_ENV_FILE:?Use framework_graph_runtime.py}
+        target: /run/framework/app.env
+        read_only: true
+      - framework-monitor:/data/monitor
+    depends_on:
+      projector:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-m", "backend.agent_framework", "graph-monitor-status", "--state-file", "/data/monitor/latest.json", "--max-age", "60"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+    labels:
+      io.creativechecker.environment: development
+      io.creativechecker.role: framework-graph-monitor
+
+  recovery:
+    image: ${AF_FRAMEWORK_IMAGE:?Use framework_graph_runtime.py}
+    init: true
+    command: ["graph-recovery", "--env-file", "/run/framework/app.env", "--state-file", "/data/recovery/latest.json"]
+    volumes:
+      - type: bind
+        source: ${AF_GRAPH_APP_ENV_FILE:?Use framework_graph_runtime.py}
+        target: /run/framework/app.env
+        read_only: true
+      - framework-recovery:/data/recovery
+    depends_on:
+      projector:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-m", "backend.agent_framework", "graph-recovery-status", "--state-file", "/data/recovery/latest.json", "--max-age", "120"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+    labels:
+      io.creativechecker.environment: development
+      io.creativechecker.role: framework-graph-recovery
+
+volumes:
+  framework-monitor:
+  framework-recovery:

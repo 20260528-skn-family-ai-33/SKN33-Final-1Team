@@ -292,12 +292,47 @@ def parser():
             command.add_argument('--host',choices=('127.0.0.1','0.0.0.0'),default='127.0.0.1',help='Use 0.0.0.0 only inside a container with a loopback-only published host port.')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF root initialized with init-pdf-storage; requires AF002')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; registered poster reviews require AF003')
-        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003','AF004'),default='AF001')
+        if name=='migrate-postgres':command.add_argument('--revision',choices=('AF001','AF002','AF003','AF004','AF005'),default='AF001')
         if name=='worker':
             command.add_argument('--once',action='store_true',help='recover expired claims and execute at most one queued phase')
             command.add_argument('--pdf-storage-root',help='existing dedicated PDF storage; required by registered_pdf A02 configuration')
             command.add_argument('--poster-storage-root',help='existing M008 image storage; required by registered_poster inspector')
         command.set_defaults(handler=handler)
+    from .graph_commands import graph_command
+    for name in ('graph-init','graph-projector','graph-rebuild','graph-check'):
+        command=commands.add_parser(name,help='Explicit framework graph operation; never migrates a database')
+        command.add_argument('--env-file',required=True)
+        if name=='graph-projector':command.add_argument('--once',action='store_true')
+        if name=='graph-rebuild':
+            from uuid import UUID
+            command.add_argument('--project-id',type=UUID,required=True)
+        command.set_defaults(handler=graph_command)
+    from .graph_monitor import monitor_command,monitor_status_command
+    command=commands.add_parser('graph-monitor',help='Read-only sync lag/failure observations; no repairs or external alerts')
+    command.add_argument('--env-file',required=True)
+    command.add_argument('--once',action='store_true')
+    command.add_argument('--state-file')
+    command.add_argument('--interval',type=int,default=15)
+    command.add_argument('--lag-seconds',type=int,default=120)
+    command.add_argument('--failure-threshold',type=int,default=3)
+    from uuid import UUID
+    command.add_argument('--project-id',type=UUID,help='Optional operator-only observation scope; default is all projected projects')
+    command.set_defaults(handler=monitor_command)
+    command=commands.add_parser('graph-monitor-status',help='Read monitor snapshot freshness without connecting to business databases')
+    command.add_argument('--state-file',required=True)
+    command.add_argument('--max-age',type=int,default=60)
+    command.set_defaults(handler=monitor_status_command)
+    from .graph_recovery import recovery_command,recovery_status_command
+    command=commands.add_parser('graph-recovery',help='Confirm project projection loss and enqueue source-verified recovery; never initializes schemas')
+    command.add_argument('--env-file',required=True)
+    command.add_argument('--state-file')
+    command.add_argument('--once',action='store_true')
+    command.add_argument('--project-id',type=UUID,help='Optional operator-only project scope')
+    command.set_defaults(handler=recovery_command)
+    command=commands.add_parser('graph-recovery-status',help='Read recovery snapshot without writing database records')
+    command.add_argument('--state-file',required=True)
+    command.add_argument('--max-age',type=int,default=120)
+    command.set_defaults(handler=recovery_status_command)
     return cli
 
 

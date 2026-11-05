@@ -1,0 +1,79 @@
+# Only scripts/framework_graph_test.py supplies these disposable credentials.
+# No fixed project name, existing volume, application env file or public port.
+x-test-labels: &test-labels
+  io.creativechecker.environment: test
+  io.creativechecker.test-run: ${AF_ISOLATION_RUN_ID:?Use framework_graph_test.py}
+
+services:
+  runner:
+    profiles: [test-runner]
+    image: ${AF_ISOLATION_RUN_ID:?Use framework_graph_test.py}:runner
+    build:
+      context: ../..
+      dockerfile: deploy/agent-framework/Dockerfile.test
+      args:
+        TEST_RUN_ID: ${AF_ISOLATION_RUN_ID:?Use framework_graph_test.py}
+    labels: *test-labels
+    environment:
+      TEST_DB_ALLOW_CREATE: "1"
+      TEST_DB_HOST: postgres
+      TEST_DB_PORT: "5432"
+      TEST_DB_ADMIN_USER: af_test_admin
+      TEST_DB_ADMIN_PASSWORD: ${AF_ISOLATION_PG_PASSWORD:?Use framework_graph_test.py}
+      TEST_DB_OWNER_USER: af_owner
+      TEST_DB_OWNER_PASSWORD: ${AF_ISOLATION_OWNER_PASSWORD:?Use framework_graph_test.py}
+      TEST_DB_APP_USER: af_app
+      TEST_DB_APP_PASSWORD: ${AF_ISOLATION_APP_PASSWORD:?Use framework_graph_test.py}
+      AF_TEST_NEO4J_URI: bolt://neo4j:7687
+      AF_TEST_NEO4J_PASSWORD: ${AF_ISOLATION_GRAPH_PASSWORD:?Use framework_graph_test.py}
+      AF_TEST_NEO4J_RUN_ID: ${AF_ISOLATION_RUN_ID:?Use framework_graph_test.py}
+      AF_TEST_NEO4J_TOKEN: ${AF_ISOLATION_TOKEN:?Use framework_graph_test.py}
+  neo4j:
+    image: neo4j:5.26-community
+    labels: *test-labels
+    environment:
+      NEO4J_AUTH: neo4j/${AF_ISOLATION_GRAPH_PASSWORD:?Use framework_graph_test.py}
+      NEO4J_server_memory_heap_initial__size: 256m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    ports:
+      - "127.0.0.1::7687"
+    volumes:
+      - graph-data:/data
+      - graph-logs:/logs
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:7474"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
+    restart: "no"
+  postgres:
+    image: postgres:17.11-bookworm
+    labels: *test-labels
+    environment:
+      POSTGRES_USER: af_test_admin
+      POSTGRES_PASSWORD: ${AF_ISOLATION_PG_PASSWORD:?Use framework_graph_test.py}
+      POSTGRES_DB: postgres
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "af_test_admin", "-d", "postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 45
+    restart: "no"
+
+volumes:
+  graph-data:
+    labels: *test-labels
+  graph-logs:
+    labels: *test-labels
+  postgres-data:
+    labels: *test-labels
+
+networks:
+  default:
+    labels: *test-labels

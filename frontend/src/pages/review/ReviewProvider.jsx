@@ -163,7 +163,8 @@ export function ReviewProvider({ children }) {
       } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
       const merged = mergeDocumentRequirements(currentState.current.requirements, result, file.name);
-      dispatch({ type: 'document', ...merged });
+      dispatch({ type: 'document', ...merged, documentRun: { id: result.framework.run_id,
+        paragraphs: [...new Set(result.conditions.map(item => item.text.trim()))].join('\n\n'), filename: file.name } });
       setDocumentProgress(previous => ({ ...previous, percent: 100, stage: 'completed', message: `${merged.addedCount}개 조건을 입력에 반영했습니다.` }));
       setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${merged.addedCount}개 요구사항 문단을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
@@ -311,10 +312,15 @@ export function ReviewProvider({ children }) {
   }
 
   // 입력을 검증한 뒤 줄마다 하나의 검수 항목을 준비한다.
+  function openDocumentRun() {
+    setSearchParams({ framework: state.documentRun.id });
+  }
+
   function prepare(event) {
     event?.preventDefault();
     if (sampleBusy || fileBusy || documentBusy) return;
     setError('');
+    if (state.documentRun && state.requirements.trim() === state.documentRun.paragraphs) { openDocumentRun(); return; }
     if (!state.file) { setError('검수할 이미지를 먼저 선택해 주세요.'); return; }
     if (!state.requirements.trim()) { setError('검수 요구사항을 한 줄에 하나씩 입력해 주세요.'); return; }
     const criteria = parseRequirements(state.requirements);
@@ -418,7 +424,7 @@ export function ReviewProvider({ children }) {
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
-    addCriterion, navigate, retryPoll, newReview, changeFilter,
+    addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,
   };
   return <ReviewContext.Provider value={value}>{children}</ReviewContext.Provider>;
 }

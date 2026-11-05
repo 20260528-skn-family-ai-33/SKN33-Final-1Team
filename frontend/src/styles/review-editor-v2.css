@@ -213,3 +213,18 @@
 @media (prefers-reduced-motion: reduce) {
   .rv-workspace .rv-input-drop-target { transition: none; }
 }
+
+.rv-framework-review {
+  display: grid;
+  gap: 18px;
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: clamp(20px, 3vw, 42px);
+  overflow-wrap: anywhere;
+}
+.rv-framework-review :is(button, input[type=file]) { justify-self: start; }
+.rv-framework-review li { margin: 12px 0; }
+.rv-framework-review li p { color: var(--rv-muted); }
+.rv-framework-review label { display: flex; align-items: center; gap: 8px; }
+.rv-framework-review input:not([type]) { border: 1px solid var(--rv-line); padding: 8px 12px; }
+.rv-framework-review summary { cursor: pointer; font-weight: 600; }

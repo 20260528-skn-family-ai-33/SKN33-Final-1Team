@@ -64,6 +64,9 @@ def postgres_worker(args):
     for signum in (signal.SIGTERM,signal.SIGINT):signal.signal(signum,lambda *_:stop.set())
     try:
         _ready(engine,settings)
+        if configuration.context_preparation is not None:
+            with unit_of_work(engine) as c:
+                if check_extension(c)['revision']!='AF005':raise ConfigurationError('Neo4j evidence preparation requires AF005.')
         store=PostgresStore(engine,configuration)
         queue=PostgresQueue(store)
         if configuration.pdf_extraction is not None:

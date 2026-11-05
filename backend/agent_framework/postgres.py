@@ -78,6 +78,10 @@ class PostgresStore:
 
     def event(self,c,run_id,kind,**metadata):
         c.execute(insert(events).values(event_id=uuid4(),run_id=run_id,kind=kind,metadata_json=metadata))
+        from .graph_projection import GRAPH_EVENTS,mark_project_changed
+        if kind in GRAPH_EVENTS:
+            pid=c.execute(select(runs.c.project_id).where(runs.c.run_id==run_id)).scalar_one()
+            mark_project_changed(c,pid,kind,run_id)
 
     def _access(self,c,subject,context,*,write=True):
         if self.authorization is None: raise AuthError('AUTHENTICATION_REQUIRED',401)

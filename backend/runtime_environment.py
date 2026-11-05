@@ -21,7 +21,8 @@ PROFILES = {
     "mcp": STORAGE | QWEN | MCP,
     "v1": DATABASE | WEB | REVIEW,
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
-    "framework-worker": DATABASE | QWEN | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
+    "framework-worker": DATABASE | QWEN | GRAPH | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
+    "framework-projection": DATABASE | GRAPH,
     "legacy": DATABASE | WEB | REVIEW | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN"},
 }
 PREFIXES = {

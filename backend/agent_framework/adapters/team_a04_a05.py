@@ -59,7 +59,6 @@ from ..contracts import (Criterion, EvidenceBundle, ImageEvidence, InspectReques
                          ObservationStatus)
 from ..files import VerifiedPoster
 from ..ports import AdapterFailure, FileAccess, Inspector
-from .file_backed import FileBackedInspector
 
 PROMPT_VERSION = "a04-a05-2026-11-03.2"
 # 10/30 team decision; the same default as backend/creative_checker/settings.py.
@@ -215,17 +214,24 @@ class TeamPosterInspector:
         self.model, self.files, self.require_location = model, files, require_location
 
     def inspect(self, request: InspectRequest) -> InspectionResult:
-        model = self.model if self.model is not None else OpenAICompatibleVisionModel(ModelSettings.from_environment())
+        model = self._model()
         files = self.files if self.files is not None else FILE_ACCESS.get(None)
         if files is None:
             raise AdapterFailure("FILE_ACCESS_NOT_CONFIGURED",
                                  "실행 중인 앱이나 worker가 FILE_ACCESS에 인증된 파일 접근을 연결해야 합니다.")
 
-        def inspect_poster(checked: InspectRequest, poster: VerifiedPoster) -> InspectionResult:
-            answers = model.inspect(checked.criteria, prepare_image(poster))
-            return build_result(checked, poster, answers, require_location=self.require_location)
+        poster = files.read_asset(request.context, request.asset)
+        return self._inspect(request, poster, model)
 
-        return FileBackedInspector(files, inspect_poster).inspect(request)
+    def _model(self):
+        return self.model if self.model is not None else OpenAICompatibleVisionModel(ModelSettings.from_environment())
+
+    def inspect_poster(self, request: InspectRequest, poster: VerifiedPoster) -> InspectionResult:
+        return self._inspect(request, poster, self._model())
+
+    def _inspect(self, request, poster, model):
+        answers = model.inspect(request.criteria, prepare_image(poster))
+        return build_result(request, poster, answers, require_location=self.require_location)
 
 
 def create_inspector() -> Inspector:

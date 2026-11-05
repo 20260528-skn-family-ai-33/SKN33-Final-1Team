@@ -80,12 +80,20 @@ class RereviewAgent:
 
         task = (f'부모 실행 {json.dumps(parent_run_id)}에 새 포스터 버전 {json.dumps(asset.asset_version_id)}이 '
                 f'제출되었다. 재검수를 요청할지 판단하고 JSON으로 답하라.')
-        draft, used = run_agent(self.model, system=REQUEST_SYSTEM, task=task, tools=specs, output=RereviewDraft,
-                                revise=revise)
-        requested = 'request_rereview' in used
-        if draft.rereview_requested != requested:
-            raise AdapterFailure('AGENT_OUTPUT_INCONSISTENT', 'The agent answer differs from the executed command.')
-        _consistent(draft, (), (), ())
+        used: list[str] = []
+        try:
+            draft, _ = run_agent(self.model, system=REQUEST_SYSTEM, task=task, tools=specs, output=RereviewDraft,
+                                    revise=revise, completed_tools=used)
+            requested = 'request_rereview' in used
+            if draft.rereview_requested != requested:
+                raise AdapterFailure('AGENT_OUTPUT_INCONSISTENT', 'The agent answer differs from the executed command.')
+            _consistent(draft, (), (), ())
+        except Exception:
+            # The write receipt survives a later model/formatting failure.
+            if not isinstance(written.get('receipt'), dict) or written['receipt'].get('state') != 'completed':
+                raise
+            requested = True
+            draft = RereviewDraft(rereview_requested=True, summary='모델의 후속 설명을 확인하지 못했습니다.')
         child = required(written['receipt']) if requested else None
         rejected = None if requested else written.get('receipt', {}).get('error')
         error = FrameworkError(code=str(rejected.get('code') or 'TOOL_FAILED'),

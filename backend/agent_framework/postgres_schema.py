@@ -12,13 +12,17 @@ DDL = Path(__file__).with_name('AF001.sql')
 DOCUMENT_DDL = Path(__file__).with_name('AF002.sql')
 CRITERIA_DDL = Path(__file__).with_name('AF003.sql')
 TEXT_DDL = Path(__file__).with_name('AF004.sql')
+GRAPH_DDL = Path(__file__).with_name('AF005.sql')
+GRAPH_TABLES = ('graph_state','graph_outbox','evidence_contexts')
 TABLES = ('schema_version', 'runs', 'jobs', 'steps', 'approvals', 'events')
 DOCUMENT_TABLES = ('document_versions',)
 CRITERIA_TABLES = ('criteria_versions','criteria_approval_bindings')
-MIGRATIONS={'AF001':(DDL,TABLES),'AF002':(DOCUMENT_DDL,DOCUMENT_TABLES),'AF003':(CRITERIA_DDL,CRITERIA_TABLES),'AF004':(TEXT_DDL,())}
+MIGRATIONS={'AF001':(DDL,TABLES),'AF002':(DOCUMENT_DDL,DOCUMENT_TABLES),'AF003':(CRITERIA_DDL,CRITERIA_TABLES),'AF004':(TEXT_DDL,()),'AF005':(GRAPH_DDL,GRAPH_TABLES)}
 UPDATES = {'runs': ('snapshot_json','updated_at'),
            'jobs': ('state','attempt_no','worker_token','lease_expires_at','heartbeat_at','finished_at','error_json'),
-           'steps': ('state','record_json','output_json','output_sha256')}
+           'steps': ('state','record_json','output_json','output_sha256'),
+           'graph_state': ('revision','applied_revision','lease_token','lease_expires_at','available_at','attempt_no','error_json','synced_at'),
+           'graph_outbox': ('processed_at',)}
 
 
 def _structure(connection):
@@ -52,7 +56,7 @@ def check_extension(connection):
 
 def check_document_extension(connection):
     result=check_extension(connection)
-    if result['revision'] not in ('AF002','AF003','AF004'):
+    if result['revision'] not in ('AF002','AF003','AF004','AF005'):
         raise PersistenceError('FRAMEWORK_DOCUMENT_SCHEMA_NOT_READY',
                                'Apply the explicit AF002 extension before enabling PDF registration.')
     return result
@@ -60,7 +64,7 @@ def check_document_extension(connection):
 
 def check_criteria_extension(connection):
     result=check_extension(connection)
-    if result['revision'] not in ('AF003','AF004'):
+    if result['revision'] not in ('AF003','AF004','AF005'):
         raise PersistenceError('FRAMEWORK_CRITERIA_SCHEMA_NOT_READY','Apply AF003 explicitly before criteria revision/approval commands.')
     return result
 
@@ -77,7 +81,7 @@ def check_app_permissions(connection):
     revision=connection.exec_driver_sql('SELECT revision FROM agent_framework.schema_version').scalar_one()
     tables=_tables(revision)
     for table in tables:
-        if table in DOCUMENT_TABLES+CRITERIA_TABLES:
+        if table in DOCUMENT_TABLES+CRITERIA_TABLES+('evidence_contexts',):
             forbidden=forbidden or connection.execute(text("SELECT has_table_privilege(current_user,:table,'UPDATE') OR has_table_privilege(current_user,:table,'DELETE')"),{'table':'agent_framework.'+table}).scalar_one()
     required=all(connection.execute(text("SELECT has_table_privilege(current_user,:table,'SELECT')"),
         {'table':'agent_framework.'+name}).scalar_one() for name in tables)

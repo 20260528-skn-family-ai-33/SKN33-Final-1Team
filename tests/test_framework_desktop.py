@@ -48,6 +48,31 @@ def test_private_derived_settings_do_not_modify_original_or_leak_values(tmp_path
     assert not capsys.readouterr().out
 
 
+def test_shared_worker_model_tunnel_uses_docker_host(tmp_path):
+    env=tmp_path/'app.env'
+    env.write_text('CC_QWEN_BASE_URL=http://127.0.0.1:18015/v1\n')
+    a=args('worker','--env-file',str(env),'--config',str(ROOT/'deploy/qwen-a02/worker-config.poster.example.json'),
+        '--poster-volume','images')
+    with desktop.settings(a) as folder:
+        assert desktop.read_env(folder/'app.env')['CC_QWEN_BASE_URL']=='http://host.docker.internal:18015/v1'
+        assert json.loads((folder/'team.json').read_text())['pdf_extraction']['endpoint'].startswith('http://host.docker.internal:18015/')
+    assert '127.0.0.1' in env.read_text()
+
+
+def test_api_mount_excludes_graph_and_model_worker_secrets(tmp_path):
+    env=tmp_path/'shared.env'
+    original='DB_HOST=localhost\nDB_APP_PASSWORD=app-only\nCC_NEO4J_URI=bolt://localhost:57631\nCC_NEO4J_USER=neo4j\nCC_NEO4J_PASSWORD=graph-test-only\nA02_QWEN_API_KEY=model-test-only\nCC_QWEN_API_KEY=model-test-only\n'
+    env.write_text(original)
+    with desktop.settings(args('api','--env-file',str(env))) as folder:
+        values=desktop.read_env(folder/'app.env')
+        assert values=={'DB_HOST':'host.docker.internal','DB_APP_PASSWORD':'app-only'}
+    with desktop.settings(args('worker','--env-file',str(env))) as folder:
+        values=desktop.read_env(folder/'app.env')
+        assert values['CC_NEO4J_URI']=='bolt://host.docker.internal:57631'
+        assert values['CC_NEO4J_PASSWORD']=='graph-test-only' and values['A02_QWEN_API_KEY']=='model-test-only'
+    assert env.read_text()==original
+
+
 def test_owner_credentials_cannot_be_sent_to_api(tmp_path):
     env=tmp_path/'owner.env';env.write_text('DB_OWNER_PASSWORD=private-test-only\n')
     with pytest.raises(ValueError,match='APP_CREDENTIALS_ONLY'):

@@ -47,9 +47,10 @@ class Claim:
 
 
 class PostgresQueue:
-    def __init__(self,store,*,lease_seconds=90):
+    def __init__(self,store,*,lease_seconds=90,graph=None):
         if type(lease_seconds) is not int or not 1<=lease_seconds<=3600:raise ValueError('invalid lease')
         self.store,self.engine,self.lease_seconds=store,store.engine,lease_seconds
+        self.graph=graph
 
     def _lock(self,c,claim,*,skip=False):
         project=business_table('projects')
@@ -124,6 +125,9 @@ class PostgresQueue:
             remaining=[r for r in PHASE_ROLES[job['phase']] if r not in completed]
             if not remaining or remaining[0]!=role:raise AuthError('FRAMEWORK_STAGE_CONFLICT',409)
             if any(s.status=='running' for s in snapshot.step_records):raise AuthError('FRAMEWORK_CALL_ALREADY_STARTED',409)
+            if role=='A04_A05' and self.store.configuration.context_preparation is not None:
+                from .evidence_context import stored
+                if stored(c,claim.run_id) is None:raise AuthError('EVIDENCE_CONTEXT_NOT_READY',409)
             request=stage_request(snapshot,run['input_json'],role)
             record=StepRecord(ordinal=len(snapshot.step_records)+1,role=role,status='running',
                               recorded_at=now,started_at=now,synthetic=snapshot.synthetic)
@@ -260,6 +264,9 @@ def execute_claim(queue,claim,agents,*,heartbeat_seconds=15,stop=None):
                     run,_job,_now=queue._live(c,claim)
                     snapshot=RunSnapshot.model_validate(run['snapshot_json'])
                 if any(s.role==role and s.status=='completed' for s in snapshot.step_records):return 'continue'
+                if role=='A04_A05':
+                    from .evidence_context import prepare_for_claim
+                    prepare_for_claim(queue,claim)
                 request=queue.begin_step(claim,role)
                 started=perf_counter_ns()
                 result=invoke_role(role,getattr(agents,ROLE_CONTRACTS[role][0]),request)

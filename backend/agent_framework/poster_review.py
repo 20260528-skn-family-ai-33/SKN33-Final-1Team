@@ -103,6 +103,10 @@ def validate_pinned_review(store,c,row):
     if expected!=asset:raise AuthError('POSTER_ASSET_MISMATCH',409)
     if snapshot.evidence is not None:
         expected_evidence=freeze_approved_context(snapshot.context,version.criteria,synthetic=snapshot.evidence.synthetic)
+        if snapshot.evidence.context_id.startswith('rag-'):
+            from .evidence_context import check_stored
+            check_stored(c,row,snapshot,expected_evidence)
+            return
         if snapshot.evidence!=expected_evidence or (approved.synthetic and not snapshot.evidence.synthetic):
             raise AuthError('POSTER_BASELINE_MISMATCH',409)
 

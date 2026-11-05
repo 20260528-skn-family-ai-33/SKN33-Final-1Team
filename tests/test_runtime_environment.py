@@ -25,7 +25,8 @@ def shared_file(tmp_path):
 @pytest.mark.parametrize("component,expected", [
     ("api", {"CC_NEO4J_PASSWORD"}), ("worker", {"CC_MCP_TOKEN"}),
     ("mcp", {"CC_MCP_TOKEN", "CC_QWEN_API_KEY"}), ("projection", {"CC_NEO4J_PASSWORD"}),
-    ("v1", {"CSRF_SECRET", "CURSOR_SECRET"}), ("v1-worker", set()), ("framework-worker", {"CC_QWEN_API_KEY"}),
+    ("v1", {"CSRF_SECRET", "CURSOR_SECRET"}), ("v1-worker", set()), ("framework-worker", {"CC_QWEN_API_KEY", "CC_NEO4J_PASSWORD"}),
+    ("framework-projection", {"CC_NEO4J_PASSWORD"}),
 ])
 def test_shared_file_selects_only_role_secrets(tmp_path, component, expected):
     values = runtime_values(component, shared_file(tmp_path), {})

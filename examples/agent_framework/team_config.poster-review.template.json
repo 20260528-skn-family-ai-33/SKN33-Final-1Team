@@ -9,7 +9,7 @@
     "A04_A05": {
       "contract_version": "3.0.0",
       "kind": "registered_poster",
-      "factory": "examples.agent_framework.poster_adapters:make_inspector"
+      "factory": "backend.agent_framework.adapters.team_a04_a05:create_inspector"
     },
     "A06": {
       "contract_version": "3.0.0",
@@ -18,7 +18,7 @@
     "A07": {
       "contract_version": "3.0.0",
       "kind": "factory",
-      "factory": "backend.agent_framework.poster_review:make_reporter"
+      "factory": "backend.a07_reporter.adapter:create_reporter"
     }
   },
   "pdf_extraction": {

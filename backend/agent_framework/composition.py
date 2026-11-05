@@ -46,15 +46,22 @@ class RoleBinding(Contract):
         return self
 
 
+class ContextPreparation(Contract):
+    mode: Literal['neo4j_rag'] = 'neo4j_rag'
+    policy: Literal['af-approved-sources-v1'] = 'af-approved-sources-v1'
+
+
 class TeamConfiguration(Contract):
     profile: Literal["development", "test"] = "development"
     roles: dict[RoleId, RoleBinding]
     pdf_extraction: PDFExtractionConfiguration | None = None
+    context_preparation: ContextPreparation | None = None
 
     @model_serializer(mode='wrap')
     def preserve_legacy_wire_shape(self,handler):
         data=handler(self)
         if self.pdf_extraction is None:data.pop('pdf_extraction',None)
+        if self.context_preparation is None:data.pop('context_preparation',None)
         return data
 
     @model_validator(mode="after")
@@ -72,6 +79,8 @@ class TeamConfiguration(Contract):
             raise ValueError('registered_poster is only for A04_A05')
         if self.roles['A04_A05'].kind=='registered_poster' and not registered:
             raise ValueError('registered_poster requires the registered PDF baseline profile')
+        if self.context_preparation is not None and self.roles['A04_A05'].kind!='registered_poster':
+            raise ValueError('Neo4j context preparation requires a registered approved poster baseline')
         return self
 
 
@@ -207,8 +216,12 @@ def describe_configuration(config: TeamConfiguration) -> dict:
             item['model']='mock-line-fixture-v1' if checked.pdf_extraction.mode=='mock' else checked.pdf_extraction.model
             item['requires_context']='PostgreSQL worker and dedicated PDF storage'
         roles[role] = item
-    return {"contract_version": checked.contract_version, "profile": checked.profile,
-            "connection_verified": False, "roles": roles}
+    result = {"contract_version": checked.contract_version, "profile": checked.profile,
+              "connection_verified": False, "roles": roles}
+    if checked.context_preparation is not None:
+        result['context_preparation']={'mode':checked.context_preparation.mode,
+            'policy':checked.context_preparation.policy,'requires_schema':'AF005','connection_verified':False}
+    return result
 
 
 def describe_agents(agents: Agents) -> dict:

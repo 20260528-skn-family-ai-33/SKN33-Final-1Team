@@ -1,0 +1,36 @@
+{
+  "contract_version": "3.0.0",
+  "profile": "development",
+  "roles": {
+    "A02": {
+      "contract_version": "3.0.0",
+      "kind": "registered_pdf"
+    },
+    "A04_A05": {
+      "contract_version": "3.0.0",
+      "kind": "registered_poster",
+      "factory": "backend.agent_framework.adapters.team_a04_a05:create_inspector"
+    },
+    "A06": {
+      "contract_version": "3.0.0",
+      "kind": "reference"
+    },
+    "A07": {
+      "contract_version": "3.0.0",
+      "kind": "factory",
+      "factory": "backend.a07_reporter.adapter:create_reporter"
+    }
+  },
+  "pdf_extraction": {
+    "contract_version": "3.0.0",
+    "mode": "qwen",
+    "structuring": "semantic",
+    "presentation": true,
+    "endpoint": "http://127.0.0.1:18015/v1/chat/completions",
+    "model": "Qwen/Qwen3.5-4B",
+    "parser_version": "1.28.2",
+    "max_text_chars": 32000,
+    "timeout_seconds": 600,
+    "max_output_tokens": 16384
+  }
+}
