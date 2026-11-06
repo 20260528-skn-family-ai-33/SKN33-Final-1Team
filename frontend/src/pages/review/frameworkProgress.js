@@ -27,6 +27,7 @@ export function frameworkProgress(run) {
     message: run?.execution_status === 'queued' ? '작업을 접수했습니다. 처리 순서를 기다리고 있어요.'
       : active?.label || (document ? '요구사항과 원문 출처를 확인하고 있어요.' : '검사 상태를 확인하고 있어요.'),
     detail: `${completed} / ${roles.length}개 처리 단계 완료`,
+    startedAt: run?.step_records?.find(record => record.started_at)?.started_at,
     percent: completed ? Math.round(completed / roles.length * 100) : null,
     steps,
   };

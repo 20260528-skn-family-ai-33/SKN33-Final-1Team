@@ -158,7 +158,7 @@ export function ReviewProvider({ children }) {
     documentRequest.current = controller;
     setDocumentBusy(true);
     setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now() });
-    setDocumentNotice(`${file.name}에서 요구조건을 읽고 있어요. 페이지 수에 따라 몇 분 걸릴 수 있습니다.`);
+    setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
     try {
