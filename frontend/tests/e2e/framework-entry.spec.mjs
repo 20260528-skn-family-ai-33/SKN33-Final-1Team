@@ -122,22 +122,25 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.equal(reviewed, false);
       await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
       await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
+      const nextStep = page.getByRole('region', { name: '검수 다음 단계' });
+      const registerPoster = nextStep.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true });
+      const startReview = nextStep.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true });
       if (mode === 'text') {
         configured = false;
-        await page.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true }).click();
+        await registerPoster.click();
         await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
         assert.equal(uploads, 0);
         configured = true;
       }
-      await page.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true }).click();
+      await registerPoster.click();
       if (mode === 'text') {
         configured = false;
-        await page.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true }).click();
+        await startReview.click();
         await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
         assert.equal(reviewed, false);
         configured = true;
       }
-      await page.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true }).click();
+      await startReview.click();
       await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();

@@ -152,6 +152,15 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
 
+  const reviewingDraft = sourceDraft && Boolean(overview);
+  const registeringPoster = status === 'waiting_asset';
+  const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
+  const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
+  const actionError = error && <>
+    <ErrorMessage message={error} />
+    <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
+  </>;
+
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing} topbarLocked={busy} showConnection={false}
     workspaceStep={showActions && !processing ? 'tool' : step} mainClassName="rv-framework-workspace"
@@ -173,12 +182,30 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
             <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
         </>}
-        actions={sourceDraft && overview && <div className="rv-actionbar rv-criteria-actionbar">
-          <div className="rv-criteria-action-context">{excluded.length > 0 ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label> : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요.</p>}</div>
-          <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
-            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <p role="status">승인 전 보완하거나 사유를 적어 제외할 항목: {Object.keys(latest.approval_blockers).join(', ')}</p> : <button className="rv-button primary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+        actions={hasCriteriaActions && <section aria-label="검수 다음 단계" className="rv-actionbar rv-criteria-actionbar">
+          <div className="rv-criteria-action-context">
+            {reviewingDraft && (excluded.length > 0
+              ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>
+              : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요.</p>)}
+            {registeringPoster && <>
+              <p>기준이 승인됐어요. 검수할 포스터를 등록해 주세요.</p>
+              <label>검수 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
+                disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
+              {file && <p>{file.name}</p>}
+            </>}
+            {readyToStart && <p>승인된 기준과 등록한 포스터를 확인한 뒤 검수를 시작할 수 있어요.</p>}
+            {actionError}
           </div>
-        </div>}>
+          {reviewingDraft && (
+            <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
+            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <p role="status">승인 전 보완하거나 사유를 적어 제외할 항목: {Object.keys(latest.approval_blockers).join(', ')}</p> : <button className="rv-button primary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+            </div>
+          )}
+          {registeringPoster && <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
+            onClick={() => perform(registerPoster)}>승인 기준에 포스터 등록</button>}
+          {readyToStart && <button className="rv-button primary" disabled={busy}
+            onClick={() => perform(signal => decide('approve_criteria', signal))}>이 포스터와 기준을 확인하고 검수 시작</button>}
+        </section>}>
           <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
             <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}`}>
@@ -211,15 +238,13 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       {!processing && (!hasResults || showActions) && <section className="rv-panel rv-framework-actions" aria-label="검수 진행과 담당자 승인">
-      {(status === 'waiting_asset' || status === 'waiting_revision') && <>
-        <label>{status === 'waiting_revision' ? '수정 포스터' : '검수 포스터'} <input type="file" accept="image/png,image/jpeg,image/webp"
+      {status === 'waiting_revision' && <>
+        <label>수정 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
           disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
         {file && <p>{file.name}</p>}
         <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
-          onClick={() => perform(registerPoster)}>{status === 'waiting_revision' ? '수정본 재검수 접수' : '승인 기준에 포스터 등록'}</button>
+          onClick={() => perform(registerPoster)}>수정본 재검수 접수</button>
       </>}
-      {status === 'waiting_criteria' && run.baseline && <button className="rv-button primary" disabled={busy}
-        onClick={() => perform(signal => decide('approve_criteria', signal))}>이 포스터와 기준을 확인하고 검수 시작</button>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
       {run?.report && <section><h2>검수 보고서</h2><p>기계 판정 · {verdicts[run.machine_verdict]}</p>
         <p style={{ whiteSpace: 'pre-wrap' }}>{run.report.summary}</p>
@@ -238,8 +263,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         <h3>담당자 확인 · {item.criterion_id} · {verdicts[item.verdict]}</h3>
         <p>{item.observed}</p><p>근거: {item.reference} · 사유: {item.reason}</p><p>검토자: {approval.actor_id}</p>
       </section>))}
-      <ErrorMessage message={error} />
-      {error && <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>}
+      {!hasCriteriaActions && actionError}
       {!hasResults && <button className="text-btn" disabled={busy} onClick={onNew}>새 검수</button>}
       {run && <details className="rv-framework-record"><summary>실행·기준 이력</summary><p>실행 {runId}</p>
         {run.baseline && <p>승인 기준 {run.baseline.criteria_version_id} · 포스터 버전 {run.context.asset_version_id}</p>}

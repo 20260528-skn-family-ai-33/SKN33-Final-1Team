@@ -116,9 +116,11 @@ test('PDF 분석 중 이동을 잠그고 회전 표시·경과시간을 보여�
   for (const name of ['크리에이티브체커 홈', '서비스 메인으로', '로그아웃']) {
     assert.equal(await page.getByRole('button', { name, exact: true }).isDisabled(), true);
   }
+  assert.equal(await page.getByRole('button', { name: /자료 입력/ }).isDisabled(), true);
   assert.equal(new URL(page.url()).pathname, '/review/new');
   assert.equal(await page.locator('.rv-progress-spinner').isVisible(), true);
   assert.equal(await page.locator('.rv-progress-spinner').evaluate(el => getComputedStyle(el).animationName), 'rv-progress-spin');
+  assert.equal(await page.locator('.rv-progress-spinner').evaluate(el => getComputedStyle(el).borderRadius), '38px');
   await page.waitForFunction(() => document.querySelector('[role="timer"] time')?.textContent !== '0:00');
   assert.match(await page.getByRole('timer', { name: '경과 시간' }).textContent(), /\d+:\d{2}/);
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
