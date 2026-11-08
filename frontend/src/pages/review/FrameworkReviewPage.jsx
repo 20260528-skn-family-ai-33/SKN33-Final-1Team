@@ -10,6 +10,7 @@ import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
+import FrameworkReport from './FrameworkReport.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
@@ -246,9 +247,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
           onClick={() => perform(registerPoster)}>수정본 재검수 접수</button>
       </>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
-      {run?.report && <section><h2>검수 보고서</h2><p>기계 판정 · {verdicts[run.machine_verdict]}</p>
-        <p style={{ whiteSpace: 'pre-wrap' }}>{run.report.summary}</p>
-        <ul>{run.report.change_requests.map((item, i) => <li key={i}>{item}</li>)}</ul></section>}
+      {run?.report && <FrameworkReport run={run} projectName={projectName} />}
       {status === 'waiting_review' && <>
         {reviewItems.length > 0 && <form ref={humanReviewForm} onSubmit={e => e.preventDefault()}>
           <HumanReview items={reviewItems} values={humanReviews} onChange={setHumanReviews} disabled={busy} />

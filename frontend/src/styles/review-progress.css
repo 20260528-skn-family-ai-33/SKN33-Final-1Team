@@ -9,8 +9,8 @@
 .rv-progress-elapsed { display: flex; align-items: baseline; gap: 10px; margin-top: 20px; color: #77776c; font-size: 13px; }
 .rv-progress-elapsed time { color: #222; font-size: 20px; font-variant-numeric: tabular-nums; }
 .rv-progress-track { width: min(760px, 100%); height: 8px; border-radius: 12px; overflow: hidden; margin-top: 36px; background: #ecece8; }
-.rv-progress-track > div { height: 100%; border-radius: inherit; background: #171717; transition: width .4s ease; }
-.rv-progress-track > .is-indeterminate { width: 25%; animation: rv-progress-travel 1.8s ease-in-out infinite alternate; }
+.rv-progress-fill { position: relative; height: 100%; overflow: hidden; border-radius: inherit; background: #171717; transition: width .4s ease; }
+.rv-progress-shine { position: absolute; inset: 0 auto 0 0; width: 36%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.72) 45%, rgba(255,255,255,.9) 55%, transparent); animation: rv-progress-travel 2s linear infinite; }
 .rv-progress-caption { display: flex; justify-content: space-between; width: min(760px, 100%); margin-top: 12px; font-size: 12px; color: #77776c; }
 .rv-progress-caption strong { font-weight: 500; }
 .rv-progress-steps { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; list-style: none; padding: 0; margin: 32px 0 0; }
@@ -28,6 +28,6 @@
 .rv-document-ready p { margin: 8px 0 14px; color: #647160; font-size: 12px; line-height: 1.8; }
 .rv-preview-entry { margin: -12px 0 22px; text-align: right; font-size: 12px; color: #6b6b61; }
 .rv-preview-entry a { text-decoration: underline; text-underline-offset: 4px; }
-@keyframes rv-progress-travel { from { transform: translateX(0); } to { transform: translateX(300%); } }
+@keyframes rv-progress-travel { from { transform: translateX(-110%); } to { transform: translateX(300%); } }
 @keyframes rv-progress-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .rv-progress-spinner { animation: none; } .rv-progress-track > .is-indeterminate { animation: none; width: 100%; opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .rv-progress-spinner, .rv-progress-shine { animation: none; } .rv-progress-shine { opacity: .5; } .rv-progress-fill { transition: none; } }

@@ -149,6 +149,8 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         const bar = document.querySelector('.rv-progress-track');
         return bar && Math.abs(bar.firstElementChild.getBoundingClientRect().width - bar.clientWidth * .67) < 2;
       });
+      assert.equal(await progress.locator('.rv-progress-shine').count(), 1);
+      assert.equal(await progress.locator('.rv-progress-fill').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 23, 23)');
       assert.equal(await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
       if (mode === 'pdf' && process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
         await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/poster-progress.png', fullPage: true });
@@ -162,14 +164,20 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.ok(columns[0].right <= columns[1].left && columns[1].right <= columns[2].left, 'list, poster and evidence must form three columns');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
+      await page.getByRole('heading', { name: '조건별 결과·근거', exact: true }).waitFor();
+      assert.equal(await page.getByText('여름', { exact: true }).count(), 1);
+      await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
+      await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
       await page.getByRole('button', { name: '검수 결과로 돌아가기', exact: true }).click();
       await page.getByRole('button', { name: '기준 다시 확인하기', exact: true }).click();
       await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
       assert.equal(await page.getByRole('button', { name: '기준 보완', exact: true }).count(), 0, 'approved criteria stay read-only');
       await page.reload();
       await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
     }
     assert.deepEqual(legacy, [], mode); assert.deepEqual(errors, [], mode);
