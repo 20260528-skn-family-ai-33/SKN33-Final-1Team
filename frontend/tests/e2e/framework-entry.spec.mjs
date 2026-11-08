@@ -12,7 +12,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close());
-  for (const mode of ['text', 'pdf', 'edited_pdf', 'not_ready']) {
+  for (const mode of ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'not_ready']) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
@@ -45,7 +45,8 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       else if (path.endsWith('/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
       else if (path.endsWith('/criteria-versions')) {
         assert.equal(request.postDataJSON().purpose, 'human_review');
-        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
+        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256,
+          approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true); approved = true; body = {};
@@ -120,19 +121,33 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
       assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄' }]);
       assert.equal(reviewed, false);
-      await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
-      await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
+      if (mode === 'blocker') {
+        await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
+        await page.getByRole('button', { name: 'title 확인하기', exact: true }).click();
+        assert.equal(approved, false);
+        assert.equal(uploads, 0);
+        assert.equal(reviewed, false);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
+      if (mode !== 'direct') {
+        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
+        await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
+      }
       const nextStep = page.getByRole('region', { name: '검수 다음 단계' });
       const registerPoster = nextStep.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true });
       const startReview = nextStep.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true });
-      if (mode === 'text') {
+      if (mode === 'direct') {
+        await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
+      } else if (mode === 'text') {
         configured = false;
         await registerPoster.click();
         await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
         assert.equal(uploads, 0);
         configured = true;
       }
-      await registerPoster.click();
+      if (mode !== 'direct') await registerPoster.click();
       if (mode === 'text') {
         configured = false;
         await startReview.click();
@@ -140,7 +155,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         assert.equal(reviewed, false);
         configured = true;
       }
-      await startReview.click();
+      if (mode !== 'direct') await startReview.click();
       await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();
