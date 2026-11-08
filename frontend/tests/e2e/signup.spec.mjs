@@ -56,7 +56,7 @@ test('로그인 화면에서 가입 검증·중복 안내·가입 후 로그인�
   await page.getByLabel('이메일', { exact: true }).fill('existing@example.com');
   await page.getByLabel('비밀번호', { exact: true }).fill('short');
   await page.getByRole('button', { name: '가입하기', exact: true }).click();
-  await page.getByText('비밀번호를 15~128자로 입력해 주세요.', { exact: true }).waitFor();
+  await page.getByText('비밀번호는 8~128자로 입력하고 숫자와 특수문자를 각각 하나 이상 포함해 주세요.', { exact: true }).waitFor();
   assert.equal(signupCalls, 0);
   await page.getByLabel('비밀번호', { exact: true }).fill('synthetic-password-123');
   await page.getByLabel('비밀번호 확인', { exact: true }).fill('different');

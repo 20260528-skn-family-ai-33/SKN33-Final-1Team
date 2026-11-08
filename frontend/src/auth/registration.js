@@ -1,4 +1,5 @@
-// 서버의 기존 계정 정책과 같은 길이·확인 규칙으로 제출 전에 안내한다.
+// 서버와 같은 비밀번호 규칙으로 제출 전에 안내한다.
+const SPECIAL_CHARACTERS = `!"#$%&'()*+,-./:;<=>?@[\\]^_\`{|}~`;
 export function registrationIssue({ displayName, email, password, confirmation }) {
   const name = displayName.trim();
   if (!name || Array.from(name).length > 100 || /[\u0000-\u001f]/.test(name)) {
@@ -8,8 +9,8 @@ export function registrationIssue({ displayName, email, password, confirmation }
     return { field: 'email', message: '올바른 이메일을 입력해 주세요.' };
   }
   const length = Array.from(password).length;
-  if (length < 15 || length > 128 || password.includes('\0')) {
-    return { field: 'password', message: '비밀번호를 15~128자로 입력해 주세요.' };
+  if (length < 8 || length > 128 || password.includes('\0') || !/[0-9]/.test(password) || !Array.from(password).some(char => SPECIAL_CHARACTERS.includes(char))) {
+    return { field: 'password', message: '비밀번호는 8~128자로 입력하고 숫자와 특수문자를 각각 하나 이상 포함해 주세요.' };
   }
   if (password !== confirmation) return { field: 'confirmation', message: '비밀번호 확인이 일치하지 않습니다.' };
   return null;
