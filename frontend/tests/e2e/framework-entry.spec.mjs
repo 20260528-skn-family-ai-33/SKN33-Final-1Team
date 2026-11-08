@@ -16,7 +16,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
-    let allowDocumentResult = mode !== 'pdf', allowReviewResult = false;
+    let allowDocumentResult = mode !== 'pdf', allowReviewResult = false, allowReviewStages = false;
     let configured = mode !== 'not_ready';
     const context = { run_id: 'draft', project_id: 'project', actor_id: 'user' };
     const criterion = { criterion_id: 'title', text: '행사명은 봄', kind: 'text', operator: 'contains',
@@ -66,8 +66,9 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
         ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, criterion_text: criterion.text,
           observed: '여름', verdict: 'fail', issues: ['value_mismatch'], image: { asset_version_id: 'image', bbox: [.1, .1, .8, .3] } }] },
-          step_records: [{ role: 'A04_A05', status: 'completed' }, { role: 'A06', status: 'completed' },
-            { role: 'A07', status: allowReviewResult ? 'completed' : 'running' }],
+          step_records: [{ role: 'A04_A05', status: allowReviewStages ? 'completed' : 'running' },
+            { role: 'A06', status: allowReviewStages ? 'completed' : 'pending' },
+            { role: 'A07', status: allowReviewResult ? 'completed' : allowReviewStages ? 'running' : 'pending' }],
           ...(allowReviewResult ? { report: { summary: 'A07 보고: 행사명이 기준과 다릅니다.', change_requests: ['행사명을 봄으로 수정해 주세요.'] } } : {}) } : {}) };
       else throw new Error('unexpected test route: ' + path);
       await route.fulfill({ json: body });
@@ -159,6 +160,10 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();
+      await page.locator('.rv-progress-fill.is-unknown .rv-progress-shine').waitFor();
+      assert.equal(await progress.getAttribute('aria-valuenow'), null);
+      await page.getByText('세부 진행률 확인 불가', { exact: true }).waitFor();
+      allowReviewStages = true;
       await page.waitForFunction(() => document.querySelector('.rv-progress-track')?.getAttribute('aria-valuenow') === '67');
       await page.waitForFunction(() => {
         const bar = document.querySelector('.rv-progress-track');

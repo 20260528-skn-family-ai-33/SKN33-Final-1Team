@@ -25,11 +25,11 @@ export default function ReviewProgress({ title, message, detail, percent, starte
       <p className="rv-progress-elapsed" role="timer" aria-live="off" aria-label="경과 시간"><span>경과 시간</span><time dateTime={`PT${seconds}S`}>{elapsed}</time></p>
       <div className="rv-progress-track" role="progressbar" aria-label="검수 처리 진행 상태"
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={value ?? undefined} aria-valuetext={message}>
-        <div className="rv-progress-fill" style={{ width: `${value ?? 0}%` }}>
-          {value > 0 && value < 100 && <span className="rv-progress-shine" />}
+        <div className={`rv-progress-fill${value === null ? ' is-unknown' : ''}`} style={value === null ? undefined : { width: `${value}%` }}>
+          {(value === null || value > 0 && value < 100) && <span className="rv-progress-shine" />}
         </div>
       </div>
-      <div className="rv-progress-caption"><span>{value === null ? '서버 처리 상태 확인 중' : '처리 단계 기준 진행률'}</span><strong>{value === null ? '처리 중' : `${value}%`}</strong></div>
+      <div className="rv-progress-caption"><span>{value === null ? '세부 진행률 확인 불가' : '처리 단계 기준 진행률'}</span><strong>{value === null ? '서버 상태 확인 중' : `${value}%`}</strong></div>
       {steps.length > 0 && <ol className="rv-progress-steps">{steps.map((step, i) => <li key={step.key} className={`is-${step.status}`}>
         <span>{step.status === 'completed' ? <Icon name="check" /> : String(i + 1).padStart(2, '0')}</span>{step.label}
       </li>)}</ol>}
