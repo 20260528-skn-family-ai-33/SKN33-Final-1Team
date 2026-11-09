@@ -33,17 +33,23 @@ def main():
     from backend.runtime_environment import activate_runtime
     from backend.app.v1_config import load_v1_settings
     from backend.app.video.framework_service import create_video_app
+    from backend.app.video.logos.client import WorkerPool
     import portalocker
     import uvicorn
 
     try:
         settings = load_v1_settings(activate_runtime('legacy', args.env_file))
+        worker_pool = None
         if args.aws_test:
             from backend.agent_framework.deployment import require_verified_database
             require_verified_database(settings)
-            worker_url = urlsplit(os.environ.get('VIDEO_LOGO_WORKER_URL', ''))
+            primary_url = os.environ.get('VIDEO_LOGO_WORKER_URL', '').strip().rstrip('/')
+            worker_url = urlsplit(primary_url)
             if worker_url.scheme != 'http' or worker_url.hostname != '127.0.0.1' or not worker_url.port:
                 raise ConfigurationError('AWS test requires a loopback video worker tunnel.')
+            secondary_url = os.environ.get('VIDEO_LOGO_WORKER_SECONDARY_URL', '').strip().rstrip('/')
+            if secondary_url:
+                worker_pool = WorkerPool(primary_url, secondary_url)
             token = args.worker_token_file.read_text().strip()
             if len(token) < 32 or not token.isascii() or not all(c.isalnum() or c in '-_' for c in token):
                 raise ConfigurationError('Invalid video worker token file.')
@@ -52,7 +58,7 @@ def main():
         root.mkdir(mode=0o700, parents=True, exist_ok=True)
         with portalocker.Lock(str(root / '.service.lock'), mode='a', timeout=0,
                               flags=portalocker.LOCK_EX | portalocker.LOCK_NB):
-            app = create_video_app(settings, root, aws_test=args.aws_test)
+            app = create_video_app(settings, root, aws_test=args.aws_test, worker_pool=worker_pool)
             uvicorn.run(app, host='127.0.0.1', port=args.port, workers=1,
                         proxy_headers=args.aws_test, forwarded_allow_ips='127.0.0.1', reload=False)
     except (ConfigurationError, OSError, ValueError, portalocker.exceptions.LockException) as error:

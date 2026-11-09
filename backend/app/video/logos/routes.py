@@ -23,6 +23,7 @@ from fastapi import APIRouter, BackgroundTasks, Body, Depends, File, Form, HTTPE
 from fastapi.responses import FileResponse
 from PIL import Image
 
+from backend.app.video.logos.client import WorkerPool
 from backend.app.video.review import _now
 from backend.app.video.review import _read_json
 from backend.app.video.review import _write_json
@@ -84,7 +85,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                       authenticate: Callable[[Request], object] | None = None,
                       allowed_hosts: tuple[str, ...] | None = None,
                       candidates: Callable | None = None, comparer: Callable | None = None,
-                      isolate_users: bool = False, linked_reviews: Path | None = None) -> APIRouter:
+                      isolate_users: bool = False, linked_reviews: Path | None = None,
+                      worker_pool: WorkerPool | None = None) -> APIRouter:
     """candidates·comparer는 테스트에서 실제 모델 대신 주입한다."""
     if not readonly:
         root.mkdir(parents=True, exist_ok=True)
@@ -138,7 +140,9 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
         from backend.app.video.logos import client as R
         meta = _read_json(target / "result.json")
         try:
-            with inference_lock:
+            with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
+                if worker_pool:
+                    update(target, worker_slot=slot)
                 update(target, status="running", stage="frames", progress=1)
                 frames, missing, total = C.sample_frames(target / meta["video_file"], target / "frames")
                 if not frames:
@@ -175,7 +179,9 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             return results
 
         try:
-            with inference_lock:
+            with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
+                if worker_pool:
+                    update(target, worker_slot=slot)
                 update(target, compare_status="running", compare_progress=0)
                 total = sum(len(V.bundle_seconds(c, data["groups"])) for a in answers for c in a.get("crops", [])) or 1; done = 0
                 for a in answers:
@@ -218,7 +224,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
 
     @router.get("/status")
     def get_status():
-        ready, detail = readiness()
+        ready, detail = worker_pool.readiness() if worker_pool else readiness()
         return {"ready": ready and not readonly, "detail": detail if not readonly else "읽기 전용 모드입니다."}
 
     @router.get("")
@@ -242,7 +248,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                          logo_texts: str = Form("[]"), title: str = Form("영상 로고 검수", min_length=1, max_length=120),
                          review_id: str | None = Form(None)):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분, 예: "울산광역시남구|ULSAN METROPOLITAN NAMGU"). 비우면 문자 비교를 하지 않는다.
-            review_id: 같은 영상으로 함께 접수한 동영상 검수 작업(화면에서 묶어 보여 주는 데만 쓴다)."""
+            review_id: 같은 영상으로 함께 접수한 동영상 검수 작업."""
+            worker_slot = None
             if review_id is not None:
                 try:
                     if str(UUID(review_id)) != review_id:
@@ -253,6 +260,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                     review = linked_reviews / request.state.video_owner / review_id / "result.json"
                     if not review.is_file():
                         raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
+                    if worker_pool:
+                        worker_slot = _read_json(review).get("worker_slot")
             if not 1 <= len(logos) <= MAX_LOGOS:
                 raise HTTPException(422, f"원본 로고는 1~{MAX_LOGOS}장입니다.")
             try:
@@ -287,8 +296,12 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             except BaseException:
                 shutil.rmtree(target, ignore_errors=True)
                 raise
-            _write_json(target / "result.json", {"id": job_id, "title": title, "status": "queued", "stage": "queued", "progress": 0,
-                                                 "video_file": f"video{suffix}", "logos": items, "review_id": review_id, "created_at": _now(), "updated_at": _now()})
+            result = {"id": job_id, "title": title, "status": "queued", "stage": "queued", "progress": 0,
+                      "video_file": f"video{suffix}", "logos": items, "review_id": review_id,
+                      "created_at": _now(), "updated_at": _now()}
+            if worker_slot:
+                result["worker_slot"] = worker_slot
+            _write_json(target / "result.json", result)
             background.add_task(run_candidates, target)
             return {"id": job_id, "status": "queued"}
 
@@ -299,8 +312,6 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             target = directory(request, job_id); meta = _read_json(target / "result.json")
             if meta.get("status") != "candidates_ready":
                 raise HTTPException(409, "후보 찾기가 끝난 뒤에 정밀 대조를 실행할 수 있습니다.")
-            if meta.get("compare_status") == "running":
-                raise HTTPException(409, "정밀 대조가 이미 실행 중입니다.")
             for a in answers:
                 li = a.get("logo")
                 if type(li) is not int or not 0 <= li < len(meta["logos"]) or not isinstance(a.get("crops"), list):
@@ -313,8 +324,11 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                         raise HTTPException(422, "crop마다 sec(정수)와 bbox(x1<x2, y1<y2인 숫자 4개)가 필요합니다.")
             if len({a["logo"] for a in answers}) != len(answers):
                 raise HTTPException(422, "같은 원본 로고 번호가 두 번 들어 있습니다.")
-            (target / "compare.json").unlink(missing_ok=True)  # 다시 실행하면 이전 결과를 새 결과처럼 보여 주지 않는다
-            update(target, compare_status="queued", compare_progress=0, compare_error=None)
+            with lock:
+                if _read_json(target / "result.json").get("compare_status") in {"queued", "running"}:
+                    raise HTTPException(409, "정밀 대조가 이미 실행 중입니다.")
+                (target / "compare.json").unlink(missing_ok=True)  # 이전 결과를 새 결과처럼 보여 주지 않는다
+                update(target, compare_status="queued", compare_progress=0, compare_error=None)
             background.add_task(run_compare, target, [a for a in answers if a.get("decision") == "done"])
             return {"id": job_id, "compare_status": "queued"}
 

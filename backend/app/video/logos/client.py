@@ -8,11 +8,15 @@ VIDEO_LOGO_WORKER_TOKEN 은 워커와 같은 값을 둔다(선택). 둘 다 서�
 from __future__ import annotations
 
 import base64
+from contextlib import contextmanager
+from contextvars import ContextVar
 from io import BytesIO
 import json
+import logging
 import os
 from pathlib import Path
 import re
+from threading import Condition
 import time
 import urllib.error
 import urllib.request
@@ -21,6 +25,8 @@ from PIL import Image
 
 POLL_SECONDS = 2
 MAX_RESPONSE_BYTES = 256 * 1024 * 1024
+_bound_worker: ContextVar[tuple[str, str, str] | None] = ContextVar("video_worker", default=None)
+_logger = logging.getLogger("uvicorn.error")
 
 
 class WorkerError(RuntimeError):
@@ -28,12 +34,62 @@ class WorkerError(RuntimeError):
 
 
 def worker_url() -> str | None:
+    worker = _bound_worker.get()
+    if worker is not None:
+        return worker[1]
     value = os.getenv("VIDEO_LOGO_WORKER_URL", "").strip().rstrip("/")
     if not value:
         return None
     if not re.fullmatch(r"https?://[A-Za-z0-9.\-\[\]:]+(/[A-Za-z0-9._\-/]*)?", value):
         raise WorkerError("VIDEO_LOGO_WORKER_URL 형식이 올바르지 않습니다(예: http://127.0.0.1:8791).")
     return value
+
+
+class WorkerPool:
+    """Each slot holds one API pipeline at a time and keeps its remote requests on that endpoint."""
+
+    def __init__(self, primary: str, secondary: str):
+        endpoints = (primary, secondary)
+        if (any(not re.fullmatch(r"http://127\.0\.0\.1:[1-9][0-9]{0,4}", url)
+                or int(url.rsplit(":", 1)[1]) > 65535 for url in endpoints)
+                or primary == secondary):
+            raise ValueError("AWS test video workers require distinct loopback tunnel ports.")
+        self.endpoints = dict(zip(("video-1", "video-2"), endpoints))
+        self.condition = Condition()
+        self.busy: set[str] = set()
+
+    def ready_slots(self) -> tuple[str, ...]:
+        ready = []
+        for slot, url in self.endpoints.items():
+            try:
+                if _request("GET", "/health", timeout=3, endpoint=url).get("ready") is True:
+                    ready.append(slot)
+            except WorkerError:
+                continue
+        return tuple(ready)
+
+    def readiness(self, ready_slots: tuple[str, ...] | None = None) -> tuple[bool, str]:
+        slots = self.ready_slots() if ready_slots is None else ready_slots
+        return bool(slots), f"영상 RunPod 워커 준비 {len(slots)} / {len(self.endpoints)}"
+
+    @contextmanager
+    def acquire(self, preferred: str | None, api_job_id: str):
+        # Old records have no slot. Pick a currently healthy worker for those operations.
+        slots = (preferred,) if preferred in self.endpoints else self.ready_slots()
+        if not slots:
+            raise WorkerError("사용 가능한 영상 RunPod 워커가 없습니다.")
+        with self.condition:
+            self.condition.wait_for(lambda: any(slot not in self.busy for slot in slots))
+            slot = next(slot for slot in slots if slot not in self.busy)
+            self.busy.add(slot)
+        token = _bound_worker.set((slot, self.endpoints[slot], api_job_id))
+        try:
+            yield slot
+        finally:
+            _bound_worker.reset(token)
+            with self.condition:
+                self.busy.remove(slot)
+                self.condition.notify_all()
 
 
 def _timeout() -> float:
@@ -44,12 +100,13 @@ def _timeout() -> float:
     return min(max(value, 30), 6 * 3600)
 
 
-def _request(method: str, path: str, payload: dict | None = None, timeout: float = 30) -> dict:
+def _request(method: str, path: str, payload: dict | None = None, timeout: float = 30, *,
+             endpoint: str | None = None) -> dict:
     headers = {"Content-Type": "application/json"}
     if os.getenv("VIDEO_LOGO_WORKER_TOKEN"):
         headers["X-Worker-Token"] = os.environ["VIDEO_LOGO_WORKER_TOKEN"]
     data = json.dumps(payload).encode() if payload is not None else None
-    request = urllib.request.Request(f"{worker_url()}{path}", method=method, headers=headers, data=data)
+    request = urllib.request.Request(f"{endpoint or worker_url()}{path}", method=method, headers=headers, data=data)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             content = response.read(MAX_RESPONSE_BYTES + 1)
@@ -94,6 +151,15 @@ def _run(payload: dict, progress) -> object:
     job_id = _request("POST", "/jobs", payload, timeout=600).get("id")
     if not isinstance(job_id, str) or not re.fullmatch(r"[0-9a-f]{32}", job_id):
         raise WorkerError("RunPod 워커가 작업 번호를 돌려주지 않았습니다.")
+    worker = _bound_worker.get()
+
+    def record(status: str) -> None:
+        if worker:
+            _logger.info("video worker slot=%s kind=%s api_job=%s worker_job=%s status=%s",
+                         worker[0], payload["kind"], worker[2], job_id, status)
+
+    record("submitted")
+    observed_running = False
     deadline, failures = time.monotonic() + _timeout(), 0
     while True:
         if time.monotonic() > deadline:
@@ -106,9 +172,15 @@ def _run(payload: dict, progress) -> object:
             if failures > 5:
                 raise
             continue
-        if state.get("status") == "completed":
+        status = state.get("status")
+        if status == "running" and not observed_running:
+            record("running")
+            observed_running = True
+        if status == "completed":
+            record("completed")
             return state.get("result")
-        if state.get("status") == "failed":
+        if status == "failed":
+            record("failed")
             raise WorkerError(f"RunPod 워커 작업 실패: {state.get('error') or '원인 미상'}")
         progress(state.get("progress") or 0, state.get("detail"))
 
