@@ -165,6 +165,14 @@ def _invalid_output(message: str):
     raise AdapterFailure("MODEL_OUTPUT_INVALID", message)
 
 
+# Words a model writes instead of null; only an exact match counts, any real reason stays a note.
+_NO_UNCERTAINTY = frozenset({"none", "null", "n/a", "na", "-", "없음", "해당 없음", "해당없음"})
+
+
+def _states_uncertainty(value: str | None) -> bool:
+    return bool(value and value.strip()) and value.strip().casefold() not in _NO_UNCERTAINTY
+
+
 def build_result(request: InspectRequest, poster: VerifiedPoster, answers: Sequence[ModelAnswer], *,
                  require_location: bool = True) -> InspectionResult:
     """Convert raw answers. IDs, hashes and citations come from the request, never from the model."""
@@ -180,7 +188,7 @@ def build_result(request: InspectRequest, poster: VerifiedPoster, answers: Seque
                 or not (answer.observed_unit is None or isinstance(answer.observed_unit, str))):
             _invalid_output("모델 응답의 관측 상태·단위 형식이 올바르지 않습니다.")
         seen.add(answer.criterion_id)
-        notes = [answer.uncertainty.strip()] if answer.uncertainty and answer.uncertainty.strip() else []
+        notes = [answer.uncertainty.strip()] if _states_uncertainty(answer.uncertainty) else []
         bbox = asset_box(answer.bbox, orientation=poster.exif_orientation, coordinate_space=poster.coordinate_space)
         if answer.bbox is not None and bbox is None:
             notes.append("모델이 반환한 위치가 올바르지 않아 위치를 기록하지 않았습니다.")
