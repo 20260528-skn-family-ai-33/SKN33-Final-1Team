@@ -1,0 +1,39 @@
+/* 버튼·메뉴의 반응. 색만 바뀌던 버튼에 눌림·처리 중 표시를 더한다. 포스터·영상·내 작업 화면이 함께 쓴다.
+   움직임은 사용자가 누르거나 올렸을 때만 일어나고, 처리 중 표시는 누른 그 버튼 자리에 나온다. */
+.rv-button, .rv-icon-button, .rv-step-nav > button, .rv-tool-link, .rv-result-item-button, .rv-criteria-select,
+.rv-input-fileactions button, .rv-result-item-navigation button {
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease;
+}
+
+/* 눌림: 1px 내려앉고 한 단계 진해진다. */
+.rv-button:active:not(:disabled), .rv-icon-button:active:not(:disabled), .rv-result-item-navigation button:active:not(:disabled) { transform: translateY(1px); }
+.rv-button.primary:active:not(:disabled) { background: #000; }
+.rv-button.secondary:hover:not(:disabled) { border-color: #c9c9c2; }
+.rv-button.secondary:active:not(:disabled), .rv-icon-button:active:not(:disabled) { background: #e8e8e4; }
+a.rv-button:hover { text-decoration: none; }
+
+/* 단계 메뉴·상단 메뉴: 갈 수 있는 곳은 마우스를 올리면 드러난다. */
+.rv-step-nav > button:not(.is-active):not(:disabled):hover { background: #efefeb; color: #171717; }
+.rv-step-nav > button:not(.is-active):not(:disabled):active { background: #e6e6e1; }
+a.rv-tool-link:active { background: #e8e8e4; }
+
+/* 처리 중: 누른 버튼에 회전 표시를 띄우고 아이콘 자리를 대신한다. 다른 버튼은 기존처럼 흐려진다. */
+.rv-button[aria-busy="true"] { cursor: progress; }
+.rv-button[aria-busy="true"]:disabled { opacity: 1; }
+.rv-button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rv-button-spin .7s linear infinite; }
+.rv-button[aria-busy="true"] .icon { display: none; }
+@keyframes rv-button-spin { to { transform: rotate(360deg); } }
+
+/* 결과 목록 위의 키보드 안내 */
+.rv-results .rv-result-list-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0; }
+.rv-results .rv-result-list-meta .rv-result-list-count { margin-right: 0; }
+.rv-result-keyhint { display: inline-flex; align-items: center; gap: 3px; margin: 17px 18px 10px 0; color: #85857e; font-size: 10px; white-space: nowrap; }
+.rv-result-keyhint kbd { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 3px; border: 1px solid #deded8; border-bottom-width: 2px; border-radius: 4px; background: #fff; color: #55554f; font-family: inherit; font-size: 9px; font-weight: 600; line-height: 1; }
+@media (max-width: 1499px) { .rv-result-keyhint { margin: 12px 16px 9px 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-button, .rv-icon-button, .rv-step-nav > button, .rv-tool-link, .rv-result-item-button, .rv-criteria-select,
+  .rv-input-fileactions button, .rv-result-item-navigation button { transition: none; }
+  .rv-button:active:not(:disabled), .rv-icon-button:active:not(:disabled), .rv-result-item-navigation button:active:not(:disabled) { transform: none; }
+  .rv-button[aria-busy="true"]::before { animation-duration: 2.4s; }
+}

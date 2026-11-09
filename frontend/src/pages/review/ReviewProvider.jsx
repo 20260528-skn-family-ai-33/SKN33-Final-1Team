@@ -177,7 +177,7 @@ export function ReviewProvider({ children }) {
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true);
-    setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now() });
+    setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
     setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
@@ -369,7 +369,7 @@ export function ReviewProvider({ children }) {
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setError('');
-    setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now() });
+    setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now(), source: '직접 입력한 요구사항' });
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
     try {

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { WorkspaceTopbar, WorkspaceFooter } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { EmptyTasksArt } from '../../components/ReviewArt.jsx';
 import { frameworkJson } from './frameworkClient.js';
 import '../../styles/my-tasks.css';
 
@@ -67,7 +68,7 @@ export default function MyTasksPage() {
         <ErrorMessage message={error} />
         {notice && <p className="rv-task-notice" role="status">{notice}</p>}
         {loading && <p role="status">내 작업을 불러오고 있습니다.</p>}
-        {page && <><div className="rv-task-table-wrap"><table className="rv-task-table"><caption className="sr-only">내 문서 분석 및 포스터 검수 이력</caption>
+        {page && <>{page.items.length ? <div className="rv-task-table-wrap"><table className="rv-task-table"><caption className="sr-only">내 문서 분석 및 포스터 검수 이력</caption>
           <thead><tr><th scope="col">작업</th><th scope="col">접수 시간</th><th scope="col">상태</th><th scope="col">관리</th></tr></thead>
           <tbody>{page.items.map(item => <tr key={item.run_id}>
             <td><strong>{item.project_name}</strong><span>{item.kind === 'poster' ? '포스터 검수' : '문서 분석'} · {item.run_id.slice(0, 8)}</span></td>
@@ -80,11 +81,14 @@ export default function MyTasksPage() {
               {item.hidden ? <button type="button" className="text-btn" disabled={busy} onClick={() => perform(item, 'restore')}>다시 표시</button>
                 : item.can_hide && <button type="button" className="text-btn" disabled={busy} onClick={() => perform(item, 'hide')}>이력 숨기기</button>}</div></td>
           </tr>)}</tbody></table></div>
-          {!page.items.length && <p className="rv-task-empty">{visibility === 'hidden' ? '숨긴 이력이 없습니다.' : '표시할 작업이 없습니다.'}</p>}
-          <div className="rv-task-pagination"><button className="rv-button secondary" disabled={busy || cursors.length === 1}
+          : <div className="rv-task-empty-state"><EmptyTasksArt />
+            <p className="rv-task-empty">{visibility === 'hidden' ? '숨긴 이력이 없습니다.' : '표시할 작업이 없습니다.'}</p>
+            {visibility !== 'hidden' && <><p className="rv-task-empty-hint">포스터와 요구사항을 올려 검수를 맡기면 여기에서 진행 상황을 보고 다시 열 수 있어요.</p>
+              <Link className="rv-button secondary" to="/review/new">포스터 검수 시작</Link></>}</div>}
+          {(page.items.length > 0 || cursors.length > 1) && <div className="rv-task-pagination"><button className="rv-button secondary" disabled={busy || cursors.length === 1}
             onClick={() => setCursors(value => value.slice(0, -1))}>이전</button><span>{cursors.length}페이지</span>
             <button className="rv-button secondary" disabled={busy || !page.has_more}
-              onClick={() => setCursors(value => [...value, page.next_cursor])}>다음</button></div>
+              onClick={() => setCursors(value => [...value, page.next_cursor])}>다음</button></div>}
         </>}
       </section>
     </main><WorkspaceFooter />

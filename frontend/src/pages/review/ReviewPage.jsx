@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import ReviewProgress from './ReviewProgress.jsx';
+import { documentSteps } from './progressScan.js';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
@@ -38,6 +39,7 @@ export default function ReviewPage() {
   return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
     {documentBusy && documentProgress && <ReviewProgress title="검수 요구사항을 정리하고 있어요."
       message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent}
+      steps={documentSteps(documentProgress.stage)} facts={documentProgress.source ? [['입력 자료', documentProgress.source]] : []}
       startedAt={documentProgress.startedAt} error={documentError} cancelBusy={documentCancelBusy}
       cancelLabel={documentProgress.stage === 'queued' && documentProgress.runId ? '대기 작업 취소' : '입력 반영 취소'}
       onCancel={documentProgress.stage === 'queued' && documentProgress.runId ? cancelQueuedDocument : cancelDocument} />}

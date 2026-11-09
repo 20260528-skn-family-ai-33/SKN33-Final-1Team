@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
+import { NoMatchArt } from '../../components/ReviewArt.jsx';
 import { LogoFlowInline } from './LogoFlowParts.jsx';
 import {
   coverageNote, diffChars, filterItems, formatTime, judgmentItems, mismatchLabels, reviewerLabels, roleLabels, ruleLabels, severityLabels, statusLabels,
@@ -372,7 +373,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
                     : <span className="rv-result-item-subtitle">표시 규정 R0–R6<span>{item.disclosure.applicable ? `문구·시간 ${statusLabels[item.disclosure.text_time_status] || '확인 필요'}` : '검수 제외'}</span></span>}
                 </button></li>;
               })}</ul></div>)}
-            {!visibleItems.length && items.length > 0 && <div className="rv-result-empty"><Icon name="search" /><strong>일치하는 항목이 없습니다.</strong>
+            {!visibleItems.length && items.length > 0 && <div className="rv-result-empty"><NoMatchArt /><strong>일치하는 항목이 없습니다.</strong>
               <button type="button" className="rv-button secondary" onClick={() => changeFilter('all')}>전체 보기</button></div>}
           </>}
           {tab === 'tracks' && (tracks.length ? <ul className="rv-result-items">{tracks.map(track => {
@@ -425,7 +426,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             : selectedItem?.kind === 'disclosure' ? <DisclosureDetail disclosure={selectedItem.disclosure} activeKey={view.key} onShow={show} />
               : selectedTrack ? <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} />
                 : selectedSegment ? <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={selectItem} />
-                  : <div className="rv-result-empty"><Icon name="list" /><strong>표시할 항목이 없습니다.</strong><p>목록에서 항목을 고르면 기준·문구·근거를 확인할 수 있습니다.</p></div>}
+                  : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong><p>목록에서 항목을 고르면 기준·문구·근거를 확인할 수 있습니다.</p></div>}
           <RuntimeDetails job={job} />
         </div>
       </aside>

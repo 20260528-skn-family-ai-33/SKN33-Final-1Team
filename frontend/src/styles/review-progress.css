@@ -2,12 +2,9 @@
 .rv-progress-card { min-height: 520px; display: flex; align-items: center; flex-direction: column; justify-content: center; padding: 56px 64px; background: #fff; border: 1px solid var(--rv-line, #e6e6e1); border-radius: 24px; text-align: center; }
 .rv-progress-symbol { position: relative; display: grid; place-items: center; width: 96px; height: 96px; background: #f1f1ee; border-radius: 30px; margin-bottom: 34px; }
 .rv-progress-symbol .icon { width: 32px; height: 32px; }
-.rv-progress-spinner { position: absolute; box-sizing: border-box; width: 116px; height: 116px; border: 3px solid #deded8; border-top-color: #222; border-radius: 38px; animation: rv-progress-spin 2s linear infinite; }
 .rv-progress-card h1 { margin-top: 14px; font-size: 30px; line-height: 1.5; letter-spacing: -.04em; outline: none; }
 .rv-progress-message { color: #62625b; margin-top: 16px; font-size: 17px; }
 .rv-progress-detail { color: #85857b; font-size: 13px; margin-top: 12px; }
-.rv-progress-elapsed { display: flex; align-items: baseline; gap: 10px; margin-top: 20px; color: #77776c; font-size: 13px; }
-.rv-progress-elapsed time { color: #222; font-size: 20px; font-variant-numeric: tabular-nums; }
 .rv-progress-track { width: min(760px, 100%); height: 8px; border-radius: 12px; overflow: hidden; margin-top: 36px; background: #ecece8; }
 .rv-progress-fill { position: relative; height: 100%; overflow: hidden; border-radius: inherit; background: #171717; transition: width .4s ease; }
 .rv-progress-fill.is-unknown { width: 25%; }
@@ -29,6 +26,80 @@
 .rv-document-ready p { margin: 8px 0 14px; color: #647160; font-size: 12px; line-height: 1.8; }
 .rv-preview-entry { margin: -12px 0 22px; text-align: right; font-size: 12px; color: #6b6b61; }
 .rv-preview-entry a { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- 포스터·문서 검수 진행: 지금 처리 중인 칸 위의 돋보기 (영상 검수의 필름 돋보기와 같은 모양) ---------- */
+.rv-progress-card.rv-scan-card { min-height: 560px; padding: 44px 56px 42px; }
+.rv-progress-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; width: min(760px, 100%); margin: 28px 0 0; text-align: left; }
+.rv-progress-facts > div { padding: 12px 14px; border-radius: 10px; background: #f5f5f2; }
+.rv-progress-facts dt { color: #6e6e6b; font-size: 10px; }
+.rv-progress-facts dd { margin: 5px 0 0; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rv-progress-facts time { font-variant-numeric: tabular-nums; }
+.rv-scan-card .error-box { width: min(760px, 100%); margin-top: 22px; text-align: left; }
+/* 작업 화면의 문단 여백 초기화(.rv-workspace p)보다 앞서도록 카드 안에서 다시 준다. */
+.rv-progress-card .rv-progress-help { margin-top: 24px; }
+
+.rv-scan { display: flex; justify-content: center; min-width: min(360px, 100%); max-width: 100%; margin: 4px auto 30px; padding: 14px 26px 14px; border-radius: 16px; background: #171717; }
+.rv-scan-track { position: relative; }
+.rv-scan-parts { display: flex; margin: 0; padding: 0; list-style: none; }
+.rv-scan-part { display: grid; justify-items: center; align-content: start; width: 132px; padding: 6px 4px 0; }
+.rv-scan-tile { position: relative; width: 78px; height: 104px; margin-bottom: 10px; }
+.rv-scan-art { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 6px; background: #fff; transition: opacity .5s ease, filter .5s ease; }
+.rv-scan-part.is-pending .rv-scan-art, .rv-scan-part.is-waiting .rv-scan-art { opacity: .34; filter: grayscale(1); }
+.rv-scan-part.is-current .rv-scan-art { box-shadow: 0 0 0 2px #fff; }
+.rv-scan-badge { position: absolute; top: -7px; right: -7px; z-index: 1; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #171717; box-shadow: 0 0 0 2px #171717; }
+.rv-scan-badge .icon { width: 12px; height: 12px; stroke-width: 2.6; }
+.rv-scan-name { color: #8f8f88; font-size: 12px; font-weight: 600; letter-spacing: -.02em; white-space: nowrap; }
+.rv-scan-state { margin-top: 2px; color: #6e6e6b; font-size: 10px; white-space: nowrap; }
+.rv-scan-part.is-completed .rv-scan-name { color: #d6d6cf; }
+.rv-scan-part.is-completed .rv-scan-state { color: #a3a39b; }
+.rv-scan-part.is-current .rv-scan-name { color: #fff; }
+.rv-scan-part.is-current.is-active .rv-scan-state { color: #1db954; font-weight: 600; }
+.rv-scan-part.is-waiting .rv-scan-state { color: #e6c77a; font-weight: 600; }
+.rv-scan-part.is-failed .rv-scan-state { color: #ee9a87; font-weight: 600; }
+
+/* 칸 그림: 실제 포스터, 또는 단계에 맞는 문서 모양(선은 글줄, 노란 선은 뽑아낸 요구사항). */
+.rv-scan-art > i { position: absolute; left: 16%; right: 16%; height: 5%; border-radius: 2px; background: #cfcfc7; }
+.rv-scan-art > i:nth-child(1) { top: 20%; }
+.rv-scan-art > i:nth-child(2) { top: 34%; right: 30%; }
+.rv-scan-art > i:nth-child(3) { top: 48%; }
+.rv-scan-art > i:nth-child(4) { top: 62%; right: 40%; }
+.rv-scan-art.is-poster { background: #26433e; }
+.rv-scan-art.is-poster > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rv-scan-art.is-poster > i:nth-child(1) { top: 14%; right: 30%; height: 9%; background: #f4f0df; }
+.rv-scan-art.is-poster > i:nth-child(2) { top: 27%; right: 46%; background: #f4f0df; opacity: .7; }
+.rv-scan-art.is-poster > i:nth-child(3) { top: 46%; left: 38%; right: -18%; height: 46%; border-radius: 50%; background: #e5ba79; }
+.rv-scan-art.is-poster > i:nth-child(4) { top: 56%; left: 12%; right: 46%; height: 30%; background: #ece8db; }
+.rv-scan-art.is-extract > i:nth-child(2), .rv-scan-art.is-extract > i:nth-child(4) { height: 7%; background: #d9bf7e; }
+.rv-scan-art.is-criteria > i { background: linear-gradient(90deg, #55554f 0 10%, transparent 10% 20%, #cfcfc7 20%); }
+.rv-scan-art.is-compare > i { left: 12%; right: 54%; }
+.rv-scan-art.is-compare > i:nth-child(3) { background: #d9bf7e; }
+.rv-scan-art.is-compare > i:nth-child(4) { top: 20%; left: 54%; right: 12%; height: 47%; border-radius: 3px; background: #26433e; }
+.rv-scan-art.is-report > i:nth-child(1) { top: 12%; left: 12%; right: 12%; height: 10%; background: #171717; }
+.rv-scan-art.is-report > i:nth-child(4) { top: auto; bottom: 12%; left: auto; right: 13%; width: 30%; height: 23%; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 2px #806a28; }
+
+/* 돋보기: 지금 칸을 크게 보여 주고, 검사 중이면 초록 선이 위아래로 읽는다. */
+.rv-scan-lens { position: absolute; top: 58px; z-index: 2; width: 88px; height: 88px; margin: -44px 0 0 -44px; pointer-events: none; transition: left .9s cubic-bezier(.2, .7, .2, 1); }
+.rv-scan-glass { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; border: 4px solid #fff; border-radius: 50%; background: #f5f5f2; box-shadow: 0 0 0 2px #171717, 0 12px 28px #17171740; }
+.rv-scan-zoom { position: absolute; inset: 0; }
+.rv-scan-zoom .rv-scan-art { inset: -34% -22%; border-radius: 0; box-shadow: none; }
+.rv-scan-line { position: absolute; left: 6px; right: 6px; top: 14%; height: 2px; border-radius: 2px; background: #1db954; box-shadow: 0 0 10px #1db954; opacity: 0; }
+.rv-scan-glass > .icon { position: relative; z-index: 2; width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: #fff; color: #171717; stroke-width: 2.2; box-shadow: 0 2px 10px #17171730; }
+.rv-scan-handle { position: absolute; left: 68px; top: 72px; width: 12px; height: 36px; border-radius: 6px; background: #171717; box-shadow: 0 0 0 2px #fff; transform: rotate(-45deg); transform-origin: top center; }
+.rv-scan.is-working .rv-scan-line { opacity: 1; animation: rv-scan-sweep 1.7s ease-in-out infinite alternate; }
+.rv-scan.is-working .rv-scan-zoom .rv-scan-art.is-poster { animation: rv-scan-pan 3.4s ease-in-out infinite alternate; }
+.rv-scan.is-waiting .rv-scan-lens, .rv-scan.is-between .rv-scan-lens { animation: rv-scan-hover 2.4s ease-in-out infinite; }
+.rv-scan.is-waiting .rv-scan-zoom, .rv-scan.is-done .rv-scan-zoom { opacity: .45; }
+.rv-scan.is-failed .rv-scan-glass { box-shadow: 0 0 0 2px #a34f3e, 0 12px 28px #17171740; }
+.rv-scan.is-failed .rv-scan-glass > .icon { color: #a34f3e; }
+.rv-scan.is-failed .rv-scan-handle { background: #a34f3e; }
+
 @keyframes rv-progress-travel { from { transform: translateX(-110%); } to { transform: translateX(300%); } }
-@keyframes rv-progress-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .rv-progress-spinner, .rv-progress-shine { animation: none; } .rv-progress-shine { opacity: .5; } .rv-progress-fill { transition: none; } }
+@keyframes rv-scan-sweep { from { top: 14%; } to { top: 84%; } }
+@keyframes rv-scan-pan { from { transform: translateY(14%); } to { transform: translateY(-14%); } }
+@keyframes rv-scan-hover { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .rv-progress-shine { animation: none; opacity: .5; }
+  .rv-progress-fill, .rv-scan-lens, .rv-scan-art { transition: none; }
+  .rv-scan-line { display: none; }
+  .rv-scan.is-working .rv-scan-zoom .rv-scan-art.is-poster, .rv-scan.is-waiting .rv-scan-lens, .rv-scan.is-between .rv-scan-lens { animation: none; }
+}

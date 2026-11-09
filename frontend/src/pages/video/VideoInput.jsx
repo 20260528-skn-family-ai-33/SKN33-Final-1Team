@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { VideoDropArt } from '../../components/ReviewArt.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
@@ -151,9 +152,9 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
                 <div><strong>1. 검수할 동영상</strong><span>{file ? file.name : '숏폼 영상 1개'}</span></div></div><span className="image-stage-original">ORIGINAL</span></div>
               <div className="image-stage-viewport rv-video-stage-viewport">
                 {!file ? <div className="rv-input-empty">
-                  <div className="rv-input-empty-icon"><Icon name="film" /></div>
+                  <VideoDropArt />
                   <span className="rv-eyebrow">YOUR NEXT SHORT-FORM</span>
-                  <h2>여기에 동영상을 놓아주세요.</h2>
+                  <h2>{dragging ? '놓으면 바로 올라가요.' : '여기에 동영상을 놓아주세요.'}</h2>
                   <p>영상을 끌어다 놓거나<br />파일을 선택해 시작하세요.</p>
                   <button type="button" ref={chooseButton} className="rv-button primary" onClick={chooseFile} disabled={busy}><Icon name="upload" />파일 선택</button>
                   <span>{status ? limitText : '서버 한도를 확인하고 있어요.'}</span>

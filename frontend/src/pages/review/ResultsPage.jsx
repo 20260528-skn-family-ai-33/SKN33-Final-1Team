@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DocumentConditionDetails from './DocumentConditionDetails.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
+import { NoMatchArt } from '../../components/ReviewArt.jsx';
 import { statuses } from './reviewConstants.js';
 import { filterResults, selectVisibleResult, evidenceOverlays } from './resultSelection.js';
 import '../../styles/review-results-v2.css';
@@ -83,6 +84,17 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   function chooseResult(result) {
     setActiveEvidence(result ? { criterion_id: result.criterion_id, evidence: result.evidence || EMPTY } : null);
   }
+  // 목록에서 ↑·↓·Home·End로 항목을 옮기며 근거를 바로 본다. 초점도 함께 옮겨 키보드만으로 이어서 볼 수 있다.
+  function moveWithKeys(event) {
+    const steps = { ArrowDown: 1, ArrowUp: -1, Home: -Infinity, End: Infinity };
+    if (!(event.key in steps) || !visible.length || event.altKey || event.ctrlKey || event.metaKey) return;
+    event.preventDefault();
+    const step = steps[event.key];
+    const next = step === -Infinity ? 0 : step === Infinity ? visible.length - 1
+      : Math.min(visible.length - 1, Math.max(0, (selectedIndex < 0 ? -1 : selectedIndex) + step));
+    chooseResult(visible[next]);
+    list.current?.querySelectorAll('.rv-result-item-button')[next]?.focus();
+  }
   function changeFilter(value) {
     // The provider clears its old evidence on filter change. Restore the same
     // criterion if it remains visible, otherwise select the first visible row.
@@ -137,15 +149,17 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
             .map(([status, label, count]) => <button type="button" className={filter === status ? 'is-active' : ''}
               aria-pressed={filter === status} key={status} onClick={() => changeFilter(status)}>{label}<span>{count}</span></button>)}
         </div>
-        <p className="rv-result-list-count" role="status">{visible.length}개 표시{query.trim() ? ' · 검색 적용' : ''}</p>
-        {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록">{visible.map(result =>
+        <div className="rv-result-list-meta"><p className="rv-result-list-count" role="status">{visible.length}개 표시{query.trim() ? ' · 검색 적용' : ''}</p>
+          {visible.length > 1 && <span className="rv-result-keyhint" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> 항목 이동</span>}
+          <span id="rv-result-keys" className="visually-hidden">위아래 화살표로 항목을 옮길 수 있습니다.</span></div>
+        {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록" aria-describedby="rv-result-keys" onKeyDown={moveWithKeys}>{visible.map(result =>
           <li key={result.criterion_id}><button type="button" className={`rv-result-item-button ${selected?.criterion_id === result.criterion_id ? 'is-selected' : ''}`}
             aria-pressed={selected?.criterion_id === result.criterion_id} aria-controls="rv-result-inspector" onClick={() => chooseResult(result)}>
             <span className="rv-result-item-meta"><StatusLabel status={result.status} /><span>{String(results.indexOf(result) + 1).padStart(2, '0')}</span></span>
             <span className="rv-result-item-title">{result.criterion}</span>
             <span className="rv-result-item-subtitle">{result.type === 'visual' ? '시각 검수' : '정보 검수'}<span>근거 {result.evidence?.length || 0}개</span></span>
           </button></li>)}</ul> : <div className="rv-result-empty rv-result-empty-list">
-          <Icon name="search" /><strong>{results.length ? '일치하는 항목이 없습니다.' : '검수 항목이 없습니다.'}</strong>
+          <NoMatchArt /><strong>{results.length ? '일치하는 항목이 없습니다.' : '검수 항목이 없습니다.'}</strong>
           <p>{results.length ? '검색어나 상태 필터를 바꿔 주세요.' : '기준과 검수 내용을 다시 확인해 주세요.'}</p>
           {results.length > 0 && <button type="button" className="rv-button secondary" onClick={resetFilters}>검색·필터 초기화</button>}
         </div>}
@@ -195,7 +209,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
             {review.model_runtime?.status === 'not_configured' && <p>시각 분석 모델이 연결되지 않아 OCR·파일 정보로 확인 가능한 항목만 자동 판정합니다.</p>}
             <RetryNote retry={review.ocr?.conditional_retry} />
           </details>
-        </div> : <div className="rv-result-empty"><Icon name="list" /><strong>표시할 항목이 없습니다.</strong><p>목록에 표시되는 항목을 선택하면 기준·관측·이유·근거를 확인할 수 있습니다.</p></div>}
+        </div> : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong><p>목록에 표시되는 항목을 선택하면 기준·관측·이유·근거를 확인할 수 있습니다.</p></div>}
       </aside>
     </div>
     <footer className="rv-result-footer"><p><Icon name="shield" />검수 실행 완료는 최종 승인을 의미하지 않습니다.</p>

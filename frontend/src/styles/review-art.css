@@ -1,0 +1,78 @@
+/* 서비스 안내 그림(ReviewArt.jsx). 잉크 윤곽 2px · 평면 채움 · 검수 진행 화면과 같은 돋보기.
+   움직임은 사용자가 파일을 끌어 오거나 올리기 영역에 마우스를 올렸을 때만 일어난다. */
+.cc-art {
+  --art-ink: #171717; --art-line: #d6d6cf; --art-soft: #efefeb; --art-evidence: #d9bf7e; --art-scan: #1db954;
+  --art-green: #26433e; --art-sand: #e5ba79; --art-cream: #ece8db; --art-brick: #b5573d;
+  display: block; width: 100%; height: auto; overflow: visible;
+}
+.cc-art .cc-art-outline { fill: none; stroke: var(--art-ink); stroke-width: 2; }
+.cc-art .cc-art-outline-line { fill: none; stroke: var(--art-ink); stroke-width: 2; stroke-linecap: round; }
+.cc-art .cc-art-drop { fill: var(--art-ink); opacity: .09; }
+.cc-art .cc-art-poster-ground { fill: var(--art-green); }
+.cc-art .cc-art-poster-sand { fill: var(--art-sand); }
+.cc-art .cc-art-poster-cream { fill: var(--art-cream); }
+.cc-art .cc-art-poster-brick { fill: var(--art-brick); }
+.cc-art .cc-art-poster-cross { fill: none; stroke: var(--art-cream); stroke-width: 2; }
+.cc-art .cc-art-poster-title { fill: #f4f0df; }
+.cc-art .cc-art-poster-title.is-soft { opacity: .62; }
+.cc-art .cc-art-evidence { fill: none; stroke: var(--art-evidence); stroke-width: 2.5; }
+.cc-art .cc-art-tape { fill: var(--art-cream); stroke: var(--art-ink); stroke-width: 1.2; }
+.cc-art .cc-art-film { fill: var(--art-ink); }
+.cc-art .cc-art-film-hole { fill: #4b4b47; }
+.cc-art .cc-art-phone { fill: var(--art-ink); }
+.cc-art .cc-art-play { fill: #fff; opacity: .92; }
+.cc-art .cc-art-caption { fill: #fff; }
+.cc-art .cc-art-floor { stroke: var(--art-line); stroke-width: 2; stroke-linecap: round; }
+.cc-art .cc-art-gap { fill: rgba(255, 255, 255, .6); stroke: #b4b4ac; stroke-width: 2; stroke-dasharray: 6 5; }
+.cc-art .cc-art-sheet { fill: #fff; stroke: var(--art-ink); stroke-width: 2; }
+.cc-art .cc-art-sheet-ghost { fill: #fff; stroke: #c4c4bc; stroke-width: 1.6; stroke-dasharray: 5 4; }
+.cc-art .cc-art-tray { fill: var(--art-soft); stroke: var(--art-ink); stroke-width: 2; stroke-linejoin: round; }
+.cc-art .cc-art-tray-slot { fill: #deded8; }
+.cc-art .cc-art-line { fill: var(--art-line); }
+.cc-art .cc-art-box { fill: none; stroke: #b4b4ac; stroke-width: 1.4; }
+
+/* 돋보기 — 진행 화면 렌즈와 같은 흰 테 · 잉크 테 · 손잡이 */
+.cc-art .cc-art-glass { fill: #f5f5f2; }
+.cc-art .cc-art-rim { fill: none; stroke: #fff; stroke-width: 5; }
+.cc-art .cc-art-ring { fill: none; stroke: var(--art-ink); stroke-width: 2.4; }
+.cc-art .cc-art-handle { stroke: var(--art-ink); stroke-width: 9; stroke-linecap: round; }
+.cc-art .cc-art-handle-edge { stroke: #fff; stroke-width: 13; stroke-linecap: round; }
+.cc-art .cc-art-scan { stroke: var(--art-scan); stroke-width: 2; opacity: 0; }
+.cc-art-missing .cc-art-scan { opacity: 1; }
+
+/* 올리기 영역의 반응: 마우스를 올리면 돋보기가 다가가고, 파일을 끌어 오면 포스터가 들리고 돋보기가 그 위를 읽는다. */
+.cc-art .cc-art-lift, .cc-art .cc-art-lens { transform-box: fill-box; transform-origin: center; transition: transform .35s cubic-bezier(.2, .7, .2, 1); }
+.cc-art-poster .cc-art-lift, .cc-art-video .cc-art-lift { transform: rotate(-3deg); }
+.rv-input-drop-target:hover .cc-art :is(.cc-art-lens) { transform: translate(-6px, -6px); }
+.rv-input-drop-target.is-dragging .cc-art .cc-art-lift { transform: translateY(-7px) rotate(0deg); }
+.rv-input-drop-target.is-dragging .cc-art-poster .cc-art-lens { transform: translate(-46px, -50px); }
+.rv-input-drop-target.is-dragging .cc-art-video .cc-art-lens { transform: translate(-48px, -36px); }
+.rv-input-drop-target.is-dragging .cc-art .cc-art-scan { opacity: 1; animation: cc-art-sweep 1.3s ease-in-out infinite alternate; }
+@keyframes cc-art-sweep { from { transform: translateY(0); } to { transform: translateY(20px); } }
+
+/* 없는 페이지: 작업 화면과 같은 바탕 위에 흰 종이 한 장 */
+.cc-missing-page { min-height: 100dvh; display: flex; flex-direction: column; background: #f2f2f1; color: #171717; }
+.cc-missing-top { display: flex; align-items: center; min-height: 76px; padding: 18px 36px; background: #fff; border-bottom: 1px solid #e3e3df; }
+.cc-missing-sheet { display: flex; flex-direction: column; align-items: center; gap: 0; width: min(560px, calc(100% - 32px)); margin: auto; padding: 44px 40px 40px; background: #fff; border: 1px solid #e3e3df; border-radius: 22px; text-align: center; }
+.cc-missing-sheet > .cc-art { width: 260px; margin-bottom: 18px; }
+.cc-missing-sheet h1 { font-size: 26px; line-height: 1.4; letter-spacing: -.04em; }
+.cc-missing-sheet p { margin-top: 10px; color: #6e6e6b; font-size: 14px; line-height: 1.8; }
+.cc-missing-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 26px; }
+.cc-missing-actions .rv-button { text-decoration: none; }
+
+/* 내 작업이 비었을 때: 그림 · 상태 문장 · 다음 행동 하나 */
+.rv-task-empty-state { display: flex; flex-direction: column; align-items: center; padding: 34px 24px 40px; text-align: center; }
+.rv-task-empty-state > .cc-art { width: 200px; margin-bottom: 6px; }
+.rv-task-empty-state .rv-task-empty { padding: 0; color: #171717; font-size: 15px; font-weight: 600; }
+.rv-task-empty-hint { max-width: 40em; margin-top: 8px; color: #6e6e6b; font-size: 12px; line-height: 1.8; text-wrap: balance; }
+.rv-task-empty-state .rv-button { margin-top: 18px; text-decoration: none; }
+
+/* 배치: 올리기 영역의 그림은 예전 아이콘 자리에 들어간다. */
+.rv-workspace .rv-input-empty > .cc-art { width: 220px; margin: 0 auto 10px; }
+.rv-workspace .rv-result-empty > .cc-art { width: 112px; margin: 0 auto 4px; }
+@media (max-width: 760px) { .rv-workspace .rv-input-empty > .cc-art { width: 168px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-art .cc-art-lift, .cc-art .cc-art-lens { transition: none; }
+  .rv-input-drop-target.is-dragging .cc-art .cc-art-scan { animation: none; }
+}

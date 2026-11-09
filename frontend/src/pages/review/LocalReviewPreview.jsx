@@ -39,6 +39,15 @@ const exampleRun = {
   step_records: [{ role: 'A04_A05', status: 'completed' }, { role: 'A06', status: 'completed' }, { role: 'A07', status: 'running' }],
 };
 
+// 진행 화면 미리보기에서 돋보기 위치를 단계별로 바꿔 볼 수 있게 서버 상태 예시를 둔다.
+const done = role => ({ role, status: 'completed' }), running = role => ({ role, status: 'running' });
+const progressStages = [
+  ['queued', '접수 대기', { execution_status: 'queued', step_records: [] }],
+  ['A04_A05', '포스터 검사', { step_records: [running('A04_A05')] }],
+  ['A06', '근거 대조', { step_records: [done('A04_A05'), running('A06')] }],
+  ['A07', '보고서 정리', { step_records: [done('A04_A05'), done('A06'), running('A07')] }],
+];
+
 function seed(state) {
   const requirements = state.requirements.trim() ? state.requirements : brief;
   return { ...state, projectName: state.projectName || '포스터 화면 미리보기', requirements,
@@ -54,6 +63,7 @@ export default function LocalReviewPreview({ uiOnly = false }) {
   const [newCategory, setNewCategory] = useState('information');
   const [filter, setFilter] = useState('all');
   const [activeEvidence, setActiveEvidence] = useState(null);
+  const [progressStage, setProgressStage] = useState('A07');
   const fileInput = useRef(null);
   const nextId = useRef(0);
   const result = useMemo(() => ({ ...frameworkResults(exampleRun, { url: posterUrl, width: 1200, height: 1600 }, '예시 포스터'),
@@ -105,8 +115,15 @@ export default function LocalReviewPreview({ uiOnly = false }) {
       newCriterion={newCriterion} setNewCriterion={setNewCriterion} newCategory={newCategory} setNewCategory={setNewCategory}
       addCriterion={event => { event.preventDefault(); dispatch({ type: 'add', id: `preview-${++nextId.current}`, text: newCriterion, category: newCategory }); setNewCriterion(''); }}
       navigate={navigate} confirm={confirm} run={() => navigate('running')} />}
-    {state.step === 'running' && <ReviewProgress {...frameworkProgress(exampleRun)} title="검수 진행 화면 미리보기"
-      helpText="예시 화면입니다. 상단의 다음 화면 또는 결과 확인을 눌러 바로 넘어가세요." />}
+    {state.step === 'running' && <>
+      <div className="rv-preview-scan-stages"><span>진행 단계 예시</span>
+        <div className="rv-preview-controls" role="group" aria-label="진행 단계 예시">{progressStages.map(([key, label]) => <button type="button" key={key}
+          aria-pressed={progressStage === key} onClick={() => setProgressStage(key)}>{label}</button>)}</div></div>
+      <ReviewProgress {...frameworkProgress({ ...exampleRun, validated: null, execution_status: 'reviewing',
+        ...progressStages.find(([key]) => key === progressStage)[2] })} detail={null} image={posterUrl}
+        facts={[['검수 기준', `${criterionData.length}개`], ['포스터 크기', '1200×1600']]} title="검수 진행 화면 미리보기"
+        helpText="예시 화면입니다. 상단의 다음 화면 또는 결과 확인을 눌러 바로 넘어가세요." />
+    </>}
     {state.step === 'results' && <ResultsPage review={result} exportData={exampleRun} filter={filter} setFilter={setFilter}
       activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
       edit={() => setState(current => ({ ...current, step: 'criteria', snapshot: null }))} newReview={reset} />}
