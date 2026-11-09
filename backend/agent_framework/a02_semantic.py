@@ -326,14 +326,18 @@ def materialize_semantics(reply,index,sources,version,*,presentation=False):
         # Qualifier language is a conservative review flag, not an interpretation.
         if not qualifiers and re.search(r'허용|예외|또는|줄바꿈|공백',quote):
             qualifiers.append(reference(version,source,quote));warnings.append('source_qualifier_review_required')
-        details=RequirementDetails(compiler='qwen-semantic-v1',target=item.target,field=item.field,
+        target,kind=item.target,item.kind
+        if missing and item.field=='unspecified':
+            # A placeholder is a source-grounded note with no comparison value.
+            target,kind='unspecified','unsupported'
+        details=RequirementDetails(compiler='qwen-semantic-v1',target=target,field=item.field,
             expected_source=reference(version,source,literal) if item.expected else None,
             presentation=item.presentation,
             normalized_expected=item.normalized_expected,qualifiers=tuple(qualifiers),origin='model_structured')
-        key=(source.block_id,quote,item.target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
+        key=(source.block_id,quote,target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
         if key in seen:invalid('A02_DUPLICATE_REQUIREMENT')
         seen.add(key)
-        result.append(CompiledRequirement(quote,item.kind,item.operator,expected,item.unit,item.required,
+        result.append(CompiledRequirement(quote,kind,item.operator,expected,item.unit,item.required,
             source.block_id,source.page,quote,missing,details))
     # Supporting coverage check retains only literal undecided source passages.
     # It does not fill an answer or replace any semantic choice made above.

@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/RequireAuth.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
 import ReviewPage from './pages/review/ReviewPage.jsx';
+import MyTasksPage from './pages/review/MyTasksPage.jsx';
 import { ReviewProvider } from './pages/review/ReviewProvider.jsx';
 import VideoReviewPage from './pages/video/VideoReviewPage.jsx';
 const ModelTestPage = React.lazy(() => import('./pages/modeltest/ModelTestPage.jsx'));
@@ -17,6 +18,7 @@ function AppRoutes() {
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/review/new" element={<RequireAuth><ReviewPage /></RequireAuth>} />
+    <Route path="/review/tasks" element={<RequireAuth><MyTasksPage /></RequireAuth>} />
     {import.meta.env.DEV && <Route path="/review/preview" element={<React.Suspense fallback={<p role="status">미리보기 준비 중…</p>}><LocalReviewPreview /></React.Suspense>} />}
     <Route path="/video" element={<RequireAuth><VideoReviewPage /></RequireAuth>} />
     <Route path="/video/logo" element={<RequireAuth><React.Suspense fallback={<p role="status">로고 확정 화면을 준비하고 있어요.</p>}><LogoConfirmPage /></React.Suspense></RequireAuth>} />

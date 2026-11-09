@@ -8,8 +8,9 @@ from dataclasses import replace
 from functools import partial
 from urllib.parse import quote
 from uuid import UUID
+from typing import Literal
 
-from fastapi import Header, Request, Response
+from fastapi import Header, Query, Request, Response
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.main import create_app as create_auth_app
@@ -31,6 +32,7 @@ from .files import FileLimits
 from .criteria_review import PostgresCriteriaReview
 from .criteria_contracts import CriteriaVersionRequest,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord
 from .poster_review import PosterReviewRequest,PostgresPosterReviews,open_poster_storage
+from .my_tasks import MyTasks, HistoryVisibility
 
 
 def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=None,poster_storage_root=None):
@@ -117,6 +119,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
                 'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
                 'graph_projection':app.state.framework_revision=='AF005',
+                'task_controls':True,
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
                 'poster_review_ready':not blockers,'poster_review_blockers':blockers,
@@ -148,6 +151,19 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     def evidence_view(request:Request,run_id:str):
         from .evidence_context import read_context
         return read_context(app.state.framework,subject(request),run_id)
+
+    @app.get(prefix+'/my-tasks')
+    def my_tasks(request:Request, visibility:Literal['visible','hidden','all']='visible',
+                 limit:int=Query(30,ge=1,le=100), before:str|None=Query(None,max_length=160)):
+        return MyTasks(app.state.framework).list(subject(request),visibility=visibility,limit=limit,before=before)
+
+    @app.post(prefix+'/runs/{run_id}/cancel',response_model=RunSnapshot)
+    def cancel_task(request:Request,run_id:str):
+        return MyTasks(app.state.framework).cancel(subject(request),run_id)
+
+    @app.post(prefix+'/runs/{run_id}/history-visibility')
+    def task_visibility(request:Request,run_id:str,body:HistoryVisibility):
+        return MyTasks(app.state.framework).visibility(subject(request),run_id,body.hidden)
 
     @app.post(prefix+'/runs',response_model=RunSnapshot,status_code=202)
     def start(request:Request,body:StartRequest):

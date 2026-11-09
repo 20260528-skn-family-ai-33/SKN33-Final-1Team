@@ -29,6 +29,7 @@
     "test:modeltest:ui": "node --test --test-concurrency=1 tests/e2e/modeltest.spec.mjs tests/e2e/modeltest-board.spec.mjs",
     "test:preview:ui": "node --test tests/e2e/local-review-preview.spec.mjs",
     "test:workspace:ui": "node --test tests/e2e/workspace-reset.spec.mjs",
+    "test:tasks:ui": "node --test tests/e2e/my-tasks.spec.mjs",
     "dev:ui": "vite --mode ui --host 0.0.0.0 --port 5173 --strictPort"
   },
   "dependencies": {

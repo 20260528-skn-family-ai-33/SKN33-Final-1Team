@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
@@ -14,6 +15,7 @@ import FrameworkReport from './FrameworkReport.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
+import { useAuth } from '../../auth/AuthProvider.jsx';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = processingStatuses;
@@ -24,6 +26,7 @@ function command(path, body, key, signal) {
 }
 
 export default function FrameworkReviewPage({ runId, initialFile, projectName, openRun, onNew }) {
+  const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
@@ -193,9 +196,16 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     canNavigate={key => !busy && !processing && (key === 'criteria' && criteria.length > 0 || key === 'results' && hasResults)}
     navigate={key => { setShowActions(false); setShowCriteria(key === 'criteria'); }}>
       {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
-      {run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
+      {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
+        : run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
       {processing ? <ReviewProgress {...frameworkProgress(run)} error={error}
+        cancelLabel="대기 작업 취소" cancelBusy={busy}
+        onCancel={status === 'queued' && run?.context.actor_id === user.id ? () => perform(async signal => {
+          try { setRun(await command(path + '/cancel', {}, null, signal)); }
+          finally { setReload(n => n + 1); }
+        }) : undefined}
         onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
+      : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title">대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
       : showActions ? <div className="rv-workspace-intro"><div><span className="rv-eyebrow">REVIEW REPORT</span><h1 id="page-title">보고서와 담당자 승인</h1><p>자동 검수 결과를 검토하고 최종 판단을 기록하세요.</p></div><button type="button" className="rv-button secondary" disabled={busy} onClick={() => setShowActions(false)}>검수 결과로 돌아가기</button></div>
       : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}

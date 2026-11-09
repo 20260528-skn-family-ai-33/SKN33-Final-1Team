@@ -41,6 +41,7 @@ export function ReviewProvider({ children }) {
   const [sampleBusy, setSampleBusy] = useState(false);
   const [fileBusy, setFileBusy] = useState(false);
   const [documentBusy, setDocumentBusy] = useState(false);
+  const [documentCancelBusy, setDocumentCancelBusy] = useState(false);
   const [documentProgress, setDocumentProgress] = useState(null);
   const [documentNotice, setDocumentNotice] = useState('');
   const [documentError, setDocumentError] = useState('');
@@ -61,6 +62,7 @@ export function ReviewProvider({ children }) {
   const documentInput = useRef(null);
   const documentRequest = useRef(null);
   const documentAttempts = useRef(new Map());
+  const documentCancellation = useRef(false);
   const currentState = useRef(state);
   currentState.current = state;
   const generation = useRef(0);
@@ -145,6 +147,24 @@ export function ReviewProvider({ children }) {
     setDocumentNotice('');
     setDocumentError('');
   }, []);
+
+  async function cancelQueuedDocument() {
+    const controller = documentRequest.current;
+    const runId = documentProgress?.runId;
+    if (!controller || !runId || documentProgress.stage !== 'queued' || documentCancellation.current) return;
+    documentCancellation.current = true; setDocumentCancelBusy(true); setDocumentError('');
+    try {
+      await frameworkJson(`/runs/${encodeURIComponent(runId)}/cancel`, { method: 'POST', signal: controller.signal });
+      if (controller.signal.aborted || (documentRequest.current && documentRequest.current !== controller)) return;
+      for (const attempt of documentAttempts.current.values()) {
+        if (attempt.runId === runId) { delete attempt.runId; delete attempt.extractionKey; }
+      }
+      cancelDocument();
+      setDocumentNotice('대기 작업을 취소했습니다. 원본과 기록은 보존됩니다.');
+    } catch (err) {
+      if (!controller.signal.aborted) setDocumentError(err.message);
+    } finally { documentCancellation.current = false; setDocumentCancelBusy(false); }
+  }
 
   async function selectDocument(files, projectId) {
     cancelDocument();
@@ -442,6 +462,7 @@ export function ReviewProvider({ children }) {
 
   const value = {
     projectId, setProjectId,
+    documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,

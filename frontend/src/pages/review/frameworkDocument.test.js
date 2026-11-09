@@ -14,7 +14,7 @@ const result = { framework: { run_id: 'run-1', document_version_id: 'doc-1' }, p
   { text: '문구와 이미지가 잘리지 않아야 합니다.', type: 'visual', label: '잘림', requirement: '문구와 이미지가 잘리지 않아야 합니다.', inspection: '', level: '필수', page: 2, source: '문구와 이미지가 잘리지 않아야 합니다.' },
 ] };
 
-function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], upload, admit, requirements = result } = {}) {
+function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], errorCode = 'QWEN_OUTCOME_UNKNOWN', upload, admit, requirements = result } = {}) {
   const calls = [];
   t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
     calls.push({ url, options });
@@ -36,7 +36,7 @@ function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], upl
       if (admit) return admit(options);
       return Response.json({ context: { run_id: 'run-1' }, execution_status: 'queued' }, { status: 202 });
     }
-    if (url === prefix + runPath) return Response.json({ execution_status: statuses.length > 1 ? statuses.shift() : statuses[0], error: { code: 'QWEN_OUTCOME_UNKNOWN' } });
+    if (url === prefix + runPath) return Response.json({ execution_status: statuses.length > 1 ? statuses.shift() : statuses[0], error: { code: errorCode } });
     if (url === prefix + runPath + '/requirements') return Response.json(requirements);
     throw new Error('unexpected request: ' + url);
   });
@@ -90,7 +90,7 @@ test('접수 응답이 유실되면 같은 키를 재사용하고 성공 뒤에�
   await extractDocumentWithProgress(file, { projectId: 'p', attempt });
   const posts = calls.filter(c => c.url.endsWith('/extractions'));
   assert.equal(posts.length, 2);
-  assert.equal(posts[0].options.headers['Idempotency-Key'], posts[1].options.headers['Idempotency-Key']);
+  assert.equal(new Headers(posts[0].options.headers).get('Idempotency-Key'), new Headers(posts[1].options.headers).get('Idempotency-Key'));
   assert.equal(calls.filter(c => c.url.includes('/documents?')).length, 1);
 });
 
@@ -99,6 +99,19 @@ test('결과 불명은 새 추론으로 자동 재접수하지 않는다', async
   await assert.rejects(extractDocumentWithProgress(file, { projectId: 'p', attempt }), /QWEN_OUTCOME_UNKNOWN/);
   await assert.rejects(extractDocumentWithProgress(file, { projectId: 'p', attempt }), /QWEN_OUTCOME_UNKNOWN/);
   assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 1);
+});
+
+test('서버에서 취소된 문서는 자동 재접수하지 않고 다음 명시적 요청에만 새 키를 쓴다', async t => {
+  const calls = setup(t, { statuses: ['failed', 'waiting_criteria'], errorCode: 'USER_CANCELLED' });
+  const attempt = {};
+  await assert.rejects(extractDocumentWithProgress(file, { projectId: 'p', attempt }), /대기 작업이 취소/);
+  const first = new Headers(calls.find(call => call.url.endsWith('/extractions')).options.headers).get('Idempotency-Key');
+  assert.equal(calls.filter(call => call.url.endsWith('/extractions')).length, 1);
+  await extractDocumentWithProgress(file, { projectId: 'p', attempt });
+  const posts = calls.filter(call => call.url.endsWith('/extractions'));
+  assert.equal(posts.length, 2);
+  assert.notEqual(new Headers(posts[1].options.headers).get('Idempotency-Key'), first);
+  assert.equal(calls.filter(call => call.url.includes('/documents?')).length, 1);
 });
 
 test('취소 후에는 문단 결과를 반환하지 않고 같은 실행으로 재조회한다', async t => {

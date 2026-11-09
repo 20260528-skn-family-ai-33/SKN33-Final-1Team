@@ -17,6 +17,9 @@ class AuthError(RuntimeError):
             'EMAIL_ALREADY_EXISTS':'이미 사용 중인 이메일입니다.',
             'AUTH_STATE_CHANGED':'계정 상태가 변경되었습니다. 다시 시도해 주세요.',
             'DEVELOPMENT_CONFLICT':'기존 개발 계정/프로젝트 구성이 다릅니다.',
+            'FRAMEWORK_TASK_NOT_QUEUED':'이미 시작되었거나 종료된 작업입니다. 대기 중인 작업만 취소할 수 있습니다.',
+            'FRAMEWORK_TASK_NOT_FINISHED':'완료·실패·취소된 이력만 숨길 수 있습니다.',
+            'FRAMEWORK_TASK_CURSOR_INVALID':'목록이 변경되었습니다. 처음부터 다시 불러와 주세요.',
         }
         super().__init__(messages.get(code,'요청을 처리할 수 없습니다.'))
         self.code,self.status,self.retry_after=code,status,retry_after

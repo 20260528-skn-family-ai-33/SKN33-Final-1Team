@@ -3,7 +3,7 @@ import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import '../../styles/review-progress.css';
 
-export default function ReviewProgress({ title, message, detail, percent, startedAt, steps = [], onCancel, onRetry, error, helpText = '완료되면 다음 화면이 표시됩니다. 페이지를 그대로 두셔도 됩니다.' }) {
+export default function ReviewProgress({ title, message, detail, percent, startedAt, steps = [], onCancel, cancelLabel = '입력 반영 취소', cancelBusy = false, onRetry, error, helpText = '완료되면 다음 화면이 표시됩니다. 페이지를 그대로 두셔도 됩니다.' }) {
   const openedAt = useRef(Date.now());
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function ReviewProgress({ title, message, detail, percent, starte
       <ErrorMessage message={error} />
       <div className="rv-progress-actions">
         {onRetry && <button type="button" className="rv-button secondary" onClick={onRetry}>진행 상태 다시 확인</button>}
-        {onCancel && <button type="button" className="text-btn" onClick={onCancel}>입력 반영 취소</button>}
+        {onCancel && <button type="button" className="text-btn" disabled={cancelBusy} onClick={onCancel}>{cancelBusy ? '취소 확인 중…' : cancelLabel}</button>}
       </div>
     </div>
   </section>;
