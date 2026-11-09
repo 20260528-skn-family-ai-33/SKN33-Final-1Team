@@ -1,0 +1,82 @@
+name: AWS 메인 프론트 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aws-main-frontend
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          VITE_API_PROFILE: legacy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aws-main-frontend
+          path: frontend/dist/
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: 배포 역할 설정 확인
+        env:
+          ROLE_ARN: ${{ vars.AWS_MAIN_DEPLOY_ROLE_ARN }}
+        run: test -n "$ROLE_ARN" || { echo '메인 배포 역할 변수가 없습니다.' >&2; exit 1; }
+      - uses: actions/download-artifact@v4
+        with:
+          name: aws-main-frontend
+          path: dist
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_MAIN_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
+      - name: 메인 배포 대상 확인
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(aws sts get-caller-identity --query Account --output text)" = '357297649391'
+          aws cloudfront get-distribution-config --id E1LYR5RFZBQOT8 --output json > "$RUNNER_TEMP/distribution.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          config = json.loads((Path(os.environ['RUNNER_TEMP']) / 'distribution.json').read_text())['DistributionConfig']
+          origins = {origin['Id']: origin['DomainName'] for origin in config['Origins']['Items']}
+          expected = 'creative-checker-frontend-20261106-jh.s3.ap-northeast-2.amazonaws.com'
+          if origins.get(config['DefaultCacheBehavior']['TargetOriginId']) != expected:
+              raise SystemExit('메인 배포의 S3 원본이 예상과 다릅니다.')
+          PY
+      - name: 메인 버킷에 배포
+        shell: bash
+        run: |
+          set -euo pipefail
+          bucket='s3://creative-checker-frontend-20261106-jh'
+          aws s3 sync dist/assets/ "$bucket/assets/" --cache-control 'public,max-age=31536000,immutable'
+          aws s3 sync dist/ "$bucket/" --exclude 'assets/*' --exclude 'index.html' --cache-control 'no-cache'
+          aws s3 cp dist/index.html "$bucket/index.html" --cache-control 'no-cache' --content-type 'text/html; charset=utf-8'
+          aws cloudfront create-invalidation --distribution-id E1LYR5RFZBQOT8 --paths '/' '/index.html'

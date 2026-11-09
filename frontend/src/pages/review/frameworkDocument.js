@@ -60,7 +60,7 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
       throw error;
     }
     onProgress?.({ stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
-      message: run.execution_status === 'queued' ? '분석을 기다리고 있습니다.' : '문서 전체의 검수 항목과 표시 문단을 정리하고 있습니다.' });
+      message: run.execution_status === 'queued' ? '문서 분석 차례를 기다리고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
     await waitFor(pollInterval, signal);
   }
   signal?.throwIfAborted();

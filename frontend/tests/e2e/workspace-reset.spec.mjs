@@ -86,7 +86,7 @@ test('현재 메뉴 재클릭과 영상·모델 도구 왕복은 입력·첨부�
   assert.equal(calls.filter(call => call.method === 'DELETE' || call.path.endsWith('/auth/logout')).length, 0);
 });
 
-test('PDF 분석 중 메뉴를 바꾸면 조회를 중단하고 늦은 결과가 새 입력에 반영되지 않는다', { timeout: 30000 }, async t => {
+test('PDF 분석 중 이동을 잠그고 회전 표시·경과시간을 보여주며 취소 후 이동을 허용한다', { timeout: 30000 }, async t => {
   let release, entered;
   const gate = new Promise(resolve => { release = resolve; });
   const pending = new Promise(resolve => { entered = resolve; });
@@ -107,6 +107,23 @@ test('PDF 분석 중 메뉴를 바꾸면 조회를 중단하고 늦은 결과가
   await pending;
   await page.getByRole('heading', { name: '검수 요구사항을 정리하고 있어요.' }).waitFor();
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
+  for (const label of ['포스터 검수', '영상 검수', '모델 테스트']) {
+    const link = tools.getByRole('link', { name: label, exact: true });
+    assert.equal(await link.getAttribute('aria-disabled'), 'true');
+    assert.equal(await link.getAttribute('href'), null, 'locked tools cannot open another route or tab');
+    await link.dispatchEvent('click');
+  }
+  for (const name of ['크리에이티브체커 홈', '서비스 메인으로', '로그아웃']) {
+    assert.equal(await page.getByRole('button', { name, exact: true }).isDisabled(), true);
+  }
+  assert.equal(await page.getByRole('button', { name: /자료 입력/ }).isDisabled(), true);
+  assert.equal(new URL(page.url()).pathname, '/review/new');
+  assert.equal(await page.locator('.rv-progress-spinner').isVisible(), true);
+  assert.equal(await page.locator('.rv-progress-spinner').evaluate(el => getComputedStyle(el).animationName), 'rv-progress-spin');
+  assert.equal(await page.locator('.rv-progress-spinner').evaluate(el => getComputedStyle(el).borderRadius), '38px');
+  await page.waitForFunction(() => document.querySelector('[role="timer"] time')?.textContent !== '0:00');
+  assert.match(await page.getByRole('timer', { name: '경과 시간' }).textContent(), /\d+:\d{2}/);
+  await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
   await tools.getByRole('link', { name: '영상 검수', exact: true }).click();
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
@@ -132,15 +149,23 @@ test('홈 버튼 왕복도 새 입력으로 초기화한다', { timeout: 30000 }
   }
 });
 
-test('실행 중 포스터 메뉴를 다시 누르면 실행 URL과 이전 상태 조회를 정리한다', { timeout: 30000 }, async t => {
+test('포스터 실행 중 이동을 잠그고 실행이 끝나면 메뉴 초기화를 허용한다', { timeout: 30000 }, async t => {
+  let status = 'reviewing';
   const { page, base, calls } = await fixture(t, { route: async (route, path) => {
     if (!path.endsWith('/runs/live-run')) return false;
-    await route.fulfill({ json: { execution_status: 'reviewing', context: { run_id: 'live-run', project_id: 'project' }, criteria: { criteria: [] } } });
+    await route.fulfill({ json: { execution_status: status, context: { run_id: 'live-run', project_id: 'project' }, criteria: { criteria: [] } } });
     return true;
   } });
   await page.goto(base + '/review/new?framework=live-run');
   await page.getByRole('progressbar', { name: '검수 처리 진행 상태', exact: true }).waitFor();
-  await page.getByRole('navigation', { name: '검수 도구', exact: true }).getByRole('link', { name: '포스터 검수', exact: true }).click();
+  const posterLink = page.getByRole('navigation', { name: '검수 도구', exact: true }).getByRole('link', { name: '포스터 검수', exact: true });
+  assert.equal(await posterLink.getAttribute('aria-disabled'), 'true');
+  assert.equal(await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).isDisabled(), true);
+  assert.equal(await page.locator('.rv-progress-spinner').isVisible(), true);
+  assert.equal(await page.getByRole('timer', { name: '경과 시간' }).count(), 1);
+  status = 'failed';
+  await page.waitForFunction(() => document.querySelector('.rv-tool-link')?.getAttribute('aria-disabled') !== 'true');
+  await posterLink.click();
   await checkBlank(page);
   const reads = calls.filter(call => call.path.endsWith('/runs/live-run')).length;
   await page.waitForTimeout(1200);

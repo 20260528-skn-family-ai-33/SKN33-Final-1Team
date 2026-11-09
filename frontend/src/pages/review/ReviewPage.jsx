@@ -36,7 +36,8 @@ export default function ReviewPage() {
 
   return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
     {documentBusy && documentProgress && <ReviewProgress title="검수 요구사항을 정리하고 있어요."
-      message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent} onCancel={cancelDocument} />}
+      message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent}
+      startedAt={documentProgress.startedAt} onCancel={cancelDocument} />}
     {state.step === 'input' && <div hidden={documentBusy && !!documentProgress}><InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} /></div>}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}

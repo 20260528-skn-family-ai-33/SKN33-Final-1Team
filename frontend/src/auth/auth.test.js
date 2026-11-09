@@ -27,7 +27,7 @@ test('회원가입은 이름·이메일·비밀번호와 CSRF만 보내고 로�
   assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'member@example.com', display_name: '조원', password: 'synthetic-password-123' });
 });
 
-test('회원가입 입력은 확인 비밀번호와 기존 비밀번호 길이를 검증한다', () => {
+test('회원가입 입력은 비밀번호 길이와 숫자·특수문자를 검증한다', () => {
   const value = { displayName: '조원', email: 'member@example.com', password: '  password-123456  ', confirmation: '  password-123456  ' };
   assert.equal(registrationIssue(value), null);
   for (const [change, field] of [[{ displayName: '  ' }, 'name'], [{ email: 'bad' }, 'email'], [{ password: 'short' }, 'password'], [{ confirmation: 'different' }, 'confirmation']]) {
@@ -35,6 +35,12 @@ test('회원가입 입력은 확인 비밀번호와 기존 비밀번호 길이�
   }
   assert.match(registrationErrorMessage({ code: 'EMAIL_ALREADY_EXISTS', status: 409 }), /이미 가입/);
   assert.match(registrationErrorMessage({ status: 503 }), /먼저 로그인/);
+  for (const password of ['aaaaaa1!', '한글한글한글1!', 'a'.repeat(126) + '1!']) {
+    assert.equal(registrationIssue({ ...value, password, confirmation: password }), null);
+  }
+  for (const password of ['aaaaa1!', 'abcdefgh1', 'abcdefgh!', 'abcdefgh', 'a'.repeat(127) + '1!', 'aaaaaa１!']) {
+    assert.equal(registrationIssue({ ...value, password, confirmation: password }).field, 'password');
+  }
 });
 
 test('외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용하지 않는다', () => {

@@ -43,7 +43,7 @@ def test_signup_persists_argon2_user_without_session_or_membership(auth_database
 def test_duplicate_normalized_email_keeps_original_account(auth_database,client):
     payload=body();first=signup(client,payload)
     assert first.status_code==201
-    second=signup(client,{**payload,'email':' '+payload['email'].upper()+' ','password':'another-synthetic-password'})
+    second=signup(client,{**payload,'email':' '+payload['email'].upper()+' ','password':'another-synthetic-password-1'})
     assert second.status_code==409 and second.json()['error']['code']=='EMAIL_ALREADY_EXISTS'
     assert login(client,email=payload['email']).status_code==200
     assert client.get('/api/v1/auth/me').json()['user']['id']==first.json()['user']['id']

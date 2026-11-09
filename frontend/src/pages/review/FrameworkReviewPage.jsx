@@ -10,6 +10,7 @@ import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
+import FrameworkReport from './FrameworkReport.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
@@ -118,14 +119,15 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       })), ...(amendment ? [amendment] : [])] };
     const version = await command(path + '/criteria-versions', body, requestKey(JSON.stringify(body)), signal);
     setOverview({ ...overview, latest_version: version }); setExcluded([]); setReason(''); setAmendment(null);
+    return version;
   }
-  async function approveVersion(signal) {
-    const body = { criteria_version_id: latest.version.criteria_version_id, expected_sha256: latest.sha256,
+  async function approveVersion(signal, version = latest) {
+    const body = { criteria_version_id: version.version.criteria_version_id, expected_sha256: version.sha256,
       purpose: 'human_review', reviewed_all_criteria: true, reason: '표시된 기준 전체와 원문을 확인하고 승인했습니다.' };
     await command(path + '/criteria-approvals', body, requestKey(JSON.stringify(body)), signal);
     setRun(await frameworkJson(path, { signal }));
   }
-  async function registerPoster(signal) {
+  async function registerPoster(signal, version = latest, navigate = true) {
     if (!file) return;
     await requirePosterReview({ signal });
     if (uploaded.current?.file !== file) {
@@ -135,11 +137,27 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       uploaded.current = { file, id: image.id };
     }
     const revision = status === 'waiting_revision';
-    const baseline = revision ? run.baseline : { criteria_version_id: latest.version.criteria_version_id, criteria_sha256: latest.sha256 };
+    const baseline = revision ? run.baseline : { criteria_version_id: version.version.criteria_version_id, criteria_sha256: version.sha256 };
     const body = { criteria_version_id: baseline.criteria_version_id, expected_criteria_sha256: baseline.criteria_sha256,
       asset_version_id: uploaded.current.id };
     const child = await command(path + (revision ? '/poster-revisions' : '/poster-reviews'), body, requestKey(JSON.stringify(body)), signal);
-    if (!signal.aborted) openRun(child.context.run_id);
+    if (navigate && !signal.aborted) openRun(child.context.run_id);
+    return child;
+  }
+  async function approveAndStart(signal) {
+    await requirePosterReview({ signal });
+    const version = !latest || excluded.length || amendment ? await saveVersion(signal) : latest;
+    if (!version || Object.keys(version.approval_blockers).length) return;
+    await approveVersion(signal, version);
+    if (!file) return;
+    const child = await registerPoster(signal, version, false);
+    try {
+      await command('/runs/' + encodeURIComponent(child.context.run_id) + '/approvals', {
+        context: child.context, actor_id: child.context.actor_id, decision: 'approve_criteria', reason: '',
+      }, null, signal);
+    } finally {
+      if (!signal.aborted) openRun(child.context.run_id);
+    }
   }
   async function decide(decision, signal) {
     if (decision === 'approve_criteria') await requirePosterReview({ signal });
@@ -151,6 +169,15 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     setRun(snapshot); setReason(''); setHumanReviews({});
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
+
+  const reviewingDraft = sourceDraft && Boolean(overview);
+  const registeringPoster = status === 'waiting_asset';
+  const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
+  const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
+  const actionError = error && <>
+    <ErrorMessage message={error} />
+    <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
+  </>;
 
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing} topbarLocked={busy} showConnection={false}
@@ -173,15 +200,34 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
             <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
         </>}
-        actions={sourceDraft && overview && <div className="rv-actionbar rv-criteria-actionbar">
-          <div className="rv-criteria-action-context">{excluded.length > 0 ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label> : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요.</p>}</div>
-          <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
-            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <p role="status">승인 전 보완하거나 사유를 적어 제외할 항목: {Object.keys(latest.approval_blockers).join(', ')}</p> : <button className="rv-button primary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+        actions={hasCriteriaActions && <section aria-label="검수 다음 단계" className="rv-actionbar rv-criteria-actionbar">
+          <div className="rv-criteria-action-context">
+            {reviewingDraft && (excluded.length > 0
+              ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>
+              : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요. 검수 시작을 누르면 기준 승인과 포스터 등록이 함께 진행됩니다.</p>)}
+            {registeringPoster && <>
+              <p>기준이 승인됐어요. 검수할 포스터를 등록해 주세요.</p>
+              <label>검수 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
+                disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
+              {file && <p>{file.name}</p>}
+            </>}
+            {readyToStart && <p>승인된 기준과 등록한 포스터를 확인한 뒤 검수를 시작할 수 있어요.</p>}
+            {actionError}
           </div>
-        </div>}>
+          {reviewingDraft && (
+            <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
+            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>검수 전에 보완하거나 사유를 적어 제외할 항목</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+            {(!latest || excluded.length > 0 || amendment || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart)}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
+            </div>
+          )}
+          {registeringPoster && <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
+            onClick={() => perform(registerPoster)}>승인 기준에 포스터 등록</button>}
+          {readyToStart && <button className="rv-button primary" disabled={busy}
+            onClick={() => perform(signal => decide('approve_criteria', signal))}>이 포스터와 기준을 확인하고 검수 시작</button>}
+        </section>}>
           <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
-            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}`}>
+            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
               <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
                 checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
               <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
@@ -211,19 +257,15 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       {!processing && (!hasResults || showActions) && <section className="rv-panel rv-framework-actions" aria-label="검수 진행과 담당자 승인">
-      {(status === 'waiting_asset' || status === 'waiting_revision') && <>
-        <label>{status === 'waiting_revision' ? '수정 포스터' : '검수 포스터'} <input type="file" accept="image/png,image/jpeg,image/webp"
+      {status === 'waiting_revision' && <>
+        <label>수정 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
           disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
         {file && <p>{file.name}</p>}
         <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
-          onClick={() => perform(registerPoster)}>{status === 'waiting_revision' ? '수정본 재검수 접수' : '승인 기준에 포스터 등록'}</button>
+          onClick={() => perform(registerPoster)}>수정본 재검수 접수</button>
       </>}
-      {status === 'waiting_criteria' && run.baseline && <button className="rv-button primary" disabled={busy}
-        onClick={() => perform(signal => decide('approve_criteria', signal))}>이 포스터와 기준을 확인하고 검수 시작</button>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
-      {run?.report && <section><h2>검수 보고서</h2><p>기계 판정 · {verdicts[run.machine_verdict]}</p>
-        <p style={{ whiteSpace: 'pre-wrap' }}>{run.report.summary}</p>
-        <ul>{run.report.change_requests.map((item, i) => <li key={i}>{item}</li>)}</ul></section>}
+      {run?.report && <FrameworkReport run={run} projectName={projectName} />}
       {status === 'waiting_review' && <>
         {reviewItems.length > 0 && <form ref={humanReviewForm} onSubmit={e => e.preventDefault()}>
           <HumanReview items={reviewItems} values={humanReviews} onChange={setHumanReviews} disabled={busy} />
@@ -238,8 +280,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         <h3>담당자 확인 · {item.criterion_id} · {verdicts[item.verdict]}</h3>
         <p>{item.observed}</p><p>근거: {item.reference} · 사유: {item.reason}</p><p>검토자: {approval.actor_id}</p>
       </section>))}
-      <ErrorMessage message={error} />
-      {error && <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>}
+      {!hasCriteriaActions && actionError}
       {!hasResults && <button className="text-btn" disabled={busy} onClick={onNew}>새 검수</button>}
       {run && <details className="rv-framework-record"><summary>실행·기준 이력</summary><p>실행 {runId}</p>
         {run.baseline && <p>승인 기준 {run.baseline.criteria_version_id} · 포스터 버전 {run.context.asset_version_id}</p>}

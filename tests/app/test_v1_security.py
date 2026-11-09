@@ -85,7 +85,7 @@ def test_invalid_credentials_have_no_fallback_and_hide_input(body):
 
 def test_password_is_preserved_and_real_argon2_costs_no_downgrade():
     from argon2 import PasswordHasher,extract_parameters,Type
-    passwords=Passwords();value='  한글 비밀번호 123456  '
+    passwords=Passwords();value='  한글 비밀번호 123456!  '
     encoded=passwords.hash(value);parameters=extract_parameters(encoded)
     assert (parameters.type,parameters.memory_cost,parameters.time_cost,parameters.parallelism)==(Type.ID,19456,2,1)
     assert passwords.verify(value,encoded)==(True,None)
@@ -95,6 +95,9 @@ def test_password_is_preserved_and_real_argon2_costs_no_downgrade():
     good,upgraded=passwords.verify(value,weak);assert good and upgraded and extract_parameters(upgraded).memory_cost==19456
     strong=PasswordHasher(memory_cost=24576,time_cost=3,parallelism=1).hash(value)
     assert passwords.verify(value,strong)==(True,None)
+    legacy='previous password without digits'
+    assert passwords.verify(legacy,PasswordHasher().hash(legacy))[0]
+    assert validate_password(legacy)==legacy
     assert validate_password('admin')=='admin'
     with pytest.raises(AuthError):validate_password('admin',issuing=True)
 

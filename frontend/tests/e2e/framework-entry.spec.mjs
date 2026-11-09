@@ -12,11 +12,11 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close());
-  for (const mode of ['text', 'pdf', 'edited_pdf', 'not_ready']) {
+  for (const mode of ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'not_ready']) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
-    let allowDocumentResult = mode !== 'pdf', allowReviewResult = false;
+    let allowDocumentResult = mode !== 'pdf', allowReviewResult = false, allowReviewStages = false;
     let configured = mode !== 'not_ready';
     const context = { run_id: 'draft', project_id: 'project', actor_id: 'user' };
     const criterion = { criterion_id: 'title', text: '행사명은 봄', kind: 'text', operator: 'contains',
@@ -45,7 +45,8 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       else if (path.endsWith('/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
       else if (path.endsWith('/criteria-versions')) {
         assert.equal(request.postDataJSON().purpose, 'human_review');
-        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
+        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256,
+          approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true); approved = true; body = {};
@@ -65,8 +66,9 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
         ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, criterion_text: criterion.text,
           observed: '여름', verdict: 'fail', issues: ['value_mismatch'], image: { asset_version_id: 'image', bbox: [.1, .1, .8, .3] } }] },
-          step_records: [{ role: 'A04_A05', status: 'completed' }, { role: 'A06', status: 'completed' },
-            { role: 'A07', status: allowReviewResult ? 'completed' : 'running' }],
+          step_records: [{ role: 'A04_A05', status: allowReviewStages ? 'completed' : 'running' },
+            { role: 'A06', status: allowReviewStages ? 'completed' : 'pending' },
+            { role: 'A07', status: allowReviewResult ? 'completed' : allowReviewStages ? 'running' : 'pending' }],
           ...(allowReviewResult ? { report: { summary: 'A07 보고: 행사명이 기준과 다릅니다.', change_requests: ['행사명을 봄으로 수정해 주세요.'] } } : {}) } : {}) };
       else throw new Error('unexpected test route: ' + path);
       await route.fulfill({ json: body });
@@ -120,32 +122,55 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
       assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄' }]);
       assert.equal(reviewed, false);
-      await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
-      await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
-      if (mode === 'text') {
+      if (mode === 'blocker') {
+        await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
+        await page.getByRole('button', { name: 'title 확인하기', exact: true }).click();
+        assert.equal(approved, false);
+        assert.equal(uploads, 0);
+        assert.equal(reviewed, false);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
+      if (mode !== 'direct') {
+        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
+        await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
+      }
+      const nextStep = page.getByRole('region', { name: '검수 다음 단계' });
+      const registerPoster = nextStep.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true });
+      const startReview = nextStep.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true });
+      if (mode === 'direct') {
+        await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
+      } else if (mode === 'text') {
         configured = false;
-        await page.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true }).click();
+        await registerPoster.click();
         await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
         assert.equal(uploads, 0);
         configured = true;
       }
-      await page.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true }).click();
+      if (mode !== 'direct') await registerPoster.click();
       if (mode === 'text') {
         configured = false;
-        await page.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true }).click();
+        await startReview.click();
         await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
         assert.equal(reviewed, false);
         configured = true;
       }
-      await page.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true }).click();
+      if (mode !== 'direct') await startReview.click();
       await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();
+      await page.locator('.rv-progress-fill.is-unknown .rv-progress-shine').waitFor();
+      assert.equal(await progress.getAttribute('aria-valuenow'), null);
+      await page.getByText('세부 진행률 확인 불가', { exact: true }).waitFor();
+      allowReviewStages = true;
       await page.waitForFunction(() => document.querySelector('.rv-progress-track')?.getAttribute('aria-valuenow') === '67');
       await page.waitForFunction(() => {
         const bar = document.querySelector('.rv-progress-track');
         return bar && Math.abs(bar.firstElementChild.getBoundingClientRect().width - bar.clientWidth * .67) < 2;
       });
+      assert.equal(await progress.locator('.rv-progress-shine').count(), 1);
+      assert.equal(await progress.locator('.rv-progress-fill').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 23, 23)');
       assert.equal(await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
       if (mode === 'pdf' && process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
         await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/poster-progress.png', fullPage: true });
@@ -159,14 +184,20 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.ok(columns[0].right <= columns[1].left && columns[1].right <= columns[2].left, 'list, poster and evidence must form three columns');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
+      await page.getByRole('heading', { name: '조건별 결과·근거', exact: true }).waitFor();
+      assert.equal(await page.getByText('여름', { exact: true }).count(), 1);
+      await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
+      await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
       await page.getByRole('button', { name: '검수 결과로 돌아가기', exact: true }).click();
       await page.getByRole('button', { name: '기준 다시 확인하기', exact: true }).click();
       await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
       assert.equal(await page.getByRole('button', { name: '기준 보완', exact: true }).count(), 0, 'approved criteria stay read-only');
       await page.reload();
       await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
     }
     assert.deepEqual(legacy, [], mode); assert.deepEqual(errors, [], mode);

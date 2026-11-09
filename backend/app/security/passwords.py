@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from threading import BoundedSemaphore
 import secrets
+import string
 from .errors import AuthError
 
 
@@ -15,7 +16,9 @@ def normalize_email(value):
 
 
 def validate_password(value,*,issuing=False):
-    if not isinstance(value,str) or '\x00' in value or not (15 if issuing else 1)<=len(value)<=128:
+    if not isinstance(value,str) or '\x00' in value or not (8 if issuing else 1)<=len(value)<=128:
+        raise AuthError('INVALID_AUTH_REQUEST',422)
+    if issuing and (not any('0'<=c<='9' for c in value) or not any(c in string.punctuation for c in value)):
         raise AuthError('INVALID_AUTH_REQUEST',422)
     try:value.encode('utf-8')
     except UnicodeEncodeError:raise AuthError('INVALID_AUTH_REQUEST',422) from None
