@@ -83,12 +83,13 @@ def missing_text(missing: list[int], total: int) -> str:
 def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: bool = False,
                       authenticate: Callable[[Request], object] | None = None,
                       allowed_hosts: tuple[str, ...] | None = None,
-                      candidates: Callable | None = None, comparer: Callable | None = None) -> APIRouter:
+                      candidates: Callable | None = None, comparer: Callable | None = None,
+                      isolate_users: bool = False, linked_reviews: Path | None = None) -> APIRouter:
     """candidates·comparer는 테스트에서 실제 모델 대신 주입한다."""
     if not readonly:
         root.mkdir(parents=True, exist_ok=True)
     lock = threading.RLock()
-    for path in (() if readonly else root.glob("*/result.json")):  # 재시작 전에 돌던 작업은 실패로 남긴다
+    for path in (() if readonly else root.glob("*/*/result.json" if isolate_users else "*/result.json")):
         try:
             value = _read_json(path)
             changed = False
@@ -114,13 +115,16 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
 
     router = APIRouter(prefix="/api/video-logos", dependencies=[Depends(guard)])
 
-    def directory(job_id: str) -> Path:
+    def owner_root(request: Request) -> Path:
+        return root / request.state.video_owner if isolate_users else root
+
+    def directory(request: Request, job_id: str) -> Path:
         try:
             if str(UUID(job_id)) != job_id:
                 raise ValueError
         except ValueError:
             raise HTTPException(404, "영상 로고 작업을 찾을 수 없습니다.") from None
-        target = root / job_id
+        target = owner_root(request) / job_id
         if not (target / "result.json").is_file():
             raise HTTPException(404, "영상 로고 작업을 찾을 수 없습니다.")
         return target
@@ -218,10 +222,10 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
         return {"ready": ready and not readonly, "detail": detail if not readonly else "읽기 전용 모드입니다."}
 
     @router.get("")
-    def listing(review_id: str | None = None):
+    def listing(request: Request, review_id: str | None = None):
         """review_id를 주면 그 동영상 검수와 함께 올린 로고 작업만 돌려준다."""
         jobs = []
-        for path in root.glob("*/result.json"):
+        for path in owner_root(request).glob("*/result.json"):
             try:
                 v = _read_json(path)
             except (OSError, ValueError):
@@ -234,7 +238,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
 
     if not readonly:
         @router.post("", status_code=202)
-        async def submit(background: BackgroundTasks, video: UploadFile = File(...), logos: list[UploadFile] = File(...),
+        async def submit(request: Request, background: BackgroundTasks, video: UploadFile = File(...), logos: list[UploadFile] = File(...),
                          logo_texts: str = Form("[]"), title: str = Form("영상 로고 검수", min_length=1, max_length=120),
                          review_id: str | None = Form(None)):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분, 예: "울산광역시남구|ULSAN METROPOLITAN NAMGU"). 비우면 문자 비교를 하지 않는다.
@@ -245,6 +249,10 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                         raise ValueError
                 except ValueError:
                     raise HTTPException(422, "review_id가 올바르지 않습니다.") from None
+                if linked_reviews is not None:
+                    review = linked_reviews / request.state.video_owner / review_id / "result.json"
+                    if not review.is_file():
+                        raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
             if not 1 <= len(logos) <= MAX_LOGOS:
                 raise HTTPException(422, f"원본 로고는 1~{MAX_LOGOS}장입니다.")
             try:
@@ -256,7 +264,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             suffix = Path(video.filename or "").suffix.lower()
             if suffix not in VIDEO_SUFFIXES:
                 raise HTTPException(422, "지원하는 영상 형식이 아닙니다.")
-            job_id = str(uuid4()); target = root / job_id; (target / "refs").mkdir(parents=True)
+            job_id = str(uuid4()); target = owner_root(request) / job_id; (target / "refs").mkdir(parents=True)
             try:  # 검증에 걸리면 반쯤 만든 작업 폴더를 남기지 않는다
                 size = 0
                 with open(target / f"video{suffix}", "wb") as fh:
@@ -285,10 +293,10 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             return {"id": job_id, "status": "queued"}
 
         @router.post("/{job_id}/compare", status_code=202)
-        def compare(job_id: str, background: BackgroundTasks, answers: list[dict] = Body(...)):
+        def compare(request: Request, job_id: str, background: BackgroundTasks, answers: list[dict] = Body(...)):
             """확정 화면이 내려받는 정답 값(원본 로고마다 {logo, reference, decision, crops})의 목록을 받는다.
             logo는 원본 로고 번호(업로드 순서)다. 파일 이름이 같은 로고가 있어도 번호로 구분한다."""
-            target = directory(job_id); meta = _read_json(target / "result.json")
+            target = directory(request, job_id); meta = _read_json(target / "result.json")
             if meta.get("status") != "candidates_ready":
                 raise HTTPException(409, "후보 찾기가 끝난 뒤에 정밀 대조를 실행할 수 있습니다.")
             if meta.get("compare_status") == "running":
@@ -311,49 +319,49 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             return {"id": job_id, "compare_status": "queued"}
 
     @router.get("/{job_id}")
-    def get_job(job_id: str):
-        meta = _read_json(directory(job_id) / "result.json")
+    def get_job(request: Request, job_id: str):
+        meta = _read_json(directory(request, job_id) / "result.json")
         return {k: v for k, v in meta.items() if k != "video_file"}
 
     @router.get("/{job_id}/index.json")
-    def index(job_id: str):
-        target = directory(job_id); meta = _read_json(target / "result.json")
+    def index(request: Request, job_id: str):
+        target = directory(request, job_id); meta = _read_json(target / "result.json")
         if not (target / "data.json").is_file():
             raise HTTPException(404, "후보가 아직 없습니다.")
         return [{"key": VIDEO_KEY, "title": meta["title"], "refs": [r["name"] for r in meta["logos"]], "seconds": meta.get("seconds", 0),
                  "missing": len(meta.get("missing_seconds", []))}]
 
     @router.get(f"/{{job_id}}/{VIDEO_KEY}/data.json")
-    def data(job_id: str):
-        path = directory(job_id) / "data.json"
+    def data(request: Request, job_id: str):
+        path = directory(request, job_id) / "data.json"
         if not path.is_file():
             raise HTTPException(404, "후보가 아직 없습니다.")
         return _read_json(path)
 
     @router.get(f"/{{job_id}}/{VIDEO_KEY}/f/{{sec}}.jpg")
-    def frame(job_id: str, sec: int):
-        path = directory(job_id) / "frames" / "f" / f"{sec}.jpg"
+    def frame(request: Request, job_id: str, sec: int):
+        path = directory(request, job_id) / "frames" / "f" / f"{sec}.jpg"
         if not path.is_file():
             raise HTTPException(404, "프레임이 없습니다.")
         return FileResponse(path, media_type="image/jpeg")
 
     @router.get("/{job_id}/refs/{index_no}.png")
-    def ref_image(job_id: str, index_no: int):
-        path = directory(job_id) / "refs" / f"{index_no}.png"
+    def ref_image(request: Request, job_id: str, index_no: int):
+        path = directory(request, job_id) / "refs" / f"{index_no}.png"
         if not path.is_file():
             raise HTTPException(404, "원본 로고가 없습니다.")
         return FileResponse(path, media_type="image/png")
 
     @router.get("/{job_id}/compare")
-    def compare_result(job_id: str):
-        target = directory(job_id); meta = _read_json(target / "result.json")
+    def compare_result(request: Request, job_id: str):
+        target = directory(request, job_id); meta = _read_json(target / "result.json")
         body = _read_json(target / "compare.json") if (target / "compare.json").is_file() else {"bundles": []}
         return {"compare_status": meta.get("compare_status"), "compare_progress": meta.get("compare_progress"),
                 "compare_error": meta.get("compare_error"), **body}
 
     @router.get("/{job_id}/compare/rep/{logo}/{crop}.jpg")
-    def representative(job_id: str, logo: int, crop: int):
-        path = directory(job_id) / "frames" / f"rep_{logo}_{crop}.jpg"
+    def representative(request: Request, job_id: str, logo: int, crop: int):
+        path = directory(request, job_id) / "frames" / f"rep_{logo}_{crop}.jpg"
         if not path.is_file():
             raise HTTPException(404, "대표 프레임이 없습니다.")
         return FileResponse(path, media_type="image/jpeg")

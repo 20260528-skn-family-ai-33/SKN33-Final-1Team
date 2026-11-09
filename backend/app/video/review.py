@@ -267,9 +267,9 @@ def load_role_weights():
     return roles.LogRegWeights.load(configured), "logreg"
 
 
-def recover_jobs(root: Path) -> None:
+def recover_jobs(root: Path, *, isolate_users: bool = False) -> None:
     """프로세스 안에서만 도는 작업이라, 재시작 전 대기·실행 중이던 작업을 실패로 닫는다."""
-    for path in root.glob("*/result.json"):
+    for path in root.glob("*/*/result.json" if isolate_users else "*/result.json"):
         try:
             value = _read_json(path)
             if value.get("status") in {"queued", "running"}:
@@ -454,7 +454,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                         logo_review: Callable[[list[dict], Path], dict] | None = None,
                         logo_readiness: Callable[[], tuple[bool, str]] | None = None,
                         authenticate: Callable[[Request], object] | None = None,
-                        allowed_hosts: tuple[str, ...] | None = None) -> APIRouter:
+                        allowed_hosts: tuple[str, ...] | None = None,
+                        isolate_users: bool = False) -> APIRouter:
     """ocr·readiness·logo_*는 테스트에서 실제 모델 대신 주입한다. authenticate는 로컬 로그인 세션 확인 함수다."""
 
     def guard(request: Request) -> None:
@@ -479,13 +480,16 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
     admission, reserved = threading.Lock(), [0]  # 동시 제출이 한도 검사를 함께 통과하지 않게 자리를 예약한다
     policy = limits()
 
-    def directory(job_id: str) -> Path:
+    def owner_root(request: Request) -> Path:
+        return root / request.state.video_owner if isolate_users else root
+
+    def directory(request: Request, job_id: str) -> Path:
         try:
             if str(UUID(job_id)) != job_id:
                 raise ValueError
         except ValueError:
             raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.") from None
-        target = root / job_id
+        target = owner_root(request) / job_id
         if not (target / "result.json").is_file():
             raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
         return target
@@ -516,7 +520,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
 
     def active_jobs() -> int:
         count = 0
-        for path in root.glob("*/result.json"):
+        for path in root.glob("*/*/result.json" if isolate_users else "*/result.json"):
             try:
                 count += _read_json(path).get("status") in {"queued", "running"}
             except (OSError, ValueError):
@@ -556,9 +560,9 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return status()
 
     @router.get("")
-    def listing():
+    def listing(request: Request):
         jobs = []
-        for path in root.glob("*/result.json"):
+        for path in owner_root(request).glob("*/result.json"):
             try:
                 value = _read_json(path)
             except (OSError, ValueError):
@@ -599,13 +603,14 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     await logo.close()
                 raise
             try:  # 예약한 자리는 queued 결과를 쓴 뒤(그때부터 active_jobs가 센다) 또는 거부 뒤 돌려준다
-                return await accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo)
+                return await accept(owner_root(request), background_tasks, video, frozen, criteria_version,
+                                    project_name, ad, logo)
             finally:
                 await run_in_threadpool(release)
 
-        async def accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo):
+        async def accept(account_root, background_tasks, video, frozen, criteria_version, project_name, ad, logo):
             job_id = str(uuid4())
-            target = root / job_id
+            target = account_root / job_id
             target.mkdir(parents=True)
             source = target / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
@@ -662,14 +667,14 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             return {"id": job_id, "status": "queued"}
 
     @router.get("/{job_id}")
-    def get_job(job_id: str):
+    def get_job(request: Request, job_id: str):
         with lock:
-            return _read_json(directory(job_id) / "result.json")
+            return _read_json(directory(request, job_id) / "result.json")
 
     @router.get("/{job_id}/video")
-    def video_file(job_id: str):
+    def video_file(request: Request, job_id: str):
         """구간 이동을 위해 Range 요청에 206으로 답한다. AVI 등은 재생용 MP4를 만들어 두면 그걸 내보낸다."""
-        target = directory(job_id)
+        target = directory(request, job_id)
         media = _read_json(target / "media.json")
         playback = target / "playback.mp4"
         if playback.is_file():
@@ -677,8 +682,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return FileResponse(target / "original.bin", media_type=CONTAINER_MIME.get(media["container"], "application/octet-stream"))
 
     @router.get("/{job_id}/frames/{frame_id}")
-    def frame(job_id: str, frame_id: str):
-        path = directory(job_id) / "frames" / f"{frame_id}.jpg"
+    def frame(request: Request, job_id: str, frame_id: str):
+        path = directory(request, job_id) / "frames" / f"{frame_id}.jpg"
         if not FRAME_ID.match(frame_id) or not path.is_file():
             raise HTTPException(404, "프레임을 찾을 수 없습니다.")
         return FileResponse(path, media_type="image/jpeg")
