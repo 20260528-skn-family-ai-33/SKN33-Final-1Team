@@ -109,13 +109,17 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     catch (err) { if (!controller.signal.aborted) setError(err.code && err.code !== 'http_error' ? err.message + ' (' + err.code + ')' : err.message); }
     finally { if (!controller.signal.aborted) { active.current = null; setBusy(false); } }
   }
-  async function saveVersion(signal) {
+  async function saveVersion(signal, base = latest, unresolvedIds = []) {
     if (amendment && !amendmentForm.current.reportValidity()) return;
-    const body = { parent_version_id: latest?.version.criteria_version_id || null,
-      expected_base_sha256: latest?.sha256 || overview.source_draft_sha256, purpose: 'human_review',
+    const unresolvedReason = '담당자가 확인 필요 항목을 제외하고 검수를 시작했습니다.';
+    const body = { parent_version_id: base?.version.criteria_version_id || null,
+      expected_base_sha256: base?.sha256 || overview.source_draft_sha256, purpose: 'human_review',
       edits: [...criteria.filter(c => excluded.includes(c.criterion_id)).map(c => ({
         action: 'exclude', criterion_id: c.criterion_id, reason: reason.trim(),
         source: { reference: '담당자 기준 검토', quote: reason.trim() },
+      })), ...unresolvedIds.filter(id => !excluded.includes(id)).map(id => ({
+        action: 'exclude', criterion_id: id, reason: unresolvedReason,
+        source: { reference: '담당자 검수 시작 선택', quote: unresolvedReason },
       })), ...(amendment ? [amendment] : [])] };
     const version = await command(path + '/criteria-versions', body, requestKey(JSON.stringify(body)), signal);
     setOverview({ ...overview, latest_version: version }); setExcluded([]); setReason(''); setAmendment(null);
@@ -144,9 +148,12 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     if (navigate && !signal.aborted) openRun(child.context.run_id);
     return child;
   }
-  async function approveAndStart(signal) {
+  async function approveAndStart(signal, excludeUnresolved = false) {
     await requirePosterReview({ signal });
-    const version = !latest || excluded.length || amendment ? await saveVersion(signal) : latest;
+    let version = !latest || excluded.length || amendment ? await saveVersion(signal) : latest;
+    if (excludeUnresolved && version && Object.keys(version.approval_blockers).length) {
+      version = await saveVersion(signal, version, Object.keys(version.approval_blockers));
+    }
     if (!version || Object.keys(version.approval_blockers).length) return;
     await approveVersion(signal, version);
     if (!file) return;
@@ -216,7 +223,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
           </div>
           {reviewingDraft && (
             <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion)}>검토한 기준 버전 저장</button>}
-            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>검수 전에 보완하거나 사유를 적어 제외할 항목</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
+            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}<button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true))}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion)}>이 버전의 전체 기준 승인</button>)}
             {(!latest || excluded.length > 0 || amendment || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart)}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
             </div>
           )}
