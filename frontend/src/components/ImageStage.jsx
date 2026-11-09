@@ -5,8 +5,9 @@ import { imageStageSize, imageStageBounds, evidenceLabelOnRight, canShowImageEvi
 import '../styles/image-stage.css';
 
 // Evidence and image share one sized surface at every zoom level.
+// viewKey(선택): 같은 이미지에서 호출한 화면이 다른 항목을 고르면 확대를 '화면에 맞춤'으로 되돌린다.
 export default function ImageStage({ src, alt = '검수 이미지', title = '검수 이미지', subtitle = '', width, height,
-  overlays = [], selectedOverlayId, onOverlaySelect, empty, children }) {
+  overlays = [], selectedOverlayId, onOverlaySelect, empty, viewKey, children }) {
   const viewport = useRef(null);
   const drag = useRef(null);
   const [bounds, setBounds] = useState({ width: 600, height: 620 });
@@ -20,7 +21,8 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
   const ready = Boolean(src && natural?.src === src);
   const size = imageStageSize(ready ? natural.width : width, ready ? natural.height : height, bounds.width, bounds.height, zoom);
   const safeEvidence = ready && canShowImageEvidence(natural.width, natural.height, width, height);
-  useEffect(() => { setView({ zoom: 'fit', target: null }); setFailed(false); drag.current = null; setPanning(false); }, [src]);
+  useEffect(() => { setView({ zoom: 'fit', target: null }); drag.current = null; setPanning(false); }, [src, viewKey]);
+  useEffect(() => { setFailed(false); }, [src]);
   useEffect(() => {
     const element = viewport.current;
     // contentRect is fractional and excludes scrollbars; the first callback arrives before paint.
@@ -83,12 +85,12 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
             <img src={src} alt={alt} draggable={false} onLoad={event => setNatural({ src, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} onError={() => setFailed(true)} />
             {safeEvidence && showEvidence && overlays.map((overlay, index) => {
               const style = evidenceBoxStyle(overlay.bbox_xyxy, natural.width, natural.height);
-              return style ? <button type="button" key={`${overlay.id}-${index}`} data-testid="evidence-box" className={`image-stage-box ${selectedOverlayId === overlay.id ? 'is-selected' : ''} ${evidenceLabelOnRight(overlay.bbox_xyxy, natural.width) ? 'is-right' : ''}`} style={style} aria-label={`근거 영역: ${overlay.text || overlay.label || index + 1}`} aria-pressed={selectedOverlayId === overlay.id} onClick={() => onOverlaySelect?.(overlay.id)}><span>{overlay.label || String(index + 1).padStart(2, '0')}</span></button> : null;
+              return style ? <button type="button" key={`${overlay.id}-${index}`} data-testid="evidence-box" className={`image-stage-box ${overlay.tone ? `is-${overlay.tone}` : ''} ${selectedOverlayId === overlay.id ? 'is-selected' : ''} ${evidenceLabelOnRight(overlay.bbox_xyxy, natural.width) ? 'is-right' : ''}`} style={style} aria-label={overlay.ariaLabel || `근거 영역: ${overlay.text || overlay.label || index + 1}`} aria-pressed={selectedOverlayId === overlay.id} onClick={() => onOverlaySelect?.(overlay.id)}><span>{overlay.label || String(index + 1).padStart(2, '0')}</span></button> : null;
             })}
           </div>
         </div>}
     </div>
-    <div className="image-stage-toolbar"><div className="image-stage-zoom"><button type="button" aria-label="이미지 축소" disabled={!src || failed} onClick={() => changeZoom(-1)}>−</button><select aria-label="이미지 확대 비율" value={zoom} disabled={!src || failed} onChange={event => setZoom(event.target.value === 'fit' ? 'fit' : Number(event.target.value))}><option value="fit">화면에 맞춤</option>{zoom !== 'fit' && !zoomStops.includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}% · 근거</option>}{zoomStops.map(value => <option key={value} value={value}>{value * 100}%</option>)}</select><button type="button" aria-label="이미지 확대" disabled={!src || failed} onClick={() => changeZoom(1)}>+</button></div><div className="image-stage-tools">{overlays.length > 0 && <button type="button" className="image-stage-focus" disabled={!focusView || failed} onClick={focusEvidence}><Icon name="search" />선택 근거 확대</button>}<button type="button" className="image-stage-evidence-toggle" aria-pressed={showEvidence} disabled={!safeEvidence || !overlays.length} onClick={() => setShowEvidence(value => !value)}><Icon name={showEvidence ? 'eye' : 'eyeOff'} />근거 표시</button></div></div>
+    <div className="image-stage-toolbar"><div className="image-stage-zoom"><button type="button" aria-label="이미지 축소" disabled={!src || failed} onClick={() => changeZoom(-1)}>−</button><select aria-label="이미지 확대 비율" value={zoom} disabled={!src || failed} onChange={event => setZoom(event.target.value === 'fit' ? 'fit' : Number(event.target.value))}><option value="fit">화면에 맞춤</option>{zoom !== 'fit' && !zoomStops.includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}% · 근거</option>}{zoomStops.map(value => <option key={value} value={value}>{value * 100}%</option>)}</select><button type="button" aria-label="이미지 확대" disabled={!src || failed} onClick={() => changeZoom(1)}>+</button></div><div className="image-stage-tools">{overlays.length > 0 && <button type="button" className="image-stage-focus" title="선택 근거 확대" disabled={!focusView || failed} onClick={focusEvidence}><Icon name="search" />선택 근거 확대</button>}<button type="button" className="image-stage-evidence-toggle" title="근거 표시" aria-pressed={showEvidence} disabled={!safeEvidence || !overlays.length} onClick={() => setShowEvidence(value => !value)}><Icon name={showEvidence ? 'eye' : 'eyeOff'} />근거 표시</button></div></div>
     {ready && !safeEvidence && overlays.length > 0 && <p className="image-stage-warning" role="status">원본 이미지와 근거의 크기가 달라 위치 표시를 생략했습니다.</p>}
     {children && <div className="image-stage-extra">{children}</div>}
   </section>;

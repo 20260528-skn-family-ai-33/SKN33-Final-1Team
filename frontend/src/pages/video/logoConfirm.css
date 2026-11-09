@@ -368,34 +368,6 @@
 .vl-empty { padding: 28px; color: #4d6077; }
 .vl-empty p { margin-top: 6px; color: var(--vl-muted); font-size: 11px; }
 
-/* 원본 로고 입력과 작업 카드 */
-.lf-inputs { min-width: 0; border: 1px solid #dfe7f0; border-radius: 12px; padding: 13px 14px 12px; background: #fbfcfe; }
-.lf-inputs legend { padding: 0 5px; color: #344861; font-size: 12px; font-weight: 850; }
-.lf-input-row { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 7px 0; border-bottom: 1px solid #e9eef4; }
-.lf-input-row:last-of-type { border-bottom: 0; }
-.lf-input-row img { width: 54px; height: 42px; object-fit: contain; border: 1px solid #e3e9f0; border-radius: 7px; background: #fff; }
-.lf-input-row label { display: grid; gap: 3px; min-width: 0; color: #445870; font-size: 10px; font-weight: 750; }
-.lf-input-row input { min-height: 33px; padding: 6px 8px; border-color: #dce4ed; border-radius: 7px; font-size: 10px; }
-.lf-input-row .btn { min-height: 31px; padding: 5px 9px; font-size: 9px; }
-.lf-add { position: relative; min-height: 34px!important; margin: 9px 0 0; padding: 7px 10px!important; border-radius: 8px!important; font-size: 10px!important; }
-.lf-add input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.lf-inputs > .help { margin: 7px 0 0; color: #7d8a9b; font-size: 9px; line-height: 1.5; }
-.lf-flow-card { margin: 14px 0 20px; padding: 17px; border: 1px solid #dce5ef; border-radius: 14px; background: #fff; box-shadow: 0 8px 28px rgba(26, 53, 88, .045); }
-.lf-flow-card > .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 0 11px; border: 0; }
-.lf-flow-card .card-heading h2 { font-size: 14px; }
-.lf-flow-card .card-heading .pill { padding: 5px 8px; font-size: 9px; }
-.lf-flow-jobs { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.lf-flow-jobs > li { display: grid; gap: 7px; padding: 11px; border: 1px solid #e6ecf3; border-radius: 10px; background: #fbfcfe; }
-.lf-flow-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.lf-flow-head strong { margin-right: auto; font-size: 11px; }
-.lf-flow-jobs .progress-track { height: 6px; overflow: hidden; border-radius: 99px; background: #e9eef5; }
-.lf-flow-jobs .progress-track > div { height: 100%; border-radius: inherit; background: #171717; }
-.lf-flow-jobs .help { margin: 0; color: #78879a; font-size: 9px; }
-.lf-flow-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.lf-flow-actions .btn { min-height: 32px; padding: 6px 10px; font-size: 9px; }
-.lf-missing { margin: 0; padding: 8px 10px; border-radius: 8px; color: #785516; background: #fff7e4; font-size: 9px; line-height: 1.5; }
-.lf-flow-card .error { margin: 0; font-size: 10px; }
-
 @media (max-width: 1160px) {
   .vl-layout { grid-template-columns: 210px minmax(0, 1fr); }
   .vl-review-grid { grid-template-columns: minmax(0, 1.15fr) minmax(250px, .85fr); }
@@ -470,9 +442,6 @@
   .vl-evidence-images figure img { height: 100px; }
   .vl-evidence-summary { grid-column: 1 / -1; }
   .vl-evidence-table th, .vl-evidence-table td { padding: 7px; }
-  .lf-input-row { grid-template-columns: 43px minmax(0, 1fr); }
-  .lf-input-row img { width: 43px; height: 36px; }
-  .lf-input-row button { grid-column: 2; justify-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .vl-page *, .vl-page *::before, .vl-page *::after { transition: none!important; scroll-behavior: auto!important; }
