@@ -133,7 +133,7 @@ class RereviewAgent:
         child = read_fact(self.tools, 'get_run', {'run_id': child_run_id})
         compared, resolved, unresolved, new = compare_verdicts(parent, child)
         _consistent(draft, resolved, unresolved, new)
-        summary = (' '.join(f'{label} {len(ids)}건' + (f"({', '.join(ids)})" if ids else '') + '.'
+        summary = (' '.join(f'{label} {len(ids)}건.'
                             for label, ids in (('해결', resolved), ('미해결', unresolved), ('새 위반', new)))
                    if compared else f"자식 실행이 {child['execution_status']} 상태라 비교할 검증 결과가 아직 없습니다.")
         return RereviewSummary(parent_run_id=parent_run_id, child_run_id=child_run_id,
