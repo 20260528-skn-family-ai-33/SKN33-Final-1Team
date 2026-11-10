@@ -124,6 +124,13 @@
 .rv-workspace .rv-criteria-source details { min-width: 0; flex: 1; }
 .rv-workspace .rv-criteria-source summary { cursor: pointer; }
 .rv-workspace .rv-criteria-source p { font-size: 11px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 10px; }
+.rv-workspace .rv-criteria-rejections { padding: 16px 20px; background: #f8f6f1; overflow-wrap: anywhere; }
+.rv-workspace .rv-criteria-rejections h3 { margin: 0 0 5px; font-size: 13px; }
+.rv-workspace .rv-criteria-rejections p { margin: 4px 0 0; font-size: 12px; }
+.rv-workspace .rv-criteria-rejections ul { margin: 12px 0 0; padding-left: 20px; font-size: 12px; }
+.rv-workspace .rv-criteria-rejections li + li { margin-top: 10px; }
+.rv-workspace .rv-criteria-rejection-code { display: block; color: #707064; font-size: 11px; }
+.rv-workspace .rv-criteria-rejections .rv-criteria-source { margin-top: 5px; }
 .rv-workspace .rv-criteria-empty { padding: 35px 25px; text-align: center; color: #85857a; font-size: 12px; }
 .rv-workspace .rv-criteria-empty p { margin-top: 15px; line-height: 1.8; }
 .rv-workspace .rv-criteria-add { border-top: 1px solid #e7e7df; padding: 17px 23px; }

@@ -1,5 +1,46 @@
 {
   "$defs": {
+    "ExtractionRejection": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "candidate_index": {
+          "maximum": 128,
+          "minimum": 1,
+          "title": "Candidate Index",
+          "type": "integer"
+        },
+        "code": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "candidate_index",
+        "code"
+      ],
+      "title": "ExtractionRejection",
+      "type": "object"
+    },
     "PDFTextSource": {
       "additionalProperties": false,
       "properties": {
@@ -41,6 +82,55 @@
         "text_sha256"
       ],
       "title": "PDFTextSource",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "document_version_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Document Version Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "block_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Block Id",
+          "type": "string"
+        },
+        "quote": {
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "source_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Source Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_version_id",
+        "page",
+        "block_id",
+        "quote",
+        "source_hash"
+      ],
+      "title": "SourceRef",
       "type": "object"
     }
   },
@@ -125,6 +215,15 @@
         "type": "string"
       },
       "title": "Unresolved Criterion Ids",
+      "type": "array"
+    },
+    "rejected_candidates": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ExtractionRejection"
+      },
+      "maxItems": 128,
+      "title": "Rejected Candidates",
       "type": "array"
     }
   },

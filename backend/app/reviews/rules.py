@@ -21,6 +21,10 @@ PADDLE_CONFLICT_CONFIDENCE = 0.97
 ENGINE_THRESHOLDS = {
     "easyocr": (MATCH_CONFIDENCE, CONFLICT_CONFIDENCE),
     "paddleocr": (PADDLE_MATCH_CONFIDENCE, PADDLE_CONFLICT_CONFIDENCE),
+    # 영상 자막 전용(backend/app/video/subtitle_vlm.py). 점수는 모델 확률이 아니라 '트랙 안에서 대표 문구와 같게 읽힌
+    # 1초 프레임 비율'이다. 과반이면 충족 근거, 85% 이상이면 위반 확정 근거로 쓴다(초기 운영 기준, 실증 정확도 아님).
+    # 포스터 경로의 qwen3-vl 재인식 엔진 이름과 다르므로 포스터 판정에는 영향이 없다.
+    "qwen3-vl-video": (0.60, 0.85),
 }
 VISUAL_HINT = re.compile(r"로고|색상|색깔|컬러|잘림|잘리|여백|배치|정렬|해상도|가독성|선명|디자인|배경|상단|하단|왼쪽|오른쪽|중앙|폰트|글꼴|굵기")
 NEGATIVE_HINT = re.compile(r"금지|제외|삭제|없어|없음|않|사용\s*불가|불포함")

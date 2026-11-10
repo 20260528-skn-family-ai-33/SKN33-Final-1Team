@@ -262,6 +262,16 @@ def validate_trace(document,draft):
             or sum(len(s.text) for s in trace.sources)>60000):raise ValueError('EXTRACTION_SOURCE_SCOPE_INVALID')
     for source in trace.sources:
         if sha256(source.text.encode()).hexdigest()!=source.text_sha256:raise ValueError('EXTRACTION_SOURCE_HASH_MISMATCH')
+    if len({item.candidate_index for item in trace.rejected_candidates})!=len(trace.rejected_candidates):
+        raise ValueError('EXTRACTION_DUPLICATE_REJECTION')
+    for item in trace.rejected_candidates:
+        reference=item.source
+        if reference is None:continue
+        source=sources.get(reference.block_id)
+        if (source is None or reference.page!=source.page or reference.document_version_id!=document.document_version_id
+                or not reference.quote.strip() or len(reference.quote)>4000 or reference.quote not in source.text
+                or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+            raise ValueError('EXTRACTION_REJECTION_SOURCE_MISMATCH')
     ids={c.criterion_id for c in draft.criteria}
     if not set(trace.unresolved_criterion_ids)<=ids:raise ValueError('EXTRACTION_UNKNOWN_UNRESOLVED_CRITERION')
     for criterion in draft.criteria:
@@ -326,12 +336,13 @@ class RegisteredPDFExtractor:
         sources=prepare_sources(document,self.settings)
         raw=self.provider(sources)
         response_hash=None
+        rejections=()
         semantic_reply=raw if isinstance(raw,SemanticProviderReply) else None
         if semantic_reply is not None:
             if self.settings.mode!='qwen' or self.settings.structuring!='semantic':_fail('A02_RESPONSE_INVALID')
             response_hash=semantic_reply.response_sha256
             index,_=index_sources(sources)
-            try:items,compilation_warnings=materialize_semantics(semantic_reply.result,index,sources,request.context.document_version_id,
+            try:items,compilation_warnings,rejections=materialize_semantics(semantic_reply.result,index,sources,request.context.document_version_id,
                 presentation=self.settings.presentation)
             except ValidationError:_fail('A02_RESPONSE_INVALID')
             # The semantic path never invokes the literal compiler or rewrites
@@ -374,7 +385,7 @@ class RegisteredPDFExtractor:
             response_sha256=response_hash or sha256(raw.encode() if isinstance(raw,str) else raw).hexdigest(),sources=sources,
             policy=('a02-semantic-v4' if self.settings.presentation else 'a02-semantic-v3') if semantic_reply is not None else 'a02-source-compile-v2' if self.settings.mode=='qwen' else 'a02-text-v1',
             input_kind='free_text' if request.document.media_type=='text/plain' else 'pdf',
-            unresolved_criterion_ids=tuple(unresolved))
+            unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections)
         warnings=['unapproved_draft','exact_source_check_is_not_semantic_accuracy','text_layer_only_visual_layout_not_verified']
         if self.settings.mode=='mock':warnings.append('synthetic_mock_manual_candidates_not_qwen_results')
         if self.settings.mode=='qwen':warnings.extend((

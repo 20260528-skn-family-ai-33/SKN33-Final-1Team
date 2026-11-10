@@ -24,7 +24,8 @@ PROFILES = {
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
     "framework-worker": DATABASE | QWEN | GRAPH | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
     "framework-projection": DATABASE | GRAPH,
-    "legacy": DATABASE | WEB | REVIEW | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN"},
+    # 영상 API(legacy 프로필)의 계약서 A02가 포스터 A02와 같은 Qwen3.5-4B 서버를 쓴다.
+    "legacy": DATABASE | WEB | REVIEW | QWEN | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN", "A02_QWEN_API_KEY"},
 }
 PREFIXES = {
     "legacy": ("OCR_", "REQUIREMENTS_", "RUNPOD_", "LOGO_", "VIDEO_", "MODELTEST_", "REVIEW_MODELS_"),

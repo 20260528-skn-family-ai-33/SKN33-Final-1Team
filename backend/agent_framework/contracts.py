@@ -148,6 +148,12 @@ class PDFTextSource(Contract):
     text_sha256: Hash
 
 
+class ExtractionRejection(Contract):
+    candidate_index: int = Field(ge=1, le=128, strict=True)
+    code: Identifier
+    source: SourceRef | None = None
+
+
 class ExtractionTrace(Contract):
     mode: Literal['mock','qwen']
     model: str = Field(min_length=1,max_length=200)
@@ -159,11 +165,13 @@ class ExtractionTrace(Contract):
     response_sha256: Hash
     sources: tuple[PDFTextSource,...] = Field(min_length=1,max_length=50)
     unresolved_criterion_ids: tuple[Identifier,...] = ()
+    rejected_candidates: tuple[ExtractionRejection, ...] = Field(default=(), max_length=128)
 
     @model_serializer(mode='wrap')
     def preserve_legacy_trace(self,handler):
         data=handler(self)
         if self.input_kind=='pdf':data.pop('input_kind',None)
+        if not self.rejected_candidates:data.pop('rejected_candidates',None)
         return data
 
 

@@ -1,8 +1,12 @@
+from copy import deepcopy
+from pathlib import Path
 from types import SimpleNamespace
+import json
 
 import pytest
 
 from backend.agent_framework.a02 import validate_trace
+from backend.agent_framework.contracts import CriteriaDraft
 from backend.agent_framework.a02_semantic import PRESENTATION_PROMPT
 from backend.agent_framework.ports import AdapterFailure
 from backend.agent_framework.requirements_presentation import present_requirements
@@ -54,7 +58,9 @@ def test_arbitrary_labels_multiple_places_and_negative_visual_rules_are_not_limi
 @pytest.mark.parametrize('value',['문서에 없는 행사','김천김밥축제\n추가 문구','없는 이름 김천김밥축제'])
 def test_ungrounded_or_multiline_presentation_is_rejected(value):
     reply=presentation_reply();reply['requirements'][0]['presentation']['value']=value
-    with pytest.raises(AdapterFailure):extract(reply,presentation=True)
+    _,draft,_,_=extract(reply,presentation=True)
+    assert len(draft.criteria)==4
+    assert draft.extraction.rejected_candidates[0].code=='A02_PRESENTATION_UNGROUNDED'
 
 
 def test_pending_item_is_kept_in_draft_and_notes_without_entering_the_review_text():
@@ -78,11 +84,50 @@ def test_old_semantic_runs_remain_valid_without_manufacturing_model_paragraphs()
 
 def test_missing_resolved_presentation_and_unresolved_fabricated_text_are_rejected():
     reply=presentation_reply();reply['requirements'][0].pop('presentation')
-    with pytest.raises(AdapterFailure):extract(reply,presentation=True)
+    _,draft,_,_=extract(reply,presentation=True)
+    assert len(draft.criteria)==4
+    assert draft.extraction.rejected_candidates[0].code=='A02_PRESENTATION_MISSING'
     doc=text_document('관람시간 - 확인 중')
     reply={'requirements':[requirement(1,'viewing_hours','',operator='manual',unresolved=True,
         presentation={'label':'시간','value':'관람시간'})]}
     with pytest.raises(AdapterFailure):extract(reply,doc=doc,presentation=True)
+
+
+@pytest.mark.parametrize('bad_value,code',[
+    (None,'A02_DUPLICATE_REQUIREMENT'),
+    ('원문에 없는 장소','A02_EXPECTED_UNGROUNDED'),
+])
+def test_same_exhibition_pdf_keeps_valid_criteria_and_records_the_rejected_candidate(bad_value,code):
+    from tests.agent_framework.replay_contract import current_contract_copy
+    from tests.agent_framework.test_a02_extraction import document
+
+    recording=json.loads((Path(__file__).parent/'fixtures/a02_presentation_pdf_response.json').read_text())
+    doc=document('EXH-NEW004')
+    assert doc.reference.sha256==recording['_meta']['source_sha256']
+    reply=current_contract_copy(recording['response'])
+    _,baseline,_,_=extract(reply,doc,presentation=True)
+    assert 'rejected_candidates' not in baseline.extraction.model_dump()
+    candidate=deepcopy(next(item for item in reply['requirements'] if item['field']=='venue'))
+    if bad_value is not None:
+        candidate['expected']=bad_value
+    reply['requirements'].append(candidate)
+    _,draft,calls,_=extract(reply,doc,presentation=True)
+    assert len(calls)==1 and draft.criteria==baseline.criteria and len(draft.criteria)==13
+    saved=CriteriaDraft.model_validate_json(draft.model_dump_json())
+    validate_trace(doc.reference,saved)
+    rejection,=saved.extraction.rejected_candidates
+    assert rejection.candidate_index==len(reply['requirements']) and rejection.code==code
+    assert '열린문화공간 후소 전시실' in ' '.join(rejection.source.quote.split())
+    assert rejection.source.page==1
+    assert bad_value is None or bad_value not in saved.model_dump_json()
+    result=projected(saved)
+    assert result['approved'] is False and len(result['conditions'])==12 and len(result['pending'])==1
+    assert any('후보 1개' in warning for warning in result['warnings'])
+    invalid_source=rejection.source.model_copy(update={'quote':'원문에 없는 인용문'})
+    invalid_trace=saved.extraction.model_copy(update={
+        'rejected_candidates':(rejection.model_copy(update={'source':invalid_source}),)})
+    with pytest.raises(ValueError,match='EXTRACTION_REJECTION_SOURCE_MISMATCH'):
+        validate_trace(doc.reference,saved.model_copy(update={'extraction':invalid_trace}))
 
 
 def test_display_spacing_may_differ_while_literal_condition_and_source_stay_unchanged():

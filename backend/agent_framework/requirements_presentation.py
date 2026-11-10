@@ -43,7 +43,10 @@ def present_requirements(snapshot):
         conditions.append(entry)
     if len(conditions)>100 or len('\n\n'.join(c['text'] for c in conditions))>6000:
         raise AuthError('REQUIREMENTS_PRESENTATION_TOO_LONG',422)
-    return {'conditions':conditions,'pending':notes,'page_count':len(draft.extraction.sources),
-        'warnings':(['확인 중인 항목은 검수 입력에서 분리했습니다.'] if notes else []),
+    warnings=['확인 중인 항목은 검수 입력에서 분리했습니다.'] if notes else []
+    if draft.extraction.rejected_candidates:
+        count=len(draft.extraction.rejected_candidates)
+        warnings.append(f'원문 검증에 실패한 후보 {count}개를 제외했습니다. 기준 확인 화면에서 사유를 확인해 주세요.')
+    return {'conditions':conditions,'pending':notes,'page_count':len(draft.extraction.sources),'warnings':warnings,
         'framework':{'run_id':snapshot.context.run_id,'document_version_id':snapshot.context.document_version_id,
             'policy':draft.extraction.policy,'synthetic':draft.synthetic},'approved':False}

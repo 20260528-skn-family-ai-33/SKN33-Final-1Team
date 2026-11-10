@@ -641,6 +641,47 @@
       "title": "EvidenceBundle",
       "type": "object"
     },
+    "ExtractionRejection": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "candidate_index": {
+          "maximum": 128,
+          "minimum": 1,
+          "title": "Candidate Index",
+          "type": "integer"
+        },
+        "code": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "candidate_index",
+        "code"
+      ],
+      "title": "ExtractionRejection",
+      "type": "object"
+    },
     "ExtractionTrace": {
       "additionalProperties": false,
       "properties": {
@@ -723,6 +764,15 @@
             "type": "string"
           },
           "title": "Unresolved Criterion Ids",
+          "type": "array"
+        },
+        "rejected_candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExtractionRejection"
+          },
+          "maxItems": 128,
+          "title": "Rejected Candidates",
           "type": "array"
         }
       },

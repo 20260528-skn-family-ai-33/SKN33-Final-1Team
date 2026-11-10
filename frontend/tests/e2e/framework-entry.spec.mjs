@@ -6,13 +6,13 @@ import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
 // API replies are scripted; this checks the real input/approval/report UI, not model quality.
-test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 60000 }, async t => {
+async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false } = {}) {
   const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
   t.after(() => vite.close()); await vite.listen();
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close());
-  for (const mode of ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'skip', 'not_ready']) {
+  for (const mode of modes) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
@@ -22,6 +22,8 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
     const criterion = { criterion_id: 'title', text: '행사명은 봄', kind: 'text', operator: 'contains',
       expected: '봄', required: true, source: { page: 1, quote: '행사명은 봄' } };
     const pending = { ...criterion, criterion_id: 'pending', text: '관람시간 확인 중', expected: '' };
+    const rejectedCandidate = { candidate_index: 2, code: 'A02_EXPECTED_UNGROUNDED',
+      source: { page: 2, quote: '행사 장소는 전시장 A입니다.' } };
     const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
     let png;
     page.on('pageerror', error => errors.push(error.message));
@@ -72,7 +74,9 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         assert.equal(request.postDataJSON().decision, 'approve_criteria'); reviewed = true;
         body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
       } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
-      else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria', criteria: { criteria: mode === 'skip' ? [criterion, pending] : [criterion] } };
+      else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria',
+        criteria: { criteria: mode === 'skip' ? [criterion, pending] : [criterion],
+          ...(checkRejectedCandidates ? { extraction: { rejected_candidates: [rejectedCandidate] } } : {}) } };
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
         ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, criterion_text: criterion.text,
@@ -138,6 +142,19 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
       assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '장소: 아카이브 홀\n행사명은 여름' : '행사명은 봄' }]);
       assert.equal(reviewed, false);
+      if (checkRejectedCandidates) {
+        const rejected = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
+        await rejected.getByText('후보 2 · 기대값이 원문과 일치하지 않습니다.').waitFor();
+        await rejected.getByText('확인된 원문 · 2쪽').click();
+        assert.ok(await rejected.getByText(rejectedCandidate.source.quote, { exact: true }).isVisible());
+        const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+        assert.equal(await checklist.getByRole('checkbox').count(), 1);
+        assert.equal(await checklist.getByText(rejectedCandidate.source.quote).count(), 0);
+        assert.equal(approved, false);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
       if (mode === 'blocker') {
         await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
         await page.getByRole('button', { name: 'title 확인하기', exact: true }).click();
@@ -222,4 +239,10 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
     assert.deepEqual(legacy, [], mode); assert.deepEqual(errors, [], mode);
     await page.close();
   }
-});
+}
+
+test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 60000 }, t =>
+  verifyFrameworkEntry(t, ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'skip', 'not_ready']));
+
+test('포스터 PDF 부분 초안은 제외된 후보의 사유와 원문을 기준 목록과 분리한다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf'], { checkRejectedCandidates: true }));
