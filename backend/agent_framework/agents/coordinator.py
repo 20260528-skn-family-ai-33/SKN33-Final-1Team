@@ -62,9 +62,9 @@ def allowed_actions(facts: dict) -> set[str]:
 
 def fact_summary(facts: dict, action: str) -> str:
     """User-facing summary built only from run facts and the checked action."""
-    open_ids = [item['criterion_id'] for item in facts['validated_items'] if item['verdict'] != 'pass']
+    open_count = sum(item['verdict'] != 'pass' for item in facts['validated_items'])
     return ' '.join([f"상태 {facts['execution_status']}, 기계 판정 {facts['machine_verdict'] or '없음'}."]
-                    + ([f"pass가 아닌 조건: {', '.join(open_ids)}."] if open_ids else [])
+                    + ([f"pass가 아닌 조건: {open_count}건."] if open_count else [])
                     + ([f"오류 코드: {facts['error']['code']}."] if facts['error'] else [])
                     + [f'다음 조치: {ACTIONS[action]}'])
 
