@@ -16,7 +16,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
   const doc = state.documentRun;
   const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
   const requirementCount = new Set([...parseRequirements(state.requirements).map(item => item.text), ...selectedRows.map(row => row.text.trim())]).size;
-  const usesNewText = doc && selectedRows.length > 0 && (state.requirements.trim() || selectedRows.length !== doc.originalCount
+  const usesNewText = doc && selectedRows.length > 0 && (state.requirements.trim()
     || selectedRows.some(row => row.text.trim() !== row.originalText));
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
   const imagePixels = ((health?.limits?.image_pixels || 10_000_000) / 10_000).toLocaleString();

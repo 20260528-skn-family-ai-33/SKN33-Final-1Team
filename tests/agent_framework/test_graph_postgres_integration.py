@@ -95,6 +95,46 @@ def test_actual_graph_feeds_one_context_to_inspector_and_reporter(rag,monkeypatc
         'criteria_version_id':r.baseline['version']['criteria_version_id'],'criterion_id':'c001'}).status_code==200
 
 
+def test_graph_impact_reads_poster_reviews_without_changing_approvals(rag):
+    r=rag
+    project_id=str(r.pid)
+    version_id=r.baseline['version']['criteria_version_id']
+    synced(r)
+    empty=r.graph.review_impact(project_id,version_id)
+    # The approved PDF extraction is in the graph but is not a poster review.
+    assert empty['runs']==empty['approvals']==[] and not empty['truncated']
+
+    poster=image(r,'normal')
+    review=create_review(r,poster)
+    run_id=review['context']['run_id']
+    assert approve(r,review,'approve_criteria').status_code==200
+    synced(r)
+    result,outcome,_=run_worker(r)
+    assert outcome=='completed' and result['machine_verdict']=='pass'
+    assert approve(r,result,'approve_final').status_code==200
+    synced(r)
+
+    def stored_approvals():
+        with unit_of_work(r.db.engine) as c:
+            return c.execute(text('SELECT * FROM agent_framework.approvals '
+                'WHERE project_id=:p ORDER BY approval_id'),{'p':r.pid}).mappings().all()
+
+    before=stored_approvals()
+    impact=r.graph.review_impact(project_id,version_id)
+    assert impact['revision']>empty['revision'] and not impact['truncated']
+    assert impact['runs']==[{'run_id':run_id,'status':'completed','asset_version_id':poster['id']}]
+    assert impact['approvals']==[
+        {'approval_id':str(row['approval_id']),'run_id':run_id,'decision':row['decision']}
+        for row in before if row['run_id']==run_id]
+    assert {item['decision'] for item in impact['approvals']}=={'approve_criteria','approve_final'}
+    for wrong_project,wrong_version in [(str(uuid4()),version_id),(project_id,str(uuid4()))]:
+        with pytest.raises(GraphUnavailable) as unavailable:
+            r.graph.review_impact(wrong_project,wrong_version)
+        assert unavailable.value.code=='GRAPH_APPROVED_CRITERIA_UNAVAILABLE'
+    assert r.graph.review_impact(project_id,version_id)==impact
+    assert stored_approvals()==before
+
+
 @pytest.mark.parametrize('fault',['offline','stale','forged'])
 def test_equivalent_sql_fallback_preserves_all_approved_sources(rag,fault):
     r=rag;rid=admitted(r);synced(r);real=r.graph

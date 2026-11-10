@@ -37,6 +37,7 @@ export default function ReviewPage() {
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
     projectName={state.projectName || location.state?.projectName}
     initialFile={runId === inputRunId ? state.file : null}
+    initialCriterionIds={location.state?.pdfSelection?.runId === runId ? location.state.pdfSelection.criterionIds : null}
     onInput={() => setParams({})}
     openRun={id => setParams({ framework: id }, { state: location.state })} onNew={() => { newReview(); setParams({}); }} />;
 

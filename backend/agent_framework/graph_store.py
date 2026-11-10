@@ -131,6 +131,51 @@ class FrameworkGraph:
         except Exception:
             raise GraphUnavailable() from None
 
+    def review_impact(self, project_id, criteria_version_id):
+        """Find poster reviews and their approval records for an approved criteria version."""
+        def read(tx):
+            rows = list(tx.run("""
+                MATCH (projection:AFProjection {project_id:$pid}),
+                      (version:AFEntity {project_id:$pid, entity_key:$version,
+                                         kind:'criteria_version', approved:true})
+                OPTIONAL MATCH (review:AFEntity {project_id:$pid, kind:'run'})
+                    -[:AF_RELATION {kind:'applies'}]->(version),
+                    (review)-[:AF_RELATION {kind:'inspects'}]->
+                    (poster:AFEntity {project_id:$pid, kind:'poster_version'})
+                WITH DISTINCT projection, review, poster
+                ORDER BY review.entity_key LIMIT 501
+                OPTIONAL MATCH (approval:AFEntity {project_id:$pid, kind:'approval'})
+                    -[:AF_RELATION {kind:'approves'}]->(review)
+                RETURN projection.revision AS revision, review.entity_key AS run_key,
+                       review.state AS status, poster.entity_key AS poster_key,
+                       collect(DISTINCT approval{.entity_key, .decision}) AS approvals
+                ORDER BY run_key
+                """, pid=project_id, version='criteria:'+criteria_version_id))
+            if not rows:
+                raise GraphUnavailable('GRAPH_APPROVED_CRITERIA_UNAVAILABLE')
+
+            runs, approvals = [], []
+            for row in rows[:500]:
+                if row['run_key'] is None:
+                    continue
+                run_id = row['run_key'].removeprefix('run:')
+                runs.append({'run_id':run_id, 'status':row['status'],
+                             'asset_version_id':row['poster_key'].removeprefix('poster:')})
+                for approval in sorted(row['approvals'], key=lambda item: item['entity_key']):
+                    approvals.append({'approval_id':approval['entity_key'].removeprefix('approval:'),
+                                      'run_id':run_id, 'decision':approval['decision']})
+            return {'revision':rows[0]['revision'], 'runs':runs, 'approvals':approvals,
+                    'truncated':len(rows)>500}
+
+        try:
+            self._check_schema()
+            with self._session() as session:
+                return session.execute_read(read)
+        except GraphUnavailable:
+            raise
+        except Exception:
+            raise GraphUnavailable() from None
+
     def approved_sources(self, project_id, criteria_version_id):
         def read(tx):
             state = tx.run('MATCH (p:AFProjection {project_id:$pid}) RETURN p.revision AS revision',pid=project_id).single()

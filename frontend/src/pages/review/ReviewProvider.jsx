@@ -200,7 +200,15 @@ export function ReviewProvider({ children }) {
       } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
       const { sources } = mergeDocumentRequirements('', result, file.name);
-      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false }));
+      const criterionIdsByText = new Map();
+      for (const condition of result.conditions) {
+        const text = condition.text.trim();
+        const ids = Array.isArray(condition.criterion_ids)
+          ? condition.criterion_ids.filter(id => typeof id === 'string' && id) : [];
+        criterionIdsByText.set(text, [...new Set([...(criterionIdsByText.get(text) || []), ...ids])]);
+      }
+      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false,
+        criterionIds: criterionIdsByText.get(row.text) || [] }));
       dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
         originalCount: rows.length, rows, filename: file.name, projectId } });
       setDocumentProgress(null);
@@ -354,6 +362,10 @@ export function ReviewProvider({ children }) {
   }
 
   function openDocumentRun() {
+    navigateToDocumentRun();
+  }
+
+  function navigateToDocumentRun(criterionIds = null) {
     if (documentRequest.current || sampleBusy || fileBusy) return;
     setError('');
     if (!state.documentRun) return;
@@ -364,7 +376,10 @@ export function ReviewProvider({ children }) {
     // Reviewing an extracted draft does not require the poster model to be ready.
     // Registration and review execution still perform their readiness checks.
     setInputRunId(state.documentRun.id);
-    setSearchParams({ framework: state.documentRun.id });
+    const runId = state.documentRun.id;
+    setSearchParams({ framework: runId }, {
+      state: criterionIds ? { pdfSelection: { runId, criterionIds } } : null,
+    });
   }
 
   function prepare(event) {
@@ -375,9 +390,14 @@ export function ReviewProvider({ children }) {
     const direct = state.requirements.trim();
     const doc = state.documentRun;
     const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
-    if (!direct && selectedRows.length && doc.originalCount === selectedRows.length
-      && selectedRows.every(row => row.text.trim() === row.originalText)) {
-      openDocumentRun();
+    if (!direct && selectedRows.length && selectedRows.every(row => row.text.trim() === row.originalText)) {
+      if (doc.originalCount === selectedRows.length) {
+        openDocumentRun();
+      } else if (selectedRows.every(row => row.criterionIds?.length)) {
+        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))]);
+      } else {
+        setError('선택한 항목의 원문 연결을 확인할 수 없습니다. PDF 원문과 기준 확인에서 항목을 선택해 주세요.');
+      }
       return;
     }
     if (selectedRows.length && projectId !== doc.projectId) {

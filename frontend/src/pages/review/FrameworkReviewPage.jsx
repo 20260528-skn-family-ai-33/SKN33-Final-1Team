@@ -56,7 +56,7 @@ function command(path, body, key, signal) {
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
 
-export default function FrameworkReviewPage({ runId, initialFile, projectName, openRun, onInput, onNew }) {
+export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
@@ -86,7 +86,11 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const latest = overview?.latest_version;
   const status = run?.execution_status;
   const sourceDraft = status === 'waiting_criteria' && !run.baseline;
-  const criteria = latest?.version.criteria || run?.criteria?.criteria || [];
+  const savedCriteria = latest?.version.criteria || run?.criteria?.criteria || [];
+  const selectedPdfIds = sourceDraft && initialCriterionIds ? new Set(initialCriterionIds) : null;
+  const criteria = selectedPdfIds ? savedCriteria.filter(item => selectedPdfIds.has(item.criterion_id)) : savedCriteria;
+  const selectionUnavailable = selectedPdfIds && overview && criteria.length !== selectedPdfIds.size;
+  const needsVersion = !latest || (selectedPdfIds && savedCriteria.length !== criteria.length) || excluded.length > 0 || amendment;
   const rejections = run?.criteria?.extraction?.rejected_candidates || [];
   const reviewScope = [
     criteria.some(item => item.kind !== 'visual') && '문구·값',
@@ -170,11 +174,18 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     : excluded.length && !reason.trim() ? '제외 사유를 먼저 적어 주세요.' : undefined;
   const posterBlock = !file ? '먼저 검수할 포스터 파일을 선택해 주세요.' : undefined;
   async function saveVersion(signal, base = latest, unresolvedIds = []) {
+    if (selectionUnavailable) return;
     if (amendment && !amendmentForm.current.reportValidity()) return;
     const unresolvedReason = '담당자가 확인 필요 항목을 제외하고 검수를 시작했습니다.';
+    const selectionReason = '자료 입력에서 검수 대상으로 선택하지 않았습니다.';
+    const omittedPdfCriteria = selectedPdfIds
+      ? (base?.version.criteria || savedCriteria).filter(item => !selectedPdfIds.has(item.criterion_id)) : [];
     const body = { parent_version_id: base?.version.criteria_version_id || null,
       expected_base_sha256: base?.sha256 || overview.source_draft_sha256, purpose: 'human_review',
-      edits: [...criteria.filter(c => excluded.includes(c.criterion_id)).map(c => ({
+      edits: [...omittedPdfCriteria.map(c => ({
+        action: 'exclude', criterion_id: c.criterion_id, reason: selectionReason,
+        source: { reference: 'PDF 검수 항목 선택', quote: selectionReason },
+      })), ...criteria.filter(c => excluded.includes(c.criterion_id)).map(c => ({
         action: 'exclude', criterion_id: c.criterion_id, reason: reason.trim(),
         source: { reference: '담당자 기준 검토', quote: reason.trim() },
       })), ...unresolvedIds.filter(id => !excluded.includes(id)).map(id => ({
@@ -209,8 +220,9 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     return child;
   }
   async function approveAndStart(signal, excludeUnresolved = false) {
+    if (selectionUnavailable) return;
     await requirePosterReview({ signal });
-    let version = !latest || excluded.length || amendment ? await saveVersion(signal) : latest;
+    let version = needsVersion ? await saveVersion(signal) : latest;
     if (excludeUnresolved && version && Object.keys(version.approval_blockers).length) {
       version = await saveVersion(signal, version, Object.keys(version.approval_blockers));
     }
@@ -309,9 +321,9 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             {hasCriteriaActions && actionError}
           </div>
           {reviewingDraft && (
-            <div className="rv-criteria-action-buttons">{(!latest || excluded.length > 0 || amendment) && <button className="rv-button secondary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion, 'save')} aria-busy={working('save')} title={exclusionBlock}>검토한 기준 버전 저장</button>}
-            {latest && !excluded.length && !amendment && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}<button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
-            {(!latest || excluded.length > 0 || amendment || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart, 'start')} aria-busy={working('start')} title={exclusionBlock}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
+            <div className="rv-criteria-action-buttons">{needsVersion && <button className="rv-button secondary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion, 'save')} aria-busy={working('save')} title={exclusionBlock}>검토한 기준 버전 저장</button>}
+            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}<button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
+            {(needsVersion || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart, 'start')} aria-busy={working('start')} title={exclusionBlock}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
             </div>
           )}
           {registeringPoster && <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
@@ -320,6 +332,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
             onClick={() => perform(signal => decide('approve_criteria', signal), 'decide-start')} aria-busy={working('decide-start')}>이 포스터와 기준을 확인하고 검수 시작</button>}
         </section>}>
           <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
+            {selectionUnavailable && <ErrorMessage message="선택한 항목 중 저장한 기준 버전에서 이미 제외된 항목이 있어요. 자료 입력으로 돌아가 선택을 다시 확인해 주세요." />}
             {rejections.length > 0 && <ExtractionRejections items={rejections} />}
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
             <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
