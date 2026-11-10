@@ -1,26 +1,34 @@
-.rv-report-print { max-width: 1050px; margin: 0 auto; }
-.rv-report-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-bottom: 16px; }
-.rv-report-paper { background: #fff; padding: clamp(22px, 4vw, 48px); border: 1px solid #deded9; border-radius: 16px; color: #222; line-height: 1.7; overflow-wrap: anywhere; }
-.rv-report-heading { border-bottom: 2px solid #222; padding-bottom: 24px; }
+.rv-report-print { margin: 0 auto; }
+.rv-report-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-bottom: 12px; }
+.rv-report-actions .rv-button { min-height: 36px; padding: 7px 12px; }
+.rv-report-shell { padding: 23px; border: 1px solid #deded9; border-radius: 20px; background: #e8e9e5; }
+.rv-report-paper {
+  width: min(100%, 775px); margin: 0 auto; padding: clamp(20px, 4vw, 49px); border: 1px solid #d6d8d1;
+  background: #fff; color: #222; box-shadow: 0 6px 22px #2222220d; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere;
+}
+.rv-report-heading { border-bottom: 2px solid #222; padding-bottom: 13px; }
 .rv-report-heading > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-.rv-report-heading > div > span, .rv-report-counts > span { display: inline-block; padding: 4px 10px; border-radius: 6px; background: #f1f1ee; font-size: 12px; }
-.rv-report-counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-report-heading > div > span, .rv-report-verdict { padding: 3px 7px; border-radius: 6px; background: #f1f1ee; font-size: 11px; }
+.rv-report-counts { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 6px; padding: 9px 11px; border-radius: 8px; background: #f3f3f1; }
+.rv-report-counts > span { font-size: 12px; }
 .rv-report-counts .is-pass { color: #177347; background: #e6f0e9; }
 .rv-report-counts .is-review { color: #795d1d; background: #f6f0dd; }
 .rv-report-counts .is-fail { color: #a34434; background: #f8eae6; }
 .rv-report-result-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-.rv-report-heading h2 { font-size: 26px; margin: 14px 0; }
-.rv-report-paper > section { margin-top: 32px; }
-.rv-report-paper h3 { padding-bottom: 12px; border-bottom: 1px solid #deded9; margin-bottom: 18px; }
+.rv-report-verdict.is-pass { color: #177347; background: #e6f0e9; }
+.rv-report-verdict.is-review { color: #795d1d; background: #f6f0dd; }
+.rv-report-verdict.is-fail { color: #a34434; background: #f8eae6; }
+.rv-report-print .rv-report-heading :is(h1, h2) { font-size: 27px; margin: 4px 0; }
+.rv-report-run, .rv-report-source { color: #62625b; font-size: 11px; }
+.rv-report-paper > section { margin-top: 19px; }
+.rv-report-print .rv-report-paper > section > :is(h2, h3) { margin-bottom: 7px; font-size: 15px; }
 .rv-report-paper p, .rv-report-paper li { white-space: pre-wrap; }
-.rv-report-facts, .rv-report-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.rv-report-facts dt, .rv-report-comparison dt { color: #70706b; font-size: 12px; }
-.rv-report-facts dd, .rv-report-comparison dd { margin: 4px 0 0; }
-.rv-report-result { padding: 20px 0; border-bottom: 1px solid #deded9; }
-.rv-report-result h4 { font-size: 16px; margin-bottom: 8px; }
-.rv-report-result p { margin-top: 12px; }
-.rv-report-comparison { margin: 16px 0; }
-.rv-report-comparison > div { padding: 14px; background: #f3f3f1; }
+.rv-report-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rv-report-facts dt { color: #70706b; font-size: 12px; }
+.rv-report-facts dd { margin: 4px 0 0; }
+.rv-report-result { padding: 9px 0; border-top: 1px solid #deded9; font-size: 12px; }
+.rv-report-print .rv-report-result-heading :is(h3, h4) { font-size: 13px; margin: 0; }
+.rv-report-print .rv-report-result p { margin-top: 3px; }
 .rv-report-original { margin-top: 12px; }
 .rv-report-approval { padding: 10px 0; border-bottom: 1px solid #eee; }
 .rv-report-paper footer { margin-top: 35px; padding-top: 16px; border-top: 1px solid #deded9; color: #70706b; }
@@ -29,6 +37,7 @@
   .rv-report-print, .rv-report-print * { visibility: visible !important; }
   .rv-report-print { position: absolute; top: 0; left: 0; width: 100%; max-width: none; }
   .rv-report-actions { display: none; }
-  .rv-report-paper { border: 0; border-radius: 0; padding: 0; }
+  .rv-report-shell { border: 0; padding: 0; background: transparent; }
+  .rv-report-paper { width: 100%; border: 0; padding: 0; box-shadow: none; }
   .rv-report-result, .rv-report-approval { break-inside: avoid; }
 }

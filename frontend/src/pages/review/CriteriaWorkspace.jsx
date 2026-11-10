@@ -6,7 +6,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 // Callers provide their own criteria data and approval commands.
 export default function CriteriaWorkspace({ canvas, children, actions, versionText, locked, error }) {
   return <section className="rv-criteria-page" aria-labelledby="page-title">
-    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">02 / 기준 확인</span>
+    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">자료 입력 / 기준 확인</span>
       <h1 id="page-title" tabIndex={-1}>검수할 항목을 확정해 주세요.</h1>
       <p>포스터와 요구사항 원문을 함께 보며 검수 기준을 확인하세요.</p>
     </div><span className={`rv-criteria-version${locked ? ' is-locked' : ''}`}><Icon name={locked ? 'lock' : 'list'} />{versionText}</span></div>
