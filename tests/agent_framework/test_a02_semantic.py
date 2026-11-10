@@ -166,6 +166,24 @@ def test_model_supplied_missing_condition_keeps_its_semantic_field():
     assert draft.criteria[0].details.origin=='model_structured'
 
 
+def test_unresolved_unspecified_model_field_is_retained_as_a_note():
+    source='관람시간은 확인 중입니다.'
+    doc=text_document(source)
+    reply={'requirements':[requirement(1,'unspecified','',operator='manual',unresolved=True,presentation=None)]}
+    _,draft,_,_=extract(reply,doc,presentation=True)
+    assert len(draft.criteria)==1
+    note=draft.criteria[0]
+    assert (note.details.target,note.details.field,note.kind,note.operator)==('unspecified','unspecified','unsupported','manual')
+    assert note.source.quote==source and note.expected=='' and note.details.presentation is None
+    assert draft.extraction.unresolved_criterion_ids==(note.criterion_id,)
+
+
+def test_resolved_unspecified_field_with_concrete_target_still_fails():
+    reply={'requirements':[requirement(1,'unspecified','김천김밥축제')]}
+    with pytest.raises(AdapterFailure) as error:extract(reply)
+    assert error.value.code=='A02_RESPONSE_INVALID'
+
+
 def test_allowances_are_preserved_without_rewriting_the_models_expected_value():
     doc=text_document('행사명은 ‘숲의 기록’으로 표기한다.\n허용 범위: 줄바꿈과 공백 차이는 허용한다.')
     reply={'requirements':[requirement(1,'event_name','숲의 기록')]}

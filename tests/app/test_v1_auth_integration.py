@@ -1,4 +1,5 @@
 """Real FastAPI auth + real restricted PostgreSQL app role. Synthetic accounts only."""
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID,uuid4
@@ -66,6 +67,15 @@ def login(client,*,email=None,password=PASSWORD,username=None):
     return client.post('/api/v1/auth/login',json=body,headers=csrf(client))
 
 
+def use_legacy_session_cookie(client, settings):
+    # Model a browser that received the same persisted session under the old name.
+    session = copy(next(cookie for cookie in client.cookies.jar if cookie.name == settings.session_cookie))
+    client.cookies.jar.clear(session.domain, session.path, session.name)
+    session.name = settings.legacy_session_cookie
+    client.cookies.jar.set_cookie(session)
+    return session.value
+
+
 def test_email_login_real_argon2_session_public_projection_and_rotation(auth_database,client):
     db,owner,manager,settings,_=auth_database;user=email_user(auth_database)
     response=login(client,email='  '+user['email'].upper()+'  ')
@@ -79,8 +89,10 @@ def test_email_login_real_argon2_session_public_projection_and_rotation(auth_dat
         assert row['user_id']==UUID(user['id']) and (row['expires_at']-row['created_at']).total_seconds()==28800
         assert raw not in str(row)
     assert client.get('/api/v1/auth/me').json()['user']==user
+    use_legacy_session_cookie(client, settings)
     assert login(client,email=user['email']).status_code==200
     assert client.cookies[settings.session_cookie]!=raw
+    assert settings.legacy_session_cookie not in client.cookies
     with owner.connect() as connection:assert connection.execute(select(user_sessions.c.revoked_at).where(user_sessions.c.token_hash==token_hash(raw))).scalar_one() is not None
 
 
@@ -90,12 +102,36 @@ def test_session_survives_app_restart_and_distinct_browser_logout(auth_database,
     with TestClient(create_app(settings=settings,engine=db.engine),base_url='http://localhost:8000',client=('127.0.0.1',9999)) as second:
         second.headers['Origin']='http://localhost:8000'
         second.cookies.update(client.cookies)
+        raw = use_legacy_session_cookie(second, settings)
         assert second.get('/api/v1/auth/me').json()['user']==user
+        assert second.cookies[settings.session_cookie] == raw
+        assert settings.legacy_session_cookie not in second.cookies
         second.cookies.clear();assert login(second,email=user['email']).status_code==200
         assert client.post('/api/v1/auth/logout',headers=csrf(client)).status_code==204
         assert second.get('/api/v1/auth/me').json()['authenticated']
         assert client.post('/api/v1/auth/logout',headers=csrf(client)).status_code==204
         assert not client.get('/api/v1/auth/me').json()['authenticated']
+
+
+def test_legacy_session_can_logout_and_cannot_be_reused(auth_database, client):
+    settings = auth_database[3]
+    user = email_user(auth_database)
+    assert login(client, email=user['email']).status_code == 200
+    raw = use_legacy_session_cookie(client, settings)
+    csrf_token = client.cookies[settings.csrf_cookie]
+
+    # A current cookie takes precedence even if it points to an invalid session.
+    client.cookies.set(settings.session_cookie, 'a' * 43, domain='localhost.local', path='/')
+    assert not client.get('/api/v1/auth/me').json()['authenticated']
+    assert client.post('/api/v1/auth/logout', headers={'X-CSRFToken': csrf_token}).status_code == 403
+    client.cookies.delete(settings.session_cookie)
+
+    assert client.post('/api/v1/auth/logout', headers={'X-CSRFToken': csrf_token}).status_code == 204
+    assert settings.session_cookie not in client.cookies and settings.legacy_session_cookie not in client.cookies
+    client.cookies.set(settings.legacy_session_cookie, raw, domain='localhost.local', path='/')
+    rejected = client.get('/api/v1/auth/me')
+    assert not rejected.json()['authenticated']
+    assert not rejected.headers.get_list('set-cookie')
 
 
 @pytest.mark.parametrize('kind',('missing','wrong_password','disabled'))
@@ -239,10 +275,13 @@ def test_http_csrf_rejects_other_session_token_and_expired_signature(auth_databa
 
 def test_expired_session_can_logout_and_first_revocation_time_is_preserved(auth_database,client):
     db,owner,manager,settings,_=auth_database;user=email_user(auth_database)
-    assert login(client,email=user['email']).status_code==200;raw=client.cookies[settings.session_cookie]
+    assert login(client,email=user['email']).status_code==200
+    raw = use_legacy_session_cookie(client, settings)
     with owner.begin() as connection:
         connection.exec_driver_sql("UPDATE public.user_sessions SET created_at=clock_timestamp()-interval '9 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE token_hash=%s",(token_hash(raw),))
-    assert not client.get('/api/v1/auth/me').json()['authenticated']
+    rejected = client.get('/api/v1/auth/me')
+    assert not rejected.json()['authenticated']
+    assert not rejected.headers.get_list('set-cookie')
     assert client.post('/api/v1/auth/logout',headers=csrf(client)).status_code==204
     with owner.connect() as connection:first=connection.execute(select(user_sessions.c.revoked_at).where(user_sessions.c.token_hash==token_hash(raw))).scalar_one()
     client.cookies.set(settings.session_cookie,raw,domain='localhost.local',path='/')

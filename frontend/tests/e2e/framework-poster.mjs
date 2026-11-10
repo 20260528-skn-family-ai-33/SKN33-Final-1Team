@@ -93,10 +93,13 @@ try {
   assert.notEqual(results[1].context.asset_version_id, results[0].context.asset_version_id);
   assert.deepEqual(results[1].baseline, results[0].baseline);
   await button('최종 승인').click();
-  await page.getByText('담당자 승인 완료').waitFor();
+  const approved = page.locator('.rv-result-summary').getByText('담당자 승인 완료', { exact: true });
+  await approved.waitFor();
   await page.reload();
-  await button('보고서·담당자 승인').click();
-  await page.getByText('담당자 승인 완료').waitFor();
+  await approved.waitFor();
+  await button('보고서 보기').click();
+  await page.getByRole('heading', { name: '검수 보고서', level: 1 }).waitFor();
+  assert.equal(await button('최종 승인').count(), 0);
   assert.deepEqual(errors, []); assert.deepEqual(legacy, []);
   console.log('PDF approved, first poster failed, revision passed and final approval survived reload.');
 } catch (error) {

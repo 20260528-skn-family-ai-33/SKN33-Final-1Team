@@ -215,6 +215,17 @@ def test_missing_answers_locations_and_invalid_boxes_stay_reviewable():
     assert invoke_role("A04_A05", relaxed, request).observations[0].uncertainty is None
 
 
+@pytest.mark.parametrize("word,kept", (
+    ("None", None), ("null", None), ("N/A", None), ("-", None), ("없음", None), (" 해당 없음 ", None),
+    ("글자 일부가 가려졌습니다.", "글자 일부가 가려졌습니다."), ("없음으로 보이나 확실하지 않습니다.", "없음으로 보이나 확실하지 않습니다."),
+))
+def test_only_an_exact_no_uncertainty_word_is_dropped(word, kept):
+    access, request = setup()
+    answer = observed_answer("title", "가을 문화축제", "pass", (0.1, 0.1, 0.9, 0.3), uncertainty=word)
+    [observation] = invoke_role("A04_A05", a04.TeamPosterInspector(FakeModel(answer), files=access), request).observations
+    assert observation.uncertainty == kept
+
+
 @pytest.mark.parametrize("orientation", range(1, 9))
 def test_display_boxes_map_back_to_encoded_pixels_for_every_exif_orientation(orientation):
     encoded = Image.new("L", (40, 24), 0)

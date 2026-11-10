@@ -31,7 +31,7 @@ def session(connection,token_hash,*,lock=False):
 
 
 def session_state(connection,token_hash):
-    row=connection.execute(select(users,user_sessions.c.session_id,user_sessions.c.token_hash).join(
+    row=connection.execute(select(users,user_sessions.c.session_id,user_sessions.c.token_hash,user_sessions.c.expires_at).join(
         user_sessions,user_sessions.c.user_id==users.c.user_id).where(user_sessions.c.token_hash==token_hash,
         user_sessions.c.revoked_at.is_(None),user_sessions.c.expires_at>func.clock_timestamp(),users.c.is_active)).mappings().one_or_none()
     return dict(row) if row else None

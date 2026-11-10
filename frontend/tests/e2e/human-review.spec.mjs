@@ -30,7 +30,8 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
   page.setDefaultTimeout(10000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   const sent = [], context = { run_id: 'human-fixture', project_id: 'project-fixture', actor_id: 'user-fixture', asset_version_id: 'poster-v1' };
-  const snapshot = { context, execution_status: 'waiting_review', machine_verdict: 'review',
+  let rejectFinal = verdict === 'pass';
+  const snapshot = { context, execution_status: 'waiting_review', human_decision: 'unreviewed', machine_verdict: 'review',
     baseline: { criteria_version_id: 'criteria-v1' }, evidence: { status: 'complete' }, approvals: [],
     validated: { items: [{ criterion_id: 'date', criterion_text: '행사 날짜', required: true, expected: '11월 12일', observed: '11월 12일',
       verdict: 'review', issues: ['date_comparison_review_required'] }] },
@@ -44,9 +45,14 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
     else if (path === '/api/framework/v1/runs/' + context.run_id) body = snapshot;
     else if (path.endsWith('/approvals')) {
       assert.equal(request.headers()['x-csrftoken'], 'human-browser-token');
+      if (rejectFinal) {
+        rejectFinal = false;
+        return route.fulfill({ status: 409, json: { error: { code: 'APPROVAL_CONFLICT', message: '승인을 다시 시도해 주세요.' } } });
+      }
       const approval = request.postDataJSON(); sent.push(approval);
       snapshot.approvals.push(approval);
       snapshot.execution_status = verdict === 'pass' ? 'completed' : 'waiting_revision';
+      snapshot.human_decision = verdict === 'pass' ? 'final_approved' : 'changes_approved';
       body = snapshot;
     } else if (path.endsWith('/content')) return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text y="40">11월 12일</text></svg>' });
     else return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } });
@@ -69,19 +75,39 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
   assert.equal(sent.length, 0);
   await page.getByLabel('현재 포스터를 직접 확인했습니다', { exact: true }).check();
   if (verdict === 'fail') assert.ok(await final.isDisabled());
+  if (verdict === 'pass') {
+    await submit.click();
+    await page.getByRole('alert').filter({ hasText: 'APPROVAL_CONFLICT' }).waitFor();
+    assert.equal(await page.getByLabel('확인 근거·위치', { exact: true }).inputValue(), '현재 포스터 상단 날짜');
+    assert.equal(sent.length, 0);
+  }
   await submit.click();
-  await page.getByRole('heading', { name: `담당자 확인 · date · ${verdict === 'pass' ? '충족' : '불충족'}` }).waitFor();
+  const approved = page.locator('.rv-result-summary').getByText('담당자 승인 완료', { exact: true });
+  if (verdict === 'pass') {
+    await approved.waitFor();
+    await page.waitForFunction(() => document.activeElement?.id === 'page-title' && window.scrollY === 0);
+    assert.equal(await page.getByRole('region', { name: '검수 진행과 담당자 승인' }).count(), 0);
+  } else {
+    await page.getByLabel('수정 포스터', { exact: true }).waitFor();
+  }
   assert.equal(sent.length, 1);
   assert.equal(sent[0].decision, verdict === 'pass' ? 'approve_final' : 'approve_changes');
   assert.deepEqual(sent[0].context, context);
   assert.deepEqual(sent[0].human_reviews, [{ criterion_id: 'date', verdict, observed: '포스터 날짜를 원문과 대조했습니다.',
     reference: '현재 포스터 상단 날짜', reason: '합성 데이터로 직접 확인 흐름 검증', checked_asset: true }]);
   await page.reload();
-  await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
-  await page.getByText('기계 판정 · 확인 필요', { exact: true }).waitFor();
-  await page.getByRole('heading', { name: `담당자 확인 · date · ${verdict === 'pass' ? '충족' : '불충족'}` }).waitFor();
+  if (verdict === 'pass') await approved.waitFor();
+  await page.getByRole('button', { name: verdict === 'pass' ? '보고서 보기' : '보고서·담당자 승인', exact: true }).click();
+  const report = page.getByRole('article', { name: '검수 보고서' });
+  await report.getByText('기계 판정 · 확인 필요', { exact: true }).waitFor();
+  const note = '포스터 날짜를 원문과 대조했습니다.';
+  await report.getByText(note, { exact: false }).waitFor();
+  assert.equal(await page.getByText(note, { exact: false }).count(), 1);
   if (verdict === 'fail') await page.getByLabel('수정 포스터', { exact: true }).waitFor();
-  else await page.getByText('담당자 승인 완료', { exact: true }).waitFor();
+  else {
+    assert.equal(await page.getByRole('heading', { name: '검수 보고서', level: 1 }).count(), 1);
+    assert.equal(await final.count(), 0);
+  }
   assert.deepEqual(errors, []);
 });
 }

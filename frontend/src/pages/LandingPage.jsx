@@ -67,7 +67,7 @@ export default function LandingPage({ profile = 'legacy' }) {
     <a className="fw-skip-link" href="#landing-content">본문으로 바로 가기</a>
     <header className="fw-nav fw-container">
       <Brand onClick={home} />
-      <nav className="fw-nav-links" aria-label="메인 메뉴"><a href="#features">서비스 소개</a><a href="#how-it-works">이용 방법</a>{profile !== 'rebuild' && <Link to="/modeltest">모델 테스트</Link>}</nav>
+      <nav className="fw-nav-links" aria-label="메인 메뉴"><a href="#features">서비스 소개</a><a href="#how-it-works">이용 방법</a></nav>
       <div className="fw-nav-actions"><Link className="fw-login" to="/login">로그인</Link><button className="fw-button fw-button-light fw-nav-start" onClick={start}>검수 시작하기 <span aria-hidden="true">↗</span></button></div>
     </header>
     <main id="landing-content" tabIndex={-1}>

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import ReviewProgress from './ReviewProgress.jsx';
+import { documentSteps } from './progressScan.js';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
@@ -13,6 +14,7 @@ import ResultsPage from './ResultsPage.jsx';
 export default function ReviewPage() {
   const {
     projectId, setProjectId,
+    documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
@@ -37,7 +39,10 @@ export default function ReviewPage() {
   return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
     {documentBusy && documentProgress && <ReviewProgress title="검수 요구사항을 정리하고 있어요."
       message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent}
-      startedAt={documentProgress.startedAt} onCancel={cancelDocument} />}
+      steps={documentSteps(documentProgress.stage)} facts={documentProgress.source ? [['입력 자료', documentProgress.source]] : []}
+      startedAt={documentProgress.startedAt} error={documentError} cancelBusy={documentCancelBusy}
+      cancelLabel={documentProgress.stage === 'queued' && documentProgress.runId ? '대기 작업 취소' : '입력 반영 취소'}
+      onCancel={documentProgress.stage === 'queued' && documentProgress.runId ? cancelQueuedDocument : cancelDocument} />}
     {state.step === 'input' && <div hidden={documentBusy && !!documentProgress}><InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} /></div>}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}

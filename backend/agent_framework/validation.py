@@ -6,6 +6,7 @@ import re
 from .contracts import (Context, CriteriaDraft, DocumentRef, EvidenceBundle,
                         InspectRequest, InspectionResult, ReportDraft, ReportRequest,
                         ValidateRequest, ValidatedItem, ValidatedResult)
+from .qualifier_rules import format_free, may_reject, needs_person, qualifier_text
 
 
 def ensure_context(expected: Context, result) -> None:
@@ -258,9 +259,10 @@ class ReferenceValidator:
         items = []
         for criterion in request.criteria:
             issues = []
+            qualifier = qualifier_text(criterion)
             if criterion.details is not None:
                 if criterion.details.target!='poster_text':issues.append('typed_attribute_review_required')
-                if criterion.details.qualifiers or criterion.human_added and re.search(r'허용|예외|또는|줄바꿈|공백',criterion.text):
+                if needs_person(qualifier):
                     issues.append('qualifier_interpretation_required')
                 if criterion.details.normalized_expected is not None:issues.append('normalized_value_review_required')
                 if criterion.details.field in {'start_date','end_date','event_date','event_period'}:
@@ -333,10 +335,12 @@ class ReferenceValidator:
                                            "lte": observed <= expected}[criterion.operator]
                     else:
                         comparison_expected, comparison_observed = criterion.expected, observation.observed
-                        matched = (criterion.expected == observation.observed if criterion.operator == "equals"
-                                   else criterion.expected in observation.observed)
+                        wanted, seen = format_free(criterion.expected, qualifier), format_free(observation.observed, qualifier)
+                        matched = wanted == seen if criterion.operator == "equals" else wanted in seen
                     if not issues:
-                        if not matched:
+                        if not matched and qualifier and not may_reject(qualifier):
+                            issues.append("qualifier_interpretation_required")
+                        elif not matched:
                             verdict = "fail"
                             issues.append("value_mismatch")
                         elif observation.verdict == "fail":

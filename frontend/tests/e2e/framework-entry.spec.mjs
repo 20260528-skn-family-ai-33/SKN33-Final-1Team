@@ -12,7 +12,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close());
-  for (const mode of ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'not_ready']) {
+  for (const mode of ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'skip', 'not_ready']) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
@@ -21,6 +21,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
     const context = { run_id: 'draft', project_id: 'project', actor_id: 'user' };
     const criterion = { criterion_id: 'title', text: '행사명은 봄', kind: 'text', operator: 'contains',
       expected: '봄', required: true, source: { page: 1, quote: '행사명은 봄' } };
+    const pending = { ...criterion, criterion_id: 'pending', text: '관람시간 확인 중', expected: '' };
     const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
     let png;
     page.on('pageerror', error => errors.push(error.message));
@@ -44,9 +45,19 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         pending: [], page_count: 1, framework: { run_id: 'draft', document_version_id: extractedText ? 'text-document' : 'pdf-document' } };
       else if (path.endsWith('/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
       else if (path.endsWith('/criteria-versions')) {
-        assert.equal(request.postDataJSON().purpose, 'human_review');
-        latest = { version: { ...baseline, version_no: 1, criteria: [criterion], exclusions: [] }, sha256: baseline.criteria_sha256,
-          approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] } : {} };
+        const input = request.postDataJSON();
+        assert.equal(input.purpose, 'human_review');
+        if (mode === 'skip' && latest) {
+          assert.equal(input.parent_version_id, baseline.criteria_version_id);
+          assert.deepEqual(input.edits.map(edit => [edit.action, edit.criterion_id]), [['exclude', 'pending']]);
+          assert.match(input.edits[0].reason, /담당자.*제외/);
+        }
+        const skipped = mode === 'skip' && input.edits.some(edit => edit.criterion_id === 'pending');
+        latest = { version: { ...baseline, version_no: skipped ? 2 : 1,
+          criteria: mode === 'skip' && !skipped ? [criterion, pending] : [criterion],
+          exclusions: skipped ? [{ criterion_id: 'pending', reason: input.edits[0].reason }] : [] }, sha256: baseline.criteria_sha256,
+          approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] }
+            : mode === 'skip' && !skipped ? { pending: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true); approved = true; body = {};
@@ -61,7 +72,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         assert.equal(request.postDataJSON().decision, 'approve_criteria'); reviewed = true;
         body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
       } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
-      else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria', criteria: { criteria: [criterion] } };
+      else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria', criteria: { criteria: mode === 'skip' ? [criterion, pending] : [criterion] } };
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
         ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, criterion_text: criterion.text,
@@ -125,6 +136,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       if (mode === 'blocker') {
         await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
         await page.getByRole('button', { name: 'title 확인하기', exact: true }).click();
+        assert.ok(await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).isDisabled());
         assert.equal(approved, false);
         assert.equal(uploads, 0);
         assert.equal(reviewed, false);
@@ -132,7 +144,10 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         await page.close();
         continue;
       }
-      if (mode !== 'direct') {
+      if (mode === 'skip') {
+        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
+        await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).click();
+      } else if (mode !== 'direct') {
         await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
         await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
       }
@@ -148,7 +163,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         assert.equal(uploads, 0);
         configured = true;
       }
-      if (mode !== 'direct') await registerPoster.click();
+      if (mode !== 'direct' && mode !== 'skip') await registerPoster.click();
       if (mode === 'text') {
         configured = false;
         await startReview.click();
@@ -156,7 +171,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
         assert.equal(reviewed, false);
         configured = true;
       }
-      if (mode !== 'direct') await startReview.click();
+      if (mode !== 'direct' && mode !== 'skip') await startReview.click();
       await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();

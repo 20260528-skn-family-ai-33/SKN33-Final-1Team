@@ -65,7 +65,8 @@ async function fixture(t, scale) {
       criteria: { criteria: [] },
       validated: { items: state.review.results.map(item => ({ criterion_id: item.criterion_id, criterion_text: item.criterion,
         kind: 'text', verdict: item.status, observed: item.observed_text, required: true, issues: [],
-        image: { asset_version_id: 'test-poster', bbox: item.evidence[0].bbox_xyxy.map((v, i) => v / (i % 2 ? state.review.height : state.review.width)) },
+        image: item.evidence.length ? { asset_version_id: 'test-poster',
+          bbox: item.evidence[0].bbox_xyxy.map((v, i) => v / (i % 2 ? state.review.height : state.review.width)) } : null,
       })) },
       report: { summary: '합성 이미지의 칸 안정성 검증', change_requests: [] },
     });
@@ -136,7 +137,7 @@ for (const scale of SCALES) test(`입력 화면(배율 ${scale * 100}%): 어떤 
 for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장자리 근거 상자의 긴 이름표가 있어도 이미지 칸이 떨리거나 넘치지 않는다`, async t => {
   const { page, state } = await fixture(t, scale);
   const problems = [];
-  for (const [width, height] of SHAPES) {
+  for (const [index, [width, height]] of SHAPES.entries()) {
     const file = await poster(page, width, height);
     const box = (x1, y1, x2, y2) => [x1 * width, y1 * height, x2 * width, y2 * height].map(Math.round);
     // 이름표는 기준 문장이라 길 수 있다. 오른쪽 끝·오른쪽 위 모서리·왼쪽 아래에 근거를 둔다.
@@ -147,18 +148,31 @@ for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장�
         status: 'fail', observed_text: '장소', reason: '시험용', evidence: [{ text: '오른쪽 위', bbox_xyxy: box(.7, .01, .99, .05) }] },
       { criterion_id: 'bottom-left', criterion: '주최: 김천시 · 주관: 김천문화재단 · 후원: 경상북도', type: 'information',
         status: 'review', observed_text: '주최', reason: '시험용', evidence: [{ text: '왼쪽 아래', bbox_xyxy: box(.02, .9, .3, .97) }] },
+      { criterion_id: 'no-location', criterion: '파일 형식: JPEG', type: 'information',
+        status: 'pass', observed_text: 'JPEG', reason: '시험용', evidence: [] },
     ] };
     // 공통 실행의 저장된 결과를 표시한다. 접수·승인 흐름은 framework-entry가 별도로 검증한다.
     await page.goto(`${baseURL}/review/new?framework=test-review`);
     await page.locator('.rv-result-workbench').waitFor();
     await page.waitForFunction(w => document.querySelector('.image-stage-surface img')?.naturalWidth === w, width);
-    assert.equal(await page.getByTestId('evidence-box').count(), 3);
+    const list = page.getByRole('list', { name: '검수 항목 목록', exact: true });
+    // 세 위치를 이미지 모양마다 번갈아 선택한다. 스크린샷용 이미지는 오른쪽 끝 항목을 사용한다.
+    const selected = width === 2480 ? 0 : index % 3;
+    await list.getByRole('button').nth(selected).click();
+    await page.getByRole('button', { name: `근거 영역: ${state.review.results[selected].observed_text}`, exact: true }).waitFor();
+    assert.equal(await page.getByTestId('evidence-box').count(), 1);
     if (process.env.E2E_SCREENSHOT_DIR && width === 2480 && scale === SCALES[0]) {
       // 요청된 경우에만 오른쪽 근거 이름표가 안쪽으로 펼쳐진 모습을 검토용으로 저장한다.
       await mkdir(process.env.E2E_SCREENSHOT_DIR, { recursive: true });
       await page.locator('.image-stage').screenshot({ path: join(process.env.E2E_SCREENSHOT_DIR, 'image-stage-right-label.png') });
     }
     for (const problem of await unstableSizes(page)) problems.push(`${width}x${height} ${problem}`);
+    if (width === 2480) {
+      await list.getByRole('button', { name: /파일 형식: JPEG/ }).click();
+      await page.getByText('이 항목에는 이미지 위치 근거가 제공되지 않았습니다.', { exact: true }).waitFor();
+      assert.equal(await page.getByTestId('evidence-box').count(), 0);
+      assert.equal(await page.getByRole('button', { name: '근거 표시', exact: true }).isDisabled(), true);
+    }
   }
   assert.deepEqual(problems, []);
 });

@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse, StreamingResponse
 from starlette.background import BackgroundTask
 from ...contracts.business import ProjectCreate, ProjectPatch, SetCreate, DraftCreate, DraftPut, Confirm
 from ...hashing.canonical import loads, MAX_BYTES
-from ...security.csrf import developer_allowed
+from ...security.csrf import developer_allowed, request_session_token
 from ...security.errors import AuthError
 from ...storage.local import StorageError
 from ...storage.images import MAX_IMAGE
@@ -24,7 +24,7 @@ def identifier(value):
 def subject(request):
     settings = request.app.state.settings
     dev = developer_allowed(request, settings)
-    principal = request.app.state.auth.current(request.cookies.get(settings.session_cookie), developer_allowed=dev)
+    principal = request.app.state.auth.current(request_session_token(request, settings), developer_allowed=dev)
     if principal is None: raise AuthError('AUTHENTICATION_REQUIRED', 401)
     return principal, dev
 

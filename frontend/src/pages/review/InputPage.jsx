@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router';
 import DocumentInput from './DocumentInput.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { PosterDropArt } from '../../components/ReviewArt.jsx';
 import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
@@ -16,16 +17,30 @@ export default function InputPage({ state, projectId, setProjectId, prepare, ope
   const imageSide = (health?.limits?.image_side || 8192).toLocaleString();
   const busy = sampleBusy || fileBusy || documentBusy;
   const chooseFile = () => fileInput.current?.click();
+  const pasteKey = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘V' : 'Ctrl+V';
+
+  // 복사한 포스터 이미지를 붙여넣으면 바로 검수 이미지로 쓴다. 글자 붙여넣기는 그대로 둔다.
+  useEffect(() => {
+    if (previewMode) return undefined;
+    function paste(event) {
+      const image = [...(event.clipboardData?.files || [])].find(file => file.type.startsWith('image/'));
+      if (!image || busy) return;
+      event.preventDefault();
+      selectFile([image]);
+    }
+    window.addEventListener('paste', paste);
+    return () => window.removeEventListener('paste', paste);
+  }, [busy, previewMode, selectFile]);
 
   return <section className="rv-input-page" aria-labelledby="page-title">
-    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">01 / 자료 등록</span><h1 id="page-title" tabIndex={-1}>어떤 광고물을 검수할까요?</h1><p>포스터를 펼쳐 놓고, 확인할 내용을 준비하세요.</p></div><button type="button" className="rv-button secondary" onClick={sample} disabled={busy}>{sampleBusy ? '불러오는 중…' : '샘플 불러오기'}<Icon name="arrow" /></button></div>
+    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">01 / 자료 등록</span><h1 id="page-title" tabIndex={-1}>어떤 광고물을 검수할까요?</h1><p>포스터를 펼쳐 놓고, 확인할 내용을 준비하세요.</p></div><button type="button" className="rv-button secondary" onClick={sample} disabled={busy} aria-busy={sampleBusy || undefined}>{sampleBusy ? '불러오는 중…' : '샘플 불러오기'}<Icon name="arrow" /></button></div>
     {import.meta.env.DEV && !previewMode && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>}
     <form className="rv-input-form" onSubmit={prepare}>
       <div className="rv-editor-grid">
         <div className="rv-input-canvas-column">
           <input type="file" ref={fileInput} accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" className="sr-only" aria-label="검수 이미지 선택" onChange={e => selectFile([...e.target.files])} />
           <div className={`rv-input-drop-target${dragging ? ' is-dragging' : ''}`} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); }} onDrop={e => { e.preventDefault(); setDragging(false); selectFile([...e.dataTransfer.files]); }}>
-            <ImageStage src={preview} alt="업로드한 검수 이미지 미리보기" title="2. 검수할 이미지" subtitle={state.file ? state.file.name : '이미지 · 포스터 1개'} width={dimensions?.width} height={dimensions?.height} empty={<div className="rv-input-empty"><div className="rv-input-empty-icon"><Icon name="image" /></div><span className="rv-eyebrow">YOUR NEXT CREATIVE</span><h2>여기에 포스터를 놓아주세요.</h2><p>이미지를 끌어다 놓거나<br />파일을 선택해 시작하세요.</p><button type="button" className="rv-button primary" onClick={chooseFile}><Icon name="upload" />파일 선택</button><span>JPG, PNG, WEBP · 최대 {uploadMiB}MiB</span></div>} />
+            <ImageStage src={preview} alt="업로드한 검수 이미지 미리보기" title="2. 검수할 이미지" subtitle={state.file ? state.file.name : '이미지 · 포스터 1개'} width={dimensions?.width} height={dimensions?.height} empty={<div className="rv-input-empty"><PosterDropArt /><span className="rv-eyebrow">YOUR NEXT CREATIVE</span><h2>{dragging ? '놓으면 바로 올라가요.' : '여기에 포스터를 놓아주세요.'}</h2><p>이미지를 끌어다 놓거나 파일을 선택하세요.<br />복사한 이미지는 {pasteKey}로 붙여넣을 수 있어요.</p><button type="button" className="rv-button primary" onClick={chooseFile}><Icon name="upload" />파일 선택</button><span>JPG, PNG, WEBP · 최대 {uploadMiB}MiB</span></div>} />
           </div>
           <div className="rv-input-filebar">
             <div className="rv-input-filemeta"><Icon name={state.file ? 'file' : 'info'} /><div><strong>{state.file ? state.file.name : '원본 이미지로 준비해 주세요.'}</strong><span>{state.file ? `${dimensions ? `${dimensions.width} × ${dimensions.height}px · ` : ''}${(state.file.size / 1024 / 1024).toFixed(2)}MB` : `${imagePixels}만 픽셀 · 한 변 ${imageSide}px 이하`}</span></div></div>

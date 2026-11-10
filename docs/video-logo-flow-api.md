@@ -36,10 +36,19 @@
   모델 파일 `.runtime/paddle-models`(해시 확인, `scripts/prepare_paddle.py`로 준비), 설정은 `paddle_video_worker.build_model`을 함께 쓴다.
   읽는 방식은 실험 그대로: 후보 상자·영상 crop·원본 로고를 잘라(crop은 짧은 변 192px 이상으로 키워) 따로 읽는다
 
+### AWS_TEST 영상 워커 2개 연결
+
+1. 영상 워커 프로세스 두 개를 준비한다. 같은 Pod에서는 `127.0.0.1:8791`, `127.0.0.1:8792`처럼 포트를 나누고, 별도 Pod에서는 각 Pod의 `127.0.0.1:8791`을 사용할 수 있다. 자막 OCR은 `VIDEO_OCR_DEVICE=gpu`로 설정하고 실제 GPU와 VRAM 여유를 확인한다.
+2. 기존 영상 API EC2에 별도 SSH 터널 두 개를 유지한다. 예를 들어 `VIDEO_LOGO_WORKER_URL=http://127.0.0.1:18791`, `VIDEO_LOGO_WORKER_SECONDARY_URL=http://127.0.0.1:18792`로 설정한다. 두 워커에 기존 영상 API 토큰과 동일한 값을 안전하게 전달한다.
+3. 기존 영상 API를 한 프로세스로 유지하고 `VIDEO_MAX_ACTIVE=2`를 설정한다. 두 번째 주소를 비우면 기존 단일 워커 방식으로 실행된다. 두 워커가 설정된 경우 영상 접수 시 준비된 슬롯 중 접수 건수가 적은 쪽에 배정한다. 같은 영상에 연결된 자막 OCR, 로고 후보, 정밀 대조는 그 슬롯을 공유한다. 한 슬롯에서 한 번에 한 작업을 처리한다.
+4. 서로 다른 영상과 원본 로고를 두 건 올린다. 결과의 `worker_slot`, 자막 `runtime.device`, 로고 후보·정밀 대조 상태를 확인한다. 영상 API 로그의 `api_job`, `worker_job`, `slot`으로 각 워커의 GPU 작업 시점을 대조한다.
+
+2026-11-09 AWS_TEST에서 A40 한 장에 영상 워커 두 개를 연결했다. 7초 분량의 1080p 영상 두 건에서 자막 OCR, 로고 후보 탐색, 선택한 영역의 정밀 대조가 모두 완료됐다. 로그에서 두 OCR 작업은 약 17.6초, 두 후보 탐색은 약 44.6초 동안 실행 구간이 겹쳤다.
+
 ## 흐름
 
 1. `POST /api/video-logos`(multipart): `video`, `logos`(1~12장), `logo_texts`(선택, 원본 로고마다 기준 문구 JSON 배열. 줄은 `|`로 구분), `title`,
-   `review_id`(선택, 같은 영상으로 함께 접수한 동영상 검수 작업 id. 화면에서 묶어 보여 주는 데만 쓴다)
+   `review_id`(선택, 같은 영상으로 함께 접수한 동영상 검수 작업 id)
    → `{"id", "status": "queued"}`. 백그라운드에서 1부 후보 찾기를 한다
 2. `GET /api/video-logos/<id>`: `status`가 `candidates_ready`가 될 때까지 확인한다(`stage`, `progress`, `stage_detail`)
    - 프레임 누락: 읽지 못한 초가 있으면 `missing_seconds`(초 목록)와 `warnings`(안내 문구)를 함께 준다.

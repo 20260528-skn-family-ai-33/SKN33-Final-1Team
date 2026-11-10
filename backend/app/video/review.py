@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+from collections import Counter
 from datetime import datetime, timezone
 import hashlib
 from ipaddress import ip_address
@@ -38,6 +39,7 @@ from backend.app.video.frames import probe
 from backend.app.video.frames import resolve_ffmpeg
 from backend.app.video.frames import sniff_container
 from backend.app.video.judge import judge
+from backend.app.video.logos.client import WorkerPool
 from backend.app.video.tracks import build_segments
 from backend.app.video.tracks import build_tracks
 from backend.app.video.tracks import choose_representatives
@@ -267,9 +269,9 @@ def load_role_weights():
     return roles.LogRegWeights.load(configured), "logreg"
 
 
-def recover_jobs(root: Path) -> None:
+def recover_jobs(root: Path, *, isolate_users: bool = False) -> None:
     """프로세스 안에서만 도는 작업이라, 재시작 전 대기·실행 중이던 작업을 실패로 닫는다."""
-    for path in root.glob("*/result.json"):
+    for path in root.glob("*/*/result.json" if isolate_users else "*/result.json"):
         try:
             value = _read_json(path)
             if value.get("status") in {"queued", "running"}:
@@ -454,7 +456,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                         logo_review: Callable[[list[dict], Path], dict] | None = None,
                         logo_readiness: Callable[[], tuple[bool, str]] | None = None,
                         authenticate: Callable[[Request], object] | None = None,
-                        allowed_hosts: tuple[str, ...] | None = None) -> APIRouter:
+                        allowed_hosts: tuple[str, ...] | None = None,
+                        isolate_users: bool = False, worker_pool: WorkerPool | None = None) -> APIRouter:
     """ocr·readiness·logo_*는 테스트에서 실제 모델 대신 주입한다. authenticate는 로컬 로그인 세션 확인 함수다."""
 
     def guard(request: Request) -> None:
@@ -476,16 +479,20 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
     do_logo = logo_review or logo_review_frames
     check_logo = logo_readiness or logo_readiness_default
     lock = threading.RLock()
-    admission, reserved = threading.Lock(), [0]  # 동시 제출이 한도 검사를 함께 통과하지 않게 자리를 예약한다
+    admission = threading.Lock()
+    reserved: dict[str, str] = {}
     policy = limits()
 
-    def directory(job_id: str) -> Path:
+    def owner_root(request: Request) -> Path:
+        return root / request.state.video_owner if isolate_users else root
+
+    def directory(request: Request, job_id: str) -> Path:
         try:
             if str(UUID(job_id)) != job_id:
                 raise ValueError
         except ValueError:
             raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.") from None
-        target = root / job_id
+        target = owner_root(request) / job_id
         if not (target / "result.json").is_file():
             raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
         return target
@@ -496,10 +503,10 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             result.update(changes, updated_at=_now())
             _write_json(target / "result.json", result)
 
-    def status() -> dict:
+    def status(ready_slots: tuple[str, ...] | None = None) -> dict:
         ffmpeg = resolve_ffmpeg()
         try:
-            ocr_ready, ocr_detail = check_ocr()
+            ocr_ready, ocr_detail = worker_pool.readiness(ready_slots) if worker_pool else check_ocr()
         except Exception:
             ocr_ready, ocr_detail = False, "OCR 준비 상태를 확인하지 못했습니다."
         try:  # 로고 검수는 선택이라 전체 ready를 막지 않는다(정보만 제공)
@@ -514,31 +521,36 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 "pipeline": PIPELINE, "limits": policy,
                 "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
 
-    def active_jobs() -> int:
-        count = 0
-        for path in root.glob("*/result.json"):
+    def active_jobs() -> Counter[str]:
+        counts = Counter()
+        for path in root.glob("*/*/result.json" if isolate_users else "*/result.json"):
             try:
-                count += _read_json(path).get("status") in {"queued", "running"}
+                result = _read_json(path)
+                if result.get("status") in {"queued", "running"}:
+                    counts[result.get("worker_slot") or "default"] += 1
             except (OSError, ValueError):
                 continue
-        return count
+        return counts
 
-    def reserve() -> bool:
+    def reserve(job_id: str, ready_slots: tuple[str, ...]) -> str | None:
         with admission:
-            if active_jobs() + reserved[0] >= policy["active_jobs"]:
-                return False
-            reserved[0] += 1
-            return True
+            counts = active_jobs() + Counter(reserved.values())
+            if sum(counts.values()) >= policy["active_jobs"]:
+                return None
+            slot = min(ready_slots, key=counts.__getitem__)
+            reserved[job_id] = slot
+            return slot
 
-    def release() -> None:
+    def publish(target: Path, result: dict) -> None:
         with admission:
-            reserved[0] -= 1
+            _write_json(target / "result.json", result)
+            reserved.pop(result["id"])
 
-    def run(target: Path, demuxer: str) -> None:
+    def run(target: Path, demuxer: str, slot: str) -> None:
         pipeline = Pipeline(target, recognize, update, do_logo)
         pipeline.stage = "extracting"
         try:
-            with inference_lock:  # 시연 환경: 포스터 검수와 같은 잠금으로 CPU 추론을 하나씩
+            with worker_pool.acquire(slot, target.name) if worker_pool else inference_lock:
                 ffmpeg = resolve_ffmpeg()
                 if not ffmpeg:
                     raise RuntimeError("ffmpeg unavailable")
@@ -556,9 +568,9 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return status()
 
     @router.get("")
-    def listing():
+    def listing(request: Request):
         jobs = []
-        for path in root.glob("*/result.json"):
+        for path in owner_root(request).glob("*/result.json"):
             try:
                 value = _read_json(path)
             except (OSError, ValueError):
@@ -574,6 +586,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
                          project_name: str = Form("동영상 검수", min_length=1, max_length=120),
                          disclosure: str = Form("{}"), logo: UploadFile = File(None)):
+            job_id = str(uuid4())
             try:
                 if "content-length" not in request.headers:
                     raise HTTPException(411, "Content-Length가 필요합니다.")
@@ -588,24 +601,24 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     ad = validate_input(json.loads(disclosure))
                 except (ValueError, TypeError):
                     raise HTTPException(422, "검수 기준 또는 광고 입력 형식을 확인해 주세요.") from None
-                ready = await run_in_threadpool(status)
+                ready_slots = await run_in_threadpool(worker_pool.ready_slots) if worker_pool else ("default",)
+                ready = await run_in_threadpool(status, ready_slots)
                 if not ready["ready"]:
                     raise HTTPException(503, ready["detail"])
-                if not await run_in_threadpool(reserve):
+                slot = await run_in_threadpool(reserve, job_id, ready_slots)
+                if slot is None:
                     raise HTTPException(429, f"동영상 검수는 실행·대기 합쳐 {policy['active_jobs']}건까지 받습니다. 잠시 후 다시 시도해 주세요.")
-            except BaseException:
+                return await accept(owner_root(request), background_tasks, video, frozen, criteria_version,
+                                    project_name, ad, logo, job_id, slot)
+            finally:
+                with admission:
+                    reserved.pop(job_id, None)
                 await video.close()
                 if logo is not None:
                     await logo.close()
-                raise
-            try:  # 예약한 자리는 queued 결과를 쓴 뒤(그때부터 active_jobs가 센다) 또는 거부 뒤 돌려준다
-                return await accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo)
-            finally:
-                await run_in_threadpool(release)
 
-        async def accept(background_tasks, video, frozen, criteria_version, project_name, ad, logo):
-            job_id = str(uuid4())
-            target = root / job_id
+        async def accept(account_root, background_tasks, video, frozen, criteria_version, project_name, ad, logo, job_id, slot):
+            target = account_root / job_id
             target.mkdir(parents=True)
             source = target / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
@@ -640,10 +653,6 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             except BaseException:  # 어떤 거부 뒤에도 저장 폴더에 남는 파일이 0개
                 shutil.rmtree(target, ignore_errors=True)
                 raise
-            finally:
-                await video.close()
-                if logo is not None:
-                    await logo.close()
             created = _now()
             media = {**info, "bytes": size, "sha256": digest.hexdigest()}
             _write_json(target / "media.json", media)
@@ -651,25 +660,28 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                                                    "criteria": frozen, "disclosure": ad, "logo_query": has_logo,
                                                    "created_at": created})
             warnings = ["HDR 영상입니다. 톤매핑 없이 처리해 색이 다르게 보일 수 있습니다."] if info["hdr"] else []
-            _write_json(target / "result.json", {
+            result = {
                 "id": job_id, "status": "queued", "stage": "queued", "progress": PROGRESS["queued"],
-                "stage_detail": f"대기 {await run_in_threadpool(active_jobs)}건", "project_name": project_name,
+                "stage_detail": f"대기 {sum((await run_in_threadpool(active_jobs)).values())}건", "project_name": project_name,
                 "criteria_version": criteria_version, "criteria": frozen, "disclosure_input": ad, "media": media,
                 "logo_query": has_logo, "runtime": None, "warnings": warnings, "error": None,
                 "created_at": created, "updated_at": created,
-            })
-            background_tasks.add_task(run, target, demuxer)
+            }
+            if worker_pool:
+                result["worker_slot"] = slot
+            publish(target, result)
+            background_tasks.add_task(run, target, demuxer, slot)
             return {"id": job_id, "status": "queued"}
 
     @router.get("/{job_id}")
-    def get_job(job_id: str):
+    def get_job(request: Request, job_id: str):
         with lock:
-            return _read_json(directory(job_id) / "result.json")
+            return _read_json(directory(request, job_id) / "result.json")
 
     @router.get("/{job_id}/video")
-    def video_file(job_id: str):
+    def video_file(request: Request, job_id: str):
         """구간 이동을 위해 Range 요청에 206으로 답한다. AVI 등은 재생용 MP4를 만들어 두면 그걸 내보낸다."""
-        target = directory(job_id)
+        target = directory(request, job_id)
         media = _read_json(target / "media.json")
         playback = target / "playback.mp4"
         if playback.is_file():
@@ -677,8 +689,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return FileResponse(target / "original.bin", media_type=CONTAINER_MIME.get(media["container"], "application/octet-stream"))
 
     @router.get("/{job_id}/frames/{frame_id}")
-    def frame(job_id: str, frame_id: str):
-        path = directory(job_id) / "frames" / f"{frame_id}.jpg"
+    def frame(request: Request, job_id: str, frame_id: str):
+        path = directory(request, job_id) / "frames" / f"{frame_id}.jpg"
         if not FRAME_ID.match(frame_id) or not path.is_file():
             raise HTTPException(404, "프레임을 찾을 수 없습니다.")
         return FileResponse(path, media_type="image/jpeg")

@@ -7,10 +7,11 @@ import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { labels } from '../pages/review/reviewConstants.js';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
 import '../styles/review-v2.css';
+import '../styles/review-interactions.css';
 
-const tools = [['/review/new', '포스터 검수'], ['/video', '영상 검수'], ['/modeltest', '모델 테스트']];
+const tools = [['/review/new', '포스터 검수'], ['/video', '영상 검수'], ['/review/tasks', '내 작업']];
 
-// 포스터·영상·모델 테스트 화면이 같은 상단 바와 이동·로그아웃 동작을 공유한다.
+// 포스터·영상·내 작업 화면이 같은 상단 바와 이동·로그아웃 동작을 공유한다.
 export function WorkspaceTopbar({ current, locked = false, lockReason, children }) {
   const auth = useOptionalAuth();
   const user = auth?.user;

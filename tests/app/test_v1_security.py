@@ -37,7 +37,7 @@ def test_invalid_v1_profiles_fail_without_revealing_secret(patch):
 def test_default_production_cookies_and_explicit_https():
     values=auth_environment(APP_ENV='production',LOCAL_ADMIN_LOGIN='0',AUTH_ALLOWED_ORIGINS='https://checker.example.com',AUTH_ALLOWED_HOSTS='checker.example.com')
     settings=load_v1_settings(values)
-    assert settings.secure and settings.session_cookie=='__Host-baro_session'
+    assert settings.secure and settings.session_cookie=='__Host-creative_checker_session'
     assert settings.csrf_cookie=='__Host-csrftoken' and settings.seed_cookie=='__Host-baro_csrf_seed'
     assert settings.csrf_secret.reveal() not in repr(settings)
     assert not hasattr(settings,'owner_password')

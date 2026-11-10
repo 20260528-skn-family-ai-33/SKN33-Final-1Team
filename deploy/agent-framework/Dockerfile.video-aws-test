@@ -1,0 +1,8 @@
+ARG VIDEO_RUNTIME_IMAGE=creative-checker-migration:f819ce1
+FROM ${VIDEO_RUNTIME_IMAGE}
+
+WORKDIR /app/video-service
+COPY --chown=10001:10001 backend/ ./backend/
+COPY --chown=10001:10001 scripts/framework_video.py scripts/prepare_paddle.py ./scripts/
+USER 10001:10001
+ENTRYPOINT ["/app/.venv/bin/python", "-m", "scripts.framework_video"]

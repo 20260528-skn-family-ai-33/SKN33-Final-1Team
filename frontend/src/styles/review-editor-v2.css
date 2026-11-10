@@ -141,7 +141,7 @@
 .rv-workspace .rv-criteria-actionbar { position: sticky; bottom: 12px; z-index: 12; margin-top: 24px; border: 1px solid #e3e3df; border-radius: 16px; box-shadow: 0 5px 24px #17171708; }
 .rv-workspace .rv-criteria-blockers { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: #805d24; }
 .rv-workspace .rv-criteria-blockers p { color: #674510; font-size: 13px; font-weight: 600; }
-.rv-workspace .rv-criteria-blockers button { padding: 8px 12px; color: #252520; background: #f3eee4; border: 1px solid #d9c9ad; border-radius: 8px; cursor: pointer; }
+.rv-workspace .rv-criteria-blockers button:not(.rv-button) { padding: 8px 12px; color: #252520; background: #f3eee4; border: 1px solid #d9c9ad; border-radius: 8px; cursor: pointer; }
 .rv-workspace .rv-criteria-item.is-blocked .rv-criteria-item-type { color: #805d24; font-weight: 700; }
 .rv-workspace .rv-input-field :is(input, textarea),
 .rv-workspace .rv-criteria-detail,

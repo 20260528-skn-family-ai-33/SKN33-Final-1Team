@@ -64,7 +64,10 @@ try {
     }
     const cookies = await context.cookies();
     if (config.https) {
-      const session = cookies.find(row => row.name === '__Host-baro_session'); assert.ok(session?.secure && session.httpOnly && session.sameSite === 'Strict' && session.path === '/'); assert.ok(!cookies.some(row => row.name === 'baro_session')); result.secure_cookie_verified = true;
+      const session = cookies.find(row => row.name === '__Host-creative_checker_session');
+      assert.ok(session?.secure && session.httpOnly && session.sameSite === 'Strict' && session.path === '/');
+      assert.ok(!cookies.some(row => ['creative_checker_session', '__Host-baro_session', 'baro_session'].includes(row.name)));
+      result.secure_cookie_verified = true;
       assert.equal(await page.getByRole('button', { name: '개발 계정으로 로그인', exact: true }).count(), 0);
     }
     if (config.screenshotDir) { mkdirSync(config.screenshotDir, { recursive: true }); await page.evaluate(() => scrollTo(0, 0)); await page.screenshot({ path: config.screenshotDir + '/desktop.png', fullPage: true, animations: 'disabled' }); await page.setViewportSize({ width: 390, height: 844 }); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true); await page.screenshot({ path: config.screenshotDir + '/mobile.png', fullPage: true, animations: 'disabled' }); }

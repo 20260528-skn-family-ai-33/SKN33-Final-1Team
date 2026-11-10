@@ -1,5 +1,6 @@
 """Password verification is outside DB transactions; final auth decisions hold locks."""
 from dataclasses import dataclass,field
+from datetime import datetime
 import hashlib,hmac,logging,secrets
 from sqlalchemy import func,select,update
 from ..persistence.database import PersistenceError
@@ -27,12 +28,13 @@ class Principal:
     display_name: str
     email: str | None
     token_hash: str=field(repr=False)
+    expires_at: datetime
 
     def public(self):return public_user({'user_id':self.user_id,'account_kind':self.account_kind,'display_name':self.display_name,'email':self.email})
 
 
 def principal(row):
-    return Principal(row['user_id'],row['session_id'],row['account_kind'],row['display_name'],row['email'],row['token_hash'])
+    return Principal(row['user_id'],row['session_id'],row['account_kind'],row['display_name'],row['email'],row['token_hash'],row['expires_at'])
 
 
 class AuthService:

@@ -57,9 +57,14 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
     if (!['queued', 'extracting'].includes(run.execution_status)) {
       const error = new Error(`문서 분석을 완료하지 못했습니다. 실행 기록을 확인해 주세요. (${run.error?.code || run.execution_status})`);
       error.runId = attempt.runId;
+      if (run.error?.code === 'USER_CANCELLED') {
+        error.message = '대기 작업이 취소되었습니다. 원본과 기록은 보존됩니다.';
+        // Only a later explicit upload starts a new extraction; never retry here.
+        delete attempt.runId; delete attempt.extractionKey;
+      }
       throw error;
     }
-    onProgress?.({ stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
+    onProgress?.({ runId: attempt.runId, stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
       message: run.execution_status === 'queued' ? '문서 분석 차례를 기다리고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
     await waitFor(pollInterval, signal);
   }

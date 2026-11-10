@@ -19,6 +19,17 @@ test('부분 판정이 있어도 A07이 실행 중이면 완료한 경계만 진
   assert.equal(progress.message, '검수 보고서 정리');
 });
 
+test('접수 대기 중이면 다음 단계만 차례 대기로 표시하고 진행률에는 넣지 않는다', () => {
+  const queued = frameworkProgress({ baseline: {}, execution_status: 'queued', step_records: [] });
+  assert.deepEqual(queued.steps.map(step => [step.key, step.status, step.kind]),
+    [['A04_A05', 'waiting', 'poster'], ['A06', 'pending', 'compare'], ['A07', 'pending', 'report']]);
+  assert.equal(queued.percent, null);
+  const resumed = frameworkProgress({ baseline: {}, execution_status: 'queued', step_records: [{ role: 'A04_A05', status: 'completed' }] });
+  assert.deepEqual(resumed.steps.map(step => step.status), ['completed', 'waiting', 'pending']);
+  const running = frameworkProgress({ baseline: {}, execution_status: 'reviewing', step_records: [{ role: 'A04_A05', status: 'running' }] });
+  assert.deepEqual(running.steps.map(step => step.status), ['active', 'pending', 'pending']);
+});
+
 test('PDF 추출 상태와 과거 완료 필드의 조회 호환성을 유지한다', () => {
   const extracting = frameworkProgress({ execution_status: 'extracting', step_records: [{ role: 'A02', status: 'running' }] });
   assert.equal(extracting.percent, null);

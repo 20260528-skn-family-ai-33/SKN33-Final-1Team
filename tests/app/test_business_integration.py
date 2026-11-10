@@ -211,7 +211,7 @@ def test_same_bytes_are_distinct_assets_and_original_preserved(client,auth_datab
 
 
 def test_concurrent_same_key_replays_one_sealed_graph(client,auth_database):
-    pid,image,body,draft=graph(client);who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    pid,image,body,draft=graph(client);who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     from backend.app.contracts.business import Confirm
     data=Confirm(draft_id=draft['id'],expected_revision='1');key=uuid4()
     def work(_): return client.app.state.business.confirm(who,True,UUID(pid),data,key,str(uuid4()))
@@ -222,7 +222,7 @@ def test_concurrent_same_key_replays_one_sealed_graph(client,auth_database):
 
 
 def test_concurrent_distinct_keys_project_numbers_and_equal_content_hash(client):
-    pid,image,body,draft=graph(client);who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    pid,image,body,draft=graph(client);who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     from backend.app.contracts.business import Confirm
     data=Confirm(draft_id=draft['id'],expected_revision='1')
     def work(_): return client.app.state.business.confirm(who,True,UUID(pid),data,uuid4(),str(uuid4()))[0]
