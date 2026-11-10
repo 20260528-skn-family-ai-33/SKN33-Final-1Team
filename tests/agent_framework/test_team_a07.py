@@ -92,6 +92,16 @@ def test_failed_item_comes_first_with_values_location_and_page():
     assert draft.verdict == "fail" and draft.evidence_ids == tuple(number_first)
 
 
+def test_image_without_a_box_reports_no_location_instead_of_failing():
+    """포스터에서 못 찾은 항목은 이미지 정보만 있고 위치 상자가 없다(실제 포스터 흐름). 위치 없이 보고한다."""
+    request = with_items(fixture("fail"), lambda i: i.model_copy(update={
+        "image": i.image.model_copy(update={"bbox": None})}) if i.image else i)
+    assert any(i.image and i.image.bbox is None for i in request.validated.items)
+    draft = report(request)
+    assert draft.verdict == "fail" and "위치" not in draft.summary
+    assert draft.summary.splitlines()[2].startswith("[불충족] 포스터에는 딸기 3개가 표시되어야 합… · 기준 ‘3개’")
+
+
 def test_review_items_with_the_same_reason_are_one_check_line_without_invented_values():
     draft = report(fixture("review"))
     line, = draft.change_requests

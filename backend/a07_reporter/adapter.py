@@ -94,7 +94,7 @@ def _report(item: ValidatedItem, sources: tuple[Evidence, ...]) -> ItemReport:
                       required=item.required, expected=_with_unit(item.expected, item.expected_unit),
                       observed=_with_unit(item.observed, item.observed_unit) if observed else None,
                       observation=OBSERVATION.get(item.observation_status, OBSERVATION["unknown"]),
-                      location=location_hint(item.image.bbox) if item.image else None,
+                      location=location_hint(item.image.bbox) if item.image and item.image.bbox is not None else None,
                       reason_code=code, source=_pages(sources))
 
 
