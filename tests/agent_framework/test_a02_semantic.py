@@ -120,14 +120,15 @@ def test_model_proposed_canonical_dates_keep_the_original_literal_citation():
     assert draft.criteria[2].expected=='2026-10-25'
     assert draft.criteria[2].details.expected_source.quote=='10.25'
     bad=model_reply();bad['requirements'][2].update(expected='2027-10-25',normalized_expected='2027-10-25')
-    with pytest.raises(AdapterFailure):extract(bad)
+    _,partial,_,_=extract(bad)
+    assert len(partial.criteria)==4 and partial.extraction.rejected_candidates[0].candidate_index==3
 
 
 @pytest.mark.parametrize('mutation,code',[
     ('value','A02_EXPECTED_UNGROUNDED'),('source','A02_SOURCE_MISMATCH'),('backwards','A02_SOURCE_MISMATCH'),
     ('qualifier','A02_QUALIFIER_UNGROUNDED'),('unit','A02_UNIT_UNGROUNDED'),
     ('normalized','A02_NORMALIZED_VALUE_UNGROUNDED'),('normalization_kind','A02_NORMALIZATION_UNSUPPORTED'),
-    ('duplicate','A02_DUPLICATE_REQUIREMENT'),('owned_id','A02_RESPONSE_INVALID'),
+    ('duplicate','A02_DUPLICATE_REQUIREMENT'),
 ])
 def test_semantic_output_is_rejected_instead_of_repaired(mutation,code):
     reply=model_reply();item=reply['requirements'][0]
@@ -139,9 +140,28 @@ def test_semantic_output_is_rejected_instead_of_repaired(mutation,code):
     if mutation=='normalized':reply['requirements'][2]['normalized_expected']='2027-10-25'
     if mutation=='normalization_kind':item['normalized_expected']='2026-10-23'
     if mutation=='duplicate':reply['requirements'].append(deepcopy(item))
-    if mutation=='owned_id':item['actor_id']='not-owned-by-model'
+    _,draft,_,_=extract(reply)
+    rejected,=draft.extraction.rejected_candidates
+    assert rejected.code==code
+    assert len(draft.criteria)==len(reply['requirements'])-1
+    if mutation in ('source','backwards'):
+        assert rejected.source is None
+    else:
+        assert rejected.source.quote in BRIEF
+
+
+def test_response_with_unowned_fields_still_fails_as_an_invalid_document_reply():
+    reply=model_reply()
+    reply['requirements'][0]['actor_id']='not-owned-by-model'
     with pytest.raises(AdapterFailure) as error:extract(reply)
-    assert error.value.code==code
+    assert error.value.code=='A02_RESPONSE_INVALID'
+
+
+def test_all_rejected_items_fail_even_when_the_source_has_a_pending_note():
+    doc=text_document(BRIEF+'\n관람시간은 확인 중입니다.')
+    reply={'requirements':[requirement(1,'event_name','없는 행사 이름')]}
+    with pytest.raises(AdapterFailure) as error:extract(reply,doc)
+    assert error.value.code=='A02_EXPECTED_UNGROUNDED'
 
 
 def test_model_missing_requirement_cannot_be_filled_and_omitted_source_is_retained():
@@ -154,8 +174,10 @@ def test_model_missing_requirement_cannot_be_filled_and_omitted_source_is_retain
     with pytest.raises(AdapterFailure) as error:accept_role_output('A02',req,bad)
     assert error.value.code=='EXTRACTION_UNRESOLVED_SOURCE_OMITTED'
     reply=model_reply();reply['requirements'].append(requirement(5,'viewing_hours','확인 중',operator='manual',unresolved=True))
-    with pytest.raises(AdapterFailure) as error:extract(reply,doc)
-    assert error.value.code=='A02_UNRESOLVED_VALUE_INVENTED'
+    _,partial,_,_=extract(reply,doc)
+    rejected,=partial.extraction.rejected_candidates
+    assert rejected.code=='A02_UNRESOLVED_VALUE_INVENTED'
+    assert partial.criteria==draft.criteria
 
 
 def test_model_supplied_missing_condition_keeps_its_semantic_field():

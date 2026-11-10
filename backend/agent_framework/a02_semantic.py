@@ -6,12 +6,12 @@ from hashlib import sha256
 import re
 from types import SimpleNamespace
 
-from pydantic import BaseModel,ConfigDict,Field
+from pydantic import BaseModel,ConfigDict,Field,ValidationError
 from typing import Literal
 
 from .a02_requirements import CompiledRequirement,reference,source_quote,unresolved_passages
 from .a02_source_selection import UNRESOLVED_SOURCE
-from .contracts import RequirementDetails,RequirementPresentation
+from .contracts import ExtractionRejection,RequirementDetails,RequirementPresentation
 from .ports import AdapterFailure
 
 SEMANTIC_PROMPT='''You are A02, the requirement analyst for creative poster review.
@@ -282,63 +282,84 @@ def validate_presentation(presentation,quote,literal,unit,field=None):
         invalid('A02_PRESENTATION_SCOPE_LOST')
 
 
+def _materialize_requirement(item,index,version,source,original,*,presentation):
+    warnings=[]
+    # A supporting rule retains an explicitly labelled adjacent allowance;
+    # it does not change the model's target, field, expected value or unit.
+    quote=source_quote(SimpleNamespace(quote=original),source)
+    missing=item.unresolved
+    if missing and (item.expected or item.unit is not None or item.normalized_expected is not None or item.operator!='manual'):
+        invalid('A02_UNRESOLVED_VALUE_INVENTED')
+    if item.expected and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
+    literal=grounded_literal(item.expected,item.normalized_expected,item.field,quote)
+    expected=item.expected
+    if expected and literal!=expected and expected!=item.normalized_expected:
+        expected=literal;warnings.append('expected_spacing_copied_from_source')
+    if presentation and not missing and item.presentation is None:invalid('A02_PRESENTATION_MISSING')
+    if missing and item.presentation is not None:invalid('A02_UNRESOLVED_VALUE_INVENTED')
+    validate_presentation(item.presentation,quote,literal,item.unit,item.field)
+    if item.unit is not None and (not item.unit.strip() or item.unit not in quote):invalid('A02_UNIT_UNGROUNDED')
+    supported={'text':{'equals','contains','manual'},'number':{'equals','gte','lte','manual'},
+        'visual':{'present','manual'},'unsupported':{'manual'}}
+    if item.operator not in supported[item.kind]:invalid('A02_RESPONSE_INVALID')
+    if item.operator!='manual' and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
+    if item.kind in ('text','visual','unsupported') and item.unit is not None:invalid('A02_UNIT_UNGROUNDED')
+    if item.kind=='number' and item.expected:
+        from .validation import _number
+        try:_number(item.expected,item.unit)
+        except ValueError:invalid('A02_RESPONSE_INVALID')
+    if item.target=='poster_visual' and item.kind not in ('visual','unsupported'):invalid('A02_RESPONSE_INVALID')
+    if item.target=='poster_text' and item.kind not in ('text','unsupported'):invalid('A02_RESPONSE_INVALID')
+    if item.field in ('pixel_width','pixel_height','resolution_dpi','file_size_bytes') and item.kind not in ('number','unsupported'):
+        invalid('A02_RESPONSE_INVALID')
+    qualifiers=[]
+    for chosen in item.qualifiers:
+        parent,text=selected_range(chosen,index)
+        if parent.block_id!=source.block_id or parent.page!=source.page or text not in quote:invalid('A02_QUALIFIER_UNGROUNDED')
+        qualifiers.append(reference(version,source,text))
+    if quote!=original:
+        extra=quote[len(original):].lstrip('\r\n')
+        if extra and not any(extra in q.quote for q in qualifiers):qualifiers.append(reference(version,source,extra))
+        warnings.append('source_qualifier_retained_by_policy')
+    # Qualifier language is a conservative review flag, not an interpretation.
+    if not qualifiers and re.search(r'허용|예외|또는|줄바꿈|공백',quote):
+        qualifiers.append(reference(version,source,quote));warnings.append('source_qualifier_review_required')
+    target,kind=item.target,item.kind
+    if missing and item.field=='unspecified':
+        # A placeholder is a source-grounded note with no comparison value.
+        target,kind='unspecified','unsupported'
+    details=RequirementDetails(compiler='qwen-semantic-v1',target=target,field=item.field,
+        expected_source=reference(version,source,literal) if item.expected else None,
+        presentation=item.presentation,
+        normalized_expected=item.normalized_expected,qualifiers=tuple(qualifiers),origin='model_structured')
+    key=(source.block_id,quote,target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
+    criterion=CompiledRequirement(quote,kind,item.operator,expected,item.unit,item.required,
+        source.block_id,source.page,quote,missing,details)
+    return criterion,key,warnings
+
+
 def materialize_semantics(reply,index,sources,version,*,presentation=False):
-    result=[];seen=set();warnings=[]
-    for item in reply.requirements:
-        source,original=selected_range(item.source,index)
-        # A supporting rule retains an explicitly labelled adjacent allowance;
-        # it does not change the model's target, field, expected value or unit.
-        quote=source_quote(SimpleNamespace(quote=original),source)
-        missing=item.unresolved
-        if missing and (item.expected or item.unit is not None or item.normalized_expected is not None or item.operator!='manual'):
-            invalid('A02_UNRESOLVED_VALUE_INVENTED')
-        if item.expected and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
-        literal=grounded_literal(item.expected,item.normalized_expected,item.field,quote)
-        expected=item.expected
-        if expected and literal!=expected and expected!=item.normalized_expected:
-            expected=literal;warnings.append('expected_spacing_copied_from_source')
-        if presentation and not missing and item.presentation is None:invalid('A02_PRESENTATION_MISSING')
-        if missing and item.presentation is not None:invalid('A02_UNRESOLVED_VALUE_INVENTED')
-        validate_presentation(item.presentation,quote,literal,item.unit,item.field)
-        if item.unit is not None and (not item.unit.strip() or item.unit not in quote):invalid('A02_UNIT_UNGROUNDED')
-        supported={'text':{'equals','contains','manual'},'number':{'equals','gte','lte','manual'},
-            'visual':{'present','manual'},'unsupported':{'manual'}}
-        if item.operator not in supported[item.kind]:invalid('A02_RESPONSE_INVALID')
-        if item.operator!='manual' and not item.expected.strip():invalid('A02_EXPECTED_UNGROUNDED')
-        if item.kind in ('text','visual','unsupported') and item.unit is not None:invalid('A02_UNIT_UNGROUNDED')
-        if item.kind=='number' and item.expected:
-            from .validation import _number
-            try:_number(item.expected,item.unit)
-            except ValueError:invalid('A02_RESPONSE_INVALID')
-        if item.target=='poster_visual' and item.kind not in ('visual','unsupported'):invalid('A02_RESPONSE_INVALID')
-        if item.target=='poster_text' and item.kind not in ('text','unsupported'):invalid('A02_RESPONSE_INVALID')
-        if item.field in ('pixel_width','pixel_height','resolution_dpi','file_size_bytes') and item.kind not in ('number','unsupported'):
-            invalid('A02_RESPONSE_INVALID')
-        qualifiers=[]
-        for chosen in item.qualifiers:
-            parent,text=selected_range(chosen,index)
-            if parent.block_id!=source.block_id or parent.page!=source.page or text not in quote:invalid('A02_QUALIFIER_UNGROUNDED')
-            qualifiers.append(reference(version,source,text))
-        if quote!=original:
-            extra=quote[len(original):].lstrip('\r\n')
-            if extra and not any(extra in q.quote for q in qualifiers):qualifiers.append(reference(version,source,extra))
-            warnings.append('source_qualifier_retained_by_policy')
-        # Qualifier language is a conservative review flag, not an interpretation.
-        if not qualifiers and re.search(r'허용|예외|또는|줄바꿈|공백',quote):
-            qualifiers.append(reference(version,source,quote));warnings.append('source_qualifier_review_required')
-        target,kind=item.target,item.kind
-        if missing and item.field=='unspecified':
-            # A placeholder is a source-grounded note with no comparison value.
-            target,kind='unspecified','unsupported'
-        details=RequirementDetails(compiler='qwen-semantic-v1',target=target,field=item.field,
-            expected_source=reference(version,source,literal) if item.expected else None,
-            presentation=item.presentation,
-            normalized_expected=item.normalized_expected,qualifiers=tuple(qualifiers),origin='model_structured')
-        key=(source.block_id,quote,target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
-        if key in seen:invalid('A02_DUPLICATE_REQUIREMENT')
+    result=[]
+    seen=set()
+    warnings=[]
+    rejections=[]
+    for candidate_index,item in enumerate(reply.requirements,1):
+        source=None
+        try:
+            source,original=selected_range(item.source,index)
+            criterion,key,item_warnings=_materialize_requirement(
+                item,index,version,source,original,presentation=presentation)
+            if key in seen:invalid('A02_DUPLICATE_REQUIREMENT')
+        except (AdapterFailure,ValidationError) as error:
+            code=error.code if isinstance(error,AdapterFailure) else 'A02_RESPONSE_INVALID'
+            rejections.append(ExtractionRejection(candidate_index=candidate_index,code=code,
+                source=reference(version,source,original) if source is not None else None))
+            continue
         seen.add(key)
-        result.append(CompiledRequirement(quote,kind,item.operator,expected,item.unit,item.required,
-            source.block_id,source.page,quote,missing,details))
+        result.append(criterion)
+        warnings.extend(item_warnings)
+    if not result:
+        invalid(rejections[0].code)
     # Supporting coverage check retains only literal undecided source passages.
     # It does not fill an answer or replace any semantic choice made above.
     for source in sources:
@@ -348,4 +369,4 @@ def materialize_semantics(reply,index,sources,version,*,presentation=False):
                 RequirementDetails(compiler='qwen-semantic-v1',target='unspecified',field='unspecified',origin='retained_unresolved_source')))
             warnings.append('explicit_unresolved_source_retained_by_policy')
     if len(result)>128:invalid('A02_COMPILED_CRITERIA_LIMIT')
-    return tuple(result),tuple(dict.fromkeys(warnings))
+    return tuple(result),tuple(dict.fromkeys(warnings)),tuple(rejections)

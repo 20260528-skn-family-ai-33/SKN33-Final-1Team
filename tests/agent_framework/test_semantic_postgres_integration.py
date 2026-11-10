@@ -1,4 +1,5 @@
 """Isolated PostgreSQL, fake model outputs and scripted test approvals only."""
+from copy import deepcopy
 from hashlib import sha256
 import json
 from types import SimpleNamespace
@@ -270,7 +271,8 @@ def test_model_paragraphs_persist_and_project_to_frontend_without_approval(seman
         assert client.get(path).status_code==401
 
 
-def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semantic):
+@pytest.mark.parametrize('with_rejection',[False,True])
+def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semantic,with_rejection):
     from pathlib import Path
     from hashlib import sha256
     from tests.agent_framework.replay_contract import current_contract_copy
@@ -285,7 +287,12 @@ def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semant
         current=SimpleNamespace(**(vars(r)|{'client':client,'app':app,'config':config}))
         uploaded=upload(current,raw,filename=pdf.name);assert uploaded.status_code==201,uploaded.text
         # Preserve the v2 model recording; replay only its copied version tags at v3.
-        rid,snapshot,_,calls=run_extraction(current,uploaded.json(),current_contract_copy(recorded['response']))
+        reply=current_contract_copy(recorded['response'])
+        if with_rejection:
+            rejected=deepcopy(next(item for item in reply['requirements'] if item['field']=='venue'))
+            rejected['expected']='원문에 없는 장소'
+            reply['requirements'].append(rejected)
+        rid,snapshot,_,calls=run_extraction(current,uploaded.json(),reply)
         assert len(calls)==1 and len(snapshot['criteria']['criteria'])==13
         response=client.get('/api/framework/v1/runs/'+rid+'/requirements')
         assert response.status_code==200,response.text
@@ -294,3 +301,10 @@ def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semant
         assert '가로: 3000픽셀' in [c['text'] for c in result['conditions']]
         assert '세로: 3000픽셀' in [c['text'] for c in result['conditions']]
         assert not snapshot['approvals'] and snapshot['execution_status']=='waiting_criteria'
+        if with_rejection:
+            rejected,=snapshot['criteria']['extraction']['rejected_candidates']
+            assert rejected['code']=='A02_EXPECTED_UNGROUNDED'
+            assert '열린문화공간 후소 전시실' in ' '.join(rejected['source']['quote'].split())
+            assert result['approved'] is False and any('후보 1개' in warning for warning in result['warnings'])
+            reloaded=client.get('/api/framework/v1/runs/'+rid).json()
+            assert reloaded['criteria']==snapshot['criteria']
