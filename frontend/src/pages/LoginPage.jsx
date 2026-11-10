@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthProvider.jsx';
 import { authErrorMessage, loginDestination } from '../auth/helpers.js';
 import { registerAccount } from '../api/auth.js';
 import { registrationErrorMessage, registrationIssue } from '../auth/registration.js';
+import posterReviewExample from '../assets/poster-review-example.png';
 import '../styles/auth.css';
 
 // 로그인 입력과 세션 확인 결과를 표시하고 성공한 사용자를 검수 화면으로 연결한다.
@@ -112,16 +113,13 @@ export function LoginPage() {
 
   return <div className="auth-page">
     <header className="auth-header"><Brand onClick={() => navigate('/')} /><Link className="auth-home-link" to="/">서비스 소개로 돌아가기<Icon name="arrow" /></Link></header>
-    <main className="auth-main">
-      <section className="auth-intro" aria-label="로그인 안내">
+    <main className="auth-main" aria-labelledby="login-intro-title">
+      <section className="auth-intro" aria-labelledby="login-intro-title">
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
-        <h1>검수의 시작을,<br /><em>한곳에서.</em></h1>
+        <h1 id="login-intro-title">검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>
-        <ol className="auth-steps" aria-label="이용 순서">
-          <li className="auth-step-current" aria-current="step"><span>01</span><div><strong>로그인</strong><p>내 계정으로 검수를 시작해요.</p></div><Icon name="lock" /></li>
-          <li><span>02</span><div><strong>자료 입력 · 기준 확정</strong><p>확인할 이미지와 조건을 준비해요.</p></div></li>
-          <li><span>03</span><div><strong>검수 실행 · 결과 확인</strong><p>항목별 결과와 이미지 근거를 살펴봐요.</p></div></li>
-        </ol>
+        <figure className="auth-example"><img src={posterReviewExample} alt="포스터와 항목별 판정 근거를 나란히 표시한 예시" width="921" height="543" />
+          <figcaption>포스터 검수 결과 예시</figcaption></figure>
       </section>
       <section className="auth-card" aria-labelledby="login-title">
         <div className="auth-card-heading"><span className="auth-symbol"><Icon name="lock" /></span><p className="eyebrow">{signup ? 'CREATE ACCOUNT · 회원가입' : 'STEP 01 · 로그인'}</p><h2 id="login-title" tabIndex="-1">{signup ? '처음 오셨나요?' : '다시 만나 반가워요.'}</h2><p>{signup ? '계정을 만들고 첫 검수를 준비하세요.' : '아이디와 비밀번호로 로그인해 주세요.'}</p></div>

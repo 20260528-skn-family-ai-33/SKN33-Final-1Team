@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { Brand } from '../components/Brand.jsx';
+import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { useScrollScene } from '../hooks/useScrollScene.js';
 import skyPreview from '../assets/fairweather-public-preview.png';
@@ -53,8 +55,12 @@ function FeatureArtwork({ kind }) {
 // 소개 화면은 API 요청 없이 렌더링하고, 실제 작업은 각 프로필의 진입 경로에 맡긴다.
 export default function LandingPage({ profile = 'legacy' }) {
   const navigate = useNavigate();
+  const auth = useOptionalAuth();
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const { rootRef, sceneRef, stageRef } = useScrollScene();
   const isV1 = profile === 'v1' || profile === 'rebuild';
+  const account = auth?.status === 'authenticated' ? auth.user.display_name || auth.user.username || '검수 담당자' : null;
   const sampleLabel = isV1 ? '프로젝트 둘러보기' : '샘플로 체험하기';
   function start() { navigate(isV1 ? '/projects' : '/review/new'); }
   function sample() { navigate(isV1 ? '/projects' : '/review/new?sample=1'); }
@@ -62,14 +68,28 @@ export default function LandingPage({ profile = 'legacy' }) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' });
   }
+  async function logout() {
+    if (logoutPending) return;
+    setLogoutPending(true);
+    setLogoutError('');
+    try { await auth.logout(); }
+    catch (error) { setLogoutError(error.message || '로그아웃하지 못했습니다. 다시 시도해 주세요.'); }
+    finally { setLogoutPending(false); }
+  }
 
   return <section className="fw-landing" ref={rootRef} aria-label="서비스 소개">
     <a className="fw-skip-link" href="#landing-content">본문으로 바로 가기</a>
     <header className="fw-nav fw-container">
       <Brand onClick={home} />
       <nav className="fw-nav-links" aria-label="메인 메뉴"><a href="#features">서비스 소개</a><a href="#how-it-works">이용 방법</a></nav>
-      <div className="fw-nav-actions"><Link className="fw-login" to="/login">로그인</Link><button className="fw-button fw-button-light fw-nav-start" onClick={start}>검수 시작하기 <span aria-hidden="true">↗</span></button></div>
+      <div className="fw-nav-actions">
+        {account ? <><span className="fw-account" title={account}>{account}</span>
+          <button type="button" className="fw-login" disabled={logoutPending} onClick={logout}>{logoutPending ? '로그아웃 중…' : '로그아웃'}</button></>
+          : <Link className="fw-login" to="/login">로그인</Link>}
+        <button type="button" className="fw-button fw-button-light fw-nav-start" disabled={logoutPending} onClick={start}>검수 시작하기 <span aria-hidden="true">↗</span></button>
+      </div>
     </header>
+    {logoutError && <div className="fw-container"><ErrorMessage message={logoutError} /></div>}
     <main id="landing-content" tabIndex={-1}>
       <div className="fw-container">
         <div className="fw-intro-line"><span><i aria-hidden="true" />이미지 · 포스터 검수</span><a href="#how-it-works">기준부터 결과까지 <span aria-hidden="true">↗</span></a></div>
@@ -81,7 +101,7 @@ export default function LandingPage({ profile = 'legacy' }) {
             </div>
             <div className="fw-hero-copy">
               <div><h1 id="fw-hero-title">좋은 작업이<br />좋은 마무리를<br />만날 수 있도록.</h1><p>포스터 속 작은 문구부터 놓치기 쉬운 조건까지.<br className="fw-desktop-break" /> 확정한 기준과 이미지 근거를 함께 확인하세요.</p><div className="fw-actions"><button className="fw-button fw-button-dark" onClick={start}>검수 시작하기 <Icon name="arrow" /></button><button className="fw-button fw-button-light" onClick={sample}>{sampleLabel}</button></div></div>
-              <div className="fw-hero-aside"><span className="fw-overline">A CLEARER FINISH</span><p>기준을 정하고.<br />근거를 살피고.<br />사람이 판단합니다.</p><span className="fw-scroll-hint">아래로 이어서 보기 <span aria-hidden="true">↓</span></span></div>
+              <div className="fw-hero-aside"><span className="fw-overline">A CLEARER FINISH</span><p>기준을 정하고.<br />근거를 살피고.<br />사람이 판단합니다.</p><a className="fw-scroll-hint" href="#features">아래로 이어서 보기 <span aria-hidden="true">↓</span></a></div>
             </div>
           </div>
         </section>
