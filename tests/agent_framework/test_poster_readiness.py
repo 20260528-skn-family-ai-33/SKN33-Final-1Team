@@ -61,6 +61,7 @@ def test_complete_poster_health_preserves_existing_fields_without_importing_fact
         'pdf_registration': True, 'free_text_registration': True, 'pdf_extraction_mode': 'qwen',
         'requirements_presentation': True, 'context_preparation': 'approved_sources',
         'graph_projection': False, 'criteria_review': True, 'poster_reviews': True,
+        'task_controls': True,
         'authentication': 'existing_M008_session_and_CSRF', 'adapters_initialized_in_api': False,
         'production_ready': False, 'poster_review_ready': True, 'poster_review_blockers': [],
     }
