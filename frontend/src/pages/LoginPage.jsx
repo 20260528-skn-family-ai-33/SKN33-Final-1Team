@@ -26,20 +26,26 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const submittingRef = useRef(false);
   const mounted = useRef(false);
+  const formTitle = useRef(null);
   const usernameInput = useRef(null);
   const passwordInput = useRef(null);
   const nameInput = useRef(null);
   const confirmationInput = useRef(null);
-  const destination = loginDestination(location.state?.from);
+  const from = location.state?.from;
+  const destination = from?.pathname === '/review/tasks' ? '/review/tasks' : loginDestination(from);
   const unavailable = status === 'unavailable';
   const checking = status === 'checking';
 
   // 페이지 진입을 알리고 이탈 후 늦게 완료된 요청이 화면을 이동시키지 않도록 한다.
   useEffect(() => {
     mounted.current = true;
-    document.getElementById('login-title')?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
     return () => { mounted.current = false; };
   }, []);
+
+  useEffect(() => {
+    formTitle.current?.focus({ preventScroll: true });
+  }, [signup]);
 
   // 공란과 연속 제출을 막고 서버가 세션을 확인한 뒤에만 페이지를 이동한다.
   async function handleLogin(event) {
@@ -73,8 +79,8 @@ export function LoginPage() {
         setSignup(false);
         setPassword('');
         setConfirmation('');
+        setShowPassword(false);
         setSuccess('회원가입이 완료됐습니다. 이메일과 비밀번호로 로그인해 주세요.');
-        passwordInput.current?.focus();
         return;
       }
       const user = await login({ username: username.trim(), password });
@@ -111,7 +117,7 @@ export function LoginPage() {
 
   if (status === 'authenticated') return <Navigate to={destination} replace />;
 
-  return <div className="auth-page">
+  return <div className="auth-page auth-page--public">
     <header className="auth-header"><Brand onClick={() => navigate('/')} /><Link className="auth-home-link" to="/">서비스 소개로 돌아가기<Icon name="arrow" /></Link></header>
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
@@ -122,7 +128,7 @@ export function LoginPage() {
           <figcaption>포스터 검수 결과 예시</figcaption></figure>
       </section>
       <section className="auth-card" aria-labelledby="login-title">
-        <div className="auth-card-heading"><span className="auth-symbol"><Icon name="lock" /></span><p className="eyebrow">{signup ? 'CREATE ACCOUNT · 회원가입' : 'STEP 01 · 로그인'}</p><h2 id="login-title" tabIndex="-1">{signup ? '처음 오셨나요?' : '다시 만나 반가워요.'}</h2><p>{signup ? '계정을 만들고 첫 검수를 준비하세요.' : '아이디와 비밀번호로 로그인해 주세요.'}</p></div>
+        <div className="auth-card-heading"><span className="auth-symbol"><Icon name="lock" /></span><h2 id="login-title" ref={formTitle} tabIndex={-1}>{signup ? '처음 오셨나요?' : '다시 만나 반가워요.'}</h2><p>{signup ? '계정을 만들고 첫 검수를 준비하세요.' : '아이디와 비밀번호로 로그인해 주세요.'}</p></div>
         <form className="auth-form" onSubmit={handleLogin} noValidate aria-busy={submitting || checking}>
           {signup && <div className="auth-field"><label htmlFor="signup-name">이름</label><input id="signup-name" name="display_name" ref={nameInput} value={displayName} onChange={event => { setDisplayName(event.target.value); setError(''); }} placeholder="이름을 입력해 주세요" autoComplete="name" maxLength={100} required readOnly={submitting} /></div>}
           <div className="auth-field"><label htmlFor="login-username">{signup ? '이메일' : '아이디'}</label><input id="login-username" name={signup ? 'email' : 'username'} type={signup ? 'email' : 'text'} ref={usernameInput} value={username} onChange={event => { setUsername(event.target.value); setError(''); }} placeholder={signup ? 'name@example.com' : '이메일 또는 아이디를 입력해 주세요'} autoComplete={signup ? 'email' : 'username'} autoCapitalize="none" spellCheck={false} required readOnly={submitting} /></div>
@@ -132,12 +138,12 @@ export function LoginPage() {
           {success && <p className="auth-success" role="status">{success}</p>}
           {checking && <p className="auth-notice" role="status"><span className="auth-spinner" aria-hidden="true" />로그인 상태를 확인하고 있어요.</p>}
           {unavailable && <div className="auth-unavailable"><ErrorMessage message={authErrorMessage(sessionError, 'session')} /><button className="text-btn" type="button" onClick={retrySession}>로그인 상태 다시 확인하기</button></div>}
-          <button className="btn primary auth-submit" type="submit" disabled={submitting || checking || unavailable}>{submitting ? (signup ? '가입 중…' : '로그인 중…') : (signup ? '가입하기' : '로그인')}{!submitting && <Icon name="arrow" />}</button>
+          <button className="auth-submit" type="submit" disabled={submitting || checking || unavailable}>{submitting ? (signup ? '가입 중…' : '로그인 중…') : (signup ? '가입하기' : '로그인')}{!submitting && <Icon name="arrow" />}</button>
           <div className="auth-switch"><span>{signup ? '이미 계정이 있나요?' : '아직 계정이 없나요?'}</span><button className="text-btn" type="button" onClick={switchMode} disabled={submitting || checking}>{signup ? '로그인으로 돌아가기' : '회원가입'}</button></div>
+          <p className="auth-note">자동 판정과 담당자의 최종 승인은 구분됩니다.</p>
         </form>
       </section>
     </main>
-    <footer className="auth-footer">OCR 근거 기반 검수 · 최종 승인은 담당자가 결정합니다.</footer>
   </div>;
 }
 

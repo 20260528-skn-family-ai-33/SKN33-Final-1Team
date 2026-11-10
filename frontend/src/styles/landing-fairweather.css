@@ -1,3 +1,4 @@
+html:has(.fw-landing) { scrollbar-gutter: stable; }
 .fw-landing {
   --fw-canvas: #f2f2f1;
   --fw-ink: #171717;
@@ -7,6 +8,9 @@
   color: var(--fw-ink);
   background: var(--dot-grid, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath fill='%23dcdcd9' d='M0 0h2v2H0z'/%3E%3C/svg%3E")) var(--fw-canvas);
   font-family: var(--font-ui, 'Helvetica Neue', Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif);
+  font-size: 14px;
+  letter-spacing: -.015em;
+  word-break: normal;
   overflow-x: clip;
   line-height: 1.6;
   min-height: 100vh;
@@ -21,12 +25,13 @@
 .fw-skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 12px 18px; background: white; border: 1px solid var(--fw-ink); border-radius: 8px; transform: translateY(-180%); }
 .fw-skip-link:focus { transform: none; }
 .fw-nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 90px; }
-.fw-nav .brand.brand-button, .fw-footer .brand.brand-button { color: var(--fw-ink); font-size: 19px; white-space: nowrap; letter-spacing: -.045em; }
+.fw-nav .brand.brand-button { color: var(--fw-ink); font-size: 19px; font-weight: 700; line-height: inherit; padding: 0; white-space: nowrap; letter-spacing: -.045em; }
+.fw-nav .brand-symbol { width: 26px; height: 26px; }
 .fw-nav-links, .fw-nav-actions { display: flex; align-items: center; gap: 28px; font-size: 14px; }
 .fw-nav-links { color: var(--fw-muted); }
 .fw-nav-links a:hover, .fw-login:hover { color: var(--fw-ink); text-decoration: underline; text-underline-offset: 5px; }
 .fw-nav-actions { gap: 24px; }
-.fw-account { max-width: min(16vw, 180px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fw-account { max-width: min(16vw, 23ch); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; }
 button.fw-login { border: 0; padding: 0; color: inherit; background: transparent; white-space: nowrap; }
 .fw-button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 50px; border-radius: 12px; padding: 13px 24px; font-size: 14px !important; font-weight: 550 !important; line-height: 1.4; border: 1px solid transparent; cursor: pointer; transition: background-color .2s, border-color .2s, box-shadow .2s; }
 .fw-button .icon { width: 18px; height: 18px; }
@@ -138,10 +143,6 @@ button.fw-login { border: 0; padding: 0; color: inherit; background: transparent
 .fw-invite { margin-top: 130px; padding: 60px 20px 110px; text-align: center; }
 .fw-invite h2 { font-size: clamp(36px, 4.5vw, 55px); line-height: 1.22; margin-top: 23px; }
 .fw-invite p { font-size: 15px; color: var(--fw-muted); margin: 24px 0 29px; line-height: 1.8; }
-.fw-footer { padding-block: 28px 34px; border-top: 1px solid #dcdcd9; display: flex; justify-content: space-between; align-items: center; gap: 24px; font-size: 10px; color: var(--fw-muted); }
-.fw-footer .brand.brand-button { font-size: 15px; }
-.fw-landing[data-reveal="on"] [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s cubic-bezier(.2,.7,.2,1); }
-.fw-landing[data-reveal="on"] [data-reveal][data-visible="true"], .fw-landing[data-reveal="on"] [data-reveal]:focus-within { opacity: 1; transform: none; }
 
 @media (max-width: 1100px) {
   .fw-nav-links, .fw-nav-actions { gap: 20px; }
@@ -186,8 +187,6 @@ button.fw-login { border: 0; padding: 0; color: inherit; background: transparent
   .fw-how-list h3 { font-size: 16px; }
   .fw-how-list p { font-size: 12px; }
   .fw-invite { margin-top: 75px; padding-bottom: 80px; }
-  .fw-footer { flex-wrap: wrap; }
-  .fw-footer p { order: 3; width: 100%; }
 }
 @media (max-width: 600px) {
   .fw-container { width: calc(100% - 32px); }
@@ -253,9 +252,6 @@ button.fw-login { border: 0; padding: 0; color: inherit; background: transparent
   .fw-invite { padding: 30px 16px 64px; margin-top: 80px; }
   .fw-invite h2 { font-size: 36px; }
   .fw-invite p { font-size: 13px; }
-  .fw-footer { padding-block: 24px; gap: 18px; }
-  .fw-footer .brand.brand-button { font-size: 14px; }
-  .fw-footer p { font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html:has(.fw-landing) { scroll-behavior: auto; }
@@ -264,5 +260,5 @@ button.fw-login { border: 0; padding: 0; color: inherit; background: transparent
   .fw-landing .fw-scene::after { display: none !important; }
   .fw-landing .fw-scene-stage { position: relative !important; top: auto !important; transform: none !important; }
   .fw-landing .fw-review-window { transform: translateX(-50%) !important; }
-  .fw-landing [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
+#fw-hero-title:focus { outline: none; }
