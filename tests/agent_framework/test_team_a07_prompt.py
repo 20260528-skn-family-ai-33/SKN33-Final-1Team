@@ -28,7 +28,7 @@ def test_only_failed_or_review_items_are_sent_with_the_current_quote():
     assert prompt_items(items(request)) == [{"criterion_id": "requirement-number", "verdict": "불충족",
                                               "required": "필수", "standard": quote, "check": "숫자가 같아야 함",
                                               "expected": "3개", "observed": "2개", "observation": "읽음",
-                                              "location": "가운데", "reasons": ["포스터에서 읽은 값이 기준과 다릅니다."]}]
+                                              "location": "가운데", "reasons": ["값이 기준과 다름"]}]
     assert prompt_items(items(fixture("pass"))) == []
 
 

@@ -2,6 +2,8 @@
 
 - Qwen은 불충족·확인 필요 항목마다 explanation(무엇이 문제인지)·action(무엇을 하면 되는지) 두 칸만 쓴다.
   조건 ID·판정·기준 원문·첫 줄 요약·통과 항목은 지금처럼 코드가 쓴다.
+  팀 보고서 템플릿(report_template.json)을 따르는 adapter는 action만 묶이지 않은 할 일 줄에 쓰고 explanation은 쓰지 않는다.
+  reasons는 템플릿 사유 말(예: "값이 기준과 다름")이다.
 - 입력은 adapter.items()가 만든 사실이다. 기준 원문·사유에 details.facts()가 만든 required·check·expected·
   observed·observation·location(계약 3.0.0)을 더한다. 불확실 사유 문장은 3.0.0에도 A07까지 오지 않는다.
 - 포스터에서 읽은 글자는 데이터로만 넘기고, 응답은 check()가 확인한다. 문제가 하나라도 있으면
@@ -57,7 +59,7 @@ def _ordered(item: dict) -> dict:
 
 EXAMPLE_ITEMS = [_ordered({
     "criterion_id": "requirement-number", "verdict": "불충족",
-    "standard": "포스터에는 딸기 3개가 표시되어야 합니다.", "reasons": ["포스터에서 읽은 값이 기준과 다릅니다."],
+    "standard": "포스터에는 딸기 3개가 표시되어야 합니다.", "reasons": ["값이 기준과 다름"],
     **facts(kind="number", operator="equals", required=True, expected="3", expected_unit="개", observed="2",
             observed_unit="개", observation_status="observed", bbox=(0.12, 0.35, 0.78, 0.82)),
 })]

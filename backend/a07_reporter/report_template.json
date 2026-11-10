@@ -1,0 +1,647 @@
+{
+  "template": {
+    "id": "creative-checker.a07.brief-report",
+    "version": "0.1.0",
+    "status": "초안. 팀 검토 전이며 코드에 연결하지 않았다.",
+    "made_at": "2026-11-09",
+    "purpose": "검수 결과를 '무엇을 비교했고 충족했는지'만 담은 짧은 보고서로 옮긴다. 포스터는 A06 검증 결과, 영상은 영상 검수 결과를 받는다.",
+    "pairs_with": "A07_보고서_템플릿.docx",
+    "rendering": {
+      "engine": "docxtpl (Jinja2)",
+      "call": "DocxTemplate('A07_보고서_템플릿.docx').render(context, autoescape=True)",
+      "context": "poster.example 또는 video.example과 같은 모양의 dict",
+      "switch": "report_type이 'poster'면 포스터 쪽만, 'video'면 영상 쪽만 남는다. 템플릿 안내 문단과 두 모양 사이 쪽 나눔은 채울 때 사라진다.",
+      "warning": "autoescape=True를 빼면 &·<·>가 든 값(예: 버스킹&영화상영회)에서 Word 파일이 깨진다. 키가 빠지면 Jinja가 빈칸으로 넘어가므로, 없는 값도 null로 채운다.",
+      "checked": "2026-11-09 docxtpl 0.20.2 · python-docx 1.2.0 · Jinja2 3.1.6. StrictUndefined로 두 예시를 채우고 Word 16으로 쪽 모양을 확인했다."
+    }
+  },
+  "rules": [
+    "판정은 앞 단계 결과를 그대로 옮긴다. 포스터는 A06의 verdict를 바꾸지 않는다(공통 경계가 REPORT_CHANGED_VERDICT로 거부한다).",
+    "조건 하나에 한 줄을 쓴다. 한 줄에는 항목 이름, 기준값, 읽은 값, 결과, 한 줄 사유만 둔다. 위치(위쪽·가운데 등)는 불충족·확인 필요 줄에만 붙인다.",
+    "순서는 불충족 → 확인 필요 → 충족이고, 같은 판정 안에서는 받은 순서를 지킨다(현재 A07과 같다).",
+    "원문 인용 전문, 좌표, 사유 코드, 해시는 보고서 화면에 쓰지 않는다. JSON에는 추적용 ID·사유 코드·쪽수만 남긴다.",
+    "읽은 값이 없으면 지어내지 않고 관측 상태(포스터에서 찾지 못함 등)를 쓴다.",
+    "영상은 시간 구간이 있는 결과를 시간순으로 적고, 시간 구간이 없는 결과는 '영상 전체 항목'으로 모은다.",
+    "같은 기준이 여러 구간에서 충족이면 첫 구간만 적고 '외 n곳'을 붙인다. 불충족과 확인 필요는 구간마다 적는다(기준 하나에 최대 5구간).",
+    "로고 대조는 근거만 보여 준다. 결과는 늘 '확인 필요'이고, 같은 로고인지는 담당자가 판단한다.",
+    "고칠 것·확인할 것은 불충족이면 '수정', 확인 필요면 '확인'으로 만든다. 사유가 같은 '확인'은 한 줄로 묶는다.",
+    "보고서는 자동 검수 초안이다. 담당자 확인(human)이 있으면 같은 줄에 덧붙이고 기계 판정은 덮어쓰지 않는다."
+  ],
+  "codes": {
+    "verdict": {
+      "pass": "충족",
+      "fail": "불충족",
+      "review": "확인 필요",
+      "na": "해당 없음"
+    },
+    "observation": {
+      "observed": "읽음",
+      "absent": "포스터에서 찾지 못함",
+      "unreadable": "읽을 수 없음",
+      "not_checked": "검사하지 않음",
+      "unknown": "관측 상태 모름"
+    },
+    "field_label": {
+      "event_name": "행사명",
+      "title_phrase": "제목 문구",
+      "wording": "문구",
+      "year": "연도",
+      "event_date": "행사일",
+      "start_date": "시작일",
+      "end_date": "종료일",
+      "event_period": "기간",
+      "weekday": "요일",
+      "venue": "장소",
+      "viewing_hours": "관람 시간",
+      "visual_requirements": "시각 요소",
+      "logo": "로고",
+      "visual_color": "색상",
+      "composition": "구성",
+      "imagery": "이미지",
+      "pixel_width": "가로 픽셀",
+      "pixel_height": "세로 픽셀",
+      "resolution_dpi": "해상도",
+      "file_size_bytes": "파일 크기",
+      "file_format": "파일 형식",
+      "color_mode": "색상 모드",
+      "quantity": "수량",
+      "unspecified": "기타 조건"
+    },
+    "issue_reason": {
+      "value_mismatch": "값이 기준과 다름",
+      "observed_absence": "포스터에 없음",
+      "unit_mismatch": "단위가 다름",
+      "verdict_conflict": "검사 판정과 값 비교가 엇갈림",
+      "missing_expected_value": "기준값이 아직 정해지지 않음",
+      "date_comparison_review_required": "날짜·시간 표기 확인",
+      "qualifier_interpretation_required": "허용 범위 안인지 확인",
+      "normalized_value_review_required": "변환한 값이 원문과 같은지 확인",
+      "typed_attribute_review_required": "담당자 직접 확인 항목",
+      "unreadable_observation": "읽을 수 없음",
+      "missing_observation": "찾거나 읽지 못함",
+      "uncertain_observation": "검사 결과가 불확실함",
+      "model_review": "검사 모델이 사람 확인을 요청함",
+      "numeric_observation_invalid": "읽은 값을 숫자로 비교할 수 없음",
+      "numeric_expectation_invalid": "기준값을 숫자로 읽을 수 없음",
+      "unsupported_criterion": "자동 검사 범위 밖",
+      "missing_citation": "기준 원문 인용 없음",
+      "missing_requirement_evidence": "기준 원문 근거 없음",
+      "context_incomplete": "기준 근거가 최신이 아님",
+      "observation_status_unknown": "관측 상태 없음",
+      "observation_not_checked": "검사하지 않음",
+      "_unknown": "기타 사유({code})"
+    },
+    "reason_priority": [
+      "value_mismatch",
+      "observed_absence",
+      "unit_mismatch",
+      "verdict_conflict",
+      "missing_expected_value",
+      "date_comparison_review_required",
+      "qualifier_interpretation_required",
+      "normalized_value_review_required",
+      "typed_attribute_review_required",
+      "unreadable_observation",
+      "missing_observation",
+      "uncertain_observation",
+      "model_review",
+      "numeric_observation_invalid",
+      "numeric_expectation_invalid",
+      "unsupported_criterion",
+      "missing_citation",
+      "missing_requirement_evidence",
+      "context_incomplete",
+      "observation_status_unknown",
+      "observation_not_checked"
+    ],
+    "video_mismatch": {
+      "one_character": "한 글자가 다르게 읽힘",
+      "spacing": "띄어쓰기가 다름",
+      "case": "대소문자가 다름",
+      "variants": "프레임마다 다르게 읽힘"
+    },
+    "logo_evidence": {
+      "detected": "원본과 비슷함",
+      "review": "비슷한지 애매함",
+      "absent": "찾지 못함"
+    },
+    "location": "image.bbox를 3×3 칸 말로 바꾼다(위쪽·가운데·아래쪽 × 왼쪽·가운데·오른쪽, 거의 전체면 '전체'). backend/a07_reporter/details.py의 location_hint를 그대로 쓴다.",
+    "limitation_ko": {
+      "Code validation only; visual accuracy and source authority are not independently verified.": "코드 검증만 했습니다. 이미지 인식 정확도와 기준 출처는 따로 검증하지 않았습니다.",
+      "Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed.": "승인된 기준만 근거로 썼고 PostgreSQL·Neo4j 관계 조회는 하지 않았습니다.",
+      "Approved version reused; a fresh poster-input confirmation is required.": "승인된 기준 버전을 다시 썼습니다. 새 포스터 입력은 다시 확인해야 합니다.",
+      "_unknown": "모르는 문구는 그대로 옮긴다."
+    },
+    "action_rules": {
+      "value_mismatch": "{label}을(를) ‘{expected}’(으)로 고쳐 주세요.",
+      "observed_absence": "{label} ‘{expected}’ 표기를 넣어 주세요.",
+      "unit_mismatch": "{label}의 단위를 기준({expected})에 맞춰 주세요.",
+      "date_comparison_review_required": "{label}이(가) 기준과 같은 날짜·시간인지 확인해 주세요.",
+      "qualifier_interpretation_required": "{label} 문구가 허용 범위 안인지 확인해 주세요.",
+      "missing_expected_value": "{label}은(는) 담당자 회신으로 기준을 정한 뒤 다시 검수해 주세요.",
+      "typed_attribute_review_required": "{labels}은(는) 담당자가 직접 확인해 주세요.",
+      "_default_fail": "{label}을(를) 기준에 맞게 고쳐 주세요.",
+      "_default_review": "{label}을(를) 담당자가 직접 확인해 주세요.",
+      "video_fail": "{label} 자막을 ‘{expected}’(으)로 고쳐 주세요.",
+      "video_mismatch": "{label} 자막의 글자가 ‘{expected}’와(과) 같은지 확인해 주세요.",
+      "video_logo": "로고가 원본과 같은 로고인지 확인해 주세요.",
+      "video_whole": "{label} 문구가 영상에 있는지 처음부터 끝까지 확인해 주세요.",
+      "particle": "을(를)·이(가)·은(는)·와(과)·(으)로는 앞 글자의 받침을 보고 하나로 고른다.",
+      "qwen": "포스터는 report.change_requests에 Qwen이 쓴 '할 일' 문장이 있으면 그 문장을 쓰고, 없으면 위 규칙 문장을 쓴다."
+    }
+  },
+  "poster": {
+    "source": "실행 기록(RunSnapshot): context, criteria.criteria(항목 이름), validated(A06), evidence(쪽수), report(A07 문장), approvals(담당자 확인). A07 입력(ReportRequest)에는 기준 목록이 없어서 항목 이름은 실행 기록에서 채운다.",
+    "fields": {
+      "report_type": "\"poster\" 고정",
+      "title": "문자열. 기본 \"포스터 검수 보고서\"",
+      "synthetic": "참/거짓. 합성 시험 데이터 여부. validated.synthetic 또는 evidence.synthetic",
+      "checked_at": "문자열. 검수 시각(KST, YYYY-MM-DD HH:mm). A06 단계 기록의 finished_at",
+      "run_id": "문자열. context.run_id",
+      "project": {
+        "name": "문자열. 프로젝트 이름. context.project_id로 조회"
+      },
+      "target": {
+        "name": "문자열. 포스터 파일 이름. 업로드 파일 기록",
+        "version": "문자열. context.asset_version_id"
+      },
+      "criteria": {
+        "document": "문자열. 기준 PDF 파일 이름. 자유 입력이면 \"직접 입력한 기준\"",
+        "version": "문자열. 승인된 기준 버전. baseline.criteria_version_id, 없으면 context.criteria_version_id"
+      },
+      "verdict": {
+        "code": "pass | fail | review. validated.verdict 그대로",
+        "label": "codes.verdict"
+      },
+      "counts": {
+        "required": "숫자. 필수 조건 수",
+        "pass": "숫자. 필수 중 충족",
+        "fail": "숫자. 필수 중 불충족",
+        "review": "숫자. 필수 중 확인 필요",
+        "optional": "숫자. 권장 조건 수. 전체 판정에 넣지 않는다(A06 규칙과 같음)"
+      },
+      "items": [
+        {
+          "criterion_id": "문자열. 추적용이며 보고서에 표시하지 않는다. items[].criterion_id",
+          "label": "문자열. 항목 이름. criteria[].details.presentation.label → codes.field_label[details.field] → criterion_text 앞 20자",
+          "required": "참/거짓. items[].required. 거짓이면 이름 옆에 '권장'",
+          "expected": "문자열 또는 null. expected + expected_unit. 비어 있으면 null이고 보고서에 '미정'으로 나온다",
+          "observed": "문자열 또는 null. observation_status가 observed일 때만 observed + observed_unit",
+          "observation": "문자열. codes.observation[observation_status]. observed가 null일 때 대신 보인다",
+          "location": "문자열 또는 null. codes.location. bbox가 없으면 null. 보고서에는 불충족·확인 필요 줄에만 보인다",
+          "verdict": {
+            "code": "pass | fail | review. items[].verdict 그대로",
+            "label": "codes.verdict"
+          },
+          "reason": "문자열. issues 가운데 codes.reason_priority에서 가장 앞선 하나를 codes.issue_reason으로 바꾼다. 충족이면 빈 문자열",
+          "issues": [
+            "문자열. 사유 코드 원본. 추적용이며 표시하지 않는다"
+          ],
+          "source": "문자열. 기준 원문 쪽수(예: \"PDF 1쪽\"). evidence[].source.page",
+          "human": {
+            "verdict": {
+              "code": "pass | fail",
+              "label": "충족 | 불충족"
+            },
+            "note": "문자열. 담당자가 적은 확인 사유. approvals[].human_reviews[]. 담당자 확인이 없으면 human 전체가 null"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "kind": "수정 | 확인",
+          "label": "문자열. 대상 항목 이름. 묶었으면 ·로 잇는다",
+          "time": "null. 포스터에는 시간이 없다",
+          "text": "문자열. 한 문장. codes.action_rules"
+        }
+      ],
+      "notes": [
+        "문자열. 보고서 끝 안내. 초안 안내 + 합성 표시 + A06 limitations(codes.limitation_ko) + 근거 상태(stale·unavailable) + evidence.warnings"
+      ]
+    },
+    "example": {
+      "report_type": "poster",
+      "title": "포스터 검수 보고서",
+      "synthetic": true,
+      "checked_at": "2026-11-09 14:20",
+      "run_id": "run-fes-new072-demo",
+      "project": {
+        "name": "2025 탄소중립 한마당 축제 포스터"
+      },
+      "target": {
+        "name": "탄소중립축제_포스터_시안1.jpg",
+        "version": "poster-v1"
+      },
+      "criteria": {
+        "document": "축제_포스터_제작의뢰서_v0.2.pdf",
+        "version": "criteria-v1"
+      },
+      "verdict": {
+        "code": "fail",
+        "label": "불충족"
+      },
+      "counts": {
+        "required": 12,
+        "pass": 4,
+        "fail": 2,
+        "review": 6,
+        "optional": 0
+      },
+      "items": [
+        {
+          "criterion_id": "c-venue",
+          "label": "행사 장소",
+          "required": true,
+          "expected": "고색역 상부공원 일원",
+          "observed": "고색역 상부공원",
+          "observation": "읽음",
+          "location": "아래쪽",
+          "verdict": {"code": "fail", "label": "불충족"},
+          "reason": "값이 기준과 다름",
+          "issues": ["value_mismatch"],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-program-3",
+          "label": "프로그램 3",
+          "required": true,
+          "expected": "탄소공감 버스킹&영화상영회",
+          "observed": null,
+          "observation": "포스터에서 찾지 못함",
+          "location": null,
+          "verdict": {"code": "fail", "label": "불충족"},
+          "reason": "포스터에 없음",
+          "issues": ["observed_absence"],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-datetime",
+          "label": "행사 일시",
+          "required": true,
+          "expected": "2025년 11월 2일 일요일 12시부터 19시까지",
+          "observed": "2025.11.2(일) 12:00~19:00",
+          "observation": "읽음",
+          "location": "위쪽",
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "날짜·시간 표기 확인",
+          "issues": ["date_comparison_review_required"],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-transit",
+          "label": "교통 안내",
+          "required": true,
+          "expected": "주차공간이 협소하므로 가급적 대중교통을 이용",
+          "observed": "주차 공간이 협소하니 대중교통을 이용해 주세요",
+          "observation": "읽음",
+          "location": "아래쪽",
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "허용 범위 안인지 확인",
+          "issues": ["qualifier_interpretation_required"],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-rain",
+          "label": "우천 시 운영 안내",
+          "required": true,
+          "expected": null,
+          "observed": null,
+          "observation": "포스터에서 찾지 못함",
+          "location": null,
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "기준값이 아직 정해지지 않음",
+          "issues": ["typed_attribute_review_required", "unsupported_criterion", "missing_expected_value"],
+          "source": "PDF 2쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-illustration",
+          "label": "하단 축제 일러스트",
+          "required": true,
+          "expected": "야외 무대·사람·나무가 있는 축제 일러스트",
+          "observed": "야외 무대·사람·나무 일러스트 있음",
+          "observation": "읽음",
+          "location": "아래쪽",
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "담당자 직접 확인 항목",
+          "issues": ["typed_attribute_review_required"],
+          "source": "PDF 2쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-file-format",
+          "label": "파일 형식",
+          "required": true,
+          "expected": "JPEG",
+          "observed": "JPEG",
+          "observation": "읽음",
+          "location": null,
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "담당자 직접 확인 항목",
+          "issues": ["typed_attribute_review_required"],
+          "source": "PDF 2쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-color-mode",
+          "label": "색상 모드",
+          "required": true,
+          "expected": "RGB",
+          "observed": "RGB",
+          "observation": "읽음",
+          "location": null,
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "담당자 직접 확인 항목",
+          "issues": ["typed_attribute_review_required"],
+          "source": "PDF 2쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-event-name",
+          "label": "행사명",
+          "required": true,
+          "expected": "2025 탄소중립 한마당 축제",
+          "observed": "2025 탄소중립 한마당 축제",
+          "observation": "읽음",
+          "location": "위쪽",
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "issues": [],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-title-1",
+          "label": "주요 제목 1",
+          "required": true,
+          "expected": "오늘무해!",
+          "observed": "오늘무해!",
+          "observation": "읽음",
+          "location": "위쪽",
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "issues": [],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-title-2",
+          "label": "주요 제목 2",
+          "required": true,
+          "expected": "FESTIVAL",
+          "observed": "FESTIVAL",
+          "observation": "읽음",
+          "location": "위쪽",
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "issues": [],
+          "source": "PDF 1쪽",
+          "human": null
+        },
+        {
+          "criterion_id": "c-program-1",
+          "label": "프로그램 1",
+          "required": true,
+          "expected": "탄소중립 그린도시 기념식",
+          "observed": "탄소중립 그린도시 기념식",
+          "observation": "읽음",
+          "location": "가운데",
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "issues": [],
+          "source": "PDF 1쪽",
+          "human": null
+        }
+      ],
+      "actions": [
+        {"kind": "수정", "label": "행사 장소", "time": null, "text": "행사 장소를 ‘고색역 상부공원 일원’으로 고쳐 주세요."},
+        {"kind": "수정", "label": "프로그램 3", "time": null, "text": "프로그램 3 ‘탄소공감 버스킹&영화상영회’ 표기를 넣어 주세요."},
+        {"kind": "확인", "label": "행사 일시", "time": null, "text": "행사 일시가 기준과 같은 날짜·시간인지 확인해 주세요."},
+        {"kind": "확인", "label": "교통 안내", "time": null, "text": "교통 안내 문구가 허용 범위 안인지 확인해 주세요."},
+        {"kind": "확인", "label": "우천 시 운영 안내", "time": null, "text": "우천 시 운영 안내는 담당자 회신으로 기준을 정한 뒤 다시 검수해 주세요."},
+        {"kind": "확인", "label": "하단 축제 일러스트·파일 형식·색상 모드", "time": null, "text": "하단 축제 일러스트·파일 형식·색상 모드는 담당자가 직접 확인해 주세요."}
+      ],
+      "notes": [
+        "자동 검수 초안입니다. 담당자가 확인하기 전에는 승인이 아닙니다.",
+        "코드 검증만 했습니다. 이미지 인식 정확도와 기준 출처는 따로 검증하지 않았습니다.",
+        "템플릿 모양을 보이기 위한 예시입니다. 값은 개발용 가상 의뢰서(FES-NEW072)에서 가져왔고 실제 검수 결과가 아닙니다."
+      ]
+    }
+  },
+  "video": {
+    "source": "영상 검수 결과(backend/app/video/review.py가 돌려주는 값): review.results(조건별 판정·evidence_segments·mismatch·whole_video), logo_match, disclosure, coverage, warnings와 업로드 기록(snapshot.json·media.json). 영상은 A06을 거치지 않는다.",
+    "fields": {
+      "report_type": "\"video\" 고정",
+      "title": "문자열. 기본 \"영상 검수 보고서\"",
+      "synthetic": "참/거짓. 합성 시험 데이터 여부",
+      "checked_at": "문자열. 작업 완료 시각(KST, YYYY-MM-DD HH:mm). 작업 기록의 updated_at",
+      "run_id": "문자열. 영상 작업 ID",
+      "project": {
+        "name": "문자열. 업로드 때 받은 project_name"
+      },
+      "media": {
+        "name": "문자열. 영상 파일 이름",
+        "duration": "문자열. m:ss. media.duration_ms",
+        "duration_ms": "숫자. media.duration_ms"
+      },
+      "criteria": {
+        "document": "문자열. 기준 PDF 파일 이름. 직접 입력이면 \"직접 입력한 기준\"",
+        "version": "문자열. snapshot.criteria_version"
+      },
+      "logo": {
+        "reference": "문자열 또는 null. 올린 로고 원본 파일 이름. 올리지 않았으면 null",
+        "status": "completed | skipped | failed. logo_match.status",
+        "note": "문자열 또는 null. skipped·failed일 때의 이유. logo_match.reason"
+      },
+      "verdict": {
+        "code": "pass | fail | review. 영상에는 A06이 없어서 아래 줄들의 판정을 모아 계산한다. 불충족이 하나라도 있으면 fail, 아니면 확인 필요가 하나라도 있으면 review, 모두 충족이면 pass. '해당 없음'은 빼고 로고는 확인 필요로 센다",
+        "label": "codes.verdict"
+      },
+      "counts": {
+        "total": "숫자. 판정에 넣은 항목 수(기준 + 로고 + 적용되는 광고 표기)",
+        "pass": "숫자",
+        "fail": "숫자",
+        "review": "숫자",
+        "not_applicable": "숫자. 해당 없음(판정에서 뺌)"
+      },
+      "timeline": [
+        {
+          "start": "문자열. mm:ss. evidence_segments[].start_ms. 로고는 연속으로 검출된 첫 시각",
+          "end": "문자열. mm:ss. evidence_segments[].end_ms. 로고는 연속 검출의 마지막 시각",
+          "label": "문자열. 기준 문장의 '항목명:' 앞부분, 없으면 기준 문장 앞 20자. 로고는 \"로고\"",
+          "kind": "문구 | 로고",
+          "screen_text": "문자열 또는 null. 그 구간 대표 프레임에서 읽은 문구. evidence_segments[].text",
+          "evidence": "문자열 또는 null. 문구가 아닌 근거. 로고는 codes.logo_evidence + 최고 유사도",
+          "verdict": {
+            "code": "pass | fail | review",
+            "label": "codes.verdict"
+          },
+          "reason": "문자열. 충족이면 빈 문자열. mismatch가 있으면 codes.video_mismatch, 없으면 judge가 쓴 reason을 한 줄로 줄인다",
+          "more": "문자열 또는 null. 같은 기준이 충족인 다른 구간(예: \"외 1곳 00:27\")",
+          "criterion_id": "문자열. 추적용. 로고는 \"logo\""
+        }
+      ],
+      "whole_video": [
+        {
+          "label": "문자열. 항목 이름",
+          "verdict": {
+            "code": "pass | fail | review | na",
+            "label": "codes.verdict"
+          },
+          "reason": "문자열. 한 줄 사유. 시간 구간이 없는 결과(whole_video), 구간 없는 불충족, 광고 표기(disclosure)",
+          "criterion_id": "문자열. 추적용. 광고 표기는 \"disclosure\""
+        }
+      ],
+      "actions": [
+        {
+          "kind": "수정 | 확인",
+          "label": "문자열. 대상 항목 이름",
+          "time": "문자열 또는 null. 그 구간의 시작 시각. 영상 전체 항목이면 null",
+          "text": "문자열. 한 문장. codes.action_rules의 video_*"
+        }
+      ],
+      "notes": [
+        "문자열. 초안 안내 + 표본 간격(coverage.intervals_ms) + warnings(OCR 실패 프레임 등) + logo.note"
+      ]
+    },
+    "example": {
+      "report_type": "video",
+      "title": "영상 검수 보고서",
+      "synthetic": true,
+      "checked_at": "2026-11-09 14:35",
+      "run_id": "job-demo-001",
+      "project": {
+        "name": "2025 탄소중립 한마당 축제 홍보 영상"
+      },
+      "media": {
+        "name": "탄소중립축제_홍보영상_30초.mp4",
+        "duration": "0:30",
+        "duration_ms": 30000
+      },
+      "criteria": {
+        "document": "축제_포스터_제작의뢰서_v0.2.pdf",
+        "version": "criteria-v1"
+      },
+      "logo": {
+        "reference": "주최_로고_원본.png",
+        "status": "completed",
+        "note": null
+      },
+      "verdict": {
+        "code": "fail",
+        "label": "불충족"
+      },
+      "counts": {
+        "total": 7,
+        "pass": 3,
+        "fail": 1,
+        "review": 3,
+        "not_applicable": 1
+      },
+      "timeline": [
+        {
+          "start": "00:00",
+          "end": "00:03",
+          "label": "행사명",
+          "kind": "문구",
+          "screen_text": "2025 탄소중립 한마당 축제",
+          "evidence": null,
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "more": "외 1곳 00:27",
+          "criterion_id": "v-event-name"
+        },
+        {
+          "start": "00:03",
+          "end": "00:06",
+          "label": "주요 제목",
+          "kind": "문구",
+          "screen_text": "오늘무해! FESTIVAL",
+          "evidence": null,
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "more": null,
+          "criterion_id": "v-title"
+        },
+        {
+          "start": "00:08",
+          "end": "00:12",
+          "label": "행사 일시",
+          "kind": "문구",
+          "screen_text": "2025.11.2(일) 12:00~19:00",
+          "evidence": null,
+          "verdict": {"code": "pass", "label": "충족"},
+          "reason": "",
+          "more": null,
+          "criterion_id": "v-datetime"
+        },
+        {
+          "start": "00:12",
+          "end": "00:15",
+          "label": "행사 장소",
+          "kind": "문구",
+          "screen_text": "고색역 상부공원",
+          "evidence": null,
+          "verdict": {"code": "fail", "label": "불충족"},
+          "reason": "기준 ‘고색역 상부공원 일원’과 다름",
+          "more": null,
+          "criterion_id": "v-venue"
+        },
+        {
+          "start": "00:16",
+          "end": "00:19",
+          "label": "프로그램",
+          "kind": "문구",
+          "screen_text": "탄소중립 그린도시 기념시",
+          "evidence": null,
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "한 글자가 다르게 읽힘",
+          "more": null,
+          "criterion_id": "v-program"
+        },
+        {
+          "start": "00:24",
+          "end": "00:28",
+          "label": "로고",
+          "kind": "로고",
+          "screen_text": null,
+          "evidence": "원본과 비슷함 · 최고 유사도 0.91",
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "같은 로고인지 담당자 판단",
+          "more": null,
+          "criterion_id": "logo"
+        }
+      ],
+      "whole_video": [
+        {
+          "label": "교통 안내",
+          "verdict": {"code": "review", "label": "확인 필요"},
+          "reason": "화면에서 찾지 못함. OCR이 실패한 프레임이 있어 위반으로 확정하지 않음",
+          "criterion_id": "v-transit"
+        },
+        {
+          "label": "광고 표기",
+          "verdict": {"code": "na", "label": "해당 없음"},
+          "reason": "광고주 자체 광고로 입력되어 추천·보증 표시 대상이 아님",
+          "criterion_id": "disclosure"
+        }
+      ],
+      "actions": [
+        {"kind": "수정", "label": "행사 장소", "time": "00:12", "text": "행사 장소 자막을 ‘고색역 상부공원 일원’으로 고쳐 주세요."},
+        {"kind": "확인", "label": "프로그램", "time": "00:16", "text": "프로그램 자막의 글자가 ‘탄소중립 그린도시 기념식’과 같은지 확인해 주세요."},
+        {"kind": "확인", "label": "로고", "time": "00:24", "text": "로고가 원본과 같은 로고인지 확인해 주세요."},
+        {"kind": "확인", "label": "교통 안내", "time": null, "text": "교통 안내 문구가 영상에 있는지 처음부터 끝까지 확인해 주세요."}
+      ],
+      "notes": [
+        "자동 검수 초안입니다. 담당자가 확인하기 전에는 승인이 아닙니다.",
+        "1초 간격으로 뽑은 화면을 검사했습니다. 그 사이에 잠깐 나온 화면은 빠질 수 있습니다.",
+        "OCR이 실패한 프레임 2장은 위반으로 확정하지 않았습니다.",
+        "템플릿 모양을 보이기 위한 예시입니다. 값은 개발용 가상 의뢰서(FES-NEW072)에서 가져왔고 실제 검수 결과가 아닙니다."
+      ]
+    }
+  }
+}
