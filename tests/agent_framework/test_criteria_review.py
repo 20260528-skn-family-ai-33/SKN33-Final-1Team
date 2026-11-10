@@ -229,11 +229,14 @@ def test_only_explicit_grounded_replacement_changes_original_allowances(replace)
     request=ValidateRequest(context=context,criteria=revised.criteria,asset=asset,evidence=evidence,
         inspection=InspectionResult(context=context,observations=observations,synthetic=True))
     result=ReferenceValidator().validate(request)
-    assert result.items[0].verdict==('pass' if replace else 'review')
+    assert result.items[0].verdict=='pass'  # An exact match satisfies the requirement with or without an allowance.
     if replace:
         qualified=current.model_copy(update={'text':'제목은 밤의 도서관으로 표기한다. 공백 차이는 허용한다.'})
         qualified_request=request.model_copy(update={'criteria':(qualified,*revised.criteria[1:])})
-        assert 'qualifier_interpretation_required' in ReferenceValidator().validate(qualified_request).items[0].issues
+        assert ReferenceValidator().validate(qualified_request).items[0].verdict=='pass'
+        needs_person=current.model_copy(update={'text':'제목은 밤의 도서관으로 표기한다. 공백 차이는 담당자 확인 후 허용한다.'})
+        person_request=request.model_copy(update={'criteria':(needs_person,*revised.criteria[1:])})
+        assert 'qualifier_interpretation_required' in ReferenceValidator().validate(person_request).items[0].issues
 
 
 @pytest.mark.parametrize('replacement,quote',[('다른 제목','담당자 회신'),('새 조건','새 조건 밤의 도서관'),(' ','밤의 도서관')])
