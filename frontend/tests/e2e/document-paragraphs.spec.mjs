@@ -110,16 +110,18 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
   await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
   const expectedTexts = [...new Set(items.map(item => item.text))];
-  const expected = [current, ...expectedTexts].filter(Boolean).join('\n\n');
-  await page.waitForFunction(value => document.querySelector('#requirements').value === value, expected);
-  assert.equal(await page.locator('#requirements').inputValue(), expected);
-  await page.getByText(pendingOnly ? /미확정 항목 1개/ : new RegExp(`${expectedTexts.length}개 요구사항 문단을 추가했습니다`)).waitFor();
+  const extracted = page.getByLabel(/문서 요구사항 \d+번 문구/);
+  const notice = page.getByText(new RegExp(`추출을 완료했어요.*${expectedTexts.length}개 추출${pendingOnly ? '.*미확정 1개' : ''}`));
+  await notice.waitFor();
+  assert.equal(await page.locator('#requirements').inputValue(), current);
+  assert.deepEqual(await extracted.evaluateAll(fields => fields.map(field => field.value)), expectedTexts);
   if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
   await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
-  await page.getByText(pendingOnly ? /미확정 항목 1개/ : /0개 요구사항 문단을 추가했습니다/).waitFor();
-  assert.equal(await page.locator('#requirements').inputValue(), expected);
+  await notice.waitFor();
+  assert.equal(await page.locator('#requirements').inputValue(), current);
+  assert.deepEqual(await extracted.evaluateAll(fields => fields.map(field => field.value)), expectedTexts);
   if (pendingOnly) {
-    await page.getByRole('button', { name: mode === 'pending_empty' ? 'PDF 검수 기준 확인하기' : 'brief.pdf 원문 기준 승인하기' }).click();
+    await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).click();
     await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
     await page.getByText('요구사항 원문 · 1쪽', { exact: true }).waitFor();
     await page.locator('.rv-criteria-source').getByText(pending[0].source, { exact: true }).waitFor();
