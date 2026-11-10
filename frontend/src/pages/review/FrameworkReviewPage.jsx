@@ -62,7 +62,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
   const hasResults = !!run?.validated;
   const processing = !run || running.has(status);
-  const step = processing ? 'running' : hasResults && !showCriteria ? 'results' : 'criteria';
+  const showingReport = !processing && hasResults && !showCriteria && showActions;
+  const step = processing ? 'running' : showingReport ? 'report' : hasResults && !showCriteria ? 'results' : 'criteria';
   const finalApproved = status === 'completed' && run?.human_decision === 'final_approved';
   const showingApprovedResult = finalApproved && step === 'results' && !showActions;
   const reviewItems = run ? reviewableItems(run) : [];
@@ -72,6 +73,9 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       humanReviews[item.criterion_id]?.verdict === 'pass')) && !Object.values(humanReviews).some(item => item.verdict === 'fail');
 
   useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    if (showingReport) document.getElementById('page-title')?.focus();
+  }, [showingReport]);
   useEffect(() => {
     if (!showingApprovedResult) return;
     document.getElementById('page-title')?.focus({ preventScroll: true });
@@ -207,10 +211,10 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
 
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing} topbarLocked={busy} showConnection={false}
-    workspaceStep={showActions && !processing ? 'tool' : step} mainClassName="rv-framework-workspace"
+    workspaceStep={step === 'report' ? 'tool' : step} mainClassName="rv-framework-workspace"
     versionLabel={latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}
-    canNavigate={key => !busy && !processing && (key === 'criteria' && criteria.length > 0 || key === 'results' && hasResults)}
-    navigate={key => { setShowActions(false); setShowCriteria(key === 'criteria'); }}>
+    canNavigate={key => !busy && !processing && (key === 'criteria' && criteria.length > 0 || ['results', 'report'].includes(key) && hasResults)}
+    navigate={key => { setShowActions(key === 'report'); setShowCriteria(key === 'criteria'); }}>
       {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
       {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
         : run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
@@ -224,10 +228,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         }) : undefined}
         onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title">대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
-      : showActions ? <div className="rv-workspace-intro"><div><span className="rv-eyebrow">REVIEW REPORT</span>
-        <h1 id="page-title">{finalApproved ? '검수 보고서' : '보고서와 담당자 승인'}</h1>
-        <p>{finalApproved ? '자동 검수 결과와 담당자의 승인 기록을 확인하세요.' : '자동 검수 결과를 검토하고 최종 판단을 기록하세요.'}</p></div>
-        <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setShowActions(false)}>검수 결과로 돌아가기</button></div>
+       : showingReport ? <FrameworkReport run={run} projectName={projectName} onBack={() => { if (!busy) setShowActions(false); }} />
       : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={() => setShowCriteria(true)} newReview={onNew}
@@ -303,7 +304,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
           onClick={() => perform(registerPoster, 'revision')} aria-busy={working('revision')} title={posterBlock}>수정본 재검수 접수</button>
       </>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
-      {run?.report && <FrameworkReport run={run} projectName={projectName} />}
+      {!showingReport && run?.report && <FrameworkReport run={run} projectName={projectName} />}
       {status === 'waiting_review' && <>
         {reviewItems.length > 0 && <form ref={humanReviewForm} onSubmit={e => e.preventDefault()}>
           <HumanReview items={reviewItems} values={humanReviews} onChange={setHumanReviews} disabled={busy} />
