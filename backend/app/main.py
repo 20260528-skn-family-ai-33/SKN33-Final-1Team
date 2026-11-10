@@ -5,9 +5,11 @@ from uuid import uuid4
 from fastapi import FastAPI,Request
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
+from starlette.datastructures import MutableHeaders
 from starlette.responses import JSONResponse
 from .config import ConfigurationError
 from .v1_config import load_v1_settings
+from .security.csrf import session_token
 from .security.errors import AuthError
 
 logger=logging.getLogger('creative_checker.security')
@@ -125,6 +127,13 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
                 except PersistenceError:raise AuthError('DATABASE_UNAVAILABLE',503) from None
                 if maintenance:raise AuthError('MAINTENANCE_ACTIVE',503,retry_after=1)
             if request.method not in ('GET','HEAD','OPTIONS'):app.state.csrf.verify(request,settings)
+            # Keep the cookie alias at the HTTP boundary so it does not change the
+            # framework code hash that ties persisted jobs to their workers.
+            if request.url.path.startswith('/api/framework/v1/') and settings.session_cookie not in request.cookies:
+                legacy = session_token(request.cookies.get(settings.legacy_session_cookie))
+                if legacy:
+                    cookies = [*request.headers.getlist('cookie'), f'{settings.session_cookie}={legacy}']
+                    MutableHeaders(scope=request.scope)['cookie'] = '; '.join(cookies)
             response=await call_next(request)
         except AuthError as error:response=error_response(request,error)
         from .web import headers

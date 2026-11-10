@@ -61,7 +61,8 @@ def test_local_video_service_rejects_production(tmp_path):
         create_video_app(settings, tmp_path / 'video', engine=object())
 
 
-def test_aws_video_results_are_private_to_their_owner(tmp_path, monkeypatch):
+@pytest.mark.parametrize('cookie_name', ['session_cookie', 'legacy_session_cookie'])
+def test_aws_video_results_are_private_to_their_owner(tmp_path, monkeypatch, cookie_name):
     from backend.app.management import maintenance
     from backend.app.persistence import schema_inventory
     from backend.app.services.auth import AuthService
@@ -84,11 +85,12 @@ def test_aws_video_results_are_private_to_their_owner(tmp_path, monkeypatch):
         (target / 'result.json').write_text(json.dumps({'id': job_id, 'status': 'completed'}))
     app = create_video_app(settings, tmp_path, engine=object(), aws_test=True)
     with TestClient(app, base_url=base, client=('127.0.0.1', 1234)) as client:
+        cookie = getattr(settings, cookie_name)
         for route in ('/api/video-reviews', '/api/video-logos'):
-            client.cookies.set(settings.session_cookie, 'a' * 43)
+            client.cookies.set(cookie, 'a' * 43)
             assert [item['id'] for item in client.get(route).json()['items']] == [job_id]
             assert client.get(f'{route}/{job_id}').status_code == 200
-            client.cookies.set(settings.session_cookie, 'b' * 43)
+            client.cookies.set(cookie, 'b' * 43)
             assert client.get(route).json()['items'] == []
             assert client.get(f'{route}/{job_id}').status_code == 404
 
