@@ -279,7 +279,7 @@ def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semant
     r=semantic
     config=r.config.model_copy(update={'pdf_extraction':r.config.pdf_extraction.model_copy(update={'presentation':True})})
     app=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
-    recorded=json.loads((Path(__file__).parent/'fixtures/a02_presentation_pdf_response.json').read_text())
+    recorded=json.loads((Path(__file__).parent/'fixtures/a02_presentation_pdf_response.json').read_text(encoding='utf-8'))
     pdf=next((PDFS/'EXH-NEW004').glob('*.pdf'));raw=pdf.read_bytes()
     assert sha256(raw).hexdigest()==recorded['_meta']['source_sha256']
     with TestClient(app,base_url='http://localhost:8000') as client:

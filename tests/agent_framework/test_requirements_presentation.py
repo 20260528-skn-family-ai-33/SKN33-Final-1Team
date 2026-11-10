@@ -101,7 +101,7 @@ def test_same_exhibition_pdf_keeps_valid_criteria_and_records_the_rejected_candi
     from tests.agent_framework.replay_contract import current_contract_copy
     from tests.agent_framework.test_a02_extraction import document
 
-    recording=json.loads((Path(__file__).parent/'fixtures/a02_presentation_pdf_response.json').read_text())
+    recording=json.loads((Path(__file__).parent/'fixtures/a02_presentation_pdf_response.json').read_text(encoding='utf-8'))
     doc=document('EXH-NEW004')
     assert doc.reference.sha256==recording['_meta']['source_sha256']
     reply=current_contract_copy(recording['response'])

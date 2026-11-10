@@ -302,6 +302,11 @@
 }
 .rv-form-stack > .rv-form-block + .rv-form-block { border-top: 1px solid var(--rv-line); }
 .rv-workspace .rv-form-block { padding: 14px 17px; min-width: 0; }
+.rv-workspace .rv-document-card.is-dragging {
+  outline: 2px dashed var(--rv-ink);
+  outline-offset: -3px;
+}
+.rv-workspace .rv-document-card.is-dragging .rv-form-upload { background: #efefeb; }
 .rv-workspace .rv-form-block > :is(h2, label) {
   display: block;
   margin-bottom: 7px;

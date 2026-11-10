@@ -108,7 +108,27 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   await page.locator('#requirements').fill(current);
   await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 PDF 선택"]').disabled);
   const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
-  await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
+  if (mode === 'resolved') {
+    const card = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
+    const heading = card.getByRole('heading', { name: '요구사항 문서 첨부', exact: true });
+    const dataTransfer = await page.evaluateHandle(bytes => {
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([new Uint8Array(bytes)], 'brief.pdf', { type: 'application/pdf' }));
+      return transfer;
+    }, [...data]);
+    const drag = { dataTransfer };
+    await heading.dispatchEvent('dragenter', drag);
+    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor();
+    await heading.dispatchEvent('dragleave', drag);
+    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
+    await heading.dispatchEvent('dragenter', drag);
+    await heading.dispatchEvent('dragover', drag);
+    await heading.dispatchEvent('drop', drag);
+    await dataTransfer.dispose();
+    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
+  } else {
+    await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
+  }
   const expectedTexts = [...new Set(items.map(item => item.text))];
   const extracted = page.getByLabel(/문서 요구사항 \d+번 문구/);
   const notice = page.getByText(new RegExp(`추출을 완료했어요.*${expectedTexts.length}개 추출${pendingOnly ? '.*미확정 1개' : ''}`));
