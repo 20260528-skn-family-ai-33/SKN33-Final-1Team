@@ -1,12 +1,14 @@
-"""A07 보고 어댑터(팀 소유). A06 판정을 바꾸지 않고 사람이 읽을 한국어 요약·수정 요청 초안·인용 근거를 만든다.
+"""A07 보고 어댑터(팀 소유). A06 판정을 바꾸지 않고 팀 보고서 템플릿(template.py) 모양의 요약·할 일을 만든다.
 
-- 사실(조건 ID·판정·사유·기준 원문)은 코드가 정해진 틀로 쓴다. 기본은 모델·파일·네트워크를 쓰지 않는다.
-- 기준값·필수 여부·검사 모델이 읽은 값·위치는 A06 검증 항목(계약 3.0.0)의 값만 쓴다(details.py).
-  요청에 없는 정보는 추측하지 않는다.
-  기준 원문은 근거 묶음의 인용만 쓰고, 과거 기록·승인된 예외는 현재 기준과 구분해 표시한다.
-- 판정이 나쁜 조건부터(불충족 → 확인 필요 → 통과) 보여 준다.
-- 모르는 사유 코드는 버리지 않고 코드 그대로 남긴다(팀별 A06이 코드를 더할 수 있다).
-- Qwen 문장 다듬기(polisher, 선택)는 items()가 만든 사실 위에 불충족·확인 필요 항목의 설명·할 일 문장만 더한다.
+- 조건 하나에 한 줄: 항목 이름 · 기준값 · 읽은 값(없으면 관측 상태) · 한 줄 사유 · 위치(불충족·확인 필요만) · 쪽수.
+  순서는 불충족 → 확인 필요 → 충족이고, 같은 판정 안에서는 받은 순서를 지킨다.
+- 원문 인용 전문·좌표·사유 코드는 요약에 쓰지 않는다. 사유는 코드 가운데 우선순위가 가장 앞선 하나를 템플릿 말로 쓴다.
+  모르는 사유 코드는 버리지 않고 "기타 사유(코드)"로 남긴다(팀별 A06이 코드를 더할 수 있다).
+- change_requests는 템플릿의 '고칠 것·확인할 것'이다. 한 줄 = "수정|확인 [조건 ID,…] 한 문장".
+  조건 ID는 화면이 줄을 항목에 잇는 추적용이고 보고서 화면에는 보이지 않는다. 사유가 같은 '확인'은 한 줄로 묶는다.
+- 항목 이름: A07 입력(ReportRequest)에는 기준 목록이 없어서 기준 문장 앞 20자를 쓴다.
+  화면(frontend reportBrief.js)은 실행 기록의 presentation.label로 같은 템플릿을 다시 채운다.
+- Qwen 문장 다듬기(polisher, 선택)가 성공하면 묶이지 않은 할 일 줄의 문장만 Qwen의 '할 일'로 바꾼다.
   사실 칸은 바꾸지 않고, 다듬기가 실패하면 규칙 문장만 쓴다. 연결은 팀 공용 CC_QWEN_* 설정(qwen.py).
 """
 from __future__ import annotations
@@ -16,36 +18,13 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from backend.a07_reporter.details import detail_lines, facts
+from backend.a07_reporter.details import facts, location_hint
+from backend.a07_reporter.template import (OBSERVATION, VERDICT, action_text, groupable, limitation_text, reason_code,
+                                           reason_text, short_label)
 from backend.agent_framework.contracts import Evidence, ReportDraft, ReportRequest, ValidatedItem
 from backend.agent_framework.ports import AdapterFailure, Reporter
 
-VERDICT = {"pass": "통과", "fail": "불충족", "review": "확인 필요"}
 ORDER = {"fail": 0, "review": 1, "pass": 2}
-ISSUE = {   # backend/agent_framework/validation.py ReferenceValidator의 사유 코드
-    "value_mismatch": "포스터에서 읽은 값이 기준과 다릅니다.",
-    "verdict_conflict": "검사 판정과 값 비교 결과가 서로 다릅니다.",
-    "missing_observation": "포스터에서 이 항목을 찾거나 읽지 못했습니다.",
-    "uncertain_observation": "검사 결과가 확실하지 않습니다.",
-    "missing_citation": "검사 결과가 기준 원문을 인용하지 않았습니다.",
-    "unsupported_criterion": "자동 검사로 판단할 수 없는 조건입니다.",
-    "numeric_observation_invalid": "포스터에서 읽은 값을 숫자로 비교할 수 없습니다.",
-    "missing_expected_value": "기준 값이 비어 있어 비교할 수 없습니다.",
-    "missing_requirement_evidence": "이 조건의 현재 기준 원문이 근거 묶음에 없습니다.",
-    "context_incomplete": "기준 근거가 최신이 아니거나 조회되지 않았습니다.",
-    # 계약 3.0.0(A06 PR #53)에서 더해진 코드
-    "unreadable_observation": "포스터에서 이 항목을 읽을 수 없었습니다.",
-    "unit_mismatch": "기준과 포스터의 단위가 달라 비교할 수 없습니다.",
-    "observed_absence": "포스터에 이 항목이 없습니다.",
-    "observation_status_unknown": "검사 결과에 관측 상태가 적혀 있지 않습니다.",
-    "observation_not_checked": "이 항목은 검사하지 않았습니다.",
-    "numeric_expectation_invalid": "기준 값을 숫자로 읽을 수 없어 비교할 수 없습니다.",
-    "model_review": "검사 모델이 사람 확인이 필요하다고 표시했습니다.",
-    "typed_attribute_review_required": "이 시각 요소·파일 정보·납품 조건은 담당자의 직접 확인이 필요합니다.",
-    "qualifier_interpretation_required": "허용 범위나 추가 조건의 적용 여부를 담당자가 확인해야 합니다.",
-    "normalized_value_review_required": "변환된 값이 원문 조건과 같은 뜻인지 담당자가 확인해야 합니다.",
-    "date_comparison_review_required": "날짜의 연도·기간·표기가 기준과 일치하는지 담당자가 확인해야 합니다.",
-}
 EVIDENCE_STATUS = {
     "empty": "이 실행에는 기준 근거가 없습니다.",
     "stale": "기준 근거가 최신 상태가 아닙니다.",
@@ -56,41 +35,67 @@ EVIDENCE_KIND = {
     "approved_exception": "승인된 예외",
     "historical_context": "과거 기록(참고, 현재 기준 아님)",
 }
-DRAFT_NOTICE = "자동 검수 초안입니다. 사람이 확인하기 전에는 승인이 아닙니다."
+TITLE = "포스터 검수 보고서"
+DRAFT_NOTICE = "자동 검수 초안입니다. 담당자가 확인하기 전에는 승인이 아닙니다."
 SYNTHETIC_NOTICE = "합성 시험 데이터로 만든 보고서입니다."
-POLISH_NOTICE = "설명·할 일 문장은 Qwen이 위 사실을 바탕으로 쓴 초안입니다."
+POLISH_NOTICE = "할 일 문장은 Qwen이 검수 결과를 바탕으로 쓴 초안입니다."
+ACTION_KIND = {"fail": "수정", "review": "확인"}
 
 
 @dataclass(frozen=True)
 class ItemReport:
     criterion_id: str
     verdict: str
-    reasons: tuple[str, ...]
+    reasons: tuple[str, ...]                                 # 사유 코드마다 템플릿 말(Qwen 입력)
     sources: tuple[Evidence, ...]
-    details: dict[str, str] = field(default_factory=dict)   # details.facts() 결과
+    details: dict[str, str] = field(default_factory=dict)   # details.facts() 결과(Qwen 입력)
     criterion_text: str = ""
+    label: str = ""
+    required: bool = True
+    expected: str | None = None
+    observed: str | None = None
+    observation: str = OBSERVATION["unknown"]
+    location: str | None = None
+    reason_code: str | None = None
+    source: str | None = None                               # "PDF 1쪽"
 
 
 class Polisher(Protocol):
     def polish(self, reports: tuple[ItemReport, ...]) -> dict[str, tuple[str, str]] | None: ...
 
 
-def reason(issue: str) -> str:
-    return ISSUE.get(issue, f"기타 사유({issue})")
+def _with_unit(value: str | None, unit: str | None) -> str | None:
+    if value is None or not value.strip():
+        return None
+    value = value.strip()
+    return value if not unit or value.endswith(unit) else f"{value}{unit}"
+
+
+def _pages(sources: tuple[Evidence, ...]) -> str | None:
+    pages = sorted({e.source.page for e in sources if e.kind == "current_requirement"})
+    return f"PDF {'·'.join(map(str, pages))}쪽" if pages else None
 
 
 def items(request: ReportRequest) -> tuple[ItemReport, ...]:
-    """조건별 사실. 판정 순서(불충족 → 확인 필요 → 통과)로, 같은 판정 안에서는 받은 순서 그대로."""
+    """조건별 사실. 판정 순서(불충족 → 확인 필요 → 충족)로, 같은 판정 안에서는 받은 순서 그대로."""
     sources: dict[str, list[Evidence]] = {}
     for evidence in request.evidence.evidence:
         for criterion_id in evidence.criterion_ids:
             sources.setdefault(criterion_id, []).append(evidence)
     ordered = sorted(request.validated.items, key=lambda item: ORDER[item.verdict])
-    return tuple(ItemReport(item.criterion_id, item.verdict, tuple(
-                            '시각 요소의 존재·부재 보고와 검사 판정이 서로 맞지 않습니다.'
-                            if item.kind=='visual' and issue=='verdict_conflict' else reason(issue) for issue in item.issues),
-                            tuple(sources.get(item.criterion_id, ())), _facts(item), item.criterion_text)
-                 for item in ordered)
+    return tuple(_report(item, tuple(sources.get(item.criterion_id, ()))) for item in ordered)
+
+
+def _report(item: ValidatedItem, sources: tuple[Evidence, ...]) -> ItemReport:
+    code = reason_code(item.issues) if item.verdict != "pass" else None
+    observed = item.observation_status == "observed"
+    return ItemReport(item.criterion_id, item.verdict, tuple(dict.fromkeys(reason_text(i) for i in item.issues)),
+                      sources, _facts(item), item.criterion_text, label=short_label(item.criterion_text) or item.criterion_id,
+                      required=item.required, expected=_with_unit(item.expected, item.expected_unit),
+                      observed=_with_unit(item.observed, item.observed_unit) if observed else None,
+                      observation=OBSERVATION.get(item.observation_status, OBSERVATION["unknown"]),
+                      location=location_hint(item.image.bbox) if item.image and item.image.bbox is not None else None,
+                      reason_code=code, source=_pages(sources))
 
 
 def _facts(item: ValidatedItem) -> dict[str, str]:
@@ -99,71 +104,75 @@ def _facts(item: ValidatedItem) -> dict[str, str]:
                  observation_status=item.observation_status, bbox=item.image.bbox if item.image else None)
 
 
-def _approved(report: ItemReport, indent: str) -> list[str]:
-    # 기준 원문이 없을 때만 사람이 승인한 조건 문장을 보여 준다. 원문 인용은 아니다.
-    return [f'{indent}승인된 조건: "{report.criterion_text}"'] if report.criterion_text else []
-
-
-def _source_line(evidence: Evidence) -> str:
-    source = evidence.source
-    return f'{EVIDENCE_KIND[evidence.kind]}: "{source.quote}" ({source.document_version_id} {source.page}쪽)'
-
-
 def supplement_lines(sources: tuple[Evidence, ...]) -> list[str]:
     return [f'{EVIDENCE_KIND[e.kind]} 보완 회신: "{e.value_source.quote}" (출처: {e.value_source.reference})'
             for e in sources if e.value_source is not None]
 
 
+def item_line(report: ItemReport) -> str:
+    name = report.label + ("" if report.required else " (권장)")
+    parts = [f"[{VERDICT[report.verdict]}] {name}", f"기준 ‘{report.expected}’" if report.expected else "기준 미정",
+             f"읽은 값 ‘{report.observed}’" if report.observed else report.observation]
+    if report.verdict != "pass":
+        parts += [reason_text(report.reason_code)] if report.reason_code else []
+        parts += [f"위치 {report.location}"] if report.location else []
+    parts += [report.source] if report.source else []
+    return " · ".join(dict.fromkeys(parts))   # 관측 상태와 사유가 같은 말이면 한 번만
+
+
+def counts(reports: tuple[ItemReport, ...]) -> dict[str, int]:
+    required = Counter(report.verdict for report in reports if report.required)
+    return {"required": sum(required.values()), "pass": required["pass"], "fail": required["fail"],
+            "review": required["review"], "optional": sum(not report.required for report in reports)}
+
+
+def notes(request: ReportRequest, synthetic: bool, polished: bool) -> list[str]:
+    out = [DRAFT_NOTICE, *([SYNTHETIC_NOTICE] if synthetic else []), *([POLISH_NOTICE] if polished else [])]
+    out += [limitation_text(text) for text in request.validated.limitations]
+    out += [EVIDENCE_STATUS[request.evidence.status]] if request.evidence.status in EVIDENCE_STATUS else []
+    out += [limitation_text(text) for text in request.evidence.warnings]   # 모르는 경고는 그대로 옮긴다
+    return list(dict.fromkeys(out))
+
+
 def summary(request: ReportRequest, reports: tuple[ItemReport, ...], synthetic: bool,
             sentences: dict[str, tuple[str, str]] | None = None) -> str:
-    counts = Counter(report.verdict for report in reports)
-    sentences = sentences or {}
-    lines = [f"검수 결과: {VERDICT[request.validated.verdict]} (조건 {len(reports)}개: 불충족 {counts['fail']}"
-             f" · 확인 필요 {counts['review']} · 통과 {counts['pass']})", DRAFT_NOTICE]
-    if synthetic:
-        lines.append(SYNTHETIC_NOTICE)
-    if sentences:
-        lines.append(POLISH_NOTICE)
-    for report in reports:
-        lines.append(f"[{VERDICT[report.verdict]}] {report.criterion_id}")
-        lines += [f"  {_source_line(e)}" for e in report.sources] or ["  기준 원문: 근거 묶음에 없습니다.",
-                                                                     *_approved(report, "  ")]
-        lines += [f"  {line}" for line in supplement_lines(report.sources)]
-        lines += [f"  {line}" for line in detail_lines(report.details)] if report.details else []
-        lines += [f"  사유: {text}" for text in report.reasons]
-        if report.criterion_id in sentences:
-            explanation, action = sentences[report.criterion_id]
-            lines += [f"  설명: {explanation}", f"  할 일: {action}"]
-    limits = ([EVIDENCE_STATUS[request.evidence.status]] if request.evidence.status in EVIDENCE_STATUS else [])
-    limits += [*request.validated.limitations, *request.evidence.warnings]   # 앞 단계의 한계 문구는 그대로 옮긴다
-    if limits:
-        lines += ["한계:", *(f"- {text}" for text in dict.fromkeys(limits))]
+    n = counts(reports)
+    lines = [TITLE, f"판정: {VERDICT[request.validated.verdict]} · 필수 조건 {n['required']}개 중 충족 {n['pass']}"
+                    f" · 불충족 {n['fail']} · 확인 필요 {n['review']} · 권장 조건 {n['optional']}개"]
+    lines += [item_line(report) for report in reports]
+    lines += ["안내:", *(f"- {text}" for text in notes(request, synthetic, uses_sentences(reports, sentences)))]
     return "\n".join(lines)
+
+
+def _groups(reports: tuple[ItemReport, ...]) -> list[list[ItemReport]]:
+    """할 일 줄 묶음. 불충족은 항목마다, 사유가 같은 '확인'은 첫 항목 자리에서 한 묶음."""
+    groups: dict[tuple, list[ItemReport]] = {}
+    for report in reports:
+        if report.verdict == "pass":
+            continue
+        key = (("group", report.reason_code) if groupable(report.verdict, report.reason_code)
+               else ("item", report.criterion_id))
+        groups.setdefault(key, []).append(report)
+    return list(groups.values())
+
+
+def uses_sentences(reports: tuple[ItemReport, ...], sentences: dict[str, tuple[str, str]] | None) -> bool:
+    """Qwen 할 일 문장이 실제로 한 줄이라도 쓰였는지(묶인 줄은 규칙 문장을 쓴다)."""
+    return any(len(members) == 1 and members[0].criterion_id in (sentences or {}) for members in _groups(reports))
 
 
 def change_requests(reports: tuple[ItemReport, ...],
                     sentences: dict[str, tuple[str, str]] | None = None) -> tuple[str, ...]:
-    """불충족은 수정 요청, 확인 필요는 확인 요청. 기준 원문은 현재 기준만 쓴다.
-    다듬은 문장이 있으면 할 일·설명을 그 문장으로 쓰고, 조건 ID·기준 원문은 그대로 둔다."""
+    """불충족은 '수정', 확인 필요는 '확인'. 묶이지 않은 줄은 Qwen '할 일' 문장이 있으면 그 문장을, 없으면 템플릿 규칙 문장을 쓴다."""
     out = []
-    for report in reports:
-        if report.verdict == "pass":
-            continue
-        quotes = [f'"{e.source.quote}"' for e in report.sources if e.kind == "current_requirement"]
-        basis = (f" 기준 원문: {' / '.join(quotes)}" if quotes
-                 else " 기준 원문이 근거 묶음에 없습니다." + "".join(_approved(report, " ")))
-        basis += "".join(f" {line}" for line in supplement_lines(
-            tuple(e for e in report.sources if e.kind == "current_requirement")))
-        basis += f" {'. '.join(detail_lines(report.details))}." if report.details else ""
-        why = f" 사유: {' / '.join(report.reasons)}" if report.reasons else ""
-        if report.criterion_id in (sentences or {}):
-            explanation, action = sentences[report.criterion_id]
-            head = "수정 요청" if report.verdict == "fail" else "확인 요청"
-            out.append(f"{head} [{report.criterion_id}] {action}{basis} 설명: {explanation}")
-        elif report.verdict == "fail":
-            out.append(f"수정 요청 [{report.criterion_id}] 포스터를 기준에 맞게 고쳐 주세요.{basis}{why}")
+    for members in _groups(reports):
+        first = members[0]
+        ids = ",".join(member.criterion_id for member in members)
+        if len(members) == 1 and first.criterion_id in (sentences or {}):
+            text = sentences[first.criterion_id][1]
         else:
-            out.append(f"확인 요청 [{report.criterion_id}] 담당자가 포스터와 기준을 직접 확인해 주세요.{basis}{why}")
+            text = action_text(first.verdict, first.reason_code, "·".join(m.label for m in members), first.expected)
+        out.append(f"{ACTION_KIND[first.verdict]} [{ids}] {text}")
     return tuple(out)
 
 
@@ -191,7 +200,7 @@ class TeamA07Reporter:
         sentences,polish_status = self._sentences(reports)
         notice=''
         if polish_status:
-            notice='\n문장 다듬기 '+('호출 결과를 확인하지 못했습니다.' if polish_status=='outcome_unknown' else '요청을 완료하지 못했습니다.')
+            notice='\n- 문장 다듬기 '+('호출 결과를 확인하지 못했습니다.' if polish_status=='outcome_unknown' else '요청을 완료하지 못했습니다.')
             notice+=' 자동 재호출 없이 검증된 판정과 근거로 규칙 기반 보고서를 제공합니다.'
         return ReportDraft(context=request.context, verdict=request.validated.verdict,
                            summary=summary(request, reports, synthetic, sentences)+notice, evidence_ids=cited,
