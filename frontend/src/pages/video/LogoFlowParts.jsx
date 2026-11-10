@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
@@ -25,47 +25,67 @@ export function useLogoStatus() {
 // 포스터는 화면 대조용 이미지를 미리 보고, 영상은 로고별 기준 문구도 입력한다.
 export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = false }) {
   const [previews, setPreviews] = useState([]);
-  const [referenceError, setReferenceError] = useState('');
+  const [error, setError] = useState('');
+  const [picked, setPicked] = useState(() => new Set());
+  const [dragging, setDragging] = useState(false);
+  const input = useRef(null);
   useEffect(() => {
     const urls = logos.map(item => URL.createObjectURL(item.file)); setPreviews(urls);
     return () => urls.forEach(url => URL.revokeObjectURL(url));
   }, [logos]);
-  const off = disabled || (status && !status.ready);
+  const off = disabled || Boolean(status && !status.ready);
+  const selectedCount = logos.filter(item => picked.has(item.file)).length;
   function add(files) {
+    if (off || !files.length) return;
     const supported = [...files].filter(file => referenceOnly
       ? /\.(jpe?g|png|webp|svg)$/i.test(file.name) && (!file.type || file.type.startsWith('image/'))
       : file.type.startsWith('image/'));
-    if (referenceOnly) {
-      setReferenceError(supported.length !== files.length ? 'JPG, PNG, WEBP, SVG 파일을 선택해 주세요.'
-        : logos.length + supported.length > MAX_LOGOS ? `로고는 최대 ${MAX_LOGOS}장까지 첨부할 수 있어요.` : '');
-    }
-    onChange([...logos, ...supported.map(file => ({ file, text: '' }))].slice(0, MAX_LOGOS));
+    setError(supported.length !== files.length ? (referenceOnly ? 'JPG, PNG, WEBP, SVG 파일을 선택해 주세요.' : '이미지 파일을 선택해 주세요.')
+      : logos.length + supported.length > MAX_LOGOS ? `로고는 최대 ${MAX_LOGOS}장까지 첨부할 수 있어요.` : '');
+    if (supported.length && logos.length < MAX_LOGOS) onChange([...logos, ...supported.map(file => ({ file, text: '' }))].slice(0, MAX_LOGOS));
   }
-  return <fieldset className={`rv-video-subsection rv-video-logos${referenceOnly ? ' rv-poster-logos' : ''}`}
-    onDragOver={referenceOnly ? event => { if (event.dataTransfer.types.includes('Files')) event.preventDefault(); } : undefined}
-    onDrop={referenceOnly ? event => {
-      if (!event.dataTransfer.files.length) return;
-      event.preventDefault();
-      if (!off) add(event.dataTransfer.files);
-    } : undefined}>
-    <legend>원본 로고 첨부 <span>선택</span></legend>
-    <p className="rv-video-subsection-hint">{referenceOnly ? '포스터와 대조할 로고를 끌어다 놓거나 선택하세요.'
-      : '올리면 같은 영상에서 로고 위치 후보를 찾고, 위치를 확정한 뒤 정밀 대조합니다. 판정은 사람이 합니다.'}</p>
-    {status && !status.ready && <p className="rv-video-inline-warning"><Icon name="warning" />{status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.'}</p>}
-    {logos.length > 0 && <ul className="rv-video-logo-list">{logos.map((item, i) => <li key={`${item.file.name}-${i}`}>
-      {previews[i] ? <img src={previews[i]} alt={`원본 로고 ${item.file.name}`} /> : <span className="rv-video-logo-thumb" />}
-      {referenceOnly ? <span className="rv-logo-filename" title={item.file.name}>{item.file.name}</span> : <label><span>{item.file.name}</span>
-        <input value={item.text} maxLength={300} placeholder="기준 문구 (선택, 줄은 | 로 구분: 울산광역시남구|ULSAN NAMGU)" disabled={off}
-          onChange={event => onChange(logos.map((x, k) => (k === i ? { ...x, text: event.target.value } : x)))} /></label>}
-      <button type="button" className="rv-video-text-button" disabled={disabled} aria-label={referenceOnly ? `${item.file.name} 삭제` : undefined}
-        onClick={() => { setReferenceError(''); onChange(logos.filter((_, k) => k !== i)); }}>빼기</button>
-    </li>)}</ul>}
-    {logos.length < MAX_LOGOS && <label className={`rv-button secondary rv-video-logo-add${off ? ' is-disabled' : ''}`}><Icon name="upload" />원본 로고 이미지 추가
-      <input className="visually-hidden" type="file" accept={referenceOnly ? '.jpg,.jpeg,.png,.webp,.svg' : 'image/*'} multiple disabled={off}
-        onChange={event => { add(event.target.files); event.target.value = ''; }} /></label>}
-    {referenceOnly ? <p className="rv-video-subsection-foot" role="status">{referenceError || `${logos.length} / ${MAX_LOGOS}장 · 이 화면의 미리보기용입니다.`}</p>
-      : <p className="rv-video-subsection-foot">{logos.length ? `원본 로고 ${logos.length}장 · 동영상 검수와 함께 같은 영상으로 로고 후보를 찾습니다.` : '올리지 않으면 로고 검수 없이 자막 검수만 합니다.'}</p>}
-  </fieldset>;
+  function pick(file, checked) {
+    setPicked(previous => {
+      const next = new Set(previous);
+      if (checked) next.add(file); else next.delete(file);
+      return next;
+    });
+  }
+  function removePicked() {
+    onChange(logos.filter(item => !picked.has(item.file)));
+    setPicked(new Set());
+    setError('');
+  }
+  return <section className="rv-form-block rv-reference-logos" aria-label="원본 로고 첨부">
+    <h2>원본 로고 첨부</h2>
+    <div className={`rv-form-upload rv-reference-logo-drop${dragging ? ' is-dragging' : ''}`}
+      onDragOver={event => { if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); if (!off) setDragging(true); } }}
+      onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }}
+      onDrop={event => { event.preventDefault(); setDragging(false); add(event.dataTransfer.files); }}>
+      <div className="rv-form-row rv-reference-logo-row"><span>여러 로고를 끌어다 놓을 수 있어요.</span>
+        <input ref={input} type="file" hidden accept={referenceOnly ? '.jpg,.jpeg,.png,.webp,.svg' : 'image/*'} multiple disabled={off}
+          onChange={event => { add(event.target.files); event.target.value = ''; }} />
+        <button type="button" className="rv-button secondary rv-compact" disabled={off || logos.length >= MAX_LOGOS} onClick={() => input.current?.click()}>로고 선택</button>
+      </div>
+      {logos.length > 0 && <>
+        <ul className="rv-reference-logo-list">{logos.map((item, index) => <li key={`${item.file.name}-${index}`}>
+          <label>
+            <input type="checkbox" checked={picked.has(item.file)} disabled={disabled} onChange={event => pick(item.file, event.target.checked)} />
+            {previews[index] && <img src={previews[index]} alt="" />}
+            <span title={item.file.name}>{item.file.name}</span>
+          </label>
+          {!referenceOnly && <input type="text" className="rv-reference-logo-text" value={item.text} maxLength={300} disabled={off}
+            aria-label={`${item.file.name} 기준 문구`} placeholder="기준 문구 (선택, 줄은 | 로 구분)"
+            onChange={event => onChange(logos.map((logo, position) => position === index ? { ...logo, text: event.target.value } : logo))} />}
+        </li>)}</ul>
+        <div className="rv-form-row rv-reference-logo-row"><span role="status">{selectedCount}개 선택</span>
+          <button type="button" className="rv-button secondary rv-compact" disabled={disabled || !selectedCount} onClick={removePicked}>선택한 로고 삭제</button></div>
+      </>}
+    </div>
+    <p className="rv-form-hint">{referenceOnly ? '포스터와 대조할 원본 로고의 미리보기입니다.'
+      : '같은 영상에서 로고 위치 후보를 찾습니다. 위치를 확정하면 원본과 정밀 대조합니다.'}</p>
+    <ErrorMessage message={error || (status && !status.ready ? status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.' : '')} />
+  </section>;
 }
 
 // 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다.
