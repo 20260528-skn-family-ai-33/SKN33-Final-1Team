@@ -10,6 +10,11 @@ TOKEN=re.compile(r'^[A-Za-z0-9_-]{43}$')
 def session_token(value):return value if isinstance(value,str) and TOKEN.fullmatch(value) else None
 
 
+def request_session_token(request,settings):
+    # The current cookie is authoritative when both names are present.
+    return request.cookies.get(settings.session_cookie, request.cookies.get(settings.legacy_session_cookie))
+
+
 def source_origin(request):
     value=request.headers.get('origin')
     if value is not None:return origin(value) if value!='null' else None
@@ -51,7 +56,7 @@ class Csrf:
         except (ValueError,UnicodeError):return False
 
     def binding(self,request,settings):
-        token=session_token(request.cookies.get(settings.session_cookie))
+        token=session_token(request_session_token(request,settings))
         if token:return 'session',token
         return 'pre-auth',session_token(request.cookies.get(settings.seed_cookie))
 

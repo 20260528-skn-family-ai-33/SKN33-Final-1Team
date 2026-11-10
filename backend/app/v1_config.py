@@ -32,7 +32,11 @@ class V1Settings:
     @property
     def secure(self):return self.environment=='production'
     @property
-    def session_cookie(self):return '__Host-baro_session' if self.secure else 'baro_session'
+    def session_cookie(self):
+        return '__Host-creative_checker_session' if self.secure else 'creative_checker_session'
+    @property
+    def legacy_session_cookie(self):
+        return '__Host-baro_session' if self.secure else 'baro_session'
     @property
     def csrf_cookie(self):return '__Host-csrftoken' if self.secure else 'csrftoken'
     @property

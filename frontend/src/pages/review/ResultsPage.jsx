@@ -48,7 +48,8 @@ function RetryNote({ retry }) {
 }
 
 // The list, canvas and inspector always share one criterion ID.
-export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview, busy = false, exportData = review, actions }) {
+export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
+  busy = false, exportData = review, actions, finalApproved = false }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const list = useRef(null);
@@ -56,8 +57,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   const counts = Object.fromEntries(Object.keys(statuses).map(status => [status, results.filter(row => row.status === status).length]));
   const visible = useMemo(() => filterResults(results, filter, query), [results, filter, query]);
   const selected = selectVisibleResult(visible, activeEvidence?.criterion_id);
-  const overlays = useMemo(() => evidenceOverlays(visible), [visible]);
-  const selectedOverlays = overlays.filter(item => item.id === selected?.criterion_id);
+  const selectedOverlays = useMemo(() => selected ? evidenceOverlays([selected]) : EMPTY, [selected]);
   const selectedEvidence = selected?.evidence || EMPTY;
   const image = review.image;
   const selectedCondition = selected && review.criteria?.find(item => item.id === selected.criterion_id)?.document_condition;
@@ -106,10 +106,6 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     setFilter('all');
     chooseResult(selectVisibleResult(results, selected?.criterion_id));
   }
-  function selectOverlay(id) {
-    const result = visible.find(item => item.criterion_id === id);
-    if (result) chooseResult(result);
-  }
   function exportJson() {
     const url = URL.createObjectURL(new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' }));
     const anchor = document.createElement('a');
@@ -133,7 +129,9 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
       {Object.entries(statuses).map(([status, label]) => <span className={`rv-result-summary-count ${status}`} key={status}>
         <span className="rv-result-dot" aria-hidden="true" />{label}<strong>{counts[status]}</strong>
       </span>)}
-      <span className="rv-result-summary-notice">최종 승인은 담당자가 별도로 판단합니다.</span>
+      <span className="rv-result-summary-notice" role={finalApproved ? 'status' : undefined}>
+        {finalApproved ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}
+      </span>
     </div>
 
     <div className="rv-result-workbench">
@@ -167,9 +165,9 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
       <div className="rv-result-canvas-column">
         <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
-          title="검수 대상 이미지" subtitle="영역을 선택하면 해당 검수 항목으로 이동합니다."
-          width={image?.width} height={image?.height} overlays={overlays}
-          selectedOverlayId={selected?.criterion_id} onOverlaySelect={selectOverlay}
+          title="검수 대상 이미지" subtitle="선택한 검수 항목의 위치 근거를 표시합니다."
+          width={image?.width} height={image?.height} overlays={selectedOverlays}
+          selectedOverlayId={selected?.criterion_id} onOverlaySelect={() => inspector.current?.scrollIntoView({ block: 'nearest' })}
           empty="검수 대상 이미지를 표시할 수 없습니다." />
           <div className="rv-result-canvas-caption" role="status">
             <Icon name="info" /><p>{!selected ? '검색이나 상태 필터를 바꾸면 검수 항목의 근거를 볼 수 있습니다.'
@@ -205,14 +203,15 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
           </section>
           <ModelAnalysis analysis={selected.model_analysis} />
           <details className="rv-result-runtime"><summary>검수 안내와 처리 내역</summary>
-            <p>자동 판정은 검토를 돕는 결과입니다. ‘확인 필요’ 항목과 최종 승인 여부는 담당자가 검토해 주세요.</p>
+            <p>{finalApproved ? '자동 판정에 대한 담당자의 확인 기록은 보고서에서 볼 수 있습니다.'
+              : '자동 판정은 검토를 돕는 결과입니다. ‘확인 필요’ 항목과 최종 승인 여부는 담당자가 검토해 주세요.'}</p>
             {review.model_runtime?.status === 'not_configured' && <p>시각 분석 모델이 연결되지 않아 OCR·파일 정보로 확인 가능한 항목만 자동 판정합니다.</p>}
             <RetryNote retry={review.ocr?.conditional_retry} />
           </details>
         </div> : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong><p>목록에 표시되는 항목을 선택하면 기준·관측·이유·근거를 확인할 수 있습니다.</p></div>}
       </aside>
     </div>
-    <footer className="rv-result-footer"><p><Icon name="shield" />검수 실행 완료는 최종 승인을 의미하지 않습니다.</p>
+    <footer className="rv-result-footer"><p><Icon name="shield" />{finalApproved ? '담당자 확인 기록은 보고서에서 볼 수 있습니다.' : '검수 실행 완료는 최종 승인을 의미하지 않습니다.'}</p>
       <div><button type="button" className="rv-button secondary" disabled={busy} onClick={edit}>기준 다시 확인하기</button>
         <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>

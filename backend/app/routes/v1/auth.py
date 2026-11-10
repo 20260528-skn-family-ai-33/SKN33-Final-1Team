@@ -1,4 +1,5 @@
 """HTTP credential parsing and cookie projection; database work stays in one worker call."""
+from datetime import UTC
 import json,secrets
 from fastapi import APIRouter,Request
 from pydantic import ValidationError
@@ -6,15 +7,15 @@ from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse,Response
 from ...contracts.auth import Credentials,Registration
 from ...security.errors import AuthError
-from ...security.csrf import developer_allowed,session_token
+from ...security.csrf import developer_allowed,request_session_token
 
 
 def envelope(request,data):
     return {**data,'meta':{'contract_version':'cc-api-v1','request_id':request.state.request_id}}
 
 
-def set_cookie(response,settings,name,value,*,httponly,max_age):
-    response.set_cookie(name,value,max_age=max_age,httponly=httponly,secure=settings.secure,samesite='strict',path='/')
+def set_cookie(response,settings,name,value,*,httponly,max_age=None,expires=None):
+    response.set_cookie(name,value,max_age=max_age,expires=expires,httponly=httponly,secure=settings.secure,samesite='strict',path='/')
 
 
 def delete_cookie(response,settings,name,*,httponly):
@@ -75,10 +76,12 @@ def router():
     async def login(request:Request):
         settings=request.app.state.settings
         credentials=await parse_credentials(request)
-        user,raw=await run_in_threadpool(request.app.state.auth.login,credentials,request.cookies.get(settings.session_cookie),
+        user,raw=await run_in_threadpool(request.app.state.auth.login,credentials,request_session_token(request,settings),
             ip=request.client.host if request.client else 'unknown',developer_allowed=developer_allowed(request,settings),request_id=request.state.request_id)
         response=JSONResponse(envelope(request,{'user':user}))
         set_cookie(response,settings,settings.session_cookie,raw,httponly=True,max_age=28800)
+        if settings.legacy_session_cookie in request.cookies:
+            delete_cookie(response,settings,settings.legacy_session_cookie,httponly=True)
         set_cookie(response,settings,settings.csrf_cookie,request.app.state.csrf.issue('session',raw),httponly=False,max_age=900)
         delete_cookie(response,settings,settings.seed_cookie,httponly=True)
         delete_cookie(response,settings,'baro_local_session',httponly=True)
@@ -87,15 +90,25 @@ def router():
     @result.get('/me')
     def me(request:Request):
         settings=request.app.state.settings
-        subject=request.app.state.auth.current(request.cookies.get(settings.session_cookie),developer_allowed=developer_allowed(request,settings))
-        return envelope(request,{'authenticated':subject is not None,'user':subject.public() if subject else None})
+        raw = request_session_token(request,settings)
+        subject = request.app.state.auth.current(raw,developer_allowed=developer_allowed(request,settings))
+        payload = envelope(request,{'authenticated':subject is not None,'user':subject.public() if subject else None})
+        if subject is None or settings.session_cookie in request.cookies:
+            return payload
+
+        # Move the validated token to the new cookie without extending the database session.
+        response = JSONResponse(payload)
+        set_cookie(response,settings,settings.session_cookie,raw,httponly=True,expires=subject.expires_at.astimezone(UTC))
+        delete_cookie(response,settings,settings.legacy_session_cookie,httponly=True)
+        return response
 
     @result.post('/logout')
     def logout(request:Request):
         settings=request.app.state.settings
-        request.app.state.auth.logout(request.cookies.get(settings.session_cookie),request_id=request.state.request_id)
+        request.app.state.auth.logout(request_session_token(request,settings),request_id=request.state.request_id)
         response=Response(status_code=204)
-        for name,private in ((settings.session_cookie,True),(settings.csrf_cookie,False),(settings.seed_cookie,True),('baro_local_session',True)):
+        for name,private in ((settings.session_cookie,True),(settings.legacy_session_cookie,True),
+                             (settings.csrf_cookie,False),(settings.seed_cookie,True),('baro_local_session',True)):
             delete_cookie(response,settings,name,httponly=private)
         return response
 

@@ -16,7 +16,7 @@ from starlette.concurrency import run_in_threadpool
 from backend.app.main import create_app as create_auth_app
 from backend.app.persistence.transaction import unit_of_work
 from backend.app.persistence.database import PersistenceError
-from backend.app.security.csrf import developer_allowed
+from backend.app.security.csrf import developer_allowed, request_session_token
 from backend.app.security.errors import AuthError
 from backend.app.config import ConfigurationError
 from backend.app.services.business import Business
@@ -89,7 +89,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     app.include_router(project_router(),prefix='/api/v1')
 
     def subject(request):
-        user=app.state.auth.current(request.cookies.get(settings.session_cookie),
+        user=app.state.auth.current(request_session_token(request,settings),
             developer_allowed=developer_allowed(request,settings))
         if user is None:raise AuthError('AUTHENTICATION_REQUIRED',401)
         return user

@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select,insert,update,func
 
 from tests.app.test_db_integration import database
-from tests.app.test_v1_auth_integration import auth_database,email_user,login,csrf
+from tests.app.test_v1_auth_integration import auth_database,email_user,login,csrf,use_legacy_session_cookie
 from backend.migrations.configuration import load_migration_settings
 from backend.app.services.business import table
 from backend.app.persistence.database import PersistenceError
@@ -133,6 +133,8 @@ def test_project_metadata_routes_reuse_session_csrf_and_membership_without_media
 
 def test_api_worker_approvals_and_rereview_survive_new_instances(runtime):
     r=runtime
+    use_legacy_session_cookie(r.client, r.settings)
+    assert r.client.get('/api/v1/projects/'+r.context.project_id).status_code == 200
     assert start(r)['execution_status']=='queued'
     assert start(r)['execution_status']=='queued'  # same fixed run is idempotent
     with unit_of_work(r.db.engine) as c:assert not c.execute(select(steps).where(steps.c.run_id==r.context.run_id)).all()

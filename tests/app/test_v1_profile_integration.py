@@ -1,17 +1,20 @@
 """Missing/disabled setup, real first-bootstrap race and production HTTPS ASGI profile."""
 from concurrent.futures import ThreadPoolExecutor
+from email.utils import parsedate_to_datetime
+from http.cookies import SimpleCookie
 from uuid import UUID,uuid4
 import threading
 import pytest
 from sqlalchemy import select,delete,func
 from fastapi.testclient import TestClient
 from tests.app.test_db_integration import database  # noqa: F401
-from tests.app.test_v1_auth_integration import auth_database,email_user,client,csrf,login  # noqa: F401
+from tests.app.test_v1_auth_integration import auth_database,email_user,client,csrf,login,use_legacy_session_cookie  # noqa: F401
 from tests.app.auth_fixtures import auth_environment,DEV_PROJECT,PASSWORD
 from backend.app.v1_config import load_v1_settings
 from backend.app.main import create_app
 from backend.app.security.errors import AuthError
-from backend.app.persistence.schema.identity import users,projects,project_members
+from backend.app.persistence.schema.identity import users,projects,project_members,user_sessions
+from backend.app.services.auth import token_hash
 
 pytestmark=pytest.mark.db_integration
 
@@ -31,8 +34,26 @@ def test_production_https_cookie_attributes_and_developer_block(auth_database):
             assert any('__Host-baro_csrf_seed=' in c and 'HttpOnly' in c for c in cookies)
             response=browser.post('/api/v1/auth/login',json={'email':user['email'],'password':PASSWORD},headers={'X-CSRFToken':prepared.json()['csrf_token']})
             assert response.status_code==200,response.text
-            session=next(c for c in response.headers.get_list('set-cookie') if c.startswith('__Host-baro_session='))
+            session=next(c for c in response.headers.get_list('set-cookie') if c.startswith('__Host-creative_checker_session='))
             assert 'HttpOnly' in session and 'Secure' in session and 'Max-Age=28800' in session and 'Domain=' not in session
+            raw = use_legacy_session_cookie(browser, settings)
+            sessions = select(user_sessions).where(user_sessions.c.user_id == uid)
+            with owner.connect() as connection:
+                previous = connection.execute(sessions).mappings().one()
+            csrf_token = browser.cookies[settings.csrf_cookie]
+            migrated = browser.get('/api/v1/auth/me')
+            assert migrated.json()['user'] == user
+            assert migrated.headers['cache-control'] == 'no-store'
+            migrated_cookie = SimpleCookie(next(c for c in migrated.headers.get_list('set-cookie')
+                if c.startswith('__Host-creative_checker_session=')))[settings.session_cookie]
+            assert migrated_cookie['secure'] and migrated_cookie['httponly'] and migrated_cookie['samesite'] == 'strict'
+            assert migrated_cookie['path'] == '/' and not migrated_cookie['domain'] and not migrated_cookie['max-age']
+            assert parsedate_to_datetime(migrated_cookie['expires']) == previous['expires_at'].replace(microsecond=0)
+            assert previous['token_hash'] == token_hash(raw) and browser.cookies[settings.session_cookie] == raw
+            assert settings.legacy_session_cookie not in browser.cookies
+            assert browser.cookies[settings.csrf_cookie] == csrf_token
+            with owner.connect() as connection:
+                assert connection.execute(sessions).mappings().one() == previous
             assert browser.get('/api/v1/auth/me').json()['user']==user
             assert browser.get('http://localhost/api/v1/auth/me').status_code==400
             assert login(browser,username='admin',password='admin').status_code==404

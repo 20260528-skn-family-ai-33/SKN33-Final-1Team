@@ -120,7 +120,7 @@ def test_retry_gets_new_run_and_operation_key_scope_is_independent(client):
 
 @pytest.mark.parametrize('state',['queued','running'])
 def test_nonterminal_retry_rejected_and_claim_is_single_owner(client,state):
-    body,draft=setup(client);who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     run,_=client.app.state.reviews.admit(who,True,body,uuid4(),str(uuid4()))
     if state=='running':
         with ThreadPoolExecutor(max_workers=2) as workers:claims=list(workers.map(lambda _:client.app.state.reviews.claim(UUID(run['id'])),range(2)))
@@ -131,7 +131,7 @@ def test_nonterminal_retry_rejected_and_claim_is_single_owner(client,state):
 
 
 def test_concurrent_admission_same_key_one_run_and_same_input_config(client):
-    body,draft=setup(client);who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True);key=uuid4()
+    body,draft=setup(client);who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True);key=uuid4()
     with ThreadPoolExecutor(max_workers=2) as workers:
         values=list(workers.map(lambda _:client.app.state.reviews.admit(who,True,body,key,str(uuid4())),range(2)))
     assert len({value[0]['id'] for value in values})==1 and sorted(value[1] for value in values)==[False,True]
@@ -166,7 +166,7 @@ def test_current_identity_and_membership_control_history(client,auth_database,ki
         other=email_user(auth_database);assert login(client,email=other['email']).status_code==200
     else:
         from backend.app.services.auth import token_hash
-        with auth_database[1].begin() as c:c.exec_driver_sql("UPDATE public.user_sessions SET created_at=clock_timestamp()-interval '9 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE token_hash=%s",(token_hash(client.cookies['baro_session']),))
+        with auth_database[1].begin() as c:c.exec_driver_sql("UPDATE public.user_sessions SET created_at=clock_timestamp()-interval '9 hours',expires_at=clock_timestamp()-interval '1 hour' WHERE token_hash=%s",(token_hash(client.cookies[client.app.state.settings.session_cookie]),))
     for path in ('','/ocr-records','/export'):
         assert client.get('/api/v1/reviews/'+receipt['id']+path).status_code==(404 if kind=='outsider' else 401)
 
@@ -229,7 +229,7 @@ def test_mid_result_db_error_rolls_back_entire_output_graph(client,auth_database
 
 def test_stale_token_cannot_store_and_late_output_cannot_replace_sealed_result(client):
     body,draft=setup(client);service=client.app.state.reviews;executor=client.app.state.review_executor
-    who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     accepted,_=service.admit(who,True,body,uuid4(),str(uuid4()));run,attempt,token=service.claim(UUID(accepted['id']))
     plan,intent=executor.prepare(run,attempt,token)
     with client.app.state.storage.lock('gate',shared=True):
@@ -262,7 +262,7 @@ def test_database_service_lock_rejects_different_root_then_restart_closes_only_b
     with pytest.raises(AuthError) as error:
         with TestClient(create_app(settings=replace(client.app.state.settings,storage_root=root),engine=auth_database[0].engine,review_adapter=SyntheticPipeline())):pass
     assert error.value.code=='BACKGROUND_SERVICE_BUSY'
-    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     queued,_=service.admit(who,True,body,uuid4(),str(uuid4()))
     running,_=service.admit(who,True,body,uuid4(),str(uuid4()));service.claim(UUID(running['id']))
     completed=submit(client,body).json()
@@ -325,7 +325,7 @@ def test_manifest_fingerprints_include_actual_output_values_and_persisted_graph(
 
 
 def test_admission_capacity_is_bounded_without_inference(client):
-    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     resources=[service.admit(who,True,body,uuid4(),str(uuid4()))[0] for _ in range(16)]
     with pytest.raises(AuthError) as error:service.admit(who,True,body,uuid4(),str(uuid4()))
     assert error.value.code=='REVIEW_CAPACITY' and client.pipeline.calls==0
@@ -398,7 +398,7 @@ def test_partial_file_publication_failure_preserves_existing_input_and_no_partia
 
 
 def test_project_name_and_input_hash_are_snapshots_while_accepted_work_finishes(client):
-    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     accepted,_=service.admit(who,True,body,uuid4(),str(uuid4()))
     old_name=client.get('/api/v1/projects/'+body['project_id']).json()['name']
     assert client.patch('/api/v1/projects/'+body['project_id'],json={'name':'나중 이름','archived':True},headers=csrf(client)).status_code==200
@@ -424,7 +424,7 @@ def test_imported_history_is_unconfirmed_local_result_and_not_retryable(client,a
 
 def test_background_recovery_never_claims_or_closes_postgres_worker_rows(client,auth_database):
     from sqlalchemy import insert
-    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     accepted,_=service.admit(who,True,body,uuid4(),str(uuid4()));worker_id=uuid4()
     with auth_database[1].begin() as c:
         original=one(c,'review_runs','run_id',UUID(accepted['id']))
@@ -437,7 +437,7 @@ def test_background_recovery_never_claims_or_closes_postgres_worker_rows(client,
 
 def test_duplicate_delivery_does_not_wait_for_the_busy_inference_slot(client,monkeypatch):
     import threading
-    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies['baro_session'],developer_allowed=True)
+    body,draft=setup(client);service=client.app.state.reviews;who=client.app.state.auth.current(client.cookies[client.app.state.settings.session_cookie],developer_allowed=True)
     accepted,_=service.admit(who,True,body,uuid4(),str(uuid4()));run_id=UUID(accepted['id'])
     entered=threading.Event();release=threading.Event();original=client.pipeline.recognize
     def blocked(*args):

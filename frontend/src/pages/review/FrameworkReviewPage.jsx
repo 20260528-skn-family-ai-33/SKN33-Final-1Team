@@ -63,6 +63,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const hasResults = !!run?.validated;
   const processing = !run || running.has(status);
   const step = processing ? 'running' : hasResults && !showCriteria ? 'results' : 'criteria';
+  const finalApproved = status === 'completed' && run?.human_decision === 'final_approved';
+  const showingApprovedResult = finalApproved && step === 'results' && !showActions;
   const reviewItems = run ? reviewableItems(run) : [];
   const requiredItems = (run?.validated?.items || []).filter(item => item.required);
   const canFinalize = requiredItems.length > 0 && requiredItems.every(item => item.verdict === 'pass' ||
@@ -70,6 +72,11 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       humanReviews[item.criterion_id]?.verdict === 'pass')) && !Object.values(humanReviews).some(item => item.verdict === 'fail');
 
   useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    if (!showingApprovedResult) return;
+    document.getElementById('page-title')?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0 });
+  }, [showingApprovedResult]);
   useEffect(() => {
     if (!file) { setPreview(null); return; }
     const url = URL.createObjectURL(file);
@@ -184,6 +191,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       ...(reviews.length ? { human_reviews: reviews } : {}),
       reason: decision === 'approve_changes' ? reason.trim() : reviews.length ? '항목별 직접 확인 결과와 근거를 검토하고 승인했습니다.' : '' }, null, signal);
     setRun(snapshot); setReason(''); setHumanReviews({});
+    if (decision === 'approve_final' && snapshot.execution_status === 'completed' &&
+        snapshot.human_decision === 'final_approved') setShowActions(false);
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
 
@@ -215,11 +224,14 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         }) : undefined}
         onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title">대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
-      : showActions ? <div className="rv-workspace-intro"><div><span className="rv-eyebrow">REVIEW REPORT</span><h1 id="page-title">보고서와 담당자 승인</h1><p>자동 검수 결과를 검토하고 최종 판단을 기록하세요.</p></div><button type="button" className="rv-button secondary" disabled={busy} onClick={() => setShowActions(false)}>검수 결과로 돌아가기</button></div>
-      : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy}
+      : showActions ? <div className="rv-workspace-intro"><div><span className="rv-eyebrow">REVIEW REPORT</span>
+        <h1 id="page-title">{finalApproved ? '검수 보고서' : '보고서와 담당자 승인'}</h1>
+        <p>{finalApproved ? '자동 검수 결과와 담당자의 승인 기록을 확인하세요.' : '자동 검수 결과를 검토하고 최종 판단을 기록하세요.'}</p></div>
+        <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setShowActions(false)}>검수 결과로 돌아가기</button></div>
+      : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={() => setShowCriteria(true)} newReview={onNew}
-        actions={<button type="button" className="rv-button primary" disabled={busy} onClick={() => setShowActions(true)}>보고서·담당자 승인<Icon name="arrow" /></button>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
+        actions={<button type="button" className="rv-button primary" disabled={busy} onClick={() => setShowActions(true)}>{finalApproved ? '보고서 보기' : '보고서·담당자 승인'}<Icon name="arrow" /></button>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
         canvas={<>
           <ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
             title="검수 포스터" alt="현재 버전의 검수 포스터" subtitle={file?.name}
@@ -303,8 +315,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         <button className="rv-button secondary" disabled={busy || !reason.trim()} onClick={() => perform(signal => decide('approve_changes', signal), 'changes')} aria-busy={working('changes')}
           title={!reason.trim() ? '수정 요청 사유를 먼저 적어 주세요.' : undefined}>수정 요청 승인</button>
       </>}
-      {status === 'completed' && <p role="status">담당자 승인 완료</p>}
-      {run?.approvals?.flatMap(approval => (approval.human_reviews || []).map(item => <section key={approval.decision + item.criterion_id}>
+      {status === 'completed' && !finalApproved && <p role="status">담당자 승인 완료</p>}
+      {!run?.report && run?.approvals?.flatMap(approval => (approval.human_reviews || []).map(item => <section key={approval.decision + item.criterion_id}>
         <h3>담당자 확인 · {item.criterion_id} · {verdicts[item.verdict]}</h3>
         <p>{item.observed}</p><p>근거: {item.reference} · 사유: {item.reason}</p><p>검토자: {approval.actor_id}</p>
       </section>))}
