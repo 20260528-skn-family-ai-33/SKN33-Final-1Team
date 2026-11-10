@@ -32,6 +32,7 @@ htmlcov/
 
 # Secrets and local environment
 .env
+env
 .env.*
 .env_*
 *.env
