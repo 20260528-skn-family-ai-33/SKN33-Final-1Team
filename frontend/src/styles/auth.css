@@ -55,3 +55,73 @@
 @media(max-width:900px){.auth-main{gap:35px;padding-top:30px}.auth-intro h1{font-size:36px}.auth-card{padding:28px}.auth-steps li{padding:10px 8px}}
 @media(max-width:700px){.auth-header{padding:22px}.auth-header .brand{font-size:21px}.auth-home-link{font-size:11px}.auth-home-link .icon{display:none}.auth-main{grid-template-columns:1fr;max-width:480px;padding:12px 22px 26px;gap:28px}.auth-intro>.pill{font-size:11px}.auth-intro h1{font-size:30px;margin:14px 0}.auth-intro>p{font-size:13px}.auth-steps{display:none}.auth-card{padding:25px}.auth-card-heading h2{font-size:25px}.auth-symbol{display:none}.auth-field input{font-size:16px}.auth-footer{font-size:10px}.auth-state-card{padding:26px}.auth-state-card h1{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.auth-spinner{animation:none}}
+
+html:has(.auth-page--public) { scrollbar-gutter: stable; }
+.auth-page--public {
+  --soft: #f1f1ef;
+  --line: #deded9;
+  --pale: #ebebe8;
+  --muted: #62645e;
+  min-height: 100dvh;
+  background: var(--dot-grid) var(--soft);
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -.015em;
+  word-break: normal;
+}
+.auth-page--public .auth-header { max-width: 1200px; padding: 28px 32px; gap: 9px; flex-wrap: wrap; }
+.auth-page--public .auth-header .brand.brand-button { font-size: 18px; font-weight: 700; line-height: inherit; letter-spacing: -.05em; padding: 0; }
+.auth-page--public .auth-header .brand-symbol { width: 26px; height: 26px; }
+.auth-page--public .auth-home-link { gap: 4px; padding: 5px 0; font-size: 13px; }
+.auth-page--public .auth-home-link:hover { text-decoration: underline; }
+.auth-page--public .auth-home-link .icon { display: inline-block; width: 17px; height: 17px; }
+.auth-page--public .auth-main {
+  max-width: 1152px;
+  grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+  align-items: start;
+  gap: 80px;
+  padding: 70px 32px 90px;
+}
+.auth-page--public .auth-intro { min-width: 0; padding-top: 30px; }
+.auth-page--public .auth-intro > .pill { padding: 3px 7px; background: var(--soft); color: var(--muted); border-radius: 7px; font-weight: 400; }
+.auth-page--public .auth-intro h1 { font-size: 48px; margin: 24px 0; }
+.auth-page--public .auth-intro > p { font-size: 15px; }
+.auth-page--public .auth-example { max-width: none; margin: 25px 0 0; }
+.auth-page--public .auth-example img { border-radius: 13px; box-shadow: 0 9px 24px #1717170a; }
+.auth-page--public .auth-card { min-width: 0; border-radius: 30px; padding: 36px; }
+.auth-page--public .auth-symbol { color: var(--ink); }
+.auth-page--public .auth-symbol .icon { width: 22px; height: 22px; }
+.auth-page--public .auth-card h2 { font-size: 28px; line-height: 1.4; letter-spacing: inherit; margin: 8px 0; }
+.auth-page--public .auth-form { gap: 19px; margin-top: 28px; }
+.auth-page--public .auth-field { gap: 7px; }
+.auth-page--public .auth-field label { font-size: 12px; font-weight: 400; }
+.auth-page--public .auth-field input { line-height: 1.55; }
+.auth-page--public .auth-field input::placeholder { color: #707169; }
+.auth-page--public .auth-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 48px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+.auth-page--public .auth-submit:hover:enabled { background: #373733; }
+.auth-page--public .auth-submit .icon { width: 17px; height: 17px; }
+.auth-page--public .auth-switch { gap: 9px; }
+.auth-page--public .auth-switch .text-btn { padding: 0; font-weight: 650; }
+.auth-note { color: var(--muted); font-size: 11px; text-align: center; }
+
+@media (max-width: 1000px) {
+  .auth-page--public .auth-main { gap: 32px; padding-top: 32px; }
+  .auth-page--public .auth-intro h1 { font-size: 37px; }
+  .auth-page--public .auth-card { padding: 27px; }
+}
+@media (max-width: 720px) {
+  .auth-page--public .auth-main { grid-template-columns: minmax(0, 1fr); }
+  .auth-page--public .auth-intro { padding-top: 0; }
+  .auth-page--public .auth-symbol { display: grid; }
+}
+#login-title:focus { outline: none; }

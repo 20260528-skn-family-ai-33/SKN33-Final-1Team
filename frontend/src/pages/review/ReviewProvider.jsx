@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useReducer, u
 import { useLocation, useSearchParams } from 'react-router';
 import { fetchJson, fetchResponse } from '../../api/client.js';
 import samplePoster from '../../assets/sample-poster.png';
+import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
@@ -10,8 +11,8 @@ import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 
 const ReviewContext = createContext(null);
 const bundledSample = {
-  project_name: '2026 김천김밥축제 포스터 검수',
-  requirements: '행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n김천시 로고가 표시되어 있어야 합니다.',
+  project_name: '빛의 기록 · 전시 포스터',
+  requirements: '전시 제목에 ‘빛의 기록’을 표시합니다.\n하단에 지정한 주최 로고를 사용합니다.\n전시 기간을 ‘11.20–11.28’로 표시합니다.',
 };
 
 // 업로드 제한과 실제 파일 서명을 확인하고 원본 이미지 크기를 반환한다.
@@ -51,6 +52,7 @@ export function ReviewProvider({ children }) {
   const [documentNotice, setDocumentNotice] = useState('');
   const [documentError, setDocumentError] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [inputRunId, setInputRunId] = useState(null);
   const [error, setError] = useState('');
   const [pollError, setPollError] = useState('');
   const [pollRetry, setPollRetry] = useState(0);
@@ -190,19 +192,20 @@ export function ReviewProvider({ children }) {
       const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
       if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
       if (controller.signal.aborted) return;
-      const result = await extractDocumentWithProgress(file, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
+      const pdf = file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf' });
+      const result = await extractDocumentWithProgress(pdf, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
           setDocumentProgress(previous => ({ ...previous, ...update }));
         }
       } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
-      const merged = mergeDocumentRequirements(currentState.current.requirements, result, file.name);
-      dispatch({ type: 'document', ...merged, documentRun: { id: result.framework.run_id,
-        paragraphs: [...new Set(result.conditions.map(item => item.text.trim()))].join('\n\n'), filename: file.name, projectId, kind: 'pdf' } });
-      setDocumentProgress(previous => ({ ...previous, percent: 100, stage: 'completed', message: `${merged.addedCount}개 조건을 입력에 반영했습니다.` }));
-      const notice = !result.conditions.length ? `미확정 항목 ${result.pending.length}개가 있습니다. PDF 검수 기준에서 원문을 확인해 주세요.`
-        : `${merged.addedCount}개 요구사항 문단을 추가했습니다. 원문과 비교한 뒤 기준을 확정해 주세요.`;
-      setDocumentNotice(`${file.name} · ${result.page_count}페이지 · ${notice}${result.warnings?.length ? ` ${result.warnings.join(' ')}` : ''}`);
+      const { sources } = mergeDocumentRequirements('', result, file.name);
+      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false }));
+      dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
+        originalCount: rows.length, rows, filename: file.name, projectId } });
+      setDocumentProgress(null);
+      const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
+      setDocumentNotice(`추출을 완료했어요. ${result.page_count}페이지 · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentNotice('');
@@ -227,22 +230,17 @@ export function ReviewProvider({ children }) {
     setFileBusy(false);
     setError('');
     try {
-      const [metadata, response] = await Promise.all([
-        fetchJson('/api/sample', { signal: controller.signal }).catch(error => {
-          if (error.status === 404) return null;
-          throw error;
-        }),
-        fetch('/api/sample/image', { signal: controller.signal, credentials: 'same-origin' }),
+      const [image, logo] = await Promise.all([
+        fetch(samplePoster, { signal: controller.signal }),
+        fetch(sampleLogo, { signal: controller.signal }),
       ]);
-      const useBundle = !metadata || response.status === 404;
-      const image = useBundle ? await fetch(samplePoster, { signal: controller.signal }) : response;
-      const sampleData = useBundle ? bundledSample : metadata;
-      if (!image.ok) throw new Error('샘플 이미지를 불러오지 못했습니다. 검수 서버 연결을 확인해 주세요.');
-      const blob = await image.blob();
-      const file = new File([blob], '2026_김천_김밥축제.png', { type: blob.type || 'image/png' });
+      if (!image.ok || !logo.ok) throw new Error('예시 자료를 불러오지 못했습니다. 다시 시도해 주세요.');
+      const [posterBlob, logoBlob] = await Promise.all([image.blob(), logo.blob()]);
+      const file = new File([posterBlob], '빛의 기록_포스터.png', { type: 'image/png' });
+      const referenceLogos = [{ file: new File([logoBlob], '주최 로고.png', { type: 'image/png' }), text: '' }];
       const dims = await validateImage(file, health?.limits);
       if (controller.signal.aborted || epoch !== generation.current) return;
-      dispatch({ type: 'sample', file, projectName: sampleData.project_name, requirements: sampleData.requirements });
+      dispatch({ type: 'sample', file, referenceLogos, projectName: bundledSample.project_name, requirements: bundledSample.requirements });
       setSearchParams(params => { const next = new URLSearchParams(params); next.delete('review'); return next; }, { replace: true });
       setDimensions(dims);
     } catch (err) {
@@ -318,9 +316,13 @@ export function ReviewProvider({ children }) {
   function inputChange(field, value) {
     clearSavedReview();
     invalidateSample();
-    if (field === 'requirements') cancelDocument();
     setError('');
     dispatch({ type: 'input', field, value });
+  }
+
+  function clearDocument() {
+    cancelDocument();
+    inputChange('documentRun', null);
   }
 
   // 가장 마지막에 선택한 파일만 반영하고 오래된 검증 오류는 표시하지 않는다.
@@ -361,6 +363,7 @@ export function ReviewProvider({ children }) {
     }
     // Reviewing an extracted draft does not require the poster model to be ready.
     // Registration and review execution still perform their readiness checks.
+    setInputRunId(state.documentRun.id);
     setSearchParams({ framework: state.documentRun.id });
   }
 
@@ -368,10 +371,24 @@ export function ReviewProvider({ children }) {
     event?.preventDefault();
     if (sampleBusy || fileBusy || documentBusy) return;
     setError('');
-    if (state.documentRun && state.requirements.trim() === state.documentRun.paragraphs) { openDocumentRun(); return; }
     if (!state.file) { setError('검수할 이미지를 먼저 선택해 주세요.'); return; }
-    if (!state.requirements.trim()) { setError('검수 요구사항을 한 줄에 하나씩 입력해 주세요.'); return; }
-    startTextReview(state.requirements);
+    const direct = state.requirements.trim();
+    const doc = state.documentRun;
+    const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
+    if (!direct && selectedRows.length && doc.originalCount === selectedRows.length
+      && selectedRows.every(row => row.text.trim() === row.originalText)) {
+      openDocumentRun();
+      return;
+    }
+    if (selectedRows.length && projectId !== doc.projectId) {
+      setError('첨부한 문서를 저장한 프로젝트를 선택해 주세요.');
+      return;
+    }
+    const lines = [...new Set([...direct.split(/\r?\n/), ...selectedRows.map(row => row.text)].map(line => line.trim()).filter(Boolean))];
+    const requirements = lines.join('\n');
+    if (!requirements) { setError('요구사항을 입력하거나 문서에서 추출한 항목을 선택해 주세요.'); return; }
+    if (requirements.length > 6000 || lines.length > 100) { setError('검수 요구사항을 6,000자 및 100개 이내로 정리해 주세요.'); return; }
+    startTextReview(requirements);
   }
 
   async function startTextReview(text) {
@@ -390,9 +407,7 @@ export function ReviewProvider({ children }) {
           if (!controller.signal.aborted && documentRequest.current === controller) setDocumentProgress(previous => ({ ...previous, ...update }));
         } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
-      dispatch({ type: 'document', requirements: text, sources: [], documentRun: {
-        id: result.framework.run_id, paragraphs: text.trim(), filename: '직접 입력', projectId, kind: 'text',
-      } });
+      setInputRunId(result.framework.run_id);
       setDocumentProgress(null);
       setSearchParams({ framework: result.framework.run_id });
     } catch (err) {
@@ -466,13 +481,14 @@ export function ReviewProvider({ children }) {
     setNewCategory('information');
     setFilter('all');
     setActiveEvidence(null);
+    setInputRunId(null);
   }
 
   // 결과 필터를 바꾸면 이전 항목의 이미지 근거 강조도 함께 지운다.
   function changeFilter(value) { setFilter(value); setActiveEvidence(null); }
 
   const value = {
-    projectId, setProjectId,
+    projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,

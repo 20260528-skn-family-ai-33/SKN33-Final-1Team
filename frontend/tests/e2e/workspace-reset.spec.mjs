@@ -25,7 +25,7 @@ async function fixture(t, options = {}) {
     else if (path.endsWith('/health')) body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true, free_text_registration: true };
     else if (path.endsWith('/projects')) body = { items: [{ id: 'project', name: '검수', my_role: 'owner' }] };
     else if (path === '/api/video-reviews/status' || path === '/api/video-logos/status') body = { ready: true };
-    else if (path === '/api/video-reviews') body = { items: [] };
+    else if (path === '/api/video-reviews' || path === '/api/video-logos') body = { items: [] };
     else { unexpected.push(path); return route.fulfill({ status: 404, json: {} }); }
     await route.fulfill({ json: body });
   });
@@ -65,18 +65,18 @@ test('현재 메뉴 재클릭과 영상 도구 왕복은 입력·첨부를 초�
   await page.locator('#requirements').fill('새 입력');
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await page.getByRole('heading', { name: '숏폼 동영상 검수', exact: true }).waitFor();
-  await page.getByLabel('검수 기준 (한 줄에 하나)', { exact: false }).fill('이전 영상 기준');
+  await page.getByLabel('검수 요구사항', { exact: true }).fill('이전 영상 기준');
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
-  assert.equal(await page.getByLabel('검수 기준 (한 줄에 하나)', { exact: false }).inputValue(), '');
+  assert.equal(await page.getByLabel('검수 요구사항', { exact: true }).inputValue(), '');
   // 모델 테스트 화면은 없앴다. 메뉴에도 남지 않는다.
   assert.equal(await tools.getByRole('link', { name: '모델 테스트', exact: true }).count(), 0);
   assert.equal(calls.filter(call => call.path.endsWith('/auth/me')).length, authReads);
   assert.equal(calls.filter(call => call.method === 'DELETE' || call.path.endsWith('/auth/logout')).length, 0);
 });
 
-test('PDF 분석 중 이동을 잠그고 돋보기로 지금 단계·경과시간을 보여주며 취소 후 이동을 허용한다', { timeout: 30000 }, async t => {
+test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여주며 취소 후 이동을 허용한다', { timeout: 30000 }, async t => {
   let release, entered;
   const gate = new Promise(resolve => { release = resolve; });
   const pending = new Promise(resolve => { entered = resolve; });
@@ -95,7 +95,10 @@ test('PDF 분석 중 이동을 잠그고 돋보기로 지금 단계·경과시�
   } });
   await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
   await pending;
-  await page.getByRole('heading', { name: '검수 요구사항을 정리하고 있어요.' }).waitFor();
+  const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
+  await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();
+  assert.equal(await page.locator('.rv-progress-page').count(), 0);
+  assert.ok(await page.locator('#requirements').isVisible());
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
   for (const label of ['포스터 검수', '동영상 검수', '내 작업']) {
     const link = tools.getByRole('link', { name: label, exact: true });
@@ -108,15 +111,9 @@ test('PDF 분석 중 이동을 잠그고 돋보기로 지금 단계·경과시�
   }
   assert.equal(await page.getByRole('button', { name: /자료 입력/ }).isDisabled(), true);
   assert.equal(new URL(page.url()).pathname, '/review/new');
-  // 분석 접수 뒤 차례를 기다리는 동안 돋보기는 '요구사항 추출' 칸 위에서 대기 표시를 한다.
-  const steps = page.getByRole('list', { name: '처리 단계', exact: true });
-  await steps.locator('[aria-current="step"]', { hasText: '요구사항 추출' }).waitFor();
-  assert.match(await steps.locator('[aria-current="step"]').textContent(), /요구사항 추출.*차례 대기/);
-  assert.equal(await steps.locator('.is-completed').count(), 1, 'the stored source document is the only finished part');
-  assert.equal(await page.locator('.rv-scan-lens').isVisible(), true);
-  assert.equal(await page.locator('.rv-scan-lens').evaluate(el => getComputedStyle(el).animationName), 'rv-scan-hover');
-  await page.waitForFunction(() => document.querySelector('[role="timer"] time')?.textContent !== '0:00');
-  assert.match(await page.getByRole('timer', { name: '경과 시간' }).textContent(), /\d+:\d{2}/);
+  await documentCard.getByText('요구사항 분석을 접수하고 있습니다.', { exact: true }).waitFor();
+  assert.ok(await documentCard.locator('.rv-progress-spinner').isVisible());
+  await documentCard.getByRole('timer', { name: '경과 시간' }).filter({ hasText: /경과 0:0[1-9]/ }).waitFor();
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
@@ -168,12 +165,16 @@ test('포스터 실행 중 이동을 잠그고 실행이 끝나면 메뉴 초기
   assert.equal(calls.filter(call => call.path.endsWith('/runs/live-run')).length, reads);
 });
 
-test('영상 업로드 중 나가면 늦은 접수 응답으로 이전 영상 화면을 다시 열지 않는다', { timeout: 30000 }, async t => {
+test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을 허용한다', { timeout: 30000 }, async t => {
   let release, entered;
   const gate = new Promise(resolve => { release = resolve; });
   const pending = new Promise(resolve => { entered = resolve; });
   t.after(() => release());
   const { page } = await fixture(t, { route: async (route, path) => {
+    if (path === '/api/video-reviews/old-video') {
+      await route.fulfill({ json: { id: 'old-video', status: 'queued' } });
+      return true;
+    }
     if (path !== '/api/video-reviews' || route.request().method() !== 'POST') return false;
     entered(); await gate;
     await route.fulfill({ json: { id: 'old-video' } }).catch(() => {});
@@ -182,11 +183,13 @@ test('영상 업로드 중 나가면 늦은 접수 응답으로 이전 영상 �
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await page.locator('#video-file').setInputFiles({ name: 'video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video') });
-  await page.getByRole('button', { name: '동영상 검수 시작', exact: true }).click();
+  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
   await pending;
+  assert.equal(await tools.getByRole('link', { name: '포스터 검수', exact: true }).getAttribute('aria-disabled'), 'true');
+  release();
+  await page.waitForURL('**/video?id=old-video');
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
-  release();
   await page.waitForTimeout(300);
   assert.equal(new URL(page.url()).pathname, '/review/new');
   assert.equal(new URL(page.url()).search, '');

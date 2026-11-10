@@ -1,6 +1,6 @@
 export const initialState = {
   step: 'input', projectName: '', requirements: '', file: null,
-  criteria: [], snapshot: null, version: 0, review: null, documentSources: [], documentRun: null,
+  criteria: [], snapshot: null, version: 0, review: null, documentSources: [], documentRun: null, referenceLogos: [],
 };
 
 export function parseRequirements(value, documentSources = []) {
@@ -35,7 +35,8 @@ export function workflowReducer(state, action) {
       return { ...state, [action.field]: action.value, criteria: [], snapshot: null, review: null };
     case 'sample':
       return { ...state, step: 'input', projectName: action.projectName, requirements: action.requirements,
-        file: action.file, criteria: [], snapshot: null, review: null, documentSources: [], documentRun: null };
+        file: action.file, criteria: [], snapshot: null, review: null, documentSources: [], documentRun: null,
+        referenceLogos: action.referenceLogos || [] };
     case 'document':
       return { ...state, requirements: action.requirements,
         documentRun: action.documentRun, documentSources: [...state.documentSources, ...action.sources], criteria: [], snapshot: null, review: null };

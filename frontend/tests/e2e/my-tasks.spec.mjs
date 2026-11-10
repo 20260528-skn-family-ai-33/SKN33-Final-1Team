@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
@@ -70,19 +69,19 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   assert.equal(await row('실패한 문서').count(), 0);
   await page.getByLabel('이력 표시').selectOption('hidden');
   await row('실패한 문서').getByRole('button', { name: '다시 표시' }).click();
-  await page.getByText('숨긴 이력이 없습니다.', { exact: true }).waitFor();
+  await page.getByText('숨긴 이력이 없어요.', { exact: true }).waitFor();
   assert.equal(await row(video.project_name).count(), 0);
   await page.getByLabel('이력 표시').selectOption('visible');
   await row('실패한 문서').waitFor();
   assert.equal(writes.length, 4); assert.deepEqual(errors, []);
-  mkdirSync('/private/tmp/cc-my-tasks-preview', { recursive: true });
-  await page.screenshot({ path: '/private/tmp/cc-my-tasks-preview/my-tasks.png', fullPage: true });
+  if (process.env.E2E_TASKS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_TASKS_SCREENSHOT, fullPage: true });
   await row(video.project_name).getByRole('link', { name: '열기' }).click();
-  await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
+  await page.getByRole('button', { name: '보고서 생성하기', exact: true }).click();
   await page.getByRole('heading', { name: '검수 보고서', exact: true }).waitFor();
+  await page.locator('.rv-report-print').getByText(video.project_name + ' · 동영상 검수', { exact: true }).waitFor();
   await page.getByText('0:01–0:02 · 전시 제목', { exact: true }).waitFor();
   await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
-  await page.getByRole('heading', { name: video.project_name, exact: true }).waitFor();
+  await page.getByRole('heading', { name: video.project_name + ' 검수 결과', exact: true }).waitFor();
 });
 
 test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { timeout: 30000 }, async t => {
