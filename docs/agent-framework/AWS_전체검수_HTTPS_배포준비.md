@@ -2,6 +2,8 @@
 
 2026-11-05 · 팀 개발·발표용 · 역할 계약 3.0.0
 
+> 이 문서는 단일 EC2/EBS를 사용하던 배포 준비 시점의 설계다. 이후 분리 EC2/EFS·포스터/영상 RunPod 연결과 실제 검증은 [2026-11-10 AWS 운영 현황](AWS_인프라_운영현황_20261110.md)을 먼저 확인한다. 아래 초기 구성 명령을 기존 운영 저장소에 그대로 재실행하지 않는다.
+
 ## 이번 구성과 완료 경계
 
 현재 front-v2와 `backend.agent_framework`를 단일 Linux EC2에서 실행하고, PostgreSQL은 RDS 17, Qwen은 기존 RunPod를 사용한다. API·worker는 EBS의 같은 PDF·포스터 저장소를 공유한다. Neo4j·projector·monitor·recovery도 같은 EC2에 둔다. S3 직접 파일 저장, AWS GPU, ECS, ECR 업로드·CD 자동 배포는 이번 단계에 포함하지 않는다.
