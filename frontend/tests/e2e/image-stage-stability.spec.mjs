@@ -159,7 +159,7 @@ for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장�
     const list = page.getByRole('list', { name: '검수 항목 목록', exact: true });
     // 세 위치를 이미지 모양마다 번갈아 선택한다. 스크린샷용 이미지는 오른쪽 끝 항목을 사용한다.
     const selected = width === 2480 ? 0 : index % 3;
-    await list.getByRole('button').nth(selected).click();
+    await list.locator('.rv-result-item-button').nth(selected).click();
     await page.getByRole('button', { name: `근거 영역: ${state.review.results[selected].observed_text}`, exact: true }).waitFor();
     assert.equal(await page.getByTestId('evidence-box').count(), 1);
     if (process.env.E2E_SCREENSHOT_DIR && width === 2480 && scale === SCALES[0]) {

@@ -397,15 +397,15 @@ test('포스터 결과에서 모든 근거와 선택 근거를 오가며 항목�
   // A hidden selection switches to the first result in the new filter.
   await filters.getByRole('button', { name: /^충족/ }).click();
   await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
-  assert.equal(await list.getByRole('button').count(), 2);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 2);
   // Widening the filter preserves the criterion ID rather than the list position.
   await filters.getByRole('button', { name: /^전체/ }).click();
   await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
-  assert.equal(await list.getByRole('button').count(), 4);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 4);
 
   await search.fill('심볼');
   await assertSelection('시 로고 포함', '브랜드 심볼 영역');
-  assert.equal(await list.getByRole('button').count(), 1);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 1);
   await search.fill('일치하는-항목-절대없음-xyz');
   await inspector.getByText('표시할 항목이 없습니다.', { exact: true }).waitFor();
   assert.equal(await selectedButtons.count(), 0);
@@ -414,6 +414,10 @@ test('포스터 결과에서 모든 근거와 선택 근거를 오가며 항목�
   await page.getByRole('button', { name: '검색·필터 초기화', exact: true }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
   assert.equal(await search.inputValue(), '');
+  await selectedButtons.click();
+  assert.equal(await selectedButtons.getAttribute('aria-expanded'), 'false');
+  await selectedButtons.click();
+  await inspector.getByText('기간: 10월 30일~11월 1일', { exact: true }).waitFor();
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);
   assert.equal(await page.getByRole('button', { name: /최종 승인/ }).count(), 0);
 });
