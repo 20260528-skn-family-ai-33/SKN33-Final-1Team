@@ -52,12 +52,14 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   busy = false, exportData = review, actions, finalApproved = false }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
+  const [selectedOnly, setSelectedOnly] = useState(false);
   const list = useRef(null);
   const inspector = useRef(null);
   const counts = Object.fromEntries(Object.keys(statuses).map(status => [status, results.filter(row => row.status === status).length]));
   const visible = useMemo(() => filterResults(results, filter, query), [results, filter, query]);
   const selected = selectVisibleResult(visible, activeEvidence?.criterion_id);
-  const selectedOverlays = useMemo(() => selected ? evidenceOverlays([selected]) : EMPTY, [selected]);
+  const allOverlays = useMemo(() => evidenceOverlays(results), [results]);
+  const selectedOverlays = selected ? allOverlays.filter(item => item.id === selected.criterion_id) : EMPTY;
   const selectedEvidence = selected?.evidence || EMPTY;
   const image = review.image;
   const selectedCondition = selected && review.criteria?.find(item => item.id === selected.criterion_id)?.document_condition;
@@ -83,6 +85,13 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
   function chooseResult(result) {
     setActiveEvidence(result ? { criterion_id: result.criterion_id, evidence: result.evidence || EMPTY } : null);
+  }
+  function chooseOverlay(id) {
+    const result = results.find(item => item.criterion_id === id);
+    if (!result) return;
+    if (!visible.includes(result)) { setQuery(''); setFilter('all'); }
+    chooseResult(result);
+    inspector.current?.scrollTo({ top: 0 });
   }
   // 목록에서 ↑·↓·Home·End로 항목을 옮기며 근거를 바로 본다. 초점도 함께 옮겨 키보드만으로 이어서 볼 수 있다.
   function moveWithKeys(event) {
@@ -135,15 +144,32 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     </div>
 
     <div className="rv-result-workbench">
+      <div className="rv-result-canvas-column">
+        <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
+          title="검수 대상 이미지" subtitle="검수 항목의 위치 근거를 표시합니다."
+          width={image?.width} height={image?.height} overlays={selectedOnly ? selectedOverlays : allOverlays}
+          selectedOverlayId={selected?.criterion_id} onOverlaySelect={chooseOverlay}
+          evidenceScope={{ label: selectedOnly ? '선택 근거 표시' : '모든 근거 표시', available: allOverlays.length > 0,
+            toggle: () => setSelectedOnly(value => !value) }}
+          empty="검수 대상 이미지를 표시할 수 없습니다." />
+        <div className="rv-result-canvas-caption" role="status">
+          <Icon name="info" /><p>{!selected ? '검색이나 상태 필터를 바꾸면 검수 항목의 근거를 볼 수 있습니다.'
+              : !selectedOverlays.length ? selected.check_method === 'source_image_metadata'
+                ? '파일 정보로 확인한 항목입니다. 표시할 이미지 영역은 없습니다.'
+                : '이 항목에는 이미지 위치 근거가 제공되지 않았습니다.'
+              : `선택한 항목의 위치 근거 ${selectedOverlays.length}곳 · 드래그로 이동 · 0 키로 화면 맞춤`}</p>
+        </div>
+      </div>
+
       <aside className="rv-result-rail rv-panel" aria-labelledby="rv-result-list-title">
-        <div className="rv-result-rail-heading"><h2 id="rv-result-list-title">검수 항목</h2><span>{results.length}</span></div>
+        <div className="rv-result-rail-heading"><h2 id="rv-result-list-title">검수 요구사항</h2><span>{results.length}</span></div>
         <div className="rv-result-search">
           <label htmlFor="rv-result-search">항목 검색</label>
           <div><Icon name="search" /><input id="rv-result-search" type="search" value={query}
             placeholder="기준·문구·판정 이유" onChange={event => setQuery(event.target.value)} /></div>
         </div>
         <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
-          {[['all', '전체', results.length], ['fail', '위반', counts.fail], ['review', '확인 필요', counts.review], ['pass', '충족', counts.pass]]
+          {[['all', '전체', results.length], ['pass', '충족', counts.pass], ['review', '확인 필요', counts.review], ['fail', '위반', counts.fail]]
             .map(([status, label, count]) => <button type="button" className={filter === status ? 'is-active' : ''}
               aria-pressed={filter === status} key={status} onClick={() => changeFilter(status)}>{label}<span>{count}</span></button>)}
         </div>
@@ -162,21 +188,6 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
           {results.length > 0 && <button type="button" className="rv-button secondary" onClick={resetFilters}>검색·필터 초기화</button>}
         </div>}
       </aside>
-
-      <div className="rv-result-canvas-column">
-        <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
-          title="검수 대상 이미지" subtitle="선택한 검수 항목의 위치 근거를 표시합니다."
-          width={image?.width} height={image?.height} overlays={selectedOverlays}
-          selectedOverlayId={selected?.criterion_id} onOverlaySelect={() => inspector.current?.scrollIntoView({ block: 'nearest' })}
-          empty="검수 대상 이미지를 표시할 수 없습니다." />
-          <div className="rv-result-canvas-caption" role="status">
-            <Icon name="info" /><p>{!selected ? '검색이나 상태 필터를 바꾸면 검수 항목의 근거를 볼 수 있습니다.'
-                : !selectedOverlays.length ? selected.check_method === 'source_image_metadata'
-                  ? '파일 정보로 확인한 항목입니다. 표시할 이미지 영역은 없습니다.'
-                  : '이 항목에는 이미지 위치 근거가 제공되지 않았습니다.'
-                : `선택한 항목의 위치 근거 ${selectedOverlays.length}곳 · 드래그로 이동 · 0 키로 화면 맞춤`}</p>
-          </div>
-      </div>
 
       <aside id="rv-result-inspector" className="rv-result-inspector rv-panel" aria-labelledby="rv-result-inspector-title">
         <div className="rv-result-inspector-heading"><div><p className="rv-eyebrow">INSPECTOR</p><h2 id="rv-result-inspector-title">선택 항목 상세</h2></div>

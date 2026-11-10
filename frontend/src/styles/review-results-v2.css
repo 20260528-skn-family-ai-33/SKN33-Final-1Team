@@ -19,7 +19,10 @@
 .rv-result-dot, .rv-result-status > span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #806a28; flex-shrink: 0; }
 .pass .rv-result-dot, .rv-result-status.pass > span { background: #177d45; }
 .fail .rv-result-dot, .rv-result-status.fail > span { background: #a34f3e; }
-.rv-result-workbench { display: grid; grid-template-columns: 250px minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.rv-result-workbench { display: grid; grid-template-areas: "canvas rail" "canvas inspector"; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+.rv-result-canvas-column { grid-area: canvas; }
+.rv-result-rail { grid-area: rail; }
+.rv-result-inspector { grid-area: inspector; }
 .rv-results .rv-result-rail, .rv-results .rv-result-inspector { min-width: 0; padding: 0; border: 1px solid var(--result-line); border-radius: 22px; background: #fff; overflow: hidden; box-shadow: none; }
 .rv-result-rail-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 18px 17px; }
 .rv-result-rail-heading h2, .rv-result-inspector-heading h2 { font-size: 16px; font-weight: 700; letter-spacing: -.035em; }
@@ -30,7 +33,7 @@
 .rv-result-search .icon { position: absolute; top: 13px; left: 11px; width: 16px; height: 16px; color: var(--result-muted); pointer-events: none; }
 .rv-workspace .rv-results .rv-result-rail .rv-result-search input[type="search"] { min-width: 0; width: 100%; min-height: 42px; padding: 10px 10px 10px 34px; border: 1px solid var(--result-line); background: #fafaf8; border-radius: 8px; color: #171717; font-size: 12px; }
 .rv-results .rv-result-search input::placeholder { color: var(--result-muted); opacity: 1; }
-.rv-result-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 14px 16px 0; }
+.rv-result-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 14px 16px 0; }
 .rv-result-filters button { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; min-height: 35px; padding: 7px 9px; border: 1px solid var(--result-line); border-radius: 7px; background: #fff; color: var(--result-muted); font-size: 11px; }
 .rv-result-filters button.is-active { background: #171717; color: #fff; border-color: #171717; }
 .rv-result-filters button > span { font-size: 10px; font-variant-numeric: tabular-nums; }
@@ -111,7 +114,7 @@
 .rv-result-summary { flex-shrink: 0; margin: 0; padding: 10px 16px; gap: 12px 22px; border-radius: 10px; font-size: 11px; }
 .rv-result-summary strong { font-size: 12px; }
 .rv-result-summary-notice { font-size: 10px; }
-.rv-result-workbench { min-height: 0; flex: 1; grid-template-columns: 260px minmax(480px, 1fr) 330px; grid-template-rows: minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.rv-result-workbench { min-height: 0; flex: 1; grid-template-rows: minmax(220px, 1fr) minmax(0, 1fr); gap: 12px; }
 .rv-results .rv-result-rail, .rv-results .rv-result-inspector { min-height: 0; display: flex; flex-direction: column; border-radius: 16px; }
 .rv-result-rail-heading { flex-shrink: 0; min-height: 55px; padding: 16px 16px 12px; }
 .rv-result-rail-heading h2, .rv-result-inspector-heading h2 { font-size: 14px; }
@@ -128,6 +131,8 @@
 .rv-result-item-button.is-selected { background: #f0f0ec; }
 .rv-result-canvas-column { min-height: 0; display: flex; flex-direction: column; }
 .rv-results .image-stage { flex: 1; min-height: 0; border-radius: 16px; }
+.rv-results .image-stage-box.is-fail { border-color: #a34f3e; background-color: #a34f3e19; }
+.rv-results .image-stage-box.is-review { border-color: #806a28; background-color: #806a281a; }
 .rv-results .image-stage-heading { flex-shrink: 0; min-height: 54px; padding: 10px 16px; }
 .rv-results .image-stage-icon { width: 30px; height: 32px; border-radius: 7px; }
 .rv-results .image-stage-file strong { font-size: 12px; }
@@ -157,7 +162,7 @@
 .rv-result-footer .rv-button { min-height: 34px; padding: 8px 13px; font-size: 11px; }
 .rv-result-empty { min-height: 0; flex: 1; }
 @media (min-width: 1700px) {
-  .rv-result-workbench { grid-template-columns: 280px minmax(480px, 1fr) 350px; gap: 16px; }
+  .rv-result-workbench { gap: 16px; }
   .rv-workspace--results .rv-main { padding-inline: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {

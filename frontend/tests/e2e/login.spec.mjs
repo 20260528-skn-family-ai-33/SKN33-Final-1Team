@@ -313,7 +313,7 @@ test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함�
   await screenshot(page, 'reread-comparison.png');
 });
 
-test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한다', async t => {
+test('포스터 결과에서 모든 근거와 선택 근거를 오가며 항목을 확인한다', async t => {
   const { page, state } = await fixture(t, {
     authenticated: true,
     // A real-size fixture keeps the evidence regions apart. No external image request is made.
@@ -347,6 +347,7 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   const filters = page.getByRole('group', { name: '검수 결과 상태 필터', exact: true });
   const search = page.getByRole('searchbox', { name: '항목 검색', exact: true });
   const selectedButtons = list.locator('button[aria-pressed="true"]');
+  const selectedScope = page.getByRole('button', { name: '선택 근거 표시', exact: true });
   async function assertSelection(criterion, ...evidenceTexts) {
     await selectedButtons.filter({ hasText: criterion }).waitFor();
     assert.equal(await selectedButtons.count(), 1);
@@ -359,6 +360,15 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
     assert.equal(await page.getByTestId('evidence-box').count(), evidenceTexts.length);
   }
 
+  await page.getByTestId('evidence-box').first().waitFor();
+  assert.equal(await page.getByTestId('evidence-box').count(), 4);
+  await filters.getByRole('button', { name: /^위반/ }).click();
+  await page.getByRole('button', { name: '근거 영역: 브랜드 심볼 영역', exact: true }).click();
+  await inspector.getByText('시 로고 포함', { exact: true }).waitFor();
+  assert.equal(await filters.getByRole('button', { name: /^전체/ }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('button', { name: '모든 근거 표시', exact: true }).click();
+  await selectedScope.waitFor();
+  await list.getByRole('button', { name: /기간: 10월 30일/ }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
   const dateBox = page.getByRole('button', { name: '근거 영역: 날짜 근거 문구', exact: true });
   assert.deepEqual(await dateBox.evaluate(node => ({ left: node.style.left, top: node.style.top, width: node.style.width, height: node.style.height })),
@@ -371,7 +381,7 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   await assertSelection('파일 형식: JPEG');
   await inspector.getByText('파일 헤더에서 JPEG를 확인했습니다.', { exact: true }).waitFor();
   await page.getByText('파일 정보로 확인한 항목입니다. 표시할 이미지 영역은 없습니다.', { exact: true }).waitFor();
-  assert.equal(await page.getByRole('button', { name: '근거 표시', exact: true }).isDisabled(), true);
+  assert.equal(await selectedScope.isEnabled(), true);
 
   await list.getByRole('button', { name: /기간: 10월 30일/ }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
