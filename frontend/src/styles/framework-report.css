@@ -41,3 +41,33 @@
   .rv-report-paper { width: 100%; border: 0; padding: 0; box-shadow: none; }
   .rv-report-result, .rv-report-approval { break-inside: avoid; }
 }
+/* 포스터 보고서: 목업 디자인(색·글꼴 크기·상태 칩·개수 상자·안내 상자) + 팀 A07 템플릿 내용.
+   .rv-poster-report 안에서만 적용해 동영상 보고서(ReviewReport)는 그대로 둔다. */
+.rv-poster-report .rv-report-paper { font-size: 14px; }
+.rv-report-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 16px; margin-top: 12px; }
+.rv-report-meta dt { font-size: 11px; color: #62645e; }
+.rv-report-meta dd { margin: 2px 0 0; font-size: 13px; }
+.rv-report-chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 7px; padding: 3px 7px; font-size: 11px; background: #f1f1ef; color: #62645e; white-space: nowrap; }
+.rv-report-chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; flex: none; }
+.rv-report-chip.is-pass { background: #e8f2ec; color: #177347; }
+.rv-report-chip.is-review { background: #f5efdf; color: #795d1d; }
+.rv-report-chip.is-fail { background: #f8ebe7; color: #a34434; }
+.rv-report-machine { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; font-size: 13px; }
+.rv-poster-report .rv-report-counts { background: #f1f1ef; }
+.rv-poster-report .rv-report-counts > span { background: none; font-size: inherit; }
+.rv-poster-report .rv-report-result { overflow-wrap: anywhere; }
+.rv-poster-report .rv-report-result-heading { align-items: center; }
+.rv-poster-report .rv-report-result-heading h3 { font-size: 12px; }
+.rv-report-muted { color: #62645e; }
+.rv-report-human { border-left: 3px solid #b3cbc0; padding-left: 8px; color: #164d3d; }
+.rv-report-todo { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 12px; }
+.rv-poster-report .rv-report-todo li { display: flex; align-items: baseline; gap: 8px; margin: 0; padding: 0; min-height: 0; border: 0; white-space: normal; }
+.rv-poster-report .rv-report-notes { border: 1px solid #e6dac3; background: #faf5e8; color: #685120; padding: 9px 12px; border-radius: 9px; font-size: 12px; }
+.rv-report-notes ul { margin: 0; padding-left: 18px; }
+.rv-poster-report .rv-report-notes li { margin: 2px 0; }
+.rv-report-notes p { margin: 0 0 4px; }
+/* A07이 만든 원문(추적용). 맨 아래에 접어 두고 인쇄에서는 뺀다. */
+.rv-report-raw { margin-top: 19px; font-size: 12px; color: #62645e; }
+.rv-report-raw summary { cursor: pointer; }
+.rv-report-raw p { margin-top: 8px; }
+@media print { .rv-report-raw { display: none; } }

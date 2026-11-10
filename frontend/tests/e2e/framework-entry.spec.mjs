@@ -76,7 +76,7 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
         ...(reviewed ? { machine_verdict: 'fail', validated: { items: [{ ...criterion, criterion_text: criterion.text,
-          observed: '여름', verdict: 'fail', issues: ['value_mismatch'], image: { asset_version_id: 'image', bbox: [.1, .1, .8, .3] } }] },
+          observed: '여름', observation_status: 'observed', verdict: 'fail', issues: ['value_mismatch'], image: { asset_version_id: 'image', bbox: [.1, .1, .8, .3] } }] },
           step_records: [{ role: 'A04_A05', status: allowReviewStages ? 'completed' : 'running' },
             { role: 'A06', status: allowReviewStages ? 'completed' : 'pending' },
             { role: 'A07', status: allowReviewResult ? 'completed' : allowReviewStages ? 'running' : 'pending' }],
@@ -207,9 +207,9 @@ test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미�
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
       await page.getByRole('heading', { name: '요구사항별 결과', exact: true }).waitFor();
-      await page.locator('.rv-report-result').getByText(/^관측 여름$/).waitFor();
+      await page.locator('.rv-report-result').getByText(/^관측 ‘여름’/).waitFor();
       await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
-      await page.getByText('기계 판정 · 위반', { exact: true }).waitFor();
+      await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
       await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
       await page.getByRole('button', { name: '기준 다시 확인하기', exact: true }).click();
       await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
