@@ -176,7 +176,7 @@ export default function VideoReviewPage() {
     else if (key === 'results') openResults();
   }
 
-  return <div className={`rv-workspace rv-video ${step === 'results' ? 'rv-workspace--results rv-video--results' : 'rv-workspace--tool'}`}>
+  return <div className={`rv-workspace rv-video rv-workspace--tool rv-video--${step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <WorkspaceTopbar current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
@@ -189,6 +189,7 @@ export default function VideoReviewPage() {
       {step === 'input' && <button type="button" className="rv-button secondary" disabled={inputLocked} onClick={loadSample}>
         {sampleBusy ? '예시 자료 불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" />
       </button>}
+      {step === 'report' && <button type="button" className="rv-button secondary" onClick={openResults}>결과 확인으로 돌아가기</button>}
     </WorkspaceProjectBar>
     <main id="review-content" className="rv-main" tabIndex={-1}>
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
@@ -205,7 +206,7 @@ export default function VideoReviewPage() {
         <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={backToInput}>새 동영상으로 다시 검수<Icon name="arrow" /></button></div>
       </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo} onRestart={backToInput} />)}
       {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning} onNewReview={startOver} onReuse={reuse} onReport={openReport} />}
-      {step === 'report' && <VideoReport job={job} onBack={openResults} />}
+      {step === 'report' && <VideoReport job={job} />}
     </main>
   </div>;
 }

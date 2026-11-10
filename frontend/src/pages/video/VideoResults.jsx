@@ -1,7 +1,6 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
-import { NoMatchArt } from '../../components/ReviewArt.jsx';
 import { LogoFlowInline } from './LogoFlowParts.jsx';
 import {
   coverageNote, diffChars, filterItems, formatTime, judgmentItems, mismatchLabels, reviewerLabels, roleLabels, ruleLabels, severityLabels, statusLabels,
@@ -11,8 +10,9 @@ const EMPTY = [];
 const NO_VIEW = { segmentId: null, frameId: null, focus: null, key: '', time: null };
 const typeLabels = { information: '정보 검수', visual: '시각 검수' };
 const samplingLabels = { base: '1초 표본', head: '시작 0.2초 표본', tail: '끝 0.2초 표본' };
-const groupTitles = { criteria: '기준별 결과', whole: '영상 전체에서 확인할 항목', disclosure: '광고·협찬 표시' };
 const evidenceKey = item => (item ? `${item.frame_id}:${(item.bbox_xyxy || []).join(',')}:${item.time_ms}` : '');
+const itemEvidence = item => item?.result?.evidence_segments || (item?.disclosure ? disclosureEvidence(item.disclosure) : EMPTY);
+const itemTitle = item => item.result?.criterion || '광고·협찬 표시';
 
 function StatusLabel({ status }) {
   return <span className={`rv-result-status ${status || 'review'}`}><span aria-hidden="true" />{statusLabels[status] || '확인 필요'}</span>;
@@ -43,14 +43,15 @@ function EvidenceButton({ item, active, onShow, children }) {
   </button>;
 }
 
-function CriterionDetail({ result, activeKey, onShow }) {
+function CriterionDetail({ result, source, activeKey, onShow }) {
   const evidence = result.evidence_segments || EMPTY;
   return <>
     <div className="rv-result-verdict"><StatusLabel status={result.status} />
       <span>{joinLabels(typeLabels[result.type], severityLabels[result.severity], reviewerLabels[result.reviewer] && `${reviewerLabels[result.reviewer]} 판정`)}</span></div>
     {result.whole_video && <p className="rv-video-note"><Icon name="info" />영상 전체에서 확인할 항목입니다.</p>}
-    <section className="rv-result-detail-section"><h3>검수 기준</h3><p className="rv-result-selected-criterion">{result.criterion}</p></section>
-    <section className="rv-result-detail-section"><h3>화면에서 읽은 문구</h3>
+    <section className="rv-result-detail-section"><h3>검수 기준</h3><p className="rv-result-selected-criterion">{result.criterion}</p>
+      {source && source !== 'user' && source !== result.criterion && <details className="rv-video-source"><summary>기준 출처 보기</summary><p>{source}</p></details>}</section>
+    <section className="rv-result-detail-section"><h3>프레임에서 읽은 문구 / 요소</h3>
       <p className={`rv-result-observation${result.observed_text ? '' : ' is-empty'}`}>{result.observed_text || '기록된 관측 문구가 없습니다. 판정 이유와 근거 프레임을 확인해 주세요.'}</p></section>
     <section className="rv-result-detail-section"><h3>판정 이유</h3><p>{result.reason || '제공된 판정 이유가 없습니다. 원본 영상과 기준을 직접 확인해 주세요.'}</p></section>
     {result.mismatch?.length > 0 && <section className="rv-result-detail-section"><h3>불일치 <span>{result.mismatch.length}</span></h3>
@@ -160,6 +161,7 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
         <p>{unavailable ? job.playback?.reason || '브라우저에서 재생할 수 없는 형식입니다.' : '브라우저가 이 영상을 재생하지 못했습니다.'}<br />근거 프레임으로 확인하거나 원본을 내려받아 확인해 주세요.</p>
         <a className="rv-button secondary" href={source} download={`video-review-${job.id}.${extension}`}>원본 영상 내려받기</a></div>
         : <video ref={player} controls preload="metadata" playsInline src={source}
+          onLoadedMetadata={event => { if (currentTime) event.currentTarget.currentTime = currentTime / 1000; }}
           onTimeUpdate={event => onTime(event.currentTarget.currentTime * 1000)} onSeeked={event => onTime(event.currentTarget.currentTime * 1000)}
           onError={() => setFailed(true)} />}
     </div>
@@ -171,16 +173,27 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
 
 // 구간 타임라인: 검사 시점은 점, 미검사 구간은 빗금, 선택 항목의 근거는 강조, 재생 위치는 세로선으로 표시한다.
 // 키보드로는 검수 목록의 '구간' 탭에서 같은 구간을 고른다.
-function Timeline({ job, view, evidence, currentTime, onSelect }) {
-  const duration = job.coverage?.duration_ms || job.media?.duration_ms || 1;
-  const pct = ms => `${Math.min(100, Math.max(0, ms / duration * 100))}%`;
+function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScrub, onShortcut }) {
+  const duration = job.coverage?.duration_ms || job.media?.duration_ms || 0;
+  const time = Math.min(currentTime, duration);
+  const pct = ms => `${Math.min(100, Math.max(0, ms / (duration || 1) * 100))}%`;
   const evidenceSegments = new Set(evidence.map(item => item.segment_id).filter(Boolean));
   const tracks = Object.fromEntries((job.tracks || []).map(track => [track.id, track]));
   const note = coverageNote(job.coverage);
   return <section className="rv-panel rv-video-timeline" aria-labelledby="video-timeline-title">
-    <div className="rv-video-timeline-heading"><div><h2 id="video-timeline-title">구간 타임라인</h2>{note && <p>{note}</p>}</div>
-      <ul className="rv-video-legend" aria-label="타임라인 범례"><li className="is-text">자막 구간</li><li className="is-evidence">선택 항목 근거</li><li className="is-current">보는 구간</li><li className="is-playhead">재생 위치</li></ul></div>
+    <div className="rv-video-timeline-heading"><h2 id="video-timeline-title">구간 타임라인</h2>
+      <span className="rv-video-time">{duration ? `${formatTime(time)} / ${formatTime(duration)}` : '시각 정보 없음'}</span></div>
     <div className="rv-video-timeline-body">
+      <input type="range" min={0} max={duration} step="any" value={time} disabled={!duration}
+        aria-label="영상 타임라인" aria-valuetext={formatTime(time)} onChange={event => onScrub(event.target.valueAsNumber)} />
+      <div className="rv-video-timeline-scale" aria-hidden="true">{[0, .25, .5, .75, 1].map(tick => <span key={tick}>{formatTime(duration * tick)}</span>)}</div>
+      {shortcuts.length > 0 && <div className="rv-video-timeline-shortcuts"><span>근거 시점</span>
+        {shortcuts.map(({ item, target }) => <button type="button" key={item.key} className="rv-button secondary rv-compact"
+          aria-pressed={view.key === evidenceKey(target)} onClick={() => onShortcut(item, target)}>{formatTime(target.time_ms)} {itemTitle(item)}</button>)}</div>}
+      <details className="rv-video-coverage">
+        <summary>검사 시점과 구간 보기</summary>
+        {note && <p>{note}</p>}
+        <ul className="rv-video-legend" aria-label="타임라인 범례"><li className="is-text">자막 구간</li><li className="is-evidence">선택 항목 근거</li><li className="is-current">보는 구간</li><li className="is-playhead">재생 위치</li></ul>
       <div className="rv-video-timeline-track">
         {(job.segments || EMPTY).map(segment => {
           const text = segment.track_ids.map(id => tracks[id]?.text).filter(Boolean).join(' · ');
@@ -194,7 +207,8 @@ function Timeline({ job, view, evidence, currentTime, onSelect }) {
         <span className="rv-video-timeline-playhead" style={{ left: pct(currentTime) }} />
       </div>
       <div className="rv-video-timeline-points" aria-hidden="true">{(job.coverage?.inspected_ms || EMPTY).map(time => <span key={time} style={{ left: pct(time) }} />)}</div>
-      <div className="rv-video-timeline-scale"><span>0:00</span><span>점 = 검사한 시점 · 빗금 = 검사하지 않은 구간</span><span>{formatTime(duration)}</span></div>
+      <p>점은 검사한 시점, 빗금은 검사하지 않은 구간입니다.</p>
+      </details>
     </div>
   </section>;
 }
@@ -202,37 +216,36 @@ function Timeline({ job, view, evidence, currentTime, onSelect }) {
 // 왼쪽 영상과 타임라인을 오른쪽의 판정 목록 및 선택 근거에 연결한다.
 export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onReport }) {
   const player = useRef(null);
-  const inspector = useRef(null);
-  const railScroll = useRef(null);
   const items = useMemo(() => judgmentItems(job), [job]);
   const tracks = job.tracks || EMPTY;
   const segments = job.segments || EMPTY;
   const frames = job.frames || EMPTY;
-  const results = job.review?.results || EMPTY;
-  const counts = job.counts || {};
   const [tab, setTab] = useState('checks');
   const [filter, setFilter] = useState('all');
-  const [selection, setSelection] = useState(() => (items[0] ? { kind: 'item', key: items[0].key } : tracks[0] ? { kind: 'track', id: tracks[0].id } : null));
-  const [currentTime, setCurrentTime] = useState(0);
-  const segmentAt = ms => segments.find(segment => ms >= segment.start_ms && ms < segment.end_ms) || segments.at(-1);
-  // 구간의 대표 프레임이 없으면(1초 표본이 들어 있지 않은 짧은 구간) 구간 안의 0.2초 표본이라도 보여 준다.
-  const segmentView = segment => (segment ? { segmentId: segment.id, focus: null, key: '', time: segment.start_ms,
-    frameId: segment.rep_frame_id || segment.frame_ids?.[0] || frames.find(item => item.time_ms >= segment.start_ms && item.time_ms < segment.end_ms)?.frame_id || null } : NO_VIEW);
-  const evidenceView = item => ({ segmentId: item.segment_id || segmentAt(item.time_ms)?.id || null, frameId: item.frame_id, key: evidenceKey(item), time: item.time_ms,
-    focus: item.bbox_xyxy ? { bbox: item.bbox_xyxy, text: item.text, label: item.label || '선택 근거' } : null });
+  const [selection, setSelection] = useState(items[0]?.key ?? null);
+  const [expanded, setExpanded] = useState(true);
+  const segmentAt = time => segments.find(segment => time >= segment.start_ms && time < segment.end_ms) || segments.at(-1);
+  const segmentView = segment => segment ? { segmentId: segment.id, focus: null, key: '', time: segment.start_ms,
+    frameId: segment.rep_frame_id || segment.frame_ids?.[0] || frames.find(frame => frame.time_ms >= segment.start_ms && frame.time_ms < segment.end_ms)?.frame_id || null,
+  } : NO_VIEW;
+  const evidenceView = target => ({ segmentId: target.segment_id || segmentAt(target.time_ms)?.id || null, frameId: target.frame_id,
+    key: evidenceKey(target), time: target.time_ms,
+    focus: target.bbox_xyxy ? { bbox: target.bbox_xyxy, text: target.text, label: target.label || '선택 근거' } : null });
   const [view, setView] = useState(() => {
-    const first = items[0];
-    const evidence = first?.kind === 'criterion' ? first.result.evidence_segments?.[0] : first ? disclosureEvidence(first.disclosure)[0] : null;
-    return evidence ? evidenceView(evidence) : segmentView(segments.find(segment => segment.track_ids.length) || segments[0]);
+    const first = itemEvidence(items[0])[0];
+    return first ? evidenceView(first) : segmentView(segments.find(segment => segment.track_ids.length) || segments[0]);
   });
+  const [currentTime, setCurrentTime] = useState(view.time ?? 0);
 
-  const visibleItems = useMemo(() => filterItems(items, filter), [items, filter]);
-  const statusCount = status => items.filter(item => item.status === status).length;
-  const selectedItem = selection?.kind === 'item' ? items.find(item => item.key === selection.key) : null;
-  const selectedTrack = selection?.kind === 'track' ? tracks.find(track => track.id === selection.id) : null;
-  const selectedSegment = selection?.kind === 'segment' ? segments.find(segment => segment.id === selection.id) : null;
-  const evidence = selectedItem?.kind === 'criterion' ? selectedItem.result.evidence_segments || EMPTY
-    : selectedItem?.kind === 'disclosure' ? disclosureEvidence(selectedItem.disclosure) : EMPTY;
+  const visibleItems = filterItems(items, filter);
+  const selectedItem = tab === 'checks' ? items.find(item => item.key === selection) : null;
+  const selectedTrack = tab === 'tracks' ? tracks.find(track => track.id === selection) : null;
+  const selectedSegment = tab === 'segments' ? segments.find(segment => segment.id === selection) : null;
+  const evidence = itemEvidence(selectedItem);
+  const shortcuts = useMemo(() => items.flatMap(item => {
+    const target = itemEvidence(item).find(entry => Number.isFinite(entry.time_ms) && entry.frame_id);
+    return target ? [{ item, target }] : [];
+  }).sort((a, b) => a.target.time_ms - b.target.time_ms), [items]);
   const frame = frames.find(item => item.frame_id === view.frameId);
   const frameLines = frame?.lines || EMPTY;
   const kept = frameLines.filter(line => line.kept).length;
@@ -240,202 +253,159 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
     if (!frame) return EMPTY;
     const lines = (frame.lines || EMPTY).map(line => ({ id: line.line_id, bbox_xyxy: line.bbox_xyxy, text: line.text, label: line.kept ? line.text : `제외 · ${line.text}`,
       tone: line.kept ? null : 'excluded', ariaLabel: `${line.kept ? '남긴 글자 줄' : '제외한 글자 줄'}: ${line.text}` }));
-    return view.focus ? [...lines, { id: 'focus', bbox_xyxy: view.focus.bbox, text: view.focus.text, label: view.focus.label,
+    return view.focus ? [...lines, { id: 'focus', bbox_xyxy: view.focus.bbox, text: view.focus.text, label: view.focus.label, tone: view.key ? selectedItem?.status : null,
       ariaLabel: `${view.focus.label}${view.focus.text ? `: ${view.focus.text}` : ''}` }] : lines;
-  }, [frame, view.focus]);
-  // 고른 항목에 위치 근거가 없으면 지금 보이는 프레임이 그 항목의 근거처럼 읽히지 않게 제목을 바꾼다.
-  const noEvidence = Boolean(selectedItem) && !evidence.length;
-  const list = tab === 'checks' ? visibleItems : tab === 'tracks' ? tracks : segments;
-  const listIndex = tab === 'checks' ? visibleItems.findIndex(item => item.key === selectedItem?.key)
-    : tab === 'tracks' ? tracks.findIndex(track => track.id === selectedTrack?.id) : segments.findIndex(segment => segment.id === selectedSegment?.id);
-  // 목록 배지는 입력한 기준 순서이고 ←/→는 묶어 보이는 목록 순서라, 상세 창에는 항목 이름과 목록 위치를 따로 적는다.
-  const criterionNumber = result => String(results.indexOf(result) + 1).padStart(2, '0');
-  const selectionLabel = selectedItem ? (selectedItem.kind === 'criterion' ? `기준 ${criterionNumber(selectedItem.result)}` : '광고 표시')
-    : selectedTrack?.id || selectedSegment?.id || '';
-  const selectionKey = selection ? `${selection.kind}:${selection.key ?? selection.id}` : '';
-
-  useEffect(() => { if (inspector.current) inspector.current.scrollTop = 0; }, [selection?.kind, selection?.key, selection?.id]);
-  // 탭을 바꾸거나 상세 창의 ←/→로 고르면 목록에서도 고른 줄이 보이게 한다. 페이지가 아니라 목록 상자만 움직인다.
-  useLayoutEffect(() => {
-    const box = railScroll.current;
-    const row = box?.querySelector('.rv-result-item-button.is-selected');
-    if (!row) return;
-    if (row === box.querySelector('.rv-result-item-button')) { box.scrollTop = 0; return; }
-    const outer = box.getBoundingClientRect(), inner = row.getBoundingClientRect();
-    if (inner.top < outer.top) box.scrollTop -= outer.top - inner.top + 8;
-    else if (inner.bottom > outer.bottom) box.scrollTop += inner.bottom - outer.bottom + 8;
-  }, [tab, selectionKey]);
+  }, [frame, view.focus, view.key, selectedItem?.status]);
 
   function seek(ms) {
     if (!Number.isFinite(ms)) return;
     setCurrentTime(ms);
     const video = player.current;
-    if (video) { video.currentTime = ms / 1000; video.pause(); }
+    if (video) {
+      video.pause();
+      if (video.readyState) video.currentTime = ms / 1000;
+    }
   }
-  function show(item) { setView(evidenceView(item)); seek(item.time_ms); }
+  function show(target) { setView(evidenceView(target)); seek(target.time_ms); }
   function showSegment(segment) {
     setView(segmentView(segment)); seek(segment.start_ms);
-    if (tab === 'segments') setSelection({ kind: 'segment', id: segment.id });
+    if (tab === 'segments') { setSelection(segment.id); setExpanded(true); }
   }
-  // 항목을 고르고 첫 근거를 보여 준다. 근거가 없으면 이전 항목의 근거 상자·이동 시각을 지운다.
-  function focusItem(item) {
-    setTab('checks'); setSelection({ kind: 'item', key: item.key });
-    const first = item.kind === 'criterion' ? item.result.evidence_segments?.[0] : disclosureEvidence(item.disclosure)[0];
-    if (first) show(first);
+  function scrub(time) {
+    const nearest = frames.reduce((closest, candidate) => !closest || Math.abs(candidate.time_ms - time) < Math.abs(closest.time_ms - time) ? candidate : closest, null);
+    setView({ ...NO_VIEW, segmentId: segmentAt(time)?.id ?? null, frameId: nearest?.frame_id ?? null, time });
+    seek(time);
+  }
+  function selectItem(item, target = itemEvidence(item)[0]) {
+    setTab('checks'); setSelection(item.key); setExpanded(true);
+    if (target) show(target);
     else setView(previous => ({ ...previous, focus: null, key: '', time: null }));
   }
-  function selectItem(item) {
+  function openItem(item, target) {
     if (!visibleItems.some(entry => entry.key === item.key)) setFilter('all');
-    focusItem(item);
+    selectItem(item, target);
   }
   function selectTrack(track) {
-    setSelection({ kind: 'track', id: track.id });
+    setSelection(track.id); setExpanded(true);
     show({ segment_id: segments.find(segment => segment.track_ids.includes(track.id))?.id, frame_id: track.rep_reading_frame, bbox_xyxy: track.bbox_xyxy,
-      time_ms: track.start_ms, text: track.text, label: track.id });
+      time_ms: frames.find(frame => frame.frame_id === track.rep_reading_frame)?.time_ms ?? track.start_ms, text: track.text, label: track.id });
   }
-  function selectSegment(segment) { setSelection({ kind: 'segment', id: segment.id }); setView(segmentView(segment)); seek(segment.start_ms); }
-  function chooseIndex(index) {
-    const entry = list[index]; if (!entry) return;
-    if (tab === 'checks') selectItem(entry); else if (tab === 'tracks') selectTrack(entry); else selectSegment(entry);
+  function selectSegment(segment) {
+    setSelection(segment.id); setExpanded(true);
+    setView(segmentView(segment)); seek(segment.start_ms);
   }
   function changeTab(next) {
     setTab(next);
-    if (next === 'tracks' && tracks[0] && selection?.kind !== 'track') selectTrack(tracks[0]);
-    if (next === 'segments' && segments[0] && selection?.kind !== 'segment') selectSegment(segments.find(segment => segment.id === view.segmentId) || segments[0]);
-    if (next === 'checks' && visibleItems[0] && selection?.kind !== 'item') selectItem(visibleItems[0]);
+    if (next === 'tracks' && tracks[0]) selectTrack(tracks[0]);
+    if (next === 'segments' && segments[0]) selectSegment(segments.find(segment => segment.id === view.segmentId) || segments[0]);
+    if (next === 'checks' && visibleItems[0]) selectItem(visibleItems[0]);
   }
-  // 필터를 바꾸면 보이는 첫 항목으로 옮기고, 보이는 항목이 없으면 숨은 항목의 근거를 화면에 남기지 않는다.
   function changeFilter(next) {
     setFilter(next);
     const visible = filterItems(items, next);
     if (!visible.length) { setSelection(null); setView(previous => ({ ...previous, focus: null, key: '', time: null })); }
-    else if (!visible.some(item => item.key === selectedItem?.key)) focusItem(visible[0]);
+    else if (!visible.some(item => item.key === selectedItem?.key)) selectItem(visible[0]);
   }
   function selectOverlay(id) {
-    if (id === 'focus' || !frame) return;
+    if (id === 'focus') return;
     const line = frameLines.find(item => item.line_id === id);
     if (line) setView(previous => ({ ...previous, key: '', focus: { bbox: line.bbox_xyxy, text: line.text, label: line.kept ? '고른 글자 줄' : '제외한 글자 줄' } }));
   }
 
-  const groups = ['criteria', 'whole', 'disclosure'].map(group => [group, visibleItems.filter(item => item.group === group)]).filter(([, entries]) => entries.length);
-  const orientation = job.media && job.media.width > job.media.height ? 'is-landscape' : 'is-portrait';
-  const disclosure = job.disclosure;
+  const open = id => expanded && selection === id;
+  function toggle(id, select) {
+    if (selection === id) setExpanded(previous => !previous);
+    else select();
+  }
+  const subtitle = frame ? joinLabels(formatTime(frame.time_ms), samplingLabels[frame.sampling] || '표본', `글자 줄 남김 ${kept} · 제외 ${frameLines.length - kept}`,
+    frame.ocr_status === 'failed' && 'OCR 실패', selectedItem && !evidence.length && '이 항목에는 위치 근거가 없어요')
+    : '타임라인에서 시점을 고르거나 항목의 근거를 선택하세요.';
 
-  return <section className="rv-video-results" aria-labelledby="page-title">
-    <header className="rv-result-header rv-video-result-header">
-      <div><p className="rv-eyebrow">VIDEO REVIEW RESULTS · 기준 v{job.criteria_version}</p>
-        <h1 id="page-title" tabIndex={-1}>{job.project_name || '숏폼 검수'}</h1>
-        <p className="rv-video-result-meta">{joinLabels(job.media && `${formatTime(job.media.duration_ms)} · ${job.media.width}×${job.media.height}`,
-          counts.frames != null && `표본 프레임 ${counts.frames}장`, `자막 트랙 ${counts.tracks ?? tracks.length}`, `구간 ${counts.segments ?? segments.length}`,
-          job.created_at && new Date(job.created_at).toLocaleString('ko-KR'))}</p></div>
+  return <section className="rv-results rv-video-results" aria-labelledby="page-title">
+    <h1 id="page-title" className="sr-only" tabIndex={-1}>{job.project_name || '숏폼 검수'} 검수 결과</h1>
+    <div className="rv-result-notice rv-video-result-notice">
+      <p>자동 검수를 완료했어요. 판정은 검사한 표본 시각을 기준으로 합니다.</p>
       <LogoFlowInline jobs={logo?.jobs} error={logo?.error} notice={logoWarning} />
-    </header>
-
-    <div className="rv-result-summary rv-video-summary" aria-label="자동 검수 결과 요약">
-      <span className="rv-result-completed"><Icon name="check" />자동 검수 완료</span>
-      <span className="rv-result-total">기준 <strong>{results.length}</strong></span>
-      {['pass', 'fail', 'review'].map(status => <span className={`rv-result-summary-count ${status}`} key={status}>
-        <span className="rv-result-dot" aria-hidden="true" />{statusLabels[status]}<strong>{counts.results?.[status] ?? results.filter(row => row.status === status).length}</strong></span>)}
-      <span className="rv-result-summary-count rv-video-mismatch-count"><span className="rv-result-dot" aria-hidden="true" />불일치<strong>{counts.mismatch ?? 0}</strong></span>
-      {disclosure && <span className="rv-video-summary-disclosure">광고 표시 <StatusLabel status={disclosure.status} /></span>}
-      <span className="rv-result-summary-notice">&lsquo;충족&rsquo;은 검사한 시점에서 충족이라는 뜻입니다.</span>
     </div>
     {job.warnings?.length > 0 && <ul className="rv-video-warning-list is-inline">{job.warnings.map(warning => <li key={warning}><Icon name="warning" />{warning}</li>)}</ul>}
 
     <div className="rv-video-workbench">
-      <aside className="rv-panel rv-video-rail" aria-labelledby="rv-video-rail-title">
-        <h2 id="rv-video-rail-title" className="visually-hidden">{{ checks: '검수 항목', tracks: '자막 트랙', segments: '구간' }[tab]} 목록</h2>
-        <div className="rv-video-tabs" role="group" aria-label="목록 종류">
-          {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
-            <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
-        </div>
-        {tab === 'checks' && <>
-          <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
-            {[['all', '전체', items.length], ['pass', '충족', statusCount('pass')], ['review', '확인 필요', statusCount('review')], ['fail', '위반', statusCount('fail')]].map(([status, label, count]) =>
-              <button type="button" key={status} className={filter === status ? 'is-active' : ''} aria-pressed={filter === status} onClick={() => changeFilter(status)}>{label}<span>{count}</span></button>)}
-          </div>
-          <p className="rv-video-rail-count" role="status">{visibleItems.length}개 표시</p>
-        </>}
-        <div ref={railScroll} className="rv-video-rail-scroll">
-          {tab === 'checks' && <>
-            {!results.length && filter === 'all' && <p className="rv-video-rail-note">입력한 기준이 없어 기준 판정을 하지 않았습니다.</p>}
-            {groups.map(([group, entries]) => <div key={group} className="rv-video-rail-group"><h3>{groupTitles[group]}</h3>
-              <ul className="rv-result-items">{entries.map(item => {
-                const selected = selectedItem?.key === item.key;
-                const result = item.result;
-                return <li key={item.key}><button type="button" className={`rv-result-item-button${selected ? ' is-selected' : ''}`} aria-pressed={selected}
-                  aria-controls="rv-video-inspector" onClick={() => selectItem(item)}>
-                  <span className="rv-result-item-meta"><StatusLabel status={item.status} />
-                    <span>{item.kind === 'criterion' ? criterionNumber(result) : ''}</span></span>
-                  <span className="rv-result-item-title">{item.kind === 'criterion' ? result.criterion : '광고·협찬 표시'}</span>
-                  {item.kind === 'criterion' ? <span className="rv-result-item-subtitle">{joinLabels(severityLabels[result.severity], reviewerLabels[result.reviewer])}
-                    <span>{result.mismatch?.length ? `불일치 ${result.mismatch.length}` : `근거 ${result.evidence_segments?.length || 0}구간`}</span></span>
-                    : <span className="rv-result-item-subtitle">표시 규정 R0–R6<span>{item.disclosure.applicable ? `문구·시간 ${statusLabels[item.disclosure.text_time_status] || '확인 필요'}` : '검수 제외'}</span></span>}
-                </button></li>;
-              })}</ul></div>)}
-            {!visibleItems.length && items.length > 0 && <div className="rv-result-empty"><NoMatchArt /><strong>일치하는 항목이 없습니다.</strong>
-              <button type="button" className="rv-button secondary" onClick={() => changeFilter('all')}>전체 보기</button></div>}
-          </>}
-          {tab === 'tracks' && (tracks.length ? <ul className="rv-result-items">{tracks.map(track => {
-            const selected = selectedTrack?.id === track.id;
-            return <li key={track.id}><button type="button" className={`rv-result-item-button${selected ? ' is-selected' : ''}`} aria-pressed={selected}
-              aria-controls="rv-video-inspector" onClick={() => selectTrack(track)}>
-              <span className="rv-result-item-meta"><span className="rv-video-time">{formatTime(track.start_ms)}–{formatTime(track.end_ms)}</span><span>{track.id}</span></span>
-              <span className="rv-result-item-title">{track.text}</span>
-              <span className="rv-result-item-subtitle">{joinLabels(roleLabels[track.role] || track.role, track.vote && `투표 ${track.vote.count}/${track.vote.total}`)}
-                <span>{joinLabels(track.requires_review && '과반 없음', track.variants?.length && `다르게 읽힘 ${track.variants.length}`)}</span></span>
-            </button></li>;
-          })}</ul> : <p className="rv-video-rail-note">읽은 자막 트랙이 없습니다.</p>)}
-          {tab === 'segments' && <ul className="rv-result-items">{segments.map(segment => {
-            const selected = selectedSegment?.id === segment.id;
-            const text = segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ');
-            const used = results.some(result => (result.evidence_segments || []).some(item => item.segment_id === segment.id));
-            return <li key={segment.id}><button type="button" className={`rv-result-item-button${selected ? ' is-selected' : ''}`} aria-pressed={selected}
-              aria-controls="rv-video-inspector" onClick={() => selectSegment(segment)}>
-              <span className="rv-result-item-meta"><span className="rv-video-time">{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}</span><span>{segment.id}</span></span>
-              <span className={`rv-result-item-title${text ? '' : ' is-muted'}`}>{text || '자막 없음'}</span>
-              <span className="rv-result-item-subtitle">1초 표본 {segment.frame_ids?.length || 0}장<span>{used ? '판정 근거 구간' : ''}</span></span>
-            </button></li>;
-          })}</ul>}
-        </div>
-      </aside>
-
       <div className="rv-video-center">
-        <div className={`rv-video-monitor ${orientation}`}>
-          <PlayerPane job={job} player={player} currentTime={currentTime} onTime={setCurrentTime} target={view.time} onSeekTarget={() => seek(view.time)} />
-          <ImageStage src={frame ? `/api/video-reviews/${job.id}/frames/${frame.frame_id}` : null} alt={frame ? `${formatTime(frame.time_ms)} 프레임과 읽은 글자 영역` : '근거 프레임'}
-            title={frame ? `${noEvidence ? '구간 대표 프레임' : '근거 프레임'} ${formatTime(frame.time_ms)}` : '근거 프레임'}
-            subtitle={frame ? joinLabels(noEvidence && '이 항목에는 위치 근거가 없어요', samplingLabels[frame.sampling] || '표본', `글자 줄 남김 ${kept} · 제외 ${frameLines.length - kept}`, frame.ocr_status === 'failed' && 'OCR 실패')
-              : '구간이나 근거를 고르면 대표 프레임을 보여 줍니다.'}
-            width={frame?.width} height={frame?.height} overlays={overlays} selectedOverlayId={view.focus ? 'focus' : null} onOverlaySelect={selectOverlay} viewKey={selectionKey}
-            empty={view.segmentId ? <><Icon name="image" /><strong className="rv-video-empty-title">이 구간에는 표본 프레임이 없어요.</strong><p>표본 시각이 들어 있지 않은 짧은 구간입니다. 원본 영상으로 확인해 주세요.</p></>
-              : <><Icon name="image" /><strong className="rv-video-empty-title">근거 프레임</strong><p>구간을 고르면 대표 프레임과 글자 위치를 보여 줍니다.</p></>} />
+        <div className="rv-video-evidence-stage">
+          <ImageStage src={frame ? `/api/video-reviews/${job.id}/frames/${frame.frame_id}` : null}
+            alt={frame ? `${formatTime(frame.time_ms)} 프레임과 읽은 글자 영역` : '근거 프레임'}
+            title="근거 프레임" subtitle={subtitle} width={frame?.width} height={frame?.height}
+            overlays={overlays} selectedOverlayId={view.focus ? 'focus' : null} onOverlaySelect={selectOverlay} viewKey={view.key}
+            empty={<><Icon name="image" /><strong className="rv-video-empty-title">표시할 표본 프레임이 없어요.</strong><p>다른 시점을 고르거나 원본 영상을 확인해 주세요.</p></>} />
         </div>
-        <Timeline job={job} view={view} evidence={evidence} currentTime={currentTime} onSelect={showSegment} />
+        <Timeline job={job} view={view} evidence={evidence} currentTime={currentTime} shortcuts={shortcuts}
+          onSelect={showSegment} onScrub={scrub} onShortcut={openItem} />
+        <details className="rv-panel rv-video-original"><summary>원본 영상 재생</summary>
+          <PlayerPane job={job} player={player} currentTime={currentTime} onTime={setCurrentTime} target={view.time} onSeekTarget={() => seek(view.time)} />
+        </details>
       </div>
 
-      <aside id="rv-video-inspector" className="rv-panel rv-video-inspector" aria-labelledby="rv-video-inspector-title">
-        <div className="rv-result-inspector-heading"><div><p className="rv-eyebrow">INSPECTOR</p><h2 id="rv-video-inspector-title">선택 항목 상세</h2></div>
-          <div className="rv-result-item-navigation"><span className="rv-video-nav-position" title="←/→는 목록에 보이는 순서대로 이동합니다.">
-            {selectionLabel && <strong>{selectionLabel}</strong>}{listIndex < 0 ? `목록 ${list.length}개` : `목록 ${listIndex + 1}/${list.length}`}</span>
-            <button type="button" aria-label="이전 항목" disabled={listIndex <= 0} onClick={() => chooseIndex(listIndex - 1)}>←</button>
-            <button type="button" aria-label="다음 항목" disabled={listIndex < 0 || listIndex >= list.length - 1} onClick={() => chooseIndex(listIndex + 1)}>→</button></div>
-        </div>
-        <div ref={inspector} className="rv-result-inspector-body">
-          {selectedItem?.kind === 'criterion' ? <CriterionDetail result={selectedItem.result} activeKey={view.key} onShow={show} />
-            : selectedItem?.kind === 'disclosure' ? <DisclosureDetail disclosure={selectedItem.disclosure} activeKey={view.key} onShow={show} />
-              : selectedTrack ? <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} />
-                : selectedSegment ? <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={selectItem} />
-                  : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong><p>목록에서 항목을 고르면 기준·문구·근거를 확인할 수 있습니다.</p></div>}
+      <aside className="rv-panel rv-video-rail" aria-labelledby="rv-video-rail-title">
+        <header className="rv-video-rail-heading"><div><h2 id="rv-video-rail-title">검수 요구사항</h2>
+          <p>항목을 펼치면 판정 근거가 표시됩니다.</p></div><span>{items.length}개 항목</span></header>
+        <div className="rv-video-rail-body">
+          {tab === 'checks' && <>
+            <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
+              {['all', 'pass', 'review', 'fail'].map(status => <button type="button" key={status} className={filter === status ? 'is-active' : ''}
+                aria-pressed={filter === status} onClick={() => changeFilter(status)}>
+                {status === 'all' ? '전체' : statusLabels[status]}<span>{filterItems(items, status).length}</span></button>)}
+            </div>
+            {visibleItems.map(item => {
+              const index = items.indexOf(item);
+              const detailId = `video-verdict-${index}`;
+              return <div className="rv-video-verdict" key={item.key}>
+                <button type="button" className="rv-video-verdict-trigger" aria-expanded={open(item.key)} aria-controls={detailId}
+                  onClick={() => toggle(item.key, () => selectItem(item))}>
+                  <span className="rv-video-verdict-index">{String(index + 1).padStart(2, '0')}</span>
+                  <strong>{itemTitle(item)}</strong><StatusLabel status={item.status} /><span aria-hidden="true">{open(item.key) ? '⌃' : '⌄'}</span>
+                </button>
+                <div id={detailId} className={`rv-video-verdict-detail is-${item.status}`} hidden={!open(item.key)}>
+                  {open(item.key) && (item.kind === 'criterion'
+                    ? <CriterionDetail result={item.result} source={job.criteria?.find(criterion => criterion.id === item.result.criterion_id)?.source} activeKey={view.key} onShow={show} />
+                    : <DisclosureDetail disclosure={item.disclosure} activeKey={view.key} onShow={show} />)}
+                </div>
+              </div>;
+            })}
+            {!visibleItems.length && <p className="rv-video-rail-note" role="status">{items.length ? '이 분류에 해당하는 요구사항이 없어요.' : '기록된 항목별 판정이 없어요.'}</p>}
+          </>}
+          {tab === 'tracks' && <>
+            {tracks.length ? <ul className="rv-result-items">{tracks.map(track => <li key={track.id}>
+              <button type="button" className={`rv-result-item-button${track.id === selection ? ' is-selected' : ''}`}
+                aria-pressed={track.id === selection} aria-controls="rv-video-aux-detail" onClick={() => selectTrack(track)}>
+                <span className="rv-video-time">{formatTime(track.start_ms)}–{formatTime(track.end_ms)}</span>
+                <span className="rv-result-item-title">{track.text}</span>
+              </button></li>)}</ul> : <p className="rv-video-rail-note">읽은 자막 트랙이 없습니다.</p>}
+          </>}
+          {tab === 'segments' && <>
+            {segments.length ? <ul className="rv-result-items">{segments.map(segment => <li key={segment.id}>
+              <button type="button" className={`rv-result-item-button${segment.id === selection ? ' is-selected' : ''}`}
+                aria-pressed={segment.id === selection} aria-controls="rv-video-aux-detail" onClick={() => selectSegment(segment)}>
+                <span className="rv-video-time">{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}</span>
+                <span className="rv-result-item-title">{segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ') || '자막 없음'}</span>
+              </button></li>)}</ul> : <p className="rv-video-rail-note">기록된 구간이 없습니다.</p>}
+          </>}
+          {tab !== 'checks' && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
+            {selectedTrack && <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} />}
+            {selectedSegment && <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={openItem} />}
+          </div>}
+          <div className="rv-video-tabs" role="group" aria-label="목록 종류">
+            {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
+              <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
+          </div>
           <RuntimeDetails job={job} />
         </div>
       </aside>
     </div>
 
-    <footer className="rv-result-footer"><p><Icon name="shield" />검수 실행 완료는 최종 승인을 의미하지 않습니다. 확인 필요 항목은 원본 영상으로 확인해 주세요.</p>
-      <div><button type="button" className="rv-button secondary" onClick={onReuse}>같은 기준으로 다시 검수</button>
-        <button type="button" className="rv-button secondary" onClick={onNewReview}>새 동영상 검수 시작하기</button>
-        <button type="button" className="rv-button primary" onClick={onReport}>보고서 보기<Icon name="arrow" /></button></div>
+    <footer className="rv-result-footer rv-video-result-actions"><div>
+      <button type="button" className="rv-button secondary" onClick={onReuse}>한번 더 검수하기</button>
+      <button type="button" className="rv-button secondary" onClick={onNewReview}>새 검수 시작하기</button>
+      <button type="button" className="rv-button primary" onClick={onReport}>보고서 생성하기<Icon name="arrow" /></button></div>
     </footer>
   </section>;
 }

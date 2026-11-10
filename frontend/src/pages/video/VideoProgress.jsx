@@ -19,14 +19,14 @@ function FilmCell({ src, className, style }) {
 
 // 돋보기가 표본 프레임 필름을 따라 읽는 연출. 읽은 칸과 돋보기 위치는 서버가 알려 준 처리량을 표본 계획의 시각에 대응시켜 정한다.
 function FilmScanner({ job, scan }) {
-  const { width, height, gap, cells } = filmCells(job?.media, 538, 61, 5);
+  const { height, gap, cells } = filmCells(job?.media, 502, 61, 5);
   const count = cells.length;
   const lastTime = cells[count - 1]?.time_ms || 0;
   const allRead = ['organizing', 'judging', 'done'].includes(scan.phase) || scan.readUpTo === Infinity;
   // 돋보기 위치(0~1): 읽는 중이면 지금 읽는 프레임의 시각, 읽기 전이면 처음, 다 읽었으면 끝.
   const lens = scan.lensTime != null ? (lastTime > 0 ? clamp01(scan.lensTime / lastTime) : 0) : allRead ? 1 : 0;
   const current = scan.lensTime != null ? Math.round(lens * (count - 1)) : -1;
-  const lensX = count <= 1 ? 50 : (.5 + lens * (count - 1)) / count * 100;
+  const lensX = count <= 1 ? 50 : 7 + lens * 86;
   const frameSrc = cell => (job?.id && scan.framesReady ? `/api/video-reviews/${job.id}/frames/${cell.frame_id}` : null);
   const lensCell = cells[Math.max(0, Math.min(count - 1, Math.round(lens * (count - 1))))];
   const duration = job?.media?.duration_ms;
@@ -35,7 +35,7 @@ function FilmScanner({ job, scan }) {
     : scan.phase === 'preparing' && frames?.total ? `표본 프레임 ${frames.total}장 준비`
       : allRead ? '표본 프레임 읽기 완료' : scan.phase === 'failed' ? '처리 멈춤' : '표본 프레임 준비 전';
   return <div className={`rv-video-scanner is-${scan.phase}`} aria-hidden="true"
-    style={{ '--cell-w': `${width}px`, '--cell-h': `${height}px`, '--cell-gap': `${gap}px`, '--cells': count }}>
+    style={{ '--cell-h': `${height}px`, '--cell-gap': `${gap}px`, '--cells': count }}>
     <div className="rv-video-film">
       <div className="rv-video-film-track">
         <div className="rv-video-film-cells">{cells.map((cell, index) => <FilmCell key={cell.frame_id} src={frameSrc(cell)}
@@ -115,7 +115,7 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
         {job && <>
           <div className="rv-progress-track" role="progressbar" aria-label="동영상 검수 진행률" aria-valuemin={0} aria-valuemax={100}
             aria-valuenow={value} aria-valuetext={`${value}% · ${title}`}>
-            <div style={{ width: `${value}%` }} />
+            <div className="rv-progress-fill" style={{ width: `${value}%` }} />
           </div>
           <div className="rv-progress-caption"><span>{failed ? '멈춘 시점의 처리 단계 기준 진행률' : '처리 단계 기준 진행률'}</span><strong>{value}%</strong></div>
           <ol className="rv-progress-steps rv-video-steps" aria-label="처리 단계">{steps.map((step, i) => <li key={step.key} className={`is-${step.status}`}
@@ -126,7 +126,10 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
           <dl className="rv-video-facts">{facts.map(([label, text]) => <div key={label}><dt>{label}</dt><dd>{text}</dd></div>)}</dl>
         </>}
         {failed ? <ErrorMessage message={job.error || '동영상 검수를 완료하지 못했습니다.'} />
-          : job && <p className="rv-progress-help">완료되면 결과 화면으로 바뀝니다. 페이지를 닫아도 서버에서 검수는 계속됩니다. <Link to="/review/tasks">내 작업에서 다시 열기</Link></p>}
+          : job && <>
+            <p className="rv-progress-help">완료되면 결과 화면으로 이동합니다. 페이지를 닫아도 서버에서 검수를 계속합니다.</p>
+            <div className="rv-progress-actions"><Link className="rv-button secondary" to="/review/tasks">내 작업에서 다시 열기</Link></div>
+          </>}
         <ErrorMessage message={error} />
         {job?.warnings?.length > 0 && <ul className="rv-video-warning-list">{job.warnings.map(warning => <li key={warning}><Icon name="warning" />{warning}</li>)}</ul>}
         {(failed || (!job && error)) && <div className="rv-progress-actions">
