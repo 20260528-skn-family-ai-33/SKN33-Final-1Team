@@ -91,7 +91,6 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     await page.goto(base + '/review/new');
     await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
     await page.waitForFunction(() => document.querySelector('#document-project')?.value === 'project');
-    await page.getByRole('button', { name: mode === 'not_ready' ? '검수 구성 확인 필요' : '검수 구성 준비됨', exact: true }).waitFor();
     png = Buffer.from(await page.evaluate(() => {
       const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
       return canvas.toDataURL().split(',')[1];
@@ -100,33 +99,39 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     if (mode === 'pdf' || mode === 'edited_pdf') {
       await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
       if (mode === 'pdf') {
-        await page.getByRole('heading', { name: '검수 요구사항을 정리하고 있어요.' }).waitFor();
-        await page.getByRole('progressbar', { name: '검수 처리 진행 상태' }).waitFor();
-        await page.waitForFunction(() => {
-          const bar = document.querySelector('.rv-progress-track');
-          return bar && Number(bar.getAttribute('aria-valuenow')) === 60
-            && Math.abs(bar.firstElementChild.getBoundingClientRect().width - bar.clientWidth * .6) < 2;
-        });
+        const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
+        await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();
+        await page.waitForFunction(() => document.querySelector('.rv-document-card progress')?.value === 60);
+        assert.ok(await page.locator('#requirements').isVisible());
+        assert.equal(await page.locator('.rv-progress-page').count(), 0);
         if (process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
           mkdirSync(process.env.E2E_PROGRESS_SCREENSHOT_DIR, { recursive: true });
           await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/pdf-progress.png', fullPage: true });
         }
         allowDocumentResult = true;
       }
-      await page.waitForFunction(() => document.querySelector('#requirements').value === '행사명은 봄');
-      await page.getByRole('button', { name: '추출된 검수 기준 확인', exact: true }).waitFor();
+      const extracted = page.getByLabel('문서 요구사항 1번 문구', { exact: true });
+      await extracted.waitFor();
+      assert.equal(await page.locator('#requirements').inputValue(), '');
+      assert.equal(await extracted.inputValue(), '행사명은 봄');
+      const include = page.getByLabel('문서 요구사항 1번 검수에 포함', { exact: true });
+      assert.equal(await include.isChecked(), false);
+      await include.check();
+      if (mode === 'edited_pdf') await extracted.fill('행사명은 여름');
     }
-    if (mode !== 'pdf') await page.locator('#requirements').fill(mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄');
+    if (mode !== 'pdf') await page.locator('#requirements').fill(mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');
     if (mode === 'pdf') {
+      await page.locator('.rv-project-picker summary').click();
       await page.locator('#document-project').selectOption('');
-      await page.getByRole('button', { name: 'PDF 검수 기준 확인하기', exact: true }).click();
+      await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).click();
       await page.getByText(/이 원문을 저장한 프로젝트를 선택/).waitFor();
       assert.equal(textInputs.length, 0, 'a project change must not silently convert PDF criteria to a new text source');
       await page.locator('#document-project').selectOption('project');
+      await page.locator('.rv-project-picker summary').click();
       configured = false; // Draft review must work even if poster models are not ready yet.
     }
-    if (mode === 'edited_pdf') await page.getByRole('note').filter({ hasText: '별도 원문' }).waitFor();
-    await page.getByRole('button', { name: mode === 'pdf' ? 'PDF 검수 기준 확인하기' : mode === 'edited_pdf' ? '입력문으로 새 기준 분석' : '검수 항목 확인하기', exact: true }).click();
+    if (mode === 'edited_pdf') await page.getByText(/선택·수정한 문구는 새 기준 초안으로 분석합니다/).waitFor();
+    await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
     if (mode === 'not_ready') {
       await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
       assert.equal(textInputs.length, 0);
@@ -135,7 +140,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       configured = true;
       assert.ok(await page.locator('.rv-criteria-canvas-column').isVisible());
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
-      assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '행사명은 여름' : '행사명은 봄' }]);
+      assert.deepEqual(textInputs, mode === 'pdf' ? [] : [{ text: mode === 'edited_pdf' ? '장소: 아카이브 홀\n행사명은 여름' : '행사명은 봄' }]);
       assert.equal(reviewed, false);
       if (checkRejectedCandidates) {
         const rejected = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
@@ -189,19 +194,18 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         configured = true;
       }
       if (mode !== 'direct' && mode !== 'skip') await startReview.click();
-      await page.getByRole('heading', { name: '확정한 기준으로 포스터를 검수하고 있어요.' }).waitFor();
+      await page.getByRole('heading', { name: '포스터의 문구와 시각 조건을 확인하고 있어요.' }).waitFor();
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();
-      await page.locator('.rv-progress-fill.is-unknown .rv-progress-shine').waitFor();
-      assert.equal(await progress.getAttribute('aria-valuenow'), null);
-      await page.getByText('세부 진행률 확인 불가', { exact: true }).waitFor();
+      assert.equal(await progress.getAttribute('aria-valuenow'), '0');
+      await page.getByText('처리 단계 기준 진행률', { exact: true }).waitFor();
       allowReviewStages = true;
       await page.waitForFunction(() => document.querySelector('.rv-progress-track')?.getAttribute('aria-valuenow') === '67');
       await page.waitForFunction(() => {
         const bar = document.querySelector('.rv-progress-track');
         return bar && Math.abs(bar.firstElementChild.getBoundingClientRect().width - bar.clientWidth * .67) < 2;
       });
-      assert.equal(await progress.locator('.rv-progress-shine').count(), 1);
+      assert.equal(await progress.locator('.rv-progress-shine').count(), 0);
       assert.equal(await progress.locator('.rv-progress-fill').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 23, 23)');
       assert.equal(await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
       if (mode === 'pdf' && process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
@@ -211,19 +215,19 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
       const columns = await page.locator('.rv-result-workbench').evaluate(element =>
         Array.from(element.children, child => { const rect = child.getBoundingClientRect(); return { left: rect.left, right: rect.right, top: rect.top, height: rect.height }; }));
-      assert.equal(columns.length, 3);
+      assert.equal(columns.length, 2);
       assert.ok(columns.every(column => column.height > 200 && Math.abs(column.top - columns[0].top) < 2));
-      assert.ok(columns[0].right <= columns[1].left && columns[1].right <= columns[2].left, 'list, poster and evidence must form three columns');
+      assert.ok(columns[0].right <= columns[1].left, 'poster and requirements must form two columns');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
       await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
-      await page.getByRole('heading', { name: '조건별 결과·근거', exact: true }).waitFor();
-      assert.equal(await page.getByText('여름', { exact: true }).count(), 1);
+      await page.getByRole('heading', { name: '요구사항별 결과', exact: true }).waitFor();
+      await page.locator('.rv-report-result').getByText(/^관측 여름$/).waitFor();
       await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
-      await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
-      await page.getByRole('button', { name: '검수 결과로 돌아가기', exact: true }).click();
+      await page.getByText('기계 판정 · 위반', { exact: true }).waitFor();
+      await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
       await page.getByRole('button', { name: '기준 다시 확인하기', exact: true }).click();
       await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
       assert.equal(await page.getByRole('button', { name: '기준 보완', exact: true }).count(), 0, 'approved criteria stay read-only');

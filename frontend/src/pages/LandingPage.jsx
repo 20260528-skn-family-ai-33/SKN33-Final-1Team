@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { Brand } from '../components/Brand.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
@@ -55,24 +55,40 @@ function FeatureArtwork({ kind }) {
 // 소개 화면은 API 요청 없이 렌더링하고, 실제 작업은 각 프로필의 진입 경로에 맡긴다.
 export default function LandingPage({ profile = 'legacy' }) {
   const navigate = useNavigate();
+  const { hash, state } = useLocation();
   const auth = useOptionalAuth();
   const [logoutPending, setLogoutPending] = useState(false);
   const [logoutError, setLogoutError] = useState('');
+  const title = useRef(null);
+  const loginLink = useRef(null);
   const { rootRef, sceneRef, stageRef } = useScrollScene();
   const isV1 = profile === 'v1' || profile === 'rebuild';
   const account = auth?.status === 'authenticated' ? auth.user.display_name || auth.user.username || '검수 담당자' : null;
   const sampleLabel = isV1 ? '프로젝트 둘러보기' : '샘플로 체험하기';
-  function start() { navigate(isV1 ? '/projects' : '/review/new'); }
+
+  useEffect(() => {
+    if (hash) return;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    (state?.focusLogin ? loginLink : title).current?.focus({ preventScroll: true });
+  }, [hash, state]);
+
+  function start() {
+    navigate(isV1 ? '/projects' : auth?.status === 'anonymous' ? '/login' : '/review/new');
+  }
   function sample() { navigate(isV1 ? '/projects' : '/review/new?sample=1'); }
   function home() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    title.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' });
   }
   async function logout() {
     if (logoutPending) return;
     setLogoutPending(true);
     setLogoutError('');
-    try { await auth.logout(); }
+    try {
+      await auth.logout();
+      if (window.location.pathname === '/') navigate('/', { replace: true, state: { focusLogin: true } });
+    }
     catch (error) { setLogoutError(error.message || '로그아웃하지 못했습니다. 다시 시도해 주세요.'); }
     finally { setLogoutPending(false); }
   }
@@ -85,8 +101,8 @@ export default function LandingPage({ profile = 'legacy' }) {
       <div className="fw-nav-actions">
         {account ? <><span className="fw-account" title={account}>{account}</span>
           <button type="button" className="fw-login" disabled={logoutPending} onClick={logout}>{logoutPending ? '로그아웃 중…' : '로그아웃'}</button></>
-          : <Link className="fw-login" to="/login">로그인</Link>}
-        <button type="button" className="fw-button fw-button-light fw-nav-start" disabled={logoutPending} onClick={start}>검수 시작하기 <span aria-hidden="true">↗</span></button>
+          : <Link ref={loginLink} className="fw-login" to="/login">로그인</Link>}
+        <button type="button" className="fw-button fw-button-light fw-nav-start" disabled={logoutPending} onClick={start}>검수 시작하기 <Icon name="arrow" /></button>
       </div>
     </header>
     {logoutError && <div className="fw-container"><ErrorMessage message={logoutError} /></div>}
@@ -100,32 +116,31 @@ export default function LandingPage({ profile = 'legacy' }) {
               <ReviewWindow />
             </div>
             <div className="fw-hero-copy">
-              <div><h1 id="fw-hero-title">좋은 작업이<br />좋은 마무리를<br />만날 수 있도록.</h1><p>포스터 속 작은 문구부터 놓치기 쉬운 조건까지.<br className="fw-desktop-break" /> 확정한 기준과 이미지 근거를 함께 확인하세요.</p><div className="fw-actions"><button className="fw-button fw-button-dark" onClick={start}>검수 시작하기 <Icon name="arrow" /></button><button className="fw-button fw-button-light" onClick={sample}>{sampleLabel}</button></div></div>
+              <div><h1 id="fw-hero-title" ref={title} tabIndex={-1}>좋은 작업이<br />좋은 마무리를<br />만날 수 있도록.</h1><p>포스터 속 작은 문구부터 놓치기 쉬운 조건까지.<br className="fw-desktop-break" /> 확정한 기준과 이미지 근거를 함께 확인하세요.</p><div className="fw-actions"><button className="fw-button fw-button-dark" disabled={logoutPending} onClick={start}>검수 시작하기 <Icon name="arrow" /></button><button className="fw-button fw-button-light" disabled={logoutPending} onClick={sample}>{sampleLabel}</button></div></div>
               <div className="fw-hero-aside"><span className="fw-overline">A CLEARER FINISH</span><p>기준을 정하고.<br />근거를 살피고.<br />사람이 판단합니다.</p><a className="fw-scroll-hint" href="#features">아래로 이어서 보기 <span aria-hidden="true">↓</span></a></div>
             </div>
           </div>
         </section>
       </div>
-      <section className="fw-section fw-container" id="features" aria-labelledby="fw-features-title" data-reveal>
+      <section className="fw-section fw-container" id="features" aria-labelledby="fw-features-title">
         <div className="fw-section-heading"><span className="fw-overline">ONE PLACE, A CLEARER VIEW</span><h2 id="fw-features-title">각각 보던 정보를,<br />하나의 흐름으로.</h2><p>반복해서 확인하던 내용을 기준, 근거, 결과로 연결합니다.</p></div>
         <div className="fw-feature-grid">{features.map(feature => <article className="fw-feature-card" key={feature.number}>
           <FeatureArtwork kind={feature.kind} />
           <div className="fw-feature-copy"><span className="fw-overline"><i aria-hidden="true" />{feature.number} · {feature.label}</span><h3>{feature.title}</h3><p>{feature.text}</p></div>
         </article>)}</div>
       </section>
-      <section className="fw-section fw-container" aria-labelledby="fw-evidence-title" data-reveal>
+      <section className="fw-section fw-container" aria-labelledby="fw-evidence-title">
         <div className="fw-section-heading"><span className="fw-overline">THE DETAIL MAKES THE DIFFERENCE</span><h2 id="fw-evidence-title">같은 기준을 확인하고,<br />같은 근거를 바라보세요.</h2><p>결과만으로는 알기 어려운 차이. 원래 조건과 관측한 내용을 함께 봅니다.</p></div>
         <div className="fw-evidence-grid">
           <article className="fw-detail-card"><div className="fw-card-heading"><h3>확인하려는 내용</h3><span className="fw-example-label">화면 예시</span></div><span className="fw-field-caption">검수 기준</span><div className="fw-example-field">행사 기간은 10월 30일부터 11월 1일까지입니다.</div><span className="fw-field-caption">필수 안내 문구</span><div className="fw-example-field">“사전 예약 없이 누구나 참여 가능합니다.”</div><p className="fw-detail-note"><Icon name="check" />실행 전에 담당자가 항목을 검토하고 확정합니다.</p></article>
           <article className="fw-detail-card"><div className="fw-card-heading"><h3>이미지에서 읽은 내용</h3><span className="fw-example-label">화면 예시</span></div><div className="fw-evidence-callout"><span>행사 기간</span><strong>10.30 — <mark>11.02</mark></strong><p>기준과 포스터의 종료일이 다릅니다.</p></div><p className="fw-detail-note"><Icon name="search" />문구와 위치를 확인하고 수정할 내용을 판단하세요.</p></article>
         </div>
       </section>
-      <section className="fw-section fw-container" id="how-it-works" aria-labelledby="fw-how-title" data-reveal>
-        <div className="fw-section-heading fw-heading-with-action"><div><span className="fw-overline">FROM A POSTER TO A CLEAR ANSWER</span><h2 id="fw-how-title">시작은 가볍게.<br />확인은 차근차근.</h2></div><button className="fw-button fw-button-light" onClick={sample}>{sampleLabel} <span aria-hidden="true">↗</span></button></div>
+      <section className="fw-section fw-container" id="how-it-works" aria-labelledby="fw-how-title">
+        <div className="fw-section-heading fw-heading-with-action"><div><span className="fw-overline">FROM A POSTER TO A CLEAR ANSWER</span><h2 id="fw-how-title">시작은 가볍게.<br />확인은 차근차근.</h2></div><button className="fw-button fw-button-light" disabled={logoutPending} onClick={sample}>{sampleLabel}</button></div>
         <ol className="fw-how-list">{[['이미지 업로드', '검수할 이미지나 포스터를 올립니다.'], ['요구사항 입력', '확인할 문구와 시각 조건을 입력합니다.'], ['검수 기준 확정', '개별 항목을 검토하고 선택합니다.'], ['결과와 근거 확인', '확정한 기준으로 검수를 실행하고 결과를 살펴봅니다.']].map(([title, text], i) => <li key={title}><span className="fw-step-index">0{i + 1}</span><h3>{title}</h3><p>{text}</p><Icon name={i === 3 ? 'check' : 'arrow'} /></li>)}</ol>
       </section>
-      <section className="fw-invite fw-container" aria-labelledby="fw-invite-title" data-reveal><span className="fw-overline">READY WHEN YOU ARE</span><h2 id="fw-invite-title">맑게 확인하고,<br />가볍게 마무리하세요.</h2><p>오늘의 포스터에 필요한 기준과 근거.<br />Creative Checker에서 함께 확인하세요.</p><button className="fw-button fw-button-dark" onClick={start}>검수 시작하기 <Icon name="arrow" /></button></section>
+      <section className="fw-invite fw-container" aria-labelledby="fw-invite-title"><span className="fw-overline">READY WHEN YOU ARE</span><h2 id="fw-invite-title">맑게 확인하고,<br />가볍게 마무리하세요.</h2><p>오늘의 포스터에 필요한 기준과 근거.<br />Creative Checker에서 함께 확인하세요.</p><button className="fw-button fw-button-dark" disabled={logoutPending} onClick={start}>검수 시작하기 <Icon name="arrow" /></button></section>
     </main>
-    <footer className="fw-footer fw-container"><Brand onClick={home} /><p>자동 검수는 판단을 돕습니다. 최종 확인은 담당자가 합니다.</p><span>Creative Checker</span></footer>
   </section>;
 }

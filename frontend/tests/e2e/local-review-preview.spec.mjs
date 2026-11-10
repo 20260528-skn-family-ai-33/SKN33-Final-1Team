@@ -10,6 +10,7 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+  page.setDefaultTimeout(8000);
   const calls = [], errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route(base + '/api/**', async route => {
@@ -20,16 +21,20 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   const toolbar = page.getByRole('complementary', { name: '로컬 화면 미리보기' });
   await toolbar.waitFor();
   assert.equal(await page.locator('#requirements').inputValue(), '');
-  assert.equal(await page.getByRole('button', { name: '요구사항 PDF 선택', exact: true }).count(), 0);
-  await page.getByLabel('원본 로고 이미지 추가', { exact: true }).setInputFiles({
+  assert.equal(await page.getByRole('button', { name: '요구사항 PDF 선택', exact: true }).isDisabled(), true);
+  const logoCard = page.getByRole('region', { name: '원본 로고 첨부', exact: true });
+  const chooser = page.waitForEvent('filechooser');
+  await logoCard.getByRole('button', { name: '로고 선택', exact: true }).click();
+  await (await chooser).setFiles({
     name: '주최 로고.svg', mimeType: 'image/svg+xml',
     buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="12"/></svg>'),
   });
-  const logo = page.getByRole('img', { name: '원본 로고 주최 로고.svg', exact: true });
+  const logo = logoCard.getByText('주최 로고.svg', { exact: true });
   await logo.waitFor();
-  await page.getByRole('button', { name: '주최 로고.svg 삭제', exact: true }).click();
+  await logoCard.getByRole('checkbox', { name: '주최 로고.svg', exact: true }).check();
+  await logoCard.getByRole('button', { name: '선택한 로고 삭제', exact: true }).click();
   assert.equal(await logo.count(), 0);
-  await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).click();
+  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
   await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
   await toolbar.getByRole('button', { name: '검수 진행', exact: true }).click();
   await page.getByRole('heading', { name: '검수 진행 화면 미리보기' }).waitFor();
@@ -39,7 +44,7 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   assert.equal(await magnifiedPoster.evaluate(img => new DOMMatrix(getComputedStyle(img).transform).a), 2);
   await toolbar.getByRole('button', { name: '결과 확인', exact: true }).click();
   await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
-  await page.getByText('화면 미리보기 · 예시 판정', { exact: true }).waitFor();
+  await page.getByRole('status').filter({ hasText: '화면 미리보기 · 예시 판정' }).waitFor();
   await toolbar.getByRole('button', { name: '자료 입력', exact: true }).click();
   await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
   assert.deepEqual(calls.filter(call => call.path.startsWith('/api/framework') || call.method !== 'GET'), []);

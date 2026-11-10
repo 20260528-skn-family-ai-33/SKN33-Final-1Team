@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
-import ReviewProgress from './ReviewProgress.jsx';
-import { documentSteps } from './progressScan.js';
+import { DocumentProjectPicker } from './DocumentInput.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
@@ -14,7 +13,7 @@ import ResultsPage from './ResultsPage.jsx';
 // 공유된 검수 상태를 현재 단계에 맞는 화면으로 표시한다.
 export default function ReviewPage() {
   const {
-    projectId, setProjectId,
+    projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
@@ -23,31 +22,34 @@ export default function ReviewPage() {
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
     addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,
   } = useReviewContext();
+  const [projectStatus, setProjectStatus] = useState({ ready: false, busy: true });
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const runId = params.get('framework');
 
   // 단계 이동 후 제목으로 초점을 옮겨 키보드와 스크린 리더 사용을 돕는다.
   useEffect(() => {
-    document.getElementById(documentBusy ? 'review-process-title' : 'page-title')?.focus({ preventScroll: true });
+    if (runId) return;
+    document.getElementById('page-title')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
-  }, [state.step, documentBusy]);
+  }, [state.step, runId]);
 
-  const [params, setParams] = useSearchParams();
-  const runId = params.get('framework');
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
-    projectName={state.projectName}
-    initialFile={runId === state.documentRun?.id ? state.file : null}
-    openRun={id => setParams({ framework: id })} onNew={() => { newReview(); setParams({}); }} />;
+    projectName={state.projectName || location.state?.projectName}
+    initialFile={runId === inputRunId ? state.file : null}
+    onInput={() => setParams({})}
+    openRun={id => setParams({ framework: id }, { state: location.state })} onNew={() => { newReview(); setParams({}); }} />;
 
-  return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}
+  const input = state.step === 'input';
+  return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy}
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value) } : undefined}
-    projectActions={state.step === 'input' && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
+    projectTools={input && <DocumentProjectPicker {...{ projectId, setProjectId }} projectName={state.projectName}
+      disabled={sampleBusy || fileBusy || documentBusy} onStatus={setProjectStatus} />}
+    projectActions={input && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
       {sampleBusy ? '불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" /></button>}>
-    {documentBusy && documentProgress && <ReviewProgress title="검수 요구사항을 정리하고 있어요."
-      message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent}
-      steps={documentSteps(documentProgress.stage)} facts={documentProgress.source ? [['입력 자료', documentProgress.source]] : []}
-      startedAt={documentProgress.startedAt} error={documentError} cancelBusy={documentCancelBusy}
-      cancelLabel={documentProgress.stage === 'queued' && documentProgress.runId ? '대기 작업 취소' : '입력 반영 취소'}
-      onCancel={documentProgress.stage === 'queued' && documentProgress.runId ? cancelQueuedDocument : cancelDocument} />}
-    {state.step === 'input' && <div hidden={documentBusy && !!documentProgress}><InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} /></div>}
+    {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
+      preview, dimensions, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentProgress,
+      documentNotice, documentError, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage

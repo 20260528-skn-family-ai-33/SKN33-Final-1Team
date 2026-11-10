@@ -49,18 +49,22 @@ function RetryNote({ retry }) {
 
 // The list, canvas and inspector always share one criterion ID.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, finalApproved = false }) {
+  busy = false, exportData = review, actions, revise, finalApproved = false }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const [selectedOnly, setSelectedOnly] = useState(false);
   const [closedId, setClosedId] = useState(null);
   const list = useRef(null);
-  const inspector = useRef(null);
+  const canvas = useRef(null);
+  const focusRow = useRef(false);
   const counts = Object.fromEntries(Object.keys(statuses).map(status => [status, results.filter(row => row.status === status).length]));
   const visible = useMemo(() => filterResults(results, filter, query), [results, filter, query]);
   const selected = selectVisibleResult(visible, activeEvidence?.criterion_id);
   const expanded = selected && selected.criterion_id !== closedId;
-  const allOverlays = useMemo(() => evidenceOverlays(results), [results]);
+  const allOverlays = useMemo(() => {
+    const numbers = new Map(results.map((result, index) => [result.criterion_id, String(index + 1).padStart(2, '0')]));
+    return evidenceOverlays(results).map(overlay => ({ ...overlay, label: numbers.get(overlay.id) }));
+  }, [results]);
   const selectedOverlays = selected ? allOverlays.filter(item => item.id === selected.criterion_id) : EMPTY;
   const selectedEvidence = selected?.evidence || EMPTY;
   const image = review.image;
@@ -68,10 +72,10 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   const selectedIndex = visible.findIndex(item => item.criterion_id === selected?.criterion_id);
 
   useEffect(() => {
-    const button = list.current?.querySelector('.rv-result-item-button.is-selected');
-    if (button) button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    if (inspector.current) inspector.current.scrollTop = 0;
-  }, [selected?.criterion_id]);
+    if (!focusRow.current) return;
+    focusRow.current = false;
+    list.current?.querySelector('.rv-result-item-button.is-selected')?.focus();
+  }, [selected, closedId]);
 
   // A hidden or removed result must not leave stale evidence on the canvas.
   useEffect(() => {
@@ -93,8 +97,15 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     const result = results.find(item => item.criterion_id === id);
     if (!result) return;
     if (!visible.includes(result)) { setQuery(''); setFilter('all'); }
+    if (result !== selected || !expanded) focusRow.current = true;
+    else list.current?.querySelector('.rv-result-item-button.is-selected')?.focus();
     chooseResult(result);
-    inspector.current?.scrollTo({ top: 0 });
+  }
+  function showImageEvidence() {
+    const zoom = canvas.current?.querySelector('.image-stage-focus:enabled');
+    if (!zoom) return;
+    zoom.click();
+    canvas.current.querySelector('.image-stage-viewport')?.focus();
   }
   // 목록에서 ↑·↓·Home·End로 항목을 옮기며 근거를 바로 본다. 초점도 함께 옮겨 키보드만으로 이어서 볼 수 있다.
   function moveWithKeys(event) {
@@ -128,23 +139,20 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  const details = <aside id="rv-result-inspector" className="rv-result-inspector rv-panel" aria-labelledby="rv-result-inspector-title">
-    <div className="rv-result-inspector-heading"><div><p className="rv-eyebrow">INSPECTOR</p><h2 id="rv-result-inspector-title">선택 항목 상세</h2></div>
-      <div className="rv-result-item-navigation"><span>{selectedIndex < 0 ? '0' : String(selectedIndex + 1).padStart(2, '0')} / {visible.length}</span>
-        <button type="button" aria-label="이전 검수 항목" disabled={selectedIndex <= 0} onClick={() => chooseResult(visible[selectedIndex - 1])}>←</button>
-        <button type="button" aria-label="다음 검수 항목" disabled={selectedIndex < 0 || selectedIndex >= visible.length - 1} onClick={() => chooseResult(visible[selectedIndex + 1])}>→</button>
-      </div>
-    </div>
-    {selected ? <div ref={inspector} className="rv-result-inspector-body">
-      <div className="rv-result-verdict"><StatusLabel status={selected.status} /><span>{selected.type === 'visual' ? '시각 검수' : '정보 검수'}</span></div>
+  const details = selected && <aside id="rv-result-inspector" className={`rv-result-inspector rv-panel is-${selected.status}`}
+    aria-labelledby="rv-result-inspector-title">
+    <h2 id="rv-result-inspector-title" className="sr-only">선택 항목 상세</h2>
+    <div className="rv-result-inspector-body">
       <section className="rv-result-detail-section"><h3>검수 기준</h3><p className="rv-result-selected-criterion">{selected.criterion}</p>
         <DocumentConditionDetails condition={selectedCondition} />
       </section>
-      <section className="rv-result-detail-section"><h3>{selected.check_method === 'source_image_metadata' ? '파일에서 확인한 값' : '이미지에서 읽은 문구'}</h3>
+      <section className="rv-result-detail-section"><h3>{selected.check_method === 'source_image_metadata' ? '파일에서 확인한 값' : '이미지에서 읽은 문구 / 요소'}</h3>
         <p className={`rv-result-observation ${!selected.observed_text ? 'is-empty' : ''}`}>{selected.observed_text || '기록된 관측 문구가 없습니다. 판정 이유와 이미지 근거를 확인해 주세요.'}</p>
       </section>
       <section className="rv-result-detail-section"><h3>판정 이유</h3><p>{selected.reason || '제공된 판정 이유가 없습니다. 원본과 기준을 직접 확인해 주세요.'}</p></section>
-      <section className="rv-result-detail-section"><h3>근거 <span>{selectedEvidence.length}</span></h3>
+      <section className="rv-result-detail-section"><h3>근거</h3>
+        {selectedOverlays.length > 0 && <button type="button" className="rv-button secondary rv-result-evidence-link" onClick={showImageEvidence}>
+          <Icon name="search" />이미지 위치 {selectedOverlays.length}곳 보기</button>}
         {selectedEvidence.length ? <ol className="rv-result-evidence-list">{selectedEvidence.map((evidence, index) =>
           <li key={`${evidence.ocr_id || 'evidence'}-${index}`}><span className="rv-result-evidence-index">{String(index + 1).padStart(2, '0')}</span>
             <p>{evidence.text || '문구 없이 위치만 제공된 근거입니다.'}</p></li>)}</ol>
@@ -158,33 +166,16 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
         {review.model_runtime?.status === 'not_configured' && <p>시각 분석 모델이 연결되지 않아 OCR·파일 정보로 확인 가능한 항목만 자동 판정합니다.</p>}
         <RetryNote retry={review.ocr?.conditional_retry} />
       </details>
-    </div> : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong>
-      <p>{results.length ? '검색어나 상태 필터를 바꿔 주세요.' : '기준과 검수 내용을 다시 확인해 주세요.'}</p>
-      {results.length > 0 && <button type="button" className="rv-button secondary" onClick={resetFilters}>검색·필터 초기화</button>}
-    </div>}
+    </div>
   </aside>;
 
   return <section className="rv-results" aria-labelledby="page-title">
-    <header className="rv-result-header">
-      <div><p className="rv-eyebrow">REVIEW RESULTS · {review.criteria_version_label || `기준 v${review.criteria_version}`}</p>
-        <h1 id="page-title" tabIndex={-1}>{review.project_name || '새로운 검수'}</h1>
-        <p className="rv-result-header-note">기준과 이미지 근거를 나란히 확인하세요.</p></div>
-      <button type="button" className="rv-button secondary" onClick={exportJson}><Icon name="file" />결과 JSON 저장</button>
-    </header>
-
-    <div className="rv-result-summary" aria-label="자동 검수 결과 요약">
-      <span className="rv-result-completed"><Icon name="check" />{review.status_label || '자동 검수 완료'}</span>
-      <span className="rv-result-total">전체 <strong>{results.length}</strong></span>
-      {Object.entries(statuses).map(([status, label]) => <span className={`rv-result-summary-count ${status}`} key={status}>
-        <span className="rv-result-dot" aria-hidden="true" />{label}<strong>{counts[status]}</strong>
-      </span>)}
-      <span className="rv-result-summary-notice" role={finalApproved ? 'status' : undefined}>
-        {finalApproved ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}
-      </span>
-    </div>
+    <h1 id="page-title" className="sr-only" tabIndex={-1}>{review.project_name || '포스터 검수'}</h1>
+    <p className="rv-result-notice" role="status">{review.status_label || '자동 검수 완료'} · {finalApproved
+      ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}</p>
 
     <div className="rv-result-workbench">
-      <div className="rv-result-canvas-column">
+      <div className="rv-result-canvas-column" ref={canvas}>
         <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
           title="검수 대상 이미지" subtitle="검수 항목의 위치 근거를 표시합니다."
           width={image?.width} height={image?.height} overlays={selectedOnly ? selectedOverlays : allOverlays}
@@ -202,20 +193,19 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
       </div>
 
       <aside className="rv-result-rail rv-panel" aria-labelledby="rv-result-list-title">
-        <div className="rv-result-rail-heading"><h2 id="rv-result-list-title">검수 요구사항</h2><span>{results.length}</span></div>
-        <div className="rv-result-search">
-          <label htmlFor="rv-result-search">항목 검색</label>
+        <div className="rv-result-rail-heading"><div><h2 id="rv-result-list-title">검수 요구사항</h2>
+          <p>항목을 펼치면 판정 근거가 표시됩니다.</p></div><span>{results.length}개 항목</span></div>
+        <details className="rv-result-search"><summary>항목 검색{query.trim() ? ` · ${visible.length}개 표시` : ''}</summary>
           <div><Icon name="search" /><input id="rv-result-search" type="search" value={query}
-            placeholder="기준·문구·판정 이유" onChange={event => setQuery(event.target.value)} /></div>
-        </div>
+            aria-label="항목 검색" placeholder="기준·문구·판정 이유" onChange={event => setQuery(event.target.value)} /></div>
+        </details>
         <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
           {[['all', '전체', results.length], ['pass', '충족', counts.pass], ['review', '확인 필요', counts.review], ['fail', '위반', counts.fail]]
             .map(([status, label, count]) => <button type="button" className={filter === status ? 'is-active' : ''}
               aria-pressed={filter === status} key={status} onClick={() => changeFilter(status)}>{label}<span>{count}</span></button>)}
         </div>
-        <div className="rv-result-list-meta"><p className="rv-result-list-count" role="status">{visible.length}개 표시{query.trim() ? ' · 검색 적용' : ''}</p>
-          {visible.length > 1 && <span className="rv-result-keyhint" aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> 항목 이동</span>}
-          <span id="rv-result-keys" className="visually-hidden">위아래 화살표로 항목을 옮길 수 있습니다.</span></div>
+        <p className="sr-only" role="status">{visible.length}개 표시</p>
+        <span id="rv-result-keys" className="sr-only">위아래 화살표로 항목을 옮길 수 있습니다.</span>
         {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록" aria-describedby="rv-result-keys" onKeyDown={moveWithKeys}>{visible.map(result => {
           const active = selected?.criterion_id === result.criterion_id;
           const open = active && expanded;
@@ -229,12 +219,19 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
             </button>
             {open && details}
           </li>;
-        })}</ul> : details}
+        })}</ul> : <div className="rv-result-empty"><NoMatchArt /><strong>표시할 항목이 없습니다.</strong>
+          <p>{results.length ? '검색어나 상태 필터를 바꿔 주세요.' : '기준과 검수 내용을 다시 확인해 주세요.'}</p>
+          {results.length > 0 && <button type="button" className="rv-button secondary" onClick={resetFilters}>검색·필터 초기화</button>}
+        </div>}
       </aside>
 
     </div>
-    <footer className="rv-result-footer"><p><Icon name="shield" />{finalApproved ? '담당자 확인 기록은 보고서에서 볼 수 있습니다.' : '검수 실행 완료는 최종 승인을 의미하지 않습니다.'}</p>
-      <div><button type="button" className="rv-button secondary" disabled={busy} onClick={edit}>기준 다시 확인하기</button>
+    <footer className="rv-result-footer">
+      <div className="rv-result-secondary-actions">
+        {edit && <button type="button" className="text-btn" disabled={busy} onClick={edit}>기준 다시 확인하기</button>}
+        <button type="button" className="text-btn" onClick={exportJson}>결과 JSON 저장</button>
+      </div>
+      <div>{revise && <button type="button" className="rv-button secondary" disabled={busy} onClick={revise}>수정본 재검수</button>}
         <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>
   </section>;

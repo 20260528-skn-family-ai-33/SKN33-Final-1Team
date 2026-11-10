@@ -4,16 +4,15 @@ import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { Brand } from '../components/Brand.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
-import { labels } from '../pages/review/reviewConstants.js';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
 import '../styles/review-v2.css';
 import '../styles/review-interactions.css';
 
 const tools = [['/review/new', '포스터 검수'], ['/video', '동영상 검수'], ['/review/tasks', '내 작업']];
-const posterSteps = { ...labels, report: '보고서' };
+const posterSteps = { input: '자료 입력', running: '검수 진행', results: '결과 확인', report: '보고서' };
 
 // 포스터·영상·내 작업 화면이 같은 상단 바와 이동·로그아웃 동작을 공유한다.
-export function WorkspaceTopbar({ current, locked = false, lockReason, children }) {
+export function WorkspaceTopbar({ current, locked = false, lockReason }) {
   const auth = useOptionalAuth();
   const user = auth?.user;
   const navigate = useNavigate();
@@ -50,9 +49,8 @@ export function WorkspaceTopbar({ current, locked = false, lockReason, children 
             // 새 탭으로 여는 동작은 현재 탭의 작업을 초기화하지 않는다.
             if (!event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) resetWorkspace();
           }}>{label}</Link>)}</nav>}
-        {children}
-        {user && <><span className="rv-topbar-divider" /><span className="rv-user" title={displayName}>{displayName}</span>
-          <button className="rv-icon-button" onClick={handleLogout} disabled={locked || logoutPending} title={locked ? lockReason : undefined} aria-label={logoutPending ? '로그아웃 중…' : '로그아웃'}><Icon name="logout" /></button></>}
+        {user && <div className="rv-topbar-account"><span className="rv-user" title={displayName}>{displayName}</span>
+          <button className="rv-icon-button" onClick={handleLogout} disabled={locked || logoutPending} title={locked ? lockReason : '로그아웃'} aria-label={logoutPending ? '로그아웃 중…' : '로그아웃'}><Icon name="logout" /></button></div>}
       </div>
     </header>
     {logoutError && <div className="rv-topbar-error"><ErrorMessage message={logoutError} /></div>}
@@ -63,10 +61,9 @@ export function WorkspaceFooter() {
   return <footer className="rv-footer"><span><i />Creative Checker</span><p>자동 판정과 담당자의 최종 승인은 구분됩니다.</p><span>기준 · 이미지 · 근거</span></footer>;
 }
 
-export function WorkspaceProjectBar({ name, version, step, steps, canNavigate, navigate, locked, projectEditor, children }) {
+export function WorkspaceProjectBar({ name, version, step, steps, canNavigate, navigate, locked, projectEditor, projectTools, children }) {
   const go = useNavigate();
   const resetWorkspace = useWorkspaceReset();
-  const currentIndex = Object.keys(steps).indexOf(step);
   return <div className="rv-projectbar">
     <div className="rv-project-identity">
       <button type="button" className="rv-icon-button" aria-label="서비스 메인으로" disabled={locked}
@@ -77,32 +74,32 @@ export function WorkspaceProjectBar({ name, version, step, steps, canNavigate, n
           onChange={event => projectEditor.onChange(event.target.value)} /><Icon name="pencil" /></div>
         : <strong>{name || '새로운 검수'}</strong>}</div>
       <span className="rv-version">{version}</span>
+      {projectTools}
     </div>
     <div className="rv-project-actions">
       <nav className="rv-step-nav" aria-label="검수 단계">{Object.entries(steps).map(([key, label], index) => <button type="button" key={key}
-        disabled={locked || !canNavigate(key)} className={`${key === step ? 'is-active' : ''} ${index < currentIndex ? 'is-done' : ''}`}
+        disabled={locked || !canNavigate(key)} className={key === step ? 'is-active' : ''}
         onClick={() => navigate(key)} aria-current={key === step ? 'step' : undefined}>
-        <span>{index < currentIndex ? <Icon name="check" /> : String(index + 1).padStart(2, '0')}</span>{label}</button>)}</nav>
+        <span>{String(index + 1).padStart(2, '0')}</span>{label}</button>)}</nav>
       {children}
     </div>
   </div>;
 }
 
-export default function ReviewLayout({ state, busy, health, healthBusy, checkHealth, navigate, children, previewMode = false,
-  canNavigate, versionLabel, showConnection = true, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectActions }) {
+export default function ReviewLayout({ state, busy, navigate, children,
+  canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions }) {
   const navigationLocked = topbarLocked || busy;
-  const connection = health?.status === 'offline' ? 'offline' : health?.ready ? 'online' : 'pending';
   const enabled = canNavigate || (key => key === 'input' || key === 'criteria' && state.criteria.length > 0
     || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed');
   return <div className={`rv-workspace rv-workspace--${workspaceStep || state.step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/review/new" locked={navigationLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다.">{showConnection && <button className={`rv-connection ${connection}`} onClick={checkHealth} disabled={navigationLocked || previewMode || healthBusy} title="검수 구성 다시 확인"><i />{previewMode ? '화면 미리보기' : healthBusy || !health ? '구성 확인 중' : health.status === 'offline' ? '서버 연결 필요' : health.ready ? '검수 구성 준비됨' : '검수 구성 확인 필요'}</button>}</WorkspaceTopbar>
+    <WorkspaceTopbar current="/review/new" locked={navigationLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {navigationLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
-    <WorkspaceProjectBar name={state.projectName || ''} step={state.step} steps={posterSteps} projectEditor={projectEditor} locked={navigationLocked}
+    <WorkspaceProjectBar name={state.projectName || ''} step={state.step === 'criteria' ? 'input' : state.step} steps={posterSteps}
+      projectEditor={projectEditor} projectTools={projectTools} locked={navigationLocked}
       version={versionLabel || (state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중')} canNavigate={enabled} navigate={navigate}>
       {projectActions}
     </WorkspaceProjectBar>
     <main id="review-content" className={`rv-main ${mainClassName}`.trim()} tabIndex={-1} aria-busy={busy || undefined}>{children}</main>
-    <WorkspaceFooter />
   </div>;
 }

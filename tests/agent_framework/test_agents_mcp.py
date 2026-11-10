@@ -114,6 +114,29 @@ def test_a01_waiting_asset_after_pdf_approval():
     assert (note.next_action, note.waiting_on) == ('submit_poster', 'creator')
 
 
+@pytest.mark.parametrize('count,id_length', [(20, 100), (500, 5)])
+def test_a01_summary_handles_long_condition_lists(count, id_length):
+    workflow, context = started('fail', 'approve_criteria')
+    original = workflow.get(context.run_id)
+    items = [{'criterion_id': f'C{i:04d}'.ljust(id_length, 'x'), 'verdict': 'fail',
+              'issues': ['value_mismatch']} for i in range(count)]
+    items.append({'criterion_id': 'passed', 'verdict': 'pass', 'issues': []})
+
+    class ManyItems(FrameworkTools):
+        def get_run(self, run_id):
+            return super().get_run(run_id) | {'validated_items': items}
+
+    model = Scripted(answer(next_action='request_change_approval', summary='수정 요청이 필요합니다.'))
+    note = RunCoordinator(model, ManyItems(workflow)).assess(context.run_id)
+    assert len(note.summary) <= 2000
+    assert f'pass가 아닌 조건: {count}건.' in note.summary
+    assert '상태 waiting_review, 기계 판정 fail.' in note.summary
+    assert note.summary.endswith('다음 조치: 수정 요청 승인을 요청한다.')
+    assert note.next_action == 'request_change_approval' and note.machine_verdict == 'fail'
+    assert note.model_summary == '수정 요청이 필요합니다.'
+    assert workflow.get(context.run_id) == original
+
+
 def test_a01_rejects_action_the_state_does_not_allow():
     workflow, context = started()
     model = Scripted(answer(next_action='request_final_approval', summary='최종 승인하세요.'))
@@ -274,6 +297,34 @@ def test_a08_compare_matches_recorded_verdicts():
     with pytest.raises(AdapterFailure) as error:
         RereviewAgent(wrong, tools).compare(parent.run_id, child.run_id)
     assert error.value.code == 'AGENT_OUTPUT_INCONSISTENT'
+
+
+@pytest.mark.parametrize('count,id_length', [(20, 100), (500, 5)])
+def test_a08_summary_preserves_long_comparison_lists(count, id_length):
+    workflow, parent = waiting_revision()
+    child, _, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)
+    workflow.rereview(parent.run_id, child, asset)
+    approve(workflow, child, 'approve_criteria')
+    originals = (workflow.get(parent.run_id), workflow.get(child.run_id))
+    ids = tuple(f'C{i:04d}'.ljust(id_length, 'x') for i in range(count))
+    resolved, unresolved, new = ids[::3], ids[1::3], ids[2::3]
+
+    class ManyItems(FrameworkTools):
+        def get_run(self, run_id):
+            passing = new if run_id == parent.run_id else resolved
+            items = [{'criterion_id': key, 'verdict': 'pass' if key in passing else 'fail',
+                      'issues': [] if key in passing else ['value_mismatch']} for key in ids]
+            return super().get_run(run_id) | {'validated_items': items}
+
+    model = Scripted(answer(resolved=resolved, unresolved=unresolved, new_violations=new,
+                            summary='수정 전후 결과를 비교했습니다.'))
+    summary = RereviewAgent(model, ManyItems(workflow)).compare(parent.run_id, child.run_id)
+    assert len(summary.summary) <= 2000
+    assert summary.summary == f'해결 {len(resolved)}건. 미해결 {len(unresolved)}건. 새 위반 {len(new)}건.'
+    assert summary.compared and summary.child_status == 'waiting_review'
+    assert (summary.resolved, summary.unresolved, summary.new_violations) == (resolved, unresolved, new)
+    assert summary.model_summary == '수정 전후 결과를 비교했습니다.'
+    assert (workflow.get(parent.run_id), workflow.get(child.run_id)) == originals
 
 
 def test_a08_compare_rejects_unrelated_child():

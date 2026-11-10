@@ -186,22 +186,20 @@ test('로그인 요청 중 서비스 소개로 이동하면 늦은 응답이 페
   await page.getByRole('region', { name: '서비스 소개', exact: true }).waitFor();
 });
 
-test('샘플 요청은 로그인 복귀 뒤 한 번만 읽고 쿼리를 소비한다', async t => {
+test('일환 예시 자료를 로그인 복귀 뒤 채우고 쿼리를 소비한다', async t => {
   const { page, state } = await fixture(t);
   await page.goto(`${baseURL}/review/new?sample=1`);
   await page.waitForURL('**/login');
   await submitLogin(page);
   await page.waitForURL('**/review/new');
   await page.getByRole('img', { name: '업로드한 검수 이미지 미리보기' }).waitFor();
-  assert.equal(await page.getByLabel('프로젝트 이름', { exact: true }).inputValue(), '샘플 프로젝트');
-  assert.equal(await page.getByLabel('검수 요구사항').inputValue(), '행사명: 테스트 축제');
-  assert.equal(state.requests.filter(request => request.path === '/api/sample').length, 1);
-  assert.equal(state.requests.filter(request => request.path === '/api/sample/image').length, 1);
-
-  await page.route('**/api/sample', route => route.fulfill({ status: 404, json: { detail: 'Not Found' } }));
+  assert.equal(await page.getByLabel('프로젝트 이름', { exact: true }).inputValue(), '빛의 기록 · 전시 포스터');
+  assert.match(await page.getByLabel('검수 요구사항', { exact: true }).inputValue(), /빛의 기록/);
+  assert.equal(state.requests.filter(request => request.path.startsWith('/api/sample')).length, 0);
+  await page.getByLabel('프로젝트 이름', { exact: true }).fill('임시 입력');
   await page.getByRole('button', { name: '예시 자료 불러오기', exact: true }).click();
-  await page.waitForFunction(() => document.getElementById('project-name')?.value === '2026 김천김밥축제 포스터 검수');
-  assert.match(await page.getByLabel('검수 요구사항').inputValue(), /행사명: 김천김밥축제/);
+  await page.waitForFunction(() => document.getElementById('project-name')?.value === '빛의 기록 · 전시 포스터');
+  await page.getByText('주최 로고.png', { exact: true }).waitFor();
 });
 
 test('업무 API의 명시적 세션 만료는 로그인 화면으로 복귀한다', async t => {

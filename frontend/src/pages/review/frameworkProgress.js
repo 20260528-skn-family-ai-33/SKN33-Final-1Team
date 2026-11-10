@@ -8,9 +8,9 @@ const labels = {
 // 진행 화면의 돋보기 띠에 쓰는 짧은 이름과 칸 그림 종류.
 const parts = {
   A02: { short: '요구사항 추출', kind: 'extract' },
-  A04_A05: { short: '포스터 검사', kind: 'poster' },
-  A06: { short: '근거 대조', kind: 'compare' },
-  A07: { short: '보고서 정리', kind: 'report' },
+  A04_A05: { short: '문구·시각 조건 검사', kind: 'poster', headline: '포스터의 문구와 시각 조건을 확인하고 있어요.' },
+  A06: { short: '근거 확인', kind: 'compare', headline: '검사 결과와 원문 근거를 확인하고 있어요.' },
+  A07: { short: '결과 정리', kind: 'report', headline: '항목별 검수 결과를 정리하고 있어요.' },
 };
 
 export const processingStatuses = new Set(['queued', 'extracting', 'reviewing']);
@@ -35,7 +35,11 @@ export function frameworkProgress(run) {
   const completed = steps.filter(step => step.status === 'completed').length;
   const active = steps.find(step => step.status === 'active');
   return {
-    title: document ? '문서에서 검수 요구사항을 정리하고 있어요.' : '확정한 기준으로 포스터를 검수하고 있어요.',
+    poster: !document,
+    queued,
+    title: document ? '문서에서 검수 요구사항을 정리하고 있어요.'
+      : queued ? '포스터 검수 순서를 기다리고 있어요.'
+        : active?.headline || '확정한 기준으로 포스터를 검수하고 있어요.',
     message: queued ? '작업을 접수했습니다. 처리 순서를 기다리고 있어요.'
       : active?.label || (document ? '요구사항과 원문 출처를 확인하고 있어요.' : '검사 상태를 확인하고 있어요.'),
     detail: `${completed} / ${roles.length}개 처리 단계 완료`,

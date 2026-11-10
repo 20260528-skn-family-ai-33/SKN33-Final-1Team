@@ -39,7 +39,6 @@
 .rv-progress-card .rv-progress-help { margin-top: 24px; }
 
 .rv-scan { display: flex; justify-content: center; min-width: min(360px, 100%); max-width: 100%; margin: 4px auto 30px; padding: 14px 26px 14px; border-radius: 16px; background: #171717; }
-.rv-scan.has-poster { margin: 0 auto 18px; padding-block: 8px 12px; }
 .rv-scan-track { position: relative; }
 .rv-scan-parts { display: flex; margin: 0; padding: 0; list-style: none; }
 .rv-scan-part { display: grid; justify-items: center; align-content: start; width: 132px; padding: 6px 4px 0; }
@@ -94,7 +93,34 @@
 
 @property --rv-poster-scan-x { syntax: '<percentage>'; inherits: true; initial-value: 26%; }
 @property --rv-poster-scan-y { syntax: '<percentage>'; inherits: true; initial-value: 24%; }
-.rv-poster-scan { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; width: min(520px, 100%); margin: 0 auto 16px; padding: 17px 28px; border: 1px solid var(--rv-line, #e6e6e1); border-radius: 15px; background: #eaeae6; }
+.rv-poster-progress { padding: 0; margin-top: 52px; }
+.rv-poster-progress .rv-scan-card { min-height: 0; padding: 42px clamp(14px, 4vw, 50px) 28px; }
+.rv-poster-progress .rv-scan-card h1 { margin: 10px 0 3px; font-size: 29px; }
+.rv-poster-progress .rv-progress-message { margin: 0; font-size: 13px; }
+.rv-poster-progress .rv-progress-track { margin-top: 16px; }
+.rv-poster-progress .rv-progress-caption { margin-top: 7px; font-size: 11px; }
+.rv-poster-progress .rv-progress-steps {
+  justify-content: space-between; width: min(820px, 100%); margin: 16px 0 0; padding: 1px 0; gap: 7px;
+}
+.rv-poster-progress .rv-progress-steps li { gap: 5px; color: #6e6e6b; font-size: 11px; }
+.rv-poster-progress .rv-progress-steps li > span:first-child { width: 22px; height: 22px; font-family: var(--font-signal); }
+.rv-poster-progress .rv-progress-steps li.is-active { color: #171717; font-weight: 700; }
+.rv-poster-progress .rv-progress-steps li.is-completed { color: #386b50; }
+.rv-poster-progress .rv-progress-facts { width: min(820px, 100%); margin-top: 16px; gap: 8px; }
+.rv-poster-progress .rv-progress-facts > div { padding: 8px 10px; background: #f3f3f1; }
+.rv-poster-progress .rv-progress-facts dd { margin-top: 2px; font-size: 13px; }
+.rv-poster-progress .rv-progress-help { margin-top: 16px; color: #6e6e6b; }
+.rv-poster-scan { width: min(520px, 100%); margin: 0 auto 20px; }
+.rv-poster-scan-stage {
+  display: grid; place-items: center; min-height: 140px; padding: 17px 28px; border: 1px solid var(--rv-line, #e6e6e1);
+  border-radius: 15px; background: #eaeae6;
+}
+.rv-poster-scan figcaption {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; color: #6e6e6b; font-size: 11px;
+}
+.rv-poster-scan figcaption > span:last-child { padding: 3px 7px; border-radius: 6px; background: #f3f3f1; }
+.rv-poster-scan-placeholder { display: grid; justify-items: center; gap: 8px; color: #6e6e6b; font-size: 12px; }
+.rv-poster-scan-placeholder .icon { width: 24px; height: 24px; }
 .rv-poster-scan-sheet {
   --rv-poster-scan-x: 26%; --rv-poster-scan-y: 24%;
   position: relative; width: min(100%, var(--rv-poster-width));
