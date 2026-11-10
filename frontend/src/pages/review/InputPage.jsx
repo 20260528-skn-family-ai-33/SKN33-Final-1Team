@@ -1,15 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import DocumentInput from './DocumentInput.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { PosterDropArt } from '../../components/ReviewArt.jsx';
+import { LogoInputs } from '../video/LogoFlowParts.jsx';
 import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 // 기존 업로드·문서 처리 흐름을 큰 이미지 캔버스와 입력 inspector에 연결한다.
 export default function InputPage({ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument, previewMode = false }) {
+  const [referenceLogos, setReferenceLogos] = useState([]);
   const requirementCount = parseRequirements(state.requirements).length;
   const mixed = state.documentRun && state.requirements.trim() !== state.documentRun.paragraphs;
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
@@ -61,6 +63,7 @@ export default function InputPage({ state, projectId, setProjectId, prepare, ope
               <p>{state.documentRun.filename}의 원문과 추출된 기준을 확인해 주세요. 미정 항목과 승인 여부도 다음 화면에서 검토합니다.</p>
               <button type="button" className="rv-button secondary" disabled={busy} onClick={openDocumentRun}>추출된 검수 기준 확인</button>
             </div>}
+            <LogoInputs logos={referenceLogos} onChange={setReferenceLogos} disabled={busy} referenceOnly />
           </div>
         </aside>
       </div>

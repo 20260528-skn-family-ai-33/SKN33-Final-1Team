@@ -21,6 +21,14 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   await toolbar.waitFor();
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('button', { name: '요구사항 PDF 선택', exact: true }).count(), 0);
+  await page.getByLabel('원본 로고 이미지 추가', { exact: true }).setInputFiles({
+    name: '주최 로고.svg', mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="12"/></svg>'),
+  });
+  const logo = page.getByRole('img', { name: '원본 로고 주최 로고.svg', exact: true });
+  await logo.waitFor();
+  await page.getByRole('button', { name: '주최 로고.svg 삭제', exact: true }).click();
+  assert.equal(await logo.count(), 0);
   await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).click();
   await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
   await toolbar.getByRole('button', { name: '검수 진행', exact: true }).click();

@@ -22,31 +22,49 @@ export function useLogoStatus() {
   return status;
 }
 
-// 원본 로고(최대 12장)와 로고마다 기준 문구. 기준 문구는 줄을 |로 나누고, 비우면 글자 비교를 하지 않는다.
-export function LogoInputs({ logos, onChange, status, disabled }) {
+// 포스터는 화면 대조용 이미지를 미리 보고, 영상은 로고별 기준 문구도 입력한다.
+export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = false }) {
   const [previews, setPreviews] = useState([]);
+  const [referenceError, setReferenceError] = useState('');
   useEffect(() => {
     const urls = logos.map(item => URL.createObjectURL(item.file)); setPreviews(urls);
     return () => urls.forEach(url => URL.revokeObjectURL(url));
   }, [logos]);
-  function add(event) {
-    const files = [...event.target.files].filter(file => file.type.startsWith('image/')); event.target.value = '';
-    onChange([...logos, ...files.map(file => ({ file, text: '' }))].slice(0, MAX_LOGOS));
-  }
   const off = disabled || (status && !status.ready);
-  return <fieldset className="rv-video-subsection rv-video-logos"><legend>5. 원본 로고 <span>선택</span></legend>
-    <p className="rv-video-subsection-hint">올리면 같은 영상에서 로고 위치 후보를 찾고, 위치를 확정한 뒤 정밀 대조합니다. 판정은 사람이 합니다.</p>
+  function add(files) {
+    const supported = [...files].filter(file => referenceOnly
+      ? /\.(jpe?g|png|webp|svg)$/i.test(file.name) && (!file.type || file.type.startsWith('image/'))
+      : file.type.startsWith('image/'));
+    if (referenceOnly) {
+      setReferenceError(supported.length !== files.length ? 'JPG, PNG, WEBP, SVG 파일을 선택해 주세요.'
+        : logos.length + supported.length > MAX_LOGOS ? `로고는 최대 ${MAX_LOGOS}장까지 첨부할 수 있어요.` : '');
+    }
+    onChange([...logos, ...supported.map(file => ({ file, text: '' }))].slice(0, MAX_LOGOS));
+  }
+  return <fieldset className={`rv-video-subsection rv-video-logos${referenceOnly ? ' rv-poster-logos' : ''}`}
+    onDragOver={referenceOnly ? event => { if (event.dataTransfer.types.includes('Files')) event.preventDefault(); } : undefined}
+    onDrop={referenceOnly ? event => {
+      if (!event.dataTransfer.files.length) return;
+      event.preventDefault();
+      if (!off) add(event.dataTransfer.files);
+    } : undefined}>
+    <legend>{referenceOnly ? '원본 로고 첨부' : '5. 원본 로고'} <span>선택</span></legend>
+    <p className="rv-video-subsection-hint">{referenceOnly ? '포스터와 대조할 로고를 끌어다 놓거나 선택하세요.'
+      : '올리면 같은 영상에서 로고 위치 후보를 찾고, 위치를 확정한 뒤 정밀 대조합니다. 판정은 사람이 합니다.'}</p>
     {status && !status.ready && <p className="rv-video-inline-warning"><Icon name="warning" />{status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.'}</p>}
     {logos.length > 0 && <ul className="rv-video-logo-list">{logos.map((item, i) => <li key={`${item.file.name}-${i}`}>
       {previews[i] ? <img src={previews[i]} alt={`원본 로고 ${item.file.name}`} /> : <span className="rv-video-logo-thumb" />}
-      <label><span>{item.file.name}</span>
+      {referenceOnly ? <span className="rv-logo-filename" title={item.file.name}>{item.file.name}</span> : <label><span>{item.file.name}</span>
         <input value={item.text} maxLength={300} placeholder="기준 문구 (선택, 줄은 | 로 구분: 울산광역시남구|ULSAN NAMGU)" disabled={off}
-          onChange={event => onChange(logos.map((x, k) => (k === i ? { ...x, text: event.target.value } : x)))} /></label>
-      <button type="button" className="rv-video-text-button" disabled={disabled} onClick={() => onChange(logos.filter((_, k) => k !== i))}>빼기</button>
+          onChange={event => onChange(logos.map((x, k) => (k === i ? { ...x, text: event.target.value } : x)))} /></label>}
+      <button type="button" className="rv-video-text-button" disabled={disabled} aria-label={referenceOnly ? `${item.file.name} 삭제` : undefined}
+        onClick={() => { setReferenceError(''); onChange(logos.filter((_, k) => k !== i)); }}>빼기</button>
     </li>)}</ul>}
     {logos.length < MAX_LOGOS && <label className={`rv-button secondary rv-video-logo-add${off ? ' is-disabled' : ''}`}><Icon name="upload" />원본 로고 이미지 추가
-      <input className="visually-hidden" type="file" accept="image/*" multiple disabled={off} onChange={add} /></label>}
-    <p className="rv-video-subsection-foot">{logos.length ? `원본 로고 ${logos.length}장 · 동영상 검수와 함께 같은 영상으로 로고 후보를 찾습니다.` : '올리지 않으면 로고 검수 없이 자막 검수만 합니다.'}</p>
+      <input className="visually-hidden" type="file" accept={referenceOnly ? '.jpg,.jpeg,.png,.webp,.svg' : 'image/*'} multiple disabled={off}
+        onChange={event => { add(event.target.files); event.target.value = ''; }} /></label>}
+    {referenceOnly ? <p className="rv-video-subsection-foot" role="status">{referenceError || `${logos.length} / ${MAX_LOGOS}장 · 이 화면의 미리보기용입니다.`}</p>
+      : <p className="rv-video-subsection-foot">{logos.length ? `원본 로고 ${logos.length}장 · 동영상 검수와 함께 같은 영상으로 로고 후보를 찾습니다.` : '올리지 않으면 로고 검수 없이 자막 검수만 합니다.'}</p>}
   </fieldset>;
 }
 
