@@ -335,14 +335,14 @@ def test_a08_compare_rejects_unrelated_child():
 
 
 @contextmanager
-def mcp_server(workflow):
+def mcp_server(workflow, evidence=None):
     """Real loopback HTTP MCP server, so McpToolClient runs its actual transport."""
     import uvicorn
 
     with socket.socket() as probe:
         probe.bind(('127.0.0.1', 0))
         port = probe.getsockname()[1]
-    server = uvicorn.Server(uvicorn.Config(create_mcp_app(workflow, token=TOKEN), host='127.0.0.1', port=port,
+    server = uvicorn.Server(uvicorn.Config(create_mcp_app(workflow, token=TOKEN, evidence=evidence), host='127.0.0.1', port=port,
                                            log_level='warning', lifespan='on'))
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()

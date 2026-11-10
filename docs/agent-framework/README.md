@@ -185,13 +185,15 @@ A01·A08은 공통 상태 전환 코드 위의 **Qwen3.5-4B 도구 호출 에이
 | 구성 | 파일 | 내용 |
 |---|---|---|
 | MCP 서버 | `mcp_server.py` | `get_run`, `get_steps`, `get_approval_history`, `start_run`, `request_rereview`. Bearer 토큰(32자 이상) 필수, **승인 도구 미노출**. `McpToolClient`는 도구 예외·빈 응답을 `McpToolError`(결과 불명)로 올린다 |
+| MCP PostgreSQL 연결 | `mcp_postgres.py`, `mcp_commands.py` | `mcp-serve` 명령. 실행 요청자의 owner·editor 권한을 호출마다 다시 확인한다 |
+| MCP 근거·관계 도구 | `mcp_evidence.py`, `mcp_graph.py` | `get_approved_criteria`, `get_history`, `verify_sources`, `get_relations`, `get_change_impact`. Neo4j는 팀 `graph-projector` 투영을 읽기만 하고, 투영이 없거나 뒤처지면 PostgreSQL로 답한다 |
 | 도구 호출 루프 | `agents/loop.py` | vLLM OpenAI 호환 API. 턴 수 제한, 쓰기 도구 1회 실행, 결과 불명 쓰기는 `outcome_unknown`으로 남기고 재호출하지 않는다 |
 | A01 `RunCoordinator` | `agents/coordinator.py` | 읽기 도구만 쓴다. 현재 상태에서 허용되는 `next_action`만 받아들인다 |
 | A08 `RereviewAgent` | `agents/rereview.py` | `request`: 재검수 요청 판단(새 문맥·산출물은 코드가 고정), 거절된 요청은 `request_error`로 구분. `compare`: 부모·자식 판정 비교 |
 
 모델 답이 실행 결과·기록과 다르면 `AGENT_ACTION_NOT_ALLOWED`·`AGENT_OUTPUT_INCONSISTENT`로 실패한다. JSON 형식이 틀린 답과 실행하지 않은 도구를 했다고 한 답에만 각각 한 번 정정 기회를 준다. 코드가 검증하는 것은 구조화 필드뿐이다. 사용자용 `summary`는 코드가 실행 사실로 만들고, `model_summary`·`model_blockers`는 **검증하지 않은 모델 문장**이므로 구분해 표시한다.
 
-개발용 MCP 서버(합성 어댑터·메모리 상태, PostgreSQL API·worker와 미연결)는 `AGENT_FRAMEWORK_MCP_TOKEN`을 주고 다음처럼 실행한다. `PostgresStore` 연결은 서비스 계정 권한 설계가 필요한 후속 범위다.
+개발용 MCP 서버(합성 어댑터·메모리 상태, PostgreSQL API·worker와 미연결)는 `AGENT_FRAMEWORK_MCP_TOKEN`을 주고 다음처럼 실행한다. 실제 PostgreSQL에 연결한 MCP 서버는 `mcp-serve`로 실행하며 실행법·권한·관계 도구의 답 순서는 [MCP 실행 가이드](MCP_실행가이드.md)에 있다. 검수 화면과 worker는 아직 이 서버를 호출하지 않는다.
 
 ```sh
 .venv/bin/python -m uvicorn backend.agent_framework.mcp_server:create_development_app --factory --host 127.0.0.1 --port 8013

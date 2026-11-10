@@ -333,6 +333,8 @@ def parser():
     command.add_argument('--state-file',required=True)
     command.add_argument('--max-age',type=int,default=120)
     command.set_defaults(handler=recovery_status_command)
+    from .mcp_commands import register as register_mcp
+    register_mcp(commands,_port)
     return cli
 
 
