@@ -25,9 +25,11 @@ REVIEWER = {"pass": "auto", "fail": "auto", "review": "manager"}
 
 def track_records(tracks: list[dict]) -> list[dict]:
     """엔진·보류 정보는 필수 — 엔진이 빠지면 EasyOCR 기준(0.60/0.85)이 적용된다(review_rules.py:60).
-    트랙 신뢰도는 대표 문구와 같게 읽힌 프레임들의 중앙값이다."""
+    Paddle 트랙 신뢰도는 대표 문구와 같게 읽힌 프레임들의 인식 점수 중앙값이고, Qwen3-VL 트랙(qwen3-vl-video)은
+    점수가 없어 대표 문구와 같게 읽힌 프레임 비율이다(subtitle_vlm.build_tracks)."""
     return [{"id": t["id"], "text": t["text"], "confidence": t["confidence"], "bbox_xyxy": t["bbox_xyxy"],
-             "recognition_engine": "paddleocr", "requires_review": bool(t["requires_review"])} for t in tracks]
+             "recognition_engine": t.get("recognition_engine", "paddleocr"),
+             "requires_review": bool(t["requires_review"])} for t in tracks]
 
 
 def requested_texts(criterion: dict) -> list[str]:

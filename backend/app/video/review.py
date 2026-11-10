@@ -28,6 +28,7 @@ from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.video import subtitle_roles as roles
+from backend.app.video import subtitle_vlm as vlm
 from backend.app.video.disclosure import judge_disclosure
 from backend.app.video.disclosure import validate_input
 from backend.app.video.frames import coverage
@@ -45,7 +46,10 @@ from backend.app.video.tracks import build_tracks
 from backend.app.video.tracks import choose_representatives
 from backend.app.video.tracks import text_groups
 
-PIPELINE = "paddle_frames_v1"   # 포스터 경로(paddle_full_v1)와 구분
+PIPELINE = "paddle_frames_v1"   # 기존 Paddle 자막 경로(포스터 경로 paddle_full_v1과 구분)
+# 자막 판독 엔진: qwen3-vl(기본, Qwen3-VL-8B-Instruct가 프레임을 직접 읽음) 또는 paddleocr(기존 경로, 명시할 때만).
+# 엔진 하나가 실패해도 다른 엔진으로 몰래 바꾸지 않는다. 로고 검수(6-B)는 엔진과 무관하게 그대로다.
+SUBTITLE_ENGINES = ("qwen3-vl", "paddleocr")
 CHUNK = 1024 * 1024
 MIN_OCR_SUCCESS = 0.9
 # 문서 '실행 구조' 표의 stage와 progress
@@ -54,8 +58,8 @@ PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "cla
 LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
-    "ocr": "프레임 OCR 실행에 실패했습니다. Paddle 전용 환경과 모델 준비 상태를 확인한 뒤 다시 실행해 주세요.",
-    "segmenting": "OCR 결과를 자막 트랙과 구간으로 정리하지 못했습니다. 실행 기록을 확인해 주세요.",
+    "ocr": "프레임 글자 판독에 실패했습니다. 자막 판독 모델(Qwen3-VL) 서버 연결과 준비 상태를 확인한 뒤 다시 실행해 주세요.",
+    "segmenting": "판독 결과를 자막 트랙과 구간으로 정리하지 못했습니다. 실행 기록을 확인해 주세요.",
     "review": "기준 판정 또는 광고 표시 판정을 완료하지 못했습니다. 기준 형식을 확인해 주세요.",
 }
 CONTAINER_MIME = {"mov": "video/mp4", "matroska": "video/webm", "avi": "video/x-msvideo"}
@@ -110,7 +114,37 @@ def _read_json(path: Path):
 
 
 # ---------------------------------------------------------------------------
-# 3단계 — Paddle 전용 환경에서 프레임 전체를 한 프로세스로
+# 3단계 — 자막 판독 엔진 선택
+# ---------------------------------------------------------------------------
+def subtitle_engine() -> str:
+    """VIDEO_SUBTITLE_ENGINE(기본 qwen3-vl). 알 수 없는 값은 설정 오류로 본다."""
+    engine = os.getenv("VIDEO_SUBTITLE_ENGINE", "").strip().lower() or "qwen3-vl"
+    if engine not in SUBTITLE_ENGINES:
+        raise ValueError(f"VIDEO_SUBTITLE_ENGINE must be one of {', '.join(SUBTITLE_ENGINES)}")
+    return engine
+
+
+def pipeline_name(engine: str) -> str:
+    return vlm.PIPELINE if engine == "qwen3-vl" else PIPELINE
+
+
+def subtitle_readiness() -> tuple[bool, str]:
+    """선택한 자막 판독 엔진의 준비 상태(추론 없음)."""
+    try:
+        engine = subtitle_engine()
+    except ValueError as exc:
+        return False, str(exc)
+    return vlm.readiness() if engine == "qwen3-vl" else ocr_readiness()
+
+
+def subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
+    """Pipeline의 기본 recognize. qwen3-vl이면 Qwen3-VL 판독, paddleocr이면 기존 Paddle 판독."""
+    return vlm.read_frames(frames, directory, progress) if subtitle_engine() == "qwen3-vl" \
+        else paddle_frames(frames, directory, progress)
+
+
+# ---------------------------------------------------------------------------
+# 3단계(기존 paddleocr 엔진) — Paddle 전용 환경에서 프레임 전체를 한 프로세스로
 # ---------------------------------------------------------------------------
 def ocr_readiness() -> tuple[bool, str]:
     """RunPod Pod 워커(VIDEO_LOGO_WORKER_URL)가 있으면 자막 OCR도 워커 GPU에서 읽는다. 없으면 로컬 Paddle 환경."""
@@ -335,6 +369,7 @@ class Pipeline:
         payload = self.recognize([target / "frames" / f"{f['frame_id']}.jpg" for f in unique], target / "ocr", progress)
         if not isinstance(payload, dict) or len(payload.get("frames", [])) != total:
             raise ValueError("Invalid video OCR response")
+        use_vlm = payload.get("engine") == vlm.ENGINE  # 모델이 역할·구역을 함께 준 판독(3-1·4단계를 VLM 방식으로)
         by_id = {f["frame_id"]: r for f, r in zip(unique, payload["frames"])}
         for frame in frames:
             result = by_id[frame["same_as"] or frame["frame_id"]]
@@ -345,15 +380,24 @@ class Pipeline:
             "frame_id": f["frame_id"], "time_ms": f["time_ms"], "sampling": f["sampling"], "width": f["width"],
             "height": f["height"], "status": f["ocr_status"], "same_as": f["same_as"], "unread_boxes": f["unread_boxes"],
             "lines": [{"line_id": f"{f['frame_id']}:{r['id']}", "text": r["text"], "bbox_xyxy": r["bbox_xyxy"],
-                       "confidence": r["confidence"]} for r in f["records"]]} for f in frames])
+                       "confidence": r["confidence"],
+                       **({"vlm_role": r.get("role"), "region": r.get("region")} if use_vlm else {})}
+                      for r in f["records"]]} for f in frames])
         if succeeded < MIN_OCR_SUCCESS:
             raise ValueError(f"OCR success ratio {succeeded:.2f}")
         failed = sum(1 for f in frames if f["ocr_status"] == "failed")
         if failed:
             self.warnings.append(f"OCR이 실패한 프레임 {failed}장은 판정에서 위반을 확정하지 않습니다.")
-        runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": payload.get("device") or "cpu", "load_seconds": payload.get("load_seconds"),
-                   "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
-                   "ocr_success_ratio": round(succeeded, 4)}
+        if use_vlm:
+            runtime = {"engine": "qwen3-vl", "model": payload.get("model"), "pipeline": vlm.PIPELINE,
+                       "device": payload.get("device") or "vllm", "load_seconds": None,
+                       "wall_seconds": payload.get("wall_seconds"),
+                       "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
+                       "ocr_success_ratio": round(succeeded, 4)}
+        else:
+            runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": payload.get("device") or "cpu", "load_seconds": payload.get("load_seconds"),
+                       "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
+                       "ocr_success_ratio": round(succeeded, 4)}
 
         self.stage = "classifying"
         self.update(target, stage=self.stage, progress=PROGRESS["classifying"], runtime=runtime)
@@ -361,12 +405,17 @@ class Pipeline:
                         "height": f["height"], "lines": [{"line_id": f"{f['frame_id']}:{r['id']}", "text": r["text"],
                                                           "bbox_xyxy": r["bbox_xyxy"], "confidence": r["confidence"]}
                                                          for r in f["records"]]} for f in frames]
-        try:
-            weights, classifier = load_role_weights()
-            role_rows = roles.classify(role_frames, weights)
-        except Exception:  # 분류 실패는 경고만 — 신뢰도 0.5 하한으로 대체(문서 실행 구조)
-            self.warnings.append("자막 줄 분류 모델을 쓰지 못해 신뢰도 0.5 하한 규칙으로 대체했습니다.")
-            classifier, role_rows = "rule_fallback", roles.classify(role_frames, None)
+        if use_vlm:  # 3-1단계: 모델이 판독하며 정한 역할을 그대로 쓴다(bbox 특징 분류기를 거치지 않음)
+            classifier = "qwen3-vl-role"
+            role_rows = [{"video_id": target.name, "frame_id": f["frame_id"], "line_id": f"{f['frame_id']}:{r['id']}",
+                          "text": r["text"], **vlm.line_role(r)} for f in frames for r in f["records"]]
+        else:
+            try:
+                weights, classifier = load_role_weights()
+                role_rows = roles.classify(role_frames, weights)
+            except Exception:  # 분류 실패는 경고만 — 신뢰도 0.5 하한으로 대체(문서 실행 구조)
+                self.warnings.append("자막 줄 분류 모델을 쓰지 못해 신뢰도 0.5 하한 규칙으로 대체했습니다.")
+                classifier, role_rows = "rule_fallback", roles.classify(role_frames, None)
         _write_jsonl(target / "ocr" / "roles.jsonl", role_rows)
         role_of = {row["line_id"]: row for row in role_rows}
         meta = {f["frame_id"]: f for f in frames}
@@ -376,11 +425,12 @@ class Pipeline:
                 row = role_of[line["line_id"]]
                 lines.append({**line, "frame_id": frame["frame_id"], "time_ms": frame["time_ms"],
                               "sampling": meta[frame["frame_id"]]["sampling"], "role": row["role"],
-                              "kept": row["kept"], "reason": row["reason"], "probs": row["probs"]})
+                              "kept": row["kept"], "reason": row["reason"], "probs": row["probs"],
+                              **({"vlm_role": row["vlm_role"], "region": row["region"]} if use_vlm else {})})
 
         self.stage = "segmenting"
         self.update(target, stage=self.stage, progress=PROGRESS["segmenting"], stage_detail=f"줄 {len(lines)}개")
-        tracks = build_tracks(frames, lines, duration)
+        tracks = vlm.build_tracks(frames, lines, duration) if use_vlm else build_tracks(frames, lines, duration)
         segments = build_segments(tracks, frames, duration, scenes.get("grid_ms", []))
         choose_representatives(segments, tracks, frames, target / "frames")
         groups = text_groups(tracks)
@@ -474,8 +524,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             raise HTTPException(401, {"code": "authentication_required", "message": "로그인이 필요합니다."})
 
     router = APIRouter(prefix="/api/video-reviews", dependencies=[Depends(guard)])
-    recognize = ocr or paddle_frames
-    check_ocr = readiness or ocr_readiness
+    recognize = ocr or subtitle_frames
+    check_ocr = readiness or subtitle_readiness
     do_logo = logo_review or logo_review_frames
     check_logo = logo_readiness or logo_readiness_default
     lock = threading.RLock()
@@ -506,9 +556,18 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
     def status(ready_slots: tuple[str, ...] | None = None) -> dict:
         ffmpeg = resolve_ffmpeg()
         try:
-            ocr_ready, ocr_detail = worker_pool.readiness(ready_slots) if worker_pool else check_ocr()
+            engine = subtitle_engine()
+        except ValueError:
+            engine = None
+        try:
+            if worker_pool:  # AWS 시험: 기존 워커 슬롯 준비 + (qwen3-vl이면) 자막 판독 서버 준비를 모두 본다
+                ocr_ready, ocr_detail = worker_pool.readiness(ready_slots)
+                if ocr_ready and engine != "paddleocr":
+                    ocr_ready, ocr_detail = check_ocr()
+            else:
+                ocr_ready, ocr_detail = check_ocr()
         except Exception:
-            ocr_ready, ocr_detail = False, "OCR 준비 상태를 확인하지 못했습니다."
+            ocr_ready, ocr_detail = False, "자막 판독 준비 상태를 확인하지 못했습니다."
         try:  # 로고 검수는 선택이라 전체 ready를 막지 않는다(정보만 제공)
             logo_ready, logo_detail = check_logo()
         except Exception:
@@ -516,9 +575,11 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         detail = ocr_detail if ffmpeg else "ffmpeg를 찾을 수 없습니다. `pip install imageio-ffmpeg` 하거나 FFMPEG_BIN을 지정하세요."
         if readonly:
             detail = "읽기 전용 모드라 새 동영상 검수를 받지 않습니다. 기존 결과만 볼 수 있습니다."
-        return {"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
+        from backend.app.video.requirements import readiness as requirements_readiness
+        requirements = {**requirements_readiness(), "enabled": not readonly}
+        return {"requirements": requirements,"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
                 "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
-                "pipeline": PIPELINE, "limits": policy,
+                "pipeline": pipeline_name(engine) if engine else None, "subtitle_engine": engine, "limits": policy,
                 "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
 
     def active_jobs() -> Counter[str]:
@@ -581,6 +642,25 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return {"items": jobs[:20]}
 
     if not readonly:
+        requirements_lock = threading.Lock()
+
+        @router.post("/requirements/extract")
+        async def extract_requirements(document: UploadFile = File(...)):
+            """계약·요구사항 문서 → 영상 기준 초안(영상 A02, 포스터와 같은 Qwen3.5-4B). 저장·승인하지 않는다."""
+            from backend.app.video import requirements as video_a02
+            try:
+                data = await document.read(video_a02.MAX_BYTES + 1)
+            finally:
+                await document.close()
+            if not requirements_lock.acquire(blocking=False):
+                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
+            try:
+                return await run_in_threadpool(video_a02.extract, data, document.filename or "")
+            except video_a02.DocumentError as error:
+                raise HTTPException(error.status, {"code": error.code, "message": str(error)}) from None
+            finally:
+                requirements_lock.release()
+
         @router.post("", status_code=202)
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
