@@ -7,7 +7,7 @@ import '../styles/image-stage.css';
 // Evidence and image share one sized surface at every zoom level.
 // viewKey(선택): 같은 이미지에서 호출한 화면이 다른 항목을 고르면 확대를 '화면에 맞춤'으로 되돌린다.
 export default function ImageStage({ src, alt = '검수 이미지', title = '검수 이미지', subtitle = '', width, height,
-  overlays = [], selectedOverlayId, onOverlaySelect, empty, viewKey, children }) {
+  overlays = [], selectedOverlayId, onOverlaySelect, evidenceScope, empty, viewKey, children }) {
   const viewport = useRef(null);
   const drag = useRef(null);
   const [bounds, setBounds] = useState({ width: 600, height: 620 });
@@ -90,7 +90,16 @@ export default function ImageStage({ src, alt = '검수 이미지', title = '검
           </div>
         </div>}
     </div>
-    <div className="image-stage-toolbar"><div className="image-stage-zoom"><button type="button" aria-label="이미지 축소" disabled={!src || failed} onClick={() => changeZoom(-1)}>−</button><select aria-label="이미지 확대 비율" value={zoom} disabled={!src || failed} onChange={event => setZoom(event.target.value === 'fit' ? 'fit' : Number(event.target.value))}><option value="fit">화면에 맞춤</option>{zoom !== 'fit' && !zoomStops.includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}% · 근거</option>}{zoomStops.map(value => <option key={value} value={value}>{value * 100}%</option>)}</select><button type="button" aria-label="이미지 확대" disabled={!src || failed} onClick={() => changeZoom(1)}>+</button></div><div className="image-stage-tools">{overlays.length > 0 && <button type="button" className="image-stage-focus" title="선택 근거 확대" disabled={!focusView || failed} onClick={focusEvidence}><Icon name="search" />선택 근거 확대</button>}<button type="button" className="image-stage-evidence-toggle" title="근거 표시" aria-pressed={showEvidence} disabled={!safeEvidence || !overlays.length} onClick={() => setShowEvidence(value => !value)}><Icon name={showEvidence ? 'eye' : 'eyeOff'} />근거 표시</button></div></div>
+    <div className="image-stage-toolbar"><div className="image-stage-zoom"><button type="button" aria-label="이미지 축소" disabled={!src || failed} onClick={() => changeZoom(-1)}>−</button><select aria-label="이미지 확대 비율" value={zoom} disabled={!src || failed} onChange={event => setZoom(event.target.value === 'fit' ? 'fit' : Number(event.target.value))}><option value="fit">화면에 맞춤</option>{zoom !== 'fit' && !zoomStops.includes(zoom) && <option value={zoom}>{Math.round(zoom * 100)}% · 근거</option>}{zoomStops.map(value => <option key={value} value={value}>{value * 100}%</option>)}</select><button type="button" aria-label="이미지 확대" disabled={!src || failed} onClick={() => changeZoom(1)}>+</button></div>
+      <div className="image-stage-tools">
+        {overlays.length > 0 && <button type="button" className="image-stage-focus" title="선택 근거 확대" disabled={!focusView || failed} onClick={focusEvidence}><Icon name="search" />선택 근거 확대</button>}
+        <button type="button" className="image-stage-evidence-toggle" title={evidenceScope ? '근거 표시 모드 전환' : '근거 표시'}
+          aria-pressed={evidenceScope ? undefined : showEvidence} disabled={!safeEvidence || !(evidenceScope?.available ?? overlays.length)}
+          onClick={evidenceScope?.toggle ?? (() => setShowEvidence(value => !value))}>
+          <Icon name={showEvidence ? 'eye' : 'eyeOff'} />{evidenceScope?.label ?? '근거 표시'}
+        </button>
+      </div>
+    </div>
     {ready && !safeEvidence && overlays.length > 0 && <p className="image-stage-warning" role="status">원본 이미지와 근거의 크기가 달라 위치 표시를 생략했습니다.</p>}
     {children && <div className="image-stage-extra">{children}</div>}
   </section>;

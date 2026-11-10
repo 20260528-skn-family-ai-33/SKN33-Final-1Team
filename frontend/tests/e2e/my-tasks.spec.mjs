@@ -20,12 +20,20 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   const items = [item('queued', 'queued', '대기 중인 문서'), item('race', 'queued', '방금 시작된 문서'),
     item('failed', 'failed', '실패한 문서'), item('completed', 'completed', '완료된 검수'),
     item('pending', 'waiting_review', '담당자 승인 대기 중')];
+  const video = { id: 'video-done', status: 'completed', project_name: '완료된 동영상 검수', criteria_version: 1,
+    created_at: '2026-11-09T07:30:00Z', media: { container: 'avi', width: 640, height: 480, duration_ms: 3000 },
+    coverage: { duration_ms: 3000, inspected_ms: [1000] }, review: { results: [{ criterion_id: 'title', criterion: '제목 확인', status: 'pass',
+      observed_text: '전시 제목', evidence_segments: [{ start_ms: 1000, end_ms: 2000, time_ms: 1000, text: '전시 제목' }] }] } };
   await page.route(base + '/api/**', async route => {
     const request = route.request(), url = new URL(request.url()), path = url.pathname;
     let body;
     if (path === '/api/v1/auth/me') body = { authenticated: true, user: { id: 'user', display_name: '검수 담당자' } };
     else if (path.endsWith('/health')) body = { status: 'ok', ready: true };
     else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
+    else if (path === '/api/video-reviews') body = { items: [video] };
+    else if (path === '/api/video-reviews/status') body = { ready: true };
+    else if (path === `/api/video-reviews/${video.id}`) body = video;
+    else if (path === '/api/video-logos') body = { items: [] };
     else if (path.endsWith('/my-tasks')) {
       const mode = url.searchParams.get('visibility');
       body = { items: items.filter(row => mode === 'all' || row.hidden === (mode === 'hidden')), has_more: false, next_cursor: null };
@@ -63,11 +71,18 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   await page.getByLabel('이력 표시').selectOption('hidden');
   await row('실패한 문서').getByRole('button', { name: '다시 표시' }).click();
   await page.getByText('숨긴 이력이 없습니다.', { exact: true }).waitFor();
+  assert.equal(await row(video.project_name).count(), 0);
   await page.getByLabel('이력 표시').selectOption('visible');
   await row('실패한 문서').waitFor();
   assert.equal(writes.length, 4); assert.deepEqual(errors, []);
   mkdirSync('/private/tmp/cc-my-tasks-preview', { recursive: true });
   await page.screenshot({ path: '/private/tmp/cc-my-tasks-preview/my-tasks.png', fullPage: true });
+  await row(video.project_name).getByRole('link', { name: '열기' }).click();
+  await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
+  await page.getByRole('heading', { name: '검수 보고서', exact: true }).waitFor();
+  await page.getByText('0:01–0:02 · 전시 제목', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
+  await page.getByRole('heading', { name: video.project_name, exact: true }).waitFor();
 });
 
 test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { timeout: 30000 }, async t => {

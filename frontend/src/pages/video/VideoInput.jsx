@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { VideoDropArt } from '../../components/ReviewArt.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
-import { criteriaPayload, formatTime, stepLabels } from './videoFormat.js';
+import { criteriaPayload, formatTime } from './videoFormat.js';
+import VideoDocumentInput from './VideoDocumentInput.jsx';
 
 const ACCEPT = 'video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo,video/avi,.avi';
 const VIDEO_NAME = /\.(mp4|m4v|mov|webm|mkv|avi)$/i;
@@ -31,24 +31,9 @@ function useLocalPreview(file) {
   return { url, meta, failed, read, setFailed };
 }
 
-// 최근 동영상 검수 한 줄: 완료·진행·실패를 구분하고 완료된 결과는 판정 수를 함께 보여 준다.
-function RecentRow({ item, current, disabled, onOpen }) {
-  const done = item.status === 'completed', failed = item.status === 'failed';
-  const state = done ? '완료' : failed ? '실패' : `${stepLabels[item.stage] || '처리 중'} ${Math.round(item.progress || 0)}%`;
-  const results = item.counts?.results;
-  const created = item.created_at ? new Date(item.created_at) : null;
-  return <button type="button" className={`rv-video-recent-item${current ? ' is-current' : ''}`} disabled={disabled} onClick={() => onOpen(item.id)} aria-current={current || undefined}>
-    <span className={`rv-video-recent-state ${done ? 'is-done' : failed ? 'is-failed' : 'is-running'}`}><span aria-hidden="true" />{state}</span>
-    <strong>{item.project_name || '이전 형식 결과'}</strong>
-    <span className="rv-video-recent-meta">{created && !Number.isNaN(created.getTime()) ? created.toLocaleString('ko-KR') : '시각 정보 없음'}
-      {item.media ? ` · ${formatTime(item.media.duration_ms)} · ${item.media.width}×${item.media.height}` : ''}</span>
-    {results && <span className="rv-video-recent-counts">충족 {results.pass ?? 0} · 위반 {results.fail ?? 0} · 확인 필요 {results.review ?? 0}</span>}
-  </button>;
-}
-
 // 영상·확정 기준·광고 입력을 한 화면에서 받아 접수한다(기준과 광고 입력은 이 시점에 고정).
-export default function VideoInput({ status, jobs, refresh, draft, setDraft, file, setFile, logos, setLogos, onSubmitted, onOpen, currentId }) {
-  const [busy, setBusy] = useState(false);
+export default function VideoInput({ status, draft, setDraft, file, setFile, logos, setLogos, onSubmitted, busy, setBusy }) {
+  const [documentBusy, setDocumentBusy] = useState(false);
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
   const input = useRef(null);
@@ -61,7 +46,7 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
   const logoStatus = useLogoStatus();
   const preview = useLocalPreview(file);
   const limits = status?.limits;
-  const criteria = useMemo(() => parseRequirements(draft.requirements), [draft.requirements]);
+  const criteria = useMemo(() => parseRequirements(draft.requirements, draft.documentSources), [draft.requirements, draft.documentSources]);
   const information = criteria.filter(c => c.type === 'information').length;
   const { ad } = draft;
   const uploadMiB = limits?.upload_bytes ? Math.floor(limits.upload_bytes / MiB) : null;
@@ -104,8 +89,21 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
   const update = (key, value) => { setError(''); setDraft(previous => ({ ...previous, [key]: value })); };
   const field = (key, value) => { setError(''); setDraft(previous => ({ ...previous, ad: { ...previous.ad, [key]: value } })); };
 
+  function applyDocument(rows) {
+    const existing = new Set(criteria.map(item => item.text));
+    const added = rows.filter(row => !existing.has(row.text));
+    const requirements = [draft.requirements.trim(), ...added.map(row => row.text)].filter(Boolean).join('\n');
+    if (requirements.length > 6000 || criteria.length + added.length > 100) {
+      setError('검수 요구사항을 6,000자 및 100개 이내로 정리해 주세요.');
+      return false;
+    }
+    setError('');
+    setDraft(previous => ({ ...previous, requirements, documentSources: [...added, ...(previous.documentSources || [])] }));
+    return true;
+  }
+
   async function submit() {
-    if (!file || busy) return;
+    if (!file || busy || documentBusy) return;
     const controller = new AbortController(); active.current = controller;
     const { signal } = controller;
     const title = draft.projectName.trim() || '숏폼 검수';
@@ -137,8 +135,7 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ') : limitText;
 
   return <section className="rv-video-input" aria-labelledby="page-title">
-    <div className="rv-workspace-intro"><div><span className="rv-eyebrow">01 / 자료 등록</span><h1 id="page-title" tabIndex={-1}>숏폼 동영상 검수</h1>
-      <p>영상을 올리고 확인할 기준을 적어 주세요. 표본 시각마다 프레임을 읽어 자막 트랙으로 묶고, 기준과 광고·협찬 표시를 영상당 한 번 판정합니다.</p></div></div>
+    <h1 id="page-title" className="sr-only" tabIndex={-1}>숏폼 동영상 검수</h1>
     {/* 입력란에서 Enter를 눌러도 접수되지 않도록 폼 제출을 막고, 접수는 버튼으로만 한다. */}
     <form className="rv-input-form" onSubmit={event => event.preventDefault()}>
       <div className="rv-editor-grid">
@@ -149,12 +146,11 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
             onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }} onDrop={drop}>
             <section className="image-stage rv-video-stage" aria-label="동영상 작업 영역">
               <div className="image-stage-heading"><div className="image-stage-file"><span className="image-stage-icon"><Icon name="film" /></span>
-                <div><strong>1. 검수할 동영상</strong><span>{file ? file.name : '숏폼 영상 1개'}</span></div></div><span className="image-stage-original">ORIGINAL</span></div>
+                <div><strong>검수할 동영상</strong><span>{file ? file.name : '동영상 파일 1개'}</span></div></div><span className="image-stage-original">원본</span></div>
               <div className="image-stage-viewport rv-video-stage-viewport">
                 {!file ? <div className="rv-input-empty">
-                  <VideoDropArt />
-                  <span className="rv-eyebrow">YOUR NEXT SHORT-FORM</span>
-                  <h2>{dragging ? '놓으면 바로 올라가요.' : '여기에 동영상을 놓아주세요.'}</h2>
+                  <span className="rv-input-empty-icon" aria-hidden="true"><Icon name="film" /></span>
+                  <h2>{dragging ? '놓으면 바로 올라가요.' : '여기에 동영상을 놓아 주세요.'}</h2>
                   <p>영상을 끌어다 놓거나<br />파일을 선택해 시작하세요.</p>
                   <button type="button" ref={chooseButton} className="rv-button primary" onClick={chooseFile} disabled={busy}><Icon name="upload" />파일 선택</button>
                   <span>{status ? limitText : '서버 한도를 확인하고 있어요.'}</span>
@@ -172,28 +168,21 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
           </div>
           <div role="status">{warnings.map(text => <p key={text} className="rv-video-inline-warning"><Icon name="warning" />{text}</p>)}</div>
 
-          <section className="rv-panel rv-video-recent" aria-labelledby="video-recent-title">
-            <div className="rv-panel-heading"><div><h2 id="video-recent-title">최근 동영상 검수</h2><p>최근 20건 · 결과는 이 서버의 실행 폴더에만 저장됩니다.</p></div>
-              <button type="button" className="rv-video-text-button" onClick={refresh}>새로 고침</button></div>
-            {jobs.length ? <ul className="rv-video-recent-list">{jobs.map(item => <li key={item.id}>
-              <RecentRow item={item} current={item.id === currentId} disabled={busy} onOpen={onOpen} /></li>)}</ul>
-              : <p className="rv-video-empty">아직 실행한 동영상 검수가 없습니다.</p>}
-          </section>
         </div>
 
         <aside className="rv-panel rv-input-inspector rv-video-brief" aria-label="프로젝트와 검수 기준">
-          <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW BRIEF</span><h2>무엇을 확인할까요?</h2></div><span className="rv-input-count">기준 {criteria.length}개</span></div>
+          <div className="rv-panel-heading"><h2>검수 요구사항</h2><span className="rv-input-count">기준 {criteria.length}개</span></div>
           <div className="rv-input-fields">
-            <div className="rv-input-field"><label htmlFor="video-project-name">2. 프로젝트 이름 <span>선택</span></label>
-              <input id="video-project-name" value={draft.projectName} maxLength={120} autoComplete="off" disabled={busy} onChange={event => update('projectName', event.target.value)} /></div>
             <div className="rv-input-field rv-input-requirements">
-              <div className="rv-input-field-heading"><label htmlFor="video-requirements">3. 검수 기준 (한 줄에 하나)</label><span>한 줄에 한 항목</span></div>
+              <div className="rv-input-field-heading"><label htmlFor="video-requirements">검수 요구사항</label><span>한 줄에 한 항목</span></div>
               <p className="rv-input-writing-hint" id="video-requirements-hint">화면 글자로 확인할 내용을 적어 주세요. 비워 두면 기준 판정 없이 자막 트랙과 광고 표시만 봅니다.</p>
               <textarea id="video-requirements" rows={6} value={draft.requirements} disabled={busy} aria-describedby="video-requirements-hint"
                 placeholder={'행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n"사전 예약 필수"'} onChange={event => update('requirements', event.target.value)} />
               <div className="rv-input-counter"><span>{criteria.length ? `정보 ${information} · 시각 ${criteria.length - information}` : '입력한 기준 없음'}</span><span>{criteria.length}개 항목</span></div>
             </div>
-            <fieldset className="rv-video-subsection" disabled={busy}><legend>4. 광고·협찬 표시</legend>
+            <VideoDocumentInput projectName={draft.projectName} disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onApply={applyDocument} />
+            <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
+            <fieldset className="rv-video-subsection" disabled={busy}><legend>광고·협찬 표시</legend>
               <p className="rv-video-subsection-hint">기준과 따로, 게시물 제목·캡션과 화면 문구로 광고 표시 규정을 판정합니다.</p>
               <div className="rv-video-subsection-grid">
                 <div className="rv-input-field"><label htmlFor="video-ad-title">게시물 제목</label><input id="video-ad-title" value={ad.title} maxLength={500} autoComplete="off" onChange={event => field('title', event.target.value)} /></div>
@@ -204,7 +193,6 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
               <label className="rv-video-check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />
                 <span><strong>PPL/협찬</strong><small>화면 표시를 시작·끝 3초 기준으로 판단합니다.</small></span></label>
             </fieldset>
-            <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
           </div>
         </aside>
       </div>
@@ -214,7 +202,7 @@ export default function VideoInput({ status, jobs, refresh, draft, setDraft, fil
         <div className="rv-input-next-note"><Icon name="lock" /><div><strong>기준·광고 입력은 접수 때 고정됩니다.</strong>
           <p>{[criteria.length ? `기준 ${criteria.length}개` : '기준 없음', ad.kind === 'self' ? '광고 표시 제외' : '광고 표시 판정', logos.length ? `로고 ${logos.length}장` : null,
             sampling ? `${sampling} · CPU에서는 프레임 1장에 수 초~20초` : null].filter(Boolean).join(' · ')}</p></div></div>
-        <button type="button" className="rv-button primary" onClick={submit} disabled={!file || busy || !status?.ready}>{busy ? '올리는 중…' : '동영상 검수 시작'}{!busy && <Icon name="arrow" />}</button>
+        <button type="button" className="rv-button primary" onClick={submit} disabled={!file || busy || documentBusy || !status?.ready}>{busy ? '올리는 중…' : '동영상 검수 시작'}{!busy && <Icon name="arrow" />}</button>
       </div>
     </form>
   </section>;

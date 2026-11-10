@@ -19,7 +19,7 @@ export function evidenceOverlays(results) {
     const box = evidence.bbox_xyxy;
     if (!Array.isArray(box) || box.length !== 4 || !box.every(Number.isFinite)
       || box[2] <= box[0] || box[3] <= box[1]) return [];
-    return [{ id: result.criterion_id, bbox_xyxy: box, label: result.criterion,
+    return [{ id: result.criterion_id, bbox_xyxy: box, label: result.criterion, tone: result.status,
       text: evidence.text || result.criterion }];
   }));
 }

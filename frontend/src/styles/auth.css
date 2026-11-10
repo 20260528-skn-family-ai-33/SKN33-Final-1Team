@@ -7,6 +7,9 @@
 .auth-intro h1{font-size:46px;margin:23px 0;line-height:1.32}
 .auth-intro h1 em{font-style:normal;color:var(--blue)}
 .auth-intro>p{font-size:15px;line-height:1.9;color:var(--muted)}
+.auth-example{margin:26px 0 0;max-width:580px}
+.auth-example img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+.auth-example figcaption{margin-top:8px;color:var(--muted);font-size:11px}
 .auth-steps{list-style:none;margin:35px 0 0;padding:0;display:grid;gap:12px;max-width:380px}
 .auth-steps li{display:flex;align-items:center;gap:14px;padding:14px 17px;border:1px solid transparent;border-radius:12px;color:var(--muted)}
 .auth-steps li>span{font-size:13px;font-weight:800;width:32px;height:32px;background:#edf2f7;display:grid;place-items:center;border-radius:50%;flex-shrink:0}

@@ -170,7 +170,7 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
 }
 
 // 구간 타임라인: 검사 시점은 점, 미검사 구간은 빗금, 선택 항목의 근거는 강조, 재생 위치는 세로선으로 표시한다.
-// 구간 버튼은 마우스 보조용이다. 키보드로는 왼쪽 목록의 '구간' 탭에서 같은 구간을 고른다.
+// 키보드로는 검수 목록의 '구간' 탭에서 같은 구간을 고른다.
 function Timeline({ job, view, evidence, currentTime, onSelect }) {
   const duration = job.coverage?.duration_ms || job.media?.duration_ms || 1;
   const pct = ms => `${Math.min(100, Math.max(0, ms / duration * 100))}%`;
@@ -199,8 +199,8 @@ function Timeline({ job, view, evidence, currentTime, onSelect }) {
   </section>;
 }
 
-// 결과 화면: 포스터 결과와 같은 3단(목록·근거·상세)에 영상 재생과 구간 타임라인을 더한다.
-export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse }) {
+// 왼쪽 영상과 타임라인을 오른쪽의 판정 목록 및 선택 근거에 연결한다.
+export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onReport }) {
   const player = useRef(null);
   const inspector = useRef(null);
   const railScroll = useRef(null);
@@ -351,7 +351,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
         </div>
         {tab === 'checks' && <>
           <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
-            {[['all', '전체', items.length], ['fail', '위반', statusCount('fail')], ['review', '확인 필요', statusCount('review')], ['pass', '충족', statusCount('pass')]].map(([status, label, count]) =>
+            {[['all', '전체', items.length], ['pass', '충족', statusCount('pass')], ['review', '확인 필요', statusCount('review')], ['fail', '위반', statusCount('fail')]].map(([status, label, count]) =>
               <button type="button" key={status} className={filter === status ? 'is-active' : ''} aria-pressed={filter === status} onClick={() => changeFilter(status)}>{label}<span>{count}</span></button>)}
           </div>
           <p className="rv-video-rail-count" role="status">{visibleItems.length}개 표시</p>
@@ -416,7 +416,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
 
       <aside id="rv-video-inspector" className="rv-panel rv-video-inspector" aria-labelledby="rv-video-inspector-title">
         <div className="rv-result-inspector-heading"><div><p className="rv-eyebrow">INSPECTOR</p><h2 id="rv-video-inspector-title">선택 항목 상세</h2></div>
-          <div className="rv-result-item-navigation"><span className="rv-video-nav-position" title="←/→는 왼쪽 목록에 보이는 순서대로 이동합니다.">
+          <div className="rv-result-item-navigation"><span className="rv-video-nav-position" title="←/→는 목록에 보이는 순서대로 이동합니다.">
             {selectionLabel && <strong>{selectionLabel}</strong>}{listIndex < 0 ? `목록 ${list.length}개` : `목록 ${listIndex + 1}/${list.length}`}</span>
             <button type="button" aria-label="이전 항목" disabled={listIndex <= 0} onClick={() => chooseIndex(listIndex - 1)}>←</button>
             <button type="button" aria-label="다음 항목" disabled={listIndex < 0 || listIndex >= list.length - 1} onClick={() => chooseIndex(listIndex + 1)}>→</button></div>
@@ -434,7 +434,8 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
 
     <footer className="rv-result-footer"><p><Icon name="shield" />검수 실행 완료는 최종 승인을 의미하지 않습니다. 확인 필요 항목은 원본 영상으로 확인해 주세요.</p>
       <div><button type="button" className="rv-button secondary" onClick={onReuse}>같은 기준으로 다시 검수</button>
-        <button type="button" className="rv-button primary" onClick={onNewReview}>새 동영상 검수 시작하기<Icon name="arrow" /></button></div>
+        <button type="button" className="rv-button secondary" onClick={onNewReview}>새 동영상 검수 시작하기</button>
+        <button type="button" className="rv-button primary" onClick={onReport}>보고서 보기<Icon name="arrow" /></button></div>
     </footer>
   </section>;
 }

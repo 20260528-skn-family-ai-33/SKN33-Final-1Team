@@ -1,18 +1,16 @@
 import React from 'react';
-import '../../styles/framework-report.css';
+import ReviewReport from '../../components/ReviewReport.jsx';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const decisions = { unreviewed: '검토 대기', changes_approved: '수정 요청 승인', final_approved: '최종 승인', exception_approved: '예외 승인' };
 
-export default function FrameworkReport({ run, projectName }) {
+export default function FrameworkReport({ run, projectName, onBack }) {
   const criteria = run.criteria?.criteria || [];
   const items = run.validated?.items || [];
   const evidence = run.evidence?.evidence || [];
   const approvals = run.approvals || [];
-  return <article className="rv-report-print" aria-label="검수 보고서">
-    <div className="rv-report-actions"><button type="button" className="rv-button secondary" onClick={() => window.print()}>인쇄 / PDF 저장</button></div>
-    <div className="rv-report-paper">
-      <header className="rv-report-heading"><p>Creative Checker</p><h2>검수 보고서</h2><p>{projectName || '포스터 검수'}</p><p>실행 {run.context.run_id}</p></header>
+  return <ReviewReport projectName={projectName || '포스터 검수'} mode="포스터 검수" detail={`실행 ${run.context.run_id}`}
+    verdicts={items.map(item => item.verdict)} onBack={onBack}>
       <section><h3>검수 대상과 기준</h3><dl className="rv-report-facts">
         <div><dt>포스터 버전</dt><dd>{run.context.asset_version_id || '정보 없음'}</dd></div>
         <div><dt>승인 기준</dt><dd>{run.baseline?.criteria_version_id || run.context.criteria_version_id || '정보 없음'}</dd></div>
@@ -47,6 +45,5 @@ export default function FrameworkReport({ run, projectName }) {
         {(approval.human_reviews || []).map(review => <p key={review.criterion_id}>{review.criterion_id} · {verdicts[review.verdict]}<br />확인 내용 · {review.observed}<br />근거 · {review.reference}<br />사유 · {review.reason}</p>)}
       </div>) : <p>담당자 승인 이력이 없습니다.</p>}</section>
       <footer>자동 판정과 담당자의 최종 판단을 함께 확인해 주세요.</footer>
-    </div>
-  </article>;
+  </ReviewReport>;
 }

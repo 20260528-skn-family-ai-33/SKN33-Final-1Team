@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { LogoFlowCard } from './LogoFlowParts.jsx';
@@ -18,7 +19,7 @@ function FilmCell({ src, className, style }) {
 
 // 돋보기가 표본 프레임 필름을 따라 읽는 연출. 읽은 칸과 돋보기 위치는 서버가 알려 준 처리량을 표본 계획의 시각에 대응시켜 정한다.
 function FilmScanner({ job, scan }) {
-  const { width, height, gap, cells } = filmCells(job?.media);
+  const { width, height, gap, cells } = filmCells(job?.media, 538, 61, 5);
   const count = cells.length;
   const lastTime = cells[count - 1]?.time_ms || 0;
   const allRead = ['organizing', 'judging', 'done'].includes(scan.phase) || scan.readUpTo === Infinity;
@@ -78,9 +79,10 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
         <span className="rv-progress-symbol" aria-hidden="true"><Icon name="search" /></span>
         <span className="rv-eyebrow">RECORD NOT FOUND</span>
         <h1 id="page-title" tabIndex={-1}>검수 기록을 찾을 수 없어요.</h1>
-        <p className="rv-progress-message">주소가 바뀌었거나 이 서버의 실행 폴더에 기록이 없습니다. 최근 동영상 검수 목록에서 다시 골라 주세요.</p>
+        <p className="rv-progress-message">주소가 바뀌었거나 이 서버의 실행 폴더에 기록이 없습니다.</p>
         <ErrorMessage message={error} />
-        <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={onRestart}>자료 입력으로 돌아가기<Icon name="arrow" /></button></div>
+        <div className="rv-progress-actions"><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link>
+          <button type="button" className="rv-button primary" onClick={onRestart}>자료 입력으로 돌아가기<Icon name="arrow" /></button></div>
       </div>
     </section>;
   }
@@ -124,7 +126,7 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
           <dl className="rv-video-facts">{facts.map(([label, text]) => <div key={label}><dt>{label}</dt><dd>{text}</dd></div>)}</dl>
         </>}
         {failed ? <ErrorMessage message={job.error || '동영상 검수를 완료하지 못했습니다.'} />
-          : job && <p className="rv-progress-help">완료되면 결과 화면으로 바뀝니다. 이 화면을 닫아도 서버에서 검수는 계속되며, 최근 동영상 검수 목록에서 다시 열 수 있어요.</p>}
+          : job && <p className="rv-progress-help">완료되면 결과 화면으로 바뀝니다. 페이지를 닫아도 서버에서 검수는 계속됩니다. <Link to="/review/tasks">내 작업에서 다시 열기</Link></p>}
         <ErrorMessage message={error} />
         {job?.warnings?.length > 0 && <ul className="rv-video-warning-list">{job.warnings.map(warning => <li key={warning}><Icon name="warning" />{warning}</li>)}</ul>}
         {(failed || (!job && error)) && <div className="rv-progress-actions">

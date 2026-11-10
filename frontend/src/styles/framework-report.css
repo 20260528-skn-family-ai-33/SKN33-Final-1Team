@@ -1,7 +1,14 @@
 .rv-report-print { max-width: 1050px; margin: 0 auto; }
-.rv-report-actions { display: flex; justify-content: flex-end; margin-bottom: 24px; }
-.rv-report-paper { background: #fff; padding: 48px; border: 1px solid #deded9; color: #222; line-height: 1.7; overflow-wrap: anywhere; }
+.rv-report-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-bottom: 16px; }
+.rv-report-paper { background: #fff; padding: clamp(22px, 4vw, 48px); border: 1px solid #deded9; border-radius: 16px; color: #222; line-height: 1.7; overflow-wrap: anywhere; }
 .rv-report-heading { border-bottom: 2px solid #222; padding-bottom: 24px; }
+.rv-report-heading > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.rv-report-heading > div > span, .rv-report-counts > span { display: inline-block; padding: 4px 10px; border-radius: 6px; background: #f1f1ee; font-size: 12px; }
+.rv-report-counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-report-counts .is-pass { color: #177347; background: #e6f0e9; }
+.rv-report-counts .is-review { color: #795d1d; background: #f6f0dd; }
+.rv-report-counts .is-fail { color: #a34434; background: #f8eae6; }
+.rv-report-result-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
 .rv-report-heading h2 { font-size: 26px; margin: 14px 0; }
 .rv-report-paper > section { margin-top: 32px; }
 .rv-report-paper h3 { padding-bottom: 12px; border-bottom: 1px solid #deded9; margin-bottom: 18px; }
@@ -22,6 +29,6 @@
   .rv-report-print, .rv-report-print * { visibility: visible !important; }
   .rv-report-print { position: absolute; top: 0; left: 0; width: 100%; max-width: none; }
   .rv-report-actions { display: none; }
-  .rv-report-paper { border: 0; padding: 0; }
+  .rv-report-paper { border: 0; border-radius: 0; padding: 0; }
   .rv-report-result, .rv-report-approval { break-inside: avoid; }
 }

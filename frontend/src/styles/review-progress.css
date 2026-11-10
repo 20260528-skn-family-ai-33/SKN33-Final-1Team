@@ -39,6 +39,7 @@
 .rv-progress-card .rv-progress-help { margin-top: 24px; }
 
 .rv-scan { display: flex; justify-content: center; min-width: min(360px, 100%); max-width: 100%; margin: 4px auto 30px; padding: 14px 26px 14px; border-radius: 16px; background: #171717; }
+.rv-scan.has-poster { margin: 0 auto 18px; padding-block: 8px 12px; }
 .rv-scan-track { position: relative; }
 .rv-scan-parts { display: flex; margin: 0; padding: 0; list-style: none; }
 .rv-scan-part { display: grid; justify-items: center; align-content: start; width: 132px; padding: 6px 4px 0; }
@@ -64,7 +65,6 @@
 .rv-scan-art > i:nth-child(3) { top: 48%; }
 .rv-scan-art > i:nth-child(4) { top: 62%; right: 40%; }
 .rv-scan-art.is-poster { background: #26433e; }
-.rv-scan-art.is-poster > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rv-scan-art.is-poster > i:nth-child(1) { top: 14%; right: 30%; height: 9%; background: #f4f0df; }
 .rv-scan-art.is-poster > i:nth-child(2) { top: 27%; right: 46%; background: #f4f0df; opacity: .7; }
 .rv-scan-art.is-poster > i:nth-child(3) { top: 46%; left: 38%; right: -18%; height: 46%; border-radius: 50%; background: #e5ba79; }
@@ -86,20 +86,43 @@
 .rv-scan-glass > .icon { position: relative; z-index: 2; width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: #fff; color: #171717; stroke-width: 2.2; box-shadow: 0 2px 10px #17171730; }
 .rv-scan-handle { position: absolute; left: 68px; top: 72px; width: 12px; height: 36px; border-radius: 6px; background: #171717; box-shadow: 0 0 0 2px #fff; transform: rotate(-45deg); transform-origin: top center; }
 .rv-scan.is-working .rv-scan-line { opacity: 1; animation: rv-scan-sweep 1.7s ease-in-out infinite alternate; }
-.rv-scan.is-working .rv-scan-zoom .rv-scan-art.is-poster { animation: rv-scan-pan 3.4s ease-in-out infinite alternate; }
 .rv-scan.is-waiting .rv-scan-lens, .rv-scan.is-between .rv-scan-lens { animation: rv-scan-hover 2.4s ease-in-out infinite; }
 .rv-scan.is-waiting .rv-scan-zoom, .rv-scan.is-done .rv-scan-zoom { opacity: .45; }
 .rv-scan.is-failed .rv-scan-glass { box-shadow: 0 0 0 2px #a34f3e, 0 12px 28px #17171740; }
 .rv-scan.is-failed .rv-scan-glass > .icon { color: #a34f3e; }
 .rv-scan.is-failed .rv-scan-handle { background: #a34f3e; }
 
+@property --rv-poster-scan-x { syntax: '<percentage>'; inherits: true; initial-value: 26%; }
+@property --rv-poster-scan-y { syntax: '<percentage>'; inherits: true; initial-value: 24%; }
+.rv-poster-scan { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; width: min(520px, 100%); margin: 0 auto 16px; padding: 17px 28px; border: 1px solid var(--rv-line, #e6e6e1); border-radius: 15px; background: #eaeae6; }
+.rv-poster-scan-sheet {
+  --rv-poster-scan-x: 26%; --rv-poster-scan-y: 24%;
+  position: relative; width: min(100%, var(--rv-poster-width));
+  animation: rv-poster-sweep 3.1s ease-in-out infinite alternate paused;
+}
+.rv-poster-scan.is-working .rv-poster-scan-sheet { animation-play-state: running; }
+.rv-poster-scan-sheet > img { display: block; width: 100%; height: auto; box-shadow: 0 7px 22px #17171723; }
+.rv-poster-scan-zoom { position: absolute; inset: 0; pointer-events: none; background: #eaeae6; clip-path: circle(32px at var(--rv-poster-scan-x) var(--rv-poster-scan-y)); }
+.rv-poster-scan-zoom img { display: block; width: 100%; height: 100%; transform: scale(2); transform-origin: var(--rv-poster-scan-x) var(--rv-poster-scan-y); }
+.rv-poster-scan-lens {
+  position: absolute; left: var(--rv-poster-scan-x); top: var(--rv-poster-scan-y); width: 72px; height: 72px;
+  transform: translate(-50%, -50%); pointer-events: none; border: 4px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 0 2px #171717, 0 9px 20px #0004; background: radial-gradient(circle at 28% 25%, #ffffff3b, transparent 52%);
+}
+.rv-poster-scan-lens::after { content: ''; position: absolute; top: 76%; left: 85%; width: 11px; height: 34px; border: 2px solid #fff; border-radius: 8px; background: #171717; transform: rotate(-44deg); transform-origin: top; }
+
 @keyframes rv-progress-travel { from { transform: translateX(-110%); } to { transform: translateX(300%); } }
 @keyframes rv-scan-sweep { from { top: 14%; } to { top: 84%; } }
-@keyframes rv-scan-pan { from { transform: translateY(14%); } to { transform: translateY(-14%); } }
 @keyframes rv-scan-hover { 50% { transform: translateY(-4px); } }
+@keyframes rv-poster-sweep {
+  0% { --rv-poster-scan-x: 26%; --rv-poster-scan-y: 24%; }
+  34% { --rv-poster-scan-x: 73%; --rv-poster-scan-y: 32%; }
+  67% { --rv-poster-scan-x: 29%; --rv-poster-scan-y: 58%; }
+  100% { --rv-poster-scan-x: 71%; --rv-poster-scan-y: 73%; }
+}
 @media (prefers-reduced-motion: reduce) {
   .rv-progress-shine { animation: none; opacity: .5; }
   .rv-progress-fill, .rv-scan-lens, .rv-scan-art { transition: none; }
   .rv-scan-line { display: none; }
-  .rv-scan.is-working .rv-scan-zoom .rv-scan-art.is-poster, .rv-scan.is-waiting .rv-scan-lens, .rv-scan.is-between .rv-scan-lens { animation: none; }
+  .rv-poster-scan-sheet, .rv-scan.is-waiting .rv-scan-lens, .rv-scan.is-between .rv-scan-lens { animation: none; }
 }

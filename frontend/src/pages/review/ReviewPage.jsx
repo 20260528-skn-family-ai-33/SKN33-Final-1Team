@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
+import { Icon } from '../../components/Icon.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import ReviewProgress from './ReviewProgress.jsx';
 import { documentSteps } from './progressScan.js';
@@ -36,14 +37,17 @@ export default function ReviewPage() {
     initialFile={runId === state.documentRun?.id ? state.file : null}
     openRun={id => setParams({ framework: id })} onNew={() => { newReview(); setParams({}); }} />;
 
-  return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}>
+  return <ReviewLayout {...{ state, health, healthBusy, checkHealth, navigate }} busy={busy || sampleBusy || fileBusy || documentBusy}
+    projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value) } : undefined}
+    projectActions={state.step === 'input' && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
+      {sampleBusy ? '불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" /></button>}>
     {documentBusy && documentProgress && <ReviewProgress title="검수 요구사항을 정리하고 있어요."
       message={documentProgress.message} detail={documentNotice} percent={documentProgress.percent}
       steps={documentSteps(documentProgress.stage)} facts={documentProgress.source ? [['입력 자료', documentProgress.source]] : []}
       startedAt={documentProgress.startedAt} error={documentError} cancelBusy={documentCancelBusy}
       cancelLabel={documentProgress.stage === 'queued' && documentProgress.runId ? '대기 작업 취소' : '입력 반영 취소'}
       onCancel={documentProgress.stage === 'queued' && documentProgress.runId ? cancelQueuedDocument : cancelDocument} />}
-    {state.step === 'input' && <div hidden={documentBusy && !!documentProgress}><InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sample, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} /></div>}
+    {state.step === 'input' && <div hidden={documentBusy && !!documentProgress}><InputPage {...{ state, projectId, setProjectId, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, error, versionText, documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument }} /></div>}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage

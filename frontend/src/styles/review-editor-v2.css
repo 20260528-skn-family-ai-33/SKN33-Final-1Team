@@ -2,6 +2,10 @@
 .rv-workspace .rv-input-page,
 .rv-workspace .rv-criteria-page { min-width: 0; }
 .rv-workspace .rv-input-form { margin: 0; }
+@media (min-width: 901px) {
+  .rv-input-form .rv-editor-grid { grid-template-columns: minmax(0, 3fr) minmax(330px, 2fr); gap: 18px; }
+}
+.rv-workspace .rv-input-form .rv-input-requirements textarea { min-height: 120px; }
 .rv-workspace .rv-input-canvas-column,
 .rv-workspace .rv-criteria-canvas-column { min-width: 0; align-self: start; }
 .rv-workspace .rv-input-drop-target { border-radius: 24px; outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s; }
@@ -9,8 +13,8 @@
 .rv-workspace .rv-input-drop-target.is-dragging .rv-input-empty { background: #e9eee7; }
 .rv-workspace .rv-input-drop-target .image-stage-empty { padding: 0; }
 .rv-workspace .rv-input-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; min-height: 420px; padding: 42px 24px; }
-.rv-workspace .rv-input-empty-icon { display: grid; place-items: center; width: 64px; height: 76px; background: white; border: 1px solid #deded8; border-radius: 13px; box-shadow: 8px -7px 0 -1px #f9f9f6, 8px -7px 0 0 #deded8; color: #787871; margin-bottom: 36px; }
-.rv-workspace .rv-input-empty-icon .icon { width: 28px; height: 28px; stroke-width: 1.2; }
+.rv-workspace .rv-input-empty-icon { display: grid; place-items: center; width: 45px; height: 45px; background: white; border: 1px solid #deded8; border-radius: 12px; color: #56564f; }
+.rv-workspace .rv-input-empty-icon .icon { width: 22px; height: 22px; }
 .rv-workspace .rv-input-empty h2 { font-size: 24px; font-weight: 500; letter-spacing: -.045em; margin: 14px 0 12px; }
 .rv-workspace .rv-input-empty p { color: #6e6e6b; font-size: 13px; line-height: 1.8; }
 .rv-workspace .rv-input-empty > .rv-button { margin-top: 26px; }

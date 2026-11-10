@@ -58,17 +58,17 @@ test('현재 메뉴 재클릭과 영상 도구 왕복은 입력·첨부를 초�
   // 새 탭 열기는 현재 화면을 초기화하지 않는다.
   // headless Chrome의 합성 클릭에서는 기본 주소 이동만 막고 React 메뉴 처리는 실행한다.
   await page.evaluate(() => document.addEventListener('click', event => event.preventDefault(), { once: true }));
-  await tools.getByRole('link', { name: '영상 검수', exact: true }).dispatchEvent('click', { button: 0, ctrlKey: true });
+  await tools.getByRole('link', { name: '동영상 검수', exact: true }).dispatchEvent('click', { button: 0, ctrlKey: true });
   assert.equal(await page.locator('#requirements').inputValue(), '행사명: 이전 축제');
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
   await page.locator('#requirements').fill('새 입력');
-  await tools.getByRole('link', { name: '영상 검수', exact: true }).click();
+  await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await page.getByRole('heading', { name: '숏폼 동영상 검수', exact: true }).waitFor();
   await page.getByLabel('검수 기준 (한 줄에 하나)', { exact: false }).fill('이전 영상 기준');
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
-  await tools.getByRole('link', { name: '영상 검수', exact: true }).click();
+  await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   assert.equal(await page.getByLabel('검수 기준 (한 줄에 하나)', { exact: false }).inputValue(), '');
   // 모델 테스트 화면은 없앴다. 메뉴에도 남지 않는다.
   assert.equal(await tools.getByRole('link', { name: '모델 테스트', exact: true }).count(), 0);
@@ -97,7 +97,7 @@ test('PDF 분석 중 이동을 잠그고 돋보기로 지금 단계·경과시�
   await pending;
   await page.getByRole('heading', { name: '검수 요구사항을 정리하고 있어요.' }).waitFor();
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
-  for (const label of ['포스터 검수', '영상 검수', '내 작업']) {
+  for (const label of ['포스터 검수', '동영상 검수', '내 작업']) {
     const link = tools.getByRole('link', { name: label, exact: true });
     assert.equal(await link.getAttribute('aria-disabled'), 'true');
     assert.equal(await link.getAttribute('href'), null, 'locked tools cannot open another route or tab');
@@ -118,7 +118,7 @@ test('PDF 분석 중 이동을 잠그고 돋보기로 지금 단계·경과시�
   await page.waitForFunction(() => document.querySelector('[role="timer"] time')?.textContent !== '0:00');
   assert.match(await page.getByRole('timer', { name: '경과 시간' }).textContent(), /\d+:\d{2}/);
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
-  await tools.getByRole('link', { name: '영상 검수', exact: true }).click();
+  await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
   await page.locator('#requirements').fill('현재 작성 중인 조건');
@@ -180,7 +180,7 @@ test('영상 업로드 중 나가면 늦은 접수 응답으로 이전 영상 �
     return true;
   } });
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
-  await tools.getByRole('link', { name: '영상 검수', exact: true }).click();
+  await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await page.locator('#video-file').setInputFiles({ name: 'video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video') });
   await page.getByRole('button', { name: '동영상 검수 시작', exact: true }).click();
   await pending;

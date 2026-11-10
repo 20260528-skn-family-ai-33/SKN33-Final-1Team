@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 import { fetchJson, fetchResponse } from '../../api/client.js';
+import samplePoster from '../../assets/sample-poster.png';
 import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
@@ -8,6 +9,10 @@ import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 
 const ReviewContext = createContext(null);
+const bundledSample = {
+  project_name: '2026 김천김밥축제 포스터 검수',
+  requirements: '행사명: 김천김밥축제\n기간: 2026.10.23 ~ 10.25\n장소: 직지문화공원\n김천시 로고가 표시되어 있어야 합니다.',
+};
 
 // 업로드 제한과 실제 파일 서명을 확인하고 원본 이미지 크기를 반환한다.
 async function validateImage(file, limits = {}) {
@@ -223,15 +228,21 @@ export function ReviewProvider({ children }) {
     setError('');
     try {
       const [metadata, response] = await Promise.all([
-        fetchJson('/api/sample', { signal: controller.signal }),
+        fetchJson('/api/sample', { signal: controller.signal }).catch(error => {
+          if (error.status === 404) return null;
+          throw error;
+        }),
         fetch('/api/sample/image', { signal: controller.signal, credentials: 'same-origin' }),
       ]);
-      if (!response.ok) throw new Error('샘플 이미지를 불러오지 못했습니다. 검수 서버 연결을 확인해 주세요.');
-      const blob = await response.blob();
+      const useBundle = !metadata || response.status === 404;
+      const image = useBundle ? await fetch(samplePoster, { signal: controller.signal }) : response;
+      const sampleData = useBundle ? bundledSample : metadata;
+      if (!image.ok) throw new Error('샘플 이미지를 불러오지 못했습니다. 검수 서버 연결을 확인해 주세요.');
+      const blob = await image.blob();
       const file = new File([blob], '2026_김천_김밥축제.png', { type: blob.type || 'image/png' });
       const dims = await validateImage(file, health?.limits);
       if (controller.signal.aborted || epoch !== generation.current) return;
-      dispatch({ type: 'sample', file, projectName: metadata.project_name, requirements: metadata.requirements });
+      dispatch({ type: 'sample', file, projectName: sampleData.project_name, requirements: sampleData.requirements });
       setSearchParams(params => { const next = new URLSearchParams(params); next.delete('review'); return next; }, { replace: true });
       setDimensions(dims);
     } catch (err) {

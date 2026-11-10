@@ -6,39 +6,53 @@ import '../../styles/review-progress.css';
 
 const statusText = { completed: '완료', active: '진행 중', waiting: '차례 대기', failed: '멈춤', pending: '대기' };
 
-// 칸 그림. 포스터 칸은 실제 포스터를 쓰고, 나머지는 단계에 맞는 문서 모양으로 그린다.
-function PartArt({ kind, image }) {
-  if (kind === 'poster' && image) return <span className="rv-scan-art is-poster"><img src={image} alt="" decoding="async" /></span>;
+// 실제 포스터를 표시할 수 없을 때는 단계에 맞는 그림을 쓴다.
+function PartArt({ kind }) {
   return <span className={`rv-scan-art is-${kind || 'document'}`}><i /><i /><i /><i /></span>;
 }
 
-// 처리 단계를 칸으로 늘어놓고, 서버가 알려 준 지금 단계 위에 돋보기를 올린다(영상 검수의 필름 돋보기와 같은 모양).
+// 포스터 위의 확대 위치와 렌즈의 중심은 같은 좌표를 쓴다.
+function PosterScan({ image, working }) {
+  const width = Math.min(460, 248 * image.width / image.height);
+  return <figure className={`rv-poster-scan${working ? ' is-working' : ''}`}>
+    <div className="rv-poster-scan-sheet" style={{ '--rv-poster-width': `${width}px` }}>
+      <img src={image.url} alt="검수 대상 포스터" width={image.width} height={image.height} />
+      <span className="rv-poster-scan-zoom" aria-hidden="true"><img src={image.url} alt="" /></span>
+      <span className="rv-poster-scan-lens" aria-hidden="true" />
+    </div>
+  </figure>;
+}
+
 function ProgressScanner({ steps, image }) {
   const { index, phase } = scanFocus(steps);
+  const poster = image?.url && image.width > 0 && image.height > 0;
   const part = steps[index];
   const lensIcon = phase === 'done' ? 'check' : phase === 'failed' ? 'warning' : phase === 'waiting' ? 'clock' : null;
-  return <div className={`rv-scan is-${phase}`}>
-    <div className="rv-scan-track">
-      <ol className="rv-scan-parts" aria-label="처리 단계">
-        {steps.map((step, i) => <li key={step.key} className={`rv-scan-part is-${step.status}${i === index ? ' is-current' : ''}`}
-          aria-current={i === index && ['active', 'waiting'].includes(step.status) ? 'step' : undefined}>
-          <span className="rv-scan-tile" aria-hidden="true"><PartArt kind={step.kind} image={image} />
-            {step.status === 'completed' && <span className="rv-scan-badge"><Icon name="check" /></span>}</span>
-          <strong className="rv-scan-name">{step.short || step.label}</strong>
-          <span className="rv-scan-state">{i === index && phase === 'working' ? '지금 확인 중' : statusText[step.status]}</span>
-          {step.short && step.short !== step.label && <span className="visually-hidden">: {step.label}</span>}
-        </li>)}
-      </ol>
-      <span className="rv-scan-lens" aria-hidden="true" style={{ left: `${(index + .5) / steps.length * 100}%` }}>
-        <span className="rv-scan-glass">
-          <span className="rv-scan-zoom"><PartArt kind={part.kind} image={image} /></span>
-          <span className="rv-scan-line" />
-          {lensIcon && <Icon name={lensIcon} />}
-        </span>
-        <span className="rv-scan-handle" />
-      </span>
+  return <>
+    {poster && <PosterScan image={image} working={phase === 'working'} />}
+    <div className={`rv-scan is-${phase}${poster ? ' has-poster' : ''}`}>
+      <div className="rv-scan-track">
+        <ol className="rv-scan-parts" aria-label="처리 단계">
+          {steps.map((step, i) => <li key={step.key} className={`rv-scan-part is-${step.status}${i === index ? ' is-current' : ''}`}
+            aria-current={i === index && ['active', 'waiting'].includes(step.status) ? 'step' : undefined}>
+            {!poster && <span className="rv-scan-tile" aria-hidden="true"><PartArt kind={step.kind} />
+              {step.status === 'completed' && <span className="rv-scan-badge"><Icon name="check" /></span>}</span>}
+            <strong className="rv-scan-name">{step.short || step.label}</strong>
+            <span className="rv-scan-state">{i === index && phase === 'working' ? '지금 확인 중' : statusText[step.status]}</span>
+            {step.short && step.short !== step.label && <span className="visually-hidden">: {step.label}</span>}
+          </li>)}
+        </ol>
+        {!poster && <span className="rv-scan-lens" aria-hidden="true" style={{ left: `${(index + .5) / steps.length * 100}%` }}>
+          <span className="rv-scan-glass">
+            <span className="rv-scan-zoom"><PartArt kind={part.kind} /></span>
+            <span className="rv-scan-line" />
+            {lensIcon && <Icon name={lensIcon} />}
+          </span>
+          <span className="rv-scan-handle" />
+        </span>}
+      </div>
     </div>
-  </div>;
+  </>;
 }
 
 export default function ReviewProgress({ title, message, detail, percent, startedAt, steps = [], image, facts = [], onCancel, cancelLabel = '입력 반영 취소', cancelBusy = false, onRetry, error, helpText = '완료되면 다음 화면이 표시됩니다. 페이지를 그대로 두셔도 됩니다.' }) {

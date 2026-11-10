@@ -3,9 +3,9 @@
 /* ---------- 공통 조각 ---------- */
 .rv-video { --result-line: #e3e3df; --result-muted: #6e6e6b; --result-soft: #f5f5f2; }
 .rv-video .rv-video-empty-title { display: block; color: #171717; font-size: 16px; font-weight: 500; letter-spacing: -.03em; }
-.rv-video .rv-video-text-button { background: none; border: 0; padding: 4px 0; color: #3f3f3a; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
-.rv-video .rv-video-text-button:hover:enabled { color: #171717; }
-.rv-video .rv-video-text-button:disabled { opacity: .4; }
+:is(.rv-video, .rv-poster-logos) .rv-video-text-button { background: none; border: 0; padding: 4px 0; color: #3f3f3a; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; }
+:is(.rv-video, .rv-poster-logos) .rv-video-text-button:hover:enabled { color: #171717; }
+:is(.rv-video, .rv-poster-logos) .rv-video-text-button:disabled { opacity: .4; }
 .rv-video .rv-video-inline-warning { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #e9dfbf; border-radius: 10px; background: #f8f3e2; color: #65551f; font-size: 11px; line-height: 1.7; }
 .rv-video .rv-video-inline-warning .icon { width: 14px; height: 14px; margin-top: 2px; color: #806a28; }
 .rv-video .rv-video-empty { padding: 28px 24px; text-align: center; color: #6e6e6b; font-size: 12px; }
@@ -28,30 +28,20 @@
 .rv-video .rv-video-preview { display: block; max-width: calc(100% - 48px); max-height: calc(100% - 48px); border-radius: 10px; background: #171717; box-shadow: 0 12px 40px #1717171a, 0 1px 4px #17171718; }
 .rv-video .rv-video-stage .image-stage-empty { min-height: 0; }
 
-.rv-video .rv-video-recent { margin-top: 18px; }
-.rv-video .rv-video-recent .rv-panel-heading { padding: 18px 22px; }
-.rv-video .rv-video-recent-list { list-style: none; margin: 0; padding: 8px 10px 10px; max-height: 360px; overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; }
-.rv-video .rv-video-recent-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 12px; width: 100%; padding: 12px 12px 11px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #171717; text-align: left; }
-.rv-video .rv-video-recent-item:hover:enabled { background: #f7f7f3; }
-.rv-video .rv-video-recent-item.is-current { background: #eeeee8; border-color: #e2e2d9; }
-.rv-video .rv-video-recent-item:disabled { opacity: .5; }
-.rv-video .rv-video-recent-item > strong { grid-column: 1 / -1; font-size: 13px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.rv-video .rv-video-recent-meta { grid-column: 1 / -1; color: #6e6e6b; font-size: 10px; font-variant-numeric: tabular-nums; }
-.rv-video .rv-video-recent-counts { grid-row: 1; grid-column: 2; color: #6e6e6b; font-size: 10px; font-variant-numeric: tabular-nums; text-align: right; }
-.rv-video .rv-video-recent-state { display: inline-flex; align-items: center; gap: 6px; color: #55554f; font-size: 10px; font-weight: 500; }
-.rv-video .rv-video-recent-state > span { width: 6px; height: 6px; border-radius: 50%; background: #171717; }
-.rv-video .rv-video-recent-state.is-running > span { background: #1db954; animation: rv-breathe 2s ease-in-out infinite; }
-.rv-video .rv-video-recent-state.is-failed { color: #a34f3e; }
-.rv-video .rv-video-recent-state.is-failed > span { background: #a34f3e; }
-
-.rv-video .rv-video-brief .rv-input-field textarea { min-height: 168px; }
+.rv-video .rv-video-document-rows { display: grid; gap: 9px; min-width: 0; margin: 12px 0; padding: 12px; border: 1px solid #e3e3df; border-radius: 9px; }
+.rv-video .rv-video-document-rows legend { padding: 0 5px; font-size: 12px; font-weight: 600; }
+.rv-video .rv-video-document-rows label { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; overflow-wrap: anywhere; }
+.rv-video .rv-video-document-rows input { width: 15px; height: 15px; flex-shrink: 0; margin: 2px 0 0; accent-color: #171717; }
+.rv-video .rv-video-document-rows .rv-button { justify-self: start; }
+.rv-video .rv-video-brief .rv-input-document { margin-bottom: 22px; }
+.rv-video .rv-video-logos { margin-top: 12px; }
 .rv-video .rv-video-subsection { min-width: 0; margin: 0 0 24px; padding: 22px 0 0; border: 0; border-top: 1px solid #e8e8e2; }
 .rv-video .rv-video-subsection:last-child { margin-bottom: 0; }
 .rv-video .rv-video-subsection > legend { float: left; width: 100%; padding: 0; margin: 0 0 8px; color: #242420; font-size: 13px; font-weight: 500; }
 .rv-video .rv-video-subsection > legend > span { margin-left: 5px; color: #6e6e6b; font-size: 10px; font-weight: 400; }
 .rv-video .rv-video-subsection > legend + * { clear: both; }
-.rv-video .rv-video-subsection-hint { color: #6e6e6b; font-size: 11px; line-height: 1.7; margin-bottom: 14px; }
-.rv-video .rv-video-subsection-foot { margin-top: 10px; color: #6e6e6b; font-size: 10px; line-height: 1.7; }
+:is(.rv-video, .rv-poster-logos) .rv-video-subsection-hint { color: #6e6e6b; font-size: 11px; line-height: 1.7; margin-bottom: 14px; }
+:is(.rv-video, .rv-poster-logos) .rv-video-subsection-foot { margin-top: 10px; color: #6e6e6b; font-size: 10px; line-height: 1.7; }
 .rv-video .rv-video-subsection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .rv-video .rv-video-subsection-grid .rv-input-field { margin-bottom: 4px; }
 .rv-video .rv-video-subsection:disabled { opacity: .6; }
@@ -61,17 +51,21 @@
 .rv-video .rv-video-check strong { display: block; color: #242420; font-size: 12px; font-weight: 500; }
 .rv-video .rv-video-check small { display: block; margin-top: 2px; color: #6e6e6b; font-size: 10px; line-height: 1.6; }
 
-.rv-video .rv-video-logo-list { list-style: none; display: grid; gap: 8px; margin: 0 0 12px; padding: 0; }
-.rv-video .rv-video-logo-list li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px 8px 8px; border: 1px solid #ecece6; border-radius: 10px; background: #fafaf8; }
-.rv-video .rv-video-logo-list img, .rv-video .rv-video-logo-thumb { display: block; width: 52px; height: 40px; object-fit: contain; border: 1px solid #e3e3df; border-radius: 7px; background: #fff; }
+.rv-poster-logos { min-width: 0; margin: 18px 0 0; padding: 13px 16px 15px; border: 1px dashed #d4d4cd; border-radius: 12px; background: #f7f7f4; }
+.rv-poster-logos > legend { padding: 0 5px; font-size: 13px; font-weight: 500; }
+.rv-poster-logos > legend span, .rv-logo-filename { color: #6e6e6b; font-size: 11px; font-weight: 400; }
+.rv-logo-filename { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-list { list-style: none; display: grid; gap: 8px; margin: 0 0 12px; padding: 0; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-list li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px 8px 8px; border: 1px solid #ecece6; border-radius: 10px; background: #fafaf8; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-list :is(img, .rv-video-logo-thumb) { display: block; width: 52px; height: 40px; object-fit: contain; border: 1px solid #e3e3df; border-radius: 7px; background: #fff; }
 .rv-video .rv-video-logo-list label { display: grid; gap: 5px; min-width: 0; color: #6e6e6b; font-size: 10px; }
 .rv-video .rv-video-logo-list label > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .rv-workspace.rv-video .rv-video-logo-list li input:not([type=file]) { min-height: 32px; padding: 6px 9px; border: 1px solid #e5e5df; border-radius: 8px; background: #fff; font-size: 11px; line-height: 1.5; }
-.rv-video .rv-video-logo-add { position: relative; min-height: 36px; padding: 8px 13px; font-size: 11px; cursor: pointer; }
-.rv-video .rv-video-logo-add .icon { width: 14px; height: 14px; }
-.rv-video .rv-video-logo-add:hover { background: #f2f2f1; }
-.rv-video .rv-video-logo-add:focus-within { outline: 2px solid #171717; outline-offset: 3px; }
-.rv-video .rv-video-logo-add.is-disabled { opacity: .4; cursor: not-allowed; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-add { position: relative; min-height: 36px; padding: 8px 13px; font-size: 11px; cursor: pointer; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-add .icon { width: 14px; height: 14px; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-add:hover { background: #f2f2f1; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-add:focus-within { outline: 2px solid #171717; outline-offset: 3px; }
+:is(.rv-video, .rv-poster-logos) .rv-video-logo-add.is-disabled { opacity: .4; cursor: not-allowed; }
 
 /* ---------- 02 검수 진행: 필름 위를 움직이는 돋보기 ---------- */
 .rv-video .rv-video-progress-card { min-height: 560px; padding: 46px 56px 44px; }
@@ -164,7 +158,10 @@
 .rv-video .rv-video-warning-list.is-inline { flex-shrink: 0; width: auto; max-height: 66px; margin: 0; overflow-y: auto; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .rv-video .rv-video-warning-list.is-inline li { padding: 7px 12px; }
 
-.rv-video-workbench { flex: 1; min-height: 0; display: grid; grid-template-columns: 272px minmax(0, 1fr) 340px; grid-template-rows: minmax(0, 1fr); gap: 12px; }
+.rv-video-workbench { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: minmax(180px, 1fr) minmax(0, 1fr); grid-template-areas: "media rail" "media detail"; gap: 12px; }
+.rv-video .rv-video-center { grid-area: media; }
+.rv-video .rv-video-rail { grid-area: rail; }
+.rv-video .rv-video-inspector { grid-area: detail; }
 
 .rv-video .rv-video-rail { display: flex; flex-direction: column; min-height: 0; border-radius: 16px; }
 .rv-video .rv-video-tabs { flex-shrink: 0; display: flex; gap: 3px; margin: 12px 12px 0; padding: 4px; border-radius: 10px; background: #efefeb; }
@@ -263,10 +260,9 @@
 .rv-video .rv-video-plain-list .rv-video-text-button { font-size: 12px; text-align: left; }
 
 @media (min-width: 1700px) {
-  .rv-video-workbench { grid-template-columns: 300px minmax(0, 1fr) 370px; gap: 16px; }
+  .rv-video-workbench { gap: 16px; }
 }
 @media (max-width: 1499px) {
-  .rv-video-workbench { grid-template-columns: 240px minmax(0, 1fr) 300px; }
   /* 좁은 근거 칸에서도 도구 줄이 한 줄에 들어가도록 근거 도구는 아이콘만 남긴다(글자는 접근 이름, 마우스를 올리면 제목으로 보인다). */
   .rv-video .rv-video-monitor .image-stage:not(.rv-video-player) :is(.image-stage-evidence-toggle, .image-stage-focus) { gap: 0; min-width: 32px; justify-content: center; padding: 7px; font-size: 0; }
   .rv-video .rv-video-monitor .image-stage:not(.rv-video-player) :is(.image-stage-evidence-toggle, .image-stage-focus) .icon { width: 16px; height: 16px; }

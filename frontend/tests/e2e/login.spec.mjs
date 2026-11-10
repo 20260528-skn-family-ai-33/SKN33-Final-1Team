@@ -193,10 +193,15 @@ test('샘플 요청은 로그인 복귀 뒤 한 번만 읽고 쿼리를 소비�
   await submitLogin(page);
   await page.waitForURL('**/review/new');
   await page.getByRole('img', { name: '업로드한 검수 이미지 미리보기' }).waitFor();
-  assert.equal(await page.getByLabel('1. 프로젝트 이름').inputValue(), '샘플 프로젝트');
-  assert.equal(await page.getByLabel('3. 검수 요구사항').inputValue(), '행사명: 테스트 축제');
+  assert.equal(await page.getByLabel('프로젝트 이름', { exact: true }).inputValue(), '샘플 프로젝트');
+  assert.equal(await page.getByLabel('검수 요구사항').inputValue(), '행사명: 테스트 축제');
   assert.equal(state.requests.filter(request => request.path === '/api/sample').length, 1);
   assert.equal(state.requests.filter(request => request.path === '/api/sample/image').length, 1);
+
+  await page.route('**/api/sample', route => route.fulfill({ status: 404, json: { detail: 'Not Found' } }));
+  await page.getByRole('button', { name: '예시 자료 불러오기', exact: true }).click();
+  await page.waitForFunction(() => document.getElementById('project-name')?.value === '2026 김천김밥축제 포스터 검수');
+  assert.match(await page.getByLabel('검수 요구사항').inputValue(), /행사명: 김천김밥축제/);
 });
 
 test('업무 API의 명시적 세션 만료는 로그인 화면으로 복귀한다', async t => {
@@ -256,9 +261,9 @@ test('로그아웃 실패는 현재 세션을 유지하고 재시도 성공 후 
 test('이미지 입력·검수 결과를 확인하고 서비스 메인 왕복 시 새 입력으로 초기화한다', async t => {
   const { page, state } = await fixture(t, { authenticated: true });
   await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('1. 프로젝트 이름').fill('화면 통합 검증');
+  await page.getByLabel('프로젝트 이름', { exact: true }).fill('화면 통합 검증');
   await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('3. 검수 요구사항').fill('행사명: 테스트 축제');
+  await page.getByLabel('검수 요구사항').fill('행사명: 테스트 축제');
   await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
   await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
   assert.equal(await page.getByRole('button', { name: '검수 시작하기', exact: true }).isDisabled(), true);
@@ -296,9 +301,9 @@ test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함�
         { text: '친환경생태공원', engine: 'paddleocr', bbox_xyxy: [0, 0, 1, 1] }] }],
   }] });
   await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('1. 프로젝트 이름').fill('재인식 검증');
+  await page.getByLabel('프로젝트 이름', { exact: true }).fill('재인식 검증');
   await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('3. 검수 요구사항').fill('장소: 친환경생태공원');
+  await page.getByLabel('검수 요구사항').fill('장소: 친환경생태공원');
   await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
   await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
@@ -313,7 +318,7 @@ test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함�
   await screenshot(page, 'reread-comparison.png');
 });
 
-test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한다', async t => {
+test('포스터 결과에서 모든 근거와 선택 근거를 오가며 항목을 확인한다', async t => {
   const { page, state } = await fixture(t, {
     authenticated: true,
     // A real-size fixture keeps the evidence regions apart. No external image request is made.
@@ -347,6 +352,7 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   const filters = page.getByRole('group', { name: '검수 결과 상태 필터', exact: true });
   const search = page.getByRole('searchbox', { name: '항목 검색', exact: true });
   const selectedButtons = list.locator('button[aria-pressed="true"]');
+  const selectedScope = page.getByRole('button', { name: '선택 근거 표시', exact: true });
   async function assertSelection(criterion, ...evidenceTexts) {
     await selectedButtons.filter({ hasText: criterion }).waitFor();
     assert.equal(await selectedButtons.count(), 1);
@@ -359,6 +365,15 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
     assert.equal(await page.getByTestId('evidence-box').count(), evidenceTexts.length);
   }
 
+  await page.getByTestId('evidence-box').first().waitFor();
+  assert.equal(await page.getByTestId('evidence-box').count(), 4);
+  await filters.getByRole('button', { name: /^위반/ }).click();
+  await page.getByRole('button', { name: '근거 영역: 브랜드 심볼 영역', exact: true }).click();
+  await inspector.getByText('시 로고 포함', { exact: true }).waitFor();
+  assert.equal(await filters.getByRole('button', { name: /^전체/ }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('button', { name: '모든 근거 표시', exact: true }).click();
+  await selectedScope.waitFor();
+  await list.getByRole('button', { name: /기간: 10월 30일/ }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
   const dateBox = page.getByRole('button', { name: '근거 영역: 날짜 근거 문구', exact: true });
   assert.deepEqual(await dateBox.evaluate(node => ({ left: node.style.left, top: node.style.top, width: node.style.width, height: node.style.height })),
@@ -371,7 +386,7 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   await assertSelection('파일 형식: JPEG');
   await inspector.getByText('파일 헤더에서 JPEG를 확인했습니다.', { exact: true }).waitFor();
   await page.getByText('파일 정보로 확인한 항목입니다. 표시할 이미지 영역은 없습니다.', { exact: true }).waitFor();
-  assert.equal(await page.getByRole('button', { name: '근거 표시', exact: true }).isDisabled(), true);
+  assert.equal(await selectedScope.isEnabled(), true);
 
   await list.getByRole('button', { name: /기간: 10월 30일/ }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
@@ -382,15 +397,15 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   // A hidden selection switches to the first result in the new filter.
   await filters.getByRole('button', { name: /^충족/ }).click();
   await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
-  assert.equal(await list.getByRole('button').count(), 2);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 2);
   // Widening the filter preserves the criterion ID rather than the list position.
   await filters.getByRole('button', { name: /^전체/ }).click();
   await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
-  assert.equal(await list.getByRole('button').count(), 4);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 4);
 
   await search.fill('심볼');
   await assertSelection('시 로고 포함', '브랜드 심볼 영역');
-  assert.equal(await list.getByRole('button').count(), 1);
+  assert.equal(await list.locator('.rv-result-item-button').count(), 1);
   await search.fill('일치하는-항목-절대없음-xyz');
   await inspector.getByText('표시할 항목이 없습니다.', { exact: true }).waitFor();
   assert.equal(await selectedButtons.count(), 0);
@@ -399,6 +414,10 @@ test('결과 항목을 바꾸면 선택한 항목의 위치 근거만 표시한�
   await page.getByRole('button', { name: '검색·필터 초기화', exact: true }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
   assert.equal(await search.inputValue(), '');
+  await selectedButtons.click();
+  assert.equal(await selectedButtons.getAttribute('aria-expanded'), 'false');
+  await selectedButtons.click();
+  await inspector.getByText('기간: 10월 30일~11월 1일', { exact: true }).waitFor();
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);
   assert.equal(await page.getByRole('button', { name: /최종 승인/ }).count(), 0);
 });
