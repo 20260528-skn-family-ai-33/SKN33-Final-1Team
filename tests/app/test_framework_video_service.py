@@ -109,6 +109,8 @@ def test_aws_video_pins_parallel_ocr_candidates_and_compare_to_distinct_workers(
     if not FFMPEG:
         pytest.skip("FFmpeg is required to prepare and decode the test videos")
     monkeypatch.setenv("VIDEO_MAX_ACTIVE", "2")
+    # This test covers the PaddleOCR worker path; the default engine is now qwen3-vl.
+    monkeypatch.setenv("VIDEO_SUBTITLE_ENGINE", "paddleocr")
     monkeypatch.setattr(schema_inventory, "check_schema", lambda *_: None)
     monkeypatch.setattr(maintenance, "active", lambda *_: False)
     monkeypatch.setattr("backend.app.persistence.transaction.unit_of_work", lambda _: _no_developer_accounts())
