@@ -77,6 +77,12 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   assert.equal(writes.length, 4); assert.deepEqual(errors, []);
   mkdirSync('/private/tmp/cc-my-tasks-preview', { recursive: true });
   await page.screenshot({ path: '/private/tmp/cc-my-tasks-preview/my-tasks.png', fullPage: true });
+  await row(video.project_name).getByRole('link', { name: '열기' }).click();
+  await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
+  await page.getByRole('heading', { name: '검수 보고서', exact: true }).waitFor();
+  await page.getByText('0:01–0:02 · 전시 제목', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
+  await page.getByRole('heading', { name: video.project_name, exact: true }).waitFor();
 });
 
 test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { timeout: 30000 }, async t => {

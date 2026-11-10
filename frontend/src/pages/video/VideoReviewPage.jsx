@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
-import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
+import { WorkspaceFooter, WorkspaceProjectBar, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
 import { useLogoJobs } from './LogoFlowParts.jsx';
 import VideoInput from './VideoInput.jsx';
 import VideoProgress from './VideoProgress.jsx';
 import VideoResults from './VideoResults.jsx';
+import VideoReport from './VideoReport.jsx';
 import { isTerminal } from './videoFormat.js';
 import '../../styles/review-editor-v2.css';
 import '../../styles/review-progress.css';
@@ -16,22 +16,21 @@ import '../../styles/review-results-v2.css';
 import '../../styles/image-stage.css';
 import './videoReview.css';
 
-// 서버 준비 상태와 최근 동영상 검수 목록을 함께 불러온다.
+// 접수에 필요한 서버 준비 상태를 불러온다. 기존 작업은 내 작업에서 조회한다.
 function useVideoStatus() {
   const [status, setStatus] = useState(null);
-  const [jobs, setJobs] = useState([]);
   const active = useRef(null);
   const refresh = useCallback(async () => {
     active.current?.abort();
     const controller = new AbortController(); active.current = controller;
     try {
-      const [ready, list] = await Promise.all([fetchJson('/api/video-reviews/status', { signal: controller.signal }), fetchJson('/api/video-reviews', { signal: controller.signal })]);
+      const ready = await fetchJson('/api/video-reviews/status', { signal: controller.signal });
       if (controller.signal.aborted) return;
-      setStatus(ready); setJobs(list.items || []);
+      setStatus(ready);
     } catch (error) { if (!controller.signal.aborted) setStatus({ ready: false, detail: error.message }); }
   }, []);
   useEffect(() => { refresh(); return () => active.current?.abort(); }, [refresh]);
-  return { status, jobs, refresh };
+  return { status, refresh };
 }
 
 // 끝날 때까지 작업 상태를 주기적으로 다시 읽는다. 없는 기록(404)이면 조회를 멈추고 missing으로 알린다.
@@ -62,38 +61,28 @@ function useVideoJob(id, onFinish) {
   return { job, error, missing };
 }
 
-const steps = [['input', '자료 입력'], ['running', '검수 진행'], ['results', '결과 확인']];
+const steps = { input: '자료 입력', running: '검수 진행', results: '결과 확인', report: '보고서' };
 const blankDraft = () => ({ projectName: '숏폼 검수', requirements: '', ad: { kind: 'endorsement', celebrity_exposure: false, title: '', caption: '', platform: '' } });
 
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 화면. 포스터 검수와 같은 자료 입력 → 검수 진행 → 결과 확인 흐름을 따른다.
 export default function VideoReviewPage() {
   const [params, setParams] = useSearchParams();
   const id = params.get('id');
-  const navigate = useNavigate();
-  const resetWorkspace = useWorkspaceReset();
   const [draft, setDraft] = useState(blankDraft);
-  // 고른 영상·원본 로고는 최근 검수를 열어 보고 돌아와도 남는다. 상단 메뉴 이동(작업 초기화)이나 새 검수에서만 비운다.
+  const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [logos, setLogos] = useState([]);
   const [logoSubmissionWarning, setLogoSubmissionWarning] = useState(null);
-  const { status, jobs, refresh } = useVideoStatus();
+  const { status, refresh } = useVideoStatus();
   const { job: loaded, error, missing } = useVideoJob(id, refresh);
   const logo = useLogoJobs(id);
   // id가 바뀐 직후 이전 작업이 한 번 그려지지 않도록 현재 id의 작업만 쓴다.
   const job = loaded?.id === id ? loaded : null;
   const legacy = job && job.status === 'completed' && !job.coverage;
-  const step = !id ? 'input' : job?.status === 'completed' && !legacy ? 'results' : 'running';
-  const stepIndex = steps.findIndex(([key]) => key === step);
+  const completed = job?.status === 'completed' && !legacy;
+  const step = !id ? 'input' : completed ? params.get('view') === 'report' ? 'report' : 'results' : 'running';
   const placeholder = step === 'running' && !job && !error;
   const submissionWarning = id && logoSubmissionWarning?.id === id ? logoSubmissionWarning.message : '';
-  const listRunning = jobs.some(item => item.status === 'queued' || item.status === 'running');
-
-  // 자료 입력 화면에서는 진행 중인 최근 검수의 상태가 멈춰 보이지 않도록 목록을 다시 읽는다.
-  useEffect(() => {
-    if (step !== 'input' || !listRunning) return undefined;
-    const timer = setInterval(refresh, 5000);
-    return () => clearInterval(timer);
-  }, [step, listRunning, refresh]);
   const shownStep = useRef(null);
 
   // 사용자가 단계를 바꾸면 새 화면의 제목으로 초점을 옮겨 화면 낭독기가 바뀐 내용을 읽게 한다.
@@ -109,29 +98,36 @@ export default function VideoReviewPage() {
   function startOver() { setDraft(blankDraft()); setFile(null); setLogos([]); backToInput(); }
   function reuse() {
     if (!job) return;
-    setDraft({ projectName: job.project_name || '숏폼 검수', requirements: (job.criteria || []).map(item => item.text).join('\n'),
+    const criteria = job.criteria || [];
+    setDraft({ projectName: job.project_name || '숏폼 검수', requirements: criteria.map(item => item.text).join('\n'),
+      documentSources: criteria.filter(item => typeof item.source === 'string' && ['information', 'visual'].includes(item.type))
+        .map(({ text, type, source }) => ({ text, type, source })),
       ad: { ...blankDraft().ad, ...(job.disclosure_input || {}) } });
     backToInput();
   }
-  const enabled = key => key === 'input' || (key === 'running' && step === 'running') || (key === 'results' && step === 'results');
-  const projectName = job?.project_name || (step === 'input' ? draft.projectName.trim() : '') || '새로운 영상 검수';
+  const enabled = key => key === 'input' || key === 'running' && step === 'running' || completed && (key === 'results' || key === 'report');
+  const openReport = () => setParams({ id, view: 'report' });
+  const openResults = () => setParams({ id });
+  function changeStep(key) {
+    if (key === step) return;
+    if (key === 'input') backToInput();
+    else if (key === 'report') openReport();
+    else if (key === 'results') openResults();
+  }
 
   return <div className={`rv-workspace rv-video ${step === 'results' ? 'rv-workspace--results rv-video--results' : 'rv-workspace--tool'}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <WorkspaceTopbar current="/video" />
-    <div className="rv-projectbar"><div className="rv-project-identity">
-      <button type="button" className="rv-icon-button" aria-label="서비스 메인으로" onClick={() => { resetWorkspace(); navigate('/'); }}><Icon name="grid" /></button>
-      <div><span className="rv-eyebrow">내 검수 프로젝트</span><strong>{projectName}</strong></div>
-      <span className="rv-version">{job ? `기준 v${job.criteria_version}` : '작업 중'}</span></div>
-      <nav className="rv-step-nav" aria-label="검수 단계">{steps.map(([key, label], index) => <button type="button" key={key} disabled={!enabled(key)}
-        className={`${key === step ? 'is-active' : ''} ${index < stepIndex ? 'is-done' : ''}`} aria-current={key === step ? 'step' : undefined}
-        onClick={() => { if (key === 'input' && step !== 'input') backToInput(); }}>
-        <span>{index < stepIndex ? <Icon name="check" /> : String(index + 1).padStart(2, '0')}</span>{label}</button>)}</nav>
-    </div>
+    <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
+      step={step} steps={steps} canNavigate={enabled} navigate={changeStep}
+      projectEditor={step === 'input' ? { id: 'video-project-name', maxLength: 120, disabled: uploading,
+        onChange: value => setDraft(previous => ({ ...previous, projectName: value })) } : undefined}>
+      {step === 'input' && <Link className="rv-button secondary" to="/review/tasks">내 작업 보기<Icon name="arrow" /></Link>}
+    </WorkspaceProjectBar>
     <main id="review-content" className="rv-main" tabIndex={-1}>
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
-      {submissionWarning && step !== 'results' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
-      {step === 'input' && <VideoInput status={status} jobs={jobs} refresh={refresh} draft={draft} setDraft={setDraft} currentId={id} onOpen={openJob}
+      {submissionWarning && step === 'running' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
+      {step === 'input' && <VideoInput status={status} draft={draft} setDraft={setDraft} busy={uploading} setBusy={setUploading}
         file={file} setFile={setFile} logos={logos} setLogos={setLogos}
         onSubmitted={(value, warning) => { setLogoSubmissionWarning(warning ? { id: value, message: warning } : null); openJob(value); refresh(); }} />}
       {step === 'running' && (legacy ? <section className="rv-progress-page" aria-labelledby="page-title"><div className="rv-progress-card rv-video-progress-card is-failed">
@@ -139,7 +135,8 @@ export default function VideoReviewPage() {
         <ErrorMessage message="계획 문서 반영 전에 만든 결과라 새 화면으로 보여 줄 수 없습니다. 같은 영상을 다시 검수해 주세요." />
         <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={backToInput}>새 동영상으로 다시 검수<Icon name="arrow" /></button></div>
       </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo} onRestart={backToInput} />)}
-      {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning} onNewReview={startOver} onReuse={reuse} />}
+      {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning} onNewReview={startOver} onReuse={reuse} onReport={openReport} />}
+      {step === 'report' && <VideoReport job={job} onBack={openResults} />}
     </main>
     <WorkspaceFooter />
   </div>;

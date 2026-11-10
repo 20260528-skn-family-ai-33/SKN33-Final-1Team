@@ -48,7 +48,7 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
       event.preventDefault();
       if (!off) add(event.dataTransfer.files);
     } : undefined}>
-    <legend>{referenceOnly ? '원본 로고 첨부' : '5. 원본 로고'} <span>선택</span></legend>
+    <legend>원본 로고 첨부 <span>선택</span></legend>
     <p className="rv-video-subsection-hint">{referenceOnly ? '포스터와 대조할 로고를 끌어다 놓거나 선택하세요.'
       : '올리면 같은 영상에서 로고 위치 후보를 찾고, 위치를 확정한 뒤 정밀 대조합니다. 판정은 사람이 합니다.'}</p>
     {status && !status.ready && <p className="rv-video-inline-warning"><Icon name="warning" />{status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.'}</p>}
