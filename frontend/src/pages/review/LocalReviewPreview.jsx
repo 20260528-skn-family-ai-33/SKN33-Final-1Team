@@ -120,7 +120,7 @@ export default function LocalReviewPreview({ uiOnly = false }) {
         <div className="rv-preview-controls" role="group" aria-label="진행 단계 예시">{progressStages.map(([key, label]) => <button type="button" key={key}
           aria-pressed={progressStage === key} onClick={() => setProgressStage(key)}>{label}</button>)}</div></div>
       <ReviewProgress {...frameworkProgress({ ...exampleRun, validated: null, execution_status: 'reviewing',
-        ...progressStages.find(([key]) => key === progressStage)[2] })} detail={null} image={posterUrl}
+        ...progressStages.find(([key]) => key === progressStage)[2] })} detail={null} image={result.image}
         facts={[['검수 기준', `${criterionData.length}개`], ['포스터 크기', '1200×1600']]} title="검수 진행 화면 미리보기"
         helpText="예시 화면입니다. 상단의 다음 화면 또는 결과 확인을 눌러 바로 넘어가세요." />
     </>}

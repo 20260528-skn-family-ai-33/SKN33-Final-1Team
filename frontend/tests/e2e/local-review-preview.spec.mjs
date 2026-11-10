@@ -34,6 +34,9 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   await toolbar.getByRole('button', { name: '검수 진행', exact: true }).click();
   await page.getByRole('heading', { name: '검수 진행 화면 미리보기' }).waitFor();
   await page.getByRole('progressbar').waitFor();
+  const magnifiedPoster = page.locator('.rv-poster-scan-zoom img');
+  await magnifiedPoster.waitFor();
+  assert.equal(await magnifiedPoster.evaluate(img => new DOMMatrix(getComputedStyle(img).transform).a), 2);
   await toolbar.getByRole('button', { name: '결과 확인', exact: true }).click();
   await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
   await page.getByText('화면 미리보기 · 예시 판정', { exact: true }).waitFor();

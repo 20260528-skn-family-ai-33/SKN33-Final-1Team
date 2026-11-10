@@ -214,7 +214,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
       {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
         : run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
-      {processing ? <ReviewProgress {...frameworkProgress(run)} detail={null} image={imageUrl} error={error}
+      {processing ? <ReviewProgress {...frameworkProgress(run)} detail={null} image={image} error={error}
         facts={run?.baseline ? [['검수 기준', criteria.length ? `${criteria.length}개` : '확인 중'],
           ['포스터 크기', image.width ? `${image.width}×${image.height}` : '확인 중']] : []}
         cancelLabel="대기 작업 취소" cancelBusy={busy}
