@@ -96,7 +96,9 @@ export default function LocalReviewPreview({ uiOnly = false }) {
   function reset() { setState(initialState); setFilter('all'); setActiveEvidence(null); }
   const viewState = { ...state, review: state.step === 'running' ? { status: 'running' } : state.step === 'results' ? { status: 'completed' } : null };
 
-  return <ReviewLayout state={viewState} busy={false} health={{ status: 'preview' }} navigate={navigate} previewMode>
+  return <ReviewLayout state={viewState} busy={false} health={{ status: 'preview' }} navigate={navigate} previewMode
+    projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => dispatch({ type: 'input', field: 'projectName', value }) } : undefined}
+    projectActions={state.step === 'input' && <button type="button" className="rv-button secondary" onClick={() => setState(seed(initialState))}>예시 자료 불러오기</button>}>
     <aside className="rv-preview-toolbar" aria-label="로컬 화면 미리보기">
       <div><strong>{uiOnly ? 'UI 전용 · 서버 연결 없음' : '로컬 화면 미리보기'}</strong><p>데이터 없이 이동할 수 있습니다. 결과는 예시이며 실제 검수·승인 기록은 저장하지 않습니다.</p></div>
       <div className="rv-preview-controls">{steps.map(([step, label]) => <button type="button" key={step}
@@ -105,7 +107,7 @@ export default function LocalReviewPreview({ uiOnly = false }) {
     </aside>
     {state.step === 'input' && <InputPage state={state} previewMode prepare={event => { event?.preventDefault(); navigate('criteria'); }}
       inputChange={(field, value) => dispatch({ type: 'input', field, value })}
-      sample={() => setState(seed(initialState))} fileInput={fileInput}
+      fileInput={fileInput}
       selectFile={files => files[0] && dispatch({ type: 'input', field: 'file', value: files[0] })}
       removeFile={() => dispatch({ type: 'input', field: 'file', value: null })}
       preview={preview} dragging={dragging} setDragging={setDragging} versionText="화면 미리보기" />}

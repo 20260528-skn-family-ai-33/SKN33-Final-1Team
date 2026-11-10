@@ -193,10 +193,15 @@ test('샘플 요청은 로그인 복귀 뒤 한 번만 읽고 쿼리를 소비�
   await submitLogin(page);
   await page.waitForURL('**/review/new');
   await page.getByRole('img', { name: '업로드한 검수 이미지 미리보기' }).waitFor();
-  assert.equal(await page.getByLabel('1. 프로젝트 이름').inputValue(), '샘플 프로젝트');
-  assert.equal(await page.getByLabel('3. 검수 요구사항').inputValue(), '행사명: 테스트 축제');
+  assert.equal(await page.getByLabel('프로젝트 이름', { exact: true }).inputValue(), '샘플 프로젝트');
+  assert.equal(await page.getByLabel('검수 요구사항').inputValue(), '행사명: 테스트 축제');
   assert.equal(state.requests.filter(request => request.path === '/api/sample').length, 1);
   assert.equal(state.requests.filter(request => request.path === '/api/sample/image').length, 1);
+
+  await page.route('**/api/sample', route => route.fulfill({ status: 404, json: { detail: 'Not Found' } }));
+  await page.getByRole('button', { name: '예시 자료 불러오기', exact: true }).click();
+  await page.waitForFunction(() => document.getElementById('project-name')?.value === '2026 김천김밥축제 포스터 검수');
+  assert.match(await page.getByLabel('검수 요구사항').inputValue(), /행사명: 김천김밥축제/);
 });
 
 test('업무 API의 명시적 세션 만료는 로그인 화면으로 복귀한다', async t => {
@@ -256,9 +261,9 @@ test('로그아웃 실패는 현재 세션을 유지하고 재시도 성공 후 
 test('이미지 입력·검수 결과를 확인하고 서비스 메인 왕복 시 새 입력으로 초기화한다', async t => {
   const { page, state } = await fixture(t, { authenticated: true });
   await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('1. 프로젝트 이름').fill('화면 통합 검증');
+  await page.getByLabel('프로젝트 이름', { exact: true }).fill('화면 통합 검증');
   await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('3. 검수 요구사항').fill('행사명: 테스트 축제');
+  await page.getByLabel('검수 요구사항').fill('행사명: 테스트 축제');
   await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
   await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
   assert.equal(await page.getByRole('button', { name: '검수 시작하기', exact: true }).isDisabled(), true);
@@ -296,9 +301,9 @@ test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함�
         { text: '친환경생태공원', engine: 'paddleocr', bbox_xyxy: [0, 0, 1, 1] }] }],
   }] });
   await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('1. 프로젝트 이름').fill('재인식 검증');
+  await page.getByLabel('프로젝트 이름', { exact: true }).fill('재인식 검증');
   await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('3. 검수 요구사항').fill('장소: 친환경생태공원');
+  await page.getByLabel('검수 요구사항').fill('장소: 친환경생태공원');
   await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
   await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();

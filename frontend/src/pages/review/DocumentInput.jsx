@@ -42,6 +42,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   }, [documentBusy, documentProgress?.startedAt]);
   const seconds = Math.max(0, Math.floor((now - (documentProgress?.startedAt || now)) / 1000));
   const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const fileDisabled = documentBusy || sampleBusy || !projectId || projectsBusy || creating || !connected;
   return <div className="document-input" aria-busy={documentBusy}>
     <div className="document-project"><label htmlFor="document-project">요구사항을 저장할 프로젝트</label>
       <select id="document-project" value={projectId} onChange={event => setProjectId(event.target.value)} disabled={documentBusy || projectsBusy || creating}>
@@ -52,10 +53,15 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         <button type="button" className="text-btn" disabled={projectsBusy || creating || documentBusy || !connected} onClick={createProject}>{creating ? '만드는 중…' : '위 이름으로 프로젝트 만들기'}</button></div>
       <ErrorMessage message={projectsError} />
     </div>
-    <div className="document-input-heading"><div><strong>요구사항 문서 불러오기</strong><p>PDF 전체에서 검수할 내용을 찾아 항목별 문단으로 추가합니다.</p></div>
-      <input ref={documentInput} type="file" className="sr-only" accept="application/pdf,.pdf" aria-label="요구사항 PDF 선택" disabled={documentBusy || sampleBusy || !projectId || projectsBusy}
+    <div className="document-input-heading" onDragOver={event => { if (event.dataTransfer.types.includes('Files')) event.preventDefault(); }}
+      onDrop={event => {
+        if (!event.dataTransfer.files.length) return;
+        event.preventDefault();
+        if (!fileDisabled) selectDocument([...event.dataTransfer.files], projectId);
+      }}><div><strong>요구사항 문서 첨부</strong><p>PDF를 선택하거나 여기에 놓아 주세요.</p></div>
+      <input ref={documentInput} type="file" className="sr-only" accept="application/pdf,.pdf" aria-label="요구사항 PDF 선택" disabled={fileDisabled}
         onChange={event => { if (event.target.files.length) selectDocument([...event.target.files], projectId); }} />
-      <button type="button" className="btn secondary small" disabled={documentBusy || sampleBusy || !projectId || projectsBusy || !connected} onClick={() => documentInput.current.click()}><Icon name="file" />{documentBusy ? '요구사항 정리 중…' : 'PDF 파일 추가'}</button>
+      <button type="button" className="btn secondary small" disabled={fileDisabled} onClick={() => documentInput.current.click()}><Icon name="file" />{documentBusy ? '요구사항 정리 중…' : 'PDF 파일 추가'}</button>
     </div>
     <p className="help">텍스트 PDF 1개 · 최대 10MiB / 50페이지 · 기존 입력은 유지됩니다.</p>
     {documentProgress && <div className={`document-progress ${documentProgress.stage === 'completed' ? 'completed' : ''}`}>

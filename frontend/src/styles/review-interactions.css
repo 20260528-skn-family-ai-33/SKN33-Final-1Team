@@ -15,6 +15,10 @@ a.rv-button:hover { text-decoration: none; }
 /* 단계 메뉴·상단 메뉴: 갈 수 있는 곳은 마우스를 올리면 드러난다. */
 .rv-step-nav > button:not(.is-active):not(:disabled):hover { background: #efefeb; color: #171717; }
 .rv-step-nav > button:not(.is-active):not(:disabled):active { background: #e6e6e1; }
+.rv-project-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.rv-project-name-field { position: relative; }
+.rv-workspace .rv-project-name-field input { width: clamp(150px, 18vw, 260px); min-height: 30px; padding: 5px 29px 5px 8px; border: 1px solid #deded9; border-radius: 7px; background: #fff; font-size: 13px; }
+.rv-project-name-field > .icon { position: absolute; right: 9px; top: 8px; width: 14px; height: 14px; color: #6e6e6b; pointer-events: none; }
 a.rv-tool-link:active { background: #e8e8e4; }
 
 /* 처리 중: 누른 버튼에 회전 표시를 띄우고 아이콘 자리를 대신한다. 다른 버튼은 기존처럼 흐려진다. */
