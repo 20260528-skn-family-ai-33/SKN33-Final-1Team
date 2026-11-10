@@ -43,6 +43,60 @@ env
 !.env.*.example
 !*.env.example
 
+# Private keys and key stores
+*.pem
+*.pem.bak
+*.key
+*.key.bak
+*.ppk
+*.p8
+*.pk8
+*.pkcs8
+*.p12
+*.pfx
+*.jks
+*.jceks
+*.keystore
+*.keytab
+*.kdbx
+id_rsa
+id_dsa
+id_ecdsa
+id_ecdsa_sk
+id_ed25519
+id_ed25519_sk
+ssh_host_*_key
+
+# Local credentials and secret exports
+.ssh/
+.gnupg/
+.aws/
+.oci/
+.kube/
+**/.docker/config.json
+kubeconfig
+*.kubeconfig
+.netrc
+_netrc
+.pypirc
+.htpasswd
+.git-credentials
+.pgpass
+pgpass.conf
+credentials.json
+credentials.csv
+*accessKeys.csv
+application_default_credentials.json
+service-account.json
+service_account.json
+.secrets
+secrets/
+secrets.json
+secrets.yaml
+secrets.yml
+secrets.toml
+*.secret
+
 # Local Docker volume data
 /docker-data/
 
