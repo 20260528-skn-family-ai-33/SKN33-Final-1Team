@@ -16,12 +16,25 @@ a.rv-button:hover { text-decoration: none; }
 .rv-step-nav > button:not(.is-active):not(:disabled):hover { background: #efefeb; color: #171717; }
 .rv-step-nav > button:not(.is-active):not(:disabled):active { background: #e6e6e1; }
 .rv-project-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.rv-step-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--rv-line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--rv-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.rv-step-status:empty { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; }
 a.rv-tool-link:active { background: #e8e8e4; }
 
 /* 처리 중: 누른 버튼에 회전 표시를 띄우고 아이콘 자리를 대신한다. 다른 버튼은 기존처럼 흐려진다. */
 .rv-button[aria-busy="true"] { cursor: progress; }
 .rv-button[aria-busy="true"]:disabled { opacity: 1; }
-.rv-button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rv-button-spin .7s linear infinite; }
+.rv-button[aria-busy="true"]::before, .rv-step-status:not(:empty)::before { content: ''; flex-shrink: 0; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rv-button-spin .7s linear infinite; }
 .rv-button[aria-busy="true"] .icon { display: none; }
 @keyframes rv-button-spin { to { transform: rotate(360deg); } }
 

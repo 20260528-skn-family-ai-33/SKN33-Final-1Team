@@ -19,6 +19,14 @@ import { useAuth } from '../../auth/AuthProvider.jsx';
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = processingStatuses;
+const actionStatus = {
+  approve: '기준을 승인하고 있어요.',
+  start: '기준을 승인하고 있어요.',
+  'start-skip': '기준을 승인하고 있어요.',
+  'decide-start': '포스터 검수를 접수하고 있어요.',
+  final: '최종 승인을 저장하고 있어요.',
+  changes: '수정 요청 승인을 저장하고 있어요.',
+};
 const rejectionReasons = {
   A02_DUPLICATE_REQUIREMENT: '이미 포함된 기준과 중복됩니다.',
   A02_EXPECTED_UNGROUNDED: '기대값이 원문과 일치하지 않습니다.',
@@ -102,6 +110,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
   const hasResults = !!run?.validated;
   const processing = !run || running.has(status);
+  const progress = processing ? frameworkProgress(run) : null;
+  const stageStatus = actionStatus[pending] || (progress && !error
+    ? run ? progress.message : '검수 상태를 불러오고 있어요.'
+    : null);
   const showingReport = !processing && hasResults && !showCriteria && Boolean(reportTarget);
   const step = processing ? 'running' : showingReport ? 'report' : hasResults && !showCriteria ? 'results' : 'criteria';
   const finalApproved = status === 'completed' && run?.human_decision === 'final_approved';
@@ -265,8 +277,11 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     busy={busy || processing}
     mainClassName="rv-framework-workspace"
     versionLabel={latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}
-    projectActions={showingReport && <button type="button" className="rv-button secondary" disabled={busy}
-      onClick={() => setReportTarget(null)}>결과 확인으로 돌아가기</button>}
+    projectActions={<>
+      <p className="rv-step-status" role="status">{stageStatus}</p>
+      {showingReport && <button type="button" className="rv-button secondary" disabled={busy}
+        onClick={() => setReportTarget(null)}>결과 확인으로 돌아가기</button>}
+    </>}
     canNavigate={key => key === 'input' ? canReturnToInput : !busy && !processing && (
       key === 'criteria' && criteria.length > 0 || ['results', 'report'].includes(key) && hasResults)}
     navigate={key => {
@@ -280,7 +295,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
       {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
         : run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
-      {processing ? <ReviewProgress {...frameworkProgress(run)} image={image} error={error}
+      {processing ? <ReviewProgress {...progress} image={image} error={error}
         facts={run?.baseline ? [['해상도', image.width ? `${image.width}×${image.height}` : image.unavailable ? '확인 불가' : '확인 중'],
           ['검수 기준', criteria.length ? `${criteria.length}개` : '확인 중'],
           ['검수 범위', reviewScope || '확인 중']] : []}
@@ -339,7 +354,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
               <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
                 checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
               <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
-                disabled={!!amendment && amendment.criterion_id !== c.criterion_id} onClick={() => setActiveId(c.criterion_id)}>
+                disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
                 <span className="rv-criteria-item-index">{String(index + 1).padStart(2, '0')}</span><span className="rv-criteria-item-text">{c.text}</span><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
               </button>
             </li>)}</ul>

@@ -30,6 +30,7 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
   page.setDefaultTimeout(10000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   const sent = [], context = { run_id: 'human-fixture', project_id: 'project-fixture', actor_id: 'user-fixture', asset_version_id: 'poster-v1' };
+  const rejectedApproval = Promise.withResolvers();
   let rejectFinal = verdict === 'pass';
   const snapshot = { context, execution_status: 'waiting_review', human_decision: 'unreviewed', machine_verdict: 'review',
     baseline: { criteria_version_id: 'criteria-v1' }, evidence: { status: 'complete' }, approvals: [],
@@ -47,6 +48,7 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
       assert.equal(request.headers()['x-csrftoken'], 'human-browser-token');
       if (rejectFinal) {
         rejectFinal = false;
+        await rejectedApproval.promise;
         return route.fulfill({ status: 409, json: { error: { code: 'APPROVAL_CONFLICT', message: '승인을 다시 시도해 주세요.' } } });
       }
       const approval = request.postDataJSON(); sent.push(approval);
@@ -76,13 +78,21 @@ test(`담당자 ${verdict} 확인 근거를 저장하고 기계 판정은 보존
   await page.getByLabel('현재 포스터를 직접 확인했습니다', { exact: true }).check();
   if (verdict === 'fail') assert.ok(await final.isDisabled());
   if (verdict === 'pass') {
-    await submit.click();
+    try {
+      await submit.click();
+      await page.getByText('최종 승인을 저장하고 있어요.', { exact: true }).waitFor();
+      assert.ok(await submit.isDisabled());
+      assert.equal(await page.getByRole('navigation', { name: '검수 단계' }).locator('button:disabled').count(), 4);
+    } finally {
+      rejectedApproval.resolve();
+    }
     await page.getByRole('alert').filter({ hasText: 'APPROVAL_CONFLICT' }).waitFor();
+    assert.ok(await submit.isEnabled());
     assert.equal(await page.getByLabel('확인 근거·위치', { exact: true }).inputValue(), '현재 포스터 상단 날짜');
     assert.equal(sent.length, 0);
   }
   await submit.click();
-  const approved = page.locator('.rv-result-summary').getByText('담당자 승인 완료', { exact: true });
+  const approved = page.getByRole('status').getByText('담당자 승인 완료', { exact: true });
   if (verdict === 'pass') {
     await approved.waitFor();
     await page.waitForFunction(() => document.activeElement?.id === 'page-title' && window.scrollY === 0);

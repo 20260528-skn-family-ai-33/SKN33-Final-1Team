@@ -59,8 +59,9 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 
   const unavailable = disabled || loading || creating;
   const selected = projects.find(project => project.id === projectId);
-  return <details className="rv-project-picker">
-    <summary title={selected?.name}>{loading ? '프로젝트 확인 중' : selected ? '저장 프로젝트' : '프로젝트 선택'}</summary>
+  const needsProject = connected && !unavailable && !selected;
+  return <details className={`rv-project-picker${needsProject ? ' is-required' : ''}`}>
+    <summary title={selected?.name}>{loading ? '프로젝트 확인 중' : selected ? '저장 프로젝트' : '저장할 프로젝트 선택'}</summary>
     <div className="rv-project-picker-panel">
       <label htmlFor="document-project">요구사항을 저장할 프로젝트</label>
       <select id="document-project" value={projectId} onChange={event => setProjectId(event.target.value)} disabled={unavailable}>

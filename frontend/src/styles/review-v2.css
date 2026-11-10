@@ -117,6 +117,23 @@ a.rv-tool-link:hover, .rv-tool-link[aria-current=page] { color: var(--rv-ink); b
 .rv-workspace .rv-project-name-field .icon { width: 14px; height: 14px; color: var(--rv-muted); }
 .rv-project-picker { position: relative; flex: none; }
 .rv-project-picker summary { cursor: pointer; color: var(--rv-muted); font-size: 11px; }
+.rv-project-picker.is-required > summary {
+  padding: 6px 9px;
+  border: 1px solid var(--rv-ink);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--rv-ink);
+  font-weight: 700;
+}
+.rv-project-picker.is-required:not([open]) > summary:not(:hover, :focus-visible) {
+  animation: rv-project-nudge 3.4s ease-in-out infinite;
+}
+@keyframes rv-project-nudge {
+  0%, 17%, 100% { transform: translateX(0); }
+  4% { transform: translateX(-3px); }
+  8% { transform: translateX(3px); }
+  12% { transform: translateX(-2px); }
+}
 .rv-project-picker-panel {
   position: absolute;
   z-index: 10;
