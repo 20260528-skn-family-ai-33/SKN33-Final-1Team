@@ -61,11 +61,10 @@ def test_polished_sentences_are_added_without_changing_facts():
     assert payload["temperature"] == 0 and payload["chat_template_kwargs"] == {"enable_thinking": False}
     assert "requirement-text" not in payload["messages"][-1]["content"]   # 통과 항목은 보내지 않는다
     assert (draft.verdict, draft.evidence_ids) == (plain.verdict, plain.evidence_ids)
-    assert POLISH_NOTICE in draft.summary and "  할 일: 딸기가 3개 보이도록 고쳐 주세요." in draft.summary
+    assert f"- {POLISH_NOTICE}" in draft.summary.splitlines()
     assert all(line in draft.summary.splitlines() for line in plain.summary.splitlines())   # 규칙 사실은 그대로
-    change, = draft.change_requests
-    assert change.startswith("수정 요청 [requirement-number] 딸기가 3개 보이도록 고쳐 주세요. 기준 원문:")
-    assert change.endswith("설명: 딸기 개수가 기준과 다릅니다. 기준은 3개입니다.")
+    assert draft.change_requests == ("수정 [requirement-number] 딸기가 3개 보이도록 고쳐 주세요.",)   # 할 일만 Qwen 문장
+    assert "딸기 개수가 기준과 다릅니다" not in draft.summary   # 템플릿에는 설명 칸이 없다(사유는 코드표 한 줄)
 
 
 @pytest.mark.parametrize(("responses", "problem"), [
@@ -93,6 +92,18 @@ def test_known_failure_falls_back_without_automatic_resubmission(response):
     draft=invoke_role('A07',TeamA07Reporter(qwen),request)
     assert_rule_report_with_notice(draft,request,'outcome_unknown' if isinstance(response,httpx.Response) and response.status_code>=500 else 'failed')
     assert len(sent) == qwen.calls == 1
+
+
+def test_grouped_check_lines_keep_the_template_sentence_even_when_polished():
+    """같은 사유로 묶인 '확인' 줄은 항목별 Qwen 문장 대신 템플릿 규칙 문장 하나를 쓴다."""
+    request = fixture("review")
+    rows = [{"criterion_id": i.criterion_id, "explanation": "자동으로 읽지 못했습니다.",
+             "action": "포스터를 직접 확인해 주세요."} for i in items(request)]
+    qwen, sent = polisher(envelope({"items": rows}))
+    draft = invoke_role("A07", TeamA07Reporter(qwen), request)
+    plain = invoke_role("A07", TeamA07Reporter(), request)
+    assert len(sent) == 1 and f"- {POLISH_NOTICE}" not in draft.summary.splitlines()   # 쓰이지 않은 Qwen 문장은 안내하지 않는다
+    assert draft.change_requests == plain.change_requests and len(draft.change_requests) == 1
 
 
 @pytest.mark.parametrize('failure', [httpx.ReadTimeout, httpx.WriteTimeout, httpx.ReadError,
