@@ -81,6 +81,8 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentInput,
   selectDocument, cancelDocument, cancelLabel = '입력 반영 취소', cancelBusy, documentName, clearDocument, disabled, kind = 'poster', children }) {
   const [now, setNow] = useState(Date.now);
+  const [dragging, setDragging] = useState(false);
+  const dragDepth = useRef(0);
   const startedAt = documentProgress?.startedAt;
   useEffect(() => {
     if (!documentBusy || !startedAt) return;
@@ -92,23 +94,50 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const seconds = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
   const elapsed = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
   const off = documentBusy || disabled;
+  const dropActive = dragging && !off;
   const filename = documentProgress?.source || documentName;
+  const uploadHint = off ? 'PDF 1개 첨부' : 'PDF 1개를 끌어 놓거나 파일을 선택하세요.';
+
+  function handleDragEnter(event) {
+    if (!event.dataTransfer.types.includes('Files')) return;
+    dragDepth.current += 1;
+    setDragging(true);
+  }
+
+  function handleDragOver(event) {
+    if (!event.dataTransfer.types.includes('Files')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = off ? 'none' : 'copy';
+  }
+
+  function handleDragLeave() {
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  }
+
+  function handleDrop(event) {
+    const files = Array.from(event.dataTransfer.files);
+    if (!files.length && !event.dataTransfer.types.includes('Files')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    dragDepth.current = 0;
+    setDragging(false);
+    if (!off && files.length) selectDocument(files);
+  }
+
   function loadExample() {
     const source = kind === 'video' ? videoExample : posterExample;
     const bytes = Uint8Array.from(atob(source.split(',')[1]), character => character.charCodeAt(0));
     selectDocument([new File([bytes], '빛의 기록_요구사항.pdf', { type: 'application/pdf' })]);
   }
-  return <section className="rv-form-block rv-document-card" aria-label="요구사항 문서 첨부" aria-busy={documentBusy || undefined}>
+  return <section className={`rv-form-block rv-document-card${dropActive ? ' is-dragging' : ''}`}
+    aria-label="요구사항 문서 첨부" aria-busy={documentBusy || undefined}
+    onDragEnter={handleDragEnter} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
     <h2>요구사항 문서 첨부</h2>
-    <div className="rv-form-upload"
-      onDragOver={event => { if (event.dataTransfer.types.includes('Files')) event.preventDefault(); }}
-      onDrop={event => {
-        if (!event.dataTransfer.files.length) return;
-        event.preventDefault();
-        if (!off) selectDocument([...event.dataTransfer.files]);
-      }}>
+    <div className="rv-form-upload">
       <div className="rv-form-row">
-        <span className="rv-upload-name">{filename || 'PDF 1개를 여기에 놓으세요.'}</span>
+        <span className="rv-upload-name">{dropActive ? '여기에 PDF를 놓으세요.' : filename || uploadHint}</span>
         <input ref={documentInput} type="file" className="sr-only" accept="application/pdf,.pdf" aria-label="요구사항 PDF 선택" disabled={off}
           onChange={event => { if (event.target.files.length) selectDocument([...event.target.files]); }} />
         <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
