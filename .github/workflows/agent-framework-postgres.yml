@@ -3,8 +3,8 @@ on:
   pull_request:
     paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "docs/poster-baselines/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "scripts/framework_graph_test*.py", "scripts/framework_graph_runtime.py", "tests/test_framework_graph_test.py", "tests/test_framework_graph_runtime.py", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example"]
   push:
-    branches: ["main", "feat/agent-framework", "feat/37-a02-pdf-registration"]
-    paths: ["backend/agent_framework/**", "tests/agent_framework/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "scripts/framework_graph_test*.py", "scripts/framework_graph_runtime.py", "tests/test_framework_graph_test.py", "tests/test_framework_graph_runtime.py", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example"]
+    branches: ["main", "AWS_TEST", "feat/agent-framework", "feat/37-a02-pdf-registration"]
+    paths: ["backend/agent_framework/**", "backend/app/**", "backend/migrations/**", "tests/agent_framework/**", "tests/app/**", "docs/poster-baselines/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "scripts/framework_graph_test*.py", "scripts/framework_graph_runtime.py", "tests/test_framework_graph_test.py", "tests/test_framework_graph_runtime.py", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework-postgres.yml", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example"]
 permissions:
   contents: read
 jobs:

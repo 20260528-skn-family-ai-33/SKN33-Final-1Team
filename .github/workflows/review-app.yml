@@ -3,7 +3,7 @@ on:
   pull_request:
     paths: ["backend/**", "frontend/**", "tests/**", "scripts/**", "requirements*.txt", "pyproject.toml", "uv.lock", "start.py", "setup_local.py", "run.sh", "run.cmd", ".env*.example", "compose*.yaml", "deploy/**", ".github/workflows/**"]
   push:
-    branches: [main]
+    branches: [main, AWS_TEST]
 permissions:
   contents: read
 jobs:
