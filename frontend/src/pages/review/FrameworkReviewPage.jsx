@@ -19,6 +19,15 @@ import { frameworkPrefix, frameworkJson, requirePosterReview } from './framework
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
 import { useAuth } from '../../auth/AuthProvider.jsx';
+import { PosterLogoCard, usePosterLogoJobs } from './PosterLogoParts.jsx';
+import { previousLogos, submitPosterLogoJob } from './posterLogoFlow.js';
+import './posterLogo.css';
+
+// 로고 접수 실패 안내는 새 실행 화면으로 이동한 뒤에도 보이도록 실행 번호별로 잠시 보관한다.
+const logoNoticeKey = runId => 'poster-logo-notice:' + runId;
+function readLogoNotice(runId) {
+  try { return sessionStorage.getItem(logoNoticeKey(runId)) || ''; } catch { return ''; }
+}
 
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = processingStatuses;
@@ -67,7 +76,7 @@ function command(path, body, key, signal) {
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
 
-export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew }) {
+export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
@@ -91,6 +100,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [editingPoster, setEditingPoster] = useState(false);
   const [changeImpact, setChangeImpact] = useState(null);
   const [revisions, setRevisions] = useState(null);
+  const [logoNotice] = useState(() => readLogoNotice(runId));
+  const logoJobs = usePosterLogoJobs(runId);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   const keys = useRef(new Map());
@@ -257,8 +268,24 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     const body = { criteria_version_id: baseline.criteria_version_id, expected_criteria_sha256: baseline.criteria_sha256,
       asset_version_id: uploaded.current.id };
     const child = await command(path + (revision ? '/poster-revisions' : '/poster-reviews'), body, requestKey(JSON.stringify(body)), signal);
+    await attachPosterLogos(child.context.run_id, revision, signal);
     if (navigate && !signal.aborted) openRun(child.context.run_id);
     return child;
+  }
+  // 원본 로고를 첨부했으면 같은 포스터로 포스터 로고 작업을 만든다. 수정본은 이전 실행의 원본 로고·기준 문구를 다시 쓴다.
+  // 로고 작업 접수가 실패해도 포스터 검수는 그대로 진행한다.
+  async function attachPosterLogos(childRunId, revision, signal) {
+    try {
+      const logos = revision ? await previousLogos(runId, { signal }) : referenceLogos || [];
+      if (!logos.length) return;
+      await submitPosterLogoJob({ poster: file, logos, title: (projectName || '포스터') + ' 로고 검수', runId: childRunId, signal });
+    } catch (failure) {
+      if (signal.aborted) return;
+      try {
+        sessionStorage.setItem(logoNoticeKey(childRunId),
+          '포스터 로고 검수를 접수하지 못했어요(' + failure.message + '). 기준 문구 검수는 그대로 진행합니다.');
+      } catch { /* 브라우저 저장소를 쓸 수 없으면 안내만 생략한다 */ }
+    }
   }
   async function approveAndStart(signal, excludeUnresolved = false) {
     if (selectionUnavailable) return;
@@ -361,6 +388,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           <div className="rv-criteria-action-context">
             {onInput && <button type="button" className="rv-button secondary" disabled={!canReturnToInput}
               onClick={onInput}>자료 입력으로 돌아가기</button>}
+            {referenceLogos?.length > 0 && (registeringPoster || reviewingDraft) && <p>
+              첨부한 원본 로고 {referenceLogos.length}개는 포스터를 등록할 때 로고 위치 후보 찾기에 함께 접수합니다.</p>}
             {reviewingDraft && (excluded.length > 0
               ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>
               : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요. 검수 시작을 누르면 기준 승인과 포스터 등록이 함께 진행됩니다.</p>)}
@@ -418,6 +447,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
             {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
+      <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
       {!processing && (!hasResults || showingReport) && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">
       <h2 id="poster-report-approval" tabIndex={-1}>{canRevise ? '담당자 승인과 수정본 재검수' : '검수 진행 기록'}</h2>
       {revisionReady && <>

@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.app.config import ConfigurationError
 from backend.app.main import create_app as create_auth_app
+from backend.app.poster.logos.routes import poster_logo_router
 from backend.app.routes.v1.business import subject
 from backend.app.video.logos.client import WorkerPool
 from backend.app.video.logos.routes import video_logo_router
@@ -32,9 +33,10 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None, aws_t
                        review_pipeline='disabled', review_executor='background_tasks',
                        review_config_file=None)
     root = Path(root)
-    reviews, logos = root / 'reviews', root / 'logos'
+    reviews, logos, poster_logos = root / 'reviews', root / 'logos', root / 'poster-logos'
     reviews.mkdir(mode=0o700, parents=True, exist_ok=True)
     logos.mkdir(mode=0o700, parents=True, exist_ok=True)
+    poster_logos.mkdir(mode=0o700, parents=True, exist_ok=True)
     app = create_auth_app(settings=settings, engine=engine)
     original = app.router.lifespan_context
 
@@ -60,5 +62,9 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None, aws_t
                                          authenticate=authenticate, allowed_hosts=settings.hosts,
                                          isolate_users=aws_test, linked_reviews=reviews if aws_test else None,
                                          worker_pool=worker_pool))
+    # 포스터 로고는 같은 RunPod 로고 워커(슬롯)와 추론 잠금을 쓴다. 포스터 검수 실행과는 run_id로만 연결한다.
+    app.include_router(poster_logo_router(root=poster_logos, inference_lock=inference_lock,
+                                          authenticate=authenticate, allowed_hosts=settings.hosts,
+                                          isolate_users=aws_test, worker_pool=worker_pool))
     app.title = 'Creative Checker video service'
     return app

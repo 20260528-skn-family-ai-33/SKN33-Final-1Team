@@ -1,0 +1,41 @@
+/* 포스터 로고 검수: 포스터 검수 화면의 작업 카드와 위치 확정·근거 화면(/review/logo).
+   확정·근거 화면의 공통 모양은 영상 로고 화면(../video/logoConfirm.css의 vl-*)을 그대로 쓰고, 세로 포스터에 맞는 부분만 더한다. */
+
+/* ---------- 포스터 검수 화면의 작업 카드 ---------- */
+.rv-poster-logo-card { margin-top: 18px; }
+.rv-poster-logo-card .rv-panel-heading { padding: 18px 24px; }
+.rv-poster-logo-card .rv-video-logo-body { padding: 16px 24px 20px; }
+.rv-poster-logo-card .rv-video-logo-jobs { list-style: none; display: grid; gap: 10px; margin: 0; padding: 0; }
+.rv-poster-logo-card .rv-video-logo-jobs > li { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid #ecece6; border-radius: 12px; background: #fafaf8; }
+.rv-poster-logo-card .rv-video-logo-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.rv-poster-logo-card .rv-video-logo-head strong { margin-right: auto; font-size: 13px; font-weight: 600; }
+.rv-poster-logo-card .rv-video-logo-track { height: 5px; overflow: hidden; border-radius: 9px; background: #ececea; }
+.rv-poster-logo-card .rv-video-logo-track > div { height: 100%; border-radius: inherit; background: #171717; transition: width .5s ease; }
+.rv-poster-logo-card .rv-video-logo-detail { color: #6e6e6b; font-size: 11px; font-variant-numeric: tabular-nums; }
+.rv-poster-logo-card .rv-video-logo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-poster-logo-card .rv-video-logo-actions .rv-button { min-height: 34px; padding: 7px 13px; font-size: 11px; text-decoration: none; }
+.rv-poster-logo-card .rv-video-logo-state { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid #e3e3df; border-radius: 999px; background: #fff; color: #3f3f3a; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rv-poster-logo-card .rv-video-logo-state > span { width: 6px; height: 6px; border-radius: 50%; background: #a3a39b; }
+.rv-poster-logo-card .rv-video-logo-state.is-running > span { background: #171717; animation: rv-breathe 2s ease-in-out infinite; }
+.rv-poster-logo-card .rv-video-logo-state.is-todo { border-color: #171717; color: #171717; }
+.rv-poster-logo-card .rv-video-logo-state.is-todo > span { background: transparent; box-shadow: inset 0 0 0 1.5px #171717; }
+.rv-poster-logo-card .rv-video-logo-state.is-done > span { background: #171717; }
+.rv-poster-logo-card .rv-video-logo-state.is-error { border-color: #e9cfc7; background: #fcf1ed; color: #a34f3e; }
+.rv-poster-logo-card .rv-video-logo-state.is-error > span { background: #a34f3e; }
+.rv-poster-logo-card .rv-video-inline-warning { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid #e9dfbf; border-radius: 10px; background: #f8f3e2; color: #65551f; font-size: 11px; line-height: 1.7; }
+
+/* ---------- 위치 확정·근거 화면 ---------- */
+/* 세로 포스터가 화면을 넘지 않게 높이를 기준으로 너비를 정한다(너비는 화면에서 aspect-ratio로 계산해 넣는다). */
+.pl-poster { margin: 0 auto; max-width: 100%; }
+.pl-poster.vl-frame { background: #e9edf3; }
+.pl-poster .vl-box > span { pointer-events: none; }
+.pl-manual-canvas { margin: 0 auto; max-width: 100%; }
+.pl-filter { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pl-candidate-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; color: #77869a; font-size: 10px; }
+.pl-absent-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pl-absent-list li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #e7edf4; border-radius: 9px; background: #f8fafc; font-size: 12px; }
+.pl-absent-list img { width: 52px; height: 34px; object-fit: contain; border-radius: 6px; background: #fff; }
+.pl-small-note { margin: 8px 0 0; color: #8a5a12; font-size: 11px; }
+.pl-element-list { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 11px; }
+.pl-element-list li { display: flex; justify-content: space-between; gap: 10px; }
+.pl-element-list li span:last-child { color: #5c6f87; font-weight: 700; }
