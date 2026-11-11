@@ -111,7 +111,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     criteria.some(item => item.kind === 'visual') && '시각 조건',
   ].filter(Boolean).join(' · ');
   const selected = criteria.find(item => item.criterion_id === (amendment?.criterion_id || activeId)) || criteria[0];
-  const imageUrl = run?.baseline ? frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content' : null;
+  const imageUrl = run?.baseline && run.context.asset_version_id
+    ? frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content' : null;
   const image = useMemo(() => ({ url: imageUrl, ...(imageSize?.url === imageUrl ? imageSize : {}) }), [imageUrl, imageSize]);
   const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
   const hasResults = !!run?.validated;
@@ -126,6 +127,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const canReturnToInput = !busy && !processing && Boolean(onInput);
   const canRevise = status === 'waiting_review' || status === 'waiting_revision';
   const revisionReady = status === 'waiting_revision';
+  const canEditPoster = hasResults && Boolean(imageUrl) && (canRevise || status === 'completed');
   const reviewItems = run ? reviewableItems(run) : [];
   const requiredItems = (run?.validated?.items || []).filter(item => item.required);
   const canFinalize = requiredItems.length > 0 && requiredItems.every(item => item.verdict === 'pass' ||
@@ -295,7 +297,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const registeringPoster = status === 'waiting_asset';
   const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
   const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
-  const editPosterButton = revisionReady && imageUrl && <button type="button" className="rv-button secondary"
+  const editPosterButton = canEditPoster && <button type="button" className="rv-button secondary"
     disabled={busy || image.unavailable} onClick={() => setEditingPoster(true)}>
     <Icon name="pencil" /> 포스터 문구 수정
   </button>;
@@ -453,7 +455,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         {run.context.parent_run_id && <p>수정 전 실행 <a href={'?framework=' + encodeURIComponent(run.context.parent_run_id)}>{run.context.parent_run_id}</a></p>}
       </details>}
       </section>}
-    {editingPoster && revisionReady && imageUrl && <PosterTextEditor key={runId} runPath={path} imageUrl={imageUrl}
+    {editingPoster && canEditPoster && <PosterTextEditor key={runId} runPath={path} imageUrl={imageUrl}
       onClose={() => setEditingPoster(false)} />}
   </ReviewLayout>;
 }

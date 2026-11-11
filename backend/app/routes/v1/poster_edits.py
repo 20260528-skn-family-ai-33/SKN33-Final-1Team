@@ -22,10 +22,11 @@ def editable_asset(service, actor, run_id):
         row = store._row(connection, run_id)
         snapshot = RunSnapshot.model_validate(row['snapshot_json'])
         store._access(connection, actor, snapshot.context)
-        if (snapshot.execution_status != 'waiting_revision' or snapshot.human_decision != 'changes_approved'
-                or snapshot.baseline is None or row['input_json'].get('asset') is None):
-            raise AuthError('POSTER_EDIT_APPROVAL_REQUIRED', 409)
-        return snapshot.context, AssetRef.model_validate(row['input_json']['asset'])
+        asset = row['input_json'].get('asset')
+        if (snapshot.execution_status not in ('waiting_review', 'waiting_revision', 'completed')
+                or snapshot.validated is None or snapshot.baseline is None or asset is None):
+            raise AuthError('POSTER_EDIT_RESULT_REQUIRED', 409)
+        return snapshot.context, AssetRef.model_validate(asset)
 
 
 def source_content(service, actor, context, asset):

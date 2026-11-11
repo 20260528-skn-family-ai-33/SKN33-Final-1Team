@@ -21,7 +21,7 @@ class AuthError(RuntimeError):
             'FRAMEWORK_TASK_NOT_FINISHED':'완료·실패·취소된 이력만 숨길 수 있습니다.',
             'FRAMEWORK_TASK_CURSOR_INVALID':'목록이 변경되었습니다. 처음부터 다시 불러와 주세요.',
             'POSTER_EDIT_NOT_CONFIGURED':'이 서버에 포스터 문구 수정 기능이 아직 연결되지 않았어요.',
-            'POSTER_EDIT_APPROVAL_REQUIRED':'수정 요청을 승인한 포스터에서 문구를 수정할 수 있어요.',
+            'POSTER_EDIT_RESULT_REQUIRED':'자동 검수가 끝난 포스터에서 문구를 수정할 수 있어요.',
             'POSTER_EDIT_SOURCE_UNAVAILABLE':'검수에 사용한 포스터를 불러오지 못했어요.',
             'POSTER_EDIT_AREA_TOO_SMALL':'문구가 들어갈 영역을 조금 더 넓게 선택해 주세요.',
             'POSTER_EDIT_BUSY':'다른 포스터를 수정하고 있어요. 잠시 후 다시 시도해 주세요.',
