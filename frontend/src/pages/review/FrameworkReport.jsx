@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { buildReportContext } from './reportBrief.js';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import ImageStage from '../../components/ImageStage.jsx';
+import { buildReportContext, posterMarks } from './reportBrief.js';
 import '../../styles/framework-report.css';
 
 // 포스터 4단계 보고서. 디자인은 목업(회색 바탕 위 종이, 점 달린 상태 칩, 개수 상자, 안내 상자)을 따르고,
@@ -12,6 +13,29 @@ function StatusChip({ verdict }) {
   return <span className={`rv-report-chip is-${verdict.code}`}><i aria-hidden="true" />{verdict.label}</span>;
 }
 
+// '위치 보기' 창: 화면 가운데 가로·세로 절반 크기. 결과 확인 화면과 같은 ImageStage(확대·이동·선택 근거 확대)로
+// 이 항목의 위치 상자 하나만 포스터 위에 표시한다. Esc·닫기·바깥 클릭으로 닫는다.
+function LocationViewer({ mark, verdict, image, onClose }) {
+  const dialog = useRef(null);
+  useEffect(() => { const element = dialog.current; if (element && !element.open) element.showModal(); }, []);
+  const sized = image?.width > 0 && image?.height > 0;
+  const overlays = sized ? [{ id: mark.criterion_id, tone: mark.code, label: `${mark.number}. ${mark.label}`,
+    bbox_xyxy: mark.bbox.map((value, index) => value * (index % 2 ? image.height : image.width)) }] : [];
+  const close = () => dialog.current?.close();
+  return <dialog ref={dialog} className="rv-report-viewer" aria-labelledby="rv-report-viewer-title" onClose={onClose}
+    onClick={event => { if (event.target === event.currentTarget) close(); }}>
+    <header className="rv-report-viewer-heading">
+      <h2 id="rv-report-viewer-title">{mark.number}. {mark.label}</h2><StatusChip verdict={verdict} />
+      <button type="button" className="rv-report-viewer-close" aria-label="위치 보기 닫기" onClick={close}>×</button>
+    </header>
+    <ImageStage src={image?.url || null} alt={`${mark.number}. ${mark.label} 위치를 표시한 검수 포스터`} title={`${mark.number}. ${mark.label}`}
+      width={sized ? image.width : undefined} height={sized ? image.height : undefined}
+      overlays={overlays} selectedOverlayId={mark.criterion_id} viewKey={mark.criterion_id}
+      empty={<p>포스터 이미지를 불러올 수 없습니다.</p>} />
+    <p className="rv-report-viewer-note">상자는 검사 모델이 읽은 위치입니다. 실제 포스터와 맞는지 담당자가 확인해 주세요.</p>
+  </dialog>;
+}
+
 function downloadJson(context) {
   const blob = new Blob([JSON.stringify(context, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -20,8 +44,10 @@ function downloadJson(context) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export default function FrameworkReport({ run, projectName, standalone = false }) {
+export default function FrameworkReport({ run, projectName, image = null, standalone = false }) {
   const context = useMemo(() => buildReportContext(run, { projectName }), [run, projectName]);
+  const marks = useMemo(() => Object.fromEntries(posterMarks(run, context.items).marks.map(mark => [mark.criterion_id, mark])), [run, context]);
+  const [viewing, setViewing] = useState(null);
   const changeReasons = (run.approvals || []).filter(approval => approval.decision === 'approve_changes' && approval.reason).map(approval => approval.reason);
   const status = run.human_decision === 'final_approved' ? '담당자 최종 승인' : context.synthetic ? '합성 데이터 · 자동 검수 초안' : '자동 검수 초안';
   const { counts } = context;
@@ -58,7 +84,13 @@ export default function FrameworkReport({ run, projectName, standalone = false }
       <section aria-labelledby="rv-report-details">
         <h2 id="rv-report-details">요구사항별 결과</h2>
         {context.items.length ? context.items.map((item, index) => <div className="rv-report-result" key={item.criterion_id}>
-          <div className="rv-report-result-heading"><h3>{pad(index + 1)}. {item.label}{item.required ? '' : ' · 권장'}</h3><StatusChip verdict={item.verdict} /></div>
+          <div className="rv-report-result-heading"><h3>{pad(index + 1)}. {item.label}{item.required ? '' : ' · 권장'}</h3>
+            <div className="rv-report-result-side">
+              {marks[item.criterion_id] ? <button type="button" className="rv-report-locate" aria-haspopup="dialog"
+                aria-label={`${pad(index + 1)}. ${item.label} 위치 보기`} onClick={() => setViewing(item.criterion_id)}>위치 보기</button>
+                : item.verdict.code !== 'pass' && <span className="rv-report-locate-none">위치 정보 없음</span>}
+              <StatusChip verdict={item.verdict} />
+            </div></div>
           <p>기준 {item.expected ? `‘${item.expected}’` : '미정'}{item.source ? ` · ${item.source}` : ''}</p>
           <p><b>관측</b> {item.observed ? `‘${item.observed}’` : item.observation}{item.verdict.code !== 'pass' && item.location ? ` · ${item.location}` : ''}</p>
           {item.reason && <p className="rv-report-muted">{item.reason}</p>}
@@ -83,5 +115,7 @@ export default function FrameworkReport({ run, projectName, standalone = false }
         {run.report.change_requests?.length > 0 && <ul>{run.report.change_requests.map((text, index) => <li key={index}>{text}</li>)}</ul>}
       </details>}
     </div></div>
+    {viewing && marks[viewing] && <LocationViewer key={viewing} mark={marks[viewing]} image={image}
+      verdict={context.items.find(item => item.criterion_id === viewing).verdict} onClose={() => setViewing(null)} />}
   </article>;
 }
