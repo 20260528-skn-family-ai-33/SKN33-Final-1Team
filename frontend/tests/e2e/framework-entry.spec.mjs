@@ -225,6 +225,25 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
       await page.getByRole('heading', { name: '요구사항별 결과', exact: true }).waitFor();
       await page.locator('.rv-report-result').getByText(/^관측 ‘여름’/).waitFor();
+      await page.locator('.rv-report-result').getByRole('button', { name: /^01\. .+ 위치 보기$/ }).click();
+      const viewer = page.getByRole('dialog', { name: /^01\. / });
+      await viewer.locator('img').evaluate(image => image.complete || new Promise(done => image.addEventListener('load', done, { once: true })));
+      await viewer.getByTestId('evidence-box').waitFor();
+      const shown = await viewer.evaluate(dialog => {
+        const image = dialog.querySelector('.image-stage-surface img').getBoundingClientRect();
+        const boxes = [...dialog.querySelectorAll('[data-testid="evidence-box"]')];
+        const box = boxes[0].getBoundingClientRect(), frame = dialog.getBoundingClientRect();
+        return { count: boxes.length, selected: boxes[0].classList.contains('is-selected') && boxes[0].classList.contains('is-fail'),
+          size: [frame.width / innerWidth, frame.height / innerHeight], pixels: [image.width, image.height],
+          at: [(box.left - image.left) / image.width, (box.top - image.top) / image.height, (box.right - image.left) / image.width, (box.bottom - image.top) / image.height] };
+      });
+      assert.equal(shown.count, 1); assert.ok(shown.selected);
+      shown.size.forEach(value => assert.ok(Math.abs(value - .5) < .02, 'viewer is half the screen ' + shown.size));
+      // 시험 이미지는 10×10px라 작게 그려진다. 위치 오차는 비율 3% 또는 3px 안이면 같은 자리로 본다.
+      [.1, .1, .8, .3].forEach((value, index) => assert.ok(Math.abs(shown.at[index] - value) * shown.pixels[index % 2] <= Math.max(3, .03 * shown.pixels[index % 2]),
+        'box follows bbox ' + shown.at + ' on ' + shown.pixels));
+      await page.keyboard.press('Escape');
+      await viewer.waitFor({ state: 'detached' });
       await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
       await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
       await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();

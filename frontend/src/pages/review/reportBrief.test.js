@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { CODES, POLISH_NOTICE, buildActions, buildReportContext, fill, itemLabel, kstMinute, locationHint, particle, polishedActions } from './reportBrief.js';
+import { CODES, POLISH_NOTICE, buildActions, buildReportContext, fill, itemLabel, kstMinute, locationHint, particle, polishedActions, posterMarks } from './reportBrief.js';
 
 const template = JSON.parse(readFileSync(new URL('../../../../backend/a07_reporter/report_template.json', import.meta.url), 'utf8'));
 const example = template.poster.example;
@@ -94,4 +94,17 @@ test('A07이 Qwen 할 일을 쓴 경우에만 그 문장을 쓴다', () => {
 test('A06 판정 칸이 없으면 실행 기록의 machine_verdict를 쓴다', () => {
   const { verdict, ...validated } = run.validated;
   assert.deepEqual(buildReportContext({ ...run, validated, machine_verdict: 'review' }).verdict, { code: 'review', label: '확인 필요' });
+});
+
+test('위치 보기는 불충족·확인 필요만, 현재 포스터의 위치 상자를 쓰고 번호는 결과 순서를 따른다', () => {
+  const marked = { ...run, validated: { ...run.validated, items: run.validated.items.map(item =>
+    item.criterion_id === 'venue' ? { ...item, image: { asset_version_id: 'poster-v1', bbox: [0.4, 0.8, 0.6, 1] } }
+      : item.criterion_id === 'date' ? { ...item, image: { asset_version_id: 'poster-v1', bbox: [0.5, 0.2, 0.3, 0.4] } } : item) } };
+  const { marks, unlocated } = posterMarks(marked, buildReportContext(marked).items);
+  assert.deepEqual(marks, [{ number: '01', criterion_id: 'venue', code: 'fail', label: '행사 장소', bbox: [0.4, 0.8, 0.6, 1] }]);
+  assert.deepEqual(unlocated, [{ number: '02', criterion_id: 'date', code: 'review', label: '행사일' }]);   // 뒤집힌 상자는 위치 없음
+  // 다른 포스터 버전의 상자와 위치가 없는 항목은 그리지 않고, 충족 항목은 상자가 있어도 빼며, JSON(context)에는 넣지 않는다
+  const original = posterMarks(run, buildReportContext(run).items);
+  assert.deepEqual([original.marks, original.unlocated.map(item => item.number)], [[], ['01', '02']]);
+  assert.ok(!('marks' in buildReportContext(marked)));
 });

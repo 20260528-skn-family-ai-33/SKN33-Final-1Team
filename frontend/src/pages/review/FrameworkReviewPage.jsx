@@ -279,7 +279,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         }) : undefined}
         onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title" tabIndex={-1}>대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
-      : showingReport ? <FrameworkReport run={run} projectName={projectName} standalone />
+      : showingReport ? <FrameworkReport run={run} projectName={projectName} image={image} standalone />
       : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
@@ -362,7 +362,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
           onClick={() => perform(registerPoster, 'revision')} aria-busy={working('revision')} title={posterBlock}>수정본 재검수 접수</button>
       </>}
       {(!run || running.has(status)) && <p role="status">검수 실행 상태를 확인하고 있습니다.</p>}
-      {!showingReport && run?.report && <FrameworkReport run={run} projectName={projectName} />}
+      {!showingReport && run?.report && <FrameworkReport run={run} projectName={projectName} image={image} />}
       {status === 'waiting_review' && <>
         <p>담당자가 결과를 검토하고 수정 요청을 승인하면 수정본을 재검수할 수 있습니다.</p>
         {reviewItems.length > 0 && <form ref={humanReviewForm} onSubmit={e => e.preventDefault()}>

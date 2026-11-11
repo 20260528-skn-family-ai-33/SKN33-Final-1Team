@@ -66,6 +66,31 @@
 .rv-report-notes ul { margin: 0; padding-left: 18px; }
 .rv-poster-report .rv-report-notes li { margin: 2px 0; }
 .rv-report-notes p { margin: 0 0 4px; }
+/* 항목별 '위치 보기'(불충족·확인 필요 중 위치 상자가 있는 항목). 누르면 화면 절반 크기 창에 포스터와 그 위치를 띄운다. */
+.rv-report-result-side { display: flex; align-items: center; gap: 8px; flex: none; }
+.rv-poster-report .rv-report-locate { min-height: 0; padding: 3px 9px; border: 1px solid #d6d8d1; border-radius: 7px; background: #fff; color: #222; font-size: 11px; line-height: 1.5; cursor: pointer; }
+.rv-poster-report .rv-report-locate:hover { background: #f1f1ef; }
+.rv-poster-report .rv-report-locate:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.rv-report-locate-none { font-size: 11px; color: #8a8b85; }
+.rv-report-viewer { width: 50vw; height: 50vh; min-width: min(560px, calc(100vw - 32px)); min-height: min(460px, calc(100vh - 32px));
+  max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); padding: 0; border: 1px solid #d6d8d1; border-radius: 16px;
+  background: #fff; color: #222; box-shadow: 0 18px 60px #17171733; overflow: hidden; }
+.rv-report-viewer[open] { display: flex; flex-direction: column; }
+.rv-report-viewer::backdrop { background: rgba(23, 23, 23, .45); }
+.rv-report-viewer-heading { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 18px; border-bottom: 1px solid #e3e3df; }
+.rv-report-viewer-heading h2 { margin: 0; font-size: 14px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-report-viewer .rv-report-viewer-close { margin-left: auto; width: 30px; height: 30px; min-height: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; font-size: 20px; line-height: 1; color: #222; cursor: pointer; }
+.rv-report-viewer .rv-report-viewer-close:hover { background: #f1f1ef; }
+/* 창 안에서는 ImageStage 제목 줄을 빼고(창 제목이 대신), 남은 높이를 이미지 영역이 채운다. */
+.rv-report-viewer .image-stage { flex: 1; min-height: 0; border: 0; border-radius: 0; }
+.rv-report-viewer .image-stage-heading { display: none; }
+.rv-report-viewer .image-stage-viewport { height: auto; flex: 1; min-height: 0; }
+.rv-report-viewer .image-stage-box.is-selected.is-fail { border-color: #a34434; background: rgba(163, 68, 52, .12); }
+.rv-report-viewer .image-stage-box.is-selected.is-fail > span { background: #a34434; }
+.rv-report-viewer .image-stage-box.is-selected.is-review { border-color: #795d1d; background: rgba(121, 93, 29, .12); }
+.rv-report-viewer .image-stage-box.is-selected.is-review > span { background: #795d1d; }
+.rv-report-viewer-note { margin: 0; padding: 8px 18px; border-top: 1px solid #e3e3df; font-size: 11px; color: #62645e; }
+@media print { .rv-report-locate, .rv-report-locate-none, .rv-report-viewer { display: none !important; } }
 /* A07이 만든 원문(추적용). 맨 아래에 접어 두고 인쇄에서는 뺀다. */
 .rv-report-raw { margin-top: 19px; font-size: 12px; color: #62645e; }
 .rv-report-raw summary { cursor: pointer; }
