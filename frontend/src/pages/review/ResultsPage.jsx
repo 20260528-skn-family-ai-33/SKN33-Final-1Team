@@ -49,7 +49,7 @@ function RetryNote({ retry }) {
 
 // The list, canvas and inspector always share one criterion ID.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, revise, finalApproved = false, header = null }) {
+  busy = false, exportData = review, actions, revise, finalApproved = false, header = null, imageActions }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const [selectedOnly, setSelectedOnly] = useState(false);
@@ -179,6 +179,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
       <div className="rv-result-canvas-column" ref={canvas}>
         <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
           title="검수 대상 이미지" subtitle="검수 항목의 위치 근거를 표시합니다."
+          headingActions={imageActions}
           width={image?.width} height={image?.height} overlays={selectedOnly ? selectedOverlays : allOverlays}
           selectedOverlayId={selected?.criterion_id} onOverlaySelect={chooseOverlay}
           evidenceScope={{ label: selectedOnly ? '선택 근거 표시' : '모든 근거 표시', available: allOverlays.length > 0,

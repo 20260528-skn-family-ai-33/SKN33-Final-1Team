@@ -32,6 +32,7 @@
     "dev:ui": "vite --mode ui --host 0.0.0.0 --port 5173 --strictPort"
   },
   "dependencies": {
+    "qrcode": "1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "7.18.4"

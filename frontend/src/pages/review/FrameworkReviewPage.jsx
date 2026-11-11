@@ -13,6 +13,7 @@ import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import FrameworkReport from './FrameworkReport.jsx';
 import PosterTextEditor from './PosterTextEditor.jsx';
+import { posterPlaceCandidates } from './posterMapQr.js';
 import ChangeImpactNotice from './ChangeImpactNotice.jsx';
 import RevisionHistory from './RevisionHistory.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
@@ -97,7 +98,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [activeEvidence, setActiveEvidence] = useState(null);
   const [preview, setPreview] = useState(null);
   const [imageSize, setImageSize] = useState(null);
-  const [editingPoster, setEditingPoster] = useState(false);
+  const [editingPoster, setEditingPoster] = useState(null);
   const [changeImpact, setChangeImpact] = useState(null);
   const [revisions, setRevisions] = useState(null);
   const [logoNotice] = useState(() => readLogoNotice(runId));
@@ -168,7 +169,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     img.src = imageUrl;
     return () => { img.onload = null; img.onerror = null; };
   }, [imageUrl]);
-  useEffect(() => { setHumanReviews({}); setEditingPoster(false); }, [runId]);
+  useEffect(() => { setHumanReviews({}); setEditingPoster(null); }, [runId]);
   useEffect(() => {
     const controller = new AbortController();
     let timer;
@@ -324,10 +325,16 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const registeringPoster = status === 'waiting_asset';
   const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
   const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
-  const editPosterButton = canEditPoster && <button type="button" className="rv-button secondary"
-    disabled={busy || image.unavailable} onClick={() => setEditingPoster(true)}>
-    <Icon name="pencil" /> 포스터 문구 수정
-  </button>;
+  const imageActions = imageUrl && <div className="rv-result-image-actions" role="group" aria-label="검수 이미지 작업">
+    {canEditPoster && <>
+      <button type="button" className="rv-button primary" disabled={busy || image.unavailable}
+        onClick={() => setEditingPoster('text')}><Icon name="pencil" />포스터 문구 수정</button>
+      <button type="button" className="rv-button secondary" disabled={busy || image.unavailable}
+        onClick={() => setEditingPoster('qr')}>QR 생성</button>
+    </>}
+    <a className="rv-button secondary" href={imageUrl} target="_blank" rel="noopener noreferrer"
+      title="근거 박스 없이 원본 이미지 새 탭에서 열기">원본</a>
+  </div>;
   const actionError = error && <>
     <ErrorMessage message={error} />
     <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
@@ -372,8 +379,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
         revise={canRevise ? () => setReportTarget('approval') : undefined}
         header={revisions?.run_id === runId ? <RevisionHistory history={revisions} /> : null}
+        imageActions={imageActions}
         actions={<>
-          {editPosterButton}
           <button type="button" className="rv-button primary" disabled={busy} onClick={() => setReportTarget('summary')}>
             {canRevise ? '보고서·담당자 승인' : '보고서 보기'}<Icon name="arrow" />
           </button>
@@ -452,7 +459,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       <h2 id="poster-report-approval" tabIndex={-1}>{canRevise ? '담당자 승인과 수정본 재검수' : '검수 진행 기록'}</h2>
       {revisionReady && <>
         <p>수정 요청이 승인됐어요. 수정한 포스터를 등록하면 기존 승인 기준으로 재검수를 접수합니다.</p>
-        {editPosterButton}
+        {canEditPoster && <button type="button" className="rv-button secondary" disabled={busy || image.unavailable}
+          onClick={() => setEditingPoster('text')}><Icon name="pencil" />포스터 문구 수정</button>}
         <label>수정 포스터 <input id="poster-revision-file" type="file" accept="image/png,image/jpeg,image/webp"
           disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
         {file && <p>{file.name}</p>}
@@ -486,6 +494,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       </details>}
       </section>}
     {editingPoster && canEditPoster && <PosterTextEditor key={runId} runPath={path} imageUrl={imageUrl}
-      onClose={() => setEditingPoster(false)} />}
+      initialMode={editingPoster}
+      placeCandidates={posterPlaceCandidates(run.criteria?.criteria || [], run.validated.items || [])}
+      onClose={() => setEditingPoster(null)} />}
   </ReviewLayout>;
 }

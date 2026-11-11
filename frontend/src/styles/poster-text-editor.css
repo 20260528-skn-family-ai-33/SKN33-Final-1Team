@@ -124,6 +124,21 @@
   color: #171717;
   background: #fff;
 }
+.rv-poster-edit-form .rv-poster-edit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid #deded8;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.rv-poster-edit-toggle input { width: 16px; height: 16px; margin: 0; accent-color: #171717; }
+.rv-poster-edit-map-links { display: grid; justify-items: start; gap: 5px; margin-top: 7px; }
+.rv-poster-edit-map-links a { color: #171717; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.rv-poster-place-suggestions { display: grid; gap: 6px; margin-top: 8px; }
+.rv-poster-place-suggestions .rv-button { justify-content: flex-start; text-align: left; overflow-wrap: anywhere; }
+.rv-poster-place-suggestions .rv-button[aria-pressed=true] { border-color: #171717; background: #f4f4f1; }
 .rv-poster-edit-controls { padding-top: 14px; border-top: 1px solid #e8e8e2; }
 .rv-poster-edit-controls .rv-button { width: 100%; justify-content: center; }
 .rv-poster-edit-controls a.rv-button { margin-top: 8px; text-decoration: none; }
