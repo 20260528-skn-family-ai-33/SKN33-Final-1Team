@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
-import { WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
@@ -110,7 +110,7 @@ export default function MyTasksPage() {
 
   return <div className="rv-workspace rv-workspace--tasks">
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/review/tasks" locked={busy} lockReason="작업 변경을 저장하고 있습니다." />
+    <SiteHeader current="/review/tasks" locked={busy} lockReason="작업 변경을 저장하고 있습니다." />
     {busy && <span id="mt-lock-reason" className="sr-only">작업 변경을 저장하고 있습니다.</span>}
     <main className="rv-main rv-my-tasks" id="review-content" aria-labelledby="tasks-title" tabIndex={-1}>
       <header className="rv-task-heading"><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>

@@ -3,7 +3,7 @@ html:has(.rv-workspace--tasks) { scrollbar-gutter: stable; }
 .rv-main.rv-my-tasks {
   --rv-line: #deded9;
   --rv-muted: #62645e;
-  max-width: 1480px;
+  max-width: 1700px;
   padding: 28px clamp(15px, 2.3vw, 36px) 42px;
   font-size: 14px;
   line-height: 1.55;
@@ -20,7 +20,7 @@ html:has(.rv-workspace--tasks) { scrollbar-gutter: stable; }
 .rv-task-heading, .rv-task-toolbar { justify-content: space-between; }
 .rv-task-heading { margin-bottom: 18px; }
 .rv-task-heading .rv-eyebrow { font-size: 11px; }
-.rv-my-tasks .rv-task-heading h1 { margin: 5px 0 10px; font-size: 34px; font-weight: 700; line-height: 1.22; letter-spacing: -.05em; }
+.rv-my-tasks .rv-task-heading h1 { outline: 0; margin: 5px 0 10px; font-size: 34px; font-weight: 700; line-height: 1.22; letter-spacing: -.05em; }
 .rv-task-heading p { color: var(--rv-muted); }
 .rv-my-tasks .rv-task-panel { border-radius: 17px; padding: clamp(15px, 2.3vw, 28px); }
 .rv-task-toolbar { margin-bottom: 13px; }

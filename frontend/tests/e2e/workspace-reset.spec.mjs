@@ -156,7 +156,7 @@ test('포스터 실행 중 이동을 잠그고 실행이 끝나면 메뉴 초기
   assert.match(await page.getByRole('list', { name: '처리 단계', exact: true }).textContent(), /요구사항 추출/);
   assert.equal(await page.getByRole('timer', { name: '경과 시간' }).count(), 1);
   status = 'failed';
-  await page.waitForFunction(() => document.querySelector('.rv-tool-link')?.getAttribute('aria-disabled') !== 'true');
+  await page.waitForFunction(() => document.querySelector('.cc-header-link')?.getAttribute('aria-disabled') !== 'true');
   await posterLink.click();
   await checkBlank(page);
   const reads = calls.filter(call => call.path.endsWith('/runs/live-run')).length;

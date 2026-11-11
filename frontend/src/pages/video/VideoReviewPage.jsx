@@ -5,7 +5,8 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import sampleVideo from '../../assets/sample-shortform.mp4';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
-import { WorkspaceProjectBar, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
+import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { DocumentProjectPicker } from '../review/DocumentInput.jsx';
 import { useLogoJobs } from './LogoFlowParts.jsx';
@@ -178,7 +179,7 @@ export default function VideoReviewPage() {
 
   return <div className={`rv-workspace rv-video rv-workspace--tool rv-video--${step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
+    <SiteHeader current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
     <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
       step={step} steps={steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}

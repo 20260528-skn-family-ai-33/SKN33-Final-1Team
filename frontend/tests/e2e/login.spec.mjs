@@ -178,7 +178,7 @@ test('로그인 요청 중 서비스 소개로 이동하면 늦은 응답이 페
   await page.goto(`${baseURL}/login`);
   await submitLogin(page);
   const sessionResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/auth/me');
-  await page.getByRole('link', { name: '서비스 소개로 돌아가기' }).click();
+  await page.getByRole('link', { name: '서비스 소개', exact: true }).click();
   await sessionResponse;
   // 세션 갱신 뒤 React 화면 반영까지 기다려 늦은 navigate 호출을 확인한다.
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));

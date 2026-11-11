@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router';
-import { Brand } from '../components/Brand.jsx';
+import { Navigate, useLocation, useNavigate } from 'react-router';
+import { SiteHeader } from '../components/SiteHeader.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { useAuth } from '../auth/AuthProvider.jsx';
@@ -118,7 +118,7 @@ export function LoginPage() {
   if (status === 'authenticated') return <Navigate to={destination} replace />;
 
   return <div className="auth-page auth-page--public">
-    <header className="auth-header"><Brand onClick={() => navigate('/')} /><Link className="auth-home-link" to="/">서비스 소개로 돌아가기<Icon name="arrow" /></Link></header>
+    <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>

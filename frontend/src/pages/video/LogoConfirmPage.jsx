@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
-import { WorkspaceFooter, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { handoff, intervalText, LINK_RATIO, linkCandidates, toIntervals, topGroups } from './logoFlow.js';
@@ -712,13 +712,13 @@ export default function LogoConfirmPage() {
 
   return <div className="rv-workspace rv-workspace--tool">
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/video" />
+    <SiteHeader current="/video" />
     <main id="review-content" className="vl-page" tabIndex={-1}>
     <div className="vl-topbar">
-      <div className="vl-topbar-title"><span>VIDEO LOGO REVIEW</span><strong>동영상 로고 검수</strong></div>
+      <div className="vl-topbar-title"><span className="rv-eyebrow">VIDEO LOGO REVIEW</span><strong>동영상 로고 검수</strong></div>
       <div className="vl-topbar-actions">
-        <Link className="vl-button secondary" to={back}>동영상 검수로</Link>
-        {ready && <button type="button" className="vl-button primary" onClick={runCompare}
+        <Link className="rv-button secondary" to={back}>동영상 검수로</Link>
+        {ready && <button type="button" className="rv-button primary" onClick={runCompare}
           disabled={!compareCount || busy || comparing}>
           {comparing ? '정밀 대조 중' : busy ? '요청 중…' : compareCount
             ? '저장한 ' + compareCount + '개 로고 정밀 대조' : '정밀 대조할 위치 없음'}
@@ -812,6 +812,5 @@ export default function LogoConfirmPage() {
       </>}
     </div>}
   </main>
-    <WorkspaceFooter />
   </div>;
 }

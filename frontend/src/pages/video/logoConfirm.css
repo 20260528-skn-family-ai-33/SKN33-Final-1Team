@@ -9,17 +9,21 @@
   outline: 0;
   padding-bottom: 40px;
 }
+/* 포스터·동영상 검수의 프로젝트 바와 같은 폭·여백·글자 크기를 쓴다. */
 .vl-topbar {
-  min-height: 78px;
-  padding: 22px max(24px, calc((100vw - 1480px) / 2)) 10px;
+  max-width: 1700px;
+  margin: 0 auto;
+  padding: 18px var(--rv-gutter, clamp(15px, 2.3vw, 36px)) 22px;
   display: flex;
   align-items: center;
-  gap: 22px;
+  justify-content: space-between;
+  gap: 13px;
 }
-.vl-topbar-title { display: grid; gap: 1px; }
-.vl-topbar-title span, .vl-kicker { color: var(--vl-muted); font-size: 10px; font-weight: 850; letter-spacing: .14em; }
-.vl-topbar-title strong { font-size: 15px; letter-spacing: -.03em; }
+.vl-topbar-title { display: grid; gap: 1px; min-width: 0; }
+.vl-kicker { color: var(--vl-muted); font-size: 10px; font-weight: 850; letter-spacing: .14em; }
+.vl-topbar-title strong { font-size: 14px; }
 .vl-topbar-actions { display: flex; gap: 9px; align-items: center; margin-left: auto; }
+.vl-topbar-actions .rv-button { min-height: 35px; padding: 7px 12px; border-radius: 9px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .vl-button {
   display: inline-flex;
   min-height: 42px;
@@ -37,13 +41,13 @@
 .vl-button:hover:not(:disabled) { transform: translateY(-1px); }
 .vl-button:disabled { opacity: .55; cursor: not-allowed; }
 .vl-button.primary { color: #fff; background: var(--vl-blue); box-shadow: 0 5px 14px rgba(23, 23, 23, .18); }
-.vl-button.primary:hover:not(:disabled) { background: #0d58c6; }
-.vl-button.secondary { color: #3a4c64; background: #fff; border-color: var(--vl-line); }
-.vl-button.secondary:hover:not(:disabled) { background: #f6f9fd; }
-.vl-button.subtle { color: #1a61c8; background: #edf5ff; border-color: #d9eaff; }
-.vl-button.subtle:hover:not(:disabled) { background: #e2efff; }
+.vl-button.primary:hover:not(:disabled) { background: #343432; }
+.vl-button.secondary { color: var(--vl-ink); background: #fff; border-color: var(--vl-line); }
+.vl-button.secondary:hover:not(:disabled) { background: #f2f2f1; }
+.vl-button.subtle { color: var(--vl-ink); background: var(--vl-blue-soft); border-color: var(--vl-line); }
+.vl-button.subtle:hover:not(:disabled) { background: #e3e3df; }
 .vl-button.vl-wide { width: 100%; margin-top: 10px; }
-.vl-content { max-width: 1480px; margin: 0 auto; padding: 24px 28px 54px; }
+.vl-content { max-width: 1700px; margin: 0 auto; padding: 0 var(--rv-gutter, clamp(15px, 2.3vw, 36px)) 54px; }
 .vl-jobbar {
   display: flex;
   align-items: center;
@@ -350,7 +354,8 @@
 .vl-finding-list li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 7px; color: #5c4c37; background: #fff8e9; font-size: 9px; }
 .vl-finding-list strong { font-variant-numeric: tabular-nums; }
 .vl-muted-copy { margin: 0; font-size: 10px; }
-.vl-sec-timeline { display: flex; gap: 2px; height: 9px; padding: 0 15px 12px; overflow: hidden; }
+/* 높이는 아래 여백 12px을 포함한다(막대 9px). 9px로 두면 border-box라 막대가 보이지 않는다. */
+.vl-sec-timeline { display: flex; gap: 2px; height: 21px; padding: 0 15px 12px; overflow: hidden; }
 .vl-sec-timeline span { flex: 1 1 0; min-width: 2px; border-radius: 2px; background: #dce5ef; }
 .vl-sec-timeline span.match { background: #65b99b; }
 .vl-sec-timeline span.diff { background: #e47878; }
@@ -385,12 +390,11 @@
   .vl-evidence-images { grid-template-columns: minmax(120px, .6fr) minmax(170px, .8fr) minmax(180px, 1fr); }
 }
 @media (max-width: 650px) {
-  .vl-topbar { min-height: 64px; gap: 10px; padding: 9px 13px; }
-  .vl-topbar-title span { font-size: 8px; }
-  .vl-topbar-title strong { font-size: 11px; }
+  .vl-topbar { gap: 10px; padding: 20px 18px; }
+  .vl-topbar-title strong { font-size: 12px; }
   .vl-topbar-actions { gap: 5px; }
-  .vl-topbar-actions .vl-button { min-height: 34px; padding: 6px 8px; font-size: 9px; }
-  .vl-content { padding: 15px 12px 36px; }
+  .vl-topbar-actions .rv-button { padding: 6px 9px; font-size: 11px; }
+  .vl-content { padding: 0 16px 36px; }
   .vl-jobbar { min-height: 45px; padding-bottom: 10px; }
   .vl-jobbar strong { font-size: 11px; }
   .vl-status { max-width: 52vw; padding: 5px 7px; font-size: 8px; }

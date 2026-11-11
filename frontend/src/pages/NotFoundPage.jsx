@@ -1,14 +1,13 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router';
-import { Brand } from '../components/Brand.jsx';
+import { Link } from 'react-router';
+import { SiteHeader } from '../components/SiteHeader.jsx';
 import { MissingPosterArt } from '../components/ReviewArt.jsx';
 import '../styles/review-art.css';
 
 // 없는 주소: 무엇이 잘못됐는지와 갈 수 있는 곳 두 군데를 보여 준다.
 export default function NotFoundPage() {
-  const navigate = useNavigate();
   return <div className="cc-missing-page">
-    <header className="cc-missing-top"><Brand onClick={() => navigate('/')} /></header>
+    <SiteHeader />
     <main className="cc-missing-sheet" aria-labelledby="cc-missing-title">
       <MissingPosterArt />
       <h1 id="cc-missing-title">페이지를 찾을 수 없습니다.</h1>
