@@ -458,6 +458,7 @@ def test_legacy_json_does_not_gain_null_trace_or_configuration_fields():
     {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions?api_key=secret'},
     {'mode':'qwen','endpoint':'file:///tmp/model'},
     {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions','max_text_chars':60001},
+    {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions','timeout_seconds':901},
 ))
 def test_model_mode_limits_and_endpoint_are_trusted_explicit_configuration(values):
     from pydantic import ValidationError

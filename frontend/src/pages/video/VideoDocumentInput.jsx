@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import DocumentInput from '../review/DocumentInput.jsx';
 import { mergeDocumentRequirements } from '../review/documentRequirements.js';
-import { extractDocumentWithProgress } from '../review/frameworkDocument.js';
+import { DOCUMENT_WAIT_TIMEOUT_MS, extractDocumentWithProgress } from '../review/frameworkDocument.js';
 
 export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument }) {
   const [progress, setProgress] = useState(null);
@@ -52,7 +52,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     setPendingName(file.name);
     setProgress({ startedAt, stage: 'preparing', percent: 0, message: 'PDF를 확인하고 있습니다.' });
     let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, DOCUMENT_WAIT_TIMEOUT_MS);
     try {
       const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
       if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다.');
@@ -67,7 +67,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     } catch (failure) {
       if (active.current === controller && (!signal.aborted || timedOut)) {
         setProgress(null);
-        setError(timedOut ? '문서 분석 대기 시간이 초과됐습니다.' : failure.message);
+        setError(timedOut ? '문서 분석 대기 시간이 15분을 넘었습니다. 접수된 분석은 내 작업에서 확인할 수 있어요.' : failure.message);
       }
     } finally {
       clearTimeout(timer);

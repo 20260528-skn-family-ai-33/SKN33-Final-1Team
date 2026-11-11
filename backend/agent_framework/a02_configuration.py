@@ -13,7 +13,7 @@ class PDFExtractionConfiguration(Contract):
     model: str = Field(default='Qwen/Qwen3.5-4B',min_length=1,max_length=200)
     parser_version: str = Field(default='1.28.2',pattern=r'^\d+\.\d+\.\d+$')
     max_text_chars: int = Field(default=32000,ge=100,le=60000,strict=True)
-    timeout_seconds: int = Field(default=120,ge=1,le=600,strict=True)
+    timeout_seconds: int = Field(default=900,ge=1,le=900,strict=True)
     max_output_tokens: int = Field(default=8192,ge=128,le=16384,strict=True)
 
     @model_validator(mode='after')

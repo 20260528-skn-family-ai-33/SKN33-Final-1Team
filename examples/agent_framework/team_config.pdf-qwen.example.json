@@ -28,7 +28,7 @@
     "model": "Qwen/Qwen3.5-4B",
     "parser_version": "1.28.2",
     "max_text_chars": 32000,
-    "timeout_seconds": 120,
+    "timeout_seconds": 900,
     "max_output_tokens": 8192
   }
 }

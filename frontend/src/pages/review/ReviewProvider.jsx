@@ -5,7 +5,7 @@ import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
-import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE } from './frameworkDocument.js';
+import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, DOCUMENT_WAIT_TIMEOUT_MS } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 
@@ -187,7 +187,7 @@ export function ReviewProvider({ children }) {
     setDocumentProgress({ percent: 0, stage: 'uploading', message: '문서를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
     setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
     let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, DOCUMENT_WAIT_TIMEOUT_MS);
     try {
       const requirementFile = await requirementDocument(file);
       if (controller.signal.aborted) return;
@@ -217,7 +217,7 @@ export function ReviewProvider({ children }) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentNotice('');
         setDocumentProgress(null);
-        setDocumentError(timedOut ? '응답 대기 시간이 초과됐습니다. 기존 입력은 유지됩니다. 잠시 후 다시 시도해 주세요.' : err.message);
+        setDocumentError(timedOut ? '문서 분석 대기 시간이 15분을 넘었습니다. 접수된 분석은 내 작업에서 확인할 수 있어요.' : err.message);
       }
     } finally {
       clearTimeout(timer);
@@ -418,7 +418,7 @@ export function ReviewProvider({ children }) {
     setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setError('');
     setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now(), source: '직접 입력한 요구사항' });
     let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, DOCUMENT_WAIT_TIMEOUT_MS);
     try {
       await requirePosterReview({ signal: controller.signal, freeText: true });
       const result = await extractTextWithProgress(text, { projectId, attempts: documentAttempts.current, signal: controller.signal,
@@ -432,7 +432,7 @@ export function ReviewProvider({ children }) {
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentProgress(null);
-        setError(timedOut ? '요구사항 분석 대기 시간이 초과됐습니다. 같은 입력으로 다시 확인하면 기존 실행을 조회합니다.' : err.message);
+        setError(timedOut ? '요구사항 분석 대기 시간이 15분을 넘었습니다. 같은 입력으로 다시 확인하면 기존 실행을 조회합니다.' : err.message);
       }
     } finally {
       clearTimeout(timer);

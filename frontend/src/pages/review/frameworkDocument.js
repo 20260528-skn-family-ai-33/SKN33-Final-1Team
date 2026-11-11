@@ -7,6 +7,7 @@ const wait = (ms, signal) => new Promise((resolve, reject) => {
   signal?.addEventListener('abort', abort, { once: true });
 });
 
+export const DOCUMENT_WAIT_TIMEOUT_MS = 15 * 60 * 1000;
 export const DOCX_MEDIA_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 // 확장자가 아니라 실제 첫 바이트로 PDF·DOCX를 가른다. DOCX(ZIP)는 이름도 .docx여야 한다.
