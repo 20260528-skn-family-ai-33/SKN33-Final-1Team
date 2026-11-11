@@ -20,7 +20,7 @@ PROFILES = {
     "worker": frozenset({"DATABASE_URL"}) | MODEL | MCP,
     "projection": frozenset({"DATABASE_URL"}) | GRAPH,
     "mcp": STORAGE | QWEN | MCP,
-    "v1": DATABASE | WEB | REVIEW,
+    "v1": DATABASE | WEB | REVIEW | {"creative_checker_openapi"},
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
     "framework-worker": DATABASE | QWEN | GRAPH | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
     "framework-projection": DATABASE | GRAPH,

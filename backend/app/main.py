@@ -166,6 +166,9 @@ def create_app(*,settings=None,engine=None,review_adapter=None):
 
     from .routes.v1.auth import router,envelope
     app.include_router(router())
+    if settings.storage_root is None:
+        from .routes.v1.poster_edits import router as poster_edit_router
+        app.include_router(poster_edit_router())
     if not settings.secure and settings.environment in ('development', 'test'):
         from pathlib import Path
         from backend.app.modeltest.routes import modeltest_ssh_router

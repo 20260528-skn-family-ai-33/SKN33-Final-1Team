@@ -20,6 +20,16 @@ class AuthError(RuntimeError):
             'FRAMEWORK_TASK_NOT_QUEUED':'이미 시작되었거나 종료된 작업입니다. 대기 중인 작업만 취소할 수 있습니다.',
             'FRAMEWORK_TASK_NOT_FINISHED':'완료·실패·취소된 이력만 숨길 수 있습니다.',
             'FRAMEWORK_TASK_CURSOR_INVALID':'목록이 변경되었습니다. 처음부터 다시 불러와 주세요.',
+            'POSTER_EDIT_NOT_CONFIGURED':'이 서버에 포스터 문구 수정 기능이 아직 연결되지 않았어요.',
+            'POSTER_EDIT_APPROVAL_REQUIRED':'수정 요청을 승인한 포스터에서 문구를 수정할 수 있어요.',
+            'POSTER_EDIT_SOURCE_UNAVAILABLE':'검수에 사용한 포스터를 불러오지 못했어요.',
+            'POSTER_EDIT_AREA_TOO_SMALL':'문구가 들어갈 영역을 조금 더 넓게 선택해 주세요.',
+            'POSTER_EDIT_BUSY':'다른 포스터를 수정하고 있어요. 잠시 후 다시 시도해 주세요.',
+            'POSTER_EDIT_PROVIDER_ACCESS':'이미지 편집 서비스의 API 키와 모델 사용 권한을 확인해 주세요.',
+            'POSTER_EDIT_PROVIDER_LIMIT':'이미지 편집 서비스의 사용량 한도에 도달했어요. 잠시 후 다시 시도해 주세요.',
+            'POSTER_EDIT_REJECTED':'이 이미지와 문구로 수정본을 만들지 못했어요. 선택 영역이나 문구를 확인해 주세요.',
+            'POSTER_EDIT_TIMEOUT':'이미지 수정 응답이 늦어지고 있어요. 잠시 후 다시 시도해 주세요.',
+            'POSTER_EDIT_FAILED':'수정본을 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
         }
         super().__init__(messages.get(code,'요청을 처리할 수 없습니다.'))
         self.code,self.status,self.retry_after=code,status,retry_after
