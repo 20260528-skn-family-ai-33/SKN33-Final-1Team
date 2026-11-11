@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import DocumentInput from '../review/DocumentInput.jsx';
 import { mergeDocumentRequirements } from '../review/documentRequirements.js';
-import { DOCUMENT_WAIT_TIMEOUT_MS, extractDocumentWithProgress } from '../review/frameworkDocument.js';
+import { DOCUMENT_WAIT_TIMEOUT_MS, extractDocumentWithProgress, requirementDocument } from '../review/frameworkDocument.js';
 
 export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument }) {
   const [progress, setProgress] = useState(null);
@@ -39,7 +39,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     if (input.current) input.current.value = '';
     const [file] = files;
     if (files.length !== 1 || !file.size || file.size > 10 * 1024 * 1024) {
-      setError('내용이 있는 10MiB 이하 PDF 1개를 선택해 주세요.');
+      setError('내용이 있는 10MiB 이하 PDF 또는 Word(.docx) 문서 1개를 선택해 주세요.');
       return;
     }
     const controller = new AbortController();
@@ -50,18 +50,16 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     setError('');
     setNotice('');
     setPendingName(file.name);
-    setProgress({ startedAt, stage: 'preparing', percent: 0, message: 'PDF를 확인하고 있습니다.' });
+    setProgress({ startedAt, stage: 'preparing', percent: 0, message: '문서를 확인하고 있습니다.' });
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, DOCUMENT_WAIT_TIMEOUT_MS);
     try {
-      const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-      if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다.');
-      const pdf = file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf' });
-      const result = await extractDocumentWithProgress(pdf, { projectId, attempts: attempts.current, signal,
+      const document = await requirementDocument(file);
+      const result = await extractDocumentWithProgress(document, { projectId, attempts: attempts.current, signal,
         onProgress: update => { if (!signal.aborted) setProgress({ ...update, startedAt }); } });
       if (signal.aborted) return;
       const { sources } = mergeDocumentRequirements('', result, file.name);
-      onDocument(file.name, sources.map((item, index) => ({ ...item, id: `pdf-${index}`, selected: false })));
+      onDocument(file.name, sources.map((item, index) => ({ ...item, id: `document-${index}`, selected: false })));
       setProgress({ startedAt, stage: 'completed', percent: 100, message: '요구사항 추출을 완료했습니다.' });
       setNotice(`${file.name} · ${sources.length}개 추출${result.pending?.length ? ` · 미확정 ${result.pending.length}개` : ''}`);
     } catch (failure) {

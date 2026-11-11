@@ -93,7 +93,7 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
     } else return false;
     return true;
   } });
-  await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
+  await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
   await pending;
   const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
   await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();

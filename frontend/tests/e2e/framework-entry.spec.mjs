@@ -116,7 +116,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     }), 'base64');
     await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
     if (mode === 'pdf' || mode === 'edited_pdf' || subset) {
-      await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
+      await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
       if (mode === 'pdf') {
         const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
         await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();
@@ -145,7 +145,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       await picker.click();
       await page.locator('#document-project').selectOption('');
       await page.getByText('저장할 프로젝트 선택', { exact: true }).waitFor();
-      assert.ok(await documentCard.getByLabel('요구사항 PDF 선택', { exact: true }).isDisabled());
+      assert.ok(await documentCard.getByLabel('요구사항 문서 선택', { exact: true }).isDisabled());
       await picker.click();
       await page.mouse.move(0, 0);
       await page.waitForFunction(() => getComputedStyle(document.querySelector('.rv-project-picker summary')).animationName === 'rv-project-nudge');

@@ -108,8 +108,8 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   catch (error) { throw new Error(`${error.message}\n${page.url()}\n${(await page.locator('body').innerText()).slice(0, 1800)}\n${errors.join('\n')}`); }
   const current = mode === 'pending_empty' ? '' : '직접 입력: 보존';
   await page.locator('#requirements').fill(current);
-  await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 PDF 선택"]').disabled);
-  const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
+  await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 문서 선택"]').disabled);
+  const upload = page.getByLabel('요구사항 문서 선택', { exact: true });
   if (mode === 'resolved') {
     const card = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
     const heading = card.getByRole('heading', { name: '요구사항 문서 첨부', exact: true });
@@ -197,7 +197,8 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
 });
 }
 
-test('Word(.docx) 요구사항 문서는 DOCX 경로로 올리고 원본 해시를 대조한 뒤 같은 분석 결과를 반영한다', { timeout: 60000 }, async t => {
+async function verifyDocx(t, mode) {
+  const video = mode !== 'poster';
   const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   if (!process.env.E2E_REQUIREMENTS_URL) {
     const child = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5177', '--strictPort'], {
@@ -223,6 +224,8 @@ test('Word(.docx) 요구사항 문서는 DOCX 경로로 올리고 원본 해시�
     .map(([label, requirement, type]) => ({ label, requirement, type, inspection: '', level: '필수', page: 1, source: requirement,
       text: type === 'visual' ? requirement : `${label}: ${requirement}` }));
   let docxUploads = 0, pdfUploads = 0, admissions = 0;
+  const videoJob = { id: 'video-docx', status: 'queued', stage: 'queued', project_name: 'DOCX 검증', criteria_version: 1 };
+  const videoSubmissions = [];
   await page.route(base + '/api/**', async route => {
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname;
     let body;
@@ -231,6 +234,17 @@ test('Word(.docx) 요구사항 문서는 DOCX 경로로 올리고 원본 해시�
     else if (path === '/api/framework/v1/health') body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true, docx_text_registration: true };
     else if (path === '/api/framework/v1/projects') body = { items: [{ id: 'project-fixture', name: 'DOCX 검증', my_role: 'owner' }], next_cursor: null };
     else if (path === '/api/framework/v1/csrf') body = { csrf_token: 'framework-browser-token' };
+    else if (video && path === '/api/v1/auth/csrf') body = { csrf_token: 'video-browser-token' };
+    else if (video && ['/api/video-reviews/status', '/api/video-logos/status'].includes(path)) body = { ready: true };
+    else if (video && path === '/api/video-logos') body = { items: [] };
+    else if (video && path === '/api/video-reviews' && request.method() === 'POST') {
+      const form = await new Response(request.postDataBuffer(), {
+        headers: { 'Content-Type': request.headers()['content-type'] },
+      }).formData();
+      videoSubmissions.push(JSON.parse(form.get('criteria')));
+      return route.fulfill({ status: 202, json: videoJob });
+    }
+    else if (video && path === '/api/video-reviews/video-docx') body = videoJob;
     else if (path.endsWith('/docx-documents')) {
       docxUploads++;
       assert.equal(url.searchParams.get('filename'), '계약서.docx');
@@ -247,18 +261,51 @@ test('Word(.docx) 요구사항 문서는 DOCX 경로로 올리고 원본 해시�
     else return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } });
     return route.fulfill({ json: body });
   });
-  await page.goto(base + '/review/new');
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
-  await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 PDF 선택"]').disabled);
-  const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
+  await page.goto(base + (video ? '/video' : '/review/new'));
+  await page.waitForFunction(() => document.querySelector('input[aria-label="요구사항 문서 선택"]')?.disabled === false);
+  const card = page.getByRole('region', { name: '요구사항 문서 첨부' });
+  const upload = page.getByLabel('요구사항 문서 선택', { exact: true });
   assert.match(await upload.getAttribute('accept'), /\.docx/);
   await page.getByText('텍스트 PDF(50페이지) · DOCX(본문 글자) · 최대 10MiB', { exact: true }).waitFor();
-  await upload.setInputFiles({ name: '계약서.docx', mimeType: DOCX, buffer: docx });
-  await page.getByText(/추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
+  if (mode === 'video-drop') {
+    const dataTransfer = await page.evaluateHandle(bytes => {
+      const data = new DataTransfer();
+      data.items.add(new File([new Uint8Array(bytes)], '계약서.docx'));
+      return data;
+    }, [...docx]);
+    await card.dispatchEvent('dragenter', { dataTransfer });
+    await card.getByText('여기에 PDF·DOCX를 놓으세요.', { exact: true }).waitFor();
+    await card.dispatchEvent('dragover', { dataTransfer });
+    await card.dispatchEvent('drop', { dataTransfer });
+    await dataTransfer.dispose();
+  } else {
+    const choose = page.waitForEvent('filechooser');
+    await card.getByRole('button', { name: '파일 선택', exact: true }).click();
+    await (await choose).setFiles({ name: '계약서.docx', mimeType: DOCX, buffer: docx });
+  }
+  await page.getByText(video ? '계약서.docx · 2개 추출' : /추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
   assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
-  await page.getByRole('button', { name: 'DOCX 본문과 기준 확인', exact: true }).waitFor();
-  assert.equal(await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).count(), 0);
-  if (process.env.E2E_DOCX_SCREENSHOT) await page.screenshot({ path: process.env.E2E_DOCX_SCREENSHOT, fullPage: true });
+  if (video) {
+    const selected = page.getByRole('checkbox', { name: '문서 요구사항 2번 검수에 포함', exact: true });
+    await selected.check();
+    await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles(
+      fileURLToPath(new URL('../../src/assets/sample-shortform.mp4', import.meta.url)));
+    await page.getByText('검수 포함 1 / 2개', { exact: true }).waitFor();
+    await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+    await page.waitForURL('**/video?id=video-docx');
+    assert.deepEqual(videoSubmissions, [[{
+      id: 'criterion-1', text: items[1].text, type: 'visual',
+      source: `계약서.docx · 본문\n${items[1].source}`,
+    }]]);
+  } else {
+    await page.getByRole('button', { name: 'DOCX 본문과 기준 확인', exact: true }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).count(), 0);
+    if (process.env.E2E_DOCX_SCREENSHOT) await page.screenshot({ path: process.env.E2E_DOCX_SCREENSHOT, fullPage: true });
+  }
   assert.equal(docxUploads, 1); assert.equal(pdfUploads, 0); assert.equal(admissions, 1);
   assert.deepEqual(errors, []);
-});
+}
+
+test('포스터 DOCX를 등록하고 원본 해시를 대조한 뒤 분석 결과를 반영한다', { timeout: 60000 }, t => verifyDocx(t, 'poster'));
+test('영상 DOCX를 파일 선택으로 첨부하고 체크한 기준만 검수에 보낸다', { timeout: 60000 }, t => verifyDocx(t, 'video-picker'));
+test('영상 DOCX를 드래그앤드롭으로 첨부하고 체크한 기준만 검수에 보낸다', { timeout: 60000 }, t => verifyDocx(t, 'video-drop'));

@@ -43,10 +43,10 @@ try {
   await post('/api/framework/v1/projects', '/api/framework/v1/csrf', { name: '포스터 브라우저 검증' });
   await page.goto(base + '/review/new');
   await page.waitForFunction(() => {
-    const input = document.querySelector('input[aria-label="요구사항 PDF 선택"]');
+    const input = document.querySelector('input[aria-label="요구사항 문서 선택"]');
     return input && !input.disabled;
   });
-  await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({
+  await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({
     name: 'poster-brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from(process.argv[4], 'base64') });
   await button('PDF 검수 기준 확인하기').click();
   await button('검토한 기준 버전 저장').click();
