@@ -98,6 +98,8 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     }
     else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2, warnings: recorded?.warnings || [],
       framework: { run_id: 'run-fixture', document_version_id: 'document-fixture' } };
+    // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
+    else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
     else { oldRequests++; return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } }); }
     return route.fulfill({ json: body });
   });

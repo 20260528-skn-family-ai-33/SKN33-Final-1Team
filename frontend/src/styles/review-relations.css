@@ -1,0 +1,48 @@
+/* 관계 조회 안내: 기준 변경 영향(기준 확인 화면) · 수정본 검수 이력(검수 결과 화면) */
+.rv-relation-notice { margin: 14px 20px; padding: 14px 16px; border: 1px solid #dfddcf; border-radius: 12px; background: #f4f1e7; color: #171717; }
+.rv-relation-notice-head { display: flex; align-items: flex-start; gap: 10px; }
+.rv-relation-notice-head > .icon { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; color: #6a5623; }
+.rv-relation-notice-head strong { display: block; font-size: 13px; font-weight: 600; }
+.rv-relation-notice-head p { margin-top: 3px; font-size: 12px; line-height: 1.6; color: #4f4a3a; }
+.rv-relation-changes { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.rv-relation-changes li { display: grid; grid-template-columns: auto minmax(0, auto) minmax(0, 1fr); align-items: baseline; gap: 8px; font-size: 12px; overflow-wrap: anywhere; }
+.rv-relation-tag { padding: 1px 7px; border-radius: 99px; background: #fff; border: 1px solid #dfddcf; font-size: 11px; color: #6a5623; white-space: nowrap; }
+.rv-relation-label { font-weight: 600; }
+.rv-relation-values del { color: #77776e; }
+.rv-relation-values ins { text-decoration: none; font-weight: 600; }
+.rv-relation-runs { margin-top: 12px; font-size: 12px; }
+.rv-relation-runs > summary { width: fit-content; padding: 7px 11px; border: 1px solid #171717; border-radius: 8px; background: #fff; font-weight: 500; cursor: pointer; list-style: none; }
+.rv-relation-runs > summary::-webkit-details-marker { display: none; }
+.rv-relation-runs ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.rv-relation-runs li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #fff; }
+.rv-relation-runs a, .rv-revision-file a { color: #171717; text-underline-offset: 3px; }
+.rv-relation-status { padding: 2px 9px; border-radius: 99px; background: #f5ead1; color: #6c4b13; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.rv-relation-status.is-approved { background: #e6f0e9; color: #17603a; }
+.rv-relation-basis { margin-top: 10px; font-size: 11px; line-height: 1.6; color: #62645e; }
+
+.rv-revision-history { border: 1px solid #deded9; border-radius: 12px; background: #fff; font-size: 12px; }
+.rv-revision-history > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; padding: 10px 14px; cursor: pointer; list-style: none; }
+.rv-revision-history > summary::-webkit-details-marker, .rv-revision-rows summary::-webkit-details-marker { display: none; }
+.rv-revision-history > summary::after { content: "펼치기"; margin-left: auto; color: #62645e; font-size: 11px; }
+.rv-revision-history[open] > summary::after { content: "접기"; }
+.rv-revision-history > summary > strong { font-size: 13px; font-weight: 600; }
+.rv-revision-fact { color: #62645e; }
+.rv-revision-fact b { color: #171717; font-weight: 600; }
+.rv-revision-rows { list-style: none; margin: 0; padding: 0 14px 6px; max-height: 320px; overflow-y: auto; }
+.rv-revision-rows > li { border-top: 1px solid #deded9; }
+.rv-revision-rows summary { display: grid; grid-template-columns: minmax(0, 1fr) auto 16px; align-items: center; gap: 12px; padding: 10px 2px; cursor: pointer; list-style: none; }
+.rv-revision-rows summary::after { content: "+"; text-align: center; color: #62645e; font-size: 15px; line-height: 1; }
+.rv-revision-rows details[open] > summary::after { content: "−"; }
+.rv-revision-title strong { display: block; font-weight: 600; }
+.rv-revision-title small, .rv-revision-detail small { color: #62645e; font-size: 11px; }
+.rv-revision-detail { margin: 0 0 12px; padding: 12px 14px; border-radius: 10px; background: #f4f4f1; display: grid; grid-template-columns: 1.1fr .7fr 1.6fr; gap: 10px 18px; }
+.rv-revision-detail dt { color: #62645e; font-size: 11px; font-weight: 600; }
+.rv-revision-detail dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.rv-revision-detail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rv-revision-file { display: flex; align-items: center; gap: 10px; }
+.rv-revision-file img { width: 44px; height: 58px; object-fit: cover; border: 1px solid #deded9; border-radius: 6px; background: #fff; }
+@media (max-width: 760px) {
+  .rv-revision-detail { grid-template-columns: 1fr; }
+  .rv-relation-changes li { grid-template-columns: auto minmax(0, 1fr); }
+  .rv-relation-values { grid-column: 1 / -1; }
+}

@@ -3,6 +3,7 @@
 No OCR/background-task leader, frontend build, model initialization or migration.
 POST admission/approval only queues work; the separate worker invokes adapters.
 """
+import os
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from functools import partial
@@ -66,6 +67,12 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
             current.state.documents=None
             current.state.criteria_review=None
             current.state.poster_reviews=None
+            # Relation reads use Neo4j only when this process was given CC_NEO4J_*; the web
+            # profile does not carry them by default, and PostgreSQL then answers alone.
+            current.state.framework_graph=None
+            if os.environ.get('CC_NEO4J_URI') and os.environ.get('CC_NEO4J_PASSWORD'):
+                from .graph_store import FrameworkGraph
+                current.state.framework_graph=FrameworkGraph()
             try:
                 if pdf_storage_root is not None:
                     storage=await run_in_threadpool(open_document_storage,pdf_storage_root)
@@ -82,6 +89,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                         current.state.poster_reviews=PostgresPosterReviews(current.state.framework,current.state.criteria_review,poster_storage)
                 yield
             finally:
+                if current.state.framework_graph is not None:await run_in_threadpool(current.state.framework_graph.close)
                 if poster_storage is not None:await run_in_threadpool(poster_storage.close)
                 if storage is not None:await run_in_threadpool(storage.close)
     app.router.lifespan_context=lifespan
@@ -146,6 +154,18 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         with unit_of_work(app.state.engine) as c:
             app.state.authorization.project(c,actor,project_id,action='read')
             return criteria_impact(c,project_id,criteria_version_id,criterion_id)
+
+    @app.get(prefix+'/runs/{run_id}/criteria-change-impact')
+    def change_impact_view(request:Request,run_id:str):
+        """Items changed against the previously approved criteria, and the poster reviews that used those."""
+        from .criteria_change import CriteriaChangeImpact
+        return CriteriaChangeImpact(criteria_review(),app.state.framework_graph).read(subject(request),run_id)
+
+    @app.get(prefix+'/runs/{run_id}/revision-history')
+    def revision_history_view(request:Request,run_id:str):
+        """Original review, its re-reviews and the approval records linked to each."""
+        from .revision_history import RevisionHistory
+        return RevisionHistory(app.state.framework,app.state.framework_graph).read(subject(request),run_id)
 
     @app.get(prefix+'/runs/{run_id}/evidence-context')
     def evidence_view(request:Request,run_id:str):

@@ -13,6 +13,8 @@ import CriteriaWorkspace from './CriteriaWorkspace.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import FrameworkReport from './FrameworkReport.jsx';
 import PosterTextEditor from './PosterTextEditor.jsx';
+import ChangeImpactNotice from './ChangeImpactNotice.jsx';
+import RevisionHistory from './RevisionHistory.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
@@ -87,6 +89,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [preview, setPreview] = useState(null);
   const [imageSize, setImageSize] = useState(null);
   const [editingPoster, setEditingPoster] = useState(false);
+  const [changeImpact, setChangeImpact] = useState(null);
+  const [revisions, setRevisions] = useState(null);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   const keys = useRef(new Map());
@@ -168,6 +172,27 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     read();
     return () => { controller.abort(); clearTimeout(timer); };
   }, [path, reload]);
+
+  // 관계 조회(이전 기준과 달라진 항목 · 수정본 검수 이력)는 부가 안내다. 실패해도 검수 흐름을 막지 않는다.
+  const criteriaRun = Boolean(run) && !run.baseline && ['waiting_criteria', 'waiting_asset'].includes(status);
+  const latestSha = latest?.sha256;
+  useEffect(() => {
+    setChangeImpact(null);
+    if (!criteriaRun) return;
+    const controller = new AbortController();
+    frameworkJson(path + '/criteria-change-impact', { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setChangeImpact(value); }).catch(() => {});
+    return () => controller.abort();
+  }, [path, criteriaRun, latestSha]);
+  const posterRun = Boolean(run?.baseline) && !processing;
+  const humanDecision = run?.human_decision;
+  useEffect(() => {
+    if (!posterRun) { setRevisions(null); return; }
+    const controller = new AbortController();
+    frameworkJson(path + '/revision-history', { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setRevisions(value); }).catch(() => {});
+    return () => controller.abort();
+  }, [path, posterRun, status, humanDecision]);
 
   function requestKey(name) {
     if (!keys.current.has(name)) keys.current.set(name, crypto.randomUUID());
@@ -317,8 +342,13 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
         revise={canRevise ? () => setReportTarget('approval') : undefined}
-        actions={<>{editPosterButton}<button type="button" className="rv-button primary" disabled={busy}
-          onClick={() => setReportTarget('summary')}>{canRevise ? '보고서·담당자 승인' : '보고서 보기'}<Icon name="arrow" /></button></>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
+        header={revisions?.run_id === runId ? <RevisionHistory history={revisions} /> : null}
+        actions={<>
+          {editPosterButton}
+          <button type="button" className="rv-button primary" disabled={busy} onClick={() => setReportTarget('summary')}>
+            {canRevise ? '보고서·담당자 승인' : '보고서 보기'}<Icon name="arrow" />
+          </button>
+        </>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
         canvas={<>
           <ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
             title="검수 포스터" alt="현재 버전의 검수 포스터" subtitle={file?.name}
@@ -353,6 +383,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             onClick={() => perform(signal => decide('approve_criteria', signal), 'decide-start')} aria-busy={working('decide-start')}>이 포스터와 기준을 확인하고 검수 시작</button>}
         </section>}>
           <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
+            {criteriaRun && changeImpact?.run_id === runId && <ChangeImpactNotice impact={changeImpact} />}
             {selectionUnavailable && <ErrorMessage message="선택한 항목 중 저장한 기준 버전에서 이미 제외된 항목이 있어요. 자료 입력으로 돌아가 선택을 다시 확인해 주세요." />}
             {rejections.length > 0 && <ExtractionRejections items={rejections} />}
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
