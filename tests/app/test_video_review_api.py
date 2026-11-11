@@ -172,6 +172,29 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     assert job["double_check"]["status"] == "skipped"
 
 
+def test_evidence_graph_endpoint_reads_completed_result(tmp_path):
+    """근거 관계도: 완료 결과의 노드·관계만 돌려주고 OCR을 다시 부르지 않는다."""
+    calls = []
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path, ocr=fake_ocr(calls, ad_text="협찬받았습니다")) as client:
+        job_id = upload(client, data, disclosure={"kind": "endorsement", "title": "신상 소개"}).json()["id"]
+        job = client.get(f"/api/video-reviews/{job_id}").json()
+        full = client.get(f"/api/video-reviews/{job_id}/evidence-graph")
+        one = client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R1"})
+        assert client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R9"}).status_code == 404
+        missing = "00000000-0000-4000-8000-000000000000"
+        assert client.get(f"/api/video-reviews/{missing}/evidence-graph").status_code == 404
+    assert job["status"] == "completed", job.get("error")
+    assert full.status_code == 200 and one.status_code == 200 and len(calls) == 1
+    graph = one.json()
+    assert graph["answered_by"] == "result_json" and graph["job_id"] == job_id
+    assert [v["status"] for v in graph["verdicts"]] == [job["disclosure"]["rules"]["R1"]["status"]]
+    [observation] = [n for n in graph["nodes"] if n["kind"] == "observation"]
+    assert observation["label"] == "협찬받았습니다" and observation["phrase_class"] == "ambiguous"
+    assert observation["count"] == job["disclosure"]["rules"]["R1"]["counts"]["ambiguous"]
+    assert [v["rule"] for v in full.json()["verdicts"]] == list(job["disclosure"]["rules"])
+
+
 def test_webm_audio_longer_than_video_extracts(tmp_path):
     """영상 6초·오디오 7초 WebM: 길이를 영상 끝(약 6초)으로 보고 프레임 추출까지 정상 완료한다.
 

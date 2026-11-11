@@ -758,6 +758,20 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         with lock:
             return _read_json(directory(request, job_id) / "result.json")
 
+    @router.get("/{job_id}/evidence-graph")
+    def evidence_graph(request: Request, job_id: str, rule: str | None = None):
+        """광고·협찬 판정의 근거 관계도(노드·관계). 저장된 완료 결과만 읽고 모델·그래프DB를 부르지 않는다."""
+        from backend.app.video.evidence_graph import GraphNotReady, UnknownRule, build_evidence_graph
+        with lock:
+            job = _read_json(directory(request, job_id) / "result.json")
+        try:
+            return build_evidence_graph(job, rule)
+        except GraphNotReady:
+            raise HTTPException(409, {"code": "evidence_graph_not_ready",
+                                      "message": "검수가 끝난 뒤 근거 관계도를 볼 수 있습니다."}) from None
+        except UnknownRule:
+            raise HTTPException(404, "판정 규칙을 찾을 수 없습니다.") from None
+
     @router.get("/{job_id}/video")
     def video_file(request: Request, job_id: str):
         """구간 이동을 위해 Range 요청에 206으로 답한다. AVI 등은 재생용 MP4를 만들어 두면 그걸 내보낸다."""
