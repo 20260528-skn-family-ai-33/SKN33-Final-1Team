@@ -15,6 +15,14 @@ export const stageLabels = {
 };
 export const statusLabels = { pass: '충족', fail: '위반', review: '확인 필요', not_applicable: '대상 아님', skipped: '생략' };
 
+export const MiB = 1024 ** 2;
+const GiB = 1024 * MiB;
+
+export function formatVideoUploadLimit(bytes) {
+  if (!bytes) return '';
+  return bytes % GiB === 0 ? `${bytes / GiB} GiB` : `${bytes / MiB} MiB`;
+}
+
 // 서버 처리 단계 순서. 진행 화면의 단계 표시와 돋보기 위치 계산에 쓴다.
 export const stageOrder = ['queued', 'extracting', 'scene_detection', 'ocr', 'classifying', 'segmenting', 'review', 'double_check'];
 export const stepLabels = {

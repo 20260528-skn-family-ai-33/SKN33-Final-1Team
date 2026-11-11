@@ -77,10 +77,9 @@ def _int_env(name: str, default: int, low: int, high: int) -> int:
 
 
 def limits() -> dict:
-    """시연 기본값 3분·500MB(사용자 결정, 2026-10-22). 계획 문서 0단계의 기본값은 기능정의서 X-01의 30초·50MB이며,
-    환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 바꿀 수 있다. 3분 영상은 CPU에서 약 1시간 걸린다(204장 × 장당 약 18초)."""
+    """영상 검수 기본값은 3분·1GiB다. 환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 조정할 수 있다."""
     return {
-        "upload_bytes": _int_env("VIDEO_MAX_MB", 500, 1, 2048) * 1024 * 1024,
+        "upload_bytes": _int_env("VIDEO_MAX_MB", 1024, 1, 2048) * 1024 * 1024,
         "duration_seconds": _int_env("VIDEO_MAX_SECONDS", 180, 1, 600),
         "short_side_min": 360, "long_side_max": 3840, "fps_max": 120,
         "active_jobs": _int_env("VIDEO_MAX_ACTIVE", 3, 1, 20),
@@ -708,7 +707,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     while chunk := await video.read(CHUNK):
                         size += len(chunk)
                         if size > policy["upload_bytes"]:
-                            raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MB 이하로 업로드해 주세요.")
+                            raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MiB 이하로 업로드해 주세요.")
                         if len(head) < 16:
                             head += chunk[:16 - len(head)]
                         digest.update(chunk)

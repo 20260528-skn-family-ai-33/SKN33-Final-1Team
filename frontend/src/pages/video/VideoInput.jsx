@@ -6,12 +6,11 @@ import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import RequirementInput, { ExtractedRequirements } from '../review/RequirementInput.jsx';
 import { parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
-import { criteriaPayload, formatTime } from './videoFormat.js';
+import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB } from './videoFormat.js';
 import VideoDocumentInput from './VideoDocumentInput.jsx';
 
 const ACCEPT = 'video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo,video/avi,.avi';
 const VIDEO_NAME = /\.(mp4|m4v|mov|webm|mkv|avi)$/i;
-const MiB = 1048576;
 
 // 선택한 영상을 브라우저에서 미리 재생하고 길이·해상도를 읽는다. 읽지 못하는 형식도 검수 접수는 막지 않는다.
 // 브라우저가 녹화한 WebM은 길이 정보가 없을(Infinity) 수 있어, 유한한 길이만 쓴다.
@@ -58,9 +57,11 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
   }, [draft.requirements, draft.documentRows]);
   const { ad } = draft;
-  const uploadMiB = limits?.upload_bytes ? Math.floor(limits.upload_bytes / MiB) : null;
+  const uploadLimit = formatVideoUploadLimit(limits?.upload_bytes);
+  const durationSeconds = limits?.duration_seconds;
+  const durationLimit = durationSeconds && (durationSeconds % 60 === 0 ? `${durationSeconds / 60}분` : `${durationSeconds}초`);
   const formats = limits?.formats?.length ? limits.formats.map(format => format.toUpperCase()).join(' · ') : 'MP4 · MOV · WEBM · AVI';
-  const limitText = [uploadMiB && `최대 ${uploadMiB}MB`, limits?.duration_seconds && `${limits.duration_seconds}초 이하`,
+  const limitText = [uploadLimit && `최대 ${uploadLimit}`, durationLimit && `${durationLimit} 이하`,
     limits?.short_side_min && `짧은 변 ${limits.short_side_min}px 이상`].filter(Boolean).join(' · ');
   // 자체 광고는 서버가 시작·끝 0.2초 표본을 뽑지 않으므로 1초 표본만 안내한다.
   const sampling = status?.sampling && (ad.kind === 'self' ? '1초 간격 표본 검사' : status.sampling);
@@ -75,8 +76,14 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   // 서버 한도를 넘는 길이·해상도는 미리 알려 주되, 판정은 서버가 하므로 접수 버튼은 막지 않는다.
   const warnings = [];
   const duration = preview.meta?.duration;
-  if (duration && limits?.duration_seconds && duration > limits.duration_seconds + .05) warnings.push(`영상 길이 ${formatTime(duration * 1000)}가 서버 한도 ${limits.duration_seconds}초를 넘어 접수되지 않을 수 있어요.`);
+  if (duration && durationLimit && duration > durationSeconds + .05) warnings.push(`영상 길이 ${formatTime(duration * 1000)}가 서버 한도(${durationLimit})를 넘어 접수되지 않을 수 있어요.`);
   if (preview.meta?.width && preview.meta?.height && limits?.short_side_min && Math.min(preview.meta.width, preview.meta.height) < limits.short_side_min) warnings.push(`짧은 변이 ${Math.min(preview.meta.width, preview.meta.height)}px라 서버 기준 ${limits.short_side_min}px보다 작습니다.`);
+
+  function exceedsUploadLimit(selected) {
+    if (!uploadLimit || selected.size <= limits.upload_bytes) return false;
+    setError(`동영상은 ${uploadLimit} 이하여야 합니다.`);
+    return true;
+  }
 
   function choose(selected) {
     setError('');
@@ -85,9 +92,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       setError('MP4 · MOV · WEBM · AVI 동영상 파일을 선택해 주세요.');
       return;
     }
-    if (limits?.upload_bytes && selected.size > limits.upload_bytes) {
+    if (exceedsUploadLimit(selected)) {
       setFile(null); if (input.current) input.current.value = '';
-      setError(`동영상은 ${Math.floor(limits.upload_bytes / MiB)}MB 이하여야 합니다.`);
       return;
     }
     setFile(selected);
@@ -109,6 +115,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
 
   async function submit() {
     if (!file || active.current || busy || documentBusy || !status?.ready) return;
+    if (exceedsUploadLimit(file)) return;
     if (criteria.length > 100 || criteria.map(item => item.text).join('\n').length > 6000 ||
         criteria.some(item => item.text.length > 500 || /[\r\n]/.test(item.text))) {
       setError('검수 요구사항은 전체 6,000자 및 100개, 항목당 한 줄 500자 이내로 정리해 주세요.');
@@ -141,7 +148,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
 
   const chooseFile = () => input.current?.click();
-  const fileMeta = file && [`${(file.size / MiB).toFixed(1)}MB`, duration && formatTime(duration * 1000),
+  const fileMeta = file && [`${(file.size / MiB).toFixed(1)} MiB`, duration && formatTime(duration * 1000),
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
   return <section className="rv-video-input" aria-labelledby="page-title">

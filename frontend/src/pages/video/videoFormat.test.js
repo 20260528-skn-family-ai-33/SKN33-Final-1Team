@@ -2,8 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseRequirements } from '../review/workflow.js';
 import {
-  coverageNote, criteriaPayload, diffChars, filmCells, filterItems, formatTime, frameId, frameProgress, judgmentItems, planTimes, progressSteps, scanState,
+  coverageNote, criteriaPayload, diffChars, filmCells, filterItems, formatTime, formatVideoUploadLimit, frameId, frameProgress, judgmentItems, MiB, planTimes, progressSteps, scanState,
 } from './videoFormat.js';
+
+test('video upload labels preserve the server limit in bytes', () => {
+  assert.equal(formatVideoUploadLimit(undefined), '');
+  assert.equal(formatVideoUploadLimit(100 * MiB), '100 MiB');
+  assert.equal(formatVideoUploadLimit(1024 * MiB), '1 GiB');
+  assert.equal(formatVideoUploadLimit(1500 * MiB), '1500 MiB');
+});
 
 test('video criteria payload drops screen-only fields that the server rejects', () => {
   const payload = criteriaPayload(parseRequirements('행사명: 김천김밥축제\n로고가 보여야 합니다'));

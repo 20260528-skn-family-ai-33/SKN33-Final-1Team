@@ -126,7 +126,9 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     calls = []
     data = make_video(tmp_path / "clip.mp4")
     with make_client(tmp_path, ocr=fake_ocr(calls)) as client:
-        assert client.get("/api/video-reviews/status").json()["limits"]["duration_seconds"] == 180
+        policy = client.get("/api/video-reviews/status").json()["limits"]
+        assert policy["duration_seconds"] == 180
+        assert policy["upload_bytes"] == 1024 ** 3
         response = upload(client, data, name="../../etc/passwd.mp4",
                           criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")],
                           disclosure={"kind": "endorsement", "title": "#광고 신상 소개"})
@@ -325,6 +327,7 @@ def test_limits_and_status_codes(tmp_path, monkeypatch):
     monkeypatch.setenv("VIDEO_MAX_SECONDS", "180")
     monkeypatch.setenv("VIDEO_MAX_MB", "1")
     with make_client(tmp_path) as client:
+        assert client.get("/api/video-reviews/status").json()["limits"]["upload_bytes"] == 1024 ** 2
         assert upload(client, b"\x00\x00\x00\x18ftypmp42" + b"0" * (2 * 1024 * 1024)).status_code == 413
     monkeypatch.setenv("VIDEO_MAX_MB", "500")
     with make_client(tmp_path) as client:  # 시작 시 복구가 끝난 뒤 실행 중 3건을 둔다 → 429
