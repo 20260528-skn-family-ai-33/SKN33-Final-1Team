@@ -58,7 +58,8 @@ test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으�
     criterion('c002', '행사 장소: 시민공원', '시민공원', 'venue', '행사 장소')];
   const { page, errors, requested } = await open(t, {
     '/runs/criteria-fixture': { context, execution_status: 'waiting_criteria', human_decision: 'unreviewed', approvals: [],
-      criteria: { context, criteria, extraction: { rejected_candidates: [] } } },
+      criteria: { context, criteria, extraction: { rejected_candidates: [] },
+        warnings: ['unapproved_draft', 'page_2_embedded_images_not_read'] } },
     '/runs/criteria-fixture/criteria-review': { source_draft_sha256: 'b'.repeat(64), latest_version: null,
       approved_criteria_version_id: null, synthetic: false, execution_status: 'waiting_criteria' },
     '/runs/criteria-fixture/criteria-change-impact': {
@@ -86,6 +87,9 @@ test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으�
   await runs.getByText('영향받는 검수 3건 보기', { exact: true }).click();
   assert.deepEqual(await runs.locator('.rv-relation-status').allInnerTexts(), ['최종 승인', '예외 승인', '승인 대기']);
   assert.equal(await runs.getByRole('link').first().getAttribute('href'), '?framework=poster-1');
+  // 이미지가 섞인 쪽은 글자층만 읽었다고 알린다
+  await page.getByRole('status', { name: '읽지 않은 이미지 안내' })
+    .getByText('2쪽의 이미지 안 내용은 읽지 않았어요.', { exact: true }).waitFor();
   // 안내는 기준 검토를 막지 않는다
   assert.ok(await page.getByRole('button', { name: '기준 확인하고 승인', exact: true }).isEnabled());
   assert.equal(requested.filter(path => path.endsWith('/revision-history')).length, 0);

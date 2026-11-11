@@ -150,3 +150,11 @@ def test_dimensions_cannot_lose_their_axis_in_a_generic_display_paragraph(field)
     item['presentation']['value']='가로 3000픽셀 × 세로 3000픽셀'
     _,draft,_,_=extract({'requirements':[item]},doc=doc,presentation=True)
     assert '가로' in projected(draft)['conditions'][0]['text']
+
+
+def test_pages_whose_images_were_not_read_are_named_in_the_input_notice():
+    _,draft,_,_=extract(presentation_reply(),presentation=True)
+    assert not any('이미지' in warning for warning in projected(draft)['warnings'])
+    draft=draft.model_copy(update={'warnings':draft.warnings+('page_2_embedded_images_not_read','page_5_embedded_images_not_read')})
+    assert [w for w in projected(draft)['warnings'] if '이미지' in w]==[
+        '2, 5쪽의 이미지 안 내용은 읽지 않았습니다. 이미지에 요구사항이 있으면 직접 추가해 주세요.']

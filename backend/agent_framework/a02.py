@@ -138,19 +138,26 @@ def _json(raw,limit=MAX_RESPONSE):
     except (ValueError,UnicodeError,RecursionError):_fail('A02_RESPONSE_INVALID')
 
 
-def prepare_sources(document,settings):
+IMAGE_PAGE_WARNING='page_{}_embedded_images_not_read'
+
+
+def prepare_sources(document,settings):return read_sources(document,settings)[0]
+
+
+def read_sources(document,settings):
+    """(text sources, page numbers whose embedded images were not read)."""
     if document.reference.media_type=='text/plain':
         from .requirement_text import inspect_text
         inspect_text(document.content)
         if sha256(document.content).hexdigest()!=document.reference.sha256:_fail('FILE_INTEGRITY_MISMATCH')
         text=document.content.decode('utf-8')
         if len(text)>settings.max_text_chars:_fail('PDF_TEXT_LIMIT_EXCEEDED')
-        return (PDFTextSource(page=1,block_id=TEXT_INPUT_BLOCK_ID,text=text,text_sha256=sha256(text.encode()).hexdigest()),)
+        return (PDFTextSource(page=1,block_id=TEXT_INPUT_BLOCK_ID,text=text,text_sha256=sha256(text.encode()).hexdigest()),),()
     import pymupdf
     if pymupdf.VersionBind!=settings.parser_version:_fail('PDF_PARSER_VERSION_MISMATCH')
     if (sha256(document.content).hexdigest()!=document.reference.sha256
             or inspect_document(document.content)!=document.reference.page_count):_fail('FILE_INTEGRITY_MISMATCH')
-    result=[];total=0
+    result=[];image_pages=[];total=0
     try:
         with pymupdf.open(stream=document.content,filetype='pdf') as pdf:
             for number,page in enumerate(pdf,1):
@@ -160,15 +167,17 @@ def prepare_sources(document,settings):
                 if not text.strip():_fail('PDF_TEXT_UNAVAILABLE')
                 if '\ufffd' in text or '\x00' in text:_fail('PDF_TEXT_UNREADABLE')
                 # Mixed image/text pages may hide requirements outside the text
-                # layer. Initial text-only path rejects them; no OCR fallback.
-                if page.get_image_info():_fail('PDF_IMAGE_PAGE_UNSUPPORTED')
+                # layer. The text layer is still read and the page is reported
+                # so a person checks the images; no OCR fallback. A page with
+                # no text layer (scan) is rejected above.
+                if page.get_image_info():image_pages.append(number)
                 total+=len(text)
                 if total>settings.max_text_chars:_fail('PDF_TEXT_LIMIT_EXCEEDED')
                 result.append(PDFTextSource(page=number,block_id=f'p{number}-text',text=text,
                     text_sha256=sha256(text.encode()).hexdigest()))
     except AdapterFailure:raise
     except Exception:_fail('PDF_TEXT_UNAVAILABLE')
-    return tuple(result)
+    return tuple(result),tuple(image_pages)
 
 
 class MockProvider:
@@ -334,7 +343,7 @@ class RegisteredPDFExtractor:
 
     def extract(self,request):
         document=self.read_document(request)
-        sources=prepare_sources(document,self.settings)
+        sources,image_pages=read_sources(document,self.settings)
         raw=self.provider(sources)
         response_hash=None
         rejections=()
@@ -388,6 +397,7 @@ class RegisteredPDFExtractor:
             input_kind='free_text' if request.document.media_type=='text/plain' else 'pdf',
             unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections)
         warnings=['unapproved_draft','exact_source_check_is_not_semantic_accuracy','text_layer_only_visual_layout_not_verified']
+        warnings.extend(IMAGE_PAGE_WARNING.format(number) for number in image_pages)
         if self.settings.mode=='mock':warnings.append('synthetic_mock_manual_candidates_not_qwen_results')
         if self.settings.mode=='qwen':warnings.extend((
             'semantic_draft_requires_human_review' if semantic_reply is not None else 'literal_compilation_requires_human_review',*compilation_warnings))

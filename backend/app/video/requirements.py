@@ -230,9 +230,13 @@ def docx_sources(data: bytes) -> tuple[PDFTextSource, ...]:
 
 
 def pdf_sources(data: bytes) -> tuple[PDFTextSource, ...]:
-    """포스터 A02와 같은 텍스트층 전용 규칙: 이미지가 섞인 쪽·글자 없는 쪽은 OCR 없이 거부한다."""
+    return _pdf_pages(data)[0]
+
+
+def _pdf_pages(data: bytes) -> tuple[tuple[PDFTextSource, ...], tuple[int, ...]]:
+    """포스터 A02와 같은 텍스트층 전용 규칙: 글자 없는 쪽은 OCR 없이 거부하고, 이미지가 섞인 쪽은 글자층만 읽고 쪽 번호를 알린다."""
     import pymupdf
-    result = []
+    result, image_pages = [], []
     try:
         with pymupdf.open(stream=data, filetype="pdf") as pdf:
             if pdf.page_count > MAX_BLOCKS:
@@ -244,14 +248,14 @@ def pdf_sources(data: bytes) -> tuple[PDFTextSource, ...]:
                 if "�" in text or "\x00" in text:
                     _fail("PDF_TEXT_UNREADABLE", f"{number}쪽 글자가 깨져 있습니다.")
                 if page.get_image_info():
-                    _fail("PDF_IMAGE_PAGE_UNSUPPORTED", f"{number}쪽에 이미지가 섞여 있어 글자층만으로는 요구사항을 다 읽었다고 볼 수 없습니다.")
+                    image_pages.append(number)  # 이미지 안 내용은 읽지 않는다. 경고로 알려 사람이 확인한다.
                 result.append(PDFTextSource(page=number, block_id=f"p{number}-text", text=text,
                                             text_sha256=sha256(text.encode()).hexdigest()))
     except DocumentError:
         raise
     except Exception:
         _fail("PDF_TEXT_UNAVAILABLE", "PDF를 읽지 못했습니다.", 415)
-    return tuple(result)
+    return tuple(result), tuple(image_pages)
 
 
 def text_sources(data: bytes) -> tuple[PDFTextSource, ...]:
@@ -265,13 +269,18 @@ def text_sources(data: bytes) -> tuple[PDFTextSource, ...]:
 
 
 def read_sources(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSource, ...]]:
-    """실제 바이트로 형식을 정한다(확장자는 텍스트 구분에만 참고)."""
+    return _read(data, filename)[:2]
+
+
+def _read(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSource, ...], tuple[int, ...]]:
+    """실제 바이트로 형식을 정한다(확장자는 텍스트 구분에만 참고). 셋째 값은 이미지를 읽지 않은 PDF 쪽 번호."""
+    image_pages = ()
     if not data:
         _fail("DOCUMENT_EMPTY", "빈 파일입니다.", 400)
     if len(data) > MAX_BYTES:
         _fail("DOCUMENT_TOO_LARGE", "문서는 10MiB 이하로 올려 주세요.", 413)
     if data.startswith(b"%PDF-"):
-        kind, sources = "pdf", pdf_sources(data)
+        kind, (sources, image_pages) = "pdf", _pdf_pages(data)
     elif data.startswith(b"PK\x03\x04"):
         kind, sources = "docx", docx_sources(data)
     elif filename.lower().endswith((".txt", ".md")):
@@ -280,7 +289,7 @@ def read_sources(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSou
         _fail("DOCUMENT_TYPE_UNSUPPORTED", "DOCX·PDF·UTF-8 텍스트(.txt) 문서만 읽을 수 있습니다.", 415)
     if sum(len(s.text) for s in sources) > MAX_TEXT_CHARS:
         _fail("DOCUMENT_TEXT_LIMIT_EXCEEDED", f"문서 글자가 {MAX_TEXT_CHARS:,}자를 넘습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
-    return kind, sources
+    return kind, sources, image_pages
 
 
 # ---------------------------------------------------------------- 모델 호출
@@ -435,7 +444,7 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
 
 
 def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None) -> dict:
-    kind, sources = read_sources(data, filename)
+    kind, sources, image_pages = _read(data, filename)
     settings = settings or config()
     try:
         index, payload = index_sources(sources)
@@ -447,7 +456,8 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
     items, warnings = materialize(reply, index)
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
                 for n, item in enumerate((i for i in items if i["include"]), 1)]
-    warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings]
+    warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings,
+                *(f"page_{number}_embedded_images_not_read" for number in image_pages)]
     if any(item["unresolved"] for item in items):
         warnings.append("missing_values_require_client_clarification")
     return {
