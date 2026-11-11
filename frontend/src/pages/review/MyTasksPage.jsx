@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
+import { useAuth } from '../../auth/AuthProvider.jsx';
+import PdfBatches from './PdfBatches.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
@@ -16,6 +18,7 @@ const taskTime = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short', timeStyl
 
 export default function MyTasksPage() {
   const resetWorkspace = useWorkspaceReset();
+  const { user } = useAuth();
   const [visibility, setVisibility] = useState('visible');
   const [cursors, setCursors] = useState([null]);
   const [page, setPage] = useState(null);
@@ -120,6 +123,7 @@ export default function MyTasksPage() {
             if (!event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) resetWorkspace();
           }}>새 검수</Link>}
       </header>
+      {user?.id != null && <PdfBatches key={user.id} userId={user.id} onAccepted={() => setReload(value => value + 1)} />}
       <section className="rv-panel rv-task-panel" aria-label="내 작업 목록">
         <div className="rv-task-toolbar">
           <div className="rv-task-view"><label>이력 표시 <select ref={visibilitySelect} value={visibility} disabled={busy}

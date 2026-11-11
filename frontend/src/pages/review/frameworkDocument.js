@@ -7,9 +7,7 @@ const wait = (ms, signal) => new Promise((resolve, reject) => {
   signal?.addEventListener('abort', abort, { once: true });
 });
 
-// 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
-export async function extractDocumentWithProgress(file, { projectId, attempt, attempts, signal, onProgress,
-  pollInterval = 1500, waitFor = wait } = {}) {
+export async function submitDocument(file, { projectId, attempt, attempts, signal, onProgress } = {}) {
   const isText = file.type === 'text/plain';
   const source = isText ? '입력문' : 'PDF';
   if (!projectId) throw new Error('요구사항을 저장할 프로젝트를 선택해 주세요.');
@@ -49,6 +47,13 @@ export async function extractDocumentWithProgress(file, { projectId, attempt, at
     if (!run?.context?.run_id) throw new Error('문서 분석 접수 결과를 확인하지 못했습니다.');
     attempt.runId = run.context.run_id;
   }
+  return attempt;
+}
+
+// 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
+export async function extractDocumentWithProgress(file, { signal, onProgress, pollInterval = 1500, waitFor = wait, ...submission } = {}) {
+  const attempt = await submitDocument(file, { ...submission, signal, onProgress });
+  const source = file.type === 'text/plain' ? '입력문' : 'PDF';
   const runPath = `/runs/${encodeURIComponent(attempt.runId)}`;
   while (true) {
     signal?.throwIfAborted();

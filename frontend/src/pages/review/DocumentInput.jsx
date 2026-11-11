@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { loadDocumentProjects, createDocumentProject } from './frameworkClient.js';
@@ -158,6 +159,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
             : <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}
       </div>
     </div>
+    {kind === 'poster' && !off && <Link className="text-btn" to="/review/tasks#pdf-batches">PDF 여러 개 올리기</Link>}
     <ErrorMessage message={documentError} />
     {children}
   </section>;
