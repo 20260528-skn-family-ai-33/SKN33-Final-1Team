@@ -155,7 +155,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         {startedAt && <small role="timer" aria-label="경과 시간">경과 {elapsed} · 처리 단계 기준</small>}
       </div>}
       <div className="rv-form-row rv-form-hint">
-        <span>{!documentBusy && documentNotice ? documentNotice : '텍스트 PDF(50페이지) · DOCX(본문 글자) · 최대 10MiB'}</span>
+        <span>{!documentBusy && documentNotice ? documentNotice : 'PDF · DOCX(본문 글자) · 최대 10MiB'}</span>
         {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
           : documentName && clearDocument ? <button type="button" className="rv-button secondary rv-compact" onClick={clearDocument}>첨부 지우기</button>
             : <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}

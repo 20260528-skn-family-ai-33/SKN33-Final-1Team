@@ -266,7 +266,7 @@ async function verifyDocx(t, mode) {
   const card = page.getByRole('region', { name: '요구사항 문서 첨부' });
   const upload = page.getByLabel('요구사항 문서 선택', { exact: true });
   assert.match(await upload.getAttribute('accept'), /\.docx/);
-  await page.getByText('텍스트 PDF(50페이지) · DOCX(본문 글자) · 최대 10MiB', { exact: true }).waitFor();
+  await page.getByText('PDF · DOCX(본문 글자) · 최대 10MiB', { exact: true }).waitFor();
   if (mode === 'video-drop') {
     const dataTransfer = await page.evaluateHandle(bytes => {
       const data = new DataTransfer();
