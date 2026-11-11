@@ -58,7 +58,7 @@ def test_complete_poster_health_preserves_existing_fields_without_importing_fact
     assert response.status_code == 200
     assert response.json() == {
         'storage': 'postgres', 'queue': 'agent_framework.jobs', 'schema': 'AF004',
-        'pdf_registration': True, 'free_text_registration': True, 'pdf_extraction_mode': 'qwen',
+        'pdf_registration': True, 'free_text_registration': True, 'docx_text_registration': True, 'pdf_extraction_mode': 'qwen',
         'requirements_presentation': True, 'context_preparation': 'approved_sources',
         'graph_projection': False, 'criteria_review': True, 'poster_reviews': True,
         'task_controls': True,

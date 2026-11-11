@@ -123,6 +123,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
                 'free_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
+                'docx_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
                 'pdf_extraction_mode':configuration.pdf_extraction.mode if configuration.pdf_extraction and app.state.documents else None,
                 'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
                 'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
@@ -302,6 +303,47 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     async def register_text_version(request:Request,project_id:UUID,document_id:UUID,previous_version_id:UUID,
                                     idempotency_key:UUID=Header(alias='Idempotency-Key')):
         return await text_document(request,project_id,idempotency_key,document_id,previous_version_id)
+
+    async def docx_document(request,pid,request_key,filename,document_id=None,previous=None):
+        # DOCX -> verbatim text in milliseconds, then the existing AF004 text
+        # version path. The DOCX bytes are not stored; their hash is returned.
+        from .docx_text import (DOCX_MEDIA_TYPE,MAX_DOCX_BYTES,ConvertedDocument,docx_filename,
+            docx_requirement_text,describe_source)
+        from .ports import AdapterFailure
+        service=documents();actor=await run_in_threadpool(subject,request)
+        dev=developer_allowed(request,settings)
+        await run_in_threadpool(service.preflight,actor,dev,pid,document_id,previous)
+        if app.state.framework_revision not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if request.headers.get('content-type','').split(';',1)[0].strip().lower()!=DOCX_MEDIA_TYPE:
+            raise AuthError('DOCX_CONTENT_TYPE_REQUIRED',415)
+        try:name=docx_filename(filename)
+        except AdapterFailure as e:raise AuthError(e.code,422) from None
+        length=request.headers.get('content-length')
+        if length is not None:
+            if not length.isascii() or not length.isdecimal():raise AuthError('DOCX_LENGTH_INVALID',400)
+            if len(length)>10 or int(length)>MAX_DOCX_BYTES:raise AuthError('FILE_TOO_LARGE',413)
+        raw=bytearray()
+        async for chunk in request.stream():
+            if len(raw)+len(chunk)>MAX_DOCX_BYTES:raise AuthError('FILE_TOO_LARGE',413)
+            raw.extend(chunk)
+        raw=bytes(raw)
+        try:converted=await run_in_threadpool(docx_requirement_text,raw)
+        except AdapterFailure as e:
+            raise AuthError(e.code,413 if e.code in ('FILE_TOO_LARGE','DOCX_TOO_LARGE','DOCX_TEXT_TOO_LARGE') else 422) from None
+        record=await run_in_threadpool(partial(service.register,actor,dev,pid,request_key,converted.text.encode('utf-8'),
+            filename=name+'.txt',document_id=document_id,previous_version_id=previous,media_type='text/plain'))
+        return ConvertedDocument.model_validate({**record.model_dump(mode='python'),'source':describe_source(raw,name,converted)})
+
+    from .docx_text import ConvertedDocument,DOCX_MEDIA_TYPE
+    docx_body_schema={'requestBody':{'required':True,'content':{DOCX_MEDIA_TYPE:{'schema':{'type':'string','format':'binary'}}}}}
+    @app.post(prefix+'/projects/{project_id}/docx-documents',response_model=ConvertedDocument,status_code=201,openapi_extra=docx_body_schema)
+    async def register_docx(request:Request,project_id:UUID,filename:str=Query(),idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await docx_document(request,project_id,idempotency_key,filename)
+
+    @app.post(prefix+'/projects/{project_id}/docx-documents/{document_id}/versions',response_model=ConvertedDocument,status_code=201,openapi_extra=docx_body_schema)
+    async def register_docx_version(request:Request,project_id:UUID,document_id:UUID,previous_version_id:UUID,
+                                    filename:str=Query(),idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await docx_document(request,project_id,idempotency_key,filename,document_id,previous_version_id)
 
     async def upload(request,pid,request_key,filename,document_id=None,previous=None):
         service=documents()

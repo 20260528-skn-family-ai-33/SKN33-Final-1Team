@@ -5,7 +5,7 @@ import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
-import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
+import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 
@@ -177,23 +177,22 @@ export function ReviewProvider({ children }) {
     cancelDocument();
     invalidateSample();
     if (documentInput.current) documentInput.current.value = '';
-    if (files.length !== 1) { setDocumentError('PDF는 한 번에 1개만 선택해 주세요.'); return; }
-    if (!projectId) { setDocumentError('PDF를 저장할 프로젝트를 선택해 주세요.'); return; }
+    if (files.length !== 1) { setDocumentError('요구사항 문서(PDF·DOCX)는 한 번에 1개만 선택해 주세요.'); return; }
+    if (!projectId) { setDocumentError('문서를 저장할 프로젝트를 선택해 주세요.'); return; }
     const file = files[0];
-    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF를 선택해 주세요.'); return; }
+    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF 또는 DOCX를 선택해 주세요.'); return; }
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true);
-    setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
+    setDocumentProgress({ percent: 0, stage: 'uploading', message: '문서를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
     setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
     let timedOut = false;
     const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
     try {
-      const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-      if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
+      const requirementFile = await requirementDocument(file);
       if (controller.signal.aborted) return;
-      const pdf = file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf' });
-      const result = await extractDocumentWithProgress(pdf, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
+      const isDocx = requirementFile.type === DOCX_MEDIA_TYPE;
+      const result = await extractDocumentWithProgress(requirementFile, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
           setDocumentProgress(previous => ({ ...previous, ...update }));
         }
@@ -213,7 +212,7 @@ export function ReviewProvider({ children }) {
         originalCount: rows.length, rows, filename: file.name, projectId } });
       setDocumentProgress(null);
       const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
-      setDocumentNotice(`추출을 완료했어요. ${result.page_count}페이지 · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
+      setDocumentNotice(`추출을 완료했어요. ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
         setDocumentNotice('');

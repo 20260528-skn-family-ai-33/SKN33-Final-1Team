@@ -85,7 +85,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
             cancelDocument={canCancelQueued ? cancelQueuedDocument : cancelDocument} cancelBusy={documentCancelBusy}
             cancelLabel={canCancelQueued ? '대기 작업 취소' : '입력 반영 취소'}>
             {doc && !documentBusy && <button type="button" className="rv-button secondary rv-compact rv-document-source"
-              disabled={busy} onClick={openDocumentRun}>PDF 원문과 기준 확인</button>}
+              disabled={busy} onClick={openDocumentRun}>{/\.docx$/i.test(doc.filename || '') ? 'DOCX 본문과 기준 확인' : 'PDF 원문과 기준 확인'}</button>}
             {!previewMode && !projectStatus?.ready && !projectStatus?.busy && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
           </DocumentInput>
           <LogoInputs logos={state.referenceLogos} onChange={logos => inputChange('referenceLogos', logos)} disabled={busy} referenceOnly />

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
+import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import { loadDocumentProjects, requirePosterReview } from './frameworkClient.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 
@@ -199,4 +199,52 @@ test('PDF 분석 가능 여부를 포스터 검수 준비나 텍스트 등록 �
   await assert.rejects(requirePosterReview({ freeText: true }), /텍스트 원문 저장/);
   health.free_text_registration = true;
   await requirePosterReview({ freeText: true });
+});
+
+const docxBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
+const docx = new File([docxBytes], '의뢰서.docx', { type: DOCX_MEDIA_TYPE });
+const docxSha = createHash('sha256').update(docxBytes).digest('hex');
+
+function setupDocx(t, sourceSha = docxSha) {
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
+    calls.push({ url, options });
+    if (url === prefix + '/csrf') return Response.json({ csrf_token: 'framework-token' });
+    if (url.includes('/docx-documents?')) {
+      assert.equal(url, `${prefix}/projects/p/docx-documents?filename=${encodeURIComponent('의뢰서.docx')}`);
+      assert.equal(options.body, docx);
+      assert.equal(new Headers(options.headers).get('Content-Type'), DOCX_MEDIA_TYPE);
+      // 저장 원문은 변환 텍스트라 document.sha256은 DOCX 해시와 다르다.
+      return Response.json({ document: { document_version_id: 'doc-1', sha256: 'f'.repeat(64), media_type: 'text/plain' },
+        source: { sha256: sourceSha } }, { status: 201 });
+    }
+    if (url.endsWith('/extractions')) return Response.json({ context: { run_id: 'run-1' }, execution_status: 'queued' }, { status: 202 });
+    if (url === prefix + runPath) return Response.json({ execution_status: 'waiting_criteria' });
+    if (url === prefix + runPath + '/requirements') return Response.json(result);
+    throw new Error('unexpected request: ' + url);
+  });
+  return calls;
+}
+
+test('DOCX는 전용 경로로 올리고 돌려받은 원본 DOCX 해시로 대조한 뒤 같은 분석을 접수한다', async t => {
+  const calls = setupDocx(t); const messages = [];
+  const response = await extractDocumentWithProgress(docx, { projectId: 'p', onProgress: update => messages.push(update.message), waitFor: async () => {} });
+  assert.equal(response.framework.run_id, 'run-1');
+  assert.match(messages[0], /DOCX 본문 글자/);
+  assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 1);
+  assert.equal(calls.filter(c => c.url.includes('/documents?')).length, 0);
+});
+
+test('DOCX 원본 해시가 응답과 다르면 분석을 접수하지 않는다', async t => {
+  const calls = setupDocx(t, '0'.repeat(64));
+  await assert.rejects(extractDocumentWithProgress(docx, { projectId: 'p' }), /DOCX 원문 저장 결과/);
+  assert.equal(calls.filter(c => c.url.endsWith('/extractions')).length, 0);
+});
+
+test('첨부 파일은 확장자가 아니라 첫 바이트로 PDF·DOCX를 가르고 나머지는 거부한다', async () => {
+  assert.equal((await requirementDocument(new File(['%PDF-1.7'], 'brief', { type: '' }))).type, 'application/pdf');
+  assert.equal((await requirementDocument(new File([docxBytes], '의뢰서.DOCX', { type: 'application/zip' }))).type, DOCX_MEDIA_TYPE);
+  assert.equal(await requirementDocument(docx), docx);
+  await assert.rejects(requirementDocument(new File([docxBytes], 'archive.zip', { type: 'application/zip' })), /Word\(\.docx\)/);
+  await assert.rejects(requirementDocument(new File(['행사명: 새벽'], 'brief.docx', { type: DOCX_MEDIA_TYPE })), /PDF 또는 Word/);
 });

@@ -98,7 +98,10 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const off = documentBusy || disabled;
   const dropActive = dragging && !off;
   const filename = documentProgress?.source || documentName;
-  const uploadHint = off ? 'PDF 1개 첨부' : 'PDF 1개를 끌어 놓거나 파일을 선택하세요.';
+  // 포스터 A02만 DOCX(본문 글자)를 받는다. 영상 문서 첨부는 기존 PDF 흐름을 유지한다.
+  const docx = kind === 'poster';
+  const formats = docx ? 'PDF·DOCX' : 'PDF';
+  const uploadHint = off ? `${formats} 1개 첨부` : `${formats} 1개를 끌어 놓거나 파일을 선택하세요.`;
 
   function handleDragEnter(event) {
     if (!event.dataTransfer.types.includes('Files')) return;
@@ -139,8 +142,9 @@ export default function DocumentInput({ documentBusy, documentProgress, document
     <h2>요구사항 문서 첨부</h2>
     <div className="rv-form-upload">
       <div className="rv-form-row">
-        <span className="rv-upload-name">{dropActive ? '여기에 PDF를 놓으세요.' : filename || uploadHint}</span>
-        <input ref={documentInput} type="file" className="sr-only" accept="application/pdf,.pdf" aria-label="요구사항 PDF 선택" disabled={off}
+        <span className="rv-upload-name">{dropActive ? `여기에 ${formats}를 놓으세요.` : filename || uploadHint}</span>
+        <input ref={documentInput} type="file" className="sr-only" aria-label="요구사항 PDF 선택" disabled={off}
+          accept={docx ? 'application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf,.pdf'}
           onChange={event => { if (event.target.files.length) selectDocument([...event.target.files]); }} />
         <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
           <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
@@ -153,7 +157,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         {startedAt && <small role="timer" aria-label="경과 시간">경과 {elapsed} · 처리 단계 기준</small>}
       </div>}
       <div className="rv-form-row rv-form-hint">
-        <span>{!documentBusy && documentNotice ? documentNotice : '텍스트 PDF · 최대 10MiB / 50페이지'}</span>
+        <span>{!documentBusy && documentNotice ? documentNotice : docx ? '텍스트 PDF(50페이지) · DOCX(본문 글자) · 최대 10MiB' : '텍스트 PDF · 최대 10MiB / 50페이지'}</span>
         {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
           : documentName && clearDocument ? <button type="button" className="rv-button secondary rv-compact" onClick={clearDocument}>첨부 지우기</button>
             : <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}

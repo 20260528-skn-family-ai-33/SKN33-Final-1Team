@@ -308,3 +308,53 @@ def test_recorded_real_qwen_pdf_paragraphs_replay_through_postgres_worker(semant
             assert result['approved'] is False and any('후보 1개' in warning for warning in result['warnings'])
             reloaded=client.get('/api/framework/v1/runs/'+rid).json()
             assert reloaded['criteria']==snapshot['criteria']
+
+
+def register_docx(r,raw,key=None,*,name='의뢰서.docx',content_type=None):
+    from backend.agent_framework.docx_text import DOCX_MEDIA_TYPE
+    return r.client.post(r.base+'/docx-documents',params={'filename':name} if name is not None else {},content=raw,
+        headers={**csrf(r.client),'Idempotency-Key':str(key or uuid4()),'Content-Type':content_type or DOCX_MEDIA_TYPE})
+
+
+def brief_docx(lines=None):
+    from tests.agent_framework.test_docx_text import package,p,r as run
+    return package(''.join(p(run(line)) for line in (lines or BRIEF.splitlines())))
+
+
+def test_docx_registers_converted_text_and_uses_the_same_free_text_a02_path(semantic):
+    r=semantic;raw=brief_docx();key=uuid4()
+    response=register_docx(r,raw,key);assert response.status_code==201,response.text
+    record=response.json();ref=record['document']
+    assert ref['media_type']=='text/plain' and ref['page_count']==1 and record['original_name']=='의뢰서.docx.txt'
+    assert record['source']['sha256']==sha256(raw).hexdigest() and record['source']['converter']=='docx-text-v1'
+    assert record['source']['byte_size']==len(raw) and record['source']['blocks']==1
+    text=r.client.get(r.base+'/document-versions/'+ref['document_version_id']+'/content').content
+    assert text==(BRIEF+'\n').encode() and ref['sha256']==sha256(text).hexdigest()
+    assert register_docx(r,raw,key).json()==record
+    assert register_docx(r,brief_docx(['다른 내용']),key).status_code==409
+    rid,saved,outcome,calls=run_extraction(r,record)
+    assert outcome=='completed' and len(calls)==1 and saved['execution_status']=='waiting_criteria'
+    assert [line['text'] for line in json.loads(calls[0]['messages'][1]['content'])['sources'][0]['lines']]==BRIEF.splitlines()
+    assert saved['criteria']['extraction']['input_kind']=='free_text' and len(saved['criteria']['criteria'])==5
+    assert r.client.get('/api/framework/v1/health').json()['docx_text_registration']
+
+
+@pytest.mark.parametrize('case,status,code',[
+    ('pdf_content_type',415,'DOCX_CONTENT_TYPE_REQUIRED'),('not_docx',422,'DOCX_INVALID'),
+    ('pdf_name',422,'DOCX_FILENAME_INVALID'),('empty_body_text',422,'DOCX_TEXT_UNAVAILABLE')])
+def test_invalid_docx_uploads_do_not_create_versions(semantic,case,status,code):
+    r=semantic
+    with unit_of_work(r.db.engine) as c:before=c.execute(select(func.count()).select_from(versions)).scalar_one()
+    raw={'not_docx':b'%PDF-1.7 not a word file','empty_body_text':brief_docx([''])}.get(case,brief_docx())
+    response=register_docx(r,raw,name='brief.pdf' if case=='pdf_name' else '의뢰서.docx',
+        content_type='application/pdf' if case=='pdf_content_type' else None)
+    assert response.status_code==status and response.json()['error']['code']==code,response.text
+    with unit_of_work(r.db.engine) as c:assert c.execute(select(func.count()).select_from(versions)).scalar_one()==before
+
+
+def test_docx_upload_requires_session_and_csrf(semantic):
+    r=semantic;raw=brief_docx()
+    from backend.agent_framework.docx_text import DOCX_MEDIA_TYPE
+    response=r.client.post(r.base+'/docx-documents',params={'filename':'의뢰서.docx'},content=raw,
+        headers={'Idempotency-Key':str(uuid4()),'Content-Type':DOCX_MEDIA_TYPE})
+    assert response.status_code==403
