@@ -14,6 +14,7 @@ import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import FrameworkReport from './FrameworkReport.jsx';
 import PosterTextEditor from './PosterTextEditor.jsx';
 import ChangeImpactNotice from './ChangeImpactNotice.jsx';
+import { unreadImagePages } from './criteriaWarnings.js';
 import RevisionHistory from './RevisionHistory.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
@@ -117,6 +118,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const selectionUnavailable = selectedPdfIds && overview && criteria.length !== selectedPdfIds.size;
   const needsVersion = !latest || (selectedPdfIds && savedCriteria.length !== criteria.length) || excluded.length > 0 || amendment;
   const rejections = run?.criteria?.extraction?.rejected_candidates || [];
+  const imagePages = unreadImagePages(run?.criteria?.warnings);
   const reviewScope = [
     criteria.some(item => item.kind !== 'visual') && '문구·값',
     criteria.some(item => item.kind === 'visual') && '시각 조건',
@@ -416,6 +418,11 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
             {criteriaRun && changeImpact?.run_id === runId && <ChangeImpactNotice impact={changeImpact} />}
             {selectionUnavailable && <ErrorMessage message="선택한 항목 중 저장한 기준 버전에서 이미 제외된 항목이 있어요. 자료 입력으로 돌아가 선택을 다시 확인해 주세요." />}
+            {imagePages.length > 0 && <section className="rv-relation-notice" role="status" aria-label="읽지 않은 이미지 안내">
+              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
+                <strong>{imagePages.join(', ')}쪽의 이미지 안 내용은 읽지 않았어요.</strong>
+                <p>글자로 된 부분만 기준으로 만들었습니다. 이미지에 요구사항이 있으면 원문을 보고 기준을 보완해 주세요.</p></div></div>
+            </section>}
             {rejections.length > 0 && <ExtractionRejections items={rejections} />}
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
             <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>

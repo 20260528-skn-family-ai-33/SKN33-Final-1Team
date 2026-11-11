@@ -7,7 +7,7 @@ import httpx
 import pymupdf
 import pytest
 
-from backend.agent_framework.a02 import (RegisteredPDFExtractor,QwenProvider,MockProvider,prepare_sources,
+from backend.agent_framework.a02 import (RegisteredPDFExtractor,QwenProvider,MockProvider,prepare_sources,read_sources,
     PROMPT_HASH,QWEN_PROMPT,QWEN_PROMPT_HASH)
 from backend.agent_framework.a02_source_selection import index_sources,materialize_selection,selection_schema,SelectedProviderReply
 from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
@@ -121,23 +121,48 @@ def test_trace_tampering_is_rechecked_at_common_role_boundary():
     assert error.value.code=='EXTRACTION_SOURCE_HASH_MISMATCH'
 
 
-@pytest.mark.parametrize('kind,code',(('blank','PDF_TEXT_UNAVAILABLE'),('image','PDF_IMAGE_PAGE_UNSUPPORTED'),('limit','PDF_TEXT_LIMIT_EXCEEDED'),('parser','PDF_PARSER_VERSION_MISMATCH')))
+@pytest.mark.parametrize('kind,code',(('blank','PDF_TEXT_UNAVAILABLE'),('scan','PDF_TEXT_UNAVAILABLE'),('limit','PDF_TEXT_LIMIT_EXCEEDED'),('parser','PDF_PARSER_VERSION_MISMATCH')))
 def test_unsupported_input_fails_before_provider(kind,code):
     doc=document();settings=PDFExtractionConfiguration(mode='mock');calls=[]
     if kind=='limit':settings=settings.model_copy(update={'max_text_chars':100})
     if kind=='parser':settings=settings.model_copy(update={'parser_version':'0.0.0'})
-    if kind in ('blank','image'):
-        with pymupdf.open() as pdf:
-            page=pdf.new_page()
-            if kind=='image':
-                page.insert_text((30,40),'Partial text layer')
-                page.insert_image(pymupdf.Rect(20,60,120,160),stream=b'P6\n1 1\n255\n\xff\x00\x00')
-            raw=pdf.tobytes()
-        ref=doc.reference.model_copy(update={'sha256':sha256(raw).hexdigest(),'page_count':1})
-        doc=VerifiedDocument(doc.context,ref,raw,1)
+    if kind in ('blank','scan'):doc=built_document(doc,(None,) if kind=='blank' else (('',True),))
     with pytest.raises(AdapterFailure) as error:
         RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:calls.append(1)).extract(request(doc))
     assert error.value.code==code and not calls
+
+
+def built_document(doc,pages):
+    """One PDF page per entry: None is blank, otherwise (text, has_image)."""
+    with pymupdf.open() as pdf:
+        for entry in pages:
+            page=pdf.new_page()
+            if entry is None:continue
+            text,image=entry
+            if text:page.insert_text((30,40),text)
+            if image:page.insert_image(pymupdf.Rect(20,60,120,160),stream=b'P6\n1 1\n255\n\xff\x00\x00')
+        raw=pdf.tobytes()
+    ref=doc.reference.model_copy(update={'sha256':sha256(raw).hexdigest(),'page_count':len(pages)})
+    return VerifiedDocument(doc.context,ref,raw,len(pages))
+
+
+def test_page_with_text_and_images_is_read_and_reported_instead_of_rejected():
+    doc=built_document(document(),(('Title must be shown',False),('Logo must be used',True)))
+    settings=PDFExtractionConfiguration(mode='mock')
+    sources,image_pages=read_sources(doc,settings)
+    assert [s.block_id for s in sources]==['p1-text','p2-text'] and image_pages==(2,)
+    assert prepare_sources(doc,settings)==sources
+    quote='Logo must be used'
+    item=dict(text=quote,kind='unsupported',operator='manual',expected='',required=True,unit=None,
+        block_id='p2-text',page=2,quote=quote,unresolved=False)
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:raw_reply(item)).extract(request(doc))
+    assert draft.criteria[0].source.page==2 and draft.criteria[0].source.quote==quote
+    assert [w for w in draft.warnings if w.endswith('_embedded_images_not_read')]==['page_2_embedded_images_not_read']
+
+
+def test_pdf_without_images_carries_no_image_warning():
+    doc=document();adapter=RegisteredPDFExtractor(lambda _:doc,PDFExtractionConfiguration(mode='mock'))
+    assert not [w for w in adapter.extract(request(doc)).warnings if w.endswith('_embedded_images_not_read')]
 
 
 def qwen_settings():return PDFExtractionConfiguration(mode='qwen',structuring='literal_legacy',endpoint='https://qwen.invalid/v1/chat/completions')
