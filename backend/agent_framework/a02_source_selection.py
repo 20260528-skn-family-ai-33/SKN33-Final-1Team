@@ -17,6 +17,8 @@ MAX_SOURCE_LINES=2048
 MAX_SOURCE_PARTS=8192
 MAX_SELECTION_SCHEMA_BYTES=2*1024*1024
 UNRESOLVED_SOURCE=re.compile(r'확인\s*중|미확정|회신\s*후')
+# Free text and DOCX-converted text are stored as this one logical source block.
+TEXT_INPUT_BLOCK_ID='input-text'
 
 
 class ValueSpan(BaseModel):
@@ -65,18 +67,45 @@ def invalid_source():
     raise AdapterFailure('A02_SOURCE_MISMATCH','The selected PDF source range is invalid.')
 
 
+def _model_blocks(source):
+    """Group a source's non-empty lines into the blocks shown to the model.
+
+    PDF pages and single-section text keep one block with the original line
+    numbers. Multi-section text input (blank-line separated paragraphs/tables,
+    e.g. a converted DOCX) is shown as consecutive blocks p1-text, p2-text, ...
+    with block-local line numbers, the same shape as PDF pages. Measured on the
+    poster Qwen server, one input-text block with numbering gaps made guided JSON
+    generation emit whitespace instead of the first line ID until max_tokens.
+    These labels exist only in the model request: every ID still resolves to the
+    single stored source, so quotes, page 1 and the trace scope are unchanged.
+    """
+    rows=[];offset=0
+    for number,raw in enumerate(source.text.splitlines(keepends=True),1):
+        # Remove only this line's delimiter. Spaces, Unicode and embedded
+        # delimiters in a multi-line selection remain the original bytes.
+        text=raw.removesuffix('\n').removesuffix('\r')
+        rows.append((number,text,offset))
+        offset+=len(raw)
+    sections=[[]]
+    for row in rows:
+        if row[1].strip():sections[-1].append(row)
+        elif sections[-1]:sections.append([])
+    sections=[section for section in sections if section]
+    if source.block_id!=TEXT_INPUT_BLOCK_ID or len(sections)<2:
+        return [(source.block_id,source.page,[row for row in rows if row[1].strip()])]
+    return [(f'p{n}-text',n,[(line,text,start) for line,(_,text,start) in enumerate(section,1)])
+        for n,section in enumerate(sections,1)]
+
+
 def index_sources(sources):
     index={};parts={};payload=[];blocks=set()
     for source in sources:
         if source.block_id in blocks:invalid_source()
         blocks.add(source.block_id)
-        lines=[];offset=0
-        for number,raw in enumerate(source.text.splitlines(keepends=True),1):
-            # Remove only this line's delimiter. Spaces, Unicode and embedded
-            # delimiters in a multi-line selection remain the original bytes.
-            text=raw.removesuffix('\n').removesuffix('\r')
-            if text.strip():
-                identifier=f'{source.block_id}:L{number}'
+        for label,page,rows in _model_blocks(source):
+            lines=[]
+            for number,text,offset in rows:
+                identifier=f'{label}:L{number}'
                 if identifier in index:invalid_source()
                 index[identifier]=SourceLine(source,offset,offset+len(text))
                 line_parts=[]
@@ -91,8 +120,7 @@ def index_sources(sources):
                 lines.append({'id':identifier,'text':text,'parts':line_parts})
                 if len(index)>MAX_SOURCE_LINES:
                     raise AdapterFailure('PDF_SOURCE_INDEX_LIMIT_EXCEEDED','The PDF has too many source lines for this extraction profile.')
-            offset+=len(raw)
-        payload.append({'block_id':source.block_id,'page':source.page,'lines':lines})
+            payload.append({'block_id':label,'page':page,'lines':lines})
     if not index:invalid_source()
     return SourceIndex(index,parts),payload
 

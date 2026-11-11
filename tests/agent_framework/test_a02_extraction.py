@@ -256,6 +256,39 @@ def test_model_cannot_supply_a_rewritten_quote_or_an_oversized_range():
     assert error.value.code=='A02_SOURCE_MISMATCH'
 
 
+def text_input_block(text):
+    return PDFTextSource(page=1,block_id='input-text',text=text,text_sha256=sha256(text.encode()).hexdigest())
+
+
+def test_multi_section_text_input_is_shown_as_blocks_but_resolves_to_the_one_stored_source():
+    text='제목\n안내 문장\n\n항목 | 내용\n가로 | 3000픽셀\r\n\r\n\r\n관람시간 - 확인 중\n'
+    source=text_input_block(text);index,sent=index_sources((source,))
+    assert [(b['block_id'],b['page'],[l['id'] for l in b['lines']]) for b in sent]==[
+        ('p1-text',1,['p1-text:L1','p1-text:L2']),
+        ('p2-text',2,['p2-text:L1','p2-text:L2']),
+        ('p3-text',3,['p3-text:L1'])]
+    assert [l['text'] for b in sent for l in b['lines']]==['제목','안내 문장','항목 | 내용','가로 | 3000픽셀','관람시간 - 확인 중']
+    assert all(line.source is source for line in index.lines.values())
+    assert [text[line.start:line.end] for line in index.lines.values()]==[l['text'] for b in sent for l in b['lines']]
+    part=index.parts['p2-text:L2:T3'];assert text[part.start:part.end]=='3000'
+    # Selected excerpts keep the stored block, page and original bytes, even across sections.
+    item=json.loads(materialize_selection(source_choice('p2-text:L2','p3-text:L1'),index))['candidates'][0]
+    assert item['quote']=='가로 | 3000픽셀\r\n\r\n\r\n관람시간 - 확인 중' and item['block_id']=='input-text' and item['page']==1
+
+
+@pytest.mark.parametrize('text',['제목\n원문\n허용 조건','\n\n제목\n원문\n\n\n','한 줄'])
+def test_single_section_text_input_keeps_its_original_line_ids(text):
+    _,sent=index_sources((text_input_block(text),))
+    numbers=[n for n,line in enumerate(text.splitlines(),1) if line.strip()]
+    assert [(b['block_id'],b['page']) for b in sent]==[('input-text',1)]
+    assert [l['id'] for l in sent[0]['lines']]==[f'input-text:L{n}' for n in numbers]
+
+
+def test_pdf_pages_with_blank_lines_are_never_split_into_sections():
+    _,sent=index_sources((source_block('첫째\n\n둘째\n\n셋째'),))
+    assert [(b['block_id'],[l['id'] for l in b['lines']]) for b in sent]==[('p1-text',['p1-text:L1','p1-text:L3','p1-text:L5'])]
+
+
 def test_source_index_overflow_fails_without_silently_truncating():
     from backend.agent_framework.a02_source_selection import MAX_SOURCE_LINES
     with pytest.raises(AdapterFailure) as error:

@@ -41,6 +41,6 @@
     }
   },
   "source_files": 78,
-  "source_html_sha256": "5546188ed1f82d89109bd878ecbb5aba03d6d4b914536f6dbbd740431f5eee16",
+  "source_html_sha256": "8c088e5f76feca7e572c4a883026a3aca73cb042abafe5b046070a780e524ebc",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

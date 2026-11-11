@@ -163,13 +163,34 @@ def summarize(reply, index, sources, presentation):
     except AdapterFailure as failure:
         return {'accepted': 0, 'rejected': [failure.code], 'fields': [], 'warnings': []}
     return {'accepted': len(items), 'rejected': [r.code for r in rejections],
-            'fields': [i.details.field for i in items], 'warnings': list(warnings)}
+            # 거부 원인을 볼 수 있게 거부된 모델 후보 원문(줄 ID·기대값·표시 문단)을 함께 남긴다.
+            'rejected_items': [{'candidate_index': r.candidate_index, 'code': r.code,
+                                'candidate': reply.requirements[r.candidate_index - 1].model_dump(mode='json')}
+                               for r in rejections],
+            'fields': [i.details.field for i in items], 'warnings': list(warnings),
+            # 비교용 초안 내용(승인 아님): 조건 문장·기대값·연산·표시 문단·원문 인용
+            'items': [{'field': i.details.field, 'text': i.text, 'expected': i.expected, 'operator': i.operator,
+                       'unresolved': i.unresolved, 'quote': i.quote,
+                       'presentation': (i.details.presentation.model_dump() if i.details.presentation else None)}
+                      for i in items]}
 
 
 def run_single(settings, sources, index, api_key, transport, presentation):
     recorder = RecordingTransport(transport)
     started = perf_counter()
-    reply = QwenProvider(settings, api_key=api_key, transport=recorder)(sources)
+    try:
+        reply = QwenProvider(settings, api_key=api_key, transport=recorder)(sources)
+    except AdapterFailure as failure:
+        # 운영과 같은 검증에서 실패하면 원인을 볼 수 있게 응답 원문·종료 사유를 남기고 다음 측정으로 넘어간다.
+        seconds = perf_counter() - started
+        used, content = usage(recorder.bodies[0]) if recorder.bodies else ({}, None)
+        try:
+            finish = json.loads(recorder.bodies[0])['choices'][0]['finish_reason']
+        except (IndexError, KeyError, TypeError, ValueError):
+            finish = None
+        return {'wall_seconds': round(seconds, 2), 'requests': [request_row(seconds, used)], 'accepted': 0,
+                'rejected': [failure.code], 'fields': [], 'warnings': [], 'items': [],
+                'finish_reason': finish, 'raw_content': content}
     seconds = perf_counter() - started
     used, _ = usage(recorder.bodies[0]) if recorder.bodies else ({}, None)
     return {'wall_seconds': round(seconds, 2), 'requests': [request_row(seconds, used)],
@@ -196,11 +217,12 @@ def run_blocks(settings, payload, sources, index, api_key, transport, parallel, 
         if response.status_code != 200:
             raise SystemExit(f'Qwen HTTP {response.status_code}: {response.text[:300]}')
         used, content = usage(response.content)
-        envelope = json.loads(response.content)
-        if envelope['choices'][0]['finish_reason'] != 'stop':
-            raise SystemExit('Qwen 응답이 끝까지 생성되지 않았습니다(finish_reason != stop).')
+        finish = json.loads(response.content)['choices'][0]['finish_reason']
+        if finish != 'stop':
+            # 끝까지 생성되지 않은 조각은 원문과 종료 사유를 남긴다(측정 전체를 멈추지 않음).
+            return seconds, used, None, {'finish_reason': finish, 'raw_content': content}
         items = [SemanticRequirement.model_validate(item) for item in json.loads(content)['requirements']]
-        return seconds, used, items
+        return seconds, used, items, None
 
     started = perf_counter()
     # 한 Client(연결 풀)를 스레드들이 함께 쓴다. 요청은 동시에 나가고 서버가 묶어 처리할지 정한다.
@@ -208,6 +230,13 @@ def run_blocks(settings, payload, sources, index, api_key, transport, parallel, 
                       trust_env=False, headers=headers) as client, ThreadPoolExecutor(max_workers=len(groups)) as pool:
         results = list(pool.map(lambda group: send(client, group), groups))
     wall = perf_counter() - started
+    failures = [failure for *_, failure in results if failure]
+    if failures:
+        return {'wall_seconds': round(wall, 2), 'chunks': [sum(len(s['lines']) for s in g) for g in groups],
+                'requests': [request_row(s, u) for s, u, _, _ in results], 'accepted': 0,
+                'rejected': ['QWEN_OUTPUT_INCOMPLETE'] * len(failures), 'fields': [], 'warnings': [], 'items': [],
+                'incomplete_chunks': failures}
+    results = [(s, u, items) for s, u, items, _ in results]
     merged = [item for _, _, items in results for item in items]
     if not merged:
         return {'wall_seconds': round(wall, 2), 'requests': [request_row(s, u) for s, u, _ in results],
@@ -225,6 +254,8 @@ def main():
     parser.add_argument('--repeat', type=int, default=1)
     parser.add_argument('--no-presentation', action='store_true', help='v3(문단 없음)로 측정. 기본은 운영 v4(문단 포함).')
     parser.add_argument('--timeout', type=int, default=600)
+    parser.add_argument('--max-output-tokens', type=int, default=None,
+                        help='진단용 출력 상한. 생략하면 운영 기본값(8192)을 그대로 쓴다.')
     parser.add_argument('--fake', action='store_true', help='모델 없이 배선만 확인(시간·품질 의미 없음)')
     parser.add_argument('--out', type=Path)
     args = parser.parse_args()
@@ -233,14 +264,17 @@ def main():
     if not base:
         raise SystemExit('CC_QWEN_BASE_URL(예: http://127.0.0.1:18015/v1)을 설정하세요.')
     api_key = None if args.fake else (os.environ.get('A02_QWEN_API_KEY') or os.environ.get('CC_QWEN_API_KEY') or None)
+    limits = {'max_output_tokens': args.max_output_tokens} if args.max_output_tokens else {}
     settings = PDFExtractionConfiguration(mode='qwen', endpoint=base + '/chat/completions', presentation=presentation,
-                                          model=os.environ.get('CC_QWEN_MODEL') or 'Qwen/Qwen3.5-4B', timeout_seconds=args.timeout)
+                                          model=os.environ.get('CC_QWEN_MODEL') or 'Qwen/Qwen3.5-4B', timeout_seconds=args.timeout,
+                                          **limits)
     kind, sources, parse_ms = load_sources(args.document, settings)
     index, payload = index_sources(sources)
     payload = [{**s, 'lines': [{'id': l['id'], 'text': l['text']} for l in s['lines']]} for s in payload]
     report = {'document': args.document.name, 'kind': kind, 'parse_ms': round(parse_ms, 1),
               'characters': sum(len(s.text) for s in sources), 'lines': len(index.lines), 'blocks': len(sources),
-              'presentation': presentation, 'parallel': args.parallel, 'fake': args.fake, 'runs': []}
+              'presentation': presentation, 'parallel': args.parallel, 'fake': args.fake,
+              'max_output_tokens': settings.max_output_tokens, 'runs': []}
     for attempt in range(1, args.repeat + 1):
         transport = fake_transport(presentation) if args.fake else httpx.HTTPTransport(retries=0)
         if args.mode in ('single', 'both'):

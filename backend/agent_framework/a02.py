@@ -13,7 +13,8 @@ from pydantic import BaseModel,ConfigDict,Field,ValidationError
 from backend.app.hashing.canonical import validate_tree
 
 from .a02_configuration import PDFExtractionConfiguration
-from .a02_source_selection import (SelectedProviderReply,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE)
+from .a02_source_selection import (SelectedProviderReply,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE,
+    TEXT_INPUT_BLOCK_ID)
 from .a02_requirements import compile_requirements,unresolved_passages
 from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticProviderReply,
     PRESENTATION_PROMPT,PRESENTATION_PROMPT_HASH,LEGACY_SEMANTIC_PROMPT_HASH,LEGACY_PRESENTATION_PROMPT_HASH,
@@ -144,7 +145,7 @@ def prepare_sources(document,settings):
         if sha256(document.content).hexdigest()!=document.reference.sha256:_fail('FILE_INTEGRITY_MISMATCH')
         text=document.content.decode('utf-8')
         if len(text)>settings.max_text_chars:_fail('PDF_TEXT_LIMIT_EXCEEDED')
-        return (PDFTextSource(page=1,block_id='input-text',text=text,text_sha256=sha256(text.encode()).hexdigest()),)
+        return (PDFTextSource(page=1,block_id=TEXT_INPUT_BLOCK_ID,text=text,text_sha256=sha256(text.encode()).hexdigest()),)
     import pymupdf
     if pymupdf.VersionBind!=settings.parser_version:_fail('PDF_PARSER_VERSION_MISMATCH')
     if (sha256(document.content).hexdigest()!=document.reference.sha256
