@@ -3,6 +3,8 @@
 로컬 백엔드(video_logo_flow)는 프레임 추출·저장·화면 데이터를 맡고, 모델이 필요한 두 단계만 이 워커에 맡긴다.
   - candidates : 1초 프레임 + 원본 로고 → 1부 후보 data(video_logo_candidates.build_candidates)
   - compare    : 원본 로고 1장 + 묶음의 초별 crop → 초별 대조 결과(video_logo_compare.reference / compare)
+                 포스터 로고 정밀 대조도 같은 작업을 쓴다(crop = 사용자가 확정한 포스터 속 위치)
+  - poster_candidates : 포스터 1장 + 원본 로고 → 포스터 로고 1부 후보 data(backend/app/poster/logos/candidates.build_candidates)
   - ocr_frames : 동영상 검수(자막) 프레임 → Paddle 원본 결과 줄(paddle_video_worker와 같은 형식). GPU용 Paddle 환경에서 돈다
 작업은 오래 걸리므로 제출(POST /jobs) 후 진행률을 조회(GET /jobs/<id>)한다. GPU를 나눠 쓰지 않게 한 번에 하나씩 돈다.
 
@@ -87,6 +89,13 @@ def _run_candidates(job_id: str, body: dict) -> dict:
         shutil.rmtree(work, ignore_errors=True)
 
 
+def _run_poster_candidates(job_id: str, body: dict) -> dict:
+    from backend.app.poster.logos import candidates as P
+    poster = _image(body["poster"]["jpg_base64"], "포스터").convert("RGB")
+    refs = [{"name": r["name"], "image": _image(r["png_base64"], f"원본 로고 {r['name']}"), "text": r.get("text", "")} for r in body["refs"]]
+    return P.build_candidates(poster, refs, lambda p, d: _set(job_id, progress=round(p), detail=d))
+
+
 def _run_compare(job_id: str, body: dict) -> list[dict]:
     from backend.app.video.logos import compare as V
     ref = V.reference(_image(body["ref"]["png_base64"], "원본 로고"), body["ref"].get("text", ""))
@@ -146,7 +155,8 @@ def _free_gpu() -> None:
         pass
 
 
-RUNNERS = {"candidates": _run_candidates, "compare": _run_compare, "ocr_frames": _run_ocr_frames}
+RUNNERS = {"candidates": _run_candidates, "poster_candidates": _run_poster_candidates, "compare": _run_compare,
+           "ocr_frames": _run_ocr_frames}
 
 
 def _loop() -> None:
@@ -197,6 +207,11 @@ def submit(body: dict = Body(...)):
         frames, refs = body.get("frames"), body.get("refs")
         if not (isinstance(frames, list) and 1 <= len(frames) <= MAX_FRAMES and isinstance(refs, list) and 1 <= len(refs) <= MAX_REFS):
             raise HTTPException(422, "frames(1개 이상)와 refs(1~12개)가 필요합니다.")
+    elif kind == "poster_candidates":
+        poster, refs = body.get("poster"), body.get("refs")
+        if not (isinstance(poster, dict) and isinstance(poster.get("jpg_base64"), str) and poster["jpg_base64"]
+                and isinstance(refs, list) and 1 <= len(refs) <= MAX_REFS):
+            raise HTTPException(422, "poster(jpg_base64)와 refs(1~12개)가 필요합니다.")
     elif kind == "ocr_frames":
         frames = body.get("frames")
         if not (isinstance(frames, list) and 1 <= len(frames) <= MAX_FRAMES and all(isinstance(f, str) and f for f in frames)):
@@ -205,7 +220,7 @@ def submit(body: dict = Body(...)):
         if not (isinstance(body.get("ref"), dict) and isinstance(body.get("crops"), list) and 1 <= len(body["crops"]) <= MAX_CROPS):
             raise HTTPException(422, "ref와 crops(1개 이상)가 필요합니다.")
     else:
-        raise HTTPException(422, "kind는 candidates, compare, ocr_frames 중 하나입니다.")
+        raise HTTPException(422, "kind는 candidates, poster_candidates, compare, ocr_frames 중 하나입니다.")
     _sweep()
     job_id = uuid4().hex
     with _lock:

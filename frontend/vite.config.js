@@ -22,6 +22,8 @@ export default defineConfig(({ mode, command }) => {
     '/api/framework': { target: frameworkTarget, changeOrigin: false, xfwd: false, ws: false },
     '/api/video-reviews': { target: videoTarget, changeOrigin: false, xfwd: false, ws: false },
     '/api/video-logos': { target: videoTarget, changeOrigin: false, xfwd: false, ws: false },
+    // 포스터 로고는 영상 로고와 같은 RunPod 로고 워커를 쓰는 영상 API에 붙어 있다.
+    '/api/poster-logos': { target: videoTarget, changeOrigin: false, xfwd: false, ws: false },
     '/api': { target: apiTarget, changeOrigin: false, xfwd: false, ws: false },
   };
   const profile = process.env.VITE_API_PROFILE || loadEnv(mode, process.cwd()).VITE_API_PROFILE || rootEnv.VITE_API_PROFILE || (mode === 'rebuild' ? 'rebuild' : mode === 'v1' ? 'v1' : 'legacy');

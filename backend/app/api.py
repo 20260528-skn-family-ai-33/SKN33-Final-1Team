@@ -772,6 +772,14 @@ def create_app(
         authenticate=auth_router.session_user if auth_router else None,
     ))
 
+    # 포스터 로고 확정·정밀 대조: 영상 로고와 같은 모델·워커·추론 잠금을 쓴다(포스터 검수 판정과는 별도 축).
+    from backend.app.poster.logos.routes import poster_logo_router
+
+    application.include_router(poster_logo_router(
+        root=PROJECT_ROOT / ".runtime" / "poster-logos", inference_lock=inference_lock, readonly=readonly,
+        authenticate=auth_router.session_user if auth_router else None,
+    ))
+
     # API routes are defined first. Only the built React assets are public.
     frontend = PROJECT_ROOT / "frontend" / "dist"
     if frontend.is_dir():
