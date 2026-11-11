@@ -90,7 +90,7 @@ def test_nested_table_rows_stay_inside_their_outer_cell_without_duplication():
     (package('',document='<x/>'),'DOCX_INVALID'),
     (package('',document='<?xml version="1.0"?><!DOCTYPE d [<!ENTITY e "x">]><d>&e;</d>'),'DOCX_INVALID'),
     (package(p('')+table([p('')])),'DOCX_TEXT_UNAVAILABLE'),
-])
+],ids=['pdf','broken-zip','macro','template','no-body','entity','empty'])
 def test_invalid_template_macro_entity_and_empty_documents_are_rejected(raw,expected):
     assert code(raw)==expected
 
