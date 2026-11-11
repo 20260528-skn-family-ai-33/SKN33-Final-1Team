@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative Checker AWS_TEST 이슈 및 해결 방안 · 2026-11-11</title>
+<style>
+:root {
+  color-scheme:light dark;
+  --paper:#f2f2f1; --surface:#fff; --ink:#171717; --muted:#535650; --line:#d8dad4;
+  --green:#155e3d; --wash:#eaf3ed; --bad:#91382c; --bad-bg:#faece8; --amber:#715409; --amber-bg:#f7f0da;
+  --ring:#16764e; --shadow:0 12px 32px rgb(23 23 23 / .05);
+  --ui:"Helvetica Neue",Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Malgun Gothic",monospace;
+}
+@media (prefers-color-scheme:dark) {
+  :root {
+    --paper:#191c19; --surface:#222623; --ink:#f2f4ef; --muted:#b9c3b9; --line:#3d493f;
+    --green:#a9dabc; --wash:#283a30; --bad:#ffc0b3; --bad-bg:#432e2a; --amber:#f3d697; --amber-bg:#3b3424;
+    --ring:#a9dabc; --shadow:none;
+  }
+}
+* {box-sizing:border-box}
+[hidden] {display:none !important}
+html {scroll-padding-top:1rem}
+body {margin:0; background:var(--paper); color:var(--ink); font-family:var(--ui); font-size:16px; line-height:1.6; word-break:keep-all; overflow-wrap:anywhere}
+button,input,select {font:inherit}
+button,summary {cursor:pointer}
+a {color:var(--green); text-underline-offset:.2em; text-decoration-thickness:.07em}
+a:hover {text-decoration-thickness:.13em}
+:focus-visible {outline:2px solid var(--ring); outline-offset:4px}
+p,h1,h2,h3,dl,dd {margin:0}
+h1,h2,h3 {line-height:1.22; letter-spacing:-.035em; text-wrap:balance}
+code,.signal,.priority,.group-count,.legend-item strong {font-family:var(--mono); font-variant-numeric:tabular-nums}
+code {font-size:.9em; padding:.08em .28em; background:var(--paper); border-radius:3px; white-space:normal}
+.skip {position:absolute; inset:12px auto auto 12px; z-index:5; padding:10px 16px; background:var(--surface); transform:translateY(-200%)}
+.skip:focus {transform:none}
+.frame {width:min(100% - 56px,1170px); margin-inline:auto}
+.mast {border-bottom:1px solid var(--line); background:var(--surface)}
+.mast-top {display:flex; justify-content:space-between; align-items:center; gap:.7rem 1rem; padding:17px 0; border-bottom:1px solid var(--line)}
+.product {font-weight:800; letter-spacing:-.015em}
+.mast-top a {font-size:.87rem; font-weight:700}
+.hero {padding:36px 0 29px; display:grid; grid-template-columns:minmax(0,1.75fr) minmax(235px,1fr); gap:26px 48px; align-items:start}
+.eyebrow {color:var(--green); font-weight:700; font-size:.84rem; letter-spacing:.045em}
+h1 {font-size:clamp(2.05rem,4vw,3.6rem); margin:.38rem 0 .8rem}
+.hero-lead {color:var(--muted); max-width:43em}
+.meta {border-top:2px solid var(--ink)}
+.meta div {display:grid; grid-template-columns:minmax(92px,.75fr) minmax(0,1.25fr); gap:4px 10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:.87rem}
+.meta dt {color:var(--muted)}
+.meta dd {font-weight:700}
+.quick {padding:0 0 22px}
+.quick h2 {font-size:1rem; margin-bottom:8px}
+.quick-list {display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); list-style:none; margin:0; padding:0}
+.quick-list a {display:flex; flex-direction:column; gap:2px; background:var(--surface); min-height:100%; padding:10px 13px; text-decoration:none}
+.quick-list a:hover {background:var(--wash)}
+.quick-list span {font-size:.77rem; color:var(--muted)}
+.quick-list strong {font-size:.93rem; font-weight:700}
+main {padding:28px 0 40px}
+.block-heading {display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:5px 1rem}
+h2 {font-size:1.55rem}
+.legend {display:flex; flex-wrap:wrap; gap:6px 12px; margin:10px 0 14px}
+.legend-item {display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:.84rem}
+.filters {display:grid; grid-template-columns:minmax(220px,1.8fr) repeat(3,minmax(120px,1fr)) auto; gap:10px; align-items:end; padding:12px 14px; background:var(--surface); border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow)}
+.filter {display:grid; gap:4px; min-width:0}
+.filter label {color:var(--muted); font-size:.8rem; font-weight:700}
+.filters input,.filters select,.filters button {width:100%; min-width:0; min-height:39px; border:1px solid var(--line); padding:6px 9px; border-radius:4px; color:var(--ink); background:var(--surface); font-size:.9rem}
+.filters button {width:auto; padding-inline:13px; font-weight:700}
+.filters button:hover {background:var(--wash)}
+#visible-count {font-size:.86rem; color:var(--muted); font-variant-numeric:tabular-nums}
+.priority-legend {margin:9px 0 0; font-size:.81rem; color:var(--muted)}
+#empty {margin-top:17px; padding:16px; background:var(--surface); border:1px solid var(--line)}
+.issue-group {margin-top:22px; border-bottom:1px solid var(--line)}
+.group-head {display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:0 2px 8px; border-bottom:2px solid var(--ink)}
+.group-head h3 {font-size:1.2rem}
+.group-count {font-size:.8rem; color:var(--muted)}
+.issue {background:var(--surface); border-top:1px solid var(--line); scroll-margin-top:14px}
+.issue:first-of-type {border-top:0}
+.issue summary {display:grid; grid-template-columns:minmax(0,1fr) minmax(155px,max-content) 13px; gap:12px; align-items:start; list-style:none; padding:12px 14px}
+.issue summary::-webkit-details-marker {display:none}
+.issue summary::after {content:""; width:7px; height:7px; border:solid var(--muted); border-width:0 2px 2px 0; transform:rotate(45deg); margin:6px 1px 0}
+.issue[open] summary::after {transform:rotate(225deg); margin-top:10px}
+.issue summary:hover,.issue:target summary {background:var(--wash)}
+.issue:target {outline:2px solid var(--ring); outline-offset:-2px}
+.issue summary:focus-visible {outline-offset:-3px}
+.issue-head {min-width:0; display:grid; gap:3px}
+.issue-title {font-weight:800; letter-spacing:-.025em; line-height:1.42}
+.issue-lead {font-size:.88rem; color:var(--muted); line-height:1.5}
+.issue-meta {display:flex; align-items:center; justify-content:flex-end; gap:7px; min-width:0}
+.priority,.state {display:inline-block; border-radius:3px; padding:.09rem .41rem; font-size:.75rem; font-weight:800; white-space:nowrap}
+.priority {border:1px solid var(--line)}
+.priority.p1,.state.live,.http-error {color:var(--bad); background:var(--bad-bg)}
+.priority.p2,.state.verify,.state.limit {color:var(--amber); background:var(--amber-bg)}
+.state.code,.state.gap {color:var(--green); background:var(--wash)}
+.state.todo {color:var(--muted); background:var(--paper)}
+.issue-detail {padding:4px 14px 14px}
+.issue-notes {display:grid; gap:7px; max-width:86ch}
+.issue-notes div {display:grid; grid-template-columns:92px minmax(0,1fr); gap:4px 10px}
+.issue-notes dt {font-weight:800; font-size:.85rem}
+.issue-notes dd {font-size:.91rem}
+.references {display:flex; gap:4px 12px; flex-wrap:wrap; font-size:.81rem; color:var(--muted); margin-top:10px}
+.references span {font-weight:800}
+.support {margin-top:34px; display:grid; gap:10px}
+.support p {max-width:82ch; font-size:.9rem; color:var(--muted)}
+.table-wrap {overflow-x:auto; border:1px solid var(--line); background:var(--surface)}
+table {border-collapse:collapse; width:100%; font-size:.88rem}
+th,td {text-align:left; padding:9px 11px; vertical-align:top; border-bottom:1px solid var(--line)}
+thead th {background:var(--wash); font-weight:800; white-space:nowrap}
+tbody th {font-weight:700}
+tbody tr:last-child > * {border-bottom:0}
+.support small {color:var(--muted)}
+.http-table td:nth-child(2) {white-space:nowrap; font-variant-numeric:tabular-nums}
+#github-issues td:last-child {min-width:115px}
+.footer {padding:15px 0 24px; border-top:1px solid var(--line); color:var(--muted); font-size:.82rem}
+@media (max-width:820px) {
+  .filters {grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+  .filters .query {grid-column:1 / -1}
+  .hero {gap:24px}
+}
+@media (max-width:640px) {
+  .frame {width:calc(100% - 28px)}
+  .hero {grid-template-columns:minmax(0,1fr); padding-top:24px; gap:15px}
+  .quick-list {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-list a {padding:7px 9px}
+  .filters {grid-template-columns:repeat(2,minmax(0,1fr)); padding:10px}
+  .filters button {width:100%}
+  .issue summary {grid-template-columns:minmax(0,1fr) 12px; gap:6px 8px; padding:11px 10px}
+  .issue summary::after {grid-row:1; grid-column:2}
+  .issue-meta {grid-column:1; justify-content:flex-start}
+  .issue-detail {padding:3px 10px 13px}
+  .issue-notes div {grid-template-columns:minmax(0,1fr); gap:1px}
+  .issue-notes {gap:9px}
+  .http-table {min-width:520px}
+}
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after {scroll-behavior:auto !important} }
+@page {margin:13mm}
+@media print {
+  :root {color-scheme:light; --paper:#fff; --surface:#fff; --ink:#171717; --muted:#414541; --line:#c4c9c4; --green:#184e34; --wash:#f1f5f1; --bad:#76352c; --bad-bg:#fff; --amber:#674e13; --amber-bg:#fff}
+  body {font-size:10pt}
+  .frame {width:100%; max-width:none}
+  .mast-top {padding:0 0 8px}
+  .hero {padding:13px 0; gap:14px}
+  h1 {font-size:26pt}
+  main {padding-top:14px}
+  .quick,.filters,.priority-legend,#visible-count,.skip,#empty {display:none !important}
+  .issue {break-inside:avoid; box-shadow:none}
+  .issue summary::after {display:none}
+  .issue summary {grid-template-columns:minmax(0,1fr) max-content}
+  .issue:target {outline:0}
+  .group-head,h2 {break-after:avoid}
+  .table-wrap {overflow:visible}
+  .http-table {min-width:0}
+  thead {display:table-header-group}
+  tr {break-inside:avoid}
+  .footer {padding:6px 0}
+}</style>
+</head>
+<body>
+<a class="skip" href="#issue-list">이슈 목록으로 건너뛰기</a>
+<header class="mast">
+  <div class="frame">
+    <div class="mast-top"><span class="product">Creative Checker</span><a href="#http-checks">공개 경로 점검 결과</a></div>
+    <div class="hero">
+      <div>
+        <p class="eyebrow signal">AWS_TEST · 2026-11-11 KST</p>
+        <h1>이슈 및 해결 방안</h1>
+        <p class="hero-lead">긴 문서의 출력 한도와 신규 로고·영상 경로의 배포 문제를 먼저 확인한다. 각 항목에 해결 방법, 완료 조건과 관련 이슈를 기록했다.</p>
+      </div>
+      <dl class="meta">
+        <div><dt>기준 커밋</dt><dd class="signal"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/commit/ffe1e4b43163855c83779ef7e7610736daf4fc5e">ffe1e4b</a></dd></div>
+        <div><dt>프론트 배포</dt><dd><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/actions/runs/42993373765">빌드·배포 성공</a></dd></div>
+        <div><dt>공개 경로 조회</dt><dd class="signal">11.11 20:42 KST</dd></div>
+        <div><dt>조사 범위</dt><dd>28개 항목 · <a href="#github-issues">열린 이슈 11건</a></dd></div>
+      </dl>
+    </div>
+    <section class="quick" aria-labelledby="quick-title">
+      <h2 id="quick-title">먼저 확인할 항목</h2>
+      <ul class="quick-list"><li><a href="#pdf-output-limit"><span>문서 추출</span><strong>Qwen 출력 상한</strong></a></li>
+<li><a href="#poster-logo-deploy"><span>포스터 로고</span><strong>화면 403 · API 404</strong></a></li>
+<li><a href="#video-evidence-deploy"><span>영상 근거</span><strong>신규 API 404</strong></a></li>
+<li><a href="#video-limits-deploy"><span>영상 업로드</span><strong>3분 · 1 GiB 적용 확인</strong></a></li></ul>
+    </section>
+  </div>
+</header>
+<main class="frame">
+  <section aria-labelledby="issue-list">
+    <div class="block-heading"><h2 id="issue-list">이슈 목록</h2><output id="visible-count" aria-live="polite">28 / 28건</output></div>
+    <div class="legend" aria-label="확인 상태별 항목 수"><span class="legend-item"><span class="state live" title="공개 경로 응답 또는 운영 재현 기록">실환경 확인</span><strong>3</strong></span><span class="legend-item"><span class="state code" title="현재 소스 또는 합성 입력에서 확인">코드 확인</span><strong>6</strong></span><span class="legend-item"><span class="state limit" title="현재 구현의 입력·판정 범위">지원 제한</span><strong>4</strong></span><span class="legend-item"><span class="state gap" title="사용 경로에 연결할 기능이 남음">미연결</span><strong>3</strong></span><span class="legend-item"><span class="state verify" title="실환경 수용 시험 또는 설정 확인이 남음">검증 필요</span><strong>8</strong></span><span class="legend-item"><span class="state todo" title="열린 평가·문서·운영 작업">팀 작업</span><strong>4</strong></span></div>
+    <form id="filters" class="filters" role="search" aria-label="이슈 검색 및 필터" hidden>
+      <div class="filter query"><label for="search-query">검색</label><input id="search-query" name="query" type="search" placeholder="이슈 번호, 오류 코드, 기능" autocomplete="off"></div>
+      <div class="filter"><label for="area-filter">영역</label><select id="area-filter" name="area"><option value="">전체 영역</option><option>문서 추출</option><option>포스터</option><option>영상</option><option>GraphDB</option><option>AWS 운영</option><option>팀 작업</option></select></div>
+      <div class="filter"><label for="priority-filter">우선순위</label><select id="priority-filter" name="priority"><option value="">전체 우선순위</option><option value="1">P1</option><option value="2">P2</option><option value="3">P3</option></select></div>
+      <div class="filter"><label for="state-filter">확인 상태</label><select id="state-filter" name="state"><option value="">전체 상태</option><option value="live">실환경 확인</option><option value="code">코드 확인</option><option value="limit">지원 제한</option><option value="gap">미연결</option><option value="verify">검증 필요</option><option value="todo">팀 작업</option></select></div>
+      <button type="button">필터 초기화</button>
+    </form>
+    <p class="priority-legend">우선순위 제안 · P1 업무 차단·근거 누락·배포 전 확인 · P2 기능 보완·수용 검증 · P3 문서·운영 정리</p>
+    <p id="empty" hidden>조건에 맞는 항목이 없습니다. 검색어나 필터를 바꿔 보세요.</p>
+    <section class="issue-group" id="document" data-group="문서 추출" aria-labelledby="heading-document">
+  <header class="group-head"><h3 id="heading-document">문서 추출</h3><span class="group-count">5건</span></header>
+  <details class="issue" id="pdf-output-limit" data-priority="1" data-state="live" open>
+  <summary>
+    <span class="issue-head"><span class="issue-title">긴 계약서에서 Qwen 응답이 잘려 기준 초안이 생성되지 않음</span><span class="issue-lead"><code>v2-033</code>은 제한을 15분으로 늘린 뒤에도 <code>QWEN_OUTPUT_INCOMPLETE</code>로 끝났다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state live">실환경 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>11월 11일 AWS_TEST에서 7쪽 문서를 재접수했다. A02는 594.18초 뒤 실패했고 생성 토큰이 요청 상한인 16,384개에 도달했다. 미승인 기준 초안은 저장되지 않았다. 팀은 현재 동작을 알려진 한계로 남겼다.</dd></div>
+      <div><dt>해결 방법</dt><dd>당장은 관련 조항을 묶어 문서를 나누고 각 초안을 원본 조항과 대조한다. 제품에서는 페이지·조항 단위로 추출한 뒤 원본 페이지·구간 ID를 유지한 채 중복과 충돌을 병합한다. 실패한 구간과 누락 가능성을 검토 화면에 남긴다.</dd></div>
+      <div><dt>완료 기준</dt><dd>같은 <code>v2-033</code>으로 추출을 끝내고 사람 정답표와 항목·근거를 비교한다. 구간 하나가 실패해도 누락 구간을 명시하고 승인 전 확인할 수 있어야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%EA%B3%B5%ED%86%B5%EB%A7%A5%EB%9D%BD.md#L11-L17">AWS 실행 기록</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/a02.py#L238-L247">출력 종료 검사</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></div>
+  </div>
+</details>
+<details class="issue" id="pdf-image-layer" data-priority="2" data-state="limit">
+  <summary>
+    <span class="issue-head"><span class="issue-title">이미지에만 있는 PDF 요구사항을 추출하지 못함</span><span class="issue-lead">텍스트층이 없는 쪽은 <code>PDF_TEXT_UNAVAILABLE</code>로 중단된다. 텍스트와 이미지가 섞인 쪽은 텍스트만 읽는다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state limit">지원 제한</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>현재 A02는 각 쪽의 텍스트층을 요구한다. 텍스트와 이미지가 함께 있으면 이미지 미판독 쪽을 경고에 기록한다. 이미지에만 있는 규격·표·문구는 추출 범위에서 빠진다.</dd></div>
+      <div><dt>해결 방법</dt><dd>문서 제공자에게 텍스트층이 있는 PDF나 본문 텍스트를 받는다. 혼합 PDF는 안내된 쪽을 직접 대조해 빠진 기준을 보완한다. 별도 판독 지원이 필요하면 이미지에서 가져온 출처의 위치와 승인 절차부터 정한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>텍스트 PDF·혼합 PDF·스캔 PDF로 추출 성공, 부분 경고, 미지원 오류가 각각 표시되는지 확인한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/a02.py#L141-L180">A02 PDF 전처리</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/review/FrameworkReviewPage.jsx#L117-L124">기준 화면의 경고 연결</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a></div>
+  </div>
+</details>
+<details class="issue" id="video-document-warning" data-priority="1" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 문서 입력에서 추출 제외·이미지 미판독 경고가 빠짐</span><span class="issue-lead">서버가 경고를 내려도 영상 입력 화면에는 추출 개수와 미확정 개수만 표시된다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>공용 요구사항 API는 원문 검증으로 제외한 후보 수와 이미지 미판독 쪽을 <code>warnings</code>에 담는다. 영상 <code>VideoDocumentInput</code>의 완료 처리에는 이 필드를 표시하는 경로가 없다. 이용자는 빠진 기준을 확인할 단서 없이 영상 검수를 시작할 수 있다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 입력의 완료 알림에 공용 경고를 연결한다. 미판독 쪽이나 제외 후보가 있으면 원문과 비교해 누락을 보완할 수 있도록 공용 실행의 기준 확인 화면으로 연결한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>혼합 PDF 및 원문 검증 거부 후보가 있는 문서로 경고·출처 링크·미확정 개수가 각각 표시되는지 확인한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/requirements_presentation.py#L49-L59">요구사항 응답의 warnings</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/video/VideoDocumentInput.jsx#L55-L68">영상 입력 완료 처리</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a></div>
+  </div>
+</details>
+<details class="issue" id="docx-source" data-priority="2" data-state="limit">
+  <summary>
+    <span class="issue-head"><span class="issue-title">DOCX 감사 원본은 변환 텍스트로 남음</span><span class="issue-lead">Word 원본 바이트는 보관하지 않아 추후 같은 파일을 서비스에서 다시 내려받을 수 없다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state limit">지원 제한</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>공개 상태 API는 DOCX 등록을 지원한다고 응답했다. 등록 API는 본문을 <code>text/plain</code> 버전으로 저장하고 DOCX의 해시·이름·크기를 응답한다. 포스터와 영상 화면의 문서 선택 한도는 10 MiB이며, 변환 후 텍스트에도 별도 한도가 있다.</dd></div>
+      <div><dt>해결 방법</dt><dd>업로드 전에 본문만 추출한다는 점과 10 MiB 한도를 안내한다. 시각 배치가 기준인 문서는 텍스트층 PDF와 원본 Word 파일을 함께 보관한다. 서비스 내 원본 보존이 필요하면 원본과 변환본의 해시·버전을 연결한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>본문·표·이미지가 있는 DOCX에서 추출 범위와 저장 형태가 안내와 일치하고, 등록 결과를 원본 해시와 대조할 수 있어야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/postgres_api.py#L306-L335">DOCX 저장 코드</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/review/ReviewProvider.jsx#L177-L187">포스터 입력 한도</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/video/VideoDocumentInput.jsx#L36-L43">영상 입력 한도</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a></div>
+  </div>
+</details>
+<details class="issue" id="document-wait" data-priority="2" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">15분 화면 대기가 끝나도 접수된 작업은 계속될 수 있음</span><span class="issue-lead">화면의 15분은 업로드·대기열을 포함한다. Qwen 요청 제한도 최대 900초다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>화면 타이머는 파일 검사와 접수 전에 시작하고 만료 시 브라우저 조회를 중단한다. 서버 작업의 종료 여부는 별개다. 내 작업 안내는 있지만 긴 대기열에서는 정상 처리 중인 실행의 결과를 입력 화면에서 바로 받지 못할 수 있다.</dd></div>
+      <div><dt>해결 방법</dt><dd>서버가 접수를 반환하면 실행 링크를 남긴다. 대기와 모델 처리의 경과시간을 각각 표시하고 시간 초과 후 기존 실행의 조회를 이어갈 수 있게 한다. 새 접수는 사용자가 명시적으로 선택한 경우에만 만든다.</dd></div>
+      <div><dt>완료 기준</dt><dd>대기열에 머문 뒤 늦게 완료되는 실행을 동일 실행 ID로 다시 조회한다. 화면 만료와 재진입으로 작업이 중복 생성되지 않아야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/review/frameworkDocument.js#L8-L11">화면 대기 한도</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/video/VideoDocumentInput.jsx#L44-L69">영상 입력 타이머</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/a02_configuration.py#L11-L18">A02 요청 제한</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a></div>
+  </div>
+</details>
+</section>
+<section class="issue-group" id="poster" data-group="포스터" aria-labelledby="heading-poster">
+  <header class="group-head"><h3 id="heading-poster">포스터</h3><span class="group-count">5건</span></header>
+  <details class="issue" id="poster-logo-deploy" data-priority="1" data-state="live">
+  <summary>
+    <span class="issue-head"><span class="issue-title">포스터 로고 검수 화면과 API가 AWS에서 열리지 않음</span><span class="issue-lead"><code>/review/logo</code>는 403 XML, <code>/api/poster-logos/status</code>는 404 JSON을 반환했다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state live">실환경 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>브랜치에 화면·접수 API·워커 작업 <code>poster_candidates</code>가 있다. CloudFront 새로고침 허용 목록에는 <code>/review/logo</code>가 빠져 있다. 배포 문서는 포스터 로고 경로를 영상 API 원본으로 전달하고 새 워커를 배포해야 한다고 기록한다. 실제 모델은 모의 시험 다음 단계다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 API와 RunPod 로고 워커에 호환 버전을 배포한다. CloudFront의 포스터 로고 API 경로와 페이지 새로고침 목록을 맞춘다. 포스터 본 검수는 로고 작업이 실패해도 진행하도록 기존 독립 경로를 유지한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>새로고침과 로그인 후 로고 카드 자동 접수를 확인한다. 실제 포스터로 후보 탐색 → 위치 확정 → 정밀 대조·근거 표시까지 실행하고, 동일 실행에서 작업이 중복되지 않는지 확인한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="#http-checks">공개 경로 점검</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/deploy/agent-framework/aws-test-spa-rewrite.js#L1-L10">SPA 경로 목록</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/poster-logo-flow-api.md#L40-L48">로고 배포 절차</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/95">#95</a></div>
+  </div>
+</details>
+<details class="issue" id="poster-beta" data-priority="1" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">포스터 베타의 통과·위반·근거 부족 판정이 함께 검증되지 않음</span><span class="issue-lead">11월 9일 전시 포스터의 기준 12개는 모두 ‘확인 필요’였다. 이후 A06 보정은 AWS_TEST에 들어갔다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>실제 보고서 생성은 확인됐고 A06에서 허용 조건 때문에 결과가 모두 확인 필요가 되던 수정도 병합됐다. 공개 이슈와 운영 기록에서 최신 설정으로 대표 시나리오를 다시 시험한 결과는 확인하지 못했다.</dd></div>
+      <div><dt>해결 방법</dt><dd>같은 전시 사례를 새 검증 실행에서 확인한다. 정상 포스터, 명확한 문구·규격 위반, 근거 부족 사례를 넣고 기준 승인부터 검사·보고서까지 조건별 기대 결과를 대조한다. 작은 글자와 이미지 축소의 영향을 함께 본다.</dd></div>
+      <div><dt>완료 기준</dt><dd>검수 조건별 원문·관측·판정·보고 위치가 일치하고 필수 조건이 누락되거나 미지원이면 담당자 확인으로 남아야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EC%9D%B8%ED%94%84%EB%9D%BC_%EC%9A%B4%EC%98%81%ED%98%84%ED%99%A9_20261110.md#L101-L112">11월 9일 실제 검수</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/pull/80">A06 수정 PR #80</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></div>
+  </div>
+</details>
+<details class="issue" id="poster-exception" data-priority="2" data-state="gap">
+  <summary>
+    <span class="issue-head"><span class="issue-title">포스터 예외 승인 동선과 수용 검증이 남아 있음</span><span class="issue-lead">예외 결정은 공통 승인 계약에 있다. 결과 화면의 일반 승인·수정 요청과 같은 수준의 제품 동선은 연결이 남았다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state gap">미연결</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>공통 <code>Approval</code>은 <code>approve_exception</code>과 사유·대상 조건을 받는다. #40은 허용된 예외를 화면에서 요청하고 승인 이력에 남기는 작업, 실제 계정에서 일반 승인·직접 확인·재검수까지 검증하는 작업을 열어 두고 있다.</dd></div>
+      <div><dt>해결 방법</dt><dd>허용 정책을 승인 API의 검증과 일치시켜 예외 대상·사유·근거를 받는 화면을 붙인다. 결과에는 기계 판정, 담당자 확인, 예외 결정을 각 기록으로 표시한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>허용된 사유는 정확한 버전에 남고, 권한 부족·오래된 버전·확정 위반·근거 부족처럼 정책에서 막는 사례는 거부된다. 수정본에는 이전 승인이 승계되지 않아야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/contracts.py#L348-L380">승인 데이터 계약</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/review/FrameworkReviewPage.jsx#L463-L497">포스터 작업 화면</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a></div>
+  </div>
+</details>
+<details class="issue" id="poster-edit-ready" data-priority="2" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">포스터 문구 수정 버튼의 모델 준비 상태가 화면에 드러나지 않음</span><span class="issue-lead">편집 API 경로는 배포돼 있다. 편집용 키가 없으면 사용자가 실행한 뒤 <code>POSTER_EDIT_NOT_CONFIGURED</code>를 받는다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>문구 수정 경로의 익명 GET은 405를 반환해 POST 라우트가 응답하는 것을 확인했다. 화면은 검수 결과와 이미지·실행 상태로 버튼을 표시한다. 서버는 편집용 키를 별도로 확인하며 공개 상태 API는 키의 준비 상태를 알리지 않는다.</dd></div>
+      <div><dt>해결 방법</dt><dd>키 자체는 공개하지 않고 편집 가능 여부만 화면에 제공한다. 비활성 상태의 이유를 버튼 근처에서 안내한다. 네이버지도 QR의 브라우저 기능은 독립적으로 확인한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>설정이 없는 환경은 실행 전에 이유를 안내한다. 설정된 환경에서 지정 영역의 편집, 결과 미리보기·다운로드, 수정본 재검수 연결을 확인한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/routes/v1/poster_edits.py#L39-L58">문구 수정 API</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/review/FrameworkReviewPage.jsx#L138-L146">버튼 활성 조건</a> <a href="#http-checks">공개 경로 점검</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></div>
+  </div>
+</details>
+<details class="issue" id="poster-image-limit" data-priority="2" data-state="limit">
+  <summary>
+    <span class="issue-head"><span class="issue-title">1,000만 화소를 넘는 포스터 원본이 거부됨</span><span class="issue-lead">11월 3일 연주회 원본이 이 제한에 걸렸고 현재 코드도 같은 상한을 적용한다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state limit">지원 제한</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>포스터 파일 저장소와 로고 API가 최대 화소 수를 제한한다. 고해상도 인쇄 원본은 파일 크기가 작아도 화소 수를 넘으면 업로드할 수 없다.</dd></div>
+      <div><dt>해결 방법</dt><dd>원본을 보관하고 종횡비를 유지한 검수용 사본을 만든다. 규격 자체가 검수 조건이면 원본의 메타데이터와 검사에 사용한 사본을 구별해 표시한다. 자동 축소 도입 시 작은 글자와 좌표 변환을 함께 검증한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>경계 화소·초과 화소에서 안내가 일치하고, 승인 기록이 어떤 포스터 버전과 이미지 크기를 검사했는지 가리킨다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%EA%B3%B5%ED%86%B5%EB%A7%A5%EB%9D%BD.md#L210">연주회 원본 시험 기록</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/files.py#L45-L56">파일 저장소 제한</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/poster/logos/routes.py#L38-L45">로고 입력 제한</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a></div>
+  </div>
+</details>
+</section>
+<section class="issue-group" id="video" data-group="영상" aria-labelledby="heading-video">
+  <header class="group-head"><h3 id="heading-video">영상</h3><span class="group-count">7건</span></header>
+  <details class="issue" id="video-limits-deploy" data-priority="1" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 3분·1 GiB 상한의 AWS 설정과 프록시 일치 확인 필요</span><span class="issue-lead">브랜치는 180초·1 GiB다. 11월 11일 운영 기록의 조회값은 60초·100 MiB, Nginx 110m이었다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>코드의 기본값은 <code>VIDEO_MAX_SECONDS</code>·<code>VIDEO_MAX_MB</code>로 덮을 수 있다. 화면은 영상 상태 API에서 한도를 읽는다. 현재 익명 상태 조회는 401이므로 최신 운영값과 대용량 수용 여부는 로그인 후 확인해야 한다.</dd></div>
+      <div><dt>해결 방법</dt><dd>공유 영상 API 8013의 설정을 180초·1024 MiB로 맞추고, Nginx의 영상 요청 크기에 로고 첨부와 multipart 여유를 반영한다. 운영 문서의 제안값은 <code>1150m</code>이다. 업로드 임시 공간과 처리 시간도 함께 확인한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>로그인한 상태 API가 같은 한도를 반환하고, 한도 안의 영상과 로고를 접수한다. 크기·길이를 넘긴 각각의 입력은 일관된 사유를 표시해야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%EA%B3%B5%ED%86%B5%EB%A7%A5%EB%9D%BD.md#L5-L9">11월 11일 한도·서버 기록</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/review.py#L79-L87">코드 기본값</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a></div>
+  </div>
+</details>
+<details class="issue" id="video-evidence-deploy" data-priority="1" data-state="live">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 광고·협찬 근거 관계도 API가 AWS에서 404</span><span class="issue-lead">기존 영상 상태 API는 401, 신규 <code>/evidence-graph</code> 경로는 404를 반환했다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state live">실환경 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>브랜치의 API는 완료된 <code>result.json</code>에서 영상·프레임·판정 규칙의 관계를 만든다. PR #94의 구현 범위는 API까지다. 영상 화면에서 이 경로를 호출하는 연결은 없다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 API 원본과 라우팅에 이 브랜치의 경로를 반영한다. 먼저 완료된 광고·협찬 영상의 규칙별 응답을 확인한 뒤 결과 화면에서 근거로 연결한다. 영상 이력의 DB 연동은 공통 승인·버전 연결 작업에서 결정한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>로그인한 소유자가 완료 영상의 관계도와 규칙별 근거를 열 수 있어야 한다. 미완료·다른 계정·존재하지 않는 규칙은 올바른 오류로 응답한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="#http-checks">공개 경로 점검</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/review.py#L755-L772">관계도 라우트</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/pull/94">Graph 관계 조회 PR #94</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></div>
+  </div>
+</details>
+<details class="issue" id="video-subtitle-engine" data-priority="1" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 API 배포 전에 자막 엔진 설정을 명시해야 함</span><span class="issue-lead">코드 기본값은 Qwen3-VL이다. 현재 운영의 실제 엔진은 로그인 상태 조회가 필요하다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>#29·#39가 기준으로 삼은 AWS 영상 시험은 PaddleOCR을 사용했다. #88과 최신 코드는 Qwen3-VL-8B를 기본으로 두며 Paddle은 명시 설정으로 선택한다. Qwen3-VL의 실제 AWS 영상 처리 기록은 확인되지 않았다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 API 교체 전에 팀이 채택한 엔진을 환경에 명시한다. 검증된 Paddle 경로를 이어 쓰면 <code>VIDEO_SUBTITLE_ENGINE=paddleocr</code>를 설정한다. Qwen 경로를 채택하면 별도 vLLM 모델의 준비·GPU 여유·실영상 결과를 먼저 확인한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>로그인 상태 API와 완료 결과의 <code>runtime.engine</code>이 배포 기록과 일치한다. 선택한 엔진으로 영상이 처리되고 실패 사유를 확인할 수 있어야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/review.py#L118-L142">엔진 선택 코드</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/%EC%98%81%EC%83%81_%EC%9E%90%EB%A7%89_Qwen3VL_%EC%97%B0%EA%B2%B0%EA%B0%80%EC%9D%B4%EB%93%9C.md#L3-L29">Qwen3-VL 연결 가이드</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a></div>
+  </div>
+</details>
+<details class="issue" id="video-a02-wiring" data-priority="2" data-state="gap">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 화면과 영상 전용 A02 API가 서로 다른 추출 경로를 사용함</span><span class="issue-lead">PDF·DOCX 입력 UI는 공용 프레임워크 A02를 호출한다. 영상 전용 분류·제외 목록의 API는 별도다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state gap">미연결</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd><code>VideoDocumentInput</code>은 공용 <code>extractDocumentWithProgress</code>의 결과를 요구사항 선택 목록으로 변환한다. #88의 <code>/api/video-reviews/requirements/extract</code>는 영상 전용 대상·제외 사유를 반환한다. 공용 화면이 붙은 사실만으로 전용 API의 UI 작업이 완료되지는 않는다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 기준의 제품 계약을 공용 A02와 전용 API 중 어디에 둘지 확정한다. 전용 기능이 필요하면 판독 가능한 자막·제외된 조건과 원문을 구분해 표시하고 사람이 검수 기준으로 선택하게 한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>PDF·DOCX·TXT 중 지원할 형식이 정해지고, 화면과 실제 API가 같은 지원 범위·제외 이유·출처를 보여 준다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/video/VideoDocumentInput.jsx#L1-L6">영상 문서 입력 호출</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/review.py#L643-L665">영상 전용 추출 API</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/%EC%98%81%EC%83%81_%EC%9E%90%EB%A7%89_Qwen3VL_%EC%97%B0%EA%B2%B0%EA%B0%80%EC%9D%B4%EB%93%9C.md#L54-L66">영상 A02 안내</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a></div>
+  </div>
+</details>
+<details class="issue" id="video-a02-rejection" data-priority="2" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 전용 A02는 후보 하나의 ID·중복 오류로 초안 전체가 중단됨</span><span class="issue-lead">전용 API의 원문 검증에는 항목별 거부를 우회하는 오류 분기가 남아 있다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd><code>materialize</code>는 출처·조건 검증 예외를 다시 던지고, 원문에 없는 항목 ID나 중복 후보에서도 전체 요청을 실패시킨다. #84는 닫혔고 공용 A02에는 후보별 제외 처리와 경고가 있다. 남은 분기는 영상 전용 API를 사용하는 경우에 해당한다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 전용 경로에서도 검증된 후보는 미승인 초안에 보존하고 거부·누락의 사유와 원문을 남긴다. 유효 후보가 전혀 없거나 응답 JSON이 잘린 경우에는 문서 단위 실패를 표시한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>유효 후보와 잘못된 ID·중복·잘못된 출처를 섞은 응답에서 유효 초안과 거부 사유가 각각 반환된다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/requirements.py#L387-L426">영상 전용 후보 검증</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/84">기존 이슈 #84</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a></div>
+  </div>
+</details>
+<details class="issue" id="video-sampling" data-priority="2" data-state="limit">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상 표본 검사의 충족 결과는 확인한 시점에 한정됨</span><span class="issue-lead">기본은 1초 간격이며 해당 검수에서는 시작·끝 3초를 0.2초 간격으로 더 본다. 프레임 사이의 짧은 누락은 놓칠 수 있다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state limit">지원 제한</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>결과 화면은 관측 시점과 미검사 구간을 표시한다. 11월 9일 짧은 영상에서 시간 근거가 확인됐고, #39의 정상·위반·관측 누락·부분 실패 조합은 추가 수용 시험이 필요하다. 음성 전사와 정확한 연속 노출시간은 이 범위 밖이다.</dd></div>
+      <div><dt>해결 방법</dt><dd>보고서에 표본 검사 범위를 명시한다. 연속 노출·음성을 요구하는 기준은 담당자 확인으로 남기고, 서비스 범위에 넣으려면 그 조건에 맞는 관측 경로와 별도 검증을 정한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>프레임 사이에서만 사라지는 문구와 판독 실패가 있는 영상으로 미관측·판독 실패·실제 위반을 구별하는지 확인한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/frontend/src/pages/video/VideoResults.jsx#L177-L211">영상 결과의 관측 범위</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/review.py#L573-L582">영상 상태 응답</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></div>
+  </div>
+</details>
+<details class="issue" id="video-approval-history" data-priority="2" data-state="gap">
+  <summary>
+    <span class="issue-head"><span class="issue-title">영상에 공통 버전·수정 요청·재검수·승인 이력이 연결되지 않음</span><span class="issue-lead">기존 내용 재사용은 새 영상 작업을 만드는 흐름이다. 승인된 이전 실행의 자식 재검수로 이어지지 않는다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state gap">미연결</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>현재 영상 결과는 별도 작업 저장소에 있고, #39·#40은 프로젝트·기준·산출물 버전과 공통 승인 기록 연결을 후속으로 둔다. 영상 관계도 API의 응답도 완료 <code>result.json</code>에서 구성된다.</dd></div>
+      <div><dt>해결 방법</dt><dd>영상 제출을 프로젝트·산출물 버전·승인 기준에 연결한다. 수정 요청을 부모 실행에 기록하고 수정본은 새 실행으로 검수한다. 기계 판정과 사람 결정 및 예외 사유는 공통 이력에서 조회하게 한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>같은 프로젝트에서 영상 기준 확정 → 검사 → 수정 요청 → 수정본 재검수 → 최종 승인까지 진행하고, 이전 승인과 새 승인을 각 버전에서 조회한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/evidence_graph.py#L1-L10">영상 관계도 저장 범위</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/app/video/framework_service.py#L33-L42">영상 전용 앱 저장소</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></div>
+  </div>
+</details>
+</section>
+<section class="issue-group" id="graphdb" data-group="GraphDB" aria-labelledby="heading-graphdb">
+  <header class="group-head"><h3 id="heading-graphdb">GraphDB</h3><span class="group-count">3건</span></header>
+  <details class="issue" id="graph-qualifiers" data-priority="2" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">기준의 보완 조건만 바뀌면 변경 영향 안내가 누락됨</span><span class="issue-lead">기대값이 그대로이고 허용 문구만 달라진 합성 입력에서 ‘변경 없음’이 반환됐다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>조건을 짝지을 때는 검사 대상·필드를 쓴다. 이후 <code>_value</code>는 유형·연산자·기대값·단위·필수 여부만 비교하고 <code>details.qualifiers</code>를 읽지 않는다. 현재 커밋의 비교 함수에 합성 입력을 넣었을 때 <code>changes=[]</code>, <code>unchanged=1</code>을 확인했다.</dd></div>
+      <div><dt>해결 방법</dt><dd>판정에 영향을 주는 보완 조건을 비교값에 포함한다. 원문 위치와 공백만 바뀐 경우에는 판정 내용이 바뀐 경우와 구분한다. 화면에도 보완 조건의 변경 전후를 표시한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>기대값은 같고 허용 범위만 변경된 조건에서 변경 알림과 이전 기준을 사용한 검수 목록을 볼 수 있어야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/criteria_change.py#L49-L96">기준 변경 비교</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/contracts.py#L82-L94">보완 조건 계약</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></div>
+  </div>
+</details>
+<details class="issue" id="graph-revision-recheck" data-priority="2" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">같은 revision의 Neo4j 이력에서 잘못된 부모 관계가 통과할 수 있음</span><span class="issue-lead">그래프를 사용하는 경우, 재검수 검증 함수가 부모 관계가 다른 합성 입력도 일치로 처리했다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>현재 재검수 이력 검증은 실행 ID 집합과 부모가 집합 밖인 실행 수, 승인 ID를 본다. 부모·자식 쌍은 직접 대조하지 않고 PostgreSQL 조회도 그래프가 넘긴 실행 ID로 제한한다. 합성 입력에서 부모 관계가 다른 경우와 누락된 자식이 조회되지 않은 경우를 확인했다.</dd></div>
+      <div><dt>해결 방법</dt><dd>PostgreSQL에서 같은 원본의 재검수 체인을 기준으로 부모·자식 쌍과 승인 ID를 비교한다. 그래프의 누락·불일치가 있으면 PostgreSQL 답변과 경고를 반환한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>같은 revision에 잘못된 부모를 가리키는 관계나 누락된 자식이 있으면 <code>postgres_fallback</code>으로 답한다. 정상 그래프의 이력과 결과는 유지한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/revision_history.py#L90-L150">재검수 이력 재검증</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/mcp_graph.py#L61-L81">그래프 revision 검사</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a></div>
+  </div>
+</details>
+<details class="issue" id="graph-runtime-trace" data-priority="2" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">실행별 Neo4j 채택과 SQL 대체를 운영에서 구분할 근거가 필요함</span><span class="issue-lead">공개 상태 API의 <code>neo4j_rag</code>는 설정 상태다. 개별 작업이 사용한 DB는 조회 추적에서 확인해야 한다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>포스터 관계 화면의 두 경로는 익명 요청에 401을 반환했다. PR #94는 기본 웹 프로필에서 <code>CC_NEO4J_*</code>를 주지 않아 <code>postgres_fallback</code>으로 동작한다고 명시한다. 검수 워커의 RAG와 웹 화면의 관계 조회는 별도 경로다.</dd></div>
+      <div><dt>해결 방법</dt><dd>승인 기준으로 실행한 포스터에서 <code>evidence-context.retrieval.backend</code>, 그래프 revision, 대체 사유를 확인한다. 웹 화면은 <code>answered_by</code>를 확인하고 SQL 사용을 운영 기준에 명시한다. Neo4j를 화면에서도 쓸 경우 필요한 연결 권한과 장애 시 동작을 함께 검증한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>정상·지연·연결 불가에서 실제 근거 출처와 대체 사유가 기록되고, 사람이 보는 결과의 출처가 원장과 일치한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://d3navmtcjn23y2.cloudfront.net/api/framework/v1/health">포스터 상태 API</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/pull/94">웹 프로필과 폴백 설명</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/evidence_context.py#L95-L129">검수 근거 조회 추적</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a></div>
+  </div>
+</details>
+</section>
+<section class="issue-group" id="aws" data-group="AWS 운영" aria-labelledby="heading-aws">
+  <header class="group-head"><h3 id="heading-aws">AWS 운영</h3><span class="group-count">4건</span></header>
+  <details class="issue" id="release-coverage" data-priority="1" data-state="code">
+  <summary>
+    <span class="issue-head"><span class="issue-title">AWS_TEST 최신 커밋에서 프론트 배포만 자동으로 확인됨</span><span class="issue-lead"><code>ffe1e4b</code>의 체크는 프론트 <code>build</code>·<code>deploy</code> 성공 두 건이다. 백엔드 통합 검사는 이 SHA에서 실행 기록이 없다.</span></span>
+    <span class="issue-meta"><span class="priority p1" title="업무 차단·근거 누락·배포 전 확인">P1</span><span class="state code">코드 확인</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>백엔드·통합 워크플로의 push 대상에 <code>AWS_TEST</code>가 빠져 있다. PR에서는 경로에 따라 실행되지만, 이후 직접 반영한 커밋에 같은 검증을 보장하지 않는다. 프론트와 API·워커·CloudFront를 서로 다른 시점에 반영하는 과정에서 경로 불일치가 드러났다.</dd></div>
+      <div><dt>해결 방법</dt><dd><code>AWS_TEST</code>의 백엔드 변경에 통합 워크플로를 연결한다. 릴리스 기록에 프론트 SHA, API·워커 이미지와 설정 해시, 영상 API·로고 워커, CloudFront 설정 버전을 함께 남긴다. 신규 경로는 연결 확인 뒤 프론트에서 활성화한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>같은 SHA의 필요한 검사가 실행되고 배포 기록에 각 구성의 버전이 있다. 프론트 링크와 API 라우트가 맞는지 배포 직후 확인할 수 있다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/actions/runs/42993373765">최신 프론트 Actions</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/.github/workflows/review-app.yml#L1-L8">통합 검사 트리거</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/.github/workflows/agent-framework-postgres.yml#L1-L8">DB 검사 트리거</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EC%9D%B8%ED%94%84%EB%9D%BC_%EC%9A%B4%EC%98%81%ED%98%84%ED%99%A9_20261110.md#L180-L191">운영 배포 경계</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/44">#44</a></div>
+  </div>
+</details>
+<details class="issue" id="worker-recovery" data-priority="2" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">워커 장애·취소 경쟁·재시작을 최신 배포 구성으로 확인해야 함</span><span class="issue-lead">대기 취소와 숨김·복원은 구현됐다. 실제 AWS에서 모델 실행을 접수해 취소한 시험은 남았다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>격리 PostgreSQL에서 선점·취소 경쟁과 권한을 시험했고 AWS에서는 실패 이력의 숨김·복원을 확인했다. 현재 취소는 선점 전 대기 작업에 한정된다. EC2 재부팅·EFS 미마운트·터널 단절·RunPod 재기동의 복구 기록은 추가 확인이 필요하다.</dd></div>
+      <div><dt>해결 방법</dt><dd>검증 환경에서 대기 취소 직전 선점, 이미 처리 중인 작업, 결과 불명·늦은 응답, 워커 재시작과 저장소·터널 단절을 각각 재현한다. 실행 소유권·상태·결과 해시를 대조하고 운영 복구 순서를 기록한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>취소·실패·결과 불명·완료가 구별되고 늦은 결과나 중복 요청이 기록을 덮어쓰지 않는다. EFS 미마운트 때 로컬 디스크에 원본이 저장되지 않아야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/%EB%82%B4_%EC%9E%91%EC%97%85_%EA%B4%80%EB%A6%AC.md#L28-L38">내 작업 시험 범위</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EC%9D%B8%ED%94%84%EB%9D%BC_%EC%9A%B4%EC%98%81%ED%98%84%ED%99%A9_20261110.md#L195-L211">재부팅·복구 확인 항목</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></div>
+  </div>
+</details>
+<details class="issue" id="backup-restore" data-priority="2" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">RDS·EFS 복원 후 검수 근거와 승인 연결의 일치 증거가 부족함</span><span class="issue-lead">백업으로 복원한 서비스에서 원본과 기준·실행·승인 이력을 다시 조회하는 시험이 남았다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>#42는 DB·파일 백업을 별도 환경에 복원해 결과·근거·승인 이력을 대조하는 작업을 열어 두고 있다. AWS 운영 문서는 실제 데이터 복원을 별도 절차로 둔다.</dd></div>
+      <div><dt>해결 방법</dt><dd>같은 시점의 RDS와 EFS 백업을 격리 대상에 복원한다. 문서·이미지 해시, 프로젝트 권한, 기준·실행·승인 관계를 확인한다. 필요할 경우 원장에서 Neo4j를 재구축해 revision과 조회 결과를 비교한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>복원된 사용자와 권한으로 포스터 원문·결과·승인 기록과 영상 원본·결과를 열 수 있고, 해시와 연결 관계가 복원 기준과 일치한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EA%B5%AC%EC%B6%95_%EC%84%A4%EC%A0%95_%EC%9D%B8%EC%88%98%EC%9D%B8%EA%B3%84_20261110.md#L607-L612">복원 경계</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/backend/agent_framework/graph_recovery.py#L84-L102">그래프 복구 범위</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/45">#45</a></div>
+  </div>
+</details>
+<details class="issue" id="mixed-load" data-priority="2" data-state="verify">
+  <summary>
+    <span class="issue-head"><span class="issue-title">다른 사용자와 포스터·영상 혼합 부하의 수용 범위가 미확정</span><span class="issue-lead">포스터 3건은 같은 2쪽 PDF의 시험이다. 영상 두 슬롯도 이전 짧은 영상 시험으로 확인됐다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state verify">검증 필요</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>11월 11일 포스터 동시 추론 세 건은 같은 계정·문서로 완료됐다. 11월 10일 운영 기록에서 main과 AWS_TEST는 영상 API 한도와 API EC2의 업로드·FFmpeg 자원을 공유한다. 포스터·영상 교차 완료, 대용량 영상, 장시간 처리의 근거는 남아 있지 않다.</dd></div>
+      <div><dt>해결 방법</dt><dd>서로 다른 계정과 문서를 사용해 포스터·영상·로고를 함께 처리한다. 작업 슬롯, 대기 시간, CPU·메모리, EFS 임시 공간, GPU 메모리, 거부·재접수 상태를 기록한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>합의한 동시 입력에서 사용자별 조회 격리가 유지되고 각 작업이 명시된 상태로 종료된다. 한도 초과의 대기·거부 기준이 운영 문서와 일치해야 한다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%EA%B3%B5%ED%86%B5%EB%A7%A5%EB%9D%BD.md#L19-L35">포스터 3건 실검증</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EC%9D%B8%ED%94%84%EB%9D%BC_%EC%9A%B4%EC%98%81%ED%98%84%ED%99%A9_20261110.md#L95-L118">공유 영상 슬롯과 시험 범위</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></div>
+  </div>
+</details>
+</section>
+<section class="issue-group" id="team" data-group="팀 작업" aria-labelledby="heading-team">
+  <header class="group-head"><h3 id="heading-team">팀 작업</h3><span class="group-count">4건</span></header>
+  <details class="issue" id="independent-evaluation" data-priority="2" data-state="todo">
+  <summary>
+    <span class="issue-head"><span class="issue-title">문서·포스터·영상의 독립 품질 평가와 회귀 기준 미확정</span><span class="issue-lead">개발 사례의 실행 성공과 기준 추출·판정 품질을 각각 측정할 공통 정답표가 필요하다.</span></span>
+    <span class="issue-meta"><span class="priority p2" title="기능 보완·수용 검증">P2</span><span class="state todo">팀 작업</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>#43은 개발용과 독립 평가 입력, 지표 분모와 모델·프롬프트·샘플링·버전 고정, 오류 회귀를 열어 두고 있다. 이전 OCR 실험과 최신 모델의 운영 기록은 환경과 입력 범위가 다르다.</dd></div>
+      <div><dt>해결 방법</dt><dd>팀이 검토한 정답과 독립 입력 집합을 고정한다. 항목 누락, 잘못된 값, 근거 연결, 오통과·확인 필요, 처리시간을 각각 기록한다. 이번에 확인한 길이·이미지·후보 거부 사례를 회귀 입력에 포함한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>각 지표의 분모와 입력·정답·버전을 재현하고 변경 전후를 같은 조건으로 비교할 수 있다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/84">A02 오류 사례 #84</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EC%9D%B8%ED%94%84%EB%9D%BC_%EC%9A%B4%EC%98%81%ED%98%84%ED%99%A9_20261110.md#L97-L118">실측 범위</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></div>
+  </div>
+</details>
+<details class="issue" id="docs-index" data-priority="3" data-state="todo">
+  <summary>
+    <span class="issue-head"><span class="issue-title">기준 문서와 생성본을 찾는 공통 목차가 없음</span><span class="issue-lead">운영 문서·검증 자료·공유 사본이 여러 폴더에 있고 <code>docs/INDEX.md</code>는 브랜치에 없다.</span></span>
+    <span class="issue-meta"><span class="priority p3" title="문서·운영 정리">P3</span><span class="state todo">팀 작업</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>#70의 문서·산출물 목차, 원본과 생성 관계, README 연결이 남아 있다. 과거 문서의 제품 범위나 배포 상태를 최신 기준으로 읽으면 지원 기능이 다르게 보인다.</dd></div>
+      <div><dt>해결 방법</dt><dd><code>docs/INDEX.md</code>에 운영·실행·평가·계획의 기준 파일과 생성본을 연결한다. 과거 기록과 현재 원본의 날짜를 표시하고 루트 README에서 진입점을 제공한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>팀원이 목차에서 최신 운영·실행·평가 문서를 열고, 수정할 원본과 열람할 사본을 찾을 수 있다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%EA%B3%B5%ED%86%B5%EB%A7%A5%EB%9D%BD.md#L115-L139">문서 탐색 안내</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/70">#70</a></div>
+  </div>
+</details>
+<details class="issue" id="handover-release" data-priority="3" data-state="todo">
+  <summary>
+    <span class="issue-head"><span class="issue-title">최종 제출용 코드·모델·설정과 시연 근거를 한 버전으로 확정해야 함</span><span class="issue-lead">열린 #44는 배포 버전, 사용자 실행 안내, 평가 기록, 시연 시나리오의 일치를 요구한다.</span></span>
+    <span class="issue-meta"><span class="priority p3" title="문서·운영 정리">P3</span><span class="state todo">팀 작업</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>최신 프론트의 배포 성공과 포스터 API 상태는 확인됐다. 영상 신규 경로와 일부 배포 설정은 이슈 목록의 해결과 확인이 필요하다. #29의 통합 완료 판정은 두 매체의 승인·재검수까지 포함한다.</dd></div>
+      <div><dt>해결 방법</dt><dd>제출 기준 SHA와 구성 버전을 확정한다. 정상 검수, 명확한 위반, 담당자 확인·수정본의 시연 순서와 실제 평가 기록을 같은 버전으로 묶는다.</dd></div>
+      <div><dt>완료 기준</dt><dd>팀원이 제출 자료로 시연을 재현하고 화면·API·모델·보고서의 버전과 알려진 한계를 대조할 수 있다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/actions/runs/42993373765">최신 프론트 배포</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/blob/ffe1e4b43163855c83779ef7e7610736daf4fc5e/docs/agent-framework/AWS_%EA%B5%AC%EC%B6%95_%EC%84%A4%EC%A0%95_%EC%9D%B8%EC%88%98%EC%9D%B8%EA%B3%84_20261110.md#L1-L20">운영 인수인계</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/44">#44</a> <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a></div>
+  </div>
+</details>
+<details class="issue" id="shutdown-retention" data-priority="3" data-state="todo">
+  <summary>
+    <span class="issue-head"><span class="issue-title">운영 종료 시각·보존 대상·남은 과금 항목을 확정해야 함</span><span class="issue-lead">#45 본문에 11월 20일 22:00 KST와 기존 11월 22일 계획의 차이가 기록돼 있다.</span></span>
+    <span class="issue-meta"><span class="priority p3" title="문서·운영 정리">P3</span><span class="state todo">팀 작업</span></span>
+  </summary>
+  <div class="issue-detail">
+    <dl class="issue-notes">
+      <div><dt>확인 근거</dt><dd>종료 일시와 자료 보존 기간·위치, 복원 확인 및 비용 자원의 유지·종료 범위는 아직 확정 작업으로 남아 있다.</dd></div>
+      <div><dt>해결 방법</dt><dd>팀이 종료 시각과 책임을 확정한 뒤 보존 자료의 읽기·복원을 확인한다. AWS·RunPod·스토리지·네트워크 자원을 목록화하고 승인된 종료 범위를 기록한다.</dd></div>
+      <div><dt>완료 기준</dt><dd>보존 파일과 복원 결과, 종료·유지 자원, 남은 비용의 확인 시점이 기록된다.</dd></div>
+    </dl>
+    <div class="references"><span>출처</span><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/25">AWS 비용·운영 기반 #25</a><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/45">#45</a></div>
+  </div>
+</details>
+</section>
+  </section>
+  <section class="support" id="http-checks" aria-labelledby="http-title">
+    <h2 id="http-title">공개 경로 점검</h2>
+    <p>11월 11일 20:42 KST 전후에 로그인 없이 GET으로 조회했다. 401은 인증 경계에 도달했다는 뜻이다. 공개 상태의 준비 플래그는 개별 작업의 모델·Neo4j 실행 결과와 별도로 읽는다.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="공개 경로 응답 표">
+      <table class="http-table"><thead><tr><th scope="col">경로</th><th scope="col">응답</th><th scope="col">확인 내용</th></tr></thead><tbody><tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/">/ · /login · /review/new · /review/tasks · /video · /video/logo</a></th><td><code class="">200 HTML</code></td><td>공개 페이지의 문서 응답</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/framework/v1/health">/api/framework/v1/health</a></th><td><code class="">200 JSON</code></td><td>AF005 · Qwen · neo4j_rag · 포스터 준비 · DOCX 등록 플래그</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/framework/v1/runs/00000000-0000-0000-0000-000000000000/criteria-change-impact">포스터 기준 변경 · 수정본 이력 · 근거 묶음</a></th><td><code class="">401 JSON</code></td><td>신규 관계 조회와 기존 근거 조회의 인증 경계</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/framework/v1/runs/00000000-0000-0000-0000-000000000000/poster-text-edits">포스터 문구 수정 경로의 GET</a></th><td><code class="">405 JSON</code></td><td>POST 경로 존재 확인</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/review/logo">/review/logo</a></th><td><code class="http-error">403 XML</code></td><td>포스터 로고 페이지 직접 접속 실패</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/poster-logos/status">/api/poster-logos/status</a></th><td><code class="http-error">404 JSON</code></td><td>포스터 로고 상태 경로를 찾지 못함</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/video-reviews/status">/api/video-reviews/status · /api/video-logos/status</a></th><td><code class="">401 JSON</code></td><td>기존 영상·로고 인증 경계</td></tr>
+<tr><th scope="row"><a href="https://d3navmtcjn23y2.cloudfront.net/api/video-reviews/00000000-0000-0000-0000-000000000000/evidence-graph">영상 광고·협찬 /evidence-graph</a></th><td><code class="http-error">404 JSON</code></td><td>신규 관계도 경로를 찾지 못함</td></tr></tbody></table>
+    </div>
+    <p>소스는 기준 커밋에 고정했다. GitHub 열린 이슈 전체, 최신 Actions와 저장소 운영 기록을 대조했고 기준 변경·재검수 함수는 합성 입력으로 확인했다. 실제 계정의 승인·대용량 업로드·모델 작업과 AWS 내부 설정·로그의 재검증은 남아 있다.</p>
+  </section>
+  <section class="support" id="github-issues" aria-labelledby="github-title">
+    <h2 id="github-title">GitHub 열린 이슈 11건</h2>
+    <p>번호는 GitHub 원문, 영역은 이 문서의 해당 해결 항목으로 연결된다.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="GitHub 열린 이슈 연결 표">
+      <table><thead><tr><th scope="col">번호</th><th scope="col">이슈</th><th scope="col">해결 항목</th></tr></thead><tbody><tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/29">#29</a></th><td>문서·포스터·영상 검수와 승인 서비스 통합</td><td><a href="#poster-exception">포스터</a> · <a href="#video-approval-history">영상</a> · <a href="#graph-runtime-trace">GraphDB</a> · <a href="#release-coverage">AWS 운영</a> · <a href="#handover-release">팀 작업</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/37">#37</a></th><td>Qwen 문서·포스터 베타 검수 흐름 연결</td><td><a href="#document-wait">문서 추출</a> · <a href="#poster-image-limit">포스터</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/39">#39</a></th><td>숏폼 영상 검수와 시간 근거 조회 연결</td><td><a href="#video-approval-history">영상</a> · <a href="#mixed-load">AWS 운영</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/40">#40</a></th><td>포스터·영상 판정·승인·재검수 흐름 통합</td><td><a href="#poster-edit-ready">포스터</a> · <a href="#video-approval-history">영상</a> · <a href="#graph-revision-recheck">GraphDB</a> · <a href="#worker-recovery">AWS 운영</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/42">#42</a></th><td>worker 장애·중복 실행·취소와 백업 복원 검증</td><td><a href="#document-wait">문서 추출</a> · <a href="#video-limits-deploy">영상</a> · <a href="#graph-runtime-trace">GraphDB</a> · <a href="#mixed-load">AWS 운영</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/43">#43</a></th><td>문서·포스터·영상 평가 기준과 회귀 검증 정리</td><td><a href="#pdf-output-limit">문서 추출</a> · <a href="#poster-beta">포스터</a> · <a href="#video-sampling">영상</a> · <a href="#mixed-load">AWS 운영</a> · <a href="#independent-evaluation">팀 작업</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/44">#44</a></th><td>docs: 최종 제출용 실행·평가·시연 자료 확정</td><td><a href="#release-coverage">AWS 운영</a> · <a href="#handover-release">팀 작업</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/45">#45</a></th><td>운영 종료 시 자료 내보내기와 과금 자원 정리</td><td><a href="#backup-restore">AWS 운영</a> · <a href="#shutdown-retention">팀 작업</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/70">#70</a></th><td>docs: 문서·산출물 목차와 기준 원본을 정리</td><td><a href="#docs-index">팀 작업</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/88">#88</a></th><td>영상 자막 Qwen3-VL 판독과 계약서 A02 요구사항 추출</td><td><a href="#docx-source">문서 추출</a> · <a href="#video-a02-rejection">영상</a></td></tr>
+<tr><th scope="row"><a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/95">#95</a></th><td>포스터 로고 위치 확정·정밀 대조 파이프라인</td><td><a href="#poster-logo-deploy">포스터</a></td></tr></tbody></table>
+    </div>
+    <p>공용 A02의 후보 단위 제외와 A06의 일괄 ‘확인 필요’는 이전 수정으로 처리됐다. 남아 있는 응답 잘림·영상 전용 검증 분기와 최신 포스터의 수용 시험을 위 목록에 연결했다. <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/issues/84">A02 #84</a> · <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/pull/80">A06 PR #80</a></p>
+  </section>
+</main>
+<footer class="footer"><div class="frame">Creative Checker · <a href="https://github.com/20260528-skn-family-ai-33/SKN33-Final-1Team/commit/ffe1e4b43163855c83779ef7e7610736daf4fc5e">AWS_TEST 기준 커밋 ffe1e4b</a> · 2026-11-11</div></footer>
+<script>
+(() => {
+  const form = document.querySelector('#filters');
+  const {query, area, priority, state} = form.elements;
+  const groups = Array.from(document.querySelectorAll('.issue-group'), group => ({
+    node: group,
+    count: group.querySelector('.group-count'),
+    entries: Array.from(group.querySelectorAll('.issue'), node => ({
+      node, search: node.textContent.replace(/\s+/g, ' ').toLowerCase()
+    }))
+  }));
+  const all = groups.flatMap(group => group.entries.map(entry => entry.node));
+  const result = document.querySelector('#visible-count');
+  const empty = document.querySelector('#empty');
+  function filter() {
+    const words = query.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let visible = 0;
+    for (const group of groups) {
+      let count = 0;
+      for (const {node, search} of group.entries) {
+        node.hidden = Boolean((area.value && group.node.dataset.group !== area.value)
+          || (priority.value && node.dataset.priority !== priority.value)
+          || (state.value && node.dataset.state !== state.value)
+          || words.some(word => !search.includes(word)));
+        if (!node.hidden) count += 1;
+      }
+      group.count.textContent = count + '건';
+      group.node.hidden = count === 0;
+      visible += count;
+    }
+    result.textContent = visible + ' / ' + all.length + '건';
+    empty.hidden = visible !== 0;
+  }
+  function clearFilters() {
+    form.reset();
+    filter();
+  }
+  function reveal(hash) {
+    const target = document.getElementById(hash.slice(1));
+    if (!target?.classList.contains('issue')) return;
+    if (target.hidden) clearFilters();
+    target.open = true;
+    requestAnimationFrame(() => target.scrollIntoView({block:'start'}));
+  }
+  form.hidden = false;
+  form.addEventListener('submit', event => event.preventDefault());
+  form.addEventListener('input', filter);
+  form.querySelector('button').addEventListener('click', clearFilters);
+  window.addEventListener('hashchange', () => reveal(location.hash));
+  document.addEventListener('click', event => {
+    const anchor = event.target.closest('a[href^="#"]');
+    if (anchor && anchor.hash === location.hash) reveal(anchor.hash);
+  });
+  let printOpen;
+  window.addEventListener('beforeprint', () => {
+    printOpen = all.map(issue => issue.open);
+    groups.forEach(group => { group.node.hidden = false; group.count.textContent = group.entries.length + '건'; });
+    all.forEach(issue => { issue.hidden = false; issue.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    if (printOpen) all.forEach((issue, index) => { issue.open = printOpen[index]; });
+    filter();
+  });
+  filter();
+  if (location.hash) reveal(location.hash);
+})();
+</script>
+</body>
+</html>

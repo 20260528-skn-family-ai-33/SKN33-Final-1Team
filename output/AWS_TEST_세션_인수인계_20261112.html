@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Creative Checker AWS_TEST 28개 이슈의 현재 조치, 코드 위치, 검증과 후속 작업">
+<title>AWS_TEST 작업 인수인계 · Creative Checker</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --ground: #edf2f6;
+  --paper: #fcfdff;
+  --ink: #1a2735;
+  --secondary: #445a6b;
+  --rule: #c4d1dc;
+  --wash: #eaf2f9;
+  --accent: #075c89;
+  --mast: #152d41;
+  --mast-ink: #f5faff;
+  --mast-note: #c5d9e8;
+  --mast-rule: #57748b;
+  --pass: #135e49;
+  --attention: #824500;
+  --focus: #156ea6;
+  --reading: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #121d28;
+    --paper: #192734;
+    --ink: #edf5fa;
+    --secondary: #bdcfdb;
+    --rule: #40566a;
+    --wash: #213648;
+    --accent: #a2d8ff;
+    --mast: #102336;
+    --mast-ink: #f5faff;
+    --mast-note: #bed4e5;
+    --mast-rule: #516f87;
+    --pass: #97dcc3;
+    --attention: #ffd29b;
+    --focus: #9bd4ff;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 1.25rem; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 1rem/1.7 var(--reading);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+p, h1, h2, h3, figure, dl, dd, pre { margin: 0; }
+h1, h2, h3 { line-height: 1.24; letter-spacing: -.026em; text-wrap: balance; }
+h1 { font-size: clamp(2.25rem, 5vw, 3.7rem); }
+h2 { font-size: clamp(1.45rem, 3vw, 1.95rem); }
+h3 { font-size: 1.1rem; }
+p { text-wrap: pretty; }
+a { color: var(--accent); text-decoration-thickness: .065em; text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: .13em; }
+a:focus-visible, main:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+code, time { font: .89em var(--mono); font-variant-numeric: tabular-nums; }
+code { word-break: normal; overflow-wrap: anywhere; }
+.skip {
+  position: absolute;
+  inset: .75rem auto auto .75rem;
+  z-index: 3;
+  background: var(--paper);
+  padding: .5rem .8rem;
+  transform: translateY(-180%);
+}
+.skip:focus { transform: none; }
+.frame { width: min(100% - 3rem, 70rem); margin-inline: auto; }
+.masthead { background: var(--mast); color: var(--mast-ink); border-top: .26rem solid #6fbbdf; }
+.identity {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .45rem 1rem;
+  padding-block: .8rem;
+  border-bottom: 1px solid var(--mast-rule);
+}
+.identity strong { font-size: .92rem; letter-spacing: .015em; }
+.identity time { color: var(--mast-note); }
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(14rem, 1fr);
+  gap: 1.6rem 3.25rem;
+  align-items: end;
+  padding-block: clamp(1.9rem, 4.7vw, 3.3rem);
+}
+.overview-copy { display: grid; gap: .8rem; }
+.lead { max-width: 52ch; color: var(--mast-note); font-size: 1.06rem; }
+.checkout { border-left: 1px solid var(--mast-rule); padding-left: 1.15rem; display: grid; gap: .65rem; min-width: 0; }
+.checkout div { display: grid; gap: .12rem; }
+.checkout dt { color: var(--mast-note); font-size: .79rem; }
+.checkout dd { font-size: .95rem; font-weight: 650; line-height: 1.48; }
+.commit { font-size: .82rem; color: var(--mast-note); }
+.shell {
+  display: grid;
+  grid-template-columns: minmax(8rem, 9.75rem) minmax(0, 1fr);
+  gap: 1.65rem;
+  align-items: start;
+  padding-block: 1.55rem 3rem;
+}
+.contents { position: sticky; top: 1.2rem; padding-top: .65rem; }
+.contents h2 { color: var(--secondary); font-size: .78rem; margin-bottom: .45rem; }
+.contents ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .14rem; }
+.contents a {
+  display: block;
+  padding: .34rem .55rem;
+  border-left: 2px solid var(--rule);
+  font-size: .9rem;
+  text-decoration: none;
+}
+.contents a:hover { border-color: var(--accent); background: var(--wash); text-decoration: underline; }
+main { background: var(--paper); border: 1px solid var(--rule); padding: clamp(1.2rem, 3.2vw, 2.55rem); min-width: 0; }
+section { display: grid; gap: .9rem; }
+section + section { border-top: 1px solid var(--rule); padding-top: 1.55rem; margin-top: 1.8rem; }
+section:target > h2 { color: var(--accent); }
+.measure { max-width: 69ch; }
+.inline-code code { background: var(--wash); padding: .08em .22em; }
+.refs { font-size: .85rem; color: var(--secondary); }
+.refs a { display: inline; }
+.flow {
+  padding: .9rem 1.05rem;
+  background: var(--wash);
+  border-block: 1px solid var(--rule);
+  display: grid;
+  gap: .65rem;
+}
+.flow-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .95rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flow-steps li { position: relative; display: grid; gap: .12rem; }
+.flow-steps li:not(:last-child) { padding-right: 1.15rem; }
+.flow-steps li:not(:last-child)::after { content: "→"; position: absolute; right: .06rem; top: .08rem; color: var(--accent); }
+.flow-steps strong { font-size: .98rem; }
+.flow-steps span, figcaption { color: var(--secondary); font-size: .83rem; }
+figcaption { border-top: 1px solid var(--rule); padding-top: .55rem; }
+.results { width: 100%; border-collapse: collapse; border-top: 2px solid var(--accent); table-layout: fixed; }
+.results th, .results td { padding: .58rem .65rem .58rem 0; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.results thead { font-size: .79rem; color: var(--secondary); }
+.results th:first-child { width: 29%; }
+.results tbody th { font-size: .88rem; font-weight: 650; }
+.pass { color: var(--pass); }
+.attention { color: var(--attention); font-weight: 650; }
+.procedure { display: grid; gap: 1.1rem; margin: 0; padding-left: 1.45rem; }
+.procedure li { padding-left: .18rem; }
+.procedure li::marker { color: var(--accent); font-family: var(--mono); font-weight: 700; }
+.step { display: grid; gap: .5rem; }
+pre {
+  color: var(--ink);
+  background: var(--wash);
+  padding: .58rem .76rem;
+  border-left: 3px solid var(--accent);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: auto;
+  line-height: 1.52;
+}
+pre code { font-size: .83rem; }
+.todo { margin: 0; padding-left: 1.18rem; display: grid; gap: .63rem; }
+.todo li::marker { color: var(--accent); }
+.source-list { margin: 0; padding: 0; list-style: none; display: grid; gap: .34rem; }
+.source-list li { color: var(--secondary); font-size: .9rem; }
+.footer { border-top: 1px solid var(--rule); padding-top: .75rem; margin-top: 1.6rem; font-size: .85rem; }
+@media (max-width: 780px) {
+  .frame { width: min(100% - 1.75rem, 70rem); }
+  .overview { grid-template-columns: 1fr; gap: 1.05rem; }
+  .checkout { grid-template-columns: 1fr 1fr; border-left: 0; border-top: 1px solid var(--mast-rule); padding: .75rem 0 0; }
+  .checkout div:last-child { grid-column: 1 / -1; }
+  .shell { grid-template-columns: 1fr; gap: .85rem; padding-top: .7rem; }
+  .contents { position: static; padding-top: 0; }
+  .contents h2 { margin-bottom: .2rem; }
+  .contents ul { display: flex; flex-wrap: wrap; gap: .2rem .4rem; }
+  .contents a { border-left: 0; padding: .22rem .42rem; text-decoration: underline; }
+}
+@media (max-width: 510px) {
+  .ledger > div { grid-template-columns: 1fr; }
+  .flow-steps { grid-template-columns: 1fr; gap: .95rem; }
+  .flow-steps li:not(:last-child) { padding-right: 0; }
+  .flow-steps li:not(:last-child)::after { content: "↓"; inset: auto auto -.97rem .05rem; line-height: 1; }
+  .results th:first-child { width: 32%; }
+  .results th, .results td { font-size: .88rem; }
+  .commit { font-size: .75rem; }
+}
+@page { size: A4; margin: 13mm 15mm; }
+@media print {
+  :root {
+    color-scheme: light;
+    --ground: #fff;
+    --paper: #fff;
+    --ink: #152435;
+    --secondary: #384c5f;
+    --rule: #b9c6d0;
+    --wash: #edf3f8;
+    --accent: #075477;
+    --mast: #fff;
+    --mast-ink: #142b3d;
+    --mast-note: #354e65;
+    --mast-rule: #b9c6d0;
+    --pass: #135e49;
+    --attention: #824500;
+  }
+  body { font-size: 10.5pt; line-height: 1.5; }
+  .frame { width: 100%; }
+  .masthead { border-top-width: 2px; }
+  .identity { padding-block: .3rem; }
+  .overview { grid-template-columns: 1.65fr 1fr; gap: 1.3rem; padding-block: .65rem .85rem; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 14.5pt; }
+  h3 { font-size: 11.5pt; }
+  .lead { font-size: 10.5pt; }
+  .checkout { padding-top: 0; padding-left: .7rem; border-left: 1px solid var(--rule); border-top: 0; grid-template-columns: 1fr; gap: .2rem; }
+  .contents, .skip, .footer { display: none; }
+  .shell { display: block; padding: 0; }
+  main { border: 0; padding: 0; }
+  section { display: block; }
+  section > * + * { margin-top: .48rem; }
+  section + section { padding-top: .66rem; margin-top: .78rem; }
+  h2, h3 { break-after: avoid; }
+  p, li { orphans: 2; widows: 2; }
+  .masthead, .ledger > div, .flow, .results tr, pre, .step { break-inside: avoid; }
+  .ledger > div { grid-template-columns: 7.2rem minmax(0, 1fr); padding-block: .36rem; }
+  .flow { padding: .55rem .7rem; }
+  .flow-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .flow-steps li:not(:last-child) { padding-right: 1.15rem; }
+  .flow-steps li:not(:last-child)::after { content: "→"; inset: .08rem .06rem auto auto; }
+  .results th, .results td { padding-block: .34rem; }
+  .procedure { gap: .65rem; }
+  .todo, .source-list { gap: .28rem; }
+  pre { font-size: 9pt; }
+}
+
+
+.overview { padding-block: 1.75rem 2.25rem; }
+.lead { max-width: 57ch; }
+.contents a { display: flex; align-items: baseline; gap: .45rem; justify-content: space-between; }
+.contents small, .group-range, .issue-number {
+  color: var(--secondary);
+  font: .8rem var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.transfer-list { margin: 0; padding-left: 1.25rem; display: grid; gap: .45rem; }
+.group-heading { display: flex; align-items: baseline; gap: .8rem; }
+.group-range { color: var(--accent); }
+.issue-jumps { display: flex; gap: .3rem; flex-wrap: wrap; }
+.issue-jumps a {
+  min-width: 2rem; padding: .16rem .38rem; border: 1px solid var(--rule);
+  color: var(--accent); font: .82rem/1.45 var(--mono); text-align: center;
+}
+.issue-jumps a:hover { background: var(--wash); border-color: var(--accent); }
+.issue { display: grid; gap: .55rem; border-top: 1px solid var(--rule); padding-block: .8rem .55rem; min-width: 0; }
+.issue:first-of-type { border-top: 2px solid var(--accent); }
+.issue:target .issue-title { color: var(--accent); }
+.issue-header {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline; gap: .25rem .65rem;
+}
+.issue-number { color: var(--accent); font-weight: 700; }
+.issue-title { font-size: 1.08rem; }
+.issue-state {
+  display: inline-block; color: var(--secondary); font-size: .73rem; font-weight: 650;
+  padding: .14rem .45rem; border: 1px solid var(--rule); white-space: nowrap;
+}
+.issue-state.pass { color: var(--pass); }
+.issue-state.attention { color: var(--attention); }
+.original-note { color: var(--secondary); font-size: .85rem; line-height: 1.55; }
+.original-note a { white-space: nowrap; }
+.issue-body { display: grid; gap: .47rem; }
+.issue-body > div { display: grid; grid-template-columns: 6.15rem minmax(0, 1fr); gap: .12rem .65rem; }
+.issue-body dt { color: var(--secondary); font-weight: 650; font-size: .86rem; padding-top: .1rem; }
+.issue-body dd { min-width: 0; }
+.issue-body dd > p { max-width: 76ch; }
+.issue-body .remaining dt { color: var(--attention); }
+.code-refs { display: grid; gap: .1rem; padding: 0; margin: 0; list-style: none; }
+.code-refs li { color: var(--secondary); font-size: .81rem; line-height: 1.48; }
+.code-refs code { padding: 0; background: transparent; }
+.code-refs .ref-label { padding-right: .35rem; }
+.issue .flow { margin: .25rem 0 0; }
+@media (max-width: 780px) {
+  .overview { padding-block: 1.15rem 1.5rem; }
+  .contents a { gap: .26rem; }
+  .contents small { font-size: .69rem; }
+}
+@media (max-width: 540px) {
+  .issue-body > div { grid-template-columns: 1fr; gap: .06rem; }
+  .issue-body { gap: .62rem; }
+  .issue-header { grid-template-columns: auto minmax(0, 1fr); }
+  .issue-state { grid-column: 2; justify-self: start; }
+  .issue-jumps a { min-width: 2.25rem; padding-block: .24rem; }
+}
+@media print {
+  .overview { padding-block: .65rem .85rem; }
+  .contents, .issue-jumps { display: none; }
+  .issue-group .group-heading { break-after: avoid; margin-bottom: .3rem; }
+  .issue { display: block; break-inside: avoid; padding-block: .38rem .34rem; margin-top: .35rem; }
+  .issue > * + * { margin-top: .27rem; }
+  .issue-header { grid-template-columns: auto minmax(0, 1fr) auto; gap: .3rem .5rem; }
+  .issue-title { font-size: 10.7pt; }
+  .issue-state { grid-column: auto; }
+  .issue-body { gap: .2rem; }
+  .issue-body > div { grid-template-columns: 5.6rem minmax(0, 1fr); }
+  .original-note { font-size: 8.5pt; }
+  .code-refs { gap: .04rem; }
+  .code-refs li { font-size: 8.1pt; line-height: 1.36; }
+  .issue .flow { margin-top: .25rem; }
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#document">본문으로 건너뛰기</a>
+<header class="masthead">
+  <div class="frame">
+    <div class="identity"><strong>Creative Checker</strong><time datetime="2026-11-12">2026-11-12 KST</time></div>
+    <div class="overview">
+      <div class="overview-copy">
+        <h1>AWS_TEST<br>작업 인수인계</h1>
+        <p class="lead">첨부 보고서의 28개 이슈를 기준으로 현재 작업 트리의 조치, 코드 위치, 검증 결과와 남은 일을 기록했다.</p>
+      </div>
+      <dl class="checkout">
+        <div><dt>작업 브랜치</dt><dd><code>fix/aws-test-issues</code></dd></div>
+        <div><dt>Git 상태</dt><dd>로컬 작업 트리 · 커밋 전</dd></div>
+        <div><dt>조사 기준 및 현재 HEAD</dt><dd><code class="commit">ffe1e4b43163855c83779ef7e7610736daf4fc5e</code></dd></div>
+      </dl>
+    </div>
+  </div>
+</header>
+<div class="frame shell">
+  <nav class="contents" aria-labelledby="contents-title">
+    <h2 id="contents-title">목차</h2>
+    <ul>
+      <li><a href="#resume">노트북 인수인계</a></li>
+      <li><a href="#group-document">문서 추출<small>01–05</small></a></li>
+      <li><a href="#group-poster">포스터<small>06–10</small></a></li>
+      <li><a href="#group-video">영상<small>11–17</small></a></li>
+      <li><a href="#group-graph">GraphDB<small>18–20</small></a></li>
+      <li><a href="#group-aws">AWS 운영<small>21–24</small></a></li>
+      <li><a href="#group-team">팀 작업<small>25–28</small></a></li>
+      <li><a href="#verification">검증 기록</a></li>
+      <li><a href="#commands">재현·적용</a></li>
+      <li><a href="#references">참고 파일</a></li>
+    </ul>
+  </nav>
+  <main id="document" class="inline-code" tabindex="-1">
+    <section id="resume" aria-labelledby="resume-title">
+      <h2 id="resume-title">노트북에서 이어받기</h2>
+      <p class="measure">현재 수정분과 새 파일은 <code>fix/aws-test-issues</code>의 작업 트리에 있다. 이번 변경의 커밋·원격 푸시·배포는 0건이다. 노트북에 옮길 때 아래 명령에 나오는 추적 파일의 수정분과 미추적 소스 파일을 함께 가져간다.</p>
+      <ul class="transfer-list">
+        <li>이 문서와 원본 보고서는 저장소 아래 <code>output/</code>에 두고 폴더 구조를 유지한다.</li>
+        <li>코드 링크는 해당 파일을 연다. 링크의 <code>파일:줄</code>에서 경로는 저장소 루트 기준이며 줄 번호는 이 작업 트리 기준이다.</li>
+      </ul>
+      <pre><code>git status --short --branch
+git diff --name-only HEAD
+git ls-files --others --exclude-standard</code></pre>
+      <p class="refs"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html">원본 이슈 보고서</a> · <a href="../docs/agent-framework/AWS_TEST_로컬_조치_20261111.md">로컬 조치와 시험 기록</a></p>
+    </section>
+    <section class="issue-group" id="group-document" aria-labelledby="group-document-title">
+      <header class="group-heading"><h2 id="group-document-title">문서 추출</h2><span class="group-range">01–05</span></header>
+      <nav class="issue-jumps" aria-label="문서 추출 이슈 바로가기">
+        <a href="#issue-01" aria-label="01 긴 계약서에서 Qwen 응답이 잘려 기준 초안이 생성되지 않음">01</a>
+        <a href="#issue-02" aria-label="02 이미지에만 있는 PDF 요구사항을 추출하지 못함">02</a>
+        <a href="#issue-03" aria-label="03 영상 문서 입력에서 추출 제외·이미지 미판독 경고가 빠짐">03</a>
+        <a href="#issue-04" aria-label="04 DOCX 감사 원본은 변환 텍스트로 남음">04</a>
+        <a href="#issue-05" aria-label="05 15분 화면 대기가 끝나도 접수된 작업은 계속될 수 있음">05</a>
+      </nav>
+      <article class="issue" id="issue-01" aria-labelledby="issue-title-01" data-source-issue="pdf-output-limit">
+        <header class="issue-header">
+          <span class="issue-number">01</span>
+          <h3 class="issue-title" id="issue-title-01">긴 계약서에서 Qwen 응답이 잘려 기준 초안이 생성되지 않음</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#pdf-output-limit">조사 당시</a> · v2-033은 제한을 15분으로 늘린 뒤에도 QWEN_OUTPUT_INCOMPLETE로 끝났다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>A02가 긴 입력을 줄 단위로 묶어 Qwen에 순서대로 보낸다. 2쪽 또는 약 6,500자를 기준으로 요청을 나누며 원래 페이지와 줄 ID는 그대로 사용한다. 각 요청은 전체 시간 예산을 공유한다. 잘린 구간의 쪽 번호를 경고에 남긴 뒤 정상 응답의 후보를 합친다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">요청 분할과 응답 병합</span> <a data-source-line="200" href="../backend/agent_framework/a02.py"><code>backend/agent_framework/a02.py:200</code></a></li>
+              <li><span class="ref-label">미완료 구간 경고</span> <a data-source-line="61" href="../backend/agent_framework/requirements_presentation.py"><code>backend/agent_framework/requirements_presentation.py:61</code></a></li>
+              <li><span class="ref-label">긴 PDF 회귀 시험</span> <a data-source-line="72" href="../tests/agent_framework/test_a02_semantic.py"><code>tests/agent_framework/test_a02_semantic.py:72</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 응답에서 구간 누락을 표시하면서 정상 후보와 원문 ID가 유지되는지 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>7쪽 계약서 <code>v2-033</code>을 실제 Qwen에서 다시 처리해 기준 누락, 출처, 소요 시간을 대조한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-02" aria-labelledby="issue-title-02" data-source-issue="pdf-image-layer">
+        <header class="issue-header">
+          <span class="issue-number">02</span>
+          <h3 class="issue-title" id="issue-title-02">이미지에만 있는 PDF 요구사항을 추출하지 못함</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#pdf-image-layer">조사 당시</a> · 텍스트층이 없는 쪽은 PDF_TEXT_UNAVAILABLE로 중단된다. 텍스트와 이미지가 섞인 쪽은 텍스트만 읽는다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>텍스트가 있는 쪽은 원래 쪽 번호로 추출하고 건너뛴 쪽은 <code>skipped_pdf_pages</code>에 남긴다. 이미지가 포함된 쪽의 판독 범위도 따로 표시해 기준 확인 단계에서 원본을 대조할 수 있게 했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">쪽 단위 텍스트 읽기</span> <a data-source-line="168" href="../backend/agent_framework/a02.py"><code>backend/agent_framework/a02.py:168</code></a></li>
+              <li><span class="ref-label">건너뛴 쪽 기록</span> <a data-source-line="447" href="../backend/agent_framework/a02.py"><code>backend/agent_framework/a02.py:447</code></a></li>
+              <li><span class="ref-label">이미지·쪽 경고 변환</span> <a data-source-line="55" href="../backend/agent_framework/requirements_presentation.py"><code>backend/agent_framework/requirements_presentation.py:55</code></a></li>
+              <li><span class="ref-label">혼합 PDF 회귀 시험</span> <a data-source-line="163" href="../tests/agent_framework/test_a02_extraction.py"><code>tests/agent_framework/test_a02_extraction.py:163</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>혼합 PDF에서 쪽 번호와 근거가 보존되는지 확인했다. 텍스트층이 없는 문서는 판독 불가로 안내한다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>스캔 전용 파일은 텍스트층이 있는 PDF를 받는다. 이미지 속 조항이 필요한 경우 담당자가 원본에서 읽고 기준에 보완한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-03" aria-labelledby="issue-title-03" data-source-issue="video-document-warning">
+        <header class="issue-header">
+          <span class="issue-number">03</span>
+          <h3 class="issue-title" id="issue-title-03">영상 문서 입력에서 추출 제외·이미지 미판독 경고가 빠짐</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-document-warning">조사 당시</a> · 서버가 경고를 내려도 영상 입력 화면에는 추출 개수와 미확정 개수만 표시된다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>영상 입력 화면이 공용 A02의 <code>warnings</code>와 미확정 개수를 받아 보여 준다. 경고가 있으면 저장된 분석 실행을 열 수 있다. 영상 전용 분석에서는 제외·거부 사유와 확인 가능한 원문을 펼쳐 볼 수 있다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">영상 전용 제외·거부 목록</span> <a data-source-line="79" href="../frontend/src/pages/video/VideoDocumentInput.jsx"><code>frontend/src/pages/video/VideoDocumentInput.jsx:79</code></a></li>
+              <li><span class="ref-label">공용 A02 결과와 경고 연결</span> <a data-source-line="89" href="../frontend/src/pages/video/VideoDocumentInput.jsx"><code>frontend/src/pages/video/VideoDocumentInput.jsx:89</code></a></li>
+              <li><span class="ref-label">영상 DOCX 입력 흐름</span> <a data-source-line="316" href="../frontend/tests/e2e/document-paragraphs.spec.mjs"><code>frontend/tests/e2e/document-paragraphs.spec.mjs:316</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 응답과 브라우저에서 영상 문서 첨부 및 기준 선택 흐름을 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 혼합 PDF와 여러 종류의 제외 사유가 담긴 문서로 두 경로의 화면 출력을 대조한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-04" aria-labelledby="issue-title-04" data-source-issue="docx-source">
+        <header class="issue-header">
+          <span class="issue-number">04</span>
+          <h3 class="issue-title" id="issue-title-04">DOCX 감사 원본은 변환 텍스트로 남음</h3>
+          <span class="issue-state">안내 반영</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#docx-source">조사 당시</a> · Word 원본 바이트는 보관하지 않아 추후 같은 파일을 서비스에서 다시 내려받을 수 없다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>첨부 화면에서는 DOCX 본문만 읽는다고 안내한다. Word 원본의 이미지와 배치는 별도로 보관하라는 문구도 표시한다. 공용 API의 기존 저장 경로는 변환한 본문을 텍스트 버전으로 저장하고 DOCX 원본의 SHA-256을 반환한다. 브라우저는 첨부 파일과 응답의 해시가 맞아야 분석을 접수한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">첨부 한도와 보관 안내</span> <a data-source-line="159" href="../frontend/src/pages/review/DocumentInput.jsx"><code>frontend/src/pages/review/DocumentInput.jsx:159</code></a></li>
+              <li><span class="ref-label">업로드 파일 해시 대조</span> <a data-source-line="85" href="../frontend/src/pages/review/frameworkDocument.js"><code>frontend/src/pages/review/frameworkDocument.js:85</code></a></li>
+              <li><span class="ref-label">텍스트 버전 저장 경로</span> <a data-source-line="310" href="../backend/agent_framework/postgres_api.py"><code>backend/agent_framework/postgres_api.py:310</code></a></li>
+              <li><span class="ref-label">공용 DOCX API 파일 한도</span> <a data-source-line="34" href="../backend/agent_framework/docx_text.py"><code>backend/agent_framework/docx_text.py:34</code></a></li>
+              <li><span class="ref-label">해시 불일치 시험</span> <a data-source-line="257" href="../frontend/src/pages/review/frameworkDocument.test.js"><code>frontend/src/pages/review/frameworkDocument.test.js:257</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>포스터·영상 DOCX 첨부와 원본 해시 불일치 거부를 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>서버에서 DOCX 원본을 함께 보존할지 팀이 결정한다. 화면 한도 10MiB와 공용 DOCX API 한도 20MiB를 운영 기준에 맞춰 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-05" aria-labelledby="issue-title-05" data-source-issue="document-wait">
+        <header class="issue-header">
+          <span class="issue-number">05</span>
+          <h3 class="issue-title" id="issue-title-05">15분 화면 대기가 끝나도 접수된 작업은 계속될 수 있음</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#document-wait">조사 당시</a> · 화면의 15분은 업로드·대기열을 포함한다. Qwen 요청 제한도 최대 900초다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>브라우저는 업로드와 대기에 15분을 둔다. 추출 시작을 감지하면 화면 대기 시간을 15분 30초로 다시 잡는다. 화면 대기가 만료되면 이미 받은 실행 ID를 남겨 다시 열 수 있다. 같은 화면에서 같은 프로젝트와 파일을 선택하면 접수에 쓴 요청 키를 재사용한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">단계별 타이머</span> <a data-source-line="13" href="../frontend/src/pages/review/frameworkDocument.js"><code>frontend/src/pages/review/frameworkDocument.js:13</code></a></li>
+              <li><span class="ref-label">문서 해시별 요청 키 재사용</span> <a data-source-line="67" href="../frontend/src/pages/review/frameworkDocument.js"><code>frontend/src/pages/review/frameworkDocument.js:67</code></a></li>
+              <li><span class="ref-label">만료 후 기존 실행 연결</span> <a data-source-line="225" href="../frontend/src/pages/review/ReviewProvider.jsx"><code>frontend/src/pages/review/ReviewProvider.jsx:225</code></a></li>
+              <li><span class="ref-label">문서 처리 중 늦은 응답 시험</span> <a data-source-line="82" href="../frontend/tests/e2e/workspace-reset.spec.mjs"><code>frontend/tests/e2e/workspace-reset.spec.mjs:82</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 타이머, 취소 후 늦은 응답, 같은 실행 재조회와 중복 접수 방지를 검사했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 대기열에서 시간 초과와 재진입을 확인한다. 서버의 대기 작업 취소는 별도 버튼과 API로 시험한다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section class="issue-group" id="group-poster" aria-labelledby="group-poster-title">
+      <header class="group-heading"><h2 id="group-poster-title">포스터</h2><span class="group-range">06–10</span></header>
+      <nav class="issue-jumps" aria-label="포스터 이슈 바로가기">
+        <a href="#issue-06" aria-label="06 포스터 로고 검수 화면과 API가 AWS에서 열리지 않음">06</a>
+        <a href="#issue-07" aria-label="07 포스터 베타의 통과·위반·근거 부족 판정이 함께 검증되지 않음">07</a>
+        <a href="#issue-08" aria-label="08 포스터 예외 승인 동선과 수용 검증이 남아 있음">08</a>
+        <a href="#issue-09" aria-label="09 포스터 문구 수정 버튼의 모델 준비 상태가 화면에 드러나지 않음">09</a>
+        <a href="#issue-10" aria-label="10 1,000만 화소를 넘는 포스터 원본이 거부됨">10</a>
+      </nav>
+      <article class="issue" id="issue-06" aria-labelledby="issue-title-06" data-source-issue="poster-logo-deploy">
+        <header class="issue-header">
+          <span class="issue-number">06</span>
+          <h3 class="issue-title" id="issue-title-06">포스터 로고 검수 화면과 API가 AWS에서 열리지 않음</h3>
+          <span class="issue-state">배포 후보</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#poster-logo-deploy">조사 당시</a> · /review/logo는 403 XML, /api/poster-logos/status는 404 JSON을 반환했다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>CloudFront의 SPA 재작성 대상에 <code>/review/logo</code>를 추가했다. Nginx 원본 설정에서는 <code>/api/poster-logos</code>와 그 하위 경로를 영상 API가 있는 8013으로 보낸다. 화면 URL과 API 요청이 각자의 원본에 도착하도록 구성했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">SPA 화면 경로</span> <a data-source-line="4" href="../deploy/agent-framework/aws-test-spa-rewrite.js"><code>deploy/agent-framework/aws-test-spa-rewrite.js:4</code></a></li>
+              <li><span class="ref-label">8013 API 라우팅</span> <a data-source-line="2" href="../deploy/agent-framework/aws-video-routes.conf"><code>deploy/agent-framework/aws-video-routes.conf:2</code></a></li>
+              <li><span class="ref-label">페이지 재작성 회귀 시험</span> <a data-source-line="39" href="../frontend/src/pages/video/proxy-config.test.js"><code>frontend/src/pages/video/proxy-config.test.js:39</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>재작성 함수와 프록시 계약을 로컬에서 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>CloudFront와 Nginx에 반영한 뒤 새로고침, 로그인, 로고 후보 확인과 위치 확정, 정밀 대조, 결과 재열기를 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-07" aria-labelledby="issue-title-07" data-source-issue="poster-beta">
+        <header class="issue-header">
+          <span class="issue-number">07</span>
+          <h3 class="issue-title" id="issue-title-07">포스터 베타의 통과·위반·근거 부족 판정이 함께 검증되지 않음</h3>
+          <span class="issue-state attention">수용 시험 대기</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#poster-beta">조사 당시</a> · 11월 9일 전시 포스터의 기준 12개는 모두 ‘확인 필요’였다. 이후 A06 보정은 AWS_TEST에 들어갔다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>기존 A06 판정·근거 계약을 사용해 정상, 날짜 오류, 필수 고지 누락, 수정본을 같은 기준으로 비교했다. 근거가 부족한 항목을 담당자가 확인할 때도 자동 판정 기록을 보존한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">정상·위반·수정본 비교</span> <a data-source-line="116" href="../tests/agent_framework/test_poster_postgres_integration.py"><code>tests/agent_framework/test_poster_postgres_integration.py:116</code></a></li>
+              <li><span class="ref-label">담당자 확인과 자동 근거 보존</span> <a data-source-line="37" href="../tests/agent_framework/test_human_review.py"><code>tests/agent_framework/test_human_review.py:37</code></a></li>
+              <li><span class="ref-label">담당자 확인 검증 조건</span> <a data-source-line="15" href="../backend/agent_framework/human_review.py"><code>backend/agent_framework/human_review.py:15</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>격리 PostgreSQL의 합성 포스터 경로와 담당자 확인 회귀가 통과했다. 실모델 판정은 운영 수용 시험에 남아 있다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>같은 전시의 정상·확정 위반·근거 부족 포스터를 실제 모델로 처리해 기준 승인부터 보고서까지 대조한다. 축소 사본의 작은 글자도 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-08" aria-labelledby="issue-title-08" data-source-issue="poster-exception">
+        <header class="issue-header">
+          <span class="issue-number">08</span>
+          <h3 class="issue-title" id="issue-title-08">포스터 예외 승인 동선과 수용 검증이 남아 있음</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#poster-exception">조사 당시</a> · 예외 결정은 공통 승인 계약에 있다. 결과 화면의 일반 승인·수정 요청과 같은 수준의 제품 동선은 연결이 남았다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>검수 화면에서 조건을 충족한 값 불일치 항목에 예외 승인 입력을 연다. 화면은 항목 ID와 담당자 사유를 승인 요청에 담는다. 서버가 기존 정책으로 허용 여부를 판단한다. 결과에는 예외 승인 상태를 표시한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">예외 승인 노출 조건</span> <a data-source-line="154" href="../frontend/src/pages/review/FrameworkReviewPage.jsx"><code>frontend/src/pages/review/FrameworkReviewPage.jsx:154</code></a></li>
+              <li><span class="ref-label">항목과 사유 전송</span> <a data-source-line="332" href="../frontend/src/pages/review/FrameworkReviewPage.jsx"><code>frontend/src/pages/review/FrameworkReviewPage.jsx:332</code></a></li>
+              <li><span class="ref-label">서버의 예외 승인 정책</span> <a data-source-line="283" href="../backend/agent_framework/runtime.py"><code>backend/agent_framework/runtime.py:283</code></a></li>
+              <li><span class="ref-label">예외 승인 허용·거부 시험</span> <a data-source-line="199" href="../tests/agent_framework/test_runtime.py"><code>tests/agent_framework/test_runtime.py:199</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>기존 승인 정책의 허용 사례와 근거 부족·충돌·잘못된 항목의 거부를 검사했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>운영 환경에서 담당자 권한, 오래된 버전 거부, 수정본에 이전 승인 미승계를 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-09" aria-labelledby="issue-title-09" data-source-issue="poster-edit-ready">
+        <header class="issue-header">
+          <span class="issue-number">09</span>
+          <h3 class="issue-title" id="issue-title-09">포스터 문구 수정 버튼의 모델 준비 상태가 화면에 드러나지 않음</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#poster-edit-ready">조사 당시</a> · 편집 API 경로는 배포돼 있다. 편집용 키가 없으면 사용자가 실행한 뒤 POSTER_EDIT_NOT_CONFIGURED를 받는다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>서버가 편집 키와 포스터 저장소 상태를 바탕으로 <code>poster_text_edit_ready</code>를 보낸다. 화면은 이 값이 준비 상태를 나타낼 때 문구 편집 버튼을 연다. QR 조작은 별도로 제공한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">문구 편집 준비 상태</span> <a data-source-line="136" href="../backend/agent_framework/postgres_api.py"><code>backend/agent_framework/postgres_api.py:136</code></a></li>
+              <li><span class="ref-label">편집 버튼 활성 조건</span> <a data-source-line="151" href="../frontend/src/pages/review/FrameworkReviewPage.jsx"><code>frontend/src/pages/review/FrameworkReviewPage.jsx:151</code></a></li>
+              <li><span class="ref-label">설정과 저장소 상태 시험</span> <a data-source-line="73" href="../tests/agent_framework/test_poster_readiness.py"><code>tests/agent_framework/test_poster_readiness.py:73</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>키와 저장소의 유무가 준비 상태에 반영되는지 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 편집 제공자의 권한과 응답을 확인한 뒤 지정 영역 수정·다운로드·수정본 재검수를 시험한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-10" aria-labelledby="issue-title-10" data-source-issue="poster-image-limit">
+        <header class="issue-header">
+          <span class="issue-number">10</span>
+          <h3 class="issue-title" id="issue-title-10">1,000만 화소를 넘는 포스터 원본이 거부됨</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#poster-image-limit">조사 당시</a> · 11월 3일 연주회 원본이 이 제한에 걸렸고 현재 코드도 같은 상한을 적용한다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>사용자가 검수용 사본 만들기를 선택하면 브라우저에서 종횡비를 유지한 채 화소·변 길이·파일 크기 한도에 맞춘다. 화면은 원본 크기를 보여 주고 검수 결과와 승인은 업로드한 사본에 연결한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">비율·한도 계산과 사본 생성</span> <a data-source-line="1" href="../frontend/src/pages/review/posterImageCopy.js"><code>frontend/src/pages/review/posterImageCopy.js:1</code></a></li>
+              <li><span class="ref-label">검수용 사본 선택</span> <a data-source-line="369" href="../frontend/src/pages/review/ReviewProvider.jsx"><code>frontend/src/pages/review/ReviewProvider.jsx:369</code></a></li>
+              <li><span class="ref-label">화소와 변 길이 경계 시험</span> <a data-source-line="6" href="../frontend/src/pages/review/workflow.test.js"><code>frontend/src/pages/review/workflow.test.js:6</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>1,000만 화소 경계, 초과 이미지 축소, 긴 변 제한을 단위 시험으로 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>대형 포스터의 작은 글자와 좌표가 실제 검수에서 충분히 보이는지 확인한다. 원본 규격 판정은 보관한 원본으로 대조한다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section class="issue-group" id="group-video" aria-labelledby="group-video-title">
+      <header class="group-heading"><h2 id="group-video-title">영상</h2><span class="group-range">11–17</span></header>
+      <nav class="issue-jumps" aria-label="영상 이슈 바로가기">
+        <a href="#issue-11" aria-label="11 영상 3분·1 GiB 상한의 AWS 설정과 프록시 일치 확인 필요">11</a>
+        <a href="#issue-12" aria-label="12 영상 광고·협찬 근거 관계도 API가 AWS에서 404">12</a>
+        <a href="#issue-13" aria-label="13 영상 API 배포 전에 자막 엔진 설정을 명시해야 함">13</a>
+        <a href="#issue-14" aria-label="14 영상 화면과 영상 전용 A02 API가 서로 다른 추출 경로를 사용함">14</a>
+        <a href="#issue-15" aria-label="15 영상 전용 A02는 후보 하나의 ID·중복 오류로 초안 전체가 중단됨">15</a>
+        <a href="#issue-16" aria-label="16 영상 표본 검사의 충족 결과는 확인한 시점에 한정됨">16</a>
+        <a href="#issue-17" aria-label="17 영상에 공통 버전·수정 요청·재검수·승인 이력이 연결되지 않음">17</a>
+      </nav>
+      <article class="issue" id="issue-11" aria-labelledby="issue-title-11" data-source-issue="video-limits-deploy">
+        <header class="issue-header">
+          <span class="issue-number">11</span>
+          <h3 class="issue-title" id="issue-title-11">영상 3분·1 GiB 상한의 AWS 설정과 프록시 일치 확인 필요</h3>
+          <span class="issue-state">배포 후보</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-limits-deploy">조사 당시</a> · 브랜치는 180초·1 GiB다. 11월 11일 운영 기록의 조회값은 60초·100 MiB, Nginx 110m이었다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>기준 커밋의 API 기본값 180초·1GiB에 맞춰 AWS_TEST 영상 설정 예시를 작성했다. Nginx의 8013 요청 상한으로 <code>1150m</code>를 제안했다. 로고 첨부와 multipart 여유를 포함한 값이다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">API 한도 기본값</span> <a data-source-line="81" href="../backend/app/video/review.py"><code>backend/app/video/review.py:81</code></a></li>
+              <li><span class="ref-label">180초·1024MiB 설정 예시</span> <a data-source-line="3" href="../deploy/agent-framework/video.aws-test.env.example"><code>deploy/agent-framework/video.aws-test.env.example:3</code></a></li>
+              <li><span class="ref-label">Nginx 업로드 상한</span> <a data-source-line="3" href="../deploy/agent-framework/aws-video-routes.conf"><code>deploy/agent-framework/aws-video-routes.conf:3</code></a></li>
+              <li><span class="ref-label">프론트 파일 크기 검사</span> <a data-source-line="87" href="../frontend/src/pages/video/VideoInput.jsx"><code>frontend/src/pages/video/VideoInput.jsx:87</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>API 한도 응답과 화면 표시, 프록시 계약을 로컬에서 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 CloudFront와 Nginx에 반영한 뒤 180초·1GiB 경계와 로고 동시 첨부의 통과 여부를 확인한다. 한도 초과 영상은 거절 사유를 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-12" aria-labelledby="issue-title-12" data-source-issue="video-evidence-deploy">
+        <header class="issue-header">
+          <span class="issue-number">12</span>
+          <h3 class="issue-title" id="issue-title-12">영상 광고·협찬 근거 관계도 API가 AWS에서 404</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-evidence-deploy">조사 당시</a> · 기존 영상 상태 API는 401, 신규 /evidence-graph 경로는 404를 반환했다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>완료 화면에 기존 <code>evidence-graph</code> API를 연결했다. 광고 규칙을 고르면 보관된 판정 근거와 프레임을 열 수 있다. API는 영상 결과 JSON에서 관계를 만든다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">광고 근거 관계 조회</span> <a data-source-line="6" href="../frontend/src/pages/video/VideoEvidenceGraph.jsx"><code>frontend/src/pages/video/VideoEvidenceGraph.jsx:6</code></a></li>
+              <li><span class="ref-label">근거 API 경로</span> <a data-source-line="906" href="../backend/app/video/review.py"><code>backend/app/video/review.py:906</code></a></li>
+              <li><span class="ref-label">결과 JSON을 관계로 변환</span> <a data-source-line="65" href="../backend/app/video/evidence_graph.py"><code>backend/app/video/evidence_graph.py:65</code></a></li>
+              <li><span class="ref-label">완료 결과의 근거 API 시험</span> <a data-source-line="179" href="../tests/app/test_video_review_api.py"><code>tests/app/test_video_review_api.py:179</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 완료 영상에서 API 응답과 브라우저의 근거 프레임 열기를 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>AWS 8013 원본에 하위 조회 경로를 반영한 뒤 로그인한 소유자의 완료 결과와 미완료·다른 계정 응답을 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-13" aria-labelledby="issue-title-13" data-source-issue="video-subtitle-engine">
+        <header class="issue-header">
+          <span class="issue-number">13</span>
+          <h3 class="issue-title" id="issue-title-13">영상 API 배포 전에 자막 엔진 설정을 명시해야 함</h3>
+          <span class="issue-state">배포 후보</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-subtitle-engine">조사 당시</a> · 코드 기본값은 Qwen3-VL이다. 현재 운영의 실제 엔진은 로그인 상태 조회가 필요하다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>AWS_TEST 환경 예시에 <code>VIDEO_SUBTITLE_ENGINE=paddleocr</code>를 명시했다. 런타임은 환경 변수로 엔진을 고르고 선택한 엔진을 상태 API와 완료 결과에 남긴다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">명시적 엔진 설정</span> <a data-source-line="2" href="../deploy/agent-framework/video.aws-test.env.example"><code>deploy/agent-framework/video.aws-test.env.example:2</code></a></li>
+              <li><span class="ref-label">엔진 선택과 기본값</span> <a data-source-line="120" href="../backend/app/video/review.py"><code>backend/app/video/review.py:120</code></a></li>
+              <li><span class="ref-label">완료 결과 엔진 기록</span> <a data-source-line="393" href="../backend/app/video/review.py"><code>backend/app/video/review.py:393</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>예시와 코드 경로를 확인했다. 샘플 설정의 엔진으로 운영 영상을 처리한 기록은 이번 세션에 없다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>운영에서 쓸 엔진을 확정하고 인증된 <code>subtitle_engine</code>과 완료 결과의 <code>runtime.engine</code>을 대조한다. Qwen3-VL을 택하면 GPU 준비와 실영상을 함께 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-14" aria-labelledby="issue-title-14" data-source-issue="video-a02-wiring">
+        <header class="issue-header">
+          <span class="issue-number">14</span>
+          <h3 class="issue-title" id="issue-title-14">영상 화면과 영상 전용 A02 API가 서로 다른 추출 경로를 사용함</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-a02-wiring">조사 당시</a> · PDF·DOCX 입력 UI는 공용 프레임워크 A02를 호출한다. 영상 전용 분류·제외 목록의 API는 별도다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>영상 문서 입력의 기본 경로는 프로젝트에 문서와 실행을 저장하는 공용 A02다. 영상 전용 분석을 선택하면 PDF·DOCX·TXT를 전용 API로 보낸다. 돌아온 분류 초안에서 검수할 항목을 고른다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">전용 분석 선택 상태</span> <a data-source-line="14" href="../frontend/src/pages/video/VideoDocumentInput.jsx"><code>frontend/src/pages/video/VideoDocumentInput.jsx:14</code></a></li>
+              <li><span class="ref-label">전용 API 접수와 초안 반영</span> <a data-source-line="68" href="../frontend/src/pages/video/VideoDocumentInput.jsx"><code>frontend/src/pages/video/VideoDocumentInput.jsx:68</code></a></li>
+              <li><span class="ref-label">영상 전용 분류 API</span> <a data-source-line="688" href="../backend/app/video/review.py"><code>backend/app/video/review.py:688</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>공용 문서 등록과 기준 선택은 브라우저에서 확인했고 전용 후보 분류는 합성 응답으로 검사했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>전용 분석을 운영에서 쓸 경우 원본을 보관하는 절차와 긴 응답의 프록시 시간 제한을 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-15" aria-labelledby="issue-title-15" data-source-issue="video-a02-rejection">
+        <header class="issue-header">
+          <span class="issue-number">15</span>
+          <h3 class="issue-title" id="issue-title-15">영상 전용 A02는 후보 하나의 ID·중복 오류로 초안 전체가 중단됨</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-a02-rejection">조사 당시</a> · 전용 API의 원문 검증에는 항목별 거부를 우회하는 오류 분기가 남아 있다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>전용 추출은 잘못된 ID, 중복, 근거 불일치를 후보 단위로 기록하고 정상 후보를 남긴다. 확인 가능한 원문이 있으면 거부 사유와 함께 돌려준다. 유효 후보가 없거나 응답 전체를 해석할 수 없으면 분석 실패로 처리한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">후보별 원문 검증과 거부</span> <a data-source-line="396" href="../backend/app/video/requirements.py"><code>backend/app/video/requirements.py:396</code></a></li>
+              <li><span class="ref-label">전용 응답 조립</span> <a data-source-line="460" href="../backend/app/video/requirements.py"><code>backend/app/video/requirements.py:460</code></a></li>
+              <li><span class="ref-label">정상·거부 후보 공존 시험</span> <a data-source-line="35" href="../tests/app/test_video_requirement_sources.py"><code>tests/app/test_video_requirement_sources.py:35</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>정상 후보와 오류 후보가 섞인 합성 응답에서 정상 기준과 거부 사유를 함께 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 전용 모델 응답에서 잘못된 후보가 어느 정도 나오는지 독립 평가 사례에 포함한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-16" aria-labelledby="issue-title-16" data-source-issue="video-sampling">
+        <header class="issue-header">
+          <span class="issue-number">16</span>
+          <h3 class="issue-title" id="issue-title-16">영상 표본 검사의 충족 결과는 확인한 시점에 한정됨</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-sampling">조사 당시</a> · 기본은 1초 간격이며 해당 검수에서는 시작·끝 3초를 0.2초 간격으로 더 본다. 프레임 사이의 짧은 누락은 놓칠 수 있다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>결과 화면에 검사한 프레임 시각과 미검사 구간을 표시한다. 연속 표시나 음성을 요구하는 문구를 감지하면 <code>scope_limit</code>으로 표시하고 해당 근거만으로 자동 충족이나 최종 승인이 진행되지 않게 했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">표본 시각과 검사 범위</span> <a data-source-line="116" href="../backend/app/video/frames.py"><code>backend/app/video/frames.py:116</code></a></li>
+              <li><span class="ref-label">연속·음성 조건 보류</span> <a data-source-line="126" href="../backend/app/video/judge.py"><code>backend/app/video/judge.py:126</code></a></li>
+              <li><span class="ref-label">최종 승인 조건</span> <a data-source-line="39" href="../backend/app/video/workflow.py"><code>backend/app/video/workflow.py:39</code></a></li>
+              <li><span class="ref-label">표본 검사 한계 시험</span> <a data-source-line="122" href="../tests/app/test_video_pipeline_rules.py"><code>tests/app/test_video_pipeline_rules.py:122</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 판정에서 표본으로 판단할 수 있는 사례와 연속 표시·음성 범위를 구분했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>프레임 사이의 짧은 누락과 판독 실패가 포함된 실영상으로 시험한다. 음성과 연속 구간의 최종 검수 방식은 팀이 정한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-17" aria-labelledby="issue-title-17" data-source-issue="video-approval-history">
+        <header class="issue-header">
+          <span class="issue-number">17</span>
+          <h3 class="issue-title" id="issue-title-17">영상에 공통 버전·수정 요청·재검수·승인 이력이 연결되지 않음</h3>
+          <span class="issue-state pass">격리 DB 검증</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#video-approval-history">조사 당시</a> · 기존 내용 재사용은 새 영상 작업을 만드는 흐름이다. 승인된 이전 실행의 자식 재검수로 이어지지 않는다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>프로젝트에 연결한 영상은 기준·영상 버전을 고정하고 수정 요청과 수정본을 연결한다. <code>AF006</code>의 <code>video_approvals</code>는 <code>run_id</code>를 기본 키로 두고 결정, 사유, 담당자, 기준·영상 해시를 실행별 한 건에 묶는다. 기동 시 기존 프로젝트 JSON 승인을 가져온다. 원본과 자동 결과는 파일에 둔다. 이벤트를 승인과 같은 트랜잭션에 기록해 Neo4j에 승인·수정본 관계를 동기화한다.</p>
+          <figure class="flow" aria-labelledby="af006-caption">
+            <ol class="flow-steps" role="list">
+              <li><strong>영상 API</strong><span>프로젝트 권한·버전 확인</span></li>
+              <li><strong>PostgreSQL · AF006</strong><span>승인과 동기화 이벤트 기록</span></li>
+              <li><strong>Neo4j</strong><span>승인·수정본 관계 반영</span></li>
+            </ol>
+            <figcaption id="af006-caption">영상 승인 기록이 그래프에 반영되는 순서</figcaption>
+          </figure></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">영상 승인 테이블과 불변 제약</span> <a data-source-line="1" href="../backend/agent_framework/AF006.sql"><code>backend/agent_framework/AF006.sql:1</code></a></li>
+              <li><span class="ref-label">승인 저장과 기동 시 JSON 이관</span> <a data-source-line="109" href="../backend/app/video/postgres.py"><code>backend/app/video/postgres.py:109</code></a></li>
+              <li><span class="ref-label">영상 승인 관계 동기화</span> <a data-source-line="89" href="../backend/agent_framework/graph_projection.py"><code>backend/agent_framework/graph_projection.py:89</code></a></li>
+              <li><span class="ref-label">수정 요청·최종 승인 동선</span> <a data-source-line="33" href="../frontend/src/pages/video/VideoWorkflowActions.jsx"><code>frontend/src/pages/video/VideoWorkflowActions.jsx:33</code></a></li>
+              <li><span class="ref-label">실 PostgreSQL·Neo4j 통합 시험</span> <a data-source-line="29" href="../tests/agent_framework/test_video_approvals_postgres_integration.py"><code>tests/agent_framework/test_video_approvals_postgres_integration.py:29</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>격리 PostgreSQL 17.11·Neo4j 5.26.33에서 JSON 이관, 권한, 동시 재시도, 수정본 승인, 재시작 조회와 그래프 관계를 검증했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>공유 DB에 <code>AF006</code>을 적용하고 호환되는 API·워커·그래프 프로세스로 기동한다. 영상 예외 승인 정책은 팀 결정 대기다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section class="issue-group" id="group-graph" aria-labelledby="group-graph-title">
+      <header class="group-heading"><h2 id="group-graph-title">GraphDB</h2><span class="group-range">18–20</span></header>
+      <nav class="issue-jumps" aria-label="GraphDB 이슈 바로가기">
+        <a href="#issue-18" aria-label="18 기준의 보완 조건만 바뀌면 변경 영향 안내가 누락됨">18</a>
+        <a href="#issue-19" aria-label="19 같은 revision의 Neo4j 이력에서 잘못된 부모 관계가 통과할 수 있음">19</a>
+        <a href="#issue-20" aria-label="20 실행별 Neo4j 채택과 SQL 대체를 운영에서 구분할 근거가 필요함">20</a>
+      </nav>
+      <article class="issue" id="issue-18" aria-labelledby="issue-title-18" data-source-issue="graph-qualifiers">
+        <header class="issue-header">
+          <span class="issue-number">18</span>
+          <h3 class="issue-title" id="issue-title-18">기준의 보완 조건만 바뀌면 변경 영향 안내가 누락됨</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#graph-qualifiers">조사 당시</a> · 기대값이 그대로이고 허용 문구만 달라진 합성 입력에서 ‘변경 없음’이 반환됐다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>기대값이 같아도 기준의 허용 문구나 보완 조건이 바뀌면 변경으로 잡는다. 비교할 때 문구를 정규화하고 화면에는 이전과 현재의 보완 문구를 함께 표시한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">보완 조건의 비교값 구성</span> <a data-source-line="58" href="../backend/agent_framework/criteria_change.py"><code>backend/agent_framework/criteria_change.py:58</code></a></li>
+              <li><span class="ref-label">변경 문구 표시</span> <a data-source-line="22" href="../frontend/src/pages/review/reviewRelations.js"><code>frontend/src/pages/review/reviewRelations.js:22</code></a></li>
+              <li><span class="ref-label">보완 조건만 바뀐 사례</span> <a data-source-line="48" href="../tests/agent_framework/test_criteria_change.py"><code>tests/agent_framework/test_criteria_change.py:48</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>기대값은 같고 보완 문구만 다른 사례에서 변경 표시를 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 수정 계약서에서 의미 변경과 공백 변경을 대조해 영향받은 이전 검수 목록을 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-19" aria-labelledby="issue-title-19" data-source-issue="graph-revision-recheck">
+        <header class="issue-header">
+          <span class="issue-number">19</span>
+          <h3 class="issue-title" id="issue-title-19">같은 revision의 Neo4j 이력에서 잘못된 부모 관계가 통과할 수 있음</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#graph-revision-recheck">조사 당시</a> · 그래프를 사용하는 경우, 재검수 검증 함수가 부모 관계가 다른 합성 입력도 일치로 처리했다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>재검수 조회는 PostgreSQL에서 가져온 실행 체인과 Neo4j의 부모·자식 쌍, 승인 ID를 대조한다. revision이 같더라도 체인이나 승인 정보가 다르면 <code>postgres_fallback</code> 응답과 사유를 돌려준다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">실제 부모·자식 쌍 대조</span> <a data-source-line="113" href="../backend/agent_framework/revision_history.py"><code>backend/agent_framework/revision_history.py:113</code></a></li>
+              <li><span class="ref-label">누락·잘못된 부모 합성 회귀</span> <a data-source-line="176" href="../tests/agent_framework/test_revision_history.py"><code>tests/agent_framework/test_revision_history.py:176</code></a></li>
+              <li><span class="ref-label">실 DB 그래프 내용 불일치 검사</span> <a data-source-line="504" href="../tests/agent_framework/test_graph_postgres_integration.py"><code>tests/agent_framework/test_graph_postgres_integration.py:504</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>잘못된 부모, 빠진 자식, 다른 승인 ID는 합성 회귀에서 확인했다. 실제 두 DB에서는 별도의 그래프 동기화와 같은 revision의 내용 불일치 감지 시험도 통과했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>같은 revision에 잘못된 부모를 둔 재검수 조회 사례를 실제 DB 통합 시험에 추가한다. 배포 뒤 원장과 그래프 응답도 비교한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-20" aria-labelledby="issue-title-20" data-source-issue="graph-runtime-trace">
+        <header class="issue-header">
+          <span class="issue-number">20</span>
+          <h3 class="issue-title" id="issue-title-20">실행별 Neo4j 채택과 SQL 대체를 운영에서 구분할 근거가 필요함</h3>
+          <span class="issue-state">로컬 구현</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#graph-runtime-trace">조사 당시</a> · 공개 상태 API의 neo4j_rag는 설정 상태다. 개별 작업이 사용한 DB는 조회 추적에서 확인해야 한다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>포스터 결과에 <code>rag-</code> 근거 ID가 있으면 저장된 조회 추적을 <code>/evidence-context</code>에서 읽는다. 실제 조회 DB, 필요한 원장 revision, 관측한 그래프 revision, PostgreSQL 대체 사유를 표시한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">조회 DB와 대체 사유 기록</span> <a data-source-line="100" href="../backend/agent_framework/evidence_context.py"><code>backend/agent_framework/evidence_context.py:100</code></a></li>
+              <li><span class="ref-label">근거 추적 API</span> <a data-source-line="174" href="../backend/agent_framework/postgres_api.py"><code>backend/agent_framework/postgres_api.py:174</code></a></li>
+              <li><span class="ref-label">조회 출처와 revision 표시</span> <a data-source-line="407" href="../frontend/src/pages/review/FrameworkReviewPage.jsx"><code>frontend/src/pages/review/FrameworkReviewPage.jsx:407</code></a></li>
+              <li><span class="ref-label">실 DB와 SQL 대체 결과 비교</span> <a data-source-line="139" href="../tests/agent_framework/test_graph_postgres_integration.py"><code>tests/agent_framework/test_graph_postgres_integration.py:139</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>격리 PostgreSQL·Neo4j에서 그래프 사용과 장애 시 같은 SQL 근거를 반환하는 시험을 실행했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>실제 배포의 정상·지연·연결 불가 상황에서 검수 워커의 추적과 화면의 조회 출처가 맞는지 확인한다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section class="issue-group" id="group-aws" aria-labelledby="group-aws-title">
+      <header class="group-heading"><h2 id="group-aws-title">AWS 운영</h2><span class="group-range">21–24</span></header>
+      <nav class="issue-jumps" aria-label="AWS 운영 이슈 바로가기">
+        <a href="#issue-21" aria-label="21 AWS_TEST 최신 커밋에서 프론트 배포만 자동으로 확인됨">21</a>
+        <a href="#issue-22" aria-label="22 워커 장애·취소 경쟁·재시작을 최신 배포 구성으로 확인해야 함">22</a>
+        <a href="#issue-23" aria-label="23 RDS·EFS 복원 후 검수 근거와 승인 연결의 일치 증거가 부족함">23</a>
+        <a href="#issue-24" aria-label="24 다른 사용자와 포스터·영상 혼합 부하의 수용 범위가 미확정">24</a>
+      </nav>
+      <article class="issue" id="issue-21" aria-labelledby="issue-title-21" data-source-issue="release-coverage">
+        <header class="issue-header">
+          <span class="issue-number">21</span>
+          <h3 class="issue-title" id="issue-title-21">AWS_TEST 최신 커밋에서 프론트 배포만 자동으로 확인됨</h3>
+          <span class="issue-state">배포 후보</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#release-coverage">조사 당시</a> · ffe1e4b의 체크는 프론트 build·deploy 성공 두 건이다. 백엔드 통합 검사는 이 SHA에서 실행 기록이 없다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>프레임워크 계약, PostgreSQL 통합, 검수 앱, v1 통합 워크플로의 실행 대상 브랜치에 <code>AWS_TEST</code>를 추가했다. 릴리스에서 비교할 프론트 SHA, API·워커 이미지와 설정 해시, CloudFront 버전도 정리했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">프레임워크 계약 CI</span> <a data-source-line="6" href="../.github/workflows/agent-framework.yml"><code>.github/workflows/agent-framework.yml:6</code></a></li>
+              <li><span class="ref-label">격리 DB CI</span> <a data-source-line="6" href="../.github/workflows/agent-framework-postgres.yml"><code>.github/workflows/agent-framework-postgres.yml:6</code></a></li>
+              <li><span class="ref-label">검수 앱 CI</span> <a data-source-line="6" href="../.github/workflows/review-app.yml"><code>.github/workflows/review-app.yml:6</code></a></li>
+              <li><span class="ref-label">v1 통합 CI</span> <a data-source-line="6" href="../.github/workflows/v1-integration.yml"><code>.github/workflows/v1-integration.yml:6</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>로컬 워크플로의 트리거와 프레임워크 시험 기록을 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>변경이 반영된 AWS_TEST 커밋에서 백엔드 CI와 프론트 배포 결과를 함께 확인한다. 같은 SHA와 런타임 설정을 릴리스 기록에 남긴다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-22" aria-labelledby="issue-title-22" data-source-issue="worker-recovery">
+        <header class="issue-header">
+          <span class="issue-number">22</span>
+          <h3 class="issue-title" id="issue-title-22">워커 장애·취소 경쟁·재시작을 최신 배포 구성으로 확인해야 함</h3>
+          <span class="issue-state pass">격리 DB 검증</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#worker-recovery">조사 당시</a> · 대기 취소와 숨김·복원은 구현됐다. 실제 AWS에서 모델 실행을 접수해 취소한 시험은 남았다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>화면 대기 취소와 서버의 대기 작업 취소를 따로 처리한다. 포스터 워커가 이미 선점한 작업은 대기 취소로 지울 수 없다. 영상은 검증한 파일을 한 번에 접수한다. 동일 키로 요청을 재전송하면 기존 실행을 돌려준다. 재시작 시 남은 실행은 실패 상태로 정리한다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">서버 대기 작업 취소</span> <a data-source-line="165" href="../frontend/src/pages/review/ReviewProvider.jsx"><code>frontend/src/pages/review/ReviewProvider.jsx:165</code></a></li>
+              <li><span class="ref-label">영상 재시작 정리</span> <a data-source-line="307" href="../backend/app/video/review.py"><code>backend/app/video/review.py:307</code></a></li>
+              <li><span class="ref-label">검증 완료 뒤 한 번에 접수</span> <a data-source-line="638" href="../backend/app/video/review.py"><code>backend/app/video/review.py:638</code></a></li>
+              <li><span class="ref-label">실 PostgreSQL 취소·선점 경쟁</span> <a data-source-line="68" href="../tests/agent_framework/test_my_tasks_postgres_integration.py"><code>tests/agent_framework/test_my_tasks_postgres_integration.py:68</code></a></li>
+              <li><span class="ref-label">영상 재시작 시험</span> <a data-source-line="343" href="../tests/app/test_video_review_api.py"><code>tests/app/test_video_review_api.py:343</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>로컬 PostgreSQL에서 취소·선점 경쟁을 실행했다. 영상 재시작과 동일 키 재요청도 각각 검사했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>AWS에서 EFS 미마운트, 워커 재시작, SSH 터널 단절과 늦은 결과를 재현해 잘못된 재접수나 덮어쓰기가 없는지 확인한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-23" aria-labelledby="issue-title-23" data-source-issue="backup-restore">
+        <header class="issue-header">
+          <span class="issue-number">23</span>
+          <h3 class="issue-title" id="issue-title-23">RDS·EFS 복원 후 검수 근거와 승인 연결의 일치 증거가 부족함</h3>
+          <span class="issue-state attention">복원 검증 대기</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#backup-restore">조사 당시</a> · 백업으로 복원한 서비스에서 원본과 기준·실행·승인 이력을 다시 조회하는 시험이 남았다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>RDS와 파일 저장소를 같은 시점으로 복원한 뒤 대조할 항목을 적었다. 저장소에는 PostgreSQL 덤프·복원 도구와 원장 기준의 Neo4j 복구 경로가 있다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">기존 백업 생성</span> <a data-source-line="201" href="../backend/app/management/backup.py"><code>backend/app/management/backup.py:201</code></a></li>
+              <li><span class="ref-label">기존 복원 경로</span> <a data-source-line="282" href="../backend/app/management/backup.py"><code>backend/app/management/backup.py:282</code></a></li>
+              <li><span class="ref-label">프로젝트 그래프 복구</span> <a data-source-line="174" href="../backend/agent_framework/graph_recovery.py"><code>backend/agent_framework/graph_recovery.py:174</code></a></li>
+              <li><span class="ref-label">RDS·EFS 복원 확인 항목</span> <a data-source-line="41" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:41</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>이 세션에서는 격리 그래프 재구축 시험을 돌렸다. RDS·EFS 복원 시험은 미실행이다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>격리 대상에 RDS·EFS를 복원하고 <code>AF006</code> 승인, 영상 파일·결과 JSON, 문서 원본 해시, 권한과 부모 실행 관계가 같은지 대조한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-24" aria-labelledby="issue-title-24" data-source-issue="mixed-load">
+        <header class="issue-header">
+          <span class="issue-number">24</span>
+          <h3 class="issue-title" id="issue-title-24">다른 사용자와 포스터·영상 혼합 부하의 수용 범위가 미확정</h3>
+          <span class="issue-state attention">부하 검증 대기</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#mixed-load">조사 당시</a> · 포스터 3건은 같은 2쪽 PDF의 시험이다. 영상 두 슬롯도 이전 짧은 영상 시험으로 확인됐다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>AWS_TEST 영상 예시에 동시 2건을 지정하고 API 접수 제한과 워커 슬롯 예약 위치를 확인했다. 서로 다른 계정의 포스터·영상·로고를 한꺼번에 실행할 때 기록할 지표를 정리했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">영상 2건 설정 예시</span> <a data-source-line="5" href="../deploy/agent-framework/video.aws-test.env.example"><code>deploy/agent-framework/video.aws-test.env.example:5</code></a></li>
+              <li><span class="ref-label">작업 슬롯과 접수 제한</span> <a data-source-line="619" href="../backend/app/video/review.py"><code>backend/app/video/review.py:619</code></a></li>
+              <li><span class="ref-label">혼합 부하 기록 항목</span> <a data-source-line="42" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:42</code></a></li>
+              <li><span class="ref-label">두 영상 워커 모의 시험</span> <a data-source-line="104" href="../tests/app/test_framework_video_service.py"><code>tests/app/test_framework_video_service.py:104</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>영상 두 슬롯의 모의 실행과 개별 회귀를 확인했다. 운영 혼합 부하는 미실행이다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>다른 계정에서 포스터와 대용량 영상·로고를 겹쳐 제출하고 접수·대기·종료, CPU·GPU·EFS 임시 공간, 권한 격리, 초과 요청 처리를 기록한다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section class="issue-group" id="group-team" aria-labelledby="group-team-title">
+      <header class="group-heading"><h2 id="group-team-title">팀 작업</h2><span class="group-range">25–28</span></header>
+      <nav class="issue-jumps" aria-label="팀 작업 이슈 바로가기">
+        <a href="#issue-25" aria-label="25 문서·포스터·영상의 독립 품질 평가와 회귀 기준 미확정">25</a>
+        <a href="#issue-26" aria-label="26 기준 문서와 생성본을 찾는 공통 목차가 없음">26</a>
+        <a href="#issue-27" aria-label="27 최종 제출용 코드·모델·설정과 시연 근거를 한 버전으로 확정해야 함">27</a>
+        <a href="#issue-28" aria-label="28 운영 종료 시각·보존 대상·남은 과금 항목을 확정해야 함">28</a>
+      </nav>
+      <article class="issue" id="issue-25" aria-labelledby="issue-title-25" data-source-issue="independent-evaluation">
+        <header class="issue-header">
+          <span class="issue-number">25</span>
+          <h3 class="issue-title" id="issue-title-25">문서·포스터·영상의 독립 품질 평가와 회귀 기준 미확정</h3>
+          <span class="issue-state attention">평가 대기</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#independent-evaluation">조사 당시</a> · 개발 사례의 실행 성공과 기준 추출·판정 품질을 각각 측정할 공통 정답표가 필요하다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>긴 PDF, 혼합 PDF, 원문이 틀린 영상 후보와 포스터 판정 경계를 회귀 시험으로 남겼다. 독립 평가에서는 입력과 정답, 실행 버전, 지표 분모를 함께 기록하도록 정리했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">긴 문서 회귀</span> <a data-source-line="72" href="../tests/agent_framework/test_a02_semantic.py"><code>tests/agent_framework/test_a02_semantic.py:72</code></a></li>
+              <li><span class="ref-label">영상 후보 회귀</span> <a data-source-line="35" href="../tests/app/test_video_requirement_sources.py"><code>tests/app/test_video_requirement_sources.py:35</code></a></li>
+              <li><span class="ref-label">독립 평가 기록 방식</span> <a data-source-line="43" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:43</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>합성 회귀에서 동작을 확인했다. 독립 정답표와 실제 모델 점수는 팀 확정 대기다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>개발 사례와 별도로 문서·포스터·영상 입력을 정한다. 정답과 근거는 사람이 작성한다. 누락·오추출·오통과·확인 필요·소요 시간을 측정한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-26" aria-labelledby="issue-title-26" data-source-issue="docs-index">
+        <header class="issue-header">
+          <span class="issue-number">26</span>
+          <h3 class="issue-title" id="issue-title-26">기준 문서와 생성본을 찾는 공통 목차가 없음</h3>
+          <span class="issue-state pass">문서 반영</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#docs-index">조사 당시</a> · 운영 문서·검증 자료·공유 사본이 여러 폴더에 있고 docs/INDEX.md는 브랜치에 없다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p><code>docs/INDEX.md</code>를 만들고 루트 README에서 연결했다. 실행 가이드, 운영 기록, 평가 자료와 생성본의 원본 위치를 목차에서 찾을 수 있다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">프로젝트 문서 목차</span> <a data-source-line="3" href="../docs/INDEX.md"><code>docs/INDEX.md:3</code></a></li>
+              <li><span class="ref-label">원본과 생성본 구분</span> <a data-source-line="13" href="../docs/INDEX.md"><code>docs/INDEX.md:13</code></a></li>
+              <li><span class="ref-label">README의 목차 연결</span> <a data-source-line="262" href="../README.md"><code>README.md:262</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>목차의 Markdown·HTML·JSON 대상이 로컬에서 열리는지 확인했다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>이번 작업 범위의 목차 연결은 완료했다. 이후 문서가 추가될 때 링크와 생성 기준을 함께 갱신한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-27" aria-labelledby="issue-title-27" data-source-issue="handover-release">
+        <header class="issue-header">
+          <span class="issue-number">27</span>
+          <h3 class="issue-title" id="issue-title-27">최종 제출용 코드·모델·설정과 시연 근거를 한 버전으로 확정해야 함</h3>
+          <span class="issue-state attention">릴리스 미확정</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#handover-release">조사 당시</a> · 열린 #44는 배포 버전, 사용자 실행 안내, 평가 기록, 시연 시나리오의 일치를 요구한다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>배포·시연에 필요한 프론트 SHA, API와 모델·워커 버전, 설정 해시, DB 스키마와 CloudFront 버전을 한 기록에 남기도록 인수인계 항목을 정리했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">릴리스 버전과 시연 기록</span> <a data-source-line="40" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:40</code></a></li>
+              <li><span class="ref-label">배포 후 실제 검수 확인</span> <a data-source-line="554" href="../docs/agent-framework/AWS_%EA%B5%AC%EC%B6%95_%EC%84%A4%EC%A0%95_%EC%9D%B8%EC%88%98%EC%9D%B8%EA%B3%84_20261110.md"><code>docs/agent-framework/AWS_구축_설정_인수인계_20261110.md:554</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>기준 SHA와 로컬 변경 상태를 확인했다. 제출에 사용할 SHA와 시연 환경은 팀 확정 대기다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>제출용 SHA와 환경을 고정하고 같은 버전으로 정상·위반·근거 부족·수정본 시연을 실행한다. 실제 검증 결과를 제출 기록에 연결한다.</p></dd></div>
+        </dl>
+      </article>
+      <article class="issue" id="issue-28" aria-labelledby="issue-title-28" data-source-issue="shutdown-retention">
+        <header class="issue-header">
+          <span class="issue-number">28</span>
+          <h3 class="issue-title" id="issue-title-28">운영 종료 시각·보존 대상·남은 과금 항목을 확정해야 함</h3>
+          <span class="issue-state attention">팀 결정 대기</span>
+        </header>
+        <p class="original-note"><a href="./AWS_TEST_이슈_및_해결방안_20261111.html#shutdown-retention">조사 당시</a> · #45 본문에 11월 20일 22:00 KST와 기존 11월 22일 계획의 차이가 기록돼 있다.</p>
+        <dl class="issue-body">
+          <div><dt>조치와 동작</dt><dd><p>원본 보고서에 남은 종료 시각 후보 두 가지를 기록했다. DB·파일·모델의 보존 위치와 기간, 복원 결과, 종료하거나 유지할 자원을 확인 항목으로 정리했다.</p></dd></div>
+          <div><dt>코드·문서 위치</dt><dd>
+            <ul class="code-refs">
+              <li><span class="ref-label">종료 시각과 보존 상태</span> <a data-source-line="36" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:36</code></a></li>
+              <li><span class="ref-label">종료 자원과 비용 확인</span> <a data-source-line="44" href="../docs/agent-framework/AWS_TEST_%EB%A1%9C%EC%BB%AC_%EC%A1%B0%EC%B9%98_20261111.md"><code>docs/agent-framework/AWS_TEST_로컬_조치_20261111.md:44</code></a></li>
+            </ul>
+          </dd></div>
+          <div><dt>확인</dt><dd><p>11월 20일 22:00 KST와 11월 22일이 서로 다른 기록으로 남아 있다. 운영 리소스 변경은 0건이다.</p></dd></div>
+          <div class="remaining"><dt>남은 일</dt><dd><p>팀이 종료 시각과 책임자를 확정한다. 보존본을 읽고 복원할 수 있는지 확인한 뒤 EC2·RDS·EFS·S3·CloudFront·RunPod 및 네트워크의 잔여 과금을 점검한다.</p></dd></div>
+        </dl>
+      </article>
+    </section>
+    <section id="verification" aria-labelledby="verification-title">
+      <h2 id="verification-title">세션에서 실행한 검증</h2>
+      <table class="results" aria-labelledby="verification-title">
+        <thead><tr><th scope="col">검증 범위</th><th scope="col">실행 결과</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">초기 로컬 조치</th><td>Python 370개, 프론트 단위 118개, Edge 시나리오 15개 통과. Vite 빌드 성공. Edge는 합성 API를 사용했다.</td></tr>
+          <tr><th scope="row">AF006 관련 회귀</th><td><strong class="pass">124개 통과</strong></td></tr>
+          <tr><th scope="row">실제 DB 통합</th><td>격리 Docker에서 <strong>PostgreSQL 17.11 · Neo4j 5.26.33</strong>으로 실행했다. 전체 첫 실행은 <strong class="pass">기존 162개 통과</strong>, 3개 건너뜀, 신규 영상 시험 1개 실패였다.</td></tr>
+          <tr><th scope="row">신규 영상 시험 재실행</th><td>첫 실행에서 소유자 세션이 바뀌어 승인 요청이 401로 거부됐다. 시험 계정의 세션을 분리한 뒤 별도 격리 실행에서 <strong class="pass">1개 통과</strong>했다. 영상 OCR은 합성 응답을 사용했다.</td></tr>
+        </tbody>
+      </table>
+      <p class="measure">격리 테스트 컨테이너·볼륨·네트워크를 정리했다.</p>
+      <p class="refs"><a href="../docs/agent-framework/AWS_TEST_로컬_조치_20261111.md#격리-db-시험">격리 DB 시험 기록</a> · <a href="../tests/agent_framework/test_video_approvals_postgres_integration.py">영상 승인 통합 시나리오</a></p>
+    </section>
+    <section id="commands" aria-labelledby="commands-title">
+      <h2 id="commands-title">격리 재현과 AF006 적용</h2>
+      <ol class="procedure">
+        <li><div class="step">
+          <h3>영상 승인 통합 시험 재현</h3>
+          <p class="measure">저장소 루트에서 Python 3.12와 Docker Desktop Linux 엔진을 사용한다. 저장소의 격리 실행기가 테스트 전용 PostgreSQL·Neo4j와 볼륨을 만들고 종료 때 정리한다.</p>
+          <pre><code>uv sync --locked --python 3.12 --group dev
+uv run --locked python -X utf8 scripts/framework_graph_test.py -- tests/agent_framework/test_video_approvals_postgres_integration.py -q</code></pre>
+          <p>프레임워크 DB 통합 전체를 다시 돌릴 때 사용한다.</p>
+          <pre><code>uv run --locked python -X utf8 scripts/framework_graph_test.py -- tests/agent_framework -q</code></pre>
+        </div></li>
+        <li><div class="step">
+          <h3>대상 PostgreSQL 17에 AF006 적용</h3>
+          <p class="measure">AF006을 지원하는 포스터 API·워커·그래프 프로세스와 영상 API를 같은 코드 버전으로 준비한다. 아래 상대경로는 예시이며 적용할 환경의 소유자용 설정과 영상 서비스용 설정을 지정한다.</p>
+          <pre><code>uv run --locked python scripts/framework_desktop.py build --image creative-checker-framework:af006-local
+uv run --locked python scripts/framework_desktop.py migrate `
+  --image creative-checker-framework:af006-local --env-file './path/to/owner-migration.env' --revision AF006
+uv run --locked python scripts/framework_video.py --env-file './path/to/video-service.env'</code></pre>
+          <p class="measure">로그인 상태의 <code>/api/video-reviews/status</code>에서 <code>project_reviews: true</code>를 확인한다. <code>/api/video-reviews/{id}/revisions</code>에서 승인과 수정본을 읽고 Neo4j의 적용 revision을 대조한다.</p>
+          <p class="refs"><a href="../docs/agent-framework/영상_포스터_로컬_병행실행.md#3-영상-api">로컬 실행·마이그레이션 가이드</a></p>
+        </div></li>
+      </ol>
+    </section>
+    <section id="references" aria-labelledby="references-title">
+      <h2 id="references-title">참고 파일</h2>
+      <ul class="source-list">
+        <li><a href="../docs/INDEX.md">Creative Checker 문서 목차</a> · 실행·운영 기준</li>
+        <li><a href="../docs/agent-framework/AWS_구축_설정_인수인계_20261110.md#11-cloudfront와-https-경로-설정">AWS 구축 설정 인수인계</a> · CloudFront와 8013 경로 후보</li>
+        <li><a href="../docs/agent-framework/Neo4j_프로젝트_자동복구_가이드.md">Neo4j 자동 복구 가이드</a> · PostgreSQL 원장에서 관계 재구축</li>
+      </ul>
+    </section>
+    <footer class="footer"><a href="#top">맨 위로</a></footer>
+  </main>
+</div>
+</body>
+</html>
+
