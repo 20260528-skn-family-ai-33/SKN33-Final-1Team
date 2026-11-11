@@ -126,7 +126,9 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     calls = []
     data = make_video(tmp_path / "clip.mp4")
     with make_client(tmp_path, ocr=fake_ocr(calls)) as client:
-        policy = client.get("/api/video-reviews/status").json()["limits"]
+        status = client.get("/api/video-reviews/status").json()
+        assert status["project_reviews"] is False
+        policy = status["limits"]
         assert policy["duration_seconds"] == 180
         assert policy["upload_bytes"] == 1024 ** 3
         response = upload(client, data, name="../../etc/passwd.mp4",

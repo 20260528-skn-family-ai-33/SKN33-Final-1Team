@@ -30,3 +30,17 @@ def test_scanned_page_without_text_layer_is_still_rejected():
     with pytest.raises(requirements.DocumentError) as error:
         requirements.pdf_sources(pdf(("", True)))
     assert error.value.code == "PDF_TEXT_UNAVAILABLE"
+
+
+def test_rejected_video_candidates_preserve_valid_items_and_sources():
+    sources = requirements.pdf_sources(pdf(("R01: Festival", False)))
+    index, _ = requirements.index_sources(sources)
+    base = {"target": "screen_text", "label": "제목", "expected": "Festival",
+            "source": {"start_line": "p1-text:L1", "end_line": "p1-text:L1"},
+            "item_id": "R01", "required": True, "unresolved": False, "qualifiers": []}
+    reply = requirements.VideoReply.model_validate({"requirements": [base, {**base, "item_id": "R99"}, base]})
+    items, _, rejected = requirements.materialize(reply, index)
+    assert [item["item_id"] for item in items] == ["R01"]
+    assert [(row["candidate_index"], row["code"], row["source"]["block"]) for row in rejected] == [
+        (2, "A02_ITEM_ID_UNGROUNDED", 1), (3, "A02_DUPLICATE_REQUIREMENT", 1),
+    ]

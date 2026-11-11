@@ -69,6 +69,37 @@ def test_free_input_is_semantically_structured_by_the_model_without_literal_comp
     assert draft.extraction.response_sha256==sha256(raw.encode()).hexdigest()
 
 
+def test_long_pdf_keeps_source_ids_and_marks_incomplete_chunks():
+    import pymupdf
+    with pymupdf.open() as pdf:
+        for text in ('Venue: City Hall','Title: Festival','Date: November 20'):
+            pdf.new_page().insert_text((40,40),text)
+        raw=pdf.tobytes()
+    context=text_document().context
+    ref=DocumentRef(file_id='long-pdf',document_version_id=context.document_version_id,
+        sha256=sha256(raw).hexdigest(),media_type='application/pdf',page_count=3)
+    doc=VerifiedDocument(context,ref,raw,3)
+    settings=PDFExtractionConfiguration(mode='qwen',endpoint='https://qwen.invalid/v1/chat/completions')
+    calls=[]
+    def handler(req):
+        data=json.loads(req.content)
+        sources=json.loads(data['messages'][1]['content'])['sources']
+        calls.append([source['page'] for source in sources])
+        if sources[0]['page']==3:
+            return httpx.Response(200,json={'choices':[{'finish_reason':'length','message':{'content':'{...'}}]})
+        item=requirement(1,'venue','City Hall',source={'start_line':'p1-text:L1','end_line':'p1-text:L1'})
+        unsent=requirement(1,'venue','November 20',source={'start_line':'p3-text:L1','end_line':'p3-text:L1'})
+        content=json.dumps({'requirements':[item,unsent]})
+        return httpx.Response(200,json={'choices':[{'finish_reason':'stop','message':{'content':content}}]})
+    provider=QwenProvider(settings,transport=httpx.MockTransport(handler))
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=provider).extract(
+        ExtractRequest(context=context,document=ref,synthetic=True))
+    assert calls==[[1,2],[3]]
+    assert [(item.source.page,item.expected) for item in draft.criteria]==[(1,'City Hall')]
+    assert draft.extraction.rejected_candidates[0].code=='A02_SOURCE_MISMATCH'
+    assert 'page_3_model_output_incomplete' in draft.warnings
+
+
 @pytest.mark.parametrize('value',['10,000','1,000,000','10,000장'])
 def test_number_separators_preserve_literal_source_and_match_a06_syntax(value):
     from backend.agent_framework.validation import _number

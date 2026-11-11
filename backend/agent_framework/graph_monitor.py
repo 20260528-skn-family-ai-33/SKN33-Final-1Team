@@ -17,6 +17,7 @@ from sqlalchemy import text
 from backend.app.persistence.database import create_app_engine
 from .graph_store import FrameworkGraph,GraphUnavailable
 from .postgres_commands import _values,_ready
+from .postgres_schema import GRAPH_REVISIONS
 
 FORMAT='af-graph-monitor-v1'
 
@@ -148,7 +149,7 @@ def monitor_command(args):
     stop=Event();transitions=Transitions()
     try:
         # No implicit migration: incompatible schemas fail at startup.
-        if _ready(engine,settings)['revision']!='AF005':raise ValueError('AF005 required')
+        if _ready(engine,settings)['revision'] not in GRAPH_REVISIONS:raise ValueError('AF005 required')
         for signum in (signal.SIGINT,signal.SIGTERM):signal.signal(signum,lambda *_:stop.set())
         while not stop.is_set():
             value=observe(engine,graph,policy,project_id=args.project_id)

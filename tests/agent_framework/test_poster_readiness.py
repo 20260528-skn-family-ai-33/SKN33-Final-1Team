@@ -39,9 +39,10 @@ def make_app(monkeypatch, configuration):
     monkeypatch.setattr(postgres_api.Files, 'recover', lambda *args, **kwargs: None)
     settings = load_v1_settings(auth_environment())
 
-    def create(config=None, *, schema='AF004', documents=True, posters=True):
+    def create(config=None, *, schema='AF004', documents=True, posters=True, edit_key=None):
         monkeypatch.setattr(postgres_api, 'check_extension', lambda _: {'revision': schema})
-        return postgres_api.create_postgres_app(settings, config or configuration, engine=object(),
+        configured = load_v1_settings(auth_environment() | {'creative_checker_openapi': edit_key}) if edit_key else settings
+        return postgres_api.create_postgres_app(configured, config or configuration, engine=object(),
             pdf_storage_root='unused-pdfs' if documents else None,
             poster_storage_root='unused-posters' if posters else None)
 
@@ -64,7 +65,14 @@ def test_complete_poster_health_preserves_existing_fields_without_importing_fact
         'task_controls': True,
         'authentication': 'existing_M008_session_and_CSRF', 'adapters_initialized_in_api': False,
         'production_ready': False, 'poster_review_ready': True, 'poster_review_blockers': [],
+        'poster_text_edit_ready': False,
     }
+
+
+@pytest.mark.parametrize('posters', [False, True])
+def test_text_edit_readiness_needs_key_and_poster_storage(make_app, posters):
+    with TestClient(make_app(posters=posters, edit_key='test-only-key')) as client:
+        assert client.get(HEALTH).json()['poster_text_edit_ready'] is posters
 
 
 @pytest.mark.parametrize('service,code', [

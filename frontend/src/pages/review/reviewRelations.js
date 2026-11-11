@@ -18,7 +18,8 @@ export function subjectParticle(word) {
 
 function valueText(item) {
   if (!item) return null;
-  return [item.expected?.trim() || '기대값 미정', item.unit].filter(Boolean).join(' ');
+  const expected = [item.expected?.trim() || '기대값 미정', item.unit].filter(Boolean).join(' ');
+  return [expected, ...(item.qualifiers || [])].join(' · ');
 }
 
 // 이전 승인 기준과 달라진 항목이 있을 때만 안내를 만든다.

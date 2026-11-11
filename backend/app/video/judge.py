@@ -19,6 +19,11 @@ from backend.app.video.tracks import edit_distance
 # "'최고' 표현은 쓰지 마세요"가 충족으로 뒤집힌다. 공통 수정은 포스터와 함께(B 담당) 하고,
 # 영상 경로에서는 충족을 확인 필요로 낮추기만 한다.
 VIDEO_NEGATIVE_HINT = re.compile(r"마세요|마십시오|말\s*것|말아\s*주|하지\s*마|쓰지\s*마|넣지\s*마|금물")
+UNOBSERVED_SCOPE = re.compile(
+    r"(?:영상\s*전체|전\s*구간|전체\s*구간).{0,14}(?:표시|노출|유지)"
+    r"|연속.{0,14}(?:표시|노출|유지|초)|(?:음성|오디오|내레이션).{0,12}(?:포함|낭독|발화|전사|들려)"
+    r"|\b(?:throughout|continuously|voiceover)\b", re.IGNORECASE,
+)
 SEVERITY = {"pass": "info", "review": "warn", "fail": "block"}
 REVIEWER = {"pass": "auto", "fail": "auto", "review": "manager"}
 
@@ -118,6 +123,10 @@ def judge(criteria: list[dict], tracks: list[dict], segments: list[dict], frames
     frame_meta = {f["frame_id"]: f for f in frames}
     for criterion, result in zip(criteria, results):
         notes = []
+        if UNOBSERVED_SCOPE.search(criterion["text"]):
+            result["status"] = "review"
+            result["scope_limit"] = True
+            notes.append("연속 구간 또는 음성은 표본 프레임으로 확정할 수 없습니다. 원본에서 직접 확인해 주세요.")
         if result["status"] == "pass" and any(m["criterion_id"] == criterion["id"] for m in mismatch):
             result["status"] = "review"
             notes.append("기준과 한 글자라도 다르게 읽힌 화면 문구가 있어 '불일치'로 사람 확인이 필요합니다.")

@@ -37,7 +37,8 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   page.setDefaultTimeout(10000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
-  let uploads = 0, admissions = 0, oldRequests = 0;
+  let uploads = 0, admissions = 0;
+  const unexpectedRequests = [];
   const data = Buffer.from('%PDF-test');
   const fixtureItems = [
     ['행사명', '봄의 기록', 'information'], ['기간', '2026.05.01 ~ 05.04', 'information'],
@@ -63,6 +64,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     else if (path === '/api/framework/v1/health') body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true };
     else if (path === '/api/framework/v1/projects') body = { items: [{ id: 'project-fixture', name: 'PDF 검증', my_role: 'owner' }], next_cursor: null };
     else if (path === '/api/framework/v1/csrf') body = { csrf_token: 'framework-browser-token' };
+    else if (path === '/api/poster-logos') body = { items: [] };
     else if (path.endsWith('/documents')) {
       uploads++;
       assert.equal(request.headers()['x-csrftoken'], 'framework-browser-token');
@@ -100,7 +102,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
       framework: { run_id: 'run-fixture', document_version_id: 'document-fixture' } };
     // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
     else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
-    else { oldRequests++; return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } }); }
+    else { unexpectedRequests.push(path); return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } }); }
     return route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new');
@@ -192,7 +194,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     await page.getByLabel('검수 포스터', { exact: true }).waitFor();
     assert.equal(approved, true);
   }
-  assert.equal(uploads, 1); assert.equal(admissions, 1); assert.equal(oldRequests, 0);
+  assert.equal(uploads, 1); assert.equal(admissions, 1); assert.deepEqual(unexpectedRequests, []);
   assert.deepEqual(errors, []);
 });
 }
@@ -235,12 +237,15 @@ async function verifyDocx(t, mode) {
     else if (path === '/api/framework/v1/projects') body = { items: [{ id: 'project-fixture', name: 'DOCX 검증', my_role: 'owner' }], next_cursor: null };
     else if (path === '/api/framework/v1/csrf') body = { csrf_token: 'framework-browser-token' };
     else if (video && path === '/api/v1/auth/csrf') body = { csrf_token: 'video-browser-token' };
-    else if (video && ['/api/video-reviews/status', '/api/video-logos/status'].includes(path)) body = { ready: true };
+    else if (video && ['/api/video-reviews/status', '/api/video-logos/status'].includes(path)) body = { ready: true, project_reviews: true };
     else if (video && path === '/api/video-logos') body = { items: [] };
     else if (video && path === '/api/video-reviews' && request.method() === 'POST') {
       const form = await new Response(request.postDataBuffer(), {
         headers: { 'Content-Type': request.headers()['content-type'] },
       }).formData();
+      assert.equal(form.get('project_id'), 'project-fixture');
+      assert.equal(form.get('criteria_confirmed'), 'true');
+      assert.match(request.headers()['idempotency-key'], /^[a-f0-9-]{36}$/);
       videoSubmissions.push(JSON.parse(form.get('criteria')));
       return route.fulfill({ status: 202, json: videoJob });
     }
@@ -266,7 +271,8 @@ async function verifyDocx(t, mode) {
   const card = page.getByRole('region', { name: '요구사항 문서 첨부' });
   const upload = page.getByLabel('요구사항 문서 선택', { exact: true });
   assert.match(await upload.getAttribute('accept'), /\.docx/);
-  await page.getByText('PDF · DOCX(본문 글자) · 최대 10MiB', { exact: true }).waitFor();
+  await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MiB', { exact: true }).waitFor();
+  await card.getByText(/별도로 보관한 Word 원본에서 확인해 주세요/).waitFor();
   if (mode === 'video-drop') {
     const dataTransfer = await page.evaluateHandle(bytes => {
       const data = new DataTransfer();

@@ -10,6 +10,32 @@ const wait = (ms, signal) => new Promise((resolve, reject) => {
 export const DOCUMENT_WAIT_TIMEOUT_MS = 15 * 60 * 1000;
 export const DOCX_MEDIA_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
+export function watchDocumentDeadline(controller) {
+  let expired = false;
+  let stage;
+  let startedAt = Date.now();
+  let inferenceStarted = false;
+  const expire = () => { expired = true; controller.abort(); };
+  let timer = setTimeout(expire, DOCUMENT_WAIT_TIMEOUT_MS);
+  return {
+    runId: '',
+    get expired() { return expired; },
+    update(progress) {
+      if (stage !== progress.stage) {
+        stage = progress.stage;
+        startedAt = Date.now();
+      }
+      if (stage === 'extracting' && !inferenceStarted) {
+        inferenceStarted = true;
+        clearTimeout(timer);
+        timer = setTimeout(expire, DOCUMENT_WAIT_TIMEOUT_MS + 30_000);
+      }
+      return { ...progress, startedAt };
+    },
+    stop() { clearTimeout(timer); },
+  };
+}
+
 // 확장자가 아니라 실제 첫 바이트로 PDF·DOCX를 가른다. DOCX(ZIP)는 이름도 .docx여야 한다.
 export async function requirementDocument(file) {
   const header = String.fromCharCode(...new Uint8Array(await file.slice(0, 5).arrayBuffer()));
@@ -73,8 +99,9 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
 }
 
 // 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
-export async function extractDocumentWithProgress(file, { signal, onProgress, pollInterval = 1500, waitFor = wait, ...submission } = {}) {
+export async function extractDocumentWithProgress(file, { signal, onProgress, onAccepted, pollInterval = 1500, waitFor = wait, ...submission } = {}) {
   const attempt = await submitDocument(file, { ...submission, signal, onProgress });
+  onAccepted?.(attempt.runId);
   const source = file.type === 'text/plain' ? '입력문' : file.type === DOCX_MEDIA_TYPE ? 'DOCX' : 'PDF';
   const runPath = `/runs/${encodeURIComponent(attempt.runId)}`;
   while (true) {

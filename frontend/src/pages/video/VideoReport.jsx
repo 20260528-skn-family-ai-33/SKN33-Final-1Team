@@ -1,5 +1,6 @@
 import React from 'react';
 import ReviewReport from '../../components/ReviewReport.jsx';
+import { decisionLabels } from './VideoWorkflowActions.jsx';
 import { coverageNote, formatTime, judgmentItems, statusLabels } from './videoFormat.js';
 
 export default function VideoReport({ job }) {
@@ -28,6 +29,14 @@ export default function VideoReport({ job }) {
       <p>{coverageNote(job.coverage)}</p>
       {job.warnings?.length > 0 && <ul>{job.warnings.map((warning, index) => <li key={index}>{warning}</li>)}</ul>}
     </section>
+    {job.workflow && <section><h2>담당자 결정</h2>
+      <p>영상 v{job.workflow.asset_version} · 기준 v{job.criteria_version} · {decisionLabels[job.workflow.human_decision]}</p>
+      {job.workflow.decisions.map(record => <div key={record.command_id}>
+        {record.reason && <p>{record.reason}</p>}
+        {Object.entries(record.human_checks).map(([id, note]) => <p key={id}>{id} · {note}</p>)}
+        <p>{record.actor_id} · {record.approved_at}</p>
+      </div>)}
+    </section>}
     <footer>판정은 검사한 표본 시각을 기준으로 합니다. 확인 필요 항목은 원본 영상에서 확인해 주세요.</footer>
   </ReviewReport>;
 }

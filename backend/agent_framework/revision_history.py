@@ -110,13 +110,10 @@ class RevisionHistory:
         return found, records, numbers
 
     @staticmethod
-    def _consistent(chain, approving, found, records) -> bool:
-        """PostgreSQL recheck of a projection answer: every run is there, linked the same way, with the same records."""
-        ids = [node.partition(':')[2] for node in chain]
-        if set(ids) != set(found) or sum(found[run_id]['parent_run_id'] not in ids for run_id in ids) != 1:
-            return False
-        return all({node.partition(':')[2] for node in approving[run_node(run_id)]}
-                   == {record['approval_id'] for record in records.get(run_id, ())} for run_id in ids)
+    def _parent_links(graph, chain) -> set[tuple[str, str]]:
+        members = set(chain)
+        return {(source, target) for source, kind, target in graph.edges
+                if kind == 'reinspected_as' and target in members}
 
     def read(self, subject, run_id: str) -> dict:
         with unit_of_work(self.engine) as c:
@@ -128,18 +125,21 @@ class RevisionHistory:
             graph, warnings, projected = graph | {'status': 'stale'}, ['GRAPH_NODE_MISSING'], None
         with unit_of_work(self.engine) as c:
             self._asked(c, subject, run_id)  # Access is rechecked after the graph call.
-            answer = None
+            authority = load_graph(c, project_id)
+            chain, approving, truncated = chain_from(authority, start)
+            found, records, numbers = self._rows(c, project_id, [node.partition(':')[2] for node in chain])
+            answer = 'postgres_fallback'
             if projected is not None:
-                chain, approving, truncated = chain_from(projected, start)
-                found, records, numbers = self._rows(c, project_id, [node.partition(':')[2] for node in chain])
-                if self._consistent(chain, approving, found, records):
+                actual_revision = postgres_revision(c, project_id)
+                if actual_revision != revision:
+                    graph, warnings = graph | {'status': 'stale', 'postgres_revision': actual_revision}, ['GRAPH_STALE']
+                elif truncated:
+                    graph, warnings = graph | {'status': 'stale'}, ['GRAPH_RESULT_LIMIT']
+                elif (chain_from(projected, start) == (chain, approving, truncated)
+                      and self._parent_links(projected, chain) == self._parent_links(authority, chain)):
                     answer = 'neo4j'
                 else:
                     graph, warnings = graph | {'status': 'stale'}, ['GRAPH_REFERS_TO_ABSENT_ROWS']
-            if answer is None:
-                answer = 'postgres_fallback'
-                chain, approving, truncated = chain_from(load_graph(c, project_id), start)
-                found, records, numbers = self._rows(c, project_id, [node.partition(':')[2] for node in chain])
         entries = []
         for row in sorted(found.values(), key=lambda item: (item['created_at'], item['run_id'])):
             snapshot = RunSnapshot.model_validate(row['snapshot_json'])

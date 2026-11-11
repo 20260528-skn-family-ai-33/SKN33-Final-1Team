@@ -27,7 +27,9 @@ from .api import StartRequest,RevisionRequest
 from .composition import poster_review_configuration_blockers
 from .contracts import Approval,RunSnapshot,StepTimeline
 from .postgres import PostgresStore
-from .postgres_schema import check_extension,check_app_permissions,check_document_extension
+from .postgres_schema import (
+    CRITERIA_REVISIONS, GRAPH_REVISIONS, TEXT_REVISIONS, check_extension, check_app_permissions, check_document_extension,
+)
 from .documents import PostgresDocuments,RegisteredDocument,TextDocumentInput,open_document_storage
 from .files import FileLimits
 from .criteria_review import PostgresCriteriaReview
@@ -56,7 +58,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 with unit_of_work(current.state.engine) as c:
                     revision=check_extension(c);check_app_permissions(c)
                     if pdf_storage_root is not None:check_document_extension(c)
-                if configuration.context_preparation is not None and revision['revision']!='AF005':
+                if configuration.context_preparation is not None and revision['revision'] not in GRAPH_REVISIONS:
                     raise ConfigurationError('Neo4j evidence preparation requires explicit AF005 migration.')
                 current.state.framework_revision=revision['revision']
                 current.state.business=Business(current.state.engine,current.state.authorization,settings)
@@ -77,7 +79,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 if pdf_storage_root is not None:
                     storage=await run_in_threadpool(open_document_storage,pdf_storage_root)
                     current.state.documents=PostgresDocuments(current.state.engine,current.state.authorization,storage)
-                if current.state.framework_revision in ('AF003','AF004','AF005'):
+                if current.state.framework_revision in CRITERIA_REVISIONS:
                     current.state.criteria_review=PostgresCriteriaReview(current.state.framework,current.state.documents)
                 if poster_storage_root is not None:
                     if current.state.criteria_review is None or storage is None:
@@ -122,15 +124,16 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         blockers.extend(poster_review_configuration_blockers(configuration))
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
-                'free_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
-                'docx_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
+                'free_text_registration':app.state.documents is not None and app.state.framework_revision in TEXT_REVISIONS,
+                'docx_text_registration':app.state.documents is not None and app.state.framework_revision in TEXT_REVISIONS,
                 'pdf_extraction_mode':configuration.pdf_extraction.mode if configuration.pdf_extraction and app.state.documents else None,
                 'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
                 'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
-                'graph_projection':app.state.framework_revision=='AF005',
+                'graph_projection':app.state.framework_revision in GRAPH_REVISIONS,
                 'task_controls':True,
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
+                'poster_text_edit_ready':settings.poster_edit_key is not None and app.state.poster_reviews is not None,
                 'poster_review_ready':not blockers,'poster_review_blockers':blockers,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
     @app.get('/api/health')
@@ -287,7 +290,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         from backend.app.routes.v1.business import parse
         service=documents();actor=await run_in_threadpool(subject,request)
         await run_in_threadpool(service.preflight,actor,developer_allowed(request,settings),pid,document_id,previous)
-        if app.state.framework_revision not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if app.state.framework_revision not in TEXT_REVISIONS:raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         body=await parse(request,TextDocumentInput)
         try:raw=body.text.encode('utf-8')
         except UnicodeError:raise AuthError('REQUIREMENT_TEXT_INVALID',422) from None
@@ -313,7 +316,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         service=documents();actor=await run_in_threadpool(subject,request)
         dev=developer_allowed(request,settings)
         await run_in_threadpool(service.preflight,actor,dev,pid,document_id,previous)
-        if app.state.framework_revision not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if app.state.framework_revision not in TEXT_REVISIONS:raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         if request.headers.get('content-type','').split(';',1)[0].strip().lower()!=DOCX_MEDIA_TYPE:
             raise AuthError('DOCX_CONTENT_TYPE_REQUIRED',415)
         try:name=docx_filename(filename)

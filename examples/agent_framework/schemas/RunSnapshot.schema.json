@@ -755,6 +755,15 @@
           "title": "Sources",
           "type": "array"
         },
+        "skipped_pdf_pages": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 49,
+          "title": "Skipped Pdf Pages",
+          "type": "array"
+        },
         "unresolved_criterion_ids": {
           "default": [],
           "items": {

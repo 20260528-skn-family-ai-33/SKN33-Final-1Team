@@ -55,13 +55,19 @@ def _scope(criterion) -> tuple[str, str]:
     return '', _flat(criterion.text)
 
 
+def _qualifiers(criterion) -> list[str]:
+    return [source.quote for source in criterion.details.qualifiers] if criterion.details else []
+
+
 def _value(criterion) -> tuple:
-    return criterion.kind, criterion.operator, _flat(criterion.expected), criterion.unit or '', criterion.required
+    qualifiers = frozenset(_flat(quote) for quote in _qualifiers(criterion))
+    return criterion.kind, criterion.operator, _flat(criterion.expected), criterion.unit or '', criterion.required, qualifiers
 
 
 def _shown(criterion) -> dict:
     return {'criterion_id': criterion.criterion_id, 'text': criterion.text, 'expected': criterion.expected,
-            'unit': criterion.unit, 'operator': criterion.operator, 'required': criterion.required}
+            'unit': criterion.unit, 'operator': criterion.operator, 'required': criterion.required,
+            'qualifiers': _qualifiers(criterion)}
 
 
 def _label(*criteria) -> str | None:

@@ -151,9 +151,10 @@ def test_history_matches_the_shared_example():
     assert store.access == [('user', 'poster-1', False)] * 2  # 그래프 조회 뒤 접근 권한을 다시 확인한다
 
 
-def test_finished_rereview_without_a_decision_waits_for_the_manager():
+def test_finished_rereview_without_a_decision_waits_for_the_manager(monkeypatch):
     waiting = dict(ROWS, **{'poster-2': run_row('poster-2', 'poster-1', 'waiting_review', 'unreviewed', 2)})
     reviews = REVIEWS[:2] + (('poster-2', 'poster-1', 'waiting_review', 'unreviewed', []),)
+    monkeypatch.setattr(revision_history, 'load_graph', lambda c, project_id: to_graph(*projection(reviews)))
     history = History(Store(), Graph(projection(reviews)))
     history.rows = waiting
     original = dict(RECORDS)
@@ -172,6 +173,9 @@ def test_finished_rereview_without_a_decision_waits_for_the_manager():
     (Graph(revision=4), 'GRAPH_STALE'),
     (Graph(unmanaged=True), 'GRAPH_UNMANAGED_RELATIONSHIPS'),
     (Graph(projection(REVIEWS[:1])), 'GRAPH_NODE_MISSING'),                       # 요청한 검수가 그래프에 없다
+    (Graph(projection(REVIEWS[:2])), 'GRAPH_REFERS_TO_ABSENT_ROWS'),              # 요청한 검수의 자식이 빠졌다
+    (Graph(projection(REVIEWS[:2] + ((REVIEWS[2][0], 'poster-0', *REVIEWS[2][2:]),))),
+     'GRAPH_REFERS_TO_ABSENT_ROWS'),                                             # 실행은 모두 있으나 부모가 다르다
     (Graph(projection(drop_approval='approval-4')), 'GRAPH_REFERS_TO_ABSENT_ROWS'),  # 승인 기록이 PostgreSQL과 다르다
 ])
 def test_postgres_snapshot_answers_whenever_the_graph_cannot_be_trusted(graph, warning):

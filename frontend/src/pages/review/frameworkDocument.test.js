@@ -1,13 +1,32 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE } from './frameworkDocument.js';
+import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE,
+  DOCUMENT_WAIT_TIMEOUT_MS, watchDocumentDeadline } from './frameworkDocument.js';
 import { loadDocumentProjects, requirePosterReview } from './frameworkClient.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 
 const file = new File(['%PDF-test'], '전체요구사항.pdf', { type: 'application/pdf' });
 const sha256 = createHash('sha256').update('%PDF-test').digest('hex');
 const prefix = '/api/framework/v1';
+
+test('queue and extraction have separate deadlines while keeping the existing run', t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const controller = new AbortController();
+  const deadline = watchDocumentDeadline(controller);
+  deadline.runId = 'existing-run';
+  deadline.update({ stage: 'queued' });
+  t.mock.timers.tick(DOCUMENT_WAIT_TIMEOUT_MS - 10);
+  const progress = deadline.update({ stage: 'extracting' });
+  t.mock.timers.tick(DOCUMENT_WAIT_TIMEOUT_MS);
+  assert.equal(deadline.runId, 'existing-run');
+  assert.equal(controller.signal.aborted, false);
+  assert.equal(deadline.update({ stage: 'extracting' }).startedAt, progress.startedAt);
+  t.mock.timers.tick(30_000);
+  assert.equal(deadline.expired, true);
+  assert.equal(controller.signal.aborted, true);
+  deadline.stop();
+});
 const runPath = '/runs/run-1';
 const result = { framework: { run_id: 'run-1', document_version_id: 'doc-1' }, page_count: 2, pending: [], conditions: [
   { text: '필수 고지: 무료 관람', type: 'information', label: '필수 고지', requirement: '무료 관람', inspection: '', level: '필수', page: 1, source: '무료 관람' },

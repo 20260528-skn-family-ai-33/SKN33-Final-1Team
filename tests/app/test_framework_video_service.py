@@ -10,7 +10,13 @@ from fastapi.testclient import TestClient
 from backend.app.config import ConfigurationError
 from backend.app.v1_config import load_v1_settings
 from backend.app.video.framework_service import create_video_app
+from backend.app.video.postgres import VideoApprovals
 from tests.app.auth_fixtures import auth_environment
+
+
+@pytest.fixture(autouse=True)
+def no_postgres_extension_in_auth_doubles(monkeypatch):
+    monkeypatch.setattr(VideoApprovals, 'open', lambda *_: None)
 
 
 @pytest.mark.parametrize('base',['http://localhost:8000','http://192.168.0.144:5173'])

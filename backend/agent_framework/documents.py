@@ -268,9 +268,9 @@ class PostgresDocuments:
         self.preflight(subject,dev,pid,document_id,previous_version_id)
         if media_type not in ('application/pdf','text/plain'):raise AuthError('UNSUPPORTED_MEDIA_TYPE',415)
         if media_type=='text/plain':
-            from .postgres_schema import check_extension
+            from .postgres_schema import TEXT_REVISIONS, check_extension
             with unit_of_work(self.engine) as c:
-                if check_extension(c)['revision'] not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+                if check_extension(c)['revision'] not in TEXT_REVISIONS:raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         name=_name(filename,media_type)
         try:count=inspect_requirement(raw,media_type,self.limits)
         except AdapterFailure as e:raise AuthError(e.code,413 if e.code=='FILE_TOO_LARGE' else 422) from None

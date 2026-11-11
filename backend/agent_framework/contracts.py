@@ -164,6 +164,7 @@ class ExtractionTrace(Contract):
     prompt_sha256: Hash
     response_sha256: Hash
     sources: tuple[PDFTextSource,...] = Field(min_length=1,max_length=50)
+    skipped_pdf_pages: tuple[int,...] = Field(default=(), max_length=49)
     unresolved_criterion_ids: tuple[Identifier,...] = ()
     rejected_candidates: tuple[ExtractionRejection, ...] = Field(default=(), max_length=128)
 
@@ -172,6 +173,7 @@ class ExtractionTrace(Contract):
         data=handler(self)
         if self.input_kind=='pdf':data.pop('input_kind',None)
         if not self.rejected_candidates:data.pop('rejected_candidates',None)
+        if not self.skipped_pdf_pages:data.pop('skipped_pdf_pages',None)
         return data
 
 

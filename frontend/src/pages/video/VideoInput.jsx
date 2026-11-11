@@ -41,6 +41,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const replaceButton = useRef(null);
   const lastFile = useRef(file);
   const active = useRef(null);
+  const submission = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   useEffect(() => () => {
     if (active.current) {
@@ -52,6 +53,10 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const logoStatus = useLogoStatus();
   const preview = useLocalPreview(file);
   const limits = status?.limits;
+  const projectWorkflow = status?.project_reviews === true;
+  const needsProject = projectWorkflow && !projectReady;
+  const revisionUnavailable = !!draft.parentRunId && !projectWorkflow;
+  const submitDisabled = !file || busy || documentBusy || !status?.ready || needsProject || revisionUnavailable;
   const criteria = useMemo(() => {
     const extracted = draft.documentRows.filter(row => row.selected && row.text.trim()).map(row => ({ ...row, text: row.text.trim() }));
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
@@ -114,7 +119,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
 
   async function submit() {
-    if (!file || active.current || busy || documentBusy || !status?.ready) return;
+    if (active.current || submitDisabled) return;
     if (exceedsUploadLimit(file)) return;
     if (criteria.length > 100 || criteria.map(item => item.text).join('\n').length > 6000 ||
         criteria.some(item => item.text.length > 500 || /[\r\n]/.test(item.text))) {
@@ -126,13 +131,25 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     const title = draft.projectName.trim() || file.name.slice(0, 120) || '숏폼 검수';
     setBusy(true); setError('');
     try {
+      const criteriaJson = JSON.stringify(criteriaPayload(criteria));
+      const disclosure = JSON.stringify(ad);
       const form = new FormData();
       form.append('video', file);
-      form.append('criteria', JSON.stringify(criteriaPayload(criteria)));
-      form.append('criteria_version', '1');
+      form.append('criteria', criteriaJson);
       form.append('project_name', title);
-      form.append('disclosure', JSON.stringify(ad));
-      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form, signal });
+      form.append('disclosure', disclosure);
+      let headers;
+      if (projectWorkflow) {
+        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, disclosure]);
+        if (submission.current?.file !== file || submission.current.fields !== fields) {
+          submission.current = { file, fields, key: crypto.randomUUID() };
+        }
+        headers = { 'Idempotency-Key': submission.current.key };
+        form.append('project_id', projectId);
+        form.append('criteria_confirmed', 'true');
+        if (draft.parentRunId) form.append('parent_run_id', draft.parentRunId);
+      }
+      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form, signal, headers });
       if (signal.aborted) return;
       // 원본 로고를 올렸으면 같은 영상으로 영상 로고 작업도 만든다. 실패해도 동영상 검수는 그대로 진행한다.
       let logoError = '';
@@ -141,6 +158,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         catch (failure) { logoError = `동영상 검수는 접수했지만 로고 검수를 접수하지 못했습니다: ${failure.message}`; }
       }
       if (signal.aborted) return;
+      submission.current = null;
       removeFile();
       onSubmitted(created.id, logoError);
     } catch (failure) { if (!signal.aborted) setError(failure.message); }
@@ -200,6 +218,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>
             <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
+              dedicated={status?.requirements?.enabled && status?.requirements?.configured}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} />
             <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
             <details className="rv-form-block rv-video-ad-settings">
@@ -220,12 +239,14 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} />
         {status && !status.ready && <ErrorMessage message={status.detail || '동영상 검수 서버가 준비되지 않았습니다.'} />}</div>
+      {draft.parentRunId && <p className="rv-form-hint">{revisionUnavailable ? '현재 영상 서버는 수정본 연결을 지원하지 않습니다.'
+        : '이전 검수에 연결할 수정본을 등록합니다. 제출한 영상과 기준으로 다시 검사합니다.'}</p>}
       <div className="rv-actionbar rv-input-actionbar">
-        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : [
+        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.' : [
           criteria.length ? `기준 ${criteria.length}개` : '기준 없음 · 자막·광고 표시만 검수', ad.kind === 'self' && '광고 표시 제외',
           logos.length ? `로고 ${logos.length}장` : null, sampling,
         ].filter(Boolean).join(' · ')}</p>
-        <button type="button" className="rv-button primary" onClick={submit} disabled={!file || busy || documentBusy || !status?.ready}>
+        <button type="button" className="rv-button primary" onClick={submit} disabled={submitDisabled}>
           {busy && !sampleBusy ? '올리는 중…' : '검수 시작하기'}{(!busy || sampleBusy) && <Icon name="arrow" />}</button>
       </div>
     </form>

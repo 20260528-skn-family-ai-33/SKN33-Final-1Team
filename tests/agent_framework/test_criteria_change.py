@@ -45,6 +45,20 @@ def test_changed_item_is_paired_by_scope_not_by_renumbered_id():
     assert change['after']['expected'] == '시민공원' and change['after']['criterion_id'] == 'c002'
 
 
+def test_changed_qualifier_is_shown_with_the_same_expected_value():
+    def with_qualifier(quote):
+        item = criterion('c001', 'event_date', '11월 20일', text=f'11월 20일 {quote}')
+        source = item.source.model_copy(update={'quote': quote, 'source_hash': sha256(quote.encode()).hexdigest()})
+        return item.model_copy(update={'details': item.details.model_copy(update={'qualifiers': (source,)})})
+
+    previous = with_qualifier('우천 시 하루 연기')
+    current = with_qualifier('우천 시 취소')
+    [change] = compare_criteria([previous], [current])['changes']
+    assert change['change'] == 'changed'
+    assert change['before']['qualifiers'] == ['우천 시 하루 연기']
+    assert change['after']['qualifiers'] == ['우천 시 취소']
+
+
 def test_same_scope_with_several_items_matches_equal_values_first():
     previous = [criterion(f'c{n}', 'wording', text) for n, text in enumerate(('함께해요', '무료 입장', '선착순 100명'))]
     one_changed = [criterion('n1', 'wording', '무료 입장'), criterion('n2', 'wording', '선착순 200명'), criterion('n3', 'wording', '함께해요')]

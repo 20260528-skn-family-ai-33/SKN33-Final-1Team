@@ -160,6 +160,18 @@ def test_page_with_text_and_images_is_read_and_reported_instead_of_rejected():
     assert [w for w in draft.warnings if w.endswith('_embedded_images_not_read')]==['page_2_embedded_images_not_read']
 
 
+def test_scanned_page_in_a_mixed_pdf_is_reported_without_renumbering_sources():
+    doc=built_document(document(),(('',True),('Title must be shown',False)))
+    settings=PDFExtractionConfiguration(mode='mock')
+    quote='Title must be shown'
+    item=dict(text=quote,kind='unsupported',operator='manual',expected='',required=True,unit=None,
+        block_id='p2-text',page=2,quote=quote,unresolved=False)
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:raw_reply(item)).extract(request(doc))
+    assert draft.extraction.skipped_pdf_pages==(1,)
+    assert [source.page for source in draft.extraction.sources]==[2]
+    assert 'page_1_text_unavailable' in draft.warnings
+
+
 def test_pdf_without_images_carries_no_image_warning():
     doc=document();adapter=RegisteredPDFExtractor(lambda _:doc,PDFExtractionConfiguration(mode='mock'))
     assert not [w for w in adapter.extract(request(doc)).warnings if w.endswith('_embedded_images_not_read')]

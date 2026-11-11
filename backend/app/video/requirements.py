@@ -234,19 +234,21 @@ def pdf_sources(data: bytes) -> tuple[PDFTextSource, ...]:
 
 
 def _pdf_pages(data: bytes) -> tuple[tuple[PDFTextSource, ...], tuple[int, ...]]:
-    """포스터 A02와 같은 텍스트층 전용 규칙: 글자 없는 쪽은 OCR 없이 거부하고, 이미지가 섞인 쪽은 글자층만 읽고 쪽 번호를 알린다."""
+    """Keep readable text and report the original page numbers requiring human review."""
     import pymupdf
     result, image_pages = [], []
+    unreadable = False
     try:
         with pymupdf.open(stream=data, filetype="pdf") as pdf:
             if pdf.page_count > MAX_BLOCKS:
                 _fail("DOCUMENT_TOO_COMPLEX", f"PDF가 {MAX_BLOCKS}쪽을 넘습니다.")
             for number, page in enumerate(pdf, 1):
                 text = page.get_text("text", sort=False)
-                if not text.strip():
-                    _fail("PDF_TEXT_UNAVAILABLE", f"{number}쪽에 글자층이 없습니다. 스캔 PDF는 아직 읽지 않습니다.")
-                if "�" in text or "\x00" in text:
-                    _fail("PDF_TEXT_UNREADABLE", f"{number}쪽 글자가 깨져 있습니다.")
+                broken = "�" in text or "\x00" in text
+                if not text.strip() or broken:
+                    image_pages.append(number)
+                    unreadable = unreadable or broken
+                    continue
                 if page.get_image_info():
                     image_pages.append(number)  # 이미지 안 내용은 읽지 않는다. 경고로 알려 사람이 확인한다.
                 result.append(PDFTextSource(page=number, block_id=f"p{number}-text", text=text,
@@ -255,6 +257,8 @@ def _pdf_pages(data: bytes) -> tuple[tuple[PDFTextSource, ...], tuple[int, ...]]
         raise
     except Exception:
         _fail("PDF_TEXT_UNAVAILABLE", "PDF를 읽지 못했습니다.", 415)
+    if not result:
+        _fail("PDF_TEXT_UNREADABLE" if unreadable else "PDF_TEXT_UNAVAILABLE", "PDF의 읽을 수 있는 글자층이 없습니다.")
     return tuple(result), tuple(image_pages)
 
 
@@ -384,11 +388,18 @@ def _criterion_text(item: VideoRequirement, quote: str, expected: str) -> str:
     return _one_line(quote)
 
 
-def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
+def _source_ref(source, quote):
+    return {"block_id": source.block_id, "block": source.page, "quote": quote,
+            "source_hash": sha256(quote.encode()).hexdigest()}
+
+
+def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[dict]]:
     from backend.app.video.judge import requested_texts
     items, seen, warnings = [], set(), []
+    rejected = []
     for number, item in enumerate(reply.requirements, 1):
         dropped = False
+        source = None
         try:
             source, quote = selected_range(item.source, index)
             if item.unresolved and item.expected:
@@ -407,17 +418,19 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
                 if parent.block_id != source.block_id or text not in quote:
                     _fail("A02_QUALIFIER_UNGROUNDED")
                 qualifiers.append(text)
-        except AdapterFailure as failure:
-            _fail(failure.code)
+            if item.item_id is not None and item.item_id not in quote:
+                _fail("A02_ITEM_ID_UNGROUNDED")
+            key = (source.block_id, quote, item.target, item.item_id, expected)
+            if key in seen:
+                _fail("A02_DUPLICATE_REQUIREMENT")
+        except (AdapterFailure, DocumentError) as failure:
+            rejected.append({"candidate_index": number, "code": failure.code,
+                             "source": _source_ref(source, quote) if source is not None else None})
+            continue
         if dropped:
             warnings.append("excluded_value_not_in_source_dropped")
         elif expected != item.expected:
             warnings.append("expected_spacing_copied_from_source")
-        if item.item_id is not None and item.item_id not in quote:
-            _fail("A02_ITEM_ID_UNGROUNDED")
-        key = (source.block_id, quote, item.target, item.item_id, expected)
-        if key in seen:
-            _fail("A02_DUPLICATE_REQUIREMENT")
         seen.add(key)
         text = _criterion_text(item, quote, expected)
         include, reason = False, EXCLUDED_REASON.get(item.target, "")
@@ -436,11 +449,12 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
             "include": include, "reason": reason,
             # 영상 판정(judge.requested_texts)이 이 문장에서 화면 글자와 비교할 값. 비어 있으면 담당자 확인으로 남는다.
             "compare": requested_texts({"text": text}) if include and kind == "information" else [],
-            "source": {"block_id": source.block_id, "block": source.page, "quote": quote,
-                       "source_hash": sha256(quote.encode()).hexdigest()},
+            "source": _source_ref(source, quote),
             "qualifiers": qualifiers,
         })
-    return items, list(dict.fromkeys(warnings))
+    if not items:
+        _fail(rejected[0]["code"] if rejected else "A02_NO_VALID_REQUIREMENTS")
+    return items, list(dict.fromkeys(warnings)), rejected
 
 
 def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None) -> dict:
@@ -453,7 +467,7 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
     # 포스터 semantic 경로처럼 줄 텍스트만 보낸다(부분 토큰 ID는 보내지 않음).
     payload = [{**block, "lines": [{"id": line["id"], "text": line["text"]} for line in block["lines"]]} for block in payload]
     reply, response_hash = call_model(settings, payload, index, transport=transport)
-    items, warnings = materialize(reply, index)
+    items, warnings, rejected = materialize(reply, index)
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
                 for n, item in enumerate((i for i in items if i["include"]), 1)]
     warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings,
@@ -462,6 +476,7 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
         warnings.append("missing_values_require_client_clarification")
     return {
         "status": "draft", "approved": False, "items": items, "criteria": criteria, "warnings": warnings,
+        "rejected_candidates": rejected,
         "counts": {"items": len(items), "criteria": len(criteria),
                    "excluded": sum(not i["include"] for i in items), "unresolved": sum(i["unresolved"] for i in items)},
         "trace": {"policy": POLICY, "model": settings.model, "input_kind": kind,

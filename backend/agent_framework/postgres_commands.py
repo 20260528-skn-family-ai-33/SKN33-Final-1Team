@@ -12,7 +12,7 @@ from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
 from .composition import load_config,build_agents
 from .postgres import PostgresStore
-from .postgres_schema import check_extension,check_app_permissions
+from .postgres_schema import GRAPH_REVISIONS, check_extension, check_app_permissions
 from backend.runtime_environment import activate_runtime
 
 
@@ -75,7 +75,7 @@ def postgres_worker(args):
         _ready(engine,settings)
         if configuration.context_preparation is not None:
             with unit_of_work(engine) as c:
-                if check_extension(c)['revision']!='AF005':raise ConfigurationError('Neo4j evidence preparation requires AF005.')
+                if check_extension(c)['revision'] not in GRAPH_REVISIONS:raise ConfigurationError('Neo4j evidence preparation requires AF005.')
         store=PostgresStore(engine,configuration)
         queue=PostgresQueue(store)
         if configuration.pdf_extraction is not None:

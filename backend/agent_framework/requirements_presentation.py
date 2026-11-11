@@ -5,6 +5,7 @@ from backend.app.documents.conditions import render_condition
 from backend.app.security.errors import AuthError
 
 IMAGE_PAGE=re.compile(r'page_(\d+)_embedded_images_not_read')
+INCOMPLETE_PAGE=re.compile(r'page_(\d+)_model_output_incomplete')
 
 
 def present_requirements(snapshot):
@@ -54,6 +55,12 @@ def present_requirements(snapshot):
     image_pages=[m.group(1) for m in map(IMAGE_PAGE.fullmatch,draft.warnings) if m]
     if image_pages:
         warnings.append(f'{", ".join(image_pages)}쪽의 이미지 안 내용은 읽지 않았습니다. 이미지에 요구사항이 있으면 직접 추가해 주세요.')
-    return {'conditions':conditions,'pending':notes,'page_count':len(draft.extraction.sources),'warnings':warnings,
+    skipped=draft.extraction.skipped_pdf_pages
+    if skipped:
+        warnings.append(f'{", ".join(map(str,skipped))}쪽은 텍스트를 읽지 못했습니다. 원본을 대조해 빠진 조건을 보완해 주세요.')
+    incomplete=[m.group(1) for m in map(INCOMPLETE_PAGE.fullmatch,draft.warnings) if m]
+    if incomplete:
+        warnings.append(f'{", ".join(incomplete)}쪽의 일부 분석 응답을 받지 못했습니다. 원본을 대조해 주세요.')
+    return {'conditions':conditions,'pending':notes,'page_count':len(draft.extraction.sources)+len(skipped),'warnings':warnings,
         'framework':{'run_id':snapshot.context.run_id,'document_version_id':snapshot.context.document_version_id,
             'policy':draft.extraction.policy,'synthetic':draft.synthetic},'approved':False}
