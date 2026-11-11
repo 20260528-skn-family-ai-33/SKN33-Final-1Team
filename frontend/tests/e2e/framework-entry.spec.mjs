@@ -102,6 +102,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
             { role: 'A06', status: allowReviewStages ? 'completed' : 'pending' },
             { role: 'A07', status: allowReviewResult ? 'completed' : allowReviewStages ? 'running' : 'pending' }],
           ...(allowReviewResult ? { report: { summary: 'A07 보고: 행사명이 기준과 다릅니다.', change_requests: ['행사명을 봄으로 수정해 주세요.'] } } : {}) } : {}) };
+      // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
+      else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
       else throw new Error('unexpected test route: ' + path);
       await route.fulfill({ json: body });
     });
