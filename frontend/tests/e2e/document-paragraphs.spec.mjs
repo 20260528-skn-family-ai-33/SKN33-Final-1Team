@@ -120,14 +120,14 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     }, [...data]);
     const drag = { dataTransfer };
     await heading.dispatchEvent('dragenter', drag);
-    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor();
+    await card.getByText('여기에 PDF·DOCX를 놓으세요.', { exact: true }).waitFor();
     await heading.dispatchEvent('dragleave', drag);
-    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
+    await card.getByText('여기에 PDF·DOCX를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
     await heading.dispatchEvent('dragenter', drag);
     await heading.dispatchEvent('dragover', drag);
     await heading.dispatchEvent('drop', drag);
     await dataTransfer.dispose();
-    await card.getByText('여기에 PDF를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
+    await card.getByText('여기에 PDF·DOCX를 놓으세요.', { exact: true }).waitFor({ state: 'hidden' });
   } else {
     await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
   }
@@ -196,3 +196,69 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   assert.deepEqual(errors, []);
 });
 }
+
+test('Word(.docx) 요구사항 문서는 DOCX 경로로 올리고 원본 해시를 대조한 뒤 같은 분석 결과를 반영한다', { timeout: 60000 }, async t => {
+  const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (!process.env.E2E_REQUIREMENTS_URL) {
+    const child = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5177', '--strictPort'], {
+      cwd: root, stdio: 'pipe', env: { ...process.env, VITE_API_PROFILE: 'legacy' },
+    });
+    let output = ''; child.stdout.on('data', data => { output += data; }); child.stderr.on('data', data => { output += data; });
+    t.after(() => child.exitCode === null ? new Promise(resolve => { child.once('exit', resolve); child.kill(); }) : undefined);
+    let ready = false;
+    for (let i = 0; i < 80 && !ready; i++) {
+      if (child.exitCode !== null) throw new Error(output);
+      try { ready = (await fetch(base)).ok; } catch {}
+      if (!ready) await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    assert.ok(ready, output);
+  }
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.setDefaultTimeout(10000);
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  const docx = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.from('docx fixture')]);
+  const items = [['행사명', '진연', 'information'], ['연주자', '전통 복식과 관모를 쓴 연주자 2명', 'visual']]
+    .map(([label, requirement, type]) => ({ label, requirement, type, inspection: '', level: '필수', page: 1, source: requirement,
+      text: type === 'visual' ? requirement : `${label}: ${requirement}` }));
+  let docxUploads = 0, pdfUploads = 0, admissions = 0;
+  await page.route(base + '/api/**', async route => {
+    const request = route.request(); const url = new URL(request.url()); const path = url.pathname;
+    let body;
+    if (path === '/api/v1/auth/me') body = { authenticated: true, user: { id: 'user-fixture', display_name: '개발 검증' } };
+    else if (path === '/api/health') body = { status: 'ok', ready: true };
+    else if (path === '/api/framework/v1/health') body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true, docx_text_registration: true };
+    else if (path === '/api/framework/v1/projects') body = { items: [{ id: 'project-fixture', name: 'DOCX 검증', my_role: 'owner' }], next_cursor: null };
+    else if (path === '/api/framework/v1/csrf') body = { csrf_token: 'framework-browser-token' };
+    else if (path.endsWith('/docx-documents')) {
+      docxUploads++;
+      assert.equal(url.searchParams.get('filename'), '계약서.docx');
+      assert.equal(request.headers()['content-type'], DOCX);
+      assert.equal(request.headers()['x-csrftoken'], 'framework-browser-token');
+      assert.deepEqual(request.postDataBuffer(), docx);
+      body = { document: { document_version_id: 'document-docx', sha256: 'c'.repeat(64), media_type: 'text/plain' },
+        source: { sha256: createHash('sha256').update(docx).digest('hex'), converter: 'docx-text-v1' } };
+    } else if (path.endsWith('/documents')) { pdfUploads++; return route.fulfill({ status: 500, json: { detail: 'PDF 경로를 쓰면 안 됩니다.' } }); }
+    else if (path.endsWith('/extractions')) { admissions++; body = { context: { run_id: 'run-docx' }, execution_status: 'queued' }; }
+    else if (path === '/api/framework/v1/runs/run-docx') body = { execution_status: 'waiting_criteria', context: { run_id: 'run-docx' }, criteria: { criteria: [] } };
+    else if (path.endsWith('/run-docx/requirements')) body = { conditions: items, pending: [], page_count: 1, warnings: [],
+      framework: { run_id: 'run-docx', document_version_id: 'document-docx' } };
+    else return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } });
+    return route.fulfill({ json: body });
+  });
+  await page.goto(base + '/review/new');
+  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  await page.waitForFunction(() => !document.querySelector('input[aria-label="요구사항 PDF 선택"]').disabled);
+  const upload = page.getByLabel('요구사항 PDF 선택', { exact: true });
+  assert.match(await upload.getAttribute('accept'), /\.docx/);
+  await page.getByText('텍스트 PDF(50페이지) · DOCX(본문 글자) · 최대 10MiB', { exact: true }).waitFor();
+  await upload.setInputFiles({ name: '계약서.docx', mimeType: DOCX, buffer: docx });
+  await page.getByText(/추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
+  assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
+  await page.getByRole('button', { name: 'DOCX 본문과 기준 확인', exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).count(), 0);
+  if (process.env.E2E_DOCX_SCREENSHOT) await page.screenshot({ path: process.env.E2E_DOCX_SCREENSHOT, fullPage: true });
+  assert.equal(docxUploads, 1); assert.equal(pdfUploads, 0); assert.equal(admissions, 1);
+  assert.deepEqual(errors, []);
+});

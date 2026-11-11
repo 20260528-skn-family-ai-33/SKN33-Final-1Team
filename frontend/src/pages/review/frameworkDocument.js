@@ -7,9 +7,28 @@ const wait = (ms, signal) => new Promise((resolve, reject) => {
   signal?.addEventListener('abort', abort, { once: true });
 });
 
+export const DOCX_MEDIA_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+// 확장자가 아니라 실제 첫 바이트로 PDF·DOCX를 가른다. DOCX(ZIP)는 이름도 .docx여야 한다.
+export async function requirementDocument(file) {
+  const header = String.fromCharCode(...new Uint8Array(await file.slice(0, 5).arrayBuffer()));
+  if (header === '%PDF-') return file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf' });
+  if (header.startsWith('PK\x03\x04') && /\.docx$/i.test(file.name)) {
+    return file.type === DOCX_MEDIA_TYPE ? file : new File([file], file.name, { type: DOCX_MEDIA_TYPE });
+  }
+  throw new Error('PDF 또는 Word(.docx) 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
+}
+
+function uploadPath(file, isText, isDocx) {
+  if (isText) return '/text-documents';
+  return `/${isDocx ? 'docx-documents' : 'documents'}?filename=${encodeURIComponent(file.name)}`;
+}
+
+// DOCX는 서버가 본문 글자만 읽어 텍스트 원문으로 저장한다(원본 DOCX는 해시만 돌려받아 대조).
 export async function submitDocument(file, { projectId, attempt, attempts, signal, onProgress } = {}) {
   const isText = file.type === 'text/plain';
-  const source = isText ? '입력문' : 'PDF';
+  const isDocx = file.type === DOCX_MEDIA_TYPE;
+  const source = isText ? '입력문' : isDocx ? 'DOCX' : 'PDF';
   if (!projectId) throw new Error('요구사항을 저장할 프로젝트를 선택해 주세요.');
   signal?.throwIfAborted();
   if (!globalThis.crypto?.subtle?.digest || !globalThis.crypto?.randomUUID) {
@@ -29,13 +48,15 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
     uploadKey: attempt.uploadKey || crypto.randomUUID(), extractionKey: attempt.extractionKey || crypto.randomUUID() });
   const project = `/projects/${encodeURIComponent(projectId)}`;
   if (!attempt.documentVersionId) {
-    onProgress?.({ stage: 'uploading', percent: 5, message: `${source} 원문과 버전을 저장하고 있습니다.` });
-    const response = await frameworkResponse(project + (isText ? '/text-documents' : `/documents?filename=${encodeURIComponent(file.name)}`), {
+    onProgress?.({ stage: 'uploading', percent: 5, message: isDocx ? 'DOCX 본문 글자를 읽어 원문과 버전을 저장하고 있습니다.' : `${source} 원문과 버전을 저장하고 있습니다.` });
+    const response = await frameworkResponse(project + uploadPath(file, isText, isDocx), {
       method: 'POST', signal, body: isText ? JSON.stringify({ text: await file.text() }) : file,
-      headers: { 'Content-Type': isText ? 'application/json' : 'application/pdf', 'Idempotency-Key': attempt.uploadKey },
+      headers: { 'Content-Type': isText ? 'application/json' : isDocx ? DOCX_MEDIA_TYPE : 'application/pdf', 'Idempotency-Key': attempt.uploadKey },
     });
     const record = await response.json();
-    if (!record?.document?.document_version_id || record.document.sha256 !== digest) throw new Error(`${source} 원문 저장 결과를 확인하지 못했습니다.`);
+    // DOCX는 변환된 텍스트가 저장 원문이므로, 올린 DOCX와의 대조는 돌려받은 source 해시로 한다.
+    const saved = isDocx ? record?.document?.media_type === 'text/plain' && record?.source?.sha256 : record?.document?.sha256;
+    if (!record?.document?.document_version_id || saved !== digest) throw new Error(`${source} 원문 저장 결과를 확인하지 못했습니다.`);
     attempt.documentVersionId = record.document.document_version_id;
   }
   signal?.throwIfAborted();
@@ -53,7 +74,7 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
 // 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
 export async function extractDocumentWithProgress(file, { signal, onProgress, pollInterval = 1500, waitFor = wait, ...submission } = {}) {
   const attempt = await submitDocument(file, { ...submission, signal, onProgress });
-  const source = file.type === 'text/plain' ? '입력문' : 'PDF';
+  const source = file.type === 'text/plain' ? '입력문' : file.type === DOCX_MEDIA_TYPE ? 'DOCX' : 'PDF';
   const runPath = `/runs/${encodeURIComponent(attempt.runId)}`;
   while (true) {
     signal?.throwIfAborted();
