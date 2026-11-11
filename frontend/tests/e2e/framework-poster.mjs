@@ -37,7 +37,7 @@ try {
     const response = await page.request.post(base + path, { headers: { Origin: base, 'X-CSRFToken': await csrf(csrfPath) }, data });
     assert.ok(response.ok(), path + ' returned ' + response.status());
   }
-  const email = randomUUID() + '@example.com', password = randomUUID() + '1!';
+  const email = randomUUID() + '@example.com', password = randomUUID().slice(0, 18) + '1!';
   await post('/api/v1/auth/signup', '/api/v1/auth/csrf', { email, password, display_name: '통합 시험' });
   await post('/api/v1/auth/login', '/api/v1/auth/csrf', { email, password });
   await post('/api/framework/v1/projects', '/api/framework/v1/csrf', { name: '포스터 브라우저 검증' });

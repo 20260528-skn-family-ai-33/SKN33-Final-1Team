@@ -25,7 +25,8 @@ def load_config(path):
             raise ValueError('DEDICATED_PATH_REQUIRED')
     if not 1024<=config['port']<=65535 or not 0<config['gpu_memory_utilization']<1:
         raise ValueError('INVALID_SERVER_LIMIT')
-    if config['max_num_seqs']!=1 or type(config['language_model_only']) is not bool or not config['enforce_eager']:
+    if (type(config['max_num_seqs']) is not int or config['max_num_seqs'] not in (1,2,3)
+            or type(config['language_model_only']) is not bool or not config['enforce_eager']):
         raise ValueError('INITIAL_A02_PROFILE_REQUIRED')
     # Old A02-only JSON files remain valid. The pinned Qwen3.5/vLLM profile
     # requires a matching parser whenever automatic tool selection is enabled.

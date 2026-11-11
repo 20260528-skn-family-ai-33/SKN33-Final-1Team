@@ -98,6 +98,7 @@ def test_password_is_preserved_and_real_argon2_costs_no_downgrade():
     legacy='previous password without digits'
     assert passwords.verify(legacy,PasswordHasher().hash(legacy))[0]
     assert validate_password(legacy)==legacy
+    assert Credentials(email='legacy@example.com',password=legacy).password==legacy
     assert validate_password('admin')=='admin'
     with pytest.raises(AuthError):validate_password('admin',issuing=True)
 
