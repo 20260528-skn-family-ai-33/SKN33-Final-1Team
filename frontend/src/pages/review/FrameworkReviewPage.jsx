@@ -7,6 +7,7 @@ import { Icon } from '../../components/Icon.jsx';
 import ResultsPage from './ResultsPage.jsx';
 import { frameworkResults } from './frameworkResults.js';
 import ReviewProgress from './ReviewProgress.jsx';
+import FrameworkRunStatus from './FrameworkRunStatus.jsx';
 import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
@@ -22,6 +23,7 @@ import { frameworkPrefix, frameworkJson, requirePosterReview } from './framework
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
 import { useAuth } from '../../auth/AuthProvider.jsx';
+import { isAnonymousError } from '../../auth/helpers.js';
 import { PosterLogoCard, usePosterLogoJobs } from './PosterLogoParts.jsx';
 import { previousLogoJob, submitPosterLogoJob } from './posterLogoFlow.js';
 import './posterLogo.css';
@@ -85,6 +87,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
+  const [loadState, setLoadState] = useState('checking');
   const [file, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
@@ -109,7 +112,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [evidenceOpened, setEvidenceOpened] = useState(false);
   const [chainRuns, setChainRuns] = useState({});
   const [logoNotice] = useState(() => readLogoNotice(runId));
-  const logoJobs = usePosterLogoJobs(runId);
+  // 실행 조회가 계정 권한으로 허용된 뒤에만 관련 로고 작업을 요청한다.
+  const logoJobs = usePosterLogoJobs(loadState === 'ready' ? runId : null);
   const [secureMaterial, setSecureMaterial] = useState(false);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
@@ -140,7 +144,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
   const hasResults = !!run?.validated;
   const evidenceId = run?.evidence?.context_id;
-  const processing = !run || running.has(status);
+  const processing = loadState === 'ready' && running.has(status);
   const progress = processing ? frameworkProgress(run) : null;
   const stageStatus = actionStatus[pending] || (progress && !error
     ? run ? progress.message : '검수 상태를 불러오고 있어요.'
@@ -210,16 +214,27 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   useEffect(() => {
     const controller = new AbortController();
     let timer;
+    let hasSnapshot = false;
     async function read() {
       try {
         const snapshot = await frameworkJson(path, { signal: controller.signal });
         const info = !snapshot.baseline && ['waiting_criteria', 'waiting_asset'].includes(snapshot.execution_status)
           ? await frameworkJson(path + '/criteria-review', { signal: controller.signal }) : null;
         if (controller.signal.aborted) return;
-        setRun(snapshot); setOverview(info);
+        hasSnapshot = true;
+        setRun(snapshot); setOverview(info); setError(''); setLoadState('ready');
         if (running.has(snapshot.execution_status)) timer = setTimeout(read, 1000);
-      } catch (err) { if (!controller.signal.aborted) setError(err.message); }
+      } catch (err) {
+        if (controller.signal.aborted || isAnonymousError(err)) return;
+        if ([403, 404].includes(err.status)) {
+          setRun(null); setOverview(null); setError(''); setLoadState('denied');
+          return;
+        }
+        setError('검수 상태를 확인하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.');
+        setLoadState(hasSnapshot ? 'ready' : 'unavailable');
+      }
     }
+    setLoadState('checking');
     read();
     return () => { controller.abort(); clearTimeout(timer); };
   }, [path, reload]);
@@ -396,6 +411,18 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
   </>;
 
+  function retryRunStatus() {
+    setRun(null); setOverview(null); setError(''); setLoadState('checking');
+    setReload(value => value + 1);
+  }
+
+  if (loadState !== 'ready') {
+    return <ReviewLayout state={{ step: 'running', projectName: '', criteria: [] }} busy={false}
+      mainClassName="rv-framework-workspace" showWorkspaceBar={false}>
+      <FrameworkRunStatus state={loadState} onRetry={retryRunStatus} />
+    </ReviewLayout>;
+  }
+
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing}
     mainClassName="rv-framework-workspace"
@@ -427,7 +454,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           try { setRun(await command(path + '/cancel', {}, null, signal)); }
           finally { setReload(n => n + 1); }
         }) : undefined}
-        onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
+        onRetry={error ? retryRunStatus : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title" tabIndex={-1}>대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
       : showingReport ? <FrameworkReport run={run} projectName={projectName} image={image} standalone />
       : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved} exceptionApproved={exceptionApproved}
@@ -451,7 +478,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         </>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
         canvas={<>
           <ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
-            title="검수 포스터" alt="현재 버전의 검수 포스터" subtitle={file?.name}
+            alt="현재 버전의 검수 포스터" heading={false} showControls={false} bare
             empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
             <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
         </>}

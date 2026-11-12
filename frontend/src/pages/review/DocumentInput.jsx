@@ -7,6 +7,29 @@ import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
+export function DocumentAnalysisProgress({ documentProgress, totalSeconds, stageSeconds, lastChecked,
+  cancelLabel, documentResumeId, kind = 'poster' }) {
+  const longRunning = totalSeconds >= 5 * 60 && ['queued', 'extracting', 'formatting'].includes(documentProgress?.stage);
+  const formatDuration = value => String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
+  return <div className="rv-document-inline" role="status">
+    <span className="rv-progress-spinner" aria-hidden="true" />
+    <p>{documentProgress.message}</p>
+    <progress max={100} value={documentProgress.percent} aria-label="문서 분석 단계" />
+    {documentProgress.startedAt && <small role="timer" aria-label="문서 분석 경과 시간">
+      총 경과 {formatDuration(totalSeconds)} · 현재 단계 {formatDuration(stageSeconds)}
+    </small>}
+    {lastChecked && <small className="rv-document-last-checked">마지막 상태 확인: {lastChecked}</small>}
+    {kind === 'poster' && documentResumeId && <Link className="text-btn" target="_blank" rel="noopener noreferrer"
+      to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>새 탭에서 분석 상태 확인</Link>}
+    {longRunning && <p className="rv-document-long-running">
+      분석이 계속 진행 중입니다. 완료 시각은 문서 분량과 서버 대기 순서에 따라 달라 예측하기 어렵습니다.
+      {cancelLabel === '대기 작업 취소'
+        ? ' 이 버튼은 아직 대기 중인 서버 작업의 취소를 요청합니다.'
+        : ' 입력 반영 취소는 화면 연결을 멈춥니다. 접수된 서버 분석은 계속될 수 있습니다.'}
+    </p>}
+  </div>;
+}
+
 function projectDate(value) {
   const date = value ? new Date(value) : null;
   if (!date || Number.isNaN(date.getTime())) return '';
@@ -171,25 +194,29 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 }
 
 export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput,
-  selectDocument, cancelDocument, cancelLabel = '입력 반영 취소', cancelBusy, documentName, clearDocument, disabled, allowText = false, kind = 'poster', children }) {
+  selectDocument, cancelDocument, cancelLabel = '입력 반영 취소', cancelBusy, documentName, clearDocument, disabled, kind = 'poster', children }) {
   const [now, setNow] = useState(Date.now);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const startedAt = documentProgress?.startedAt;
+  const requestStartedAt = documentProgress?.requestStartedAt || startedAt;
+  const lastCheckedAt = documentProgress?.lastCheckedAt;
   useEffect(() => {
     if (!documentBusy || !startedAt) return;
     setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [documentBusy, startedAt]);
+  }, [documentBusy, startedAt, requestStartedAt]);
 
   const seconds = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
-  const elapsed = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+  const totalSeconds = requestStartedAt ? Math.max(0, Math.floor((now - requestStartedAt) / 1000)) : seconds;
+  const statusAge = lastCheckedAt ? Math.max(0, Math.floor((now - lastCheckedAt) / 1000)) : null;
+  const lastChecked = statusAge === null ? '' : statusAge < 3 ? '방금' : statusAge < 60 ? `${statusAge}초 전`
+    : `${Math.floor(statusAge / 60)}분 전`;
   const off = documentBusy || disabled;
   const dropActive = dragging && !off;
   const filename = documentProgress?.source || documentName;
-  const formats = allowText ? 'PDF·DOCX·TXT' : 'PDF·DOCX';
-  const uploadHint = off ? formats + ' 1개 첨부' : formats + ' 1개를 끌어 놓거나 파일을 선택하세요.';
+  const uploadHint = off ? 'PDF·DOCX 1개 첨부' : 'PDF·DOCX 1개를 끌어 놓거나 파일을 선택하세요.';
 
   function handleDragEnter(event) {
     if (!event.dataTransfer.types.includes('Files')) return;
@@ -232,27 +259,23 @@ export default function DocumentInput({ documentBusy, documentProgress, document
       <div className="rv-form-row">
         <span className="rv-upload-name">{dropActive ? '여기에 PDF·DOCX를 놓으세요.' : filename || uploadHint}</span>
         <input ref={documentInput} type="file" className="sr-only" aria-label="요구사항 문서 선택" disabled={off}
-          accept={'application/pdf,.pdf,.docx,' + DOCX_MEDIA_TYPE + (allowText ? ',text/plain,.txt' : '')}
+          accept={`application/pdf,.pdf,.docx,${DOCX_MEDIA_TYPE}`}
           onChange={event => { if (event.target.files.length) selectDocument([...event.target.files]); }} />
         <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
           <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
         </button>
       </div>
-      {documentBusy && documentProgress && <div className="rv-document-inline" role="status">
-        <span className="rv-progress-spinner" aria-hidden="true" />
-        <p>{documentProgress.message}</p>
-        <progress max={100} value={documentProgress.percent} aria-label="문서 분석 단계" />
-        {startedAt && <small role="timer" aria-label="경과 시간">현재 단계 경과 {elapsed}</small>}
-      </div>}
+      {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, lastChecked, cancelLabel,
+        documentResumeId, kind }} stageSeconds={seconds} />}
       <div className="rv-form-row rv-form-hint">
-        <span>{!documentBusy && documentNotice ? documentNotice : 'PDF 텍스트층 · DOCX 본문' + (allowText ? ' · TXT' : '') + ' · 최대 10MiB'}</span>
+        <span>{!documentBusy && documentNotice ? documentNotice : 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
         {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
           : documentName && clearDocument ? <button type="button" className="rv-button secondary rv-compact" onClick={clearDocument}>첨부 지우기</button>
             : <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}
       </div>
     </div>
     {!documentBusy && <p className="rv-form-hint">DOCX는 본문 글자만 읽습니다. 이미지와 배치는 별도로 보관한 Word 원본에서 확인해 주세요.</p>}
-    {!documentBusy && documentResumeId && <Link className="text-btn" to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>저장된 문서 분석 보기</Link>}
+    {!documentBusy && documentResumeId && kind === 'poster' && <Link className="text-btn" to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>저장된 문서 분석 보기</Link>}
     {kind === 'poster' && !off && <Link className="text-btn" to="/review/tasks#pdf-batches">PDF 여러 개 올리기</Link>}
     <ErrorMessage message={documentError} />
     {children}

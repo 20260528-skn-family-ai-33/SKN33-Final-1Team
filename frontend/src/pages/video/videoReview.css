@@ -23,6 +23,7 @@
 .rv-video .rv-video-input-column { min-width: 0; align-self: start; }
 .rv-video .rv-video-stage .image-stage-viewport { display: grid; place-items: center; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
 .rv-video .rv-video-stage .image-stage-viewport:has(.rv-video-preview) { background: #e9e9e6; }
+.rv-video .rv-video-stage.image-stage--bare .image-stage-viewport:has(.rv-video-preview) { background: transparent; }
 .rv-video .rv-video-stage .rv-input-empty { min-height: 0; height: 100%; }
 .rv-video .rv-video-stage .rv-input-empty > * { flex-shrink: 0; }
 .rv-video .rv-video-preview { display: block; max-width: calc(100% - 32px); max-height: calc(100% - 32px); border-radius: 8px; background: #171717; box-shadow: 0 10px 28px #17171726; }
@@ -139,6 +140,7 @@
 .rv-video .rv-video-logo-inline { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 0; max-width: 60%; }
 .rv-video .rv-video-logo-inline .rv-video-inline-warning { max-width: 560px; padding: 6px 10px; }
 .rv-video .rv-video-logo-inline .rv-video-inline-warning { margin: 0; }
+.rv-video .rv-video-logo-inline-help { max-width: 560px; margin: 0; color: #6e6e6b; font-size: 10px; line-height: 1.5; text-align: right; }
 .rv-video .rv-video-logo-inline-item { display: flex; align-items: center; gap: 12px; padding: 5px 5px 5px 12px; border: 1px solid #e3e3df; border-radius: 12px; background: #fff; font-size: 11px; }
 .rv-video .rv-video-logo-inline-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .rv-video .rv-video-logo-inline-title .icon { width: 15px; height: 15px; color: #6e6e6b; }
@@ -152,7 +154,8 @@
    줄지 않아(ImageStage가 현재 너비로 캔버스를 잡음) 오른쪽 검수 요구사항 칸을 덮는다. */
 .rv-video .rv-video-center { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .rv-video .rv-video-center > * { min-width: 0; }
-.rv-video .rv-video-evidence-stage .image-stage-viewport, .rv-video .rv-video-player .image-stage-viewport { height: 372px; }
+/* 근거 프레임과 원본 영상은 제목 상자 없이 크게 보여 준다(시각·표본 정보는 아래 도구 줄에). */
+.rv-video .rv-video-evidence-stage .image-stage-viewport, .rv-video .rv-video-player .image-stage-viewport { height: clamp(440px, calc(100dvh - 340px), 640px); }
 .rv-video .rv-video-evidence-stage .image-stage-box.is-excluded { --box-color: #5f5f5a; border-style: dashed; }
 .rv-video .rv-video-rail { border-radius: 17px; }
 .rv-video .rv-video-rail-heading { display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 13px 16px; border-bottom: 1px solid var(--result-line); }

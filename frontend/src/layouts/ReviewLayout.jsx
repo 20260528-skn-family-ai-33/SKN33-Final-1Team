@@ -55,19 +55,22 @@ export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, 
 
 // steps를 null로 주면 단계 표시를 숨긴다(검수 유형을 고르기 전).
 export default function ReviewLayout({ state, busy, navigate, children, steps = posterSteps,
-  canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions }) {
+  canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions,
+  showWorkspaceBar = true }) {
   const navigationLocked = topbarLocked || busy;
   const enabled = canNavigate || (key => key === 'input' || key === 'criteria' && state.criteria.length > 0
     || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed');
   return <div className={`rv-workspace rv-workspace--${workspaceStep || state.step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <SiteHeader current="/review/new" locked={navigationLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
-    {navigationLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
-    <WorkspaceProjectBar name={state.projectName || ''} step={state.step === 'criteria' ? 'input' : state.step} steps={steps}
-      projectEditor={projectEditor} projectTools={projectTools} locked={navigationLocked}
-      version={versionLabel || (state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중')} canNavigate={enabled} navigate={navigate}>
-      {projectActions}
-    </WorkspaceProjectBar>
+    {showWorkspaceBar && <>
+      {navigationLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
+      <WorkspaceProjectBar name={state.projectName || ''} step={state.step === 'criteria' ? 'input' : state.step} steps={steps}
+        projectEditor={projectEditor} projectTools={projectTools} locked={navigationLocked}
+        version={versionLabel || (state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중')} canNavigate={enabled} navigate={navigate}>
+        {projectActions}
+      </WorkspaceProjectBar>
+    </>}
     <main id="review-content" className={`rv-main ${mainClassName}`.trim()} tabIndex={-1} aria-busy={busy || undefined}>{children}</main>
   </div>;
 }

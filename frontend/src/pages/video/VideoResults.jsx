@@ -154,10 +154,7 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
   const source = `/api/video-reviews/${job.id}/video`;
   const extension = { avi: 'avi', matroska: 'webm', mov: 'mp4' }[media?.container] || 'mp4';
   const seekLabel = target == null ? '근거 시각으로' : `${formatTime(target)}로 이동`;
-  return <section className="image-stage rv-video-player" aria-label="원본 영상">
-    <div className="image-stage-heading"><div className="image-stage-file"><span className="image-stage-icon"><Icon name="film" /></span>
-      <div><strong>원본 영상</strong><span>{media ? `${formatTime(media.duration_ms)} · ${media.width}×${media.height}` : '영상 정보 없음'}</span></div></div>
-      <span className="image-stage-original">ORIGINAL</span></div>
+  return <section className="image-stage image-stage--bare rv-video-player" aria-label="원본 영상">
     <div className="image-stage-viewport rv-video-player-viewport">
       {unavailable || failed ? <div className="image-stage-empty"><Icon name="film" /><strong className="rv-video-empty-title">영상을 재생할 수 없어요.</strong>
         <p>{unavailable ? job.playback?.reason || '브라우저에서 재생할 수 없는 형식입니다.' : '브라우저가 이 영상을 재생하지 못했습니다.'}<br />근거 프레임으로 확인하거나 원본을 내려받아 확인해 주세요.</p>
@@ -167,7 +164,8 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
           onTimeUpdate={event => onTime(event.currentTarget.currentTime * 1000)} onSeeked={event => onTime(event.currentTarget.currentTime * 1000)}
           onError={() => setFailed(true)} />}
     </div>
-    <div className="image-stage-toolbar"><span className="rv-video-timecode">재생 위치 <strong>{formatTime(currentTime)}</strong></span>
+    <div className="image-stage-toolbar"><span className="rv-video-timecode">재생 위치 <strong>{formatTime(currentTime)}</strong>
+      {media && <span className="rv-video-media-meta"> · {formatTime(media.duration_ms)} · {media.width}×{media.height}</span>}</span>
       <button type="button" className="image-stage-focus" title={seekLabel} disabled={target == null || unavailable || failed} onClick={onSeekTarget}>
         <Icon name="clock" />{seekLabel}</button></div>
   </section>;
@@ -336,7 +334,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
         <div className="rv-video-evidence-stage">
           <ImageStage src={frame ? `/api/video-reviews/${job.id}/frames/${frame.frame_id}` : null}
             alt={frame ? `${formatTime(frame.time_ms)} 프레임과 읽은 글자 영역` : '근거 프레임'}
-            title="근거 프레임" subtitle={subtitle} width={frame?.width} height={frame?.height}
+            heading={false} bare toolbarNote={subtitle} width={frame?.width} height={frame?.height}
             overlays={overlays} selectedOverlayId={view.focus ? 'focus' : null} onOverlaySelect={selectOverlay} viewKey={view.key}
             empty={<><Icon name="image" /><strong className="rv-video-empty-title">표시할 표본 프레임이 없어요.</strong><p>다른 시점을 고르거나 원본 영상을 확인해 주세요.</p></>} />
         </div>

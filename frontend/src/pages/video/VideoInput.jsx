@@ -202,7 +202,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
           {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
         <strong>{reviewModeLabels[mode]}</strong>
-        <button type="button" disabled={busy} onClick={() => setDraft(previous => ({ ...previous, reviewMode: null }))}>유형 바꾸기</button>
+        {/* 문서 추출 중에 유형을 바꾸면 문서 첨부 칸이 사라지며 추출이 취소되므로, 추출이 끝날 때까지 잠근다(포스터와 같은 규칙). */}
+        <button type="button" disabled={busy || documentBusy} onClick={() => setDraft(previous => ({ ...previous, reviewMode: null }))}>유형 바꾸기</button>
       </div>}
       <div className="rv-editor-grid">
         <div className="rv-video-input-column">
@@ -210,9 +211,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
             onChange={event => { choose(event.target.files[0] || null); event.target.value = ''; }} disabled={busy} />
           <div className={`rv-input-drop-target${dragging ? ' is-dragging' : ''}`} onDragOver={event => { event.preventDefault(); if (!busy) setDragging(true); }}
             onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }} onDrop={drop}>
-            <section className="image-stage rv-video-stage" aria-label="동영상 작업 영역">
-              <div className="image-stage-heading"><div className="image-stage-file"><span className="image-stage-icon"><Icon name="film" /></span>
-                <div><strong>검수할 동영상</strong><span>동영상 파일 1개</span></div></div><span className="image-stage-original">원본</span></div>
+            {/* 영상을 첨부하면 틀(테두리·회색 배경) 없이 미리보기만 보여 준다. 비어 있을 때는 끌어다 놓을 상자를 둔다. */}
+            <section className={`image-stage rv-video-stage${file ? ' image-stage--bare' : ''}`} aria-label="동영상 작업 영역">
               <div className="image-stage-viewport rv-video-stage-viewport">
                 {!file ? <div className="rv-input-empty">
                   <span className="rv-input-empty-icon" aria-hidden="true"><Icon name="film" /></span>
@@ -249,7 +249,6 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
             {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
-              dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
             {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
             {checksText && <details className="rv-form-block rv-video-ad-settings">
@@ -273,7 +272,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       {draft.parentRunId && <p className="rv-form-hint">{revisionUnavailable ? '현재 영상 서버는 수정본 연결을 지원하지 않습니다.'
         : '이전 검수에 연결할 수정본을 등록합니다. 제출한 영상과 기준으로 다시 검사합니다.'}</p>}
       <div className="rv-actionbar rv-input-actionbar">
-        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.'
+        <p>{documentBusy ? '문서를 분석하는 동안 다른 자료를 먼저 준비해 두세요. 분석이 끝나면 검수를 시작할 수 있어요.'
+          : !file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.'
           : checksLogo && !logos.length ? '대조할 원본 로고를 1개 이상 첨부해 주세요.'
           : mode === 'logo' ? `로고 ${logos.length}장 · 1초마다 영상에서 로고 위치 후보를 찾습니다.` : [
           criteria.length ? `기준 ${criteria.length}개` : '기준 없음 · 자막·광고 표시만 검수', ad.kind === 'self' && '광고 표시 제외',

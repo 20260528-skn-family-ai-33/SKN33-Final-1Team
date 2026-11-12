@@ -124,7 +124,7 @@ export default function VideoReviewPage() {
     setFile(null);
     setLogos([]);
     setProjectId(job.workflow?.project_id || '');
-    // 다시 검수는 같은 보안 여부로, 기준을 다시 쓰므로 자막 검수로 연다(로고는 다시 첨부하면 '유형 바꾸기'로 바꿀 수 있다).
+    // 다시 검수는 같은 보안 여부로, 기준을 다시 쓰므로 문구 검수로 연다(로고는 다시 첨부하면 '유형 바꾸기'로 바꿀 수 있다).
     setDraft({ ...blankDraft(), securityMode: securityFromRoute(job.model_route), reviewMode: 'text',
       projectName: job.project_name || '숏폼 검수', parentRunId: revision ? job.id : null,
       requirements: criteria.filter(item => !extracted(item)).map(item => item.text).join('\n'),

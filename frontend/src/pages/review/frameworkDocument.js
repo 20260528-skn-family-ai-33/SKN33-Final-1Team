@@ -13,7 +13,8 @@ export const DOCX_MEDIA_TYPE = 'application/vnd.openxmlformats-officedocument.wo
 export function watchDocumentDeadline(controller) {
   let expired = false;
   let stage;
-  let startedAt = Date.now();
+  const requestStartedAt = Date.now();
+  let startedAt = requestStartedAt;
   let inferenceStarted = false;
   const expire = () => { expired = true; controller.abort(); };
   let timer = setTimeout(expire, DOCUMENT_WAIT_TIMEOUT_MS);
@@ -30,7 +31,8 @@ export function watchDocumentDeadline(controller) {
         clearTimeout(timer);
         timer = setTimeout(expire, DOCUMENT_WAIT_TIMEOUT_MS + 30_000);
       }
-      return { ...progress, startedAt };
+      return { ...progress, startedAt, requestStartedAt,
+        lastCheckedAt: progress.runId ? Date.now() : undefined };
     },
     stop() { clearTimeout(timer); },
   };

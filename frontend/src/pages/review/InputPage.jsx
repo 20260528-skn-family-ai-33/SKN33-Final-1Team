@@ -13,7 +13,7 @@ import '../../styles/review-type-picker.css';
 
 export default function InputPage({ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy,
   fileInput, selectFile, preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
-  documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
+  documentBusy, documentExtracting = false, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
   clearDocument, documentCancelBusy, cancelQueuedDocument, previewMode = false }) {
   const doc = state.documentRun;
   const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
@@ -23,7 +23,11 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
   const imagePixels = ((health?.limits?.image_pixels || 10_000_000) / 10_000).toLocaleString();
   const imageSide = (health?.limits?.image_side || 8192).toLocaleString();
-  const busy = sampleBusy || fileBusy || documentBusy;
+  // 문서 추출은 서버에서 따로 돌아서, 추출하는 동안에도 포스터·로고·요구사항은 입력할 수 있다.
+  // busy: 입력 잠금(검수 접수 중일 때만). locked: 시작·보안 여부·유형 바꾸기 잠금(문서 추출이 끝날 때까지).
+  const submitting = documentBusy && !documentExtracting;
+  const busy = sampleBusy || fileBusy || submitting;
+  const locked = busy || documentBusy;
   // 보안 자료 여부 → 검수 유형 순서로 고른다. 검수 유형에 따라 받는 자료가 다르다: 자막은 요구사항, 로고는 원본 로고, 둘 다는 모두.
   const security = state.securityMode;
   const mode = state.reviewMode;
@@ -67,12 +71,12 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
 
   if (!security) return <section className="rv-input-page" aria-labelledby="page-title">
     {previewEntry}
-    <SecurityPicker disabled={busy} onSelect={value => inputChange('securityMode', value)} />
+    <SecurityPicker disabled={locked} onSelect={value => inputChange('securityMode', value)} />
   </section>;
 
   if (!mode) return <section className="rv-input-page" aria-labelledby="page-title">
     {previewEntry}
-    <ReviewTypePicker disabled={busy} security={security} onSelect={value => inputChange('reviewMode', value)}
+    <ReviewTypePicker disabled={locked} security={security} onSelect={value => inputChange('reviewMode', value)}
       onBack={() => inputChange('securityMode', null)} />
   </section>;
 
@@ -84,7 +88,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
         <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
           {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
         <strong>{reviewModeLabels[mode]}</strong>
-        <button type="button" disabled={busy} onClick={() => inputChange('reviewMode', null)}>유형 바꾸기</button>
+        <button type="button" disabled={locked} onClick={() => inputChange('reviewMode', null)}>유형 바꾸기</button>
       </div>
       <div className="rv-editor-grid">
         <div className="rv-input-canvas-column">
@@ -94,8 +98,8 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
             onDragOver={event => { event.preventDefault(); if (!busy) setDragging(true); }}
             onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }}
             onDrop={event => { event.preventDefault(); setDragging(false); if (!busy) selectFile([...event.dataTransfer.files]); }}>
-            <ImageStage src={preview} alt="업로드한 검수 이미지 미리보기" title="검수할 포스터" subtitle="이미지 파일 1개"
-              width={dimensions?.width} height={dimensions?.height} showControls={Boolean(preview)}
+            <ImageStage src={preview} alt="업로드한 검수 이미지 미리보기" heading={false}
+              width={dimensions?.width} height={dimensions?.height} showControls={false} bare={Boolean(preview)}
               empty={<div className="rv-input-empty"><span className="rv-input-empty-icon" aria-hidden="true"><Icon name="image" /></span>
                 <h2>여기에 포스터를 놓아 주세요.</h2><p>파일을 끌어다 놓거나 버튼으로 선택하세요.</p>
                 <button type="button" className="rv-button primary" disabled={busy} onClick={chooseFile}><Icon name="upload" />파일 선택</button>
@@ -120,10 +124,10 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
             <button type="button" className="rv-button secondary" disabled={busy} onClick={useInspectionCopy}>검수용 사본으로 줄이기</button>
           </div>}
           {copySource && <p className="rv-form-hint">원본 {copySource.width}×{copySource.height}px. 결과와 승인은 축소 사본에 연결됩니다. 원본 규격과 작은 글자는 원본에서 확인해 주세요.</p>}
-          {checksText && <RequirementInput id="requirements" value={state.requirements} disabled={documentBusy}
+          {checksText && <RequirementInput id="requirements" value={state.requirements} disabled={submitting}
             onChange={value => inputChange('requirements', value)}
             placeholder={'예: 전시 제목에 ‘빛의 기록’을 표기해 주세요.\n전시 기간은 11.20–11.28로 표기해 주세요.'}>
-            {doc && <ExtractedRequirements rows={doc.rows} disabled={busy}
+            {doc && <ExtractedRequirements rows={doc.rows} disabled={locked}
               onChange={rows => inputChange('documentRun', { ...doc, rows })} />}
           </RequirementInput>}
           {checksText && <DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, clearDocument }}
@@ -144,9 +148,9 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
         <button type="button" className="text-btn" disabled={busy || healthBusy} onClick={checkHealth}>검수 구성 다시 확인</button>
       </div>}
       <div className="rv-actionbar rv-input-actionbar">
-        <div><p>{ready ? readyText : missingText}</p>
+        <div><p>{documentExtracting ? '문서를 분석하는 동안 다른 자료를 먼저 준비해 두세요. 분석이 끝나면 검수를 시작할 수 있어요.' : ready ? readyText : missingText}</p>
           {checksText && usesNewText && <p>선택·수정한 문구는 새 기준 초안으로 분석합니다. PDF 원문은 첨부 카드에서 확인할 수 있어요.</p>}</div>
-        <button type="submit" className="rv-button primary" disabled={busy || (!previewMode && !ready)}>
+        <button type="submit" className="rv-button primary" disabled={locked || (!previewMode && !ready)}>
           {mode === 'logo' && documentBusy ? '로고 검수 접수 중…' : '검수 시작하기'}<Icon name="arrow" /></button>
       </div>
     </form>

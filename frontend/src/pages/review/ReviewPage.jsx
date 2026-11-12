@@ -16,7 +16,7 @@ export default function ReviewPage() {
   const {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
-    documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
+    documentBusy, documentExtracting, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
@@ -62,7 +62,7 @@ export default function ReviewPage() {
         // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
         onPick={project => { if (project.name !== state.projectName) inputChange('projectName', project.name.slice(0, 60)); }} />)}>
     {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
-      preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentProgress,
+      preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentExtracting, documentProgress,
       documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}

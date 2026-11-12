@@ -244,6 +244,28 @@
 .rv-framework-actions input:not([type]) { border: 1px solid var(--rv-line); padding: 8px 12px; }
 .rv-framework-workspace summary { cursor: pointer; }
 .rv-framework-workspace .rv-framework-notice { font-size: 11px; color: var(--rv-muted); margin-bottom: 20px; }
+.rv-workspace .rv-framework-status-state {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  max-width: 680px;
+  margin: clamp(28px, 8vh, 88px) auto;
+  padding: clamp(24px, 4vw, 40px);
+}
+.rv-framework-status-state h1 { margin: 0; font-size: clamp(22px, 2.3vw, 30px); letter-spacing: -.03em; }
+.rv-framework-status-state p { margin: 0; color: var(--rv-muted); line-height: 1.7; }
+.rv-framework-status-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--rv-line);
+  border-top-color: var(--rv-ink);
+  border-radius: 50%;
+  animation: rv-framework-status-spin .9s linear infinite;
+}
+@keyframes rv-framework-status-spin { to { transform: rotate(360deg); } }
+.rv-framework-status-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px; }
+.rv-framework-status-actions .text-btn { margin: 0; }
+.rv-framework-status-state.is-checking { min-height: 190px; align-content: center; }
 .rv-framework-expected { font-size: 14px; line-height: 1.8; }
 .rv-framework-amend { margin-top: 20px; }
 .rv-framework-record { font-size: 11px; color: var(--rv-muted); }
@@ -254,9 +276,8 @@
 .rv-criteria-amendment textarea { min-height: 80px; }
 
 .rv-workspace .rv-input-form .image-stage { border: 1px solid var(--rv-line); border-radius: 17px; }
-.rv-workspace .rv-input-form .image-stage-heading { min-height: 0; padding: 13px 16px; gap: 9px; }
-.rv-workspace .rv-input-form .image-stage-icon { width: 34px; height: 34px; border-radius: 9px; }
-.rv-workspace .rv-input-form .image-stage-viewport { height: 440px; background-color: #e9e9e6; }
+/* 포스터·동영상 입력 미리보기. 제목 상자 없이 화면 높이에 맞춰 크게 보여 준다. */
+.rv-workspace .rv-input-form .image-stage-viewport { height: clamp(520px, calc(100dvh - 260px), 780px); background-color: #e9e9e6; }
 .rv-workspace .rv-input-form .image-stage-viewport:has(.rv-input-empty) {
   background: #eaeae7 radial-gradient(#d9dad4 1px, transparent 1px) 0 0 / 14px 14px;
 }
@@ -281,6 +302,12 @@
   background: #fbfbfa;
   padding: 11px 15px;
 }
+/* 틀 없는 미리보기(image-stage--bare): 첨부한 포스터·동영상과 기준 확인 포스터를 테두리·회색 배경 없이 보여 준다.
+   아무것도 첨부하지 않은 입력 칸은 끌어다 놓을 자리가 보이도록 기존 상자를 그대로 둔다. 위 입력 칸 규칙보다 뒤에 둔다. */
+.rv-workspace .image-stage.image-stage--bare { border: 0; border-radius: 0; background: transparent; }
+.rv-workspace .image-stage--bare .image-stage-viewport { background: transparent; }
+.rv-workspace .image-stage--bare .image-stage-extra { border-top: 0; }
+.rv-workspace .image-stage--bare .image-stage-extra > :is(.rv-input-filebar, .rv-input-file-status) { border-top: 0; background: transparent; padding-inline: 2px; }
 .rv-workspace .rv-input-fileactions > .rv-button { color: var(--rv-ink); }
 .rv-workspace .rv-input-form .rv-input-actionbar {
   position: static;
@@ -349,6 +376,19 @@
 @keyframes rv-document-spin { to { transform: rotate(360deg); } }
 .rv-document-inline progress { width: 100%; max-width: 255px; height: 4px; accent-color: var(--rv-ink); }
 .rv-document-inline p, .rv-document-inline small { font-size: 11px; color: var(--rv-muted); }
+.rv-document-inline .rv-document-long-running {
+  width: 100%;
+  max-width: 520px;
+  margin: 4px 0 0;
+  border: 1px solid var(--rv-line);
+  border-radius: 9px;
+  background: #fff;
+  padding: 9px 11px;
+  line-height: 1.65;
+  text-align: left;
+}
+.rv-document-inline .rv-document-last-checked { font-variant-numeric: tabular-nums; }
+.rv-document-inline > .text-btn { margin: 0; }
 .rv-extracted { margin-top: 12px; padding: 10px 12px; border: 1px solid #dbe6df; border-radius: 9px; background: #f2f7f3; }
 .rv-extracted strong { font-size: 12px; }
 .rv-extracted ul { display: grid; gap: 7px; list-style: none; padding: 0; margin: 8px 0 0; }
@@ -357,6 +397,7 @@
 .rv-workspace .rv-extracted textarea { padding: 6px 8px; background: #fff; font-size: 12px; }
 @media (prefers-reduced-motion: reduce) {
   .rv-document-inline .rv-progress-spinner { animation: none; }
+  .rv-framework-status-spinner { animation: none; }
 }
 @media (max-width: 600px) {
   .rv-workspace .rv-input-form .image-stage-viewport { height: 330px; }

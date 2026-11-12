@@ -340,7 +340,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   return <div className="vl-main-stack">
     <div className="vl-stage-heading">
       <div><span className="vl-kicker">01 / 위치 확인</span><h1>이 원본 로고가 나오는 구간을 고르세요</h1>
-        <p>순위는 후보를 찾는 데 쓰고, 같은 로고인지 최종 확인은 상현님이 진행합니다.</p></div>
+        <p>순위는 후보를 찾는 데 씁니다. 같은 로고인지 최종 확인은 담당자가 진행합니다.</p></div>
       <div className="vl-stage-actions">
         <button type="button" className="vl-button subtle" onClick={onManual}>후보에 없음 · 직접 지정</button>
         <button type="button" className="vl-button secondary" onClick={onNone}>영상에 없음</button>
@@ -353,6 +353,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
         <section className="vl-panel">
           <div className="vl-section-heading"><div><span className="vl-kicker">상위 후보</span><h2>비교할 묶음을 선택하세요</h2></div>
             <span className="vl-soft-tag">여러 묶음 선택 가능</span></div>
+          <p className="vl-candidate-help">기본 선택된 후보는 없습니다. 영상에서 같은 로고로 보이는 묶음만 선택해 확정하세요.</p>
           <div className="vl-candidate-grid">
             {top.map((groupIndex, index) => <CandidateCard key={groupIndex} video={video} refIndex={refIndex} groupIndex={groupIndex}
               rank={index + 1} selected={checked.has(groupIndex)} onToggle={() => {

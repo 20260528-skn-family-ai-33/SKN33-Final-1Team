@@ -51,7 +51,7 @@ export default function CriteriaPage({ state, locked, selected, selectedInfo, ve
 
   return <CriteriaWorkspace versionText={versionText} locked={locked} error={error}
     canvas={<>
-      <ImageStage src={preview} alt="검수 대상 이미지" title={state.projectName || '검수 대상 이미지'} subtitle={state.file?.name || '이미지 1개'} />
+      <ImageStage src={preview} alt="검수 대상 이미지" heading={false} showControls={false} bare />
         <div className={`rv-criteria-context${locked ? ' is-locked' : ''}`}><Icon name={locked ? 'lock' : 'info'} /><div>{locked ? <><strong>검수 기준 v{state.snapshot.version}이 확정되었습니다.</strong><p>검수 시작 시 이 기준 버전을 사용합니다. 변경하려면 확정을 풀고 다시 검토하세요.</p></> : <><strong>{state.version ? '기준을 수정하고 다시 확정해 주세요.' : '입력한 요구사항을 항목별로 정리했어요.'}</strong><p>{state.version ? '이전 결과는 무효화되었습니다. 재확정 후 새 기준으로 검수할 수 있습니다.' : '모호한 문구는 구체적인 값으로 보완하세요. 원문과 상세 기준도 함께 확인할 수 있습니다.'}</p></>}</div>{locked && <button type="button" onClick={unlock}>기준 다시 편집</button>}</div>
     </>}
     actions={<div className="rv-actionbar rv-criteria-actionbar"><div className="rv-criteria-action-context"><button type="button" className="rv-button secondary" onClick={() => navigate('input')}>자료 다시 입력</button><div><strong>{locked ? `v${state.snapshot.version} 기준 확정 완료` : `${selected.length}개 항목을 검수에 포함합니다.`}</strong><p>{locked ? '확정한 기준 전체로 검수합니다.' : '먼저 선택한 기준을 확정해 주세요.'}</p></div></div><div className="rv-criteria-action-buttons">{!locked && <button type="button" className="rv-button primary" onClick={confirm} disabled={!canConfirm(state)}>선택한 기준 확정하기</button>}<button type="button" className={`rv-button ${locked ? 'primary' : 'secondary'}`} ref={runRef} onClick={run} disabled={!canRun(state)}>검수 시작하기<Icon name="arrow" /></button></div></div>}>

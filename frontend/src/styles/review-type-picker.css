@@ -58,21 +58,6 @@
 .rv-type-art svg { display: block; width: 100%; max-width: 230px; height: auto; }
 .rv-type-label { font-size: clamp(20px, 1.6vw, 26px); font-weight: 700; letter-spacing: -.04em; }
 .rv-type-label small { margin-left: 4px; font-size: .62em; font-weight: 500; color: #62645e; }
-.rv-workspace .rv-type-foot { color: #a7a8a2; font-size: 14px; text-align: center; }
-.rv-type-foot kbd {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  margin: 0 2px;
-  padding: 0 5px;
-  border: 1px solid #4a4a47;
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  color: #e8e8e4;
-  font-family: inherit;
-  font-size: 12px;
-}
 @media (prefers-reduced-motion: reduce) {
   .rv-workspace .rv-type-tile { transition: none; }
   .rv-workspace .rv-type-tile:is(:hover, :active):enabled { transform: none; }
