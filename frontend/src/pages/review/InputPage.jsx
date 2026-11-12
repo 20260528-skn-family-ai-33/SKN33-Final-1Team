@@ -10,13 +10,13 @@ import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
 
 export default function InputPage({ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy,
-  fileInput, selectFile, preview, dimensions, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
-  documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
+  fileInput, selectFile, preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
+  documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
   clearDocument, documentCancelBusy, cancelQueuedDocument, previewMode = false }) {
   const doc = state.documentRun;
   const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
   const requirementCount = new Set([...parseRequirements(state.requirements).map(item => item.text), ...selectedRows.map(row => row.text.trim())]).size;
-  const usesNewText = doc && selectedRows.length > 0 && (state.requirements.trim() || selectedRows.length !== doc.originalCount
+  const usesNewText = doc && selectedRows.length > 0 && (state.requirements.trim()
     || selectedRows.some(row => row.text.trim() !== row.originalText));
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
   const imagePixels = ((health?.limits?.image_pixels || 10_000_000) / 10_000).toLocaleString();
@@ -73,19 +73,24 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
         </div>
 
         <aside className="rv-form-stack" aria-label="검수 요구사항과 첨부 자료">
+          {oversizeImage && <div className="rv-form-block">
+            <p>원본 {oversizeImage.dimensions.width}×{oversizeImage.dimensions.height}px. 원본은 보관하고 검수용 사본을 만들 수 있어요.</p>
+            <button type="button" className="rv-button secondary" disabled={busy} onClick={useInspectionCopy}>검수용 사본으로 줄이기</button>
+          </div>}
+          {copySource && <p className="rv-form-hint">원본 {copySource.width}×{copySource.height}px. 결과와 승인은 축소 사본에 연결됩니다. 원본 규격과 작은 글자는 원본에서 확인해 주세요.</p>}
           <RequirementInput id="requirements" value={state.requirements} disabled={documentBusy}
             onChange={value => inputChange('requirements', value)}
             placeholder={'예: 전시 제목에 ‘빛의 기록’을 표기해 주세요.\n전시 기간은 11.20–11.28로 표기해 주세요.'}>
             {doc && <ExtractedRequirements rows={doc.rows} disabled={busy}
               onChange={rows => inputChange('documentRun', { ...doc, rows })} />}
           </RequirementInput>
-          <DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentInput, clearDocument }}
+          <DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, clearDocument }}
             disabled={previewMode || sampleBusy || fileBusy || !projectStatus?.ready} documentName={doc?.filename}
             selectDocument={files => selectDocument(files, projectId)}
             cancelDocument={canCancelQueued ? cancelQueuedDocument : cancelDocument} cancelBusy={documentCancelBusy}
             cancelLabel={canCancelQueued ? '대기 작업 취소' : '입력 반영 취소'}>
             {doc && !documentBusy && <button type="button" className="rv-button secondary rv-compact rv-document-source"
-              disabled={busy} onClick={openDocumentRun}>PDF 원문과 기준 확인</button>}
+              disabled={busy} onClick={openDocumentRun}>{/\.docx$/i.test(doc.filename || '') ? 'DOCX 본문과 기준 확인' : 'PDF 원문과 기준 확인'}</button>}
             {!previewMode && !projectStatus?.ready && !projectStatus?.busy && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
           </DocumentInput>
           <LogoInputs logos={state.referenceLogos} onChange={logos => inputChange('referenceLogos', logos)} disabled={busy} referenceOnly />

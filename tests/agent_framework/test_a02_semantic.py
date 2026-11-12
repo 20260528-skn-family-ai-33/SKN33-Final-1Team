@@ -69,6 +69,37 @@ def test_free_input_is_semantically_structured_by_the_model_without_literal_comp
     assert draft.extraction.response_sha256==sha256(raw.encode()).hexdigest()
 
 
+def test_long_pdf_keeps_source_ids_and_marks_incomplete_chunks():
+    import pymupdf
+    with pymupdf.open() as pdf:
+        for text in ('Venue: City Hall','Title: Festival','Date: November 20'):
+            pdf.new_page().insert_text((40,40),text)
+        raw=pdf.tobytes()
+    context=text_document().context
+    ref=DocumentRef(file_id='long-pdf',document_version_id=context.document_version_id,
+        sha256=sha256(raw).hexdigest(),media_type='application/pdf',page_count=3)
+    doc=VerifiedDocument(context,ref,raw,3)
+    settings=PDFExtractionConfiguration(mode='qwen',endpoint='https://qwen.invalid/v1/chat/completions')
+    calls=[]
+    def handler(req):
+        data=json.loads(req.content)
+        sources=json.loads(data['messages'][1]['content'])['sources']
+        calls.append([source['page'] for source in sources])
+        if sources[0]['page']==3:
+            return httpx.Response(200,json={'choices':[{'finish_reason':'length','message':{'content':'{...'}}]})
+        item=requirement(1,'venue','City Hall',source={'start_line':'p1-text:L1','end_line':'p1-text:L1'})
+        unsent=requirement(1,'venue','November 20',source={'start_line':'p3-text:L1','end_line':'p3-text:L1'})
+        content=json.dumps({'requirements':[item,unsent]})
+        return httpx.Response(200,json={'choices':[{'finish_reason':'stop','message':{'content':content}}]})
+    provider=QwenProvider(settings,transport=httpx.MockTransport(handler))
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=provider).extract(
+        ExtractRequest(context=context,document=ref,synthetic=True))
+    assert calls==[[1,2],[3]]
+    assert [(item.source.page,item.expected) for item in draft.criteria]==[(1,'City Hall')]
+    assert draft.extraction.rejected_candidates[0].code=='A02_SOURCE_MISMATCH'
+    assert 'page_3_model_output_incomplete' in draft.warnings
+
+
 @pytest.mark.parametrize('value',['10,000','1,000,000','10,000장'])
 def test_number_separators_preserve_literal_source_and_match_a06_syntax(value):
     from backend.agent_framework.validation import _number
@@ -274,6 +305,29 @@ def test_old_prompt_records_remain_readable_but_unknown_and_other_policy_hashes_
     for wrong in ('0'*64,LEGACY_SEMANTIC_PROMPT_HASH if presentation else LEGACY_PRESENTATION_PROMPT_HASH):
         changed=draft.model_copy(update={'extraction':draft.extraction.model_copy(update={'prompt_sha256':wrong})})
         with pytest.raises(ValueError,match='EXTRACTION_PROMPT_MISMATCH'):validate_trace(request.document,changed)
+
+
+def test_converted_docx_sections_are_separate_model_blocks_and_stored_as_one_text_source():
+    from backend.agent_framework.a02 import validate_trace
+    text=('전시 포스터 제작 의뢰서\n\n항목 | 표기 내용과 허용 범위\n'
+        '1 | 전시명에 ‘수원의 영화’를 표기한다. / 허용 범위: 줄바꿈 차이는 허용한다.\n\n'
+        '관람시간 - 확인 중\n관람시간은 확인 중입니다.\n')
+    doc=text_document(text)
+    item=requirement(1,'event_name','수원의 영화')
+    item['source']={'start_line':'p2-text:L2','end_line':'p2-text:L2'}
+    request,draft,calls,_=extract({'requirements':[item]},doc)
+    sent=json.loads(calls[0]['messages'][1]['content'])['sources']
+    assert [(s['block_id'],s['page'],[l['id'] for l in s['lines']]) for s in sent]==[
+        ('p1-text',1,['p1-text:L1']),('p2-text',2,['p2-text:L1','p2-text:L2']),('p3-text',3,['p3-text:L1','p3-text:L2'])]
+    enum=calls[0]['response_format']['json_schema']['schema']['$defs']['SourceRange']['properties']['start_line']['enum']
+    assert enum==['p1-text:L1','p2-text:L1','p2-text:L2','p3-text:L1','p3-text:L2']
+    first=draft.criteria[0]
+    assert first.expected=='수원의 영화' and first.source.block_id=='input-text' and first.source.page==1
+    assert first.source.quote=='1 | 전시명에 ‘수원의 영화’를 표기한다. / 허용 범위: 줄바꿈 차이는 허용한다.'
+    assert [(s.block_id,s.page,s.text) for s in draft.extraction.sources]==[('input-text',1,text)]
+    # The pending passage is retained from the same stored source by policy.
+    assert any(c.source.block_id=='input-text' and '확인 중' in c.source.quote for c in draft.criteria[1:])
+    validate_trace(request.document,draft)
 
 
 def test_pdf_uses_the_same_semantic_contract_as_free_input():

@@ -15,9 +15,9 @@ export default function ReviewPage() {
   const {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
-    documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
+    documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
-    dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
+    dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
     addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,
@@ -35,8 +35,11 @@ export default function ReviewPage() {
   }, [state.step, runId]);
 
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
+    health={health}
     projectName={state.projectName || location.state?.projectName}
     initialFile={runId === inputRunId ? state.file : null}
+    referenceLogos={runId === inputRunId ? state.referenceLogos : null}
+    initialCriterionIds={location.state?.pdfSelection?.runId === runId ? location.state.pdfSelection.criterionIds : null}
     onInput={() => setParams({})}
     openRun={id => setParams({ framework: id }, { state: location.state })} onNew={() => { newReview(); setParams({}); }} />;
 
@@ -48,8 +51,8 @@ export default function ReviewPage() {
     projectActions={input && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
       {sampleBusy ? '불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" /></button>}>
     {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
-      preview, dimensions, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentProgress,
-      documentNotice, documentError, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}
+      preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentProgress,
+      documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage

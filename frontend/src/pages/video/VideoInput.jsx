@@ -6,12 +6,11 @@ import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import RequirementInput, { ExtractedRequirements } from '../review/RequirementInput.jsx';
 import { parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
-import { criteriaPayload, formatTime } from './videoFormat.js';
+import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB } from './videoFormat.js';
 import VideoDocumentInput from './VideoDocumentInput.jsx';
 
 const ACCEPT = 'video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo,video/avi,.avi';
 const VIDEO_NAME = /\.(mp4|m4v|mov|webm|mkv|avi)$/i;
-const MiB = 1048576;
 
 // 선택한 영상을 브라우저에서 미리 재생하고 길이·해상도를 읽는다. 읽지 못하는 형식도 검수 접수는 막지 않는다.
 // 브라우저가 녹화한 WebM은 길이 정보가 없을(Infinity) 수 있어, 유한한 길이만 쓴다.
@@ -42,6 +41,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const replaceButton = useRef(null);
   const lastFile = useRef(file);
   const active = useRef(null);
+  const submission = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   useEffect(() => () => {
     if (active.current) {
@@ -53,14 +53,20 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const logoStatus = useLogoStatus();
   const preview = useLocalPreview(file);
   const limits = status?.limits;
+  const projectWorkflow = status?.project_reviews === true;
+  const needsProject = projectWorkflow && !projectReady;
+  const revisionUnavailable = !!draft.parentRunId && !projectWorkflow;
+  const submitDisabled = !file || busy || documentBusy || !status?.ready || needsProject || revisionUnavailable;
   const criteria = useMemo(() => {
     const extracted = draft.documentRows.filter(row => row.selected && row.text.trim()).map(row => ({ ...row, text: row.text.trim() }));
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
   }, [draft.requirements, draft.documentRows]);
   const { ad } = draft;
-  const uploadMiB = limits?.upload_bytes ? Math.floor(limits.upload_bytes / MiB) : null;
+  const uploadLimit = formatVideoUploadLimit(limits?.upload_bytes);
+  const durationSeconds = limits?.duration_seconds;
+  const durationLimit = durationSeconds && (durationSeconds % 60 === 0 ? `${durationSeconds / 60}분` : `${durationSeconds}초`);
   const formats = limits?.formats?.length ? limits.formats.map(format => format.toUpperCase()).join(' · ') : 'MP4 · MOV · WEBM · AVI';
-  const limitText = [uploadMiB && `최대 ${uploadMiB}MB`, limits?.duration_seconds && `${limits.duration_seconds}초 이하`,
+  const limitText = [uploadLimit && `최대 ${uploadLimit}`, durationLimit && `${durationLimit} 이하`,
     limits?.short_side_min && `짧은 변 ${limits.short_side_min}px 이상`].filter(Boolean).join(' · ');
   // 자체 광고는 서버가 시작·끝 0.2초 표본을 뽑지 않으므로 1초 표본만 안내한다.
   const sampling = status?.sampling && (ad.kind === 'self' ? '1초 간격 표본 검사' : status.sampling);
@@ -75,8 +81,14 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   // 서버 한도를 넘는 길이·해상도는 미리 알려 주되, 판정은 서버가 하므로 접수 버튼은 막지 않는다.
   const warnings = [];
   const duration = preview.meta?.duration;
-  if (duration && limits?.duration_seconds && duration > limits.duration_seconds + .05) warnings.push(`영상 길이 ${formatTime(duration * 1000)}가 서버 한도 ${limits.duration_seconds}초를 넘어 접수되지 않을 수 있어요.`);
+  if (duration && durationLimit && duration > durationSeconds + .05) warnings.push(`영상 길이 ${formatTime(duration * 1000)}가 서버 한도(${durationLimit})를 넘어 접수되지 않을 수 있어요.`);
   if (preview.meta?.width && preview.meta?.height && limits?.short_side_min && Math.min(preview.meta.width, preview.meta.height) < limits.short_side_min) warnings.push(`짧은 변이 ${Math.min(preview.meta.width, preview.meta.height)}px라 서버 기준 ${limits.short_side_min}px보다 작습니다.`);
+
+  function exceedsUploadLimit(selected) {
+    if (!uploadLimit || selected.size <= limits.upload_bytes) return false;
+    setError(`동영상은 ${uploadLimit} 이하여야 합니다.`);
+    return true;
+  }
 
   function choose(selected) {
     setError('');
@@ -85,9 +97,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       setError('MP4 · MOV · WEBM · AVI 동영상 파일을 선택해 주세요.');
       return;
     }
-    if (limits?.upload_bytes && selected.size > limits.upload_bytes) {
+    if (exceedsUploadLimit(selected)) {
       setFile(null); if (input.current) input.current.value = '';
-      setError(`동영상은 ${Math.floor(limits.upload_bytes / MiB)}MB 이하여야 합니다.`);
       return;
     }
     setFile(selected);
@@ -108,7 +119,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
 
   async function submit() {
-    if (!file || active.current || busy || documentBusy || !status?.ready) return;
+    if (active.current || submitDisabled) return;
+    if (exceedsUploadLimit(file)) return;
     if (criteria.length > 100 || criteria.map(item => item.text).join('\n').length > 6000 ||
         criteria.some(item => item.text.length > 500 || /[\r\n]/.test(item.text))) {
       setError('검수 요구사항은 전체 6,000자 및 100개, 항목당 한 줄 500자 이내로 정리해 주세요.');
@@ -119,13 +131,25 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     const title = draft.projectName.trim() || file.name.slice(0, 120) || '숏폼 검수';
     setBusy(true); setError('');
     try {
+      const criteriaJson = JSON.stringify(criteriaPayload(criteria));
+      const disclosure = JSON.stringify(ad);
       const form = new FormData();
       form.append('video', file);
-      form.append('criteria', JSON.stringify(criteriaPayload(criteria)));
-      form.append('criteria_version', '1');
+      form.append('criteria', criteriaJson);
       form.append('project_name', title);
-      form.append('disclosure', JSON.stringify(ad));
-      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form, signal });
+      form.append('disclosure', disclosure);
+      let headers;
+      if (projectWorkflow) {
+        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, disclosure]);
+        if (submission.current?.file !== file || submission.current.fields !== fields) {
+          submission.current = { file, fields, key: crypto.randomUUID() };
+        }
+        headers = { 'Idempotency-Key': submission.current.key };
+        form.append('project_id', projectId);
+        form.append('criteria_confirmed', 'true');
+        if (draft.parentRunId) form.append('parent_run_id', draft.parentRunId);
+      }
+      const created = await fetchJson('/api/video-reviews', { method: 'POST', body: form, signal, headers });
       if (signal.aborted) return;
       // 원본 로고를 올렸으면 같은 영상으로 영상 로고 작업도 만든다. 실패해도 동영상 검수는 그대로 진행한다.
       let logoError = '';
@@ -134,6 +158,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         catch (failure) { logoError = `동영상 검수는 접수했지만 로고 검수를 접수하지 못했습니다: ${failure.message}`; }
       }
       if (signal.aborted) return;
+      submission.current = null;
       removeFile();
       onSubmitted(created.id, logoError);
     } catch (failure) { if (!signal.aborted) setError(failure.message); }
@@ -141,7 +166,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
 
   const chooseFile = () => input.current?.click();
-  const fileMeta = file && [`${(file.size / MiB).toFixed(1)}MB`, duration && formatTime(duration * 1000),
+  const fileMeta = file && [`${(file.size / MiB).toFixed(1)} MiB`, duration && formatTime(duration * 1000),
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
   return <section className="rv-video-input" aria-labelledby="page-title">
@@ -193,6 +218,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>
             <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
+              dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} />
             <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
             <details className="rv-form-block rv-video-ad-settings">
@@ -213,12 +239,14 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} />
         {status && !status.ready && <ErrorMessage message={status.detail || '동영상 검수 서버가 준비되지 않았습니다.'} />}</div>
+      {draft.parentRunId && <p className="rv-form-hint">{revisionUnavailable ? '현재 영상 서버는 수정본 연결을 지원하지 않습니다.'
+        : '이전 검수에 연결할 수정본을 등록합니다. 제출한 영상과 기준으로 다시 검사합니다.'}</p>}
       <div className="rv-actionbar rv-input-actionbar">
-        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : [
+        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.' : [
           criteria.length ? `기준 ${criteria.length}개` : '기준 없음 · 자막·광고 표시만 검수', ad.kind === 'self' && '광고 표시 제외',
           logos.length ? `로고 ${logos.length}장` : null, sampling,
         ].filter(Boolean).join(' · ')}</p>
-        <button type="button" className="rv-button primary" onClick={submit} disabled={!file || busy || documentBusy || !status?.ready}>
+        <button type="button" className="rv-button primary" onClick={submit} disabled={submitDisabled}>
           {busy && !sampleBusy ? '올리는 중…' : '검수 시작하기'}{(!busy || sampleBusy) && <Icon name="arrow" />}</button>
       </div>
     </form>

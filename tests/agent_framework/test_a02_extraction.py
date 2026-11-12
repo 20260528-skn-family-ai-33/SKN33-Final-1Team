@@ -7,7 +7,7 @@ import httpx
 import pymupdf
 import pytest
 
-from backend.agent_framework.a02 import (RegisteredPDFExtractor,QwenProvider,MockProvider,prepare_sources,
+from backend.agent_framework.a02 import (RegisteredPDFExtractor,QwenProvider,MockProvider,prepare_sources,read_sources,
     PROMPT_HASH,QWEN_PROMPT,QWEN_PROMPT_HASH)
 from backend.agent_framework.a02_source_selection import index_sources,materialize_selection,selection_schema,SelectedProviderReply
 from backend.agent_framework.a02_configuration import PDFExtractionConfiguration
@@ -121,23 +121,60 @@ def test_trace_tampering_is_rechecked_at_common_role_boundary():
     assert error.value.code=='EXTRACTION_SOURCE_HASH_MISMATCH'
 
 
-@pytest.mark.parametrize('kind,code',(('blank','PDF_TEXT_UNAVAILABLE'),('image','PDF_IMAGE_PAGE_UNSUPPORTED'),('limit','PDF_TEXT_LIMIT_EXCEEDED'),('parser','PDF_PARSER_VERSION_MISMATCH')))
+@pytest.mark.parametrize('kind,code',(('blank','PDF_TEXT_UNAVAILABLE'),('scan','PDF_TEXT_UNAVAILABLE'),('limit','PDF_TEXT_LIMIT_EXCEEDED'),('parser','PDF_PARSER_VERSION_MISMATCH')))
 def test_unsupported_input_fails_before_provider(kind,code):
     doc=document();settings=PDFExtractionConfiguration(mode='mock');calls=[]
     if kind=='limit':settings=settings.model_copy(update={'max_text_chars':100})
     if kind=='parser':settings=settings.model_copy(update={'parser_version':'0.0.0'})
-    if kind in ('blank','image'):
-        with pymupdf.open() as pdf:
-            page=pdf.new_page()
-            if kind=='image':
-                page.insert_text((30,40),'Partial text layer')
-                page.insert_image(pymupdf.Rect(20,60,120,160),stream=b'P6\n1 1\n255\n\xff\x00\x00')
-            raw=pdf.tobytes()
-        ref=doc.reference.model_copy(update={'sha256':sha256(raw).hexdigest(),'page_count':1})
-        doc=VerifiedDocument(doc.context,ref,raw,1)
+    if kind in ('blank','scan'):doc=built_document(doc,(None,) if kind=='blank' else (('',True),))
     with pytest.raises(AdapterFailure) as error:
         RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:calls.append(1)).extract(request(doc))
     assert error.value.code==code and not calls
+
+
+def built_document(doc,pages):
+    """One PDF page per entry: None is blank, otherwise (text, has_image)."""
+    with pymupdf.open() as pdf:
+        for entry in pages:
+            page=pdf.new_page()
+            if entry is None:continue
+            text,image=entry
+            if text:page.insert_text((30,40),text)
+            if image:page.insert_image(pymupdf.Rect(20,60,120,160),stream=b'P6\n1 1\n255\n\xff\x00\x00')
+        raw=pdf.tobytes()
+    ref=doc.reference.model_copy(update={'sha256':sha256(raw).hexdigest(),'page_count':len(pages)})
+    return VerifiedDocument(doc.context,ref,raw,len(pages))
+
+
+def test_page_with_text_and_images_is_read_and_reported_instead_of_rejected():
+    doc=built_document(document(),(('Title must be shown',False),('Logo must be used',True)))
+    settings=PDFExtractionConfiguration(mode='mock')
+    sources,image_pages=read_sources(doc,settings)
+    assert [s.block_id for s in sources]==['p1-text','p2-text'] and image_pages==(2,)
+    assert prepare_sources(doc,settings)==sources
+    quote='Logo must be used'
+    item=dict(text=quote,kind='unsupported',operator='manual',expected='',required=True,unit=None,
+        block_id='p2-text',page=2,quote=quote,unresolved=False)
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:raw_reply(item)).extract(request(doc))
+    assert draft.criteria[0].source.page==2 and draft.criteria[0].source.quote==quote
+    assert [w for w in draft.warnings if w.endswith('_embedded_images_not_read')]==['page_2_embedded_images_not_read']
+
+
+def test_scanned_page_in_a_mixed_pdf_is_reported_without_renumbering_sources():
+    doc=built_document(document(),(('',True),('Title must be shown',False)))
+    settings=PDFExtractionConfiguration(mode='mock')
+    quote='Title must be shown'
+    item=dict(text=quote,kind='unsupported',operator='manual',expected='',required=True,unit=None,
+        block_id='p2-text',page=2,quote=quote,unresolved=False)
+    draft=RegisteredPDFExtractor(lambda _:doc,settings,provider=lambda _:raw_reply(item)).extract(request(doc))
+    assert draft.extraction.skipped_pdf_pages==(1,)
+    assert [source.page for source in draft.extraction.sources]==[2]
+    assert 'page_1_text_unavailable' in draft.warnings
+
+
+def test_pdf_without_images_carries_no_image_warning():
+    doc=document();adapter=RegisteredPDFExtractor(lambda _:doc,PDFExtractionConfiguration(mode='mock'))
+    assert not [w for w in adapter.extract(request(doc)).warnings if w.endswith('_embedded_images_not_read')]
 
 
 def qwen_settings():return PDFExtractionConfiguration(mode='qwen',structuring='literal_legacy',endpoint='https://qwen.invalid/v1/chat/completions')
@@ -254,6 +291,39 @@ def test_model_cannot_supply_a_rewritten_quote_or_an_oversized_range():
     with pytest.raises(AdapterFailure) as error:
         materialize_selection(source_choice('p1-text:L1','p1-text:L1'),index)
     assert error.value.code=='A02_SOURCE_MISMATCH'
+
+
+def text_input_block(text):
+    return PDFTextSource(page=1,block_id='input-text',text=text,text_sha256=sha256(text.encode()).hexdigest())
+
+
+def test_multi_section_text_input_is_shown_as_blocks_but_resolves_to_the_one_stored_source():
+    text='제목\n안내 문장\n\n항목 | 내용\n가로 | 3000픽셀\r\n\r\n\r\n관람시간 - 확인 중\n'
+    source=text_input_block(text);index,sent=index_sources((source,))
+    assert [(b['block_id'],b['page'],[l['id'] for l in b['lines']]) for b in sent]==[
+        ('p1-text',1,['p1-text:L1','p1-text:L2']),
+        ('p2-text',2,['p2-text:L1','p2-text:L2']),
+        ('p3-text',3,['p3-text:L1'])]
+    assert [l['text'] for b in sent for l in b['lines']]==['제목','안내 문장','항목 | 내용','가로 | 3000픽셀','관람시간 - 확인 중']
+    assert all(line.source is source for line in index.lines.values())
+    assert [text[line.start:line.end] for line in index.lines.values()]==[l['text'] for b in sent for l in b['lines']]
+    part=index.parts['p2-text:L2:T3'];assert text[part.start:part.end]=='3000'
+    # Selected excerpts keep the stored block, page and original bytes, even across sections.
+    item=json.loads(materialize_selection(source_choice('p2-text:L2','p3-text:L1'),index))['candidates'][0]
+    assert item['quote']=='가로 | 3000픽셀\r\n\r\n\r\n관람시간 - 확인 중' and item['block_id']=='input-text' and item['page']==1
+
+
+@pytest.mark.parametrize('text',['제목\n원문\n허용 조건','\n\n제목\n원문\n\n\n','한 줄'])
+def test_single_section_text_input_keeps_its_original_line_ids(text):
+    _,sent=index_sources((text_input_block(text),))
+    numbers=[n for n,line in enumerate(text.splitlines(),1) if line.strip()]
+    assert [(b['block_id'],b['page']) for b in sent]==[('input-text',1)]
+    assert [l['id'] for l in sent[0]['lines']]==[f'input-text:L{n}' for n in numbers]
+
+
+def test_pdf_pages_with_blank_lines_are_never_split_into_sections():
+    _,sent=index_sources((source_block('첫째\n\n둘째\n\n셋째'),))
+    assert [(b['block_id'],[l['id'] for l in b['lines']]) for b in sent]==[('p1-text',['p1-text:L1','p1-text:L3','p1-text:L5'])]
 
 
 def test_source_index_overflow_fails_without_silently_truncating():
@@ -400,6 +470,7 @@ def test_legacy_json_does_not_gain_null_trace_or_configuration_fields():
     {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions?api_key=secret'},
     {'mode':'qwen','endpoint':'file:///tmp/model'},
     {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions','max_text_chars':60001},
+    {'mode':'qwen','endpoint':'https://qwen.invalid/v1/chat/completions','timeout_seconds':901},
 ))
 def test_model_mode_limits_and_endpoint_are_trusted_explicit_configuration(values):
     from pydantic import ValidationError

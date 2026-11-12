@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import text
 from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
+from .postgres_schema import video_approvals_installed
 
 GRAPH_EVENTS = frozenset({'run.created','step.completed','criteria.version_created',
     'criteria.approved','poster.review_created','approval.recorded','run.failed'})
@@ -85,6 +86,20 @@ def project_snapshot(c, project_id):
         key='approval:'+str(row['approval_id']);node(key,'approval',decision=row['decision'])
         edge(key,'run:'+row['run_id'],'approves')
     for row in bindings:edge('approval:'+str(row['approval_id']),'criteria:'+str(row['criteria_version_id']),'approves')
+    if video_approvals_installed(c):
+        video_approvals=c.execute(text(
+            'SELECT run_id,parent_run_id,asset_version,criteria_version,criteria_sha256,asset_sha256,decision '
+            'FROM agent_framework.video_approvals WHERE project_id=:p'), {'p':pid}).mappings()
+        for row in video_approvals:
+            run_key='video:'+str(row['run_id'])
+            approval_key='video-approval:'+str(row['run_id'])
+            node(run_key,'video_review',asset_version=row['asset_version'],criteria_version=row['criteria_version'],
+                 asset_sha256=row['asset_sha256'],criteria_sha256=row['criteria_sha256'])
+            node(approval_key,'video_approval',decision=row['decision'])
+            edge(project,run_key,'contains')
+            edge(approval_key,run_key,'approves')
+            if row['parent_run_id']:
+                edge('video:'+str(row['parent_run_id']),run_key,'reinspected_as')
     return sorted(nodes.values(),key=lambda n:n['key']),[{'source':a,'target':b,'kind':k}
         for a,b,k in sorted(edges) if a in nodes and b in nodes]
 

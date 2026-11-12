@@ -3,7 +3,7 @@ html:has(.rv-workspace--tasks) { scrollbar-gutter: stable; }
 .rv-main.rv-my-tasks {
   --rv-line: #deded9;
   --rv-muted: #62645e;
-  max-width: 1480px;
+  max-width: 1700px;
   padding: 28px clamp(15px, 2.3vw, 36px) 42px;
   font-size: 14px;
   line-height: 1.55;
@@ -20,7 +20,7 @@ html:has(.rv-workspace--tasks) { scrollbar-gutter: stable; }
 .rv-task-heading, .rv-task-toolbar { justify-content: space-between; }
 .rv-task-heading { margin-bottom: 18px; }
 .rv-task-heading .rv-eyebrow { font-size: 11px; }
-.rv-my-tasks .rv-task-heading h1 { margin: 5px 0 10px; font-size: 34px; font-weight: 700; line-height: 1.22; letter-spacing: -.05em; }
+.rv-my-tasks .rv-task-heading h1 { outline: 0; margin: 5px 0 10px; font-size: 34px; font-weight: 700; line-height: 1.22; letter-spacing: -.05em; }
 .rv-task-heading p { color: var(--rv-muted); }
 .rv-my-tasks .rv-task-panel { border-radius: 17px; padding: clamp(15px, 2.3vw, 28px); }
 .rv-task-toolbar { margin-bottom: 13px; }
@@ -61,3 +61,17 @@ html:has(.rv-workspace--tasks) { scrollbar-gutter: stable; }
 .rv-task-state-icon { display: grid; place-items: center; border: 1px solid var(--rv-line); border-radius: 9px; background: #f7f7f5; }
 .rv-task-state-icon .icon { width: 17px; height: 17px; }
 .rv-task-spinner { border: 3px solid #deded8; border-top-color: #222; border-radius: 11px; animation: rv-button-spin 2s linear infinite; }
+
+.rv-my-tasks .rv-batches { margin-bottom: 18px; }
+.rv-batches h2 { margin: 0; font-size: 18px; }
+.rv-batch-form { display: grid; gap: 10px; justify-items: start; padding-bottom: 14px; }
+.rv-batch-form label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 600; }
+.rv-batch-form p, .rv-batch-card p { margin: 4px 0; }
+.rv-batch-card { padding: 13px 0; border-top: 1px solid var(--rv-line); }
+.rv-batch-card progress { width: min(100%, 400px); accent-color: #171717; }
+.rv-batch-notification { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.rv-batch-notification p { font-weight: 700; }
+.rv-batch-files { list-style: none; padding: 0; margin: 5px 0 0; }
+.rv-batch-files li { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; padding: 4px 0; overflow-wrap: anywhere; }
+.rv-batch-files li span:first-child { flex: 1 1 220px; }
+.rv-batch-files li small { color: var(--rv-muted); }

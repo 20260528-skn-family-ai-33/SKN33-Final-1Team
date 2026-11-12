@@ -8,9 +8,15 @@ export function registrationIssue({ displayName, email, password, confirmation }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     return { field: 'email', message: '올바른 이메일을 입력해 주세요.' };
   }
-  const length = Array.from(password).length;
-  if (length < 8 || length > 128 || password.includes('\0') || !/[0-9]/.test(password) || !Array.from(password).some(char => SPECIAL_CHARACTERS.includes(char))) {
-    return { field: 'password', message: '비밀번호는 8~128자로 입력하고 숫자와 특수문자를 각각 하나 이상 포함해 주세요.' };
+  const characters = Array.from(password);
+  if (characters.length < 8) {
+    return { field: 'password', message: '비밀번호는 최소 8자 이상 입력해 주세요.' };
+  }
+  if (characters.length > 20) {
+    return { field: 'password', message: '비밀번호는 최대 20자까지 입력할 수 있어요.' };
+  }
+  if (password.includes('\0') || !/[0-9]/.test(password) || !characters.some(char => SPECIAL_CHARACTERS.includes(char))) {
+    return { field: 'password', message: '비밀번호에 숫자와 특수문자를 각각 하나 이상 포함해 주세요.' };
   }
   if (password !== confirmation) return { field: 'confirmation', message: '비밀번호 확인이 일치하지 않습니다.' };
   return null;

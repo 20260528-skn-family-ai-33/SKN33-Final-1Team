@@ -13,9 +13,10 @@ from pydantic import BaseModel,ConfigDict,Field,ValidationError
 from backend.app.hashing.canonical import validate_tree
 
 from .a02_configuration import PDFExtractionConfiguration
-from .a02_source_selection import (SelectedProviderReply,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE)
+from .a02_source_selection import (SelectedProviderReply,SourceIndex,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE,
+    TEXT_INPUT_BLOCK_ID)
 from .a02_requirements import compile_requirements,unresolved_passages
-from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticProviderReply,
+from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticChunkReply,SemanticProviderReply,
     PRESENTATION_PROMPT,PRESENTATION_PROMPT_HASH,LEGACY_SEMANTIC_PROMPT_HASH,LEGACY_PRESENTATION_PROMPT_HASH,
     semantic_schema,materialize_semantics,verify_normalized_date,validate_presentation)
 from .contracts import CriteriaDraft,Criterion,ExtractionTrace,PDFTextSource,SourceRef
@@ -137,37 +138,47 @@ def _json(raw,limit=MAX_RESPONSE):
     except (ValueError,UnicodeError,RecursionError):_fail('A02_RESPONSE_INVALID')
 
 
-def prepare_sources(document,settings):
+IMAGE_PAGE_WARNING='page_{}_embedded_images_not_read'
+SKIPPED_PAGE_WARNING='page_{}_text_unavailable'
+INCOMPLETE_PAGE_WARNING='page_{}_model_output_incomplete'
+
+
+def prepare_sources(document,settings):return read_sources(document,settings)[0]
+
+
+def read_sources(document,settings):
+    """(text sources, page numbers whose embedded images were not read)."""
     if document.reference.media_type=='text/plain':
         from .requirement_text import inspect_text
         inspect_text(document.content)
         if sha256(document.content).hexdigest()!=document.reference.sha256:_fail('FILE_INTEGRITY_MISMATCH')
         text=document.content.decode('utf-8')
         if len(text)>settings.max_text_chars:_fail('PDF_TEXT_LIMIT_EXCEEDED')
-        return (PDFTextSource(page=1,block_id='input-text',text=text,text_sha256=sha256(text.encode()).hexdigest()),)
+        return (PDFTextSource(page=1,block_id=TEXT_INPUT_BLOCK_ID,text=text,text_sha256=sha256(text.encode()).hexdigest()),),()
     import pymupdf
     if pymupdf.VersionBind!=settings.parser_version:_fail('PDF_PARSER_VERSION_MISMATCH')
     if (sha256(document.content).hexdigest()!=document.reference.sha256
             or inspect_document(document.content)!=document.reference.page_count):_fail('FILE_INTEGRITY_MISMATCH')
-    result=[];total=0
+    result=[];image_pages=[];total=0;unreadable=False
     try:
         with pymupdf.open(stream=document.content,filetype='pdf') as pdf:
             for number,page in enumerate(pdf,1):
                 # One stable page text block. Raw extraction order/whitespace is
                 # preserved for quotes; it does not claim visual table fidelity.
                 text=page.get_text('text',sort=False)
-                if not text.strip():_fail('PDF_TEXT_UNAVAILABLE')
-                if '\ufffd' in text or '\x00' in text:_fail('PDF_TEXT_UNREADABLE')
-                # Mixed image/text pages may hide requirements outside the text
-                # layer. Initial text-only path rejects them; no OCR fallback.
-                if page.get_image_info():_fail('PDF_IMAGE_PAGE_UNSUPPORTED')
+                if not text.strip():continue
+                if '\ufffd' in text or '\x00' in text:
+                    unreadable=True
+                    continue
+                if page.get_image_info():image_pages.append(number)
                 total+=len(text)
                 if total>settings.max_text_chars:_fail('PDF_TEXT_LIMIT_EXCEEDED')
                 result.append(PDFTextSource(page=number,block_id=f'p{number}-text',text=text,
                     text_sha256=sha256(text.encode()).hexdigest()))
     except AdapterFailure:raise
     except Exception:_fail('PDF_TEXT_UNAVAILABLE')
-    return tuple(result)
+    if not result:_fail('PDF_TEXT_UNREADABLE' if unreadable else 'PDF_TEXT_UNAVAILABLE')
+    return tuple(result),tuple(image_pages)
 
 
 class MockProvider:
@@ -186,19 +197,62 @@ class MockProvider:
         return json.dumps({'candidates':items},ensure_ascii=False).encode()
 
 
+def semantic_chunks(index,payload):
+    # Short inputs keep one request. Large documents preserve their original
+    # source IDs while limiting each guided output to a small part of the text.
+    current=[];pages=set();chars=0
+    for source in payload:
+        for line in source['lines']:
+            page=index.lines[line['id']].source.page
+            if current and (len(pages | {page})>2 or chars+len(line['text'])>6500):
+                yield current
+                current=[];pages=set();chars=0
+            if not current or current[-1]['block_id']!=source['block_id']:
+                current.append({**source,'lines':[]})
+            current[-1]['lines'].append(line)
+            pages.add(page);chars+=len(line['text'])
+    if current:yield current
+
+
 class QwenProvider:
-    """Exactly one HTTP dispatch. No repair, transport retry, redirects or fallback."""
+    """Bounded semantic requests. Unconfirmed dispatch outcomes are never retried."""
     def __init__(self,settings,*,api_key=None,transport=None):
         self.settings=settings;self._api_key=api_key;self._transport=transport
 
     def __call__(self,sources):
-        import httpx
         settings=self.settings
         if settings.mode!='qwen':_fail('QWEN_NOT_CONFIGURED')
         source_index,source_payload=index_sources(sources)
+        deadline=monotonic()+settings.timeout_seconds
+        if settings.structuring!='semantic':
+            return self._request(source_index,source_payload,deadline)
+        payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
+        batches=list(semantic_chunks(source_index,payload))
+        if len(batches)==1:
+            return self._request(source_index,payload,deadline)
+        requirements=[];indexes=[];hashes=[];incomplete=set()
+        for batch in batches:
+            scoped=SourceIndex({line['id']:source_index.lines[line['id']] for block in batch for line in block['lines']},{})
+            try:
+                reply=self._request(scoped,batch,deadline,chunk=True)
+            except AdapterFailure as error:
+                if error.code not in ('QWEN_OUTPUT_INCOMPLETE','QWEN_REQUEST_BUDGET_EXHAUSTED'):raise
+                incomplete.update(line.source.page for line in scoped.lines.values())
+                continue
+            requirements.extend(reply.result.requirements)
+            indexes.extend([scoped]*len(reply.result.requirements))
+            hashes.append(reply.response_sha256)
+        if not requirements:_fail('QWEN_OUTPUT_INCOMPLETE' if incomplete else 'A02_NO_VALID_REQUIREMENTS')
+        if len(requirements)>128:_fail('A02_COMPILED_CRITERIA_LIMIT')
+        digest=sha256(('a02-chunks-v1:'+':'.join(hashes)).encode()).hexdigest()
+        return SemanticProviderReply(SemanticReply(requirements=requirements),digest,tuple(indexes),tuple(sorted(incomplete)))
+
+    def _request(self,source_index,source_payload,deadline,*,chunk=False):
+        import httpx
+        settings=self.settings
         semantic=settings.structuring=='semantic'
-        if semantic:
-            source_payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
+        remaining=deadline-monotonic()
+        if remaining<=0:_fail('QWEN_REQUEST_BUDGET_EXHAUSTED')
         headers={'Accept':'application/json','Accept-Encoding':'identity'}
         if self._api_key:headers['Authorization']='Bearer '+self._api_key
         prompt=PRESENTATION_PROMPT if semantic and settings.presentation else SEMANTIC_PROMPT if semantic else QWEN_PROMPT
@@ -207,11 +261,10 @@ class QwenProvider:
             'stream':False,'temperature':0,'max_tokens':settings.max_output_tokens,
             'chat_template_kwargs':{'enable_thinking':False},
             'response_format':{'type':'json_schema','json_schema':{'name':'poster_semantic_requirements' if semantic else 'poster_criteria_source_selection',
-                'strict':True,'schema':semantic_schema(source_index,presentation=settings.presentation) if semantic else selection_schema(source_index)}}}
-        deadline=monotonic()+settings.timeout_seconds
+                'strict':True,'schema':semantic_schema(source_index,presentation=settings.presentation,chunk=chunk) if semantic else selection_schema(source_index)}}}
         transport=self._transport if self._transport is not None else httpx.HTTPTransport(retries=0)
         try:
-            with httpx.Client(transport=transport,timeout=httpx.Timeout(settings.timeout_seconds,connect=min(10,settings.timeout_seconds)),
+            with httpx.Client(transport=transport,timeout=httpx.Timeout(remaining,connect=min(10,remaining)),
                     follow_redirects=False,trust_env=False,headers=headers) as client:
                 with client.stream('POST',settings.endpoint,json=data) as response:
                     if response.status_code>=500:
@@ -237,11 +290,37 @@ class QwenProvider:
             content=choices[0]['message']['content']
             if not isinstance(content,str):_fail('A02_RESPONSE_INVALID')
             model_raw=content.encode('utf-8')
-            if semantic:return SemanticProviderReply(SemanticReply.model_validate(_json(model_raw)),sha256(model_raw).hexdigest())
+            if semantic:
+                model=SemanticChunkReply if chunk else SemanticReply
+                return SemanticProviderReply(model.model_validate(_json(model_raw)),sha256(model_raw).hexdigest())
             selected=materialize_selection(_json(model_raw),source_index)
             return SelectedProviderReply(selected,sha256(model_raw).hexdigest())
         except ValidationError:_fail('A02_RESPONSE_INVALID')
         except (KeyError,TypeError,IndexError,UnicodeError):_fail('A02_RESPONSE_INVALID')
+
+
+class OpenAIFallbackProvider:
+    """Qwen 실패 뒤 한 번만 부르는 OpenAI 추출(같은 프롬프트·원문 줄 스키마). 결과 검증은 Qwen과 같다."""
+    def __init__(self,settings,fallback,*,transport=None):
+        self.settings=settings;self.fallback=fallback;self._transport=transport
+
+    @property
+    def model(self):return self.fallback.model
+
+    def __call__(self,sources):
+        from .openai_fallback import FallbackFailure,call_openai
+        settings=self.settings
+        if settings.structuring!='semantic':_fail('OPENAI_FALLBACK_UNSUPPORTED')
+        source_index,source_payload=index_sources(sources)
+        source_payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
+        try:
+            content,_=call_openai(self.fallback,system=PRESENTATION_PROMPT if settings.presentation else SEMANTIC_PROMPT,
+                user=json.dumps({'sources':source_payload},ensure_ascii=False),
+                schema=semantic_schema(source_index,presentation=settings.presentation),name='poster_semantic_requirements',
+                transport=self._transport)
+        except FallbackFailure as failure:_fail(failure.code)
+        try:return SemanticProviderReply(SemanticReply.model_validate(_json(content)),sha256(content).hexdigest())
+        except ValidationError:_fail('A02_RESPONSE_INVALID')
 
 
 def validate_trace(document,draft):
@@ -257,8 +336,11 @@ def validate_trace(document,draft):
     if trace.prompt_sha256 not in allowed_prompts:raise ValueError('EXTRACTION_PROMPT_MISMATCH')
     if trace.input_kind!=('free_text' if document.media_type=='text/plain' else 'pdf'):raise ValueError('EXTRACTION_INPUT_KIND_MISMATCH')
     sources={s.block_id:s for s in trace.sources}
-    if (len(sources)!=len(trace.sources) or len(trace.sources)!=document.page_count
-            or {s.page for s in trace.sources}!=set(range(1,document.page_count+1))
+    available={s.page for s in trace.sources}
+    skipped=set(trace.skipped_pdf_pages)
+    if (len(sources)!=len(trace.sources) or len(available)!=len(trace.sources)
+            or len(skipped)!=len(trace.skipped_pdf_pages) or (skipped and trace.input_kind!='pdf')
+            or available & skipped or available | skipped!=set(range(1,document.page_count+1))
             or sum(len(s.text) for s in trace.sources)>60000):raise ValueError('EXTRACTION_SOURCE_SCOPE_INVALID')
     for source in trace.sources:
         if sha256(source.text.encode()).hexdigest()!=source.text_sha256:raise ValueError('EXTRACTION_SOURCE_HASH_MISMATCH')
@@ -326,15 +408,32 @@ def validate_trace(document,draft):
 
 
 class RegisteredPDFExtractor:
-    def __init__(self,read_document,settings,*,provider=None):
+    def __init__(self,read_document,settings,*,provider=None,fallback=None):
         self.read_document=read_document
         self.settings=PDFExtractionConfiguration.model_validate(settings.model_dump(mode='python'))
         self.provider=provider if provider is not None else (MockProvider() if settings.mode=='mock' else QwenProvider(settings))
+        # 2026-11-12 베타테스트: Qwen 단계가 실패하면 OpenAIFallbackProvider로 한 번 더 추출한다(None이면 기존과 같다).
+        self.fallback=fallback if settings.mode=='qwen' and settings.structuring=='semantic' else None
 
     def extract(self,request):
+        from .openai_fallback import WARNING,should_fall_back
         document=self.read_document(request)
-        sources=prepare_sources(document,self.settings)
-        raw=self.provider(sources)
+        sources,image_pages=read_sources(document,self.settings)
+        skipped_pages=tuple(sorted(set(range(1,request.document.page_count+1))-{source.page for source in sources}))
+        try:
+            return self._draft(request,document,sources,self.provider(sources),mode=self.settings.mode,model=self.settings.model,
+                image_pages=image_pages,skipped_pages=skipped_pages)
+        except Exception as failure:
+            code=failure.code if isinstance(failure,AdapterFailure) else 'QWEN_RESULT_INVALID'
+            if self.fallback is None or not should_fall_back(code):raise
+        try:
+            return self._draft(request,document,sources,self.fallback(sources),mode='openai',model=self.fallback.model,
+                image_pages=image_pages,skipped_pages=skipped_pages,extra_warnings=(WARNING,'qwen_failed_'+code.lower()))
+        except AdapterFailure as failure:
+            raise AdapterFailure(failure.code,f'Qwen extraction failed ({code}) and the OpenAI fallback also failed ({failure.code}).',
+                retryable=failure.retryable) from None
+
+    def _draft(self,request,document,sources,raw,*,mode,model,image_pages,skipped_pages,extra_warnings=()):
         response_hash=None
         rejections=()
         semantic_reply=raw if isinstance(raw,SemanticProviderReply) else None
@@ -343,7 +442,7 @@ class RegisteredPDFExtractor:
             response_hash=semantic_reply.response_sha256
             index,_=index_sources(sources)
             try:items,compilation_warnings,rejections=materialize_semantics(semantic_reply.result,index,sources,request.context.document_version_id,
-                presentation=self.settings.presentation)
+                presentation=self.settings.presentation,candidate_indexes=semantic_reply.candidate_indexes)
             except ValidationError:_fail('A02_RESPONSE_INVALID')
             # The semantic path never invokes the literal compiler or rewrites
             # model values. The legacy JSON validator remains below for old
@@ -379,17 +478,22 @@ class RegisteredPDFExtractor:
                     block_id=item.block_id,quote=item.quote,source_hash=sha256(item.quote.encode()).hexdigest())))
         prompt_hash=(PRESENTATION_PROMPT_HASH if semantic_reply is not None and self.settings.presentation else
             SEMANTIC_PROMPT_HASH if semantic_reply is not None else QWEN_PROMPT_HASH if self.settings.mode=='qwen' else PROMPT_HASH)
-        trace=ExtractionTrace(mode=self.settings.mode,model='mock-line-fixture-v1' if self.settings.mode=='mock' else self.settings.model,
+        trace=ExtractionTrace(mode=mode,model='mock-line-fixture-v1' if self.settings.mode=='mock' else model,
             parser='utf8-source-v1' if request.document.media_type=='text/plain' else 'pymupdf-'+self.settings.parser_version,
             document_sha256=document.reference.sha256,prompt_sha256=prompt_hash,
             response_sha256=response_hash or sha256(raw.encode() if isinstance(raw,str) else raw).hexdigest(),sources=sources,
             policy=('a02-semantic-v4' if self.settings.presentation else 'a02-semantic-v3') if semantic_reply is not None else 'a02-source-compile-v2' if self.settings.mode=='qwen' else 'a02-text-v1',
             input_kind='free_text' if request.document.media_type=='text/plain' else 'pdf',
-            unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections)
+            unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections,skipped_pdf_pages=skipped_pages)
         warnings=['unapproved_draft','exact_source_check_is_not_semantic_accuracy','text_layer_only_visual_layout_not_verified']
+        warnings.extend(IMAGE_PAGE_WARNING.format(number) for number in image_pages)
+        warnings.extend(SKIPPED_PAGE_WARNING.format(number) for number in skipped_pages)
+        if semantic_reply is not None:
+            warnings.extend(INCOMPLETE_PAGE_WARNING.format(number) for number in semantic_reply.incomplete_pages)
         if self.settings.mode=='mock':warnings.append('synthetic_mock_manual_candidates_not_qwen_results')
         if self.settings.mode=='qwen':warnings.extend((
             'semantic_draft_requires_human_review' if semantic_reply is not None else 'literal_compilation_requires_human_review',*compilation_warnings))
+        warnings.extend(extra_warnings)
         if unresolved:warnings.append('missing_values_require_client_clarification')
         elif any(UNRESOLVED_SOURCE.search(source.text) for source in sources):
             # Source grounding alone does not prove coverage. Keep a visible
@@ -429,7 +533,11 @@ def build_postgres_agents(configuration,store,storage,*,api_key=None,poster_stor
         if len(content)!=row['byte_size'] or sha256(content).hexdigest()!=row['sha256']:_fail('FILE_INTEGRITY_MISMATCH')
         return VerifiedDocument(context,request.document,content,row['page_count'])
     provider=MockProvider() if settings.mode=='mock' else QwenProvider(settings,api_key=api_key)
-    extractor=RegisteredPDFExtractor(read_document,settings,provider=provider)
+    from .openai_fallback import fallback_settings
+    fallback=fallback_settings()
+    if fallback is not None:print(json.dumps({'event':'a02_openai_fallback_enabled','model':fallback.model}),flush=True)
+    extractor=RegisteredPDFExtractor(read_document,settings,provider=provider,
+        fallback=OpenAIFallbackProvider(settings,fallback) if fallback is not None else None)
     if configuration.roles['A04_A05'].kind=='registered_poster':
         from .poster_review import RegisteredPosterInspector,build_poster_callback
         if poster_storage is None:_fail('POSTER_STORAGE_REQUIRED')

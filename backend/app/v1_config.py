@@ -24,6 +24,7 @@ class V1Settings:
     frontend_dist: Path | None = None
     review_executor: str = 'background_tasks'
     review_config_file: Path | None = None
+    poster_edit_key: Secret | None = None
 
     @property
     def database(self):return self.persistence.database
@@ -121,4 +122,8 @@ def load_v1_settings(environ=None):
     frontend = values.get('FRONTEND_DIST')
     if frontend and (not Path(frontend).is_absolute() or '..' in Path(frontend).parts):
         raise ConfigurationError('FRONTEND_DIST must be an absolute build directory without traversal.')
-    return V1Settings(persistence,environment,flag=='1',project,origins,hosts,Secret(secrets[0]),Secret(secrets[1]),Path(root) if root else None,review_pipeline,Path(frontend) if frontend else None,executor,Path(config_file) if config_file else None)
+    poster_edit_key = values.get('creative_checker_openapi', '').strip()
+    if poster_edit_key and any(not 33 <= ord(char) <= 126 for char in poster_edit_key):
+        raise ConfigurationError('Invalid creative_checker_openapi value.')
+    return V1Settings(persistence,environment,flag=='1',project,origins,hosts,Secret(secrets[0]),Secret(secrets[1]),Path(root) if root else None,review_pipeline,Path(frontend) if frontend else None,executor,Path(config_file) if config_file else None,
+                      poster_edit_key=Secret(poster_edit_key) if poster_edit_key else None)

@@ -1,4 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
+import VideoEvidenceGraph from './VideoEvidenceGraph.jsx';
+import VideoWorkflowActions from './VideoWorkflowActions.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { LogoFlowInline } from './LogoFlowParts.jsx';
@@ -214,7 +216,7 @@ function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScr
 }
 
 // 왼쪽 영상과 타임라인을 오른쪽의 판정 목록 및 선택 근거에 연결한다.
-export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onReport }) {
+export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onRevise, onOpenRun, onDecision, onReport }) {
   const player = useRef(null);
   const items = useMemo(() => judgmentItems(job), [job]);
   const tracks = job.tracks || EMPTY;
@@ -397,13 +399,15 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
               <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
           </div>
+          {job.disclosure && <VideoEvidenceGraph jobId={job.id} onFrame={show} />}
+          {job.workflow && <VideoWorkflowActions {...{ job, onDecision, onRevise, onOpenRun }} />}
           <RuntimeDetails job={job} />
         </div>
       </aside>
     </div>
 
     <footer className="rv-result-footer rv-video-result-actions"><div>
-      <button type="button" className="rv-button secondary" onClick={onReuse}>한번 더 검수하기</button>
+      <button type="button" className="rv-button secondary" onClick={onReuse}>기준을 복사해 새 검수</button>
       <button type="button" className="rv-button secondary" onClick={onNewReview}>새 검수 시작하기</button>
       <button type="button" className="rv-button primary" onClick={onReport}>보고서 생성하기<Icon name="arrow" /></button></div>
     </footer>

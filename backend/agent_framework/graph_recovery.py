@@ -20,6 +20,7 @@ from .graph_projection import project_snapshot,mark_project_changed
 from .graph_store import FrameworkGraph,GraphUnavailable
 from .graph_monitor import save_snapshot,load_snapshot
 from .postgres_commands import _values,_ready
+from .postgres_schema import GRAPH_REVISIONS
 
 FORMAT='af-graph-recovery-v1'
 
@@ -175,7 +176,7 @@ def recovery_command(args):
     graph=FrameworkGraph(values.get('CC_NEO4J_URI',''),values.get('CC_NEO4J_USER','neo4j'),values.get('CC_NEO4J_PASSWORD',''))
     stop=Event();previous={};signature=None
     try:
-        if _ready(engine,settings)['revision']!='AF005':raise ValueError('AF005 required')
+        if _ready(engine,settings)['revision'] not in GRAPH_REVISIONS:raise ValueError('AF005 required')
         if args.state_file:previous,_=load_snapshot(args.state_file,max_age=86400,expected_format=FORMAT)
         for name in (signal.SIGINT,signal.SIGTERM):signal.signal(name,lambda *_:stop.set())
         recovery=Recovery(engine,graph)

@@ -126,7 +126,11 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     calls = []
     data = make_video(tmp_path / "clip.mp4")
     with make_client(tmp_path, ocr=fake_ocr(calls)) as client:
-        assert client.get("/api/video-reviews/status").json()["limits"]["duration_seconds"] == 180
+        status = client.get("/api/video-reviews/status").json()
+        assert status["project_reviews"] is False
+        policy = status["limits"]
+        assert policy["duration_seconds"] == 180
+        assert policy["upload_bytes"] == 1024 ** 3
         response = upload(client, data, name="../../etc/passwd.mp4",
                           criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")],
                           disclosure={"kind": "endorsement", "title": "#광고 신상 소개"})
@@ -170,6 +174,29 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     disclosure = job["disclosure"]
     assert disclosure["text_time_status"] == "pass" and disclosure["status"] == "review"
     assert job["double_check"]["status"] == "skipped"
+
+
+def test_evidence_graph_endpoint_reads_completed_result(tmp_path):
+    """근거 관계도: 완료 결과의 노드·관계만 돌려주고 OCR을 다시 부르지 않는다."""
+    calls = []
+    data = make_video(tmp_path / "clip.mp4")
+    with make_client(tmp_path, ocr=fake_ocr(calls, ad_text="협찬받았습니다")) as client:
+        job_id = upload(client, data, disclosure={"kind": "endorsement", "title": "신상 소개"}).json()["id"]
+        job = client.get(f"/api/video-reviews/{job_id}").json()
+        full = client.get(f"/api/video-reviews/{job_id}/evidence-graph")
+        one = client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R1"})
+        assert client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R9"}).status_code == 404
+        missing = "00000000-0000-4000-8000-000000000000"
+        assert client.get(f"/api/video-reviews/{missing}/evidence-graph").status_code == 404
+    assert job["status"] == "completed", job.get("error")
+    assert full.status_code == 200 and one.status_code == 200 and len(calls) == 1
+    graph = one.json()
+    assert graph["answered_by"] == "result_json" and graph["job_id"] == job_id
+    assert [v["status"] for v in graph["verdicts"]] == [job["disclosure"]["rules"]["R1"]["status"]]
+    [observation] = [n for n in graph["nodes"] if n["kind"] == "observation"]
+    assert observation["label"] == "협찬받았습니다" and observation["phrase_class"] == "ambiguous"
+    assert observation["count"] == job["disclosure"]["rules"]["R1"]["counts"]["ambiguous"]
+    assert [v["rule"] for v in full.json()["verdicts"]] == list(job["disclosure"]["rules"])
 
 
 def test_webm_audio_longer_than_video_extracts(tmp_path):
@@ -302,6 +329,7 @@ def test_limits_and_status_codes(tmp_path, monkeypatch):
     monkeypatch.setenv("VIDEO_MAX_SECONDS", "180")
     monkeypatch.setenv("VIDEO_MAX_MB", "1")
     with make_client(tmp_path) as client:
+        assert client.get("/api/video-reviews/status").json()["limits"]["upload_bytes"] == 1024 ** 2
         assert upload(client, b"\x00\x00\x00\x18ftypmp42" + b"0" * (2 * 1024 * 1024)).status_code == 413
     monkeypatch.setenv("VIDEO_MAX_MB", "500")
     with make_client(tmp_path) as client:  # 시작 시 복구가 끝난 뒤 실행 중 3건을 둔다 → 429

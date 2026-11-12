@@ -118,6 +118,18 @@ def test_judge_guards_lower_but_never_raise():
     assert judge([], [_track("x")], SEGMENTS, frames(3))["calls"] == 0
 
 
+@pytest.mark.parametrize("scope", ["전 구간 표시", "연속 노출", "음성으로 낭독"])
+def test_sampled_frames_cannot_confirm_continuity_or_audio(scope):
+    from backend.app.video.workflow import final_requirements
+
+    criteria = [{"id": "a", "text": f'"할인 쿠폰" {scope}', "type": "information"}]
+    review = judge(criteria, [_track("할인 쿠폰")], SEGMENTS, frames(3))
+    assert review["results"][0]["status"] == "review" and review["results"][0]["scope_limit"]
+    assert final_requirements({"criteria": criteria, "review": review, "coverage": {"samples": 3}}) == {
+        "blocked": True, "human_check_ids": [],
+    }
+
+
 @pytest.mark.parametrize("text,kind", [
     ("#광고", "allowed"), ("유료 광고 포함", "allowed"), ("#협찬", "allowed"), ("협찬: 김천시", "excluded"),
     ("체험단", "disallowed"), ("AD", "disallowed"), ("Sponsored", "disallowed"), ("광고 문의", "ambiguous"), ("맛있다", "none"),

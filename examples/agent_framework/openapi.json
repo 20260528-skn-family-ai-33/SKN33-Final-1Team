@@ -1047,7 +1047,8 @@
             "type": "string",
             "enum": [
               "mock",
-              "qwen"
+              "qwen",
+              "openai"
             ],
             "title": "Mode"
           },
@@ -1106,6 +1107,15 @@
             "maxItems": 50,
             "minItems": 1,
             "title": "Sources"
+          },
+          "skipped_pdf_pages": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 49,
+            "title": "Skipped Pdf Pages",
+            "default": []
           },
           "unresolved_criterion_ids": {
             "items": {

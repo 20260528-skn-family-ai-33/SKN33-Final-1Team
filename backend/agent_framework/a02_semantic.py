@@ -139,14 +139,20 @@ class SemanticReply(BaseModel):
     requirements:list[SemanticRequirement]=Field(min_length=1,max_length=128)
 
 
+class SemanticChunkReply(SemanticReply):
+    requirements:list[SemanticRequirement]=Field(max_length=128)
+
+
 @dataclass(frozen=True)
 class SemanticProviderReply:
     result:SemanticReply
     response_sha256:str
+    candidate_indexes:tuple = ()
+    incomplete_pages:tuple[int,...] = ()
 
 
-def semantic_schema(index,*,presentation=False):
-    schema=SemanticReply.model_json_schema()
+def semantic_schema(index,*,presentation=False,chunk=False):
+    schema=(SemanticChunkReply if chunk else SemanticReply).model_json_schema()
     properties=schema['$defs']['SourceRange']['properties']
     for key in ('start_line','end_line'):properties[key]['enum']=list(index.lines)
     template=schema['$defs'].pop('SemanticRequirement');variants=[]
@@ -338,17 +344,18 @@ def _materialize_requirement(item,index,version,source,original,*,presentation):
     return criterion,key,warnings
 
 
-def materialize_semantics(reply,index,sources,version,*,presentation=False):
+def materialize_semantics(reply,index,sources,version,*,presentation=False,candidate_indexes=()):
     result=[]
     seen=set()
     warnings=[]
     rejections=[]
     for candidate_index,item in enumerate(reply.requirements,1):
         source=None
+        scope=candidate_indexes[candidate_index-1] if candidate_indexes else index
         try:
-            source,original=selected_range(item.source,index)
+            source,original=selected_range(item.source,scope)
             criterion,key,item_warnings=_materialize_requirement(
-                item,index,version,source,original,presentation=presentation)
+                item,scope,version,source,original,presentation=presentation)
             if key in seen:invalid('A02_DUPLICATE_REQUIREMENT')
         except (AdapterFailure,ValidationError) as error:
             code=error.code if isinstance(error,AdapterFailure) else 'A02_RESPONSE_INVALID'

@@ -1,0 +1,125 @@
+/* 모든 페이지가 함께 쓰는 상단 바. 페이지마다 다른 글꼴 크기·자간을 물려받지 않도록 값을 직접 정한다. */
+/* 세로 스크롤 막대가 생기는 페이지와 없는 페이지에서 로고·메뉴 위치가 달라지지 않게 자리를 미리 비운다. */
+html:has(.cc-header) { scrollbar-gutter: stable; }
+.cc-header {
+  --cc-header-ink: #171717;
+  --cc-header-muted: #62645e;
+  --cc-header-line: #deded9;
+  --cc-header-hover: #f1f1ef;
+  position: relative;
+  z-index: 5;
+  background: #fff;
+  border-bottom: 1px solid var(--cc-header-line);
+  color: var(--cc-header-ink);
+  font: 400 13px/1.5 var(--font-ui, 'Helvetica Neue', Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif);
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+.cc-header *, .cc-header *::before, .cc-header *::after { box-sizing: border-box; }
+.cc-header.cc-header :is(a, button):focus-visible { outline: 2px solid var(--cc-header-ink); outline-offset: 3px; }
+/* 작업 화면 본문과 같은 최대 폭·여백을 써서 로고와 본문의 왼쪽 선을 맞춘다. */
+.cc-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  max-width: 1700px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0 clamp(15px, 2.3vw, 36px);
+}
+.cc-header-brand, .cc-header-actions, .cc-header-account, .cc-header-nav { display: flex; align-items: center; }
+.cc-header-brand { gap: 9px; min-width: 0; }
+.cc-header-actions { gap: 9px; }
+.cc-header-nav { gap: 4px; }
+.cc-header .brand.brand-button {
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cc-header-ink);
+  font: 700 18px/1 var(--font-ui, 'Helvetica Neue', Arial, sans-serif);
+  letter-spacing: -.6px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cc-header .brand-symbol { width: 26px; height: 26px; }
+.cc-header .brand-button:disabled { opacity: .49; cursor: not-allowed; }
+.cc-header-edition {
+  margin-left: 9px;
+  padding-left: 16px;
+  border-left: 1px solid var(--cc-header-line);
+  color: var(--cc-header-muted);
+  font: 9px/1.5 var(--font-signal, Consolas, monospace);
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.cc-header-link {
+  padding: 8px 11px;
+  border-radius: 9px;
+  color: var(--cc-header-muted);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color .16s, color .16s;
+}
+a.cc-header-link:hover, .cc-header-link[aria-current=page] { background: var(--cc-header-hover); color: var(--cc-header-ink); }
+a.cc-header-link:active { background: #e8e8e4; }
+.cc-header-link[aria-current=page] { font-weight: 700; }
+.cc-header-link[aria-disabled=true] { opacity: .49; cursor: not-allowed; }
+.cc-header-account { gap: 9px; padding-left: 12px; border-left: 1px solid var(--cc-header-line); }
+.cc-header-user { max-width: 23ch; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.cc-header-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  border: 1px solid var(--cc-header-line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--cc-header-ink);
+  cursor: pointer;
+  transition: background-color .16s;
+}
+.cc-header-icon:hover:enabled { background: #f2f2f1; }
+.cc-header-icon:active:enabled, .cc-header-start:active { transform: translateY(1px); }
+.cc-header-icon:disabled { opacity: .49; cursor: not-allowed; }
+.cc-header-icon .icon { width: 17px; height: 17px; }
+/* 소개 화면의 button { font: inherit }보다 우선하도록 헤더 안으로 범위를 좁힌다. */
+.cc-header .cc-header-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--cc-header-ink);
+  border-radius: 9px;
+  background: var(--cc-header-ink);
+  color: #fff;
+  font: 600 12px/1.4 var(--font-ui, 'Helvetica Neue', Arial, sans-serif);
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .16s;
+}
+.cc-header-start:hover { background: #343432; }
+.cc-header-start .icon { width: 15px; height: 15px; }
+.cc-header-error { max-width: 1700px; margin: 14px auto 0; padding: 0 clamp(15px, 2.3vw, 36px); }
+
+/* 여백은 작업 화면 본문(.rv-main, .rv-projectbar)의 구간별 여백과 같은 값을 쓴다. */
+@media (max-width: 1100px) { .cc-header-edition { display: none; } .cc-header-inner, .cc-header-error { padding-inline: 24px; } }
+@media (max-width: 900px) { .cc-header-user { display: none; } .cc-header-account { padding-left: 9px; } }
+@media (max-width: 760px) {
+  .cc-header-inner { flex-wrap: wrap; row-gap: 4px; padding-block: 10px; }
+  .cc-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+}
+@media (max-width: 600px) {
+  .cc-header-inner { gap: 10px; padding-inline: 18px; }
+  .cc-header-error { padding-inline: 18px; }
+  .cc-header .brand.brand-button { font-size: 15px; }
+  .cc-header .brand-symbol { width: 23px; height: 23px; }
+  .cc-header-link { padding: 6px 8px; font-size: 12px; }
+  .cc-header .cc-header-start { padding: 0 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .cc-header * { transition: none !important; } }

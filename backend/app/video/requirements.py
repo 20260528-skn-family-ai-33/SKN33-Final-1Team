@@ -4,8 +4,10 @@
 - 문서 읽기 모델은 포스터 A02와 같은 팀 공용 Qwen3.5-4B 서버다(CC_QWEN_BASE_URL·CC_QWEN_MODEL,
   키는 A02_QWEN_API_KEY 또는 CC_QWEN_API_KEY). 영상 자막 판독용 Qwen3-VL 서버와는 별개다.
 - 모델은 번호가 붙은 원문 줄 ID만 고르고, 서버가 그 범위의 원문을 그대로 복사한다.
-  기대값은 고른 원문 안에 실제로 있는 글자여야 하며(띄어쓰기 차이만 원문 철자로 바꿈), 아니면 전체를 거부한다.
-- 요청 1회, temperature 0, 수리·재시도·대체 모델 없음. 결과는 승인되지 않은 초안이다.
+  원문과 대조할 수 없는 후보는 제외 사유와 함께 기록한다.
+- Qwen 실패 시 설정된 OpenAI 대체 모델을 한 번 호출한다(A02_OPENAI_FALLBACK=0으로 비활성화).
+  대체 결과에도 같은 원문 검증을 적용하고 실제 모델과 Qwen 실패 사유를 기록한다.
+  결과는 승인되지 않은 초안이다.
   사람이 화면의 기준 입력란에서 고친 뒤 '검수 시작'을 누를 때 기준이 고정된다(기존 영상 검수 계약).
 - 포스터 A02 코드는 바꾸지 않는다. 원문 줄 색인·범위 복사·기대값 대조 함수만 가져다 쓴다.
 - 로고 이미지 검수 파이프라인은 건드리지 않는다. 로고 요구는 '시각 기준(담당자 확인)' 초안으로만 돌려준다.
@@ -28,6 +30,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from backend.agent_framework.a02_semantic import SourceRange, grounded_literal, selected_range
 from backend.agent_framework.a02_source_selection import index_sources
 from backend.agent_framework.contracts import PDFTextSource
+from backend.agent_framework.openai_fallback import (WARNING as FALLBACK_WARNING, FallbackFailure, call_openai,
+                                                     fallback_settings, should_fall_back)
 from backend.agent_framework.ports import AdapterFailure
 
 POLICY = "a02-video-v2"  # v2: 응답 필드 순서(값→근거 줄→ID), 제외 항목의 원문 밖 값은 비우고 표시
@@ -157,6 +161,9 @@ def readiness() -> dict:
     try:
         settings = config()
     except DocumentError as error:
+        fallback = fallback_settings()
+        if fallback is not None:
+            return {"configured": True, "model": fallback.model, "detail": "Qwen 대신 OpenAI 대체 모델로 문서를 읽습니다."}
         return {"configured": False, "model": None, "detail": str(error)}
     return {"configured": True, "model": settings.model, "detail": "문서 읽기 모델이 설정되어 있습니다."}
 
@@ -230,28 +237,36 @@ def docx_sources(data: bytes) -> tuple[PDFTextSource, ...]:
 
 
 def pdf_sources(data: bytes) -> tuple[PDFTextSource, ...]:
-    """포스터 A02와 같은 텍스트층 전용 규칙: 이미지가 섞인 쪽·글자 없는 쪽은 OCR 없이 거부한다."""
+    return _pdf_pages(data)[0]
+
+
+def _pdf_pages(data: bytes) -> tuple[tuple[PDFTextSource, ...], tuple[int, ...]]:
+    """Keep readable text and report the original page numbers requiring human review."""
     import pymupdf
-    result = []
+    result, image_pages = [], []
+    unreadable = False
     try:
         with pymupdf.open(stream=data, filetype="pdf") as pdf:
             if pdf.page_count > MAX_BLOCKS:
                 _fail("DOCUMENT_TOO_COMPLEX", f"PDF가 {MAX_BLOCKS}쪽을 넘습니다.")
             for number, page in enumerate(pdf, 1):
                 text = page.get_text("text", sort=False)
-                if not text.strip():
-                    _fail("PDF_TEXT_UNAVAILABLE", f"{number}쪽에 글자층이 없습니다. 스캔 PDF는 아직 읽지 않습니다.")
-                if "�" in text or "\x00" in text:
-                    _fail("PDF_TEXT_UNREADABLE", f"{number}쪽 글자가 깨져 있습니다.")
+                broken = "�" in text or "\x00" in text
+                if not text.strip() or broken:
+                    image_pages.append(number)
+                    unreadable = unreadable or broken
+                    continue
                 if page.get_image_info():
-                    _fail("PDF_IMAGE_PAGE_UNSUPPORTED", f"{number}쪽에 이미지가 섞여 있어 글자층만으로는 요구사항을 다 읽었다고 볼 수 없습니다.")
+                    image_pages.append(number)  # 이미지 안 내용은 읽지 않는다. 경고로 알려 사람이 확인한다.
                 result.append(PDFTextSource(page=number, block_id=f"p{number}-text", text=text,
                                             text_sha256=sha256(text.encode()).hexdigest()))
     except DocumentError:
         raise
     except Exception:
         _fail("PDF_TEXT_UNAVAILABLE", "PDF를 읽지 못했습니다.", 415)
-    return tuple(result)
+    if not result:
+        _fail("PDF_TEXT_UNREADABLE" if unreadable else "PDF_TEXT_UNAVAILABLE", "PDF의 읽을 수 있는 글자층이 없습니다.")
+    return tuple(result), tuple(image_pages)
 
 
 def text_sources(data: bytes) -> tuple[PDFTextSource, ...]:
@@ -265,13 +280,18 @@ def text_sources(data: bytes) -> tuple[PDFTextSource, ...]:
 
 
 def read_sources(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSource, ...]]:
-    """실제 바이트로 형식을 정한다(확장자는 텍스트 구분에만 참고)."""
+    return _read(data, filename)[:2]
+
+
+def _read(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSource, ...], tuple[int, ...]]:
+    """실제 바이트로 형식을 정한다(확장자는 텍스트 구분에만 참고). 셋째 값은 이미지를 읽지 않은 PDF 쪽 번호."""
+    image_pages = ()
     if not data:
         _fail("DOCUMENT_EMPTY", "빈 파일입니다.", 400)
     if len(data) > MAX_BYTES:
         _fail("DOCUMENT_TOO_LARGE", "문서는 10MiB 이하로 올려 주세요.", 413)
     if data.startswith(b"%PDF-"):
-        kind, sources = "pdf", pdf_sources(data)
+        kind, (sources, image_pages) = "pdf", _pdf_pages(data)
     elif data.startswith(b"PK\x03\x04"):
         kind, sources = "docx", docx_sources(data)
     elif filename.lower().endswith((".txt", ".md")):
@@ -280,7 +300,7 @@ def read_sources(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSou
         _fail("DOCUMENT_TYPE_UNSUPPORTED", "DOCX·PDF·UTF-8 텍스트(.txt) 문서만 읽을 수 있습니다.", 415)
     if sum(len(s.text) for s in sources) > MAX_TEXT_CHARS:
         _fail("DOCUMENT_TEXT_LIMIT_EXCEEDED", f"문서 글자가 {MAX_TEXT_CHARS:,}자를 넘습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
-    return kind, sources
+    return kind, sources, image_pages
 
 
 # ---------------------------------------------------------------- 모델 호출
@@ -375,11 +395,18 @@ def _criterion_text(item: VideoRequirement, quote: str, expected: str) -> str:
     return _one_line(quote)
 
 
-def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
+def _source_ref(source, quote):
+    return {"block_id": source.block_id, "block": source.page, "quote": quote,
+            "source_hash": sha256(quote.encode()).hexdigest()}
+
+
+def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[dict]]:
     from backend.app.video.judge import requested_texts
     items, seen, warnings = [], set(), []
+    rejected = []
     for number, item in enumerate(reply.requirements, 1):
         dropped = False
+        source = None
         try:
             source, quote = selected_range(item.source, index)
             if item.unresolved and item.expected:
@@ -398,17 +425,19 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
                 if parent.block_id != source.block_id or text not in quote:
                     _fail("A02_QUALIFIER_UNGROUNDED")
                 qualifiers.append(text)
-        except AdapterFailure as failure:
-            _fail(failure.code)
+            if item.item_id is not None and item.item_id not in quote:
+                _fail("A02_ITEM_ID_UNGROUNDED")
+            key = (source.block_id, quote, item.target, item.item_id, expected)
+            if key in seen:
+                _fail("A02_DUPLICATE_REQUIREMENT")
+        except (AdapterFailure, DocumentError) as failure:
+            rejected.append({"candidate_index": number, "code": failure.code,
+                             "source": _source_ref(source, quote) if source is not None else None})
+            continue
         if dropped:
             warnings.append("excluded_value_not_in_source_dropped")
         elif expected != item.expected:
             warnings.append("expected_spacing_copied_from_source")
-        if item.item_id is not None and item.item_id not in quote:
-            _fail("A02_ITEM_ID_UNGROUNDED")
-        key = (source.block_id, quote, item.target, item.item_id, expected)
-        if key in seen:
-            _fail("A02_DUPLICATE_REQUIREMENT")
         seen.add(key)
         text = _criterion_text(item, quote, expected)
         include, reason = False, EXCLUDED_REASON.get(item.target, "")
@@ -427,34 +456,67 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
             "include": include, "reason": reason,
             # 영상 판정(judge.requested_texts)이 이 문장에서 화면 글자와 비교할 값. 비어 있으면 담당자 확인으로 남는다.
             "compare": requested_texts({"text": text}) if include and kind == "information" else [],
-            "source": {"block_id": source.block_id, "block": source.page, "quote": quote,
-                       "source_hash": sha256(quote.encode()).hexdigest()},
+            "source": _source_ref(source, quote),
             "qualifiers": qualifiers,
         })
-    return items, list(dict.fromkeys(warnings))
+    if not items:
+        _fail(rejected[0]["code"] if rejected else "A02_NO_VALID_REQUIREMENTS")
+    return items, list(dict.fromkeys(warnings)), rejected
 
 
-def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None) -> dict:
-    kind, sources = read_sources(data, filename)
-    settings = settings or config()
+_FROM_ENV = object()
+
+
+def call_fallback(fallback, payload: list, index, *, transport=None) -> tuple[VideoReply, str]:
+    """Qwen과 같은 프롬프트·원문 줄 스키마로 OpenAI를 1회 부른다. 결과는 같은 materialize 검증을 거친다."""
+    try:
+        content, _ = call_openai(fallback, system=PROMPT, user=json.dumps({"sources": payload}, ensure_ascii=False),
+                                 schema=schema(index), name="video_requirements", transport=transport)
+    except FallbackFailure as failure:
+        _fail(failure.code, "Qwen과 OpenAI 모두 문서를 읽지 못했습니다. 잠시 후 다시 시도해 주세요.", 502)
+    try:
+        return VideoReply.model_validate(_json(content, MAX_RESPONSE)), sha256(content).hexdigest()
+    except ValidationError:
+        _fail("A02_RESPONSE_INVALID", "모델이 올바른 기준 목록을 돌려주지 않았습니다.", 502)
+
+
+def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None,
+            fallback=_FROM_ENV, fallback_transport=None) -> dict:
+    kind, sources, image_pages = _read(data, filename)
     try:
         index, payload = index_sources(sources)
     except AdapterFailure as failure:
         _fail(failure.code, "문서가 너무 길거나 복잡해 줄 번호를 붙이지 못했습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
     # 포스터 semantic 경로처럼 줄 텍스트만 보낸다(부분 토큰 ID는 보내지 않음).
     payload = [{**block, "lines": [{"id": line["id"], "text": line["text"]} for line in block["lines"]]} for block in payload]
-    reply, response_hash = call_model(settings, payload, index, transport=transport)
-    items, warnings = materialize(reply, index)
+    fallback = fallback_settings() if fallback is _FROM_ENV else fallback
+    qwen_failure = None
+    try:
+        settings = settings or config()
+        reply, response_hash = call_model(settings, payload, index, transport=transport)
+        items, warnings, rejected = materialize(reply, index)
+        model = settings.model
+    except DocumentError as error:
+        if fallback is None or not should_fall_back(error.code):
+            raise
+        qwen_failure = error.code
+        reply, response_hash = call_fallback(fallback, payload, index, transport=fallback_transport)
+        items, warnings, rejected = materialize(reply, index)
+        warnings = [*warnings, FALLBACK_WARNING]
+        model = fallback.model
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
                 for n, item in enumerate((i for i in items if i["include"]), 1)]
-    warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings]
+    warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings,
+                *(f"page_{number}_embedded_images_not_read" for number in image_pages)]
     if any(item["unresolved"] for item in items):
         warnings.append("missing_values_require_client_clarification")
     return {
         "status": "draft", "approved": False, "items": items, "criteria": criteria, "warnings": warnings,
+        "rejected_candidates": rejected,
         "counts": {"items": len(items), "criteria": len(criteria),
                    "excluded": sum(not i["include"] for i in items), "unresolved": sum(i["unresolved"] for i in items)},
-        "trace": {"policy": POLICY, "model": settings.model, "input_kind": kind,
+        "trace": {"policy": POLICY, "model": model, "input_kind": kind,
+                  **({"fallback": {"provider": "openai", "qwen_failure": qwen_failure}} if qwen_failure else {}),
                   "document_sha256": sha256(data).hexdigest(), "prompt_sha256": PROMPT_SHA256,
                   "schema_sha256": SCHEMA_SHA256, "response_sha256": response_hash,
                   "sources": [{"block_id": s.block_id, "block": s.page, "text_sha256": s.text_sha256,

@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { initialState, workflowReducer as reduce, canRun, canConfirm, evidenceBoxStyle } from './workflow.js';
+import { inspectionSize } from './posterImageCopy.js';
+
+test('poster inspection copy preserves the boundary and scales a large original proportionally', () => {
+  assert.deepEqual(inspectionSize(4000, 2500), { width: 4000, height: 2500 });
+  assert.deepEqual(inspectionSize(8000, 5000), { width: 4000, height: 2500 });
+  assert.deepEqual(inspectionSize(10000, 1000), { width: 8192, height: 819 });
+});
 
 function confirmed() {
   let state = reduce(initialState, { type: 'sample', projectName: '축제', requirements: '행사명: 김천김밥축제\n로고 포함', file: { name: 'poster.png' } });

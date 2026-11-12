@@ -26,7 +26,7 @@ class Registration(BaseModel):
     model_config=ConfigDict(extra='forbid',strict=True,hide_input_in_errors=True)
     email: str=Field(max_length=320)
     display_name: str=Field(min_length=1,max_length=100)
-    password: str=Field(min_length=8,max_length=128,repr=False)
+    password: str=Field(min_length=8,max_length=20,repr=False)
 
     @model_validator(mode='after')
     def check(self):

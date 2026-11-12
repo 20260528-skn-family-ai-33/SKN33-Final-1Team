@@ -3,6 +3,7 @@
 No OCR/background-task leader, frontend build, model initialization or migration.
 POST admission/approval only queues work; the separate worker invokes adapters.
 """
+import os
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from functools import partial
@@ -26,7 +27,9 @@ from .api import StartRequest,RevisionRequest
 from .composition import poster_review_configuration_blockers
 from .contracts import Approval,RunSnapshot,StepTimeline
 from .postgres import PostgresStore
-from .postgres_schema import check_extension,check_app_permissions,check_document_extension
+from .postgres_schema import (
+    CRITERIA_REVISIONS, GRAPH_REVISIONS, TEXT_REVISIONS, check_extension, check_app_permissions, check_document_extension,
+)
 from .documents import PostgresDocuments,RegisteredDocument,TextDocumentInput,open_document_storage
 from .files import FileLimits
 from .criteria_review import PostgresCriteriaReview
@@ -55,7 +58,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 with unit_of_work(current.state.engine) as c:
                     revision=check_extension(c);check_app_permissions(c)
                     if pdf_storage_root is not None:check_document_extension(c)
-                if configuration.context_preparation is not None and revision['revision']!='AF005':
+                if configuration.context_preparation is not None and revision['revision'] not in GRAPH_REVISIONS:
                     raise ConfigurationError('Neo4j evidence preparation requires explicit AF005 migration.')
                 current.state.framework_revision=revision['revision']
                 current.state.business=Business(current.state.engine,current.state.authorization,settings)
@@ -66,11 +69,17 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
             current.state.documents=None
             current.state.criteria_review=None
             current.state.poster_reviews=None
+            # Relation reads use Neo4j only when this process was given CC_NEO4J_*; the web
+            # profile does not carry them by default, and PostgreSQL then answers alone.
+            current.state.framework_graph=None
+            if os.environ.get('CC_NEO4J_URI') and os.environ.get('CC_NEO4J_PASSWORD'):
+                from .graph_store import FrameworkGraph
+                current.state.framework_graph=FrameworkGraph()
             try:
                 if pdf_storage_root is not None:
                     storage=await run_in_threadpool(open_document_storage,pdf_storage_root)
                     current.state.documents=PostgresDocuments(current.state.engine,current.state.authorization,storage)
-                if current.state.framework_revision in ('AF003','AF004','AF005'):
+                if current.state.framework_revision in CRITERIA_REVISIONS:
                     current.state.criteria_review=PostgresCriteriaReview(current.state.framework,current.state.documents)
                 if poster_storage_root is not None:
                     if current.state.criteria_review is None or storage is None:
@@ -82,6 +91,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                         current.state.poster_reviews=PostgresPosterReviews(current.state.framework,current.state.criteria_review,poster_storage)
                 yield
             finally:
+                if current.state.framework_graph is not None:await run_in_threadpool(current.state.framework_graph.close)
                 if poster_storage is not None:await run_in_threadpool(poster_storage.close)
                 if storage is not None:await run_in_threadpool(storage.close)
     app.router.lifespan_context=lifespan
@@ -114,14 +124,16 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         blockers.extend(poster_review_configuration_blockers(configuration))
         return {'storage':'postgres','queue':'agent_framework.jobs','schema':app.state.framework_revision,
                 'pdf_registration':app.state.documents is not None,
-                'free_text_registration':app.state.documents is not None and app.state.framework_revision in ('AF004','AF005'),
+                'free_text_registration':app.state.documents is not None and app.state.framework_revision in TEXT_REVISIONS,
+                'docx_text_registration':app.state.documents is not None and app.state.framework_revision in TEXT_REVISIONS,
                 'pdf_extraction_mode':configuration.pdf_extraction.mode if configuration.pdf_extraction and app.state.documents else None,
                 'requirements_presentation':bool(configuration.pdf_extraction and configuration.pdf_extraction.presentation),
                 'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
-                'graph_projection':app.state.framework_revision=='AF005',
+                'graph_projection':app.state.framework_revision in GRAPH_REVISIONS,
                 'task_controls':True,
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
+                'poster_text_edit_ready':settings.poster_edit_key is not None and app.state.poster_reviews is not None,
                 'poster_review_ready':not blockers,'poster_review_blockers':blockers,
                 'authentication':'existing_M008_session_and_CSRF','adapters_initialized_in_api':False,'production_ready':False}
     @app.get('/api/health')
@@ -146,6 +158,18 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         with unit_of_work(app.state.engine) as c:
             app.state.authorization.project(c,actor,project_id,action='read')
             return criteria_impact(c,project_id,criteria_version_id,criterion_id)
+
+    @app.get(prefix+'/runs/{run_id}/criteria-change-impact')
+    def change_impact_view(request:Request,run_id:str):
+        """Items changed against the previously approved criteria, and the poster reviews that used those."""
+        from .criteria_change import CriteriaChangeImpact
+        return CriteriaChangeImpact(criteria_review(),app.state.framework_graph).read(subject(request),run_id)
+
+    @app.get(prefix+'/runs/{run_id}/revision-history')
+    def revision_history_view(request:Request,run_id:str):
+        """Original review, its re-reviews and the approval records linked to each."""
+        from .revision_history import RevisionHistory
+        return RevisionHistory(app.state.framework,app.state.framework_graph).read(subject(request),run_id)
 
     @app.get(prefix+'/runs/{run_id}/evidence-context')
     def evidence_view(request:Request,run_id:str):
@@ -266,7 +290,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         from backend.app.routes.v1.business import parse
         service=documents();actor=await run_in_threadpool(subject,request)
         await run_in_threadpool(service.preflight,actor,developer_allowed(request,settings),pid,document_id,previous)
-        if app.state.framework_revision not in ('AF004','AF005'):raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if app.state.framework_revision not in TEXT_REVISIONS:raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
         body=await parse(request,TextDocumentInput)
         try:raw=body.text.encode('utf-8')
         except UnicodeError:raise AuthError('REQUIREMENT_TEXT_INVALID',422) from None
@@ -282,6 +306,47 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     async def register_text_version(request:Request,project_id:UUID,document_id:UUID,previous_version_id:UUID,
                                     idempotency_key:UUID=Header(alias='Idempotency-Key')):
         return await text_document(request,project_id,idempotency_key,document_id,previous_version_id)
+
+    async def docx_document(request,pid,request_key,filename,document_id=None,previous=None):
+        # DOCX -> verbatim text in milliseconds, then the existing AF004 text
+        # version path. The DOCX bytes are not stored; their hash is returned.
+        from .docx_text import (DOCX_MEDIA_TYPE,MAX_DOCX_BYTES,ConvertedDocument,docx_filename,
+            docx_requirement_text,describe_source)
+        from .ports import AdapterFailure
+        service=documents();actor=await run_in_threadpool(subject,request)
+        dev=developer_allowed(request,settings)
+        await run_in_threadpool(service.preflight,actor,dev,pid,document_id,previous)
+        if app.state.framework_revision not in TEXT_REVISIONS:raise AuthError('FRAMEWORK_TEXT_SCHEMA_NOT_READY',503)
+        if request.headers.get('content-type','').split(';',1)[0].strip().lower()!=DOCX_MEDIA_TYPE:
+            raise AuthError('DOCX_CONTENT_TYPE_REQUIRED',415)
+        try:name=docx_filename(filename)
+        except AdapterFailure as e:raise AuthError(e.code,422) from None
+        length=request.headers.get('content-length')
+        if length is not None:
+            if not length.isascii() or not length.isdecimal():raise AuthError('DOCX_LENGTH_INVALID',400)
+            if len(length)>10 or int(length)>MAX_DOCX_BYTES:raise AuthError('FILE_TOO_LARGE',413)
+        raw=bytearray()
+        async for chunk in request.stream():
+            if len(raw)+len(chunk)>MAX_DOCX_BYTES:raise AuthError('FILE_TOO_LARGE',413)
+            raw.extend(chunk)
+        raw=bytes(raw)
+        try:converted=await run_in_threadpool(docx_requirement_text,raw)
+        except AdapterFailure as e:
+            raise AuthError(e.code,413 if e.code in ('FILE_TOO_LARGE','DOCX_TOO_LARGE','DOCX_TEXT_TOO_LARGE') else 422) from None
+        record=await run_in_threadpool(partial(service.register,actor,dev,pid,request_key,converted.text.encode('utf-8'),
+            filename=name+'.txt',document_id=document_id,previous_version_id=previous,media_type='text/plain'))
+        return ConvertedDocument.model_validate({**record.model_dump(mode='python'),'source':describe_source(raw,name,converted)})
+
+    from .docx_text import ConvertedDocument,DOCX_MEDIA_TYPE
+    docx_body_schema={'requestBody':{'required':True,'content':{DOCX_MEDIA_TYPE:{'schema':{'type':'string','format':'binary'}}}}}
+    @app.post(prefix+'/projects/{project_id}/docx-documents',response_model=ConvertedDocument,status_code=201,openapi_extra=docx_body_schema)
+    async def register_docx(request:Request,project_id:UUID,filename:str=Query(),idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await docx_document(request,project_id,idempotency_key,filename)
+
+    @app.post(prefix+'/projects/{project_id}/docx-documents/{document_id}/versions',response_model=ConvertedDocument,status_code=201,openapi_extra=docx_body_schema)
+    async def register_docx_version(request:Request,project_id:UUID,document_id:UUID,previous_version_id:UUID,
+                                    filename:str=Query(),idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await docx_document(request,project_id,idempotency_key,filename,document_id,previous_version_id)
 
     async def upload(request,pid,request_key,filename,document_id=None,previous=None):
         service=documents()

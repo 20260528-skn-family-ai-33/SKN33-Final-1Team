@@ -69,12 +69,6 @@ html:has(.auth-page--public) { scrollbar-gutter: stable; }
   letter-spacing: -.015em;
   word-break: normal;
 }
-.auth-page--public .auth-header { max-width: 1200px; padding: 28px 32px; gap: 9px; flex-wrap: wrap; }
-.auth-page--public .auth-header .brand.brand-button { font-size: 18px; font-weight: 700; line-height: inherit; letter-spacing: -.05em; padding: 0; }
-.auth-page--public .auth-header .brand-symbol { width: 26px; height: 26px; }
-.auth-page--public .auth-home-link { gap: 4px; padding: 5px 0; font-size: 13px; }
-.auth-page--public .auth-home-link:hover { text-decoration: underline; }
-.auth-page--public .auth-home-link .icon { display: inline-block; width: 17px; height: 17px; }
 .auth-page--public .auth-main {
   max-width: 1152px;
   grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);

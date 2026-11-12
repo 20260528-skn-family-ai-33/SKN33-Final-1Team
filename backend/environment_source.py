@@ -15,17 +15,19 @@ QWEN = MODEL | {"CC_QWEN_BASE_URL", "CC_QWEN_API_KEY"}
 GRAPH = frozenset("CC_NEO4J_URI CC_NEO4J_USER CC_NEO4J_PASSWORD".split())
 MCP = frozenset("CC_MCP_URL CC_MCP_TOKEN".split())
 COOKIE = frozenset("CC_COOKIE_SECURE CC_SESSION_COOKIE CC_SESSION_HOURS".split())
+# 2026-11-12 A02 Qwen 실패 뒤 OpenAI 대체 추출(backend/agent_framework/openai_fallback.py와 같은 이름).
+OPENAI_FALLBACK = frozenset("A02_OPENAI_FALLBACK A02_OPENAI_MODEL A02_OPENAI_REASONING_EFFORT A02_OPENAI_API_KEY OPENAI_API_KEY creative_checker_openapi".split())
 PROFILES = {
     "api": STORAGE | MODEL | GRAPH | COOKIE,
     "worker": frozenset({"DATABASE_URL"}) | MODEL | MCP,
     "projection": frozenset({"DATABASE_URL"}) | GRAPH,
     "mcp": STORAGE | QWEN | MCP,
-    "v1": DATABASE | WEB | REVIEW,
+    "v1": DATABASE | WEB | REVIEW | {"creative_checker_openapi"},
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
-    "framework-worker": DATABASE | QWEN | GRAPH | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
+    "framework-worker": DATABASE | QWEN | GRAPH | OPENAI_FALLBACK | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
     "framework-projection": DATABASE | GRAPH,
     # 영상 API(legacy 프로필)의 계약서 A02가 포스터 A02와 같은 Qwen3.5-4B 서버를 쓴다.
-    "legacy": DATABASE | WEB | REVIEW | QWEN | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN", "A02_QWEN_API_KEY"},
+    "legacy": DATABASE | WEB | REVIEW | QWEN | OPENAI_FALLBACK | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN", "A02_QWEN_API_KEY"},
 }
 PREFIXES = {
     "legacy": ("OCR_", "REQUIREMENTS_", "RUNPOD_", "LOGO_", "VIDEO_", "MODELTEST_", "REVIEW_MODELS_"),

@@ -101,17 +101,33 @@ def test_shared_text_server_accepts_auto_tool_requests_without_changing_model(co
     assert argv[argv.index('--model')+1]==config['model_directory']
 
 
-def test_poster_profile_only_changes_multimodal_flag_and_preserves_pinned_limits(config):
+def test_poster_profile_enables_three_sequences_and_preserves_other_pinned_limits(config):
     poster=server.load_config(ROOT/'deploy/qwen-a02/server-poster.json')
-    assert poster==config|{'language_model_only':False}
+    assert poster==config|{'language_model_only':False,'max_num_seqs':3}
     text_command=server.command(config)
     text_command.remove('--language-model-only')
+    text_command[text_command.index('--max-num-seqs')+1]='3'
     assert server.command(poster)==text_command
     from backend.agent_framework.composition import load_config
     worker=load_config(ROOT/'deploy/qwen-a02/worker-config.poster.example.json')
     from urllib.parse import urlsplit
     assert worker.pdf_extraction.model==poster['model']
     assert urlsplit(worker.pdf_extraction.endpoint).port==poster['local_tunnel_port']
+
+
+@pytest.mark.parametrize('value',[None,False,True,0,4,'3'])
+def test_sequence_limit_requires_one_to_three_as_an_integer(config,tmp_path,value):
+    config['max_num_seqs']=value
+    path=tmp_path/'invalid.json';path.write_text(json.dumps(config))
+    with pytest.raises(ValueError,match='INITIAL_A02_PROFILE_REQUIRED'):server.load_config(path)
+
+
+@pytest.mark.parametrize('value',[1,2,3])
+def test_supported_sequence_limits_reach_the_server_command(config,tmp_path,value):
+    config['max_num_seqs']=value
+    path=tmp_path/'server.json';path.write_text(json.dumps(config))
+    argv=server.command(server.load_config(path))
+    assert argv[argv.index('--max-num-seqs')+1]==str(value)
 
 
 @pytest.mark.parametrize('value',[None,0,1,'false','true'])

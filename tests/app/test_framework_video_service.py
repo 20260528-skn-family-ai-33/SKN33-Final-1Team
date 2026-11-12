@@ -1,16 +1,38 @@
 """Local video API retains the existing auth and CSRF boundary."""
 from dataclasses import replace
 import json
+from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
+from dotenv import dotenv_values
 from fastapi.testclient import TestClient
 
 from backend.app.config import ConfigurationError
 from backend.app.v1_config import load_v1_settings
+from backend.app.video import subtitle_vlm
 from backend.app.video.framework_service import create_video_app
+from backend.app.video.postgres import VideoApprovals
+from backend.app.video.review import subtitle_engine
 from tests.app.auth_fixtures import auth_environment
+
+
+@pytest.fixture(autouse=True)
+def no_postgres_extension_in_auth_doubles(monkeypatch):
+    monkeypatch.setattr(VideoApprovals, 'open', lambda *_: None)
+
+
+def test_aws_video_example_selects_qwen_subtitles(monkeypatch):
+    example = Path(__file__).resolve().parents[2] / "deploy/agent-framework/video.aws-test.env.example"
+    settings = dotenv_values(example)
+    for name in ("VIDEO_SUBTITLE_ENGINE", "VIDEO_SUBTITLE_VLM_URL", "VIDEO_SUBTITLE_VLM_MODEL"):
+        monkeypatch.setenv(name, settings[name])
+
+    assert subtitle_engine() == "qwen3-vl"
+    config = subtitle_vlm.config()
+    assert config["base"] == "http://127.0.0.1:18000/v1"
+    assert config["model"] == subtitle_vlm.DEFAULT_MODEL
 
 
 @pytest.mark.parametrize('base',['http://localhost:8000','http://192.168.0.144:5173'])
@@ -95,19 +117,29 @@ def test_aws_video_results_are_private_to_their_owner(tmp_path, monkeypatch, coo
             assert client.get(f'{route}/{job_id}').status_code == 404
 
 
-def test_aws_video_pins_parallel_ocr_candidates_and_compare_to_distinct_workers(tmp_path, monkeypatch):
+def test_aws_video_runs_parallel_qwen_subtitles_and_pins_logo_work_to_distinct_workers(tmp_path, monkeypatch):
     from concurrent.futures import ThreadPoolExecutor
     from threading import Barrier
+
+    import httpx
 
     from backend.app.management import maintenance
     from backend.app.persistence import schema_inventory
     from backend.app.services.auth import AuthService
+    from backend.app.video import subtitle_vlm as vlm
     from backend.app.video.logos import client as remote
-    from scripts.prepare_paddle import DETECTION_MODEL, MODEL, MODEL_SPECS
     from tests.app.test_video_review_api import FFMPEG, SUBTITLE, make_video, png_bytes
 
     if not FFMPEG:
         pytest.skip("FFmpeg is required to prepare and decode the test videos")
+    qwen_url = "http://qwen-video.invalid/v1"
+    model = vlm.DEFAULT_MODEL
+    monkeypatch.setenv("VIDEO_SUBTITLE_ENGINE", "qwen3-vl")
+    monkeypatch.setenv("VIDEO_SUBTITLE_VLM_URL", qwen_url)
+    monkeypatch.setenv("VIDEO_SUBTITLE_VLM_MODEL", model)
+    monkeypatch.delenv("VIDEO_SUBTITLE_VLM_API_KEY", raising=False)
+    monkeypatch.delenv("VIDEO_SUBTITLE_VLM_TIMEOUT", raising=False)
+    monkeypatch.setenv("VIDEO_SUBTITLE_VLM_CONCURRENCY", "1")
     monkeypatch.setenv("VIDEO_MAX_ACTIVE", "2")
     monkeypatch.setattr(schema_inventory, "check_schema", lambda *_: None)
     monkeypatch.setattr(maintenance, "active", lambda *_: False)
@@ -117,8 +149,39 @@ def test_aws_video_pins_parallel_ocr_candidates_and_compare_to_distinct_workers(
                         SimpleNamespace(user_id=sessions[token]) if token in sessions else None)
     monkeypatch.setattr(remote, "POLL_SECONDS", 0)
 
+    qwen_barrier = Barrier(2, timeout=12)
+    content = json.dumps({"texts": [{"text": SUBTITLE, "role": "subtitle", "region": "bottom"}]})
+
+    def qwen_client(**kwargs):
+        first_frame = True
+
+        def respond(request):
+            nonlocal first_frame
+            if request.method == "GET":
+                assert str(request.url) == f"{qwen_url}/models"
+                return httpx.Response(200, json={"data": [{"id": model}]})
+            assert request.method == "POST" and str(request.url) == f"{qwen_url}/chat/completions"
+            payload = json.loads(request.content)
+            assert payload["model"] == model
+            assert payload["messages"][0]["content"][0]["image_url"]["url"].startswith("data:image/jpeg;base64,")
+            # Each review has its own client and one frame in flight, so only two reviews can pass this barrier.
+            if first_frame:
+                first_frame = False
+                qwen_barrier.wait()
+            return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+        return httpx.Client(transport=httpx.MockTransport(respond), **kwargs)
+
+    def qwen_get(url, **kwargs):
+        with qwen_client() as client:
+            return client.get(url, **kwargs)
+
+    monkeypatch.setattr(vlm, "httpx", SimpleNamespace(
+        Client=qwen_client, get=qwen_get, Limits=httpx.Limits, HTTPError=httpx.HTTPError,
+    ))
+
     pool = remote.WorkerPool("http://127.0.0.1:18791", "http://127.0.0.1:18792")
-    barriers = {kind: Barrier(2, timeout=12) for kind in ("ocr_frames", "candidates", "compare")}
+    barriers = {kind: Barrier(2, timeout=12) for kind in ("candidates", "compare")}
     posted = {}
 
     def request(method, path, payload=None, timeout=30, *, endpoint=None):
@@ -132,17 +195,7 @@ def test_aws_video_pins_parallel_ocr_candidates_and_compare_to_distinct_workers(
             return {"id": job_id}
         origin, body = posted[path.rsplit("/", 1)[1]]
         assert url == origin
-        if body["kind"] == "ocr_frames":
-            identities = [{"model": name, "repository": f"PaddlePaddle/{name}", **MODEL_SPECS[name]}
-                          for name in (DETECTION_MODEL, MODEL)]
-            header = {"kind": "header", "device": "gpu:0",
-                      "model_identity": dict(zip(("detection", "recognition"), identities))}
-            rows = [{"index": i, "input_dimensions": [640, 360], "raw": {
-                "rec_texts": [SUBTITLE], "rec_scores": [.99],
-                "rec_polys": [[[128, 288], [512, 288], [512, 324], [128, 324]]],
-            }} for i, _ in enumerate(body["frames"])]
-            result = {"rows": [header, *rows]}
-        elif body["kind"] == "candidates":
+        if body["kind"] == "candidates":
             result = {"groups": [], "refs": [{"name": "sample"}], "size": [640, 360]}
         else:
             result = [{"outcome": "match", "findings": [], "kinds": [], "color": {}, "elements": [], "ocr": []}
@@ -166,8 +219,10 @@ def test_aws_video_pins_parallel_ocr_candidates_and_compare_to_distinct_workers(
         review_id = response.json()["id"]
         review = client.get(f"/api/video-reviews/{review_id}").json()
         assert review["status"] == "completed", review
-        assert review["runtime"]["device"] == "gpu:0"
-        assert any(track["text"] == SUBTITLE for track in review["tracks"])
+        assert review["runtime"]["engine"] == "qwen3-vl"
+        assert review["runtime"]["model"] == model
+        assert any(track["text"] == SUBTITLE and track["recognition_engine"] == vlm.ENGINE
+                   for track in review["tracks"])
 
         response = client.post("/api/video-logos", headers=headers, data={"review_id": review_id},
                                files={"video": video, "logos": ("sample.png", png_bytes(), "image/png")})

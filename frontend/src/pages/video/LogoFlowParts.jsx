@@ -22,7 +22,7 @@ export function useLogoStatus() {
   return status;
 }
 
-// 포스터는 화면 대조용 이미지를 미리 보고, 영상은 로고별 기준 문구도 입력한다.
+// 영상·포스터 모두 로고별 기준 문구(선택)를 입력한다. 포스터(referenceOnly)는 JPG·PNG·WEBP·SVG만 받고 SVG는 접수할 때 PNG로 바꾼다.
 export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = false }) {
   const [previews, setPreviews] = useState([]);
   const [error, setError] = useState('');
@@ -74,15 +74,15 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
             {previews[index] && <img src={previews[index]} alt="" />}
             <span title={item.file.name}>{item.file.name}</span>
           </label>
-          {!referenceOnly && <input type="text" className="rv-reference-logo-text" value={item.text} maxLength={300} disabled={off}
+          <input type="text" className="rv-reference-logo-text" value={item.text} maxLength={300} disabled={off}
             aria-label={`${item.file.name} 기준 문구`} placeholder="기준 문구 (선택, 줄은 | 로 구분)"
-            onChange={event => onChange(logos.map((logo, position) => position === index ? { ...logo, text: event.target.value } : logo))} />}
+            onChange={event => onChange(logos.map((logo, position) => position === index ? { ...logo, text: event.target.value } : logo))} />
         </li>)}</ul>
         <div className="rv-form-row rv-reference-logo-row"><span role="status">{selectedCount}개 선택</span>
           <button type="button" className="rv-button secondary rv-compact" disabled={disabled || !selectedCount} onClick={removePicked}>선택한 로고 삭제</button></div>
       </>}
     </div>
-    <p className="rv-form-hint">{referenceOnly ? '포스터와 대조할 원본 로고의 미리보기입니다.'
+    <p className="rv-form-hint">{referenceOnly ? '포스터를 등록하면 원본 로고의 위치 후보를 찾습니다. 위치를 확정하면 원본과 정밀 대조합니다.'
       : '같은 영상에서 로고 위치 후보를 찾습니다. 위치를 확정하면 원본과 정밀 대조합니다.'}</p>
     <ErrorMessage message={error || (status && !status.ready ? status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.' : '')} />
   </section>;

@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
 // 합성 API로 화면 초기화·늦은 응답 차단만 검사한다. 실제 실행·승인 기록은 변경하지 않는다.
 async function fixture(t, options = {}) {
-  const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+  const root = fileURLToPath(new URL('../../', import.meta.url));
+  const vite = await createServer({ root, configFile: fileURLToPath(new URL('../../vite.config.js', import.meta.url)),
+    server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
   t.after(() => vite.close()); await vite.listen();
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
@@ -24,8 +27,8 @@ async function fixture(t, options = {}) {
     else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
     else if (path.endsWith('/health')) body = { requirements_presentation: true, pdf_extraction_mode: 'qwen', poster_review_ready: true, free_text_registration: true };
     else if (path.endsWith('/projects')) body = { items: [{ id: 'project', name: '검수', my_role: 'owner' }] };
-    else if (path === '/api/video-reviews/status' || path === '/api/video-logos/status') body = { ready: true };
-    else if (path === '/api/video-reviews' || path === '/api/video-logos') body = { items: [] };
+    else if (path === '/api/video-reviews/status' || path === '/api/video-logos/status') body = { ready: true, project_reviews: true };
+    else if (['/api/video-reviews', '/api/video-logos', '/api/poster-logos'].includes(path)) body = { items: [] };
     else { unexpected.push(path); return route.fulfill({ status: 404, json: {} }); }
     await route.fulfill({ json: body });
   });
@@ -93,7 +96,7 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
     } else return false;
     return true;
   } });
-  await page.getByLabel('요구사항 PDF 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
+  await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
   await pending;
   const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
   await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();
@@ -156,7 +159,7 @@ test('포스터 실행 중 이동을 잠그고 실행이 끝나면 메뉴 초기
   assert.match(await page.getByRole('list', { name: '처리 단계', exact: true }).textContent(), /요구사항 추출/);
   assert.equal(await page.getByRole('timer', { name: '경과 시간' }).count(), 1);
   status = 'failed';
-  await page.waitForFunction(() => document.querySelector('.rv-tool-link')?.getAttribute('aria-disabled') !== 'true');
+  await page.waitForFunction(() => document.querySelector('.cc-header-link')?.getAttribute('aria-disabled') !== 'true');
   await posterLink.click();
   await checkBlank(page);
   const reads = calls.filter(call => call.path.endsWith('/runs/live-run')).length;
@@ -193,4 +196,61 @@ test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을
   await page.waitForTimeout(300);
   assert.equal(new URL(page.url()).pathname, '/review/new');
   assert.equal(new URL(page.url()).search, '');
+});
+
+test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실행을 유지한다', { timeout: 30000 }, async t => {
+  const path = '/api/video-reviews/checked';
+  const frame = { frame_id: 't001000', time_ms: 1000, width: 640, height: 360, lines: [] };
+  const job = { id: 'checked', status: 'completed', project_name: '시연', criteria_version: 1, criteria: [],
+    media: { duration_ms: 2000, sha256: 'a'.repeat(64) }, coverage: { duration_ms: 2000, inspected_ms: [1000] },
+    frames: [frame], disclosure: { applicable: true, status: 'pass', rules: {} },
+    workflow: { project_id: 'project', asset_version: 1, human_decision: 'unreviewed', decisions: [] },
+    approval_options: { blocked: false, human_check_ids: [] } };
+  const { page, base } = await fixture(t, { route: async (route, requested) => {
+    if (requested === path) await route.fulfill({ json: job });
+    else if (requested === path + '/evidence-graph') {
+      await route.fulfill({ json: { nodes: [{ ...frame, id: 'frame', kind: 'frame', label: '프레임 0:01' }],
+        verdicts: [{ id: 'rule-a', rule: 'A', title: '광고 표시', status: 'pass', chain: ['frame'] }] } });
+    } else if (requested === path + '/frames/' + frame.frame_id) {
+      await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"/>' });
+    } else if (requested === path + '/video') {
+      await route.fulfill({ path: fileURLToPath(new URL('../../src/assets/sample-shortform.mp4', import.meta.url)) });
+    } else if (requested === path + '/approvals') {
+      const decision = route.request().postDataJSON();
+      assert.equal(decision.decision, 'approve_changes');
+      assert.equal(decision.asset_sha256, job.media.sha256);
+      assert.equal(decision.reason, '광고 위치 수정');
+      job.workflow.human_decision = 'changes_approved';
+      job.workflow.decisions.push({ ...decision, approved_at: '2026-11-11T00:00:00Z' });
+      await route.fulfill({ json: job });
+    } else if (requested === path + '/revisions') {
+      await route.fulfill({ json: { items: [{ ...job.workflow, id: job.id, status: job.status, criteria_version: 1 }] } });
+    } else if (requested === '/api/video-reviews' && route.request().method() === 'POST') {
+      const request = route.request();
+      const form = await new Response(request.postDataBuffer(), {
+        headers: { 'Content-Type': request.headers()['content-type'] },
+      }).formData();
+      assert.equal(form.get('parent_run_id'), job.id);
+      assert.equal(form.get('project_id'), job.workflow.project_id);
+      await route.fulfill({ status: 202, json: { id: 'child' } });
+    } else if (requested === '/api/video-reviews/child') {
+      await route.fulfill({ json: { id: 'child', status: 'queued' } });
+    } else return false;
+    return true;
+  } });
+  await page.goto(base + '/video?id=checked');
+  await page.getByText('광고·협찬 근거 관계', { exact: true }).click();
+  await page.getByRole('button', { name: '프레임 0:01', exact: true }).click();
+  await page.getByRole('img', { name: /프레임과 읽은 글자 영역/ }).waitFor();
+  await page.getByLabel('수정 요청 사유', { exact: true }).fill('광고 위치 수정');
+  await page.getByRole('button', { name: '수정 요청 승인', exact: true }).click();
+  await page.getByText('영상·기준·승인 이력', { exact: true }).click();
+  await page.getByText(/광고 위치 수정 · 2026-11-11/).waitFor();
+  await page.getByRole('button', { name: '수정본 등록', exact: true }).click();
+  await page.getByText(/수정본을 등록/).waitFor();
+  await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles({
+    name: 'revised.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video'),
+  });
+  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+  await page.waitForURL('**/video?id=child');
 });

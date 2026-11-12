@@ -21,10 +21,10 @@ function mockRequests(context, responses) {
 test('회원가입은 이름·이메일·비밀번호와 CSRF만 보내고 로그인은 별도로 한다', async context => {
   const user = { id: 'new-user', email: 'member@example.com', display_name: '조원' };
   const requests = mockRequests(context, [{ body: { csrf_token: 'signup-csrf' } }, { status: 201, body: { user } }]);
-  assert.deepEqual(await registerAccount({ email: ' member@example.com ', displayName: ' 조원 ', password: 'synthetic-password-123' }), user);
+  assert.deepEqual(await registerAccount({ email: ' member@example.com ', displayName: ' 조원 ', password: 'synthetic-pass-123' }), user);
   assert.deepEqual(requests.map(item => item.url), ['/api/v1/auth/csrf', '/api/v1/auth/signup']);
   assert.equal(requests[1].options.headers['X-CSRFToken'], 'signup-csrf');
-  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'member@example.com', display_name: '조원', password: 'synthetic-password-123' });
+  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'member@example.com', display_name: '조원', password: 'synthetic-pass-123' });
 });
 
 test('회원가입 입력은 비밀번호 길이와 숫자·특수문자를 검증한다', () => {
@@ -35,10 +35,10 @@ test('회원가입 입력은 비밀번호 길이와 숫자·특수문자를 검�
   }
   assert.match(registrationErrorMessage({ code: 'EMAIL_ALREADY_EXISTS', status: 409 }), /이미 가입/);
   assert.match(registrationErrorMessage({ status: 503 }), /먼저 로그인/);
-  for (const password of ['aaaaaa1!', '한글한글한글1!', 'a'.repeat(126) + '1!']) {
+  for (const password of ['aaaaaa1!', '한글한글한글1!', 'a'.repeat(18) + '1!']) {
     assert.equal(registrationIssue({ ...value, password, confirmation: password }), null);
   }
-  for (const password of ['aaaaa1!', 'abcdefgh1', 'abcdefgh!', 'abcdefgh', 'a'.repeat(127) + '1!', 'aaaaaa１!']) {
+  for (const password of ['aaaaa1!', 'abcdefgh1', 'abcdefgh!', 'abcdefgh', 'a'.repeat(19) + '1!', 'aaaaaa１!']) {
     assert.equal(registrationIssue({ ...value, password, confirmation: password }).field, 'password');
   }
 });

@@ -5,7 +5,8 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import sampleVideo from '../../assets/sample-shortform.mp4';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
-import { WorkspaceProjectBar, WorkspaceTopbar } from '../../layouts/ReviewLayout.jsx';
+import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
+import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { DocumentProjectPicker } from '../review/DocumentInput.jsx';
 import { useLogoJobs } from './LogoFlowParts.jsx';
@@ -62,7 +63,7 @@ function useVideoJob(id, onFinish) {
     setJob(null); setError(''); setMissing(false); poll();
     return () => { controller.abort(); clearTimeout(timer); };
   }, [id, onFinish]);
-  return { job, error, missing };
+  return { job, error, missing, setJob };
 }
 
 const steps = { input: '자료 입력', running: '검수 진행', results: '결과 확인', report: '보고서' };
@@ -100,7 +101,7 @@ export default function VideoReviewPage() {
   const [logos, setLogos] = useState([]);
   const [logoSubmissionWarning, setLogoSubmissionWarning] = useState(null);
   const { status, refresh } = useVideoStatus();
-  const { job: loaded, error, missing } = useVideoJob(id, refresh);
+  const { job: loaded, error, missing, setJob } = useVideoJob(id, refresh);
   const logo = useLogoJobs(id);
   // id가 바뀐 직후 이전 작업이 한 번 그려지지 않도록 현재 id의 작업만 쓴다.
   const job = loaded?.id === id ? loaded : null;
@@ -126,11 +127,14 @@ export default function VideoReviewPage() {
   const openJob = value => setParams({ id: value });
   const backToInput = () => { setParams({}); refresh(); };
   function startOver() { setDraft(blankDraft()); setProjectId(''); setFile(null); setLogos([]); setSampleError(''); backToInput(); }
-  function reuse() {
+  function reuse(revision = false) {
     if (!job) return;
     const criteria = job.criteria || [];
     const extracted = item => typeof item.source === 'string' && item.source !== 'user' && item.source !== item.text;
-    setDraft({ ...blankDraft(), projectName: job.project_name || '숏폼 검수',
+    setFile(null);
+    setLogos([]);
+    setProjectId(job.workflow?.project_id || '');
+    setDraft({ ...blankDraft(), projectName: job.project_name || '숏폼 검수', parentRunId: revision ? job.id : null,
       requirements: criteria.filter(item => !extracted(item)).map(item => item.text).join('\n'),
       documentRows: criteria.filter(extracted).map((item, index) => ({ ...item, id: `reused-${index}`, selected: true })),
       ad: { ...blankDraft().ad, ...(job.disclosure_input || {}) } });
@@ -178,14 +182,14 @@ export default function VideoReviewPage() {
 
   return <div className={`rv-workspace rv-video rv-workspace--tool rv-video--${step}`}>
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
-    <WorkspaceTopbar current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
+    <SiteHeader current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
     <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
       step={step} steps={steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
       projectEditor={step === 'input' ? { id: 'video-project-name', maxLength: 120, disabled: inputLocked,
         onChange: value => setDraft(previous => ({ ...previous, projectName: value })) } : undefined}
       projectTools={step === 'input' ? <DocumentProjectPicker projectId={projectId} setProjectId={setProjectId}
-        projectName={draft.projectName} disabled={inputLocked} onStatus={setProjectStatus} /> : undefined}>
+        projectName={draft.projectName} disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus} /> : undefined}>
       {step === 'input' && <button type="button" className="rv-button secondary" disabled={inputLocked} onClick={loadSample}>
         {sampleBusy ? '예시 자료 불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" />
       </button>}
@@ -204,8 +208,10 @@ export default function VideoReviewPage() {
         <span className="rv-eyebrow">PREVIOUS FORMAT</span><h1 id="page-title" tabIndex={-1}>이 결과는 새 화면으로 보여 줄 수 없어요.</h1>
         <ErrorMessage message="계획 문서 반영 전에 만든 결과라 새 화면으로 보여 줄 수 없습니다. 같은 영상을 다시 검수해 주세요." />
         <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={backToInput}>새 동영상으로 다시 검수<Icon name="arrow" /></button></div>
-      </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo} onRestart={backToInput} />)}
-      {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning} onNewReview={startOver} onReuse={reuse} onReport={openReport} />}
+        </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo}
+          onRestart={() => job?.workflow && job.status === 'failed' ? reuse(true) : backToInput()} />)}
+      {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning}
+        onNewReview={startOver} onReuse={() => reuse()} onRevise={() => reuse(true)} onOpenRun={openJob} onDecision={setJob} onReport={openReport} />}
       {step === 'report' && <VideoReport job={job} />}
     </main>
   </div>;

@@ -5,9 +5,10 @@ import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
-import { extractDocumentWithProgress, extractTextWithProgress } from './frameworkDocument.js';
+import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, watchDocumentDeadline } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
+import { makeInspectionCopy } from './posterImageCopy.js';
 
 const ReviewContext = createContext(null);
 const bundledSample = {
@@ -34,7 +35,9 @@ async function validateImage(file, limits = {}) {
   const dimensions = { width: decoded.width, height: decoded.height };
   decoded.close();
   if (dimensions.width * dimensions.height > maxPixels || Math.max(dimensions.width, dimensions.height) > maxSide) {
-    throw new Error(`이미지는 ${(maxPixels / 10_000).toLocaleString()}만 픽셀 이하, 한 변 ${maxSide.toLocaleString()}px 이하로 줄여 주세요.`);
+    const error = new Error(`이미지는 ${(maxPixels / 10_000).toLocaleString()}만 픽셀 이하, 한 변 ${maxSide.toLocaleString()}px 이하로 줄여 주세요.`);
+    error.dimensions = dimensions;
+    throw error;
   }
   return dimensions;
 }
@@ -50,6 +53,9 @@ export function ReviewProvider({ children }) {
   const [documentCancelBusy, setDocumentCancelBusy] = useState(false);
   const [documentProgress, setDocumentProgress] = useState(null);
   const [documentNotice, setDocumentNotice] = useState('');
+  const [documentResumeId, setDocumentResumeId] = useState('');
+  const [oversizeImage, setOversizeImage] = useState(null);
+  const [copySource, setCopySource] = useState(null);
   const [documentError, setDocumentError] = useState('');
   const [projectId, setProjectId] = useState('');
   const [inputRunId, setInputRunId] = useState(null);
@@ -152,6 +158,7 @@ export function ReviewProvider({ children }) {
     setDocumentBusy(false);
     setDocumentProgress(null);
     setDocumentNotice('');
+    setDocumentResumeId('');
     setDocumentError('');
   }, []);
 
@@ -177,43 +184,52 @@ export function ReviewProvider({ children }) {
     cancelDocument();
     invalidateSample();
     if (documentInput.current) documentInput.current.value = '';
-    if (files.length !== 1) { setDocumentError('PDF는 한 번에 1개만 선택해 주세요.'); return; }
-    if (!projectId) { setDocumentError('PDF를 저장할 프로젝트를 선택해 주세요.'); return; }
+    if (files.length !== 1) { setDocumentError('요구사항 문서(PDF·DOCX)는 한 번에 1개만 선택해 주세요.'); return; }
+    if (!projectId) { setDocumentError('문서를 저장할 프로젝트를 선택해 주세요.'); return; }
     const file = files[0];
-    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF를 선택해 주세요.'); return; }
+    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF 또는 DOCX를 선택해 주세요.'); return; }
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true);
-    setDocumentProgress({ percent: 0, stage: 'uploading', message: 'PDF를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
+    setDocumentProgress({ percent: 0, stage: 'uploading', message: '문서를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
     setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
-    let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    const deadline = watchDocumentDeadline(controller);
     try {
-      const signature = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-      if (String.fromCharCode(...signature) !== '%PDF-') throw new Error('PDF 파일만 읽을 수 있습니다. 파일 형식을 확인해 주세요.');
+      const requirementFile = await requirementDocument(file);
       if (controller.signal.aborted) return;
-      const pdf = file.type === 'application/pdf' ? file : new File([file], file.name, { type: 'application/pdf' });
-      const result = await extractDocumentWithProgress(pdf, { projectId, attempts: documentAttempts.current, signal: controller.signal, onProgress: update => {
+      const isDocx = requirementFile.type === DOCX_MEDIA_TYPE;
+      const result = await extractDocumentWithProgress(requirementFile, { projectId, attempts: documentAttempts.current, signal: controller.signal,
+        onAccepted: id => { deadline.runId = id; }, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
-          setDocumentProgress(previous => ({ ...previous, ...update }));
+          const progress = deadline.update(update);
+          setDocumentProgress(previous => ({ ...previous, ...progress }));
         }
       } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
       const { sources } = mergeDocumentRequirements('', result, file.name);
-      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false }));
+      const criterionIdsByText = new Map();
+      for (const condition of result.conditions) {
+        const text = condition.text.trim();
+        const ids = Array.isArray(condition.criterion_ids)
+          ? condition.criterion_ids.filter(id => typeof id === 'string' && id) : [];
+        criterionIdsByText.set(text, [...new Set([...(criterionIdsByText.get(text) || []), ...ids])]);
+      }
+      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false,
+        criterionIds: criterionIdsByText.get(row.text) || [] }));
       dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
         originalCount: rows.length, rows, filename: file.name, projectId } });
       setDocumentProgress(null);
       const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
-      setDocumentNotice(`추출을 완료했어요. ${result.page_count}페이지 · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
+      setDocumentNotice(`추출을 완료했어요. ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
-      if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
+      if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentNotice('');
         setDocumentProgress(null);
-        setDocumentError(timedOut ? '응답 대기 시간이 초과됐습니다. 기존 입력은 유지됩니다. 잠시 후 다시 시도해 주세요.' : err.message);
+        setDocumentResumeId(err.runId || deadline.runId);
+        setDocumentError(deadline.expired ? '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.' : err.message);
       }
     } finally {
-      clearTimeout(timer);
+      deadline.stop();
       if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
     }
   }
@@ -330,6 +346,7 @@ export function ReviewProvider({ children }) {
     invalidateSample();
     const request = ++fileValidation.current;
     setError('');
+    setOversizeImage(null);
     if (fileInput.current) fileInput.current.value = '';
     if (files.length !== 1) { setFileBusy(false); setError('이미지는 한 번에 1개만 선택해 주세요.'); return; }
     setFileBusy(true);
@@ -338,8 +355,32 @@ export function ReviewProvider({ children }) {
       if (request !== fileValidation.current) return;
       dispatch({ type: 'input', field: 'file', value: files[0] });
       setDimensions(dims);
+      setCopySource(null);
     } catch (err) {
-      if (request === fileValidation.current) setError(err.message);
+      if (request === fileValidation.current) {
+        setError(err.message);
+        if (err.dimensions) setOversizeImage({ file: files[0], dimensions: err.dimensions });
+      }
+    } finally {
+      if (request === fileValidation.current) setFileBusy(false);
+    }
+  }
+
+  async function useInspectionCopy() {
+    if (!oversizeImage) return;
+    const request = ++fileValidation.current;
+    setError('');
+    setFileBusy(true);
+    try {
+      const copy = await makeInspectionCopy(oversizeImage.file, health?.limits);
+      const dims = await validateImage(copy, health?.limits);
+      if (request !== fileValidation.current) return;
+      dispatch({ type: 'input', field: 'file', value: copy });
+      setDimensions(dims);
+      setCopySource(oversizeImage.dimensions);
+      setOversizeImage(null);
+    } catch (failure) {
+      if (request === fileValidation.current) setError(failure.message);
     } finally {
       if (request === fileValidation.current) setFileBusy(false);
     }
@@ -351,9 +392,15 @@ export function ReviewProvider({ children }) {
     setFileBusy(false);
     inputChange('file', null);
     setDimensions(null);
+    setOversizeImage(null);
+    setCopySource(null);
   }
 
   function openDocumentRun() {
+    navigateToDocumentRun();
+  }
+
+  function navigateToDocumentRun(criterionIds = null) {
     if (documentRequest.current || sampleBusy || fileBusy) return;
     setError('');
     if (!state.documentRun) return;
@@ -364,7 +411,10 @@ export function ReviewProvider({ children }) {
     // Reviewing an extracted draft does not require the poster model to be ready.
     // Registration and review execution still perform their readiness checks.
     setInputRunId(state.documentRun.id);
-    setSearchParams({ framework: state.documentRun.id });
+    const runId = state.documentRun.id;
+    setSearchParams({ framework: runId }, {
+      state: criterionIds ? { pdfSelection: { runId, criterionIds } } : null,
+    });
   }
 
   function prepare(event) {
@@ -375,9 +425,14 @@ export function ReviewProvider({ children }) {
     const direct = state.requirements.trim();
     const doc = state.documentRun;
     const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
-    if (!direct && selectedRows.length && doc.originalCount === selectedRows.length
-      && selectedRows.every(row => row.text.trim() === row.originalText)) {
-      openDocumentRun();
+    if (!direct && selectedRows.length && selectedRows.every(row => row.text.trim() === row.originalText)) {
+      if (doc.originalCount === selectedRows.length) {
+        openDocumentRun();
+      } else if (selectedRows.every(row => row.criterionIds?.length)) {
+        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))]);
+      } else {
+        setError('선택한 항목의 원문 연결을 확인할 수 없습니다. PDF 원문과 기준 확인에서 항목을 선택해 주세요.');
+      }
       return;
     }
     if (selectedRows.length && projectId !== doc.projectId) {
@@ -396,27 +451,31 @@ export function ReviewProvider({ children }) {
     if (!projectId) { setError('요구사항을 저장할 프로젝트를 선택해 주세요.'); return; }
     const controller = new AbortController();
     documentRequest.current = controller;
-    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setError('');
+    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setDocumentResumeId(''); setError('');
     setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now(), source: '직접 입력한 요구사항' });
-    let timedOut = false;
-    const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 630_000);
+    const deadline = watchDocumentDeadline(controller);
     try {
       await requirePosterReview({ signal: controller.signal, freeText: true });
       const result = await extractTextWithProgress(text, { projectId, attempts: documentAttempts.current, signal: controller.signal,
+        onAccepted: id => { deadline.runId = id; },
         onProgress: update => {
-          if (!controller.signal.aborted && documentRequest.current === controller) setDocumentProgress(previous => ({ ...previous, ...update }));
+          if (!controller.signal.aborted && documentRequest.current === controller) {
+            const progress = deadline.update(update);
+            setDocumentProgress(previous => ({ ...previous, ...progress }));
+          }
         } });
       if (controller.signal.aborted || documentRequest.current !== controller) return;
       setInputRunId(result.framework.run_id);
       setDocumentProgress(null);
       setSearchParams({ framework: result.framework.run_id });
     } catch (err) {
-      if (documentRequest.current === controller && (!controller.signal.aborted || timedOut)) {
+      if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentProgress(null);
-        setError(timedOut ? '요구사항 분석 대기 시간이 초과됐습니다. 같은 입력으로 다시 확인하면 기존 실행을 조회합니다.' : err.message);
+        setDocumentResumeId(err.runId || deadline.runId);
+        setError(deadline.expired ? '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.' : err.message);
       }
     } finally {
-      clearTimeout(timer);
+      deadline.stop();
       if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
     }
   }
@@ -476,6 +535,8 @@ export function ReviewProvider({ children }) {
     setError('');
     setPollError('');
     setDimensions(null);
+    setOversizeImage(null);
+    setCopySource(null);
     setDragging(false);
     setNewCriterion('');
     setNewCategory('information');
@@ -490,9 +551,9 @@ export function ReviewProvider({ children }) {
   const value = {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
-    documentBusy, documentProgress, documentNotice, documentError, documentInput, selectDocument, cancelDocument,
+    documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
-    dimensions, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
+    dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
     addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,

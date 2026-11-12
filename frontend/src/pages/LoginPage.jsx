@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router';
-import { Brand } from '../components/Brand.jsx';
+import { Navigate, useLocation, useNavigate } from 'react-router';
+import { SiteHeader } from '../components/SiteHeader.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { useAuth } from '../auth/AuthProvider.jsx';
@@ -24,6 +24,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const submittingRef = useRef(false);
   const mounted = useRef(false);
   const formTitle = useRef(null);
@@ -51,10 +52,16 @@ export function LoginPage() {
   async function handleLogin(event) {
     event.preventDefault();
     if (submittingRef.current || checking || unavailable) return;
+    setPasswordError('');
     if (signup) {
       const issue = registrationIssue({ displayName, email: username, password, confirmation });
       if (issue) {
-        setError(issue.message);
+        if (issue.field === 'password') {
+          setError('');
+          setPasswordError(issue.message);
+        } else {
+          setError(issue.message);
+        }
         ({ name: nameInput, email: usernameInput, password: passwordInput, confirmation: confirmationInput })[issue.field].current?.focus();
         return;
       }
@@ -109,6 +116,7 @@ export function LoginPage() {
     if (submittingRef.current) return;
     setSignup(value => !value);
     setPassword('');
+    setPasswordError('');
     setConfirmation('');
     setShowPassword(false);
     setError('');
@@ -118,7 +126,7 @@ export function LoginPage() {
   if (status === 'authenticated') return <Navigate to={destination} replace />;
 
   return <div className="auth-page auth-page--public">
-    <header className="auth-header"><Brand onClick={() => navigate('/')} /><Link className="auth-home-link" to="/">서비스 소개로 돌아가기<Icon name="arrow" /></Link></header>
+    <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
@@ -132,7 +140,32 @@ export function LoginPage() {
         <form className="auth-form" onSubmit={handleLogin} noValidate aria-busy={submitting || checking}>
           {signup && <div className="auth-field"><label htmlFor="signup-name">이름</label><input id="signup-name" name="display_name" ref={nameInput} value={displayName} onChange={event => { setDisplayName(event.target.value); setError(''); }} placeholder="이름을 입력해 주세요" autoComplete="name" maxLength={100} required readOnly={submitting} /></div>}
           <div className="auth-field"><label htmlFor="login-username">{signup ? '이메일' : '아이디'}</label><input id="login-username" name={signup ? 'email' : 'username'} type={signup ? 'email' : 'text'} ref={usernameInput} value={username} onChange={event => { setUsername(event.target.value); setError(''); }} placeholder={signup ? 'name@example.com' : '이메일 또는 아이디를 입력해 주세요'} autoComplete={signup ? 'email' : 'username'} autoCapitalize="none" spellCheck={false} required readOnly={submitting} /></div>
-          <div className="auth-field"><label htmlFor="login-password">비밀번호</label><div className="auth-password"><input id="login-password" name="password" ref={passwordInput} type={showPassword ? 'text' : 'password'} value={password} onChange={event => { setPassword(event.target.value); setError(''); }} placeholder={signup ? '8~128자로 입력해 주세요' : '비밀번호를 입력해 주세요'} autoComplete={signup ? 'new-password' : 'current-password'} aria-describedby={signup ? 'signup-password-hint' : undefined} required readOnly={submitting} /><button className="auth-password-toggle" type="button" aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? '숨기기' : '표시'}</button></div>{signup && <p id="signup-password-hint" className="auth-field-hint">8~128자, 숫자와 특수문자를 각각 하나 이상 포함해 주세요. 공백도 사용할 수 있어요.</p>}</div>
+          <div className="auth-field">
+            <label htmlFor="login-password">비밀번호</label>
+            <div className="auth-password">
+              <input
+                id="login-password"
+                name="password"
+                ref={passwordInput}
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={event => {
+                  setPassword(event.target.value);
+                  setError('');
+                  setPasswordError('');
+                }}
+                placeholder={signup ? '8~20자로 입력해 주세요' : '비밀번호를 입력해 주세요'}
+                autoComplete={signup ? 'new-password' : 'current-password'}
+                aria-describedby={signup ? (passwordError ? 'signup-password-error signup-password-hint' : 'signup-password-hint') : undefined}
+                aria-invalid={passwordError ? true : undefined}
+                required
+                readOnly={submitting}
+              />
+              <button className="auth-password-toggle" type="button" aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? '숨기기' : '표시'}</button>
+            </div>
+            <ErrorMessage id="signup-password-error" message={passwordError} />
+            {signup && <p id="signup-password-hint" className="auth-field-hint">8~20자, 숫자와 특수문자를 각각 하나 이상 포함해 주세요. 공백도 사용할 수 있어요.</p>}
+          </div>
           {signup && <div className="auth-field"><label htmlFor="signup-password-confirm">비밀번호 확인</label><input id="signup-password-confirm" name="password_confirmation" ref={confirmationInput} type={showPassword ? 'text' : 'password'} value={confirmation} onChange={event => { setConfirmation(event.target.value); setError(''); }} placeholder="비밀번호를 다시 입력해 주세요" autoComplete="new-password" required readOnly={submitting} /></div>}
           <ErrorMessage message={error} />
           {success && <p className="auth-success" role="status">{success}</p>}

@@ -3,7 +3,7 @@ on:
   pull_request:
     paths: ["backend/agent_framework/**", "tests/agent_framework/**", "tests/test_qwen_server_preparation.py", "tests/test_framework_desktop.py", "tests/test_framework_graph_test.py", "tests/test_framework_graph_runtime.py", "deploy/qwen-a02/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "scripts/framework_graph_test*.py", "scripts/framework_graph_runtime.py", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example"]
   push:
-    branches: ["main", "feat/agent-framework", "feat/37-a02-pdf-registration"]
+    branches: ["main", "AWS_TEST", "feat/agent-framework", "feat/37-a02-pdf-registration"]
     paths: ["backend/agent_framework/**", "tests/agent_framework/**", "tests/test_qwen_server_preparation.py", "tests/test_framework_desktop.py", "tests/test_framework_graph_test.py", "tests/test_framework_graph_runtime.py", "deploy/qwen-a02/**", "deploy/agent-framework/**", "scripts/framework_desktop.py", "scripts/framework_graph_test*.py", "scripts/framework_graph_runtime.py", "examples/agent_framework/**", "docs/agent-framework/**", "scripts/*agent*framework.py", "scripts/build_agent_flow_html.py", "scripts/build_agent_code_graph.py", "scripts/templates/agent-flow.*", ".gitattributes", "pyproject.toml", "uv.lock", ".github/workflows/agent-framework.yml", "backend/runtime_environment.py", "backend/app/config.py", ".env*.example"]
 permissions:
   contents: read

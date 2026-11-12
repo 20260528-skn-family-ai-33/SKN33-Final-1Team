@@ -29,7 +29,7 @@ def test_prepare_copies_app_settings_preserves_secrets_roles_and_originals_witho
     assert 'http://127.0.0.1:5173' in values['AUTH_ALLOWED_ORIGINS'] and '127.0.0.1' in values['AUTH_ALLOWED_HOSTS']
     original_roles=json.loads(config.read_text())['roles']
     assert {role:{key:team['roles'][role][key] for key in original} for role,original in original_roles.items()}==original_roles
-    assert team['pdf_extraction']['presentation'] is True and team['pdf_extraction']['timeout_seconds']==600
+    assert team['pdf_extraction']['presentation'] is True and team['pdf_extraction']['timeout_seconds']==900
     assert (env.read_bytes(),config.read_bytes())==before
     assert 'test-model-key' not in json.dumps(result) and 'test-private-password' not in json.dumps(result)
     if os.name=='posix':assert output_env.stat().st_mode&0o777==0o600

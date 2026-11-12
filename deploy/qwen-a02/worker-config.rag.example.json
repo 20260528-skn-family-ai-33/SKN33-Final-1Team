@@ -16,7 +16,7 @@
     "model": "Qwen/Qwen3.5-4B",
     "parser_version": "1.28.2",
     "max_text_chars": 32000,
-    "timeout_seconds": 600,
+    "timeout_seconds": 900,
     "max_output_tokens": 16384
   },
   "context_preparation": {"contract_version": "3.0.0", "mode": "neo4j_rag", "policy": "af-approved-sources-v1"}

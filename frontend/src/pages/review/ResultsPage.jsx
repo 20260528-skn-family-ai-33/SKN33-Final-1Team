@@ -49,7 +49,7 @@ function RetryNote({ retry }) {
 
 // The list, canvas and inspector always share one criterion ID.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, revise, finalApproved = false }) {
+  busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const [selectedOnly, setSelectedOnly] = useState(false);
@@ -171,13 +171,15 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
   return <section className="rv-results" aria-labelledby="page-title">
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{review.project_name || '포스터 검수'}</h1>
-    <p className="rv-result-notice" role="status">{review.status_label || '자동 검수 완료'} · {finalApproved
-      ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}</p>
+    <p className="rv-result-notice" role="status">{review.status_label || '자동 검수 완료'} · {exceptionApproved
+      ? <strong>담당자 예외 승인</strong> : finalApproved ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}</p>
+    {header}
 
     <div className="rv-result-workbench">
       <div className="rv-result-canvas-column" ref={canvas}>
         <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`}
           title="검수 대상 이미지" subtitle="검수 항목의 위치 근거를 표시합니다."
+          headingActions={imageActions}
           width={image?.width} height={image?.height} overlays={selectedOnly ? selectedOverlays : allOverlays}
           selectedOverlayId={selected?.criterion_id} onOverlaySelect={chooseOverlay}
           evidenceScope={{ label: selectedOnly ? '선택 근거 표시' : '모든 근거 표시', available: allOverlays.length > 0,

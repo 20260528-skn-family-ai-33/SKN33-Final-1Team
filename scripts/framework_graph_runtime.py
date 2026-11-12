@@ -89,7 +89,7 @@ def preflight(folder,image):
     args+=mount_file(folder/'worker.env','/run/framework/app.env')
     args+=[image,'postgres-check','--env-file','/run/framework/app.env']
     result=json.loads(command(args))
-    if result.get('revision')!='AF005':raise RuntimeErrorCode('APPLY_AF005_EXPLICITLY_FIRST')
+    if result.get('revision') not in ('AF005','AF006'):raise RuntimeErrorCode('APPLY_AF005_EXPLICITLY_FIRST')
 
 
 def remember(folder,*,state=STATE):

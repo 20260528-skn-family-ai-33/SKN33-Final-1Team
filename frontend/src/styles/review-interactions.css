@@ -1,6 +1,6 @@
 /* 버튼·메뉴의 반응. 색만 바뀌던 버튼에 눌림·처리 중 표시를 더한다. 포스터·영상·내 작업 화면이 함께 쓴다.
    움직임은 사용자가 누르거나 올렸을 때만 일어나고, 처리 중 표시는 누른 그 버튼 자리에 나온다. */
-.rv-button, .rv-icon-button, .rv-step-nav > button, .rv-tool-link, .rv-result-item-button, .rv-criteria-select,
+.rv-button, .rv-icon-button, .rv-step-nav > button, .rv-result-item-button, .rv-criteria-select,
 .rv-input-fileactions button, .rv-result-item-navigation button {
   transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease;
 }
@@ -16,12 +16,24 @@ a.rv-button:hover { text-decoration: none; }
 .rv-step-nav > button:not(.is-active):not(:disabled):hover { background: #efefeb; color: #171717; }
 .rv-step-nav > button:not(.is-active):not(:disabled):active { background: #e6e6e1; }
 .rv-project-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
-a.rv-tool-link:active { background: #e8e8e4; }
+.rv-step-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--rv-line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--rv-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+.rv-step-status:empty { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; }
 
 /* 처리 중: 누른 버튼에 회전 표시를 띄우고 아이콘 자리를 대신한다. 다른 버튼은 기존처럼 흐려진다. */
 .rv-button[aria-busy="true"] { cursor: progress; }
 .rv-button[aria-busy="true"]:disabled { opacity: 1; }
-.rv-button[aria-busy="true"]::before { content: ''; flex-shrink: 0; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rv-button-spin .7s linear infinite; }
+.rv-button[aria-busy="true"]::before, .rv-step-status:not(:empty)::before { content: ''; flex-shrink: 0; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: rv-button-spin .7s linear infinite; }
 .rv-button[aria-busy="true"] .icon { display: none; }
 @keyframes rv-button-spin { to { transform: rotate(360deg); } }
 
@@ -33,7 +45,7 @@ a.rv-tool-link:active { background: #e8e8e4; }
 @media (max-width: 1499px) { .rv-result-keyhint { margin: 12px 16px 9px 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .rv-button, .rv-icon-button, .rv-step-nav > button, .rv-tool-link, .rv-result-item-button, .rv-criteria-select,
+  .rv-button, .rv-icon-button, .rv-step-nav > button, .rv-result-item-button, .rv-criteria-select,
   .rv-input-fileactions button, .rv-result-item-navigation button { transition: none; }
   .rv-button:active:not(:disabled), .rv-icon-button:active:not(:disabled), .rv-result-item-navigation button:active:not(:disabled) { transform: none; }
   .rv-button[aria-busy="true"]::before { animation-duration: 2.4s; }

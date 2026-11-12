@@ -114,6 +114,27 @@ export function locationHint(bbox) {
   return col === '가운데' ? `${row}쪽` : `${col} ${row}`;
 }
 
+const isBox = box => Array.isArray(box) && box.length === 4 && box.every(value => Number.isFinite(value) && value >= 0 && value <= 1)
+  && box[0] < box[2] && box[1] < box[3];
+
+// 보고서 '위치 보기': 고칠 곳(불충족·확인 필요) 항목의 포스터 위치. 번호는 '요구사항별 결과' 순서(items, 01부터)와 같다.
+// bbox는 검사 모델(A04_A05)이 읽은 위치(0~1 비율)이고 현재 포스터 버전의 것만 쓴다. 상자가 없으면 unlocated로 모은다.
+// 템플릿 context(JSON)에는 넣지 않는 화면 전용 값이다.
+export function posterMarks(run, items) {
+  const raw = Object.fromEntries((run?.validated?.items || []).map(item => [item.criterion_id, item]));
+  const current = run?.context?.asset_version_id;
+  const marks = [], unlocated = [];
+  items.forEach((item, index) => {
+    if (item.verdict.code === 'pass') return;
+    const entry = { number: String(index + 1).padStart(2, '0'), criterion_id: item.criterion_id, code: item.verdict.code, label: item.label };
+    const image = raw[item.criterion_id]?.image;
+    const box = image && (!image.asset_version_id || image.asset_version_id === current) ? image.bbox : null;
+    if (isBox(box)) marks.push({ ...entry, bbox: [...box] });
+    else unlocated.push(entry);
+  });
+  return { marks, unlocated };
+}
+
 const withUnit = (value, unit) => {
   if (value == null || !String(value).trim()) return null;
   const text = String(value).trim();

@@ -1,9 +1,11 @@
-"""Development MCP tools over the in-memory Workflow; approvals are never exposed.
+"""MCP tools over a run backend (in-memory Workflow by default); approvals are never exposed.
 
 Agents and MCP clients may read run state and submit admission/rereview commands.
 Every state transition is still checked by Workflow. Human approval decisions
 stay on the HTTP API, so a model can never approve criteria, changes or finals.
-PostgresStore binding needs a service subject/authorization design and is follow-up.
+A backend reports a definite refusal (nothing applied) as ToolRefusal; any other
+exception propagates, so the caller keeps a write tool's outcome as unknown.
+Read-only evidence tools are added only when an evidence backend is given.
 """
 from __future__ import annotations
 
@@ -13,15 +15,42 @@ import hmac
 import inspect
 import json
 import os
-from typing import Any
+from typing import Any, Protocol
 
 import httpx
 from pydantic import ValidationError
 
-from .contracts import AssetRef, Context, DocumentRef, RunSnapshot
+from .contracts import AssetRef, Context, DocumentRef, RunSnapshot, StepTimeline
 from .runtime import Workflow
 
 TOOL_NAMES = ('get_run', 'get_steps', 'get_approval_history', 'start_run', 'request_rereview')
+# Read-only evidence tools; exposed only with a backend that stores criteria versions (PostgreSQL).
+EVIDENCE_TOOL_NAMES = ('get_approved_criteria', 'get_history', 'verify_sources', 'get_relations', 'get_change_impact')
+
+
+class RunBackend(Protocol):
+    """What the tools call; Workflow already has this shape."""
+    def get(self, run_id: str) -> RunSnapshot: ...
+    def get_steps(self, run_id: str) -> StepTimeline: ...
+    def start(self, context: Context, document: DocumentRef, asset: AssetRef) -> RunSnapshot: ...
+    def rereview(self, parent_run_id: str, context: Context, asset: AssetRef) -> RunSnapshot: ...
+
+
+class EvidenceBackend(Protocol):
+    """Read-only evidence lookups; mcp_evidence.PostgresEvidence has this shape."""
+    def approved_criteria(self, run_id: str) -> dict: ...
+    def history(self, run_id: str) -> dict: ...
+    def verify_sources(self, run_id: str) -> dict: ...
+    def relations(self, run_id: str) -> dict: ...
+    def change_impact(self, run_id: str) -> dict: ...
+
+
+class ToolRefusal(Exception):
+    """Definite backend refusal: nothing was applied, so its fixed code is safe to return."""
+
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code, self.message = code, message
 
 
 def overview(snapshot: RunSnapshot) -> dict:
@@ -50,8 +79,9 @@ def _failed(code: str, message: str) -> dict:
 class FrameworkTools:
     """Named tool capabilities; also usable in-process as a tool client."""
 
-    def __init__(self, workflow: Workflow):
-        self.workflow = workflow
+    def __init__(self, workflow: RunBackend, evidence: EvidenceBackend | None = None):
+        self.workflow, self.evidence = workflow, evidence
+        self.names = TOOL_NAMES + (EVIDENCE_TOOL_NAMES if evidence is not None else ())
 
     def get_run(self, run_id: str) -> dict:
         """Compact run state: status, verdicts, report and approval decisions."""
@@ -76,12 +106,38 @@ class FrameworkTools:
         return overview(self.workflow.rereview(parent_run_id, Context.model_validate(context),
                                                AssetRef.model_validate(asset)))
 
+    def get_approved_criteria(self, run_id: str) -> dict:
+        """Human-approved criteria of a document run, or of the run a poster review pinned:
+        each criterion with its source quote, exclusions with reasons, and the approval."""
+        return self.evidence.approved_criteria(run_id)
+
+    def get_history(self, run_id: str) -> dict:
+        """Criteria versions and their edits, document versions, poster review runs and approvals (read only)."""
+        return self.evidence.history(run_id)
+
+    def verify_sources(self, run_id: str) -> dict:
+        """Check approved criteria quotes against the stored A02 text blocks and document hashes;
+        status is verified, stale (newer document version) or mismatch."""
+        return self.evidence.verify_sources(run_id)
+
+    def get_relations(self, run_id: str) -> dict:
+        """Documents, criteria versions, runs, approvals and poster images linked to this run
+        (within four links), as nodes and edges. Neo4j when current, otherwise PostgreSQL."""
+        return self.evidence.relations(run_id)
+
+    def get_change_impact(self, run_id: str) -> dict:
+        """What depends on this run's approved criteria: poster reviews that pinned them, their
+        approvals, and newer document versions. Neo4j when current, otherwise PostgreSQL."""
+        return self.evidence.change_impact(run_id)
+
     def call(self, name: str, arguments: dict) -> dict:
         """Receipt boundary shared by MCP and in-process callers."""
-        if name not in TOOL_NAMES:
+        if name not in self.names:
             return _failed('UNKNOWN_TOOL', 'This tool is not exposed.')
         try:
             return {'state': 'completed', 'result': getattr(self, name)(**arguments)}
+        except ToolRefusal as exc:
+            return _failed(exc.code, exc.message)
         except TypeError:
             return _failed('INVALID_ARGUMENTS', 'Tool arguments do not match the tool signature.')
         except KeyError:
@@ -118,7 +174,8 @@ def _receipt_tool(tools: FrameworkTools, name: str):
     return tool
 
 
-def create_mcp_app(workflow: Workflow, *, token: str, host: str = '127.0.0.1'):
+def create_mcp_app(workflow: RunBackend, *, token: str, host: str = '127.0.0.1',
+                   evidence: EvidenceBackend | None = None):
     from mcp.server.fastmcp import FastMCP
     from mcp.server.transport_security import TransportSecuritySettings
 
@@ -127,8 +184,8 @@ def create_mcp_app(workflow: Workflow, *, token: str, host: str = '127.0.0.1'):
     server = FastMCP('creative-checker-agent-framework', stateless_http=True, json_response=True,
         transport_security=TransportSecuritySettings(allowed_hosts=[host, f'{host}:*', '127.0.0.1', '127.0.0.1:*',
                                                                      'localhost', 'localhost:*'], allowed_origins=[]))
-    tools = FrameworkTools(workflow)
-    for name in TOOL_NAMES:
+    tools = FrameworkTools(workflow, evidence)
+    for name in tools.names:
         server.add_tool(_receipt_tool(tools, name), name=name)
     return BearerMiddleware(server.streamable_http_app(), token)
 

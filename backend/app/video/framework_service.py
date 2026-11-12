@@ -8,10 +8,13 @@ from uuid import UUID
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.config import ConfigurationError
+from backend.app.persistence.transaction import unit_of_work
 from backend.app.main import create_app as create_auth_app
+from backend.app.poster.logos.routes import poster_logo_router
 from backend.app.routes.v1.business import subject
 from backend.app.video.logos.client import WorkerPool
 from backend.app.video.logos.routes import video_logo_router
+from backend.app.video.postgres import VideoApprovals
 from backend.app.video.review import recover_jobs, video_review_router
 
 
@@ -32,9 +35,10 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None, aws_t
                        review_pipeline='disabled', review_executor='background_tasks',
                        review_config_file=None)
     root = Path(root)
-    reviews, logos = root / 'reviews', root / 'logos'
+    reviews, logos, poster_logos = root / 'reviews', root / 'logos', root / 'poster-logos'
     reviews.mkdir(mode=0o700, parents=True, exist_ok=True)
     logos.mkdir(mode=0o700, parents=True, exist_ok=True)
+    poster_logos.mkdir(mode=0o700, parents=True, exist_ok=True)
     app = create_auth_app(settings=settings, engine=engine)
     original = app.router.lifespan_context
 
@@ -42,6 +46,10 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None, aws_t
     async def lifespan(current):
         async with original(current):
             await run_in_threadpool(recover_jobs, reviews, isolate_users=aws_test)
+            store = await run_in_threadpool(VideoApprovals.open, current.state.engine, current.state.authorization)
+            if store is not None:
+                await run_in_threadpool(store.import_history, reviews, isolate_users=aws_test)
+            current.state.video_approvals = store
             yield
 
     app.router.lifespan_context = lifespan
@@ -53,12 +61,23 @@ def create_video_app(settings, root: Path, *, engine=None, readiness=None, aws_t
             request.state.video_owner = str(UUID(str(principal.user_id)))
         return principal, developer
 
+    def project_access(request, project_id, action):
+        principal, developer = request.state.video_identity
+        with unit_of_work(app.state.engine) as connection:
+            app.state.authorization.project(connection, principal, UUID(project_id), action=action, developer_allowed=developer)
+        return str(principal.user_id)
+
     app.include_router(video_review_router(root=reviews, inference_lock=inference_lock,
                                            authenticate=authenticate, readiness=readiness,
-                                           allowed_hosts=settings.hosts, isolate_users=aws_test, worker_pool=worker_pool))
+                                           allowed_hosts=settings.hosts, isolate_users=aws_test, worker_pool=worker_pool,
+                                           project_access=project_access))
     app.include_router(video_logo_router(root=logos, inference_lock=inference_lock,
                                          authenticate=authenticate, allowed_hosts=settings.hosts,
                                          isolate_users=aws_test, linked_reviews=reviews if aws_test else None,
                                          worker_pool=worker_pool))
+    # 포스터 로고는 같은 RunPod 로고 워커(슬롯)와 추론 잠금을 쓴다. 포스터 검수 실행과는 run_id로만 연결한다.
+    app.include_router(poster_logo_router(root=poster_logos, inference_lock=inference_lock,
+                                          authenticate=authenticate, allowed_hosts=settings.hosts,
+                                          isolate_users=aws_test, worker_pool=worker_pool))
     app.title = 'Creative Checker video service'
     return app
