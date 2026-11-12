@@ -17,6 +17,7 @@ import { posterPlaceCandidates } from './posterMapQr.js';
 import ChangeImpactNotice from './ChangeImpactNotice.jsx';
 import { incompleteOutputPages, unreadImagePages, unreadTextPages } from './criteriaWarnings.js';
 import RevisionHistory from './RevisionHistory.jsx';
+import PosterEvidenceDialog from './PosterEvidenceDialog.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
@@ -105,6 +106,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [changeImpact, setChangeImpact] = useState(null);
   const [revisions, setRevisions] = useState(null);
   const [retrieval, setRetrieval] = useState(null);
+  const [evidenceOpened, setEvidenceOpened] = useState(false);
+  const [chainRuns, setChainRuns] = useState({});
   const [logoNotice] = useState(() => readLogoNotice(runId));
   const logoJobs = usePosterLogoJobs(runId);
   const [secureMaterial, setSecureMaterial] = useState(false);
@@ -241,6 +244,18 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       .then(value => { if (!controller.signal.aborted) setRevisions(value); }).catch(() => {});
     return () => controller.abort();
   }, [path, posterRun, status, humanDecision]);
+  // 판정 근거 창을 처음 열 때 같은 수정본 이력의 다른 검수 결과를 읽는다(가까운 8건까지). 못 읽은 검수는 버전별 판정에서 빠진다.
+  const history = revisions?.run_id === runId ? revisions : null;
+  const chainKey = evidenceOpened ? (history?.entries || []).filter(entry => !entry.current).map(entry => entry.run_id).slice(-8).join('\n') : '';
+  useEffect(() => {
+    setChainRuns(value => (Object.keys(value).length ? {} : value));
+    if (!chainKey) return undefined;
+    const controller = new AbortController();
+    Promise.all(chainKey.split('\n').map(id => frameworkJson('/runs/' + encodeURIComponent(id), { signal: controller.signal })
+      .then(snapshot => [id, snapshot]).catch(() => null)))
+      .then(found => { if (!controller.signal.aborted) setChainRuns(Object.fromEntries(found.filter(Boolean))); });
+    return () => controller.abort();
+  }, [chainKey]);
 
   function requestKey(name) {
     if (!keys.current.has(name)) keys.current.set(name, crypto.randomUUID());
@@ -419,8 +434,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
         revise={canRevise ? () => setReportTarget('approval') : undefined}
+        evidence={props => <PosterEvidenceDialog run={run} image={image} history={history} runs={chainRuns} retrieval={retrieval}
+          onOpen={() => setEvidenceOpened(true)} {...props} />}
         header={<>
-          {revisions?.run_id === runId && <RevisionHistory history={revisions} />}
+          {history && <RevisionHistory history={history} />}
           {retrieval && <details className="rv-framework-record"><summary>근거 조회 · {retrieval.backend === 'neo4j' ? 'Neo4j' : 'PostgreSQL'}</summary>
             <p>원장 revision {retrieval.required_revision} · 그래프 revision {retrieval.observed_graph_revision ?? '확인 안 됨'}</p>
             {retrieval.fallback_reason && <p>PostgreSQL 대체 사유 {retrieval.fallback_reason}</p>}
