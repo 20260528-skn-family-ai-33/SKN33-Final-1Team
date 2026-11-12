@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import RequirementInput, { ExtractedRequirements } from '../review/RequirementInput.jsx';
-import { parseRequirements } from '../review/workflow.js';
+import { reviewModeLabels, securityModeLabels } from '../review/ReviewTypePicker.jsx';
+import { logoDetectorFor, modelRouteFor, parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
 import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB } from './videoFormat.js';
 import VideoDocumentInput from './VideoDocumentInput.jsx';
@@ -51,12 +53,21 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     }
   }, [setBusy]);
   const logoStatus = useLogoStatus();
+  const go = useNavigate();
   const preview = useLocalPreview(file);
   const limits = status?.limits;
+  // 보안 여부·검수 유형(포스터와 같은 선택). 자막은 요구사항·광고 입력, 로고는 원본 로고, 둘 다는 모두를 받는다.
+  const security = draft.securityMode;
+  const mode = draft.reviewMode || 'both';
+  const checksText = mode !== 'logo';
+  const checksLogo = mode !== 'text';
+  const modelRoute = modelRouteFor(security);
   const projectWorkflow = status?.project_reviews === true;
-  const needsProject = projectWorkflow && !projectReady;
+  // 로고만 검수는 동영상 검수 작업 없이 로고 작업만 만들어 프로젝트에 저장하지 않는다.
+  const needsProject = checksText && projectWorkflow && !projectReady;
   const revisionUnavailable = !!draft.parentRunId && !projectWorkflow;
-  const submitDisabled = !file || busy || documentBusy || !status?.ready || needsProject || revisionUnavailable;
+  const submitDisabled = !file || busy || documentBusy || needsProject || revisionUnavailable
+    || (checksText && !status?.ready) || (checksLogo && (!logos.length || (logoStatus && !logoStatus.ready)));
   const criteria = useMemo(() => {
     const extracted = draft.documentRows.filter(row => row.selected && row.text.trim()).map(row => ({ ...row, text: row.text.trim() }));
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
@@ -130,6 +141,18 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     const { signal } = controller;
     const title = draft.projectName.trim() || file.name.slice(0, 120) || '숏폼 검수';
     setBusy(true); setError('');
+    if (mode === 'logo') {
+      // 로고만 검수: 동영상 검수 없이 로고 작업만 접수하고 로고 확정 화면으로 이동한다.
+      try {
+        const job = await submitLogoJob({ video: file, logos, title: `${title} 로고 검수`.slice(0, 120),
+          detector: logoDetectorFor(security), signal });
+        if (signal.aborted) return;
+        if (!job?.id) throw new Error('로고 검수를 접수하지 못했습니다. 다시 시도해 주세요.');
+        go(`/video/logo?job=${encodeURIComponent(job.id)}`);
+      } catch (failure) { if (!signal.aborted) setError(failure.message); }
+      finally { if (!signal.aborted) { active.current = null; setBusy(false); } }
+      return;
+    }
     try {
       const criteriaJson = JSON.stringify(criteriaPayload(criteria));
       const disclosure = JSON.stringify(ad);
@@ -138,9 +161,11 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       form.append('criteria', criteriaJson);
       form.append('project_name', title);
       form.append('disclosure', disclosure);
+      // 보안 여부: 일반 자료는 자막 판독을 OpenAI로, 보안 자료는 RunPod로 처리한다.
+      if (modelRoute !== 'default') form.append('model_route', modelRoute);
       let headers;
       if (projectWorkflow) {
-        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, disclosure]);
+        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, disclosure, modelRoute]);
         if (submission.current?.file !== file || submission.current.fields !== fields) {
           submission.current = { file, fields, key: crypto.randomUUID() };
         }
@@ -153,8 +178,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       if (signal.aborted) return;
       // 원본 로고를 올렸으면 같은 영상으로 영상 로고 작업도 만든다. 실패해도 동영상 검수는 그대로 진행한다.
       let logoError = '';
-      if (logos.length) {
-        try { await submitLogoJob({ video: file, logos, title, reviewId: created.id, signal }); if (!signal.aborted) setLogos([]); }
+      if (checksLogo && logos.length) {
+        try { await submitLogoJob({ video: file, logos, title, reviewId: created.id, detector: logoDetectorFor(security), signal }); if (!signal.aborted) setLogos([]); }
         catch (failure) { logoError = `동영상 검수는 접수했지만 로고 검수를 접수하지 못했습니다: ${failure.message}`; }
       }
       if (signal.aborted) return;
@@ -170,9 +195,15 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
   return <section className="rv-video-input" aria-labelledby="page-title">
-    <h1 id="page-title" className="sr-only" tabIndex={-1}>숏폼 동영상 검수</h1>
+    <h1 id="page-title" className="sr-only" tabIndex={-1}>숏폼 동영상 {reviewModeLabels[mode]} 자료 입력</h1>
     {/* 입력란에서 Enter를 눌러도 접수되지 않도록 폼 제출을 막고, 접수는 버튼으로만 한다. */}
-    <form className="rv-input-form" onSubmit={event => event.preventDefault()}>
+    <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={event => event.preventDefault()}>
+      {security && <div className="rv-input-mode">
+        <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
+          {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
+        <strong>{reviewModeLabels[mode]}</strong>
+        <button type="button" disabled={busy} onClick={() => setDraft(previous => ({ ...previous, reviewMode: null }))}>유형 바꾸기</button>
+      </div>}
       <div className="rv-editor-grid">
         <div className="rv-video-input-column">
           <input id="video-file" ref={input} className="visually-hidden" type="file" accept={ACCEPT} aria-label="검수 동영상 선택" tabIndex={-1}
@@ -212,16 +243,16 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         </div>
 
         <aside className="rv-form-stack" aria-label="검수 요구사항과 첨부 자료">
-            <RequirementInput id="video-requirements" value={draft.requirements} onChange={value => update('requirements', value)} disabled={busy}
+            {checksText && <RequirementInput id="video-requirements" value={draft.requirements} onChange={value => update('requirements', value)} disabled={busy}
               placeholder={'예: 영상에 ‘빛의 기록’ 제목을 표시해 주세요.\n시작 3초 안에 ‘유료 광고 포함’을 표시해 주세요.'}>
               {(draft.documentName || draft.documentRows.length > 0) &&
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
-            </RequirementInput>
-            <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
+            </RequirementInput>}
+            {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
               dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
-              disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} />
-            <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
-            <details className="rv-form-block rv-video-ad-settings">
+              disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
+            {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
+            {checksText && <details className="rv-form-block rv-video-ad-settings">
               <summary>광고·협찬 설정</summary>
             <fieldset className="rv-video-subsection" disabled={busy}><legend className="sr-only">광고·협찬 표시</legend>
               <p className="rv-video-subsection-hint">기준과 따로, 게시물 제목·캡션과 화면 문구로 광고 표시 규정을 판정합니다.</p>
@@ -234,17 +265,19 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
               <label className="rv-video-check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />
                 <span><strong>PPL/협찬</strong><small>화면 표시를 시작·끝 3초 기준으로 판단합니다.</small></span></label>
             </fieldset>
-            </details>
+            </details>}
         </aside>
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} />
-        {status && !status.ready && <ErrorMessage message={status.detail || '동영상 검수 서버가 준비되지 않았습니다.'} />}</div>
+        {checksText && status && !status.ready && <ErrorMessage message={status.detail || '동영상 검수 서버가 준비되지 않았습니다.'} />}</div>
       {draft.parentRunId && <p className="rv-form-hint">{revisionUnavailable ? '현재 영상 서버는 수정본 연결을 지원하지 않습니다.'
         : '이전 검수에 연결할 수정본을 등록합니다. 제출한 영상과 기준으로 다시 검사합니다.'}</p>}
       <div className="rv-actionbar rv-input-actionbar">
-        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.' : [
+        <p>{!file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.'
+          : checksLogo && !logos.length ? '대조할 원본 로고를 1개 이상 첨부해 주세요.'
+          : mode === 'logo' ? `로고 ${logos.length}장 · 1초마다 영상에서 로고 위치 후보를 찾습니다.` : [
           criteria.length ? `기준 ${criteria.length}개` : '기준 없음 · 자막·광고 표시만 검수', ad.kind === 'self' && '광고 표시 제외',
-          logos.length ? `로고 ${logos.length}장` : null, sampling,
+          checksLogo && logos.length ? `로고 ${logos.length}장` : null, sampling,
         ].filter(Boolean).join(' · ')}</p>
         <button type="button" className="rv-button primary" onClick={submit} disabled={submitDisabled}>
           {busy && !sampleBusy ? '올리는 중…' : '검수 시작하기'}{(!busy || sampleBusy) && <Icon name="arrow" />}</button>

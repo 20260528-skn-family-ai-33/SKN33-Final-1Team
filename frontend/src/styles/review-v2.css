@@ -27,7 +27,6 @@
 .rv-project-identity > div { min-width: 0; }
 .rv-project-identity strong { display: block; font-size: 14px; max-width: 26ch; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .rv-eyebrow { display: block; font: 10px/1.5 var(--font-signal); color: var(--rv-muted); letter-spacing: .06em; }
-.rv-version { border-radius: 7px; font-size: 11px; padding: 3px 7px; color: var(--rv-muted); background: #ebebe8; white-space: nowrap; }
 .rv-step-nav { display: flex; padding: 4px; background: #e5e5e1; border-radius: 12px; gap: 3px; flex-shrink: 0; }
 .rv-step-nav > button { padding: 7px 10px; border: 0; border-radius: 8px; background: transparent; color: #595951; font-size: 11px; white-space: nowrap; }
 .rv-step-nav > button > span { font: 10px var(--font-signal); margin-right: 5px; }
@@ -45,14 +44,12 @@
 @media(min-width:1400px){.rv-editor-grid{grid-template-columns:minmax(0,1.55fr) minmax(400px,1fr)}}
 @media(max-width:1100px){.rv-projectbar{align-items:flex-start;flex-direction:column;gap:18px}.rv-step-nav{width:100%}.rv-step-nav>button{flex:1;justify-content:center}.rv-editor-grid,.rv-running-layout{grid-template-columns:minmax(0,1.1fr) minmax(330px,1fr);gap:18px}.rv-main{padding-inline:24px}.rv-projectbar{padding-inline:24px}.rv-running-inspector{padding:24px}}
 @media(max-width:900px){.rv-editor-grid,.rv-running-layout{grid-template-columns:minmax(0,1fr)}.rv-workspace-intro{align-items:flex-start}.rv-workspace-intro>p{max-width:260px;margin:0}.rv-running-layout .image-stage-viewport{height:430px}}
-@media(max-width:600px){.rv-projectbar{padding:20px 18px}.rv-project-identity strong{max-width:245px;font-size:12px}.rv-version{display:none}.rv-step-nav{border-radius:10px;gap:1px;padding:4px}.rv-step-nav>button{padding:10px 4px;font-size:10px;gap:5px}.rv-step-nav>button>span{font-size:8px}.rv-main{padding:4px 16px 28px}.rv-workspace-intro{display:block;margin-bottom:20px}.rv-workspace-intro h1{font-size:27px}.rv-workspace-intro>p{max-width:none;margin-top:9px}.rv-panel{border-radius:18px}.rv-panel-heading{padding:20px}.rv-actionbar{padding:18px 20px;flex-wrap:wrap}.rv-workspace input:not([type=checkbox]):not([type=radio]):not([type=file]),.rv-workspace textarea,.rv-workspace select:not(.image-stage select){font-size:16px}.rv-running-inspector{padding:24px}}
+@media(max-width:600px){.rv-projectbar{padding:20px 18px}.rv-project-identity strong{max-width:245px;font-size:12px}.rv-step-nav{border-radius:10px;gap:1px;padding:4px}.rv-step-nav>button{padding:10px 4px;font-size:10px;gap:5px}.rv-step-nav>button>span{font-size:8px}.rv-main{padding:4px 16px 28px}.rv-workspace-intro{display:block;margin-bottom:20px}.rv-workspace-intro h1{font-size:27px}.rv-workspace-intro>p{max-width:none;margin-top:9px}.rv-panel{border-radius:18px}.rv-panel-heading{padding:20px}.rv-actionbar{padding:18px 20px;flex-wrap:wrap}.rv-workspace input:not([type=checkbox]):not([type=radio]):not([type=file]),.rv-workspace textarea,.rv-workspace select:not(.image-stage select){font-size:16px}.rv-running-inspector{padding:24px}}
 @media(prefers-reduced-motion:reduce){.rv-workspace *,.rv-workspace *::before,.rv-workspace *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 /* ---------- 프로젝트 바: 검수 이름 · 상태 · 저장할 프로젝트 ---------- */
 .rv-project-field { display: grid; gap: 3px; min-width: 0; }
 .rv-project-field-label { display: block; font-size: 11px; line-height: 1.4; color: var(--rv-muted); }
-.rv-project-field--status .rv-version { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; cursor: help; }
-.rv-project-field--status .rv-version::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #a8a9a3; }
 .rv-project-identity .rv-project-field > strong { line-height: 36px; }
 
 .rv-workspace .rv-project-name-field {
@@ -161,5 +158,4 @@
 
 @media (max-width: 600px) {
   .rv-project-picker-panel { left: auto; right: 0; width: min(320px, calc(100vw - 32px)); }
-  .rv-project-field--status { display: none; }
 }

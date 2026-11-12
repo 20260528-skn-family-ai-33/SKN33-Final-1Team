@@ -1,8 +1,6 @@
 import React, { useRef } from 'react';
-import { useNavigate } from 'react-router';
 import { Icon } from '../components/Icon.jsx';
 import { SiteHeader } from '../components/SiteHeader.jsx';
-import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
 import '../styles/review-v2.css';
 import '../styles/review-interactions.css';
 
@@ -11,38 +9,38 @@ export const posterSteps = { input: '자료 입력', running: '검수 진행', r
 export const logoSteps = { input: '자료 입력', candidates: '후보 찾기', confirm: '위치 확정', compare: '정밀 대조' };
 
 // 검수 이름 칸: 비어 있으면 흐린 안내 글자로 보이고(값처럼 보이지 않게), 연필을 누르면 바로 입력한다.
-// 입력 중에는 글자 수를 보이고, Enter·Esc로 입력을 끝낸다.
+// 입력 중에는 글자 수를 보이고, Enter·Esc로 입력을 끝낸다. editor.onEnter가 있으면 Enter로 이 이름의 프로젝트를
+// 만들고 선택한다(같은 이름이 있으면 그 프로젝트를 고른다). 한글 조합 중 Enter는 글자 확정이라 무시한다.
 function ProjectNameField({ editor, value = '', locked }) {
   const input = useRef(null);
   const off = locked || editor.disabled;
+  function keyDown(event) {
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      editor.onEnter?.(event.currentTarget.value.trim());
+      event.currentTarget.blur();
+    } else if (event.key === 'Escape') event.currentTarget.blur();
+  }
   return <div className="rv-project-name-field">
     <input ref={input} type="text" id={editor.id} aria-label="검수 이름" autoComplete="off" maxLength={editor.maxLength}
       value={value} placeholder="이름 없는 검수 (선택)" disabled={off} onChange={event => editor.onChange(event.target.value)}
-      onKeyDown={event => { if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur(); }} />
-    {editor.maxLength && <span className="rv-project-name-count" aria-hidden="true">{value.length}/{editor.maxLength}</span>}
+      title={editor.onEnter ? 'Enter를 누르면 이 이름으로 프로젝트를 만들고 선택합니다.' : undefined} onKeyDown={keyDown} />
+    {editor.maxLength && <span className="rv-project-name-count" aria-hidden="true">
+      {value.length}/{editor.maxLength}{editor.onEnter && value.trim() ? ' · Enter로 프로젝트 만들기' : ''}</span>}
     <button type="button" aria-label="검수 이름 고치기" title="검수 이름 고치기" disabled={off}
       onClick={() => { input.current?.focus(); input.current?.select(); }}><Icon name="pencil" /></button>
   </div>;
 }
 
-function versionHint(version) {
-  if (version === '작업 중') return '검수 기준을 확정하기 전입니다. 확정하면 ‘기준 v1’처럼 바뀝니다.';
-  if (/^기준 v\d+/.test(version || '')) return '확정한 검수 기준의 버전입니다.';
-  return undefined;
-}
-
-export function WorkspaceProjectBar({ name, version, step, steps, canNavigate, navigate, locked, projectEditor, projectTools, children }) {
-  const go = useNavigate();
-  const resetWorkspace = useWorkspaceReset();
+// 서비스 메인 이동은 위쪽 사이트 머리글(로고)로 하므로 이 줄에는 홈 버튼을 두지 않는다.
+// 상태(작업 중·기준 vN) 표시는 두지 않는다. 호출하는 화면이 넘기는 version은 쓰지 않는다.
+export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, locked, projectEditor, projectTools, children }) {
   return <div className="rv-projectbar">
     <div className="rv-project-identity">
-      <button type="button" className="rv-icon-button" aria-label="서비스 메인으로" title="서비스 메인으로" disabled={locked}
-        onClick={() => { resetWorkspace(); go('/'); }}><Icon name="grid" /></button>
       <div className="rv-project-field"><span className="rv-project-field-label">검수 이름</span>{projectEditor
         ? <ProjectNameField editor={projectEditor} value={name || ''} locked={locked} />
         : <strong title={name || undefined}>{name || '이름 없는 검수'}</strong>}</div>
-      <div className="rv-project-field rv-project-field--status"><span className="rv-project-field-label">상태</span>
-        <span className="rv-version" title={versionHint(version)}>{version}</span></div>
       {projectTools}
     </div>
     <div className="rv-project-actions">

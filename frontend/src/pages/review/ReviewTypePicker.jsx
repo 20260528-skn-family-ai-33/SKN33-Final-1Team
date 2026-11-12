@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import '../../styles/review-type-picker.css';
 
-// 자료 입력 전에 고르는 검수 유형. text는 요구사항 문구 검수, logo는 원본 로고 대조, both는 둘 다.
-export const reviewModeLabels = { text: '자막 검수', logo: '로고 검수', both: '둘 다 검수 (자막+로고)' };
+// 자료 입력 전에 고르는 검수 유형. text는 요구사항 문구 검수, logo는 원본 로고 대조, both는 둘 다(화면 이름 '종합 검수').
+export const reviewModeLabels = { text: '자막 검수', logo: '로고 검수', both: '종합 검수' };
 // 검수 유형보다 먼저 묻는 보안 자료 여부. 보안 자료는 기존 RunPod 파이프라인만, 일반 자료는 OpenAI API로 처리한다
 // (요구사항 추출·포스터 검사·로고 위치 탐지. 로고 정밀 대조는 둘 다 RunPod) — workflow.js modelRouteFor 참고.
 export const securityModeLabels = { secure: '보안 자료', general: '일반 자료' };
@@ -11,7 +11,7 @@ export const securityModeLabels = { secure: '보안 자료', general: '일반 �
 const TYPE_TILES = [
   { value: 'text', key: '1', label: '자막 검수' },
   { value: 'logo', key: '2', label: '로고 검수' },
-  { value: 'both', key: '3', label: '둘 다 검수', note: '자막+로고' },
+  { value: 'both', key: '3', label: '종합 검수' },
 ];
 
 function Check({ x, y }) {
@@ -94,8 +94,8 @@ function SecurityArt({ secure }) {
 }
 
 const SECURITY_TILES = [
-  { value: 'secure', key: '1', label: '보안 자료', note: '자체 서버 처리', art: <SecurityArt secure /> },
-  { value: 'general', key: '2', label: '일반 자료', note: 'OpenAI 처리', art: <SecurityArt secure={false} /> },
+  { value: 'secure', key: '1', label: '보안 자료', art: <SecurityArt secure /> },
+  { value: 'general', key: '2', label: '일반 자료', art: <SecurityArt secure={false} /> },
 ];
 
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
@@ -141,6 +141,6 @@ const typeTiles = TYPE_TILES.map(tile => ({ ...tile, art: <TypeArt mode={tile.va
 export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false }) {
   return <KioskChoice title="검수할 항목을 선택해 주세요" tiles={typeTiles} labels={reviewModeLabels}
     onSelect={onSelect} onBack={onBack} backLabel="보안 여부 다시 고르기" disabled={disabled}
-    context={security && <><Icon name={security === 'secure' ? 'lock' : 'shield'} />{securityModeLabels[security]}</>}
+    context={security && <>{security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</>}
     foot="누르면 바로 자료 입력 화면으로 넘어가요" />;
 }

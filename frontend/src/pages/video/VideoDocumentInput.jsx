@@ -4,7 +4,9 @@ import { mergeDocumentRequirements } from '../review/documentRequirements.js';
 import { extractDocumentWithProgress, requirementDocument, watchDocumentDeadline } from '../review/frameworkDocument.js';
 import { extractVideoDocument } from './videoDocumentAnalysis.js';
 
-export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument, dedicated = false }) {
+// modelRoute: 보안 여부(일반 자료 openai, 보안 자료 runpod). 동영상 전용 분석과 A02 분석 모두에 실어 보낸다.
+export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument, dedicated = false,
+  modelRoute = 'default' }) {
   const [progress, setProgress] = useState(null);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -66,7 +68,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     const deadline = watchDocumentDeadline(controller);
     try {
       if (dedicatedEnabled) {
-        const result = await extractVideoDocument(file, { signal,
+        const result = await extractVideoDocument(file, { signal, modelRoute,
           onProgress: update => { if (!signal.aborted) setProgress(deadline.update(update)); } });
         if (signal.aborted) return;
         const rows = result.items.filter(item => item.include).map(item => ({
@@ -83,7 +85,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
         return;
       }
       const document = await requirementDocument(file);
-      const result = await extractDocumentWithProgress(document, { projectId, attempts: attempts.current, signal,
+      const result = await extractDocumentWithProgress(document, { projectId, attempts: attempts.current, signal, modelRoute,
         onAccepted: id => { deadline.runId = id; },
         onProgress: update => { if (!signal.aborted) setProgress(deadline.update(update)); } });
       if (signal.aborted) return;

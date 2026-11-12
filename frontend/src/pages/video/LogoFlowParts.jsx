@@ -88,14 +88,16 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
   </section>;
 }
 
-// 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다.
-export async function submitLogoJob({ video, logos, title, reviewId, signal }) {
+// 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다. 로고만 검수하면 reviewId 없이 만든다.
+// detector: 위치 후보를 찾는 곳. 'openai'(일반 자료) 또는 'runpod'(보안 자료·기본). 정밀 대조는 둘 다 RunPod다.
+export async function submitLogoJob({ video, logos, title, reviewId, detector = 'runpod', signal }) {
   const form = new FormData();
   form.append('video', video);
   logos.forEach(item => form.append('logos', item.file));
   form.append('logo_texts', JSON.stringify(logos.map(item => item.text.trim())));
   form.append('title', title);
-  form.append('review_id', reviewId);
+  if (reviewId) form.append('review_id', reviewId);
+  form.append('detector', detector === 'openai' ? 'openai' : 'runpod');
   return fetchJson('/api/video-logos', { method: 'POST', body: form, signal });
 }
 

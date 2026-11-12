@@ -481,7 +481,11 @@ def call_fallback(fallback, payload: list, index, *, transport=None) -> tuple[Vi
 
 
 def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None,
-            fallback=_FROM_ENV, fallback_transport=None) -> dict:
+            fallback=_FROM_ENV, fallback_transport=None, route: str = "default") -> dict:
+    """route(보안 여부, backend/agent_framework/model_route.py): openai는 Qwen 없이 OpenAI로 바로 읽고,
+    runpod(보안 자료)는 Qwen만 쓰며 OpenAI 대체 추출을 하지 않는다. default는 이전과 같다."""
+    from backend.agent_framework.model_route import normalize, openai_settings
+    route = normalize(route)
     kind, sources, image_pages = _read(data, filename)
     try:
         index, payload = index_sources(sources)
@@ -489,21 +493,30 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
         _fail(failure.code, "문서가 너무 길거나 복잡해 줄 번호를 붙이지 못했습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
     # 포스터 semantic 경로처럼 줄 텍스트만 보낸다(부분 토큰 ID는 보내지 않음).
     payload = [{**block, "lines": [{"id": line["id"], "text": line["text"]} for line in block["lines"]]} for block in payload]
-    fallback = fallback_settings() if fallback is _FROM_ENV else fallback
+    fallback = None if route == "runpod" else fallback_settings() if fallback is _FROM_ENV else fallback
     qwen_failure = None
-    try:
-        settings = settings or config()
-        reply, response_hash = call_model(settings, payload, index, transport=transport)
+    if route == "openai":
+        try:
+            openai = openai_settings()
+        except AdapterFailure:
+            _fail("OPENAI_ROUTE_NOT_CONFIGURED", "일반 자료 문서 분석에 쓸 OpenAI API 키가 설정되지 않았습니다.", 503)
+        reply, response_hash = call_fallback(openai, payload, index, transport=fallback_transport)
         items, warnings, rejected = materialize(reply, index)
-        model = settings.model
-    except DocumentError as error:
-        if fallback is None or not should_fall_back(error.code):
-            raise
-        qwen_failure = error.code
-        reply, response_hash = call_fallback(fallback, payload, index, transport=fallback_transport)
-        items, warnings, rejected = materialize(reply, index)
-        warnings = [*warnings, FALLBACK_WARNING]
-        model = fallback.model
+        model = openai.model
+    else:
+        try:
+            settings = settings or config()
+            reply, response_hash = call_model(settings, payload, index, transport=transport)
+            items, warnings, rejected = materialize(reply, index)
+            model = settings.model
+        except DocumentError as error:
+            if fallback is None or not should_fall_back(error.code):
+                raise
+            qwen_failure = error.code
+            reply, response_hash = call_fallback(fallback, payload, index, transport=fallback_transport)
+            items, warnings, rejected = materialize(reply, index)
+            warnings = [*warnings, FALLBACK_WARNING]
+            model = fallback.model
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
                 for n, item in enumerate((i for i in items if i["include"]), 1)]
     warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings,
@@ -516,6 +529,7 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
         "counts": {"items": len(items), "criteria": len(criteria),
                    "excluded": sum(not i["include"] for i in items), "unresolved": sum(i["unresolved"] for i in items)},
         "trace": {"policy": POLICY, "model": model, "input_kind": kind,
+                  **({"model_route": route} if route != "default" else {}),
                   **({"fallback": {"provider": "openai", "qwen_failure": qwen_failure}} if qwen_failure else {}),
                   "document_sha256": sha256(data).hexdigest(), "prompt_sha256": PROMPT_SHA256,
                   "schema_sha256": SCHEMA_SHA256, "response_sha256": response_hash,

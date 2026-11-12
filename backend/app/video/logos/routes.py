@@ -139,19 +139,32 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
         from backend.app.video.logos import candidates as C
         from backend.app.video.logos import client as R
         meta = _read_json(target / "result.json")
+
+        def sample():
+            update(target, status="running", stage="frames", progress=1)
+            frames, missing, total = C.sample_frames(target / meta["video_file"], target / "frames")
+            if not frames:
+                raise RuntimeError("no frames")
+            if missing:  # 못 읽은 초는 후보·대조에서 빠지므로 바로 알린다
+                update(target, missing_seconds=missing, warnings=[missing_text(missing, total)])
+            refs = [{"name": r["name"], "image": Image.open(target / "refs" / r["file"]), "text": r["text"]} for r in meta["logos"]]
+            return frames, missing, total, refs
+
+        def report(p, d):
+            update(target, stage="candidates", progress=round(p), stage_detail=d)
         try:
-            with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
-                if worker_pool:
-                    update(target, worker_slot=slot)
-                update(target, status="running", stage="frames", progress=1)
-                frames, missing, total = C.sample_frames(target / meta["video_file"], target / "frames")
-                if not frames:
-                    raise RuntimeError("no frames")
-                if missing:  # 못 읽은 초는 후보·대조에서 빠지므로 바로 알린다
-                    update(target, missing_seconds=missing, warnings=[missing_text(missing, total)])
-                refs = [{"name": r["name"], "image": Image.open(target / "refs" / r["file"]), "text": r["text"]} for r in meta["logos"]]
-                build = candidates or (R.build_candidates if R.worker_url() else C.build_candidates)
-                data = build(target / "frames", frames, refs, lambda p, d: update(target, stage="candidates", progress=round(p), stage_detail=d))
+            if candidates is None and meta.get("detector") == "openai":
+                # 일반 자료: 위치 후보만 OpenAI로 찾는다. RunPod 슬롯을 잡지 않는다(정밀 대조는 run_compare가 RunPod로).
+                from backend.app.video.logos import openai_candidates as O
+                frames, missing, total, refs = sample()
+                data = O.build_candidates(target / "frames", frames, refs, report)
+            else:
+                with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
+                    if worker_pool:
+                        update(target, worker_slot=slot)
+                    frames, missing, total, refs = sample()
+                    build = candidates or (R.build_candidates if R.worker_url() else C.build_candidates)
+                    data = build(target / "frames", frames, refs, report)
             data.update(key=VIDEO_KEY, title=meta["title"], seconds=total, missing=missing)
             for i, r in enumerate(data["refs"]):
                 r["img"] = f"refs/{i}.png"
@@ -239,16 +252,19 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             if review_id and v.get("review_id") != review_id:
                 continue
             jobs.append({k: v.get(k) for k in ("id", "title", "status", "stage", "progress", "stage_detail", "error", "warnings",
-                                               "compare_status", "compare_progress", "review_id", "created_at")})
+                                               "compare_status", "compare_progress", "review_id", "detector", "created_at")})
         return {"items": sorted(jobs, key=lambda j: j.get("created_at") or "", reverse=True)[:20]}
 
     if not readonly:
         @router.post("", status_code=202)
         async def submit(request: Request, background: BackgroundTasks, video: UploadFile = File(...), logos: list[UploadFile] = File(...),
                          logo_texts: str = Form("[]"), title: str = Form("영상 로고 검수", min_length=1, max_length=120),
-                         review_id: str | None = Form(None)):
+                         review_id: str | None = Form(None), detector: str = Form("runpod")):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분, 예: "울산광역시남구|ULSAN METROPOLITAN NAMGU"). 비우면 문자 비교를 하지 않는다.
-            review_id: 같은 영상으로 함께 접수한 동영상 검수 작업."""
+            review_id: 같은 영상으로 함께 접수한 동영상 검수 작업(로고만 검수하면 없음).
+            detector: 위치 후보를 찾는 곳. runpod(보안 자료·기본) 또는 openai(일반 자료). 정밀 대조는 둘 다 RunPod다."""
+            if detector not in ("runpod", "openai"):
+                raise HTTPException(422, "detector는 runpod 또는 openai입니다.")
             worker_slot = None
             if review_id is not None:
                 try:
@@ -297,7 +313,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 shutil.rmtree(target, ignore_errors=True)
                 raise
             result = {"id": job_id, "title": title, "status": "queued", "stage": "queued", "progress": 0,
-                      "video_file": f"video{suffix}", "logos": items, "review_id": review_id,
+                      "video_file": f"video{suffix}", "logos": items, "review_id": review_id, "detector": detector,
                       "created_at": _now(), "updated_at": _now()}
             if worker_slot:
                 result["worker_slot"] = worker_slot
