@@ -143,3 +143,134 @@ test('검수 결과 화면에서 수정본 검수 이력을 펼쳐 본다', { ti
   if (shots) await page.screenshot({ path: shots + '/revision-history.png' });
   assert.deepEqual(errors, []);
 });
+
+test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도가 창으로 열린다', { timeout: 60000 }, async t => {
+  const context = number => ({ run_id: 'poster-' + number, project_id: 'project-fixture', actor_id: 'user-fixture', document_version_id: 'doc-v2',
+    criteria_version_id: 'criteria-v1', asset_version_id: 'asset-' + number, parent_run_id: number ? 'poster-' + (number - 1) : null });
+  const criteria = [criterion('date', '행사일: 11월 20일', '11월 20일', 'event_date', '행사일'),
+    criterion('venue', '행사 장소: 시민공원', '시민공원', 'venue', '행사 장소'),
+    { ...criterion('logo', '주최 기관 로고를 넣는다', '주최 기관 로고', 'logo', '로고'), kind: 'visual', operator: 'present',
+      details: { target: 'poster_visual', field: 'logo', presentation: { label: '로고', value: '주최 기관 로고' } } }];
+  const item = (number, id, verdict, observed, extra = {}) => {
+    const source = criteria.find(entry => entry.criterion_id === id);
+    return { criterion_id: id, criterion_text: source.text, kind: source.kind, operator: source.operator, required: true, expected: source.expected,
+      observed, observation_status: 'observed', verdict, issues: [], ...extra };
+  };
+  const box = (number, bbox) => ({ image: { asset_version_id: 'asset-' + number, asset_hash: 'h'.repeat(64), bbox } });
+  const run = (number, items, extra = {}) => ({ context: context(number), execution_status: 'waiting_review', human_decision: 'unreviewed', machine_verdict: 'fail',
+    baseline: { criteria_version_id: 'criteria-v1' }, evidence: { status: 'complete', context_id: 'rag-fixture' }, approvals: [],
+    criteria: { context: context(number), criteria }, validated: { verdict: 'fail', items },
+    step_records: [{ role: 'A06', finished_at: '2026-11-12T01:20:00+00:00' }], ...extra });
+  const entry = number => ({ run_id: 'poster-' + number, revision_no: number, parent_run_id: number ? 'poster-' + (number - 1) : null, current: number === 1,
+    asset_version_id: 'asset-' + number, criteria_version_id: 'criteria-v1', criteria_version_no: 1, execution_status: 'waiting_review',
+    machine_verdict: 'fail', human_decision: 'unreviewed', state: number ? 'awaiting_decision' : 'changes_requested',
+    created_at: `2026-11-0${number + 1}T02:00:00+00:00`, records: [] });
+  const { page, errors, requested } = await open(t, {
+    '/runs/poster-1': run(1, [
+      item(1, 'date', 'pass', '11월 20일', box(1, [.1, .08, .7, .2])),
+      item(1, 'venue', 'fail', '시청광장', { issues: ['value_mismatch'], ...box(1, [.1, .7, .6, .9]) }),
+      item(1, 'logo', 'review', '', { observation_status: 'unreadable', issues: ['model_review'] })]),
+    '/runs/poster-0': run(0, [
+      item(0, 'date', 'fail', '11월 2일', { issues: ['value_mismatch'], ...box(0, [.1, .08, .7, .2]) }),
+      item(0, 'venue', 'fail', '시청 앞 광장', { issues: ['value_mismatch'], ...box(0, [.3, .5, .9, .64]) }),
+      item(0, 'logo', 'review', '', { observation_status: 'unreadable', issues: ['model_review'] })]),
+    '/runs/poster-1/evidence-context': { evidence: {}, sha256: 'c'.repeat(64), retrieval: { policy: 'af-approved-sources-v1', backend: 'neo4j',
+      fallback_reason: null, required_revision: 9, observed_graph_revision: 9,
+      source_keys: criteria.map(entry => ({ criterion_id: entry.criterion_id, source_key: `source:criteria-v1:${entry.criterion_id}:document`, source_hash: 'a'.repeat(64) })),
+      relations: { run_ids: ['poster-0', 'poster-1'], approval_ids: [], truncated: false } } },
+    '/runs/poster-1/revision-history': { run_id: 'poster-1', answered_by: 'neo4j', graph: { status: 'complete' }, warnings: [], truncated: false,
+      summary: { reviews: 2, rereviews: 1, final_approved: null, awaiting_decision: true }, entries: [entry(0), entry(1)] },
+  });
+  await page.goto(base + '/review/new?framework=poster-1');
+  const rows = page.locator('.rv-result-item-button');
+  await rows.nth(2).waitFor();
+  await page.getByText('항목을 누르면 판정 근거가 창으로 열립니다.', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  if (shots) await page.screenshot({ path: shots + '/evidence-list.png' });
+  // 다른 검수 결과는 창을 열기 전에는 읽지 않는다
+  assert.equal(requested.filter(path => path.endsWith('/runs/poster-0')).length, 0);
+
+  await rows.filter({ hasText: '행사 장소: 시민공원' }).click();
+  const dialog = page.getByRole('dialog', { name: '02 행사 장소 판정 근거' });
+  await dialog.waitFor();
+  assert.equal(await dialog.locator('.rv-evd-head .rv-evd-chip').innerText(), '불충족');
+  // 왼쪽 포스터에는 읽은 위치를 상자로 표시한다
+  const poster = dialog.getByRole('region', { name: '검수 포스터' });
+  const readBox = poster.getByTestId('evidence-read-box');
+  await readBox.waitFor();
+  assert.equal(await poster.getByRole('img').getAttribute('src'), '/api/framework/v1/images/asset-1/content');
+  assert.deepEqual(await readBox.evaluate(element => { const frame = element.parentElement.getBoundingClientRect(), rect = element.getBoundingClientRect();
+    return [(rect.left - frame.left) / frame.width, (rect.top - frame.top) / frame.height, rect.width / frame.width, rect.height / frame.height].map(value => Math.round(value * 100)); }),
+  [10, 70, 50, 20]);
+  await poster.getByText('포스터 아래쪽', { exact: true }).waitFor();
+  // 상자 확대를 누르면 읽은 위치가 틀 가운데로 와서 틀 너비의 대부분을 채운다
+  const boxInFrame = () => page.evaluate(() => { const box = document.querySelector('[data-testid="evidence-read-box"]').getBoundingClientRect();
+    const frame = document.querySelector('.rv-evd-frame').getBoundingClientRect();
+    return { width: box.width / frame.width, offset: Math.abs(box.left + box.width / 2 - frame.left - frame.width / 2) }; });
+  const fitted = await boxInFrame();
+  await poster.getByRole('button', { name: '상자 확대', exact: true }).click();
+  await page.waitForFunction(width => document.querySelector('[data-testid="evidence-read-box"]').getBoundingClientRect().width
+    / document.querySelector('.rv-evd-frame').getBoundingClientRect().width > width * 1.5, fitted.width);
+  await page.waitForTimeout(400);
+  const zoomed = await boxInFrame();
+  assert.ok(zoomed.width > .68 && zoomed.width < .86 && zoomed.offset < 3, JSON.stringify(zoomed));
+  if (shots) await page.screenshot({ path: shots + '/evidence-dialog-zoom.png' });
+  await poster.getByRole('button', { name: '전체 보기', exact: true }).click();
+  await page.waitForFunction(width => Math.abs(document.querySelector('[data-testid="evidence-read-box"]').getBoundingClientRect().width
+    / document.querySelector('.rv-evd-frame').getBoundingClientRect().width - width) < .005, fitted.width);
+  // 오른쪽에는 기준 요약과 근거 관계도
+  const main = dialog.getByRole('region', { name: '판정 근거' });
+  assert.match(await main.locator('.rv-evd-criterion').innerText(), /행사 장소: 시민공원[\s\S]*기대값\s*‘시민공원’[\s\S]*읽은 값\s*‘시청광장’[\s\S]*값이 기준과 다름/);
+  const graph = main.getByRole('group', { name: '행사 장소 근거 관계도' });
+  await graph.getByRole('button', { name: /이전 검수 원본 · 불충족/ }).waitFor();
+  assert.equal(requested.filter(path => path.endsWith('/runs/poster-0')).length, 1);
+  assert.deepEqual(await graph.locator('.rv-evg-node.is-chain .rv-evg-title').allInnerTexts(),
+    ['1차 수정본 포스터', '포스터 아래쪽', '‘시청광장’', '불충족', '행사 장소', '요구사항 문서 1쪽']);
+  assert.deepEqual(await graph.locator('.rv-evg-edge.is-chain > span').allInnerTexts(), ['영역', '읽음', '근거', '기준', '출처']);
+  await main.getByText('노드 9 · 관계 10', { exact: true }).waitFor();
+  // 노드가 선과 겹치지 않고 서로도 겹치지 않는다
+  assert.ok(await graph.evaluate(element => { const boxes = [...element.querySelectorAll('.rv-evg-node')].map(node => node.getBoundingClientRect());
+    return boxes.every((a, i) => boxes.every((b, j) => i === j || a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)); }));
+  // 처음에는 판정 노드가 선택돼 있고, 다른 노드를 누르면 그 노드의 근거가 보인다
+  const detail = main.getByRole('region', { name: '선택한 노드' });
+  assert.match(await detail.innerText(), /판정[\s\S]*불충족 · 필수 조건[\s\S]*기준 ‘시민공원’ ↔ 읽은 값 ‘시청광장’[\s\S]*값이 기준과 다름/);
+  if (shots) await page.screenshot({ path: shots + '/evidence-dialog-fail.png' });
+  await graph.getByRole('button', { name: /요구사항 원문/ }).click();
+  assert.match(await detail.innerText(), /요구사항 문서 1쪽[\s\S]*행사 장소: 시민공원[\s\S]*그래프 노드\s*source/);
+  await main.getByRole('button', { name: '전체 관계', exact: true }).click();
+  assert.equal(await graph.getAttribute('class'), 'rv-evg is-all');
+  await main.getByRole('button', { name: '조회 정보 보기', exact: true }).click();
+  await main.getByText(/Neo4j 그래프에서 조회했습니다\. 그래프 revision 9 · 원장 revision 9/).waitFor();
+  await main.getByText('source:criteria-v1:venue:document', { exact: true }).waitFor();
+  // 버전별 판정에서 이전 검수본을 고르면 그 포스터와 읽은 위치를 보여 준다
+  const trail = poster.getByRole('group', { name: '버전별 판정' });
+  assert.deepEqual((await trail.getByRole('button').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), ['원본 불충족', '1차 수정본 불충족 지금']);
+  await trail.getByRole('button', { name: /원본/ }).click();
+  await poster.getByText('이전 검수본', { exact: true }).waitFor();
+  assert.equal(await poster.getByRole('img').getAttribute('src'), '/api/framework/v1/images/asset-0/content');
+  assert.match(await poster.locator('.rv-evd-poster-caption').innerText(), /원본에서 읽은 값 ‘시청 앞 광장’ · 불충족/);
+  if (shots) await page.screenshot({ path: shots + '/evidence-dialog-previous.png' });
+
+  // 다음 항목으로 넘기면 같은 창에서 내용이 바뀐다. 위치가 없는 확인 필요 항목은 점선과 담당자 확인으로 보여 준다
+  await dialog.getByRole('button', { name: '다음 항목', exact: true }).click();
+  const next = page.getByRole('dialog', { name: '03 로고 판정 근거' });
+  await next.waitFor();
+  assert.equal(await next.locator('.rv-evd-head .rv-evd-chip').innerText(), '확인 필요');
+  assert.equal(await next.getByTestId('evidence-read-box').count(), 0);
+  assert.equal(await next.getByRole('img').getAttribute('src'), '/api/framework/v1/images/asset-1/content');
+  await next.getByText('이 항목은 위치 상자가 없어 포스터 전체를 보여 줍니다.', { exact: true }).waitFor();
+  const nextGraph = next.getByRole('group', { name: '로고 근거 관계도' });
+  assert.deepEqual(await nextGraph.locator('.rv-evg-node.is-dashed .rv-evg-title').allInnerTexts(), ['위치 정보 없음', '읽을 수 없음', '원본 · 확인 필요', '결정 대기']);
+  assert.ok(await next.getByRole('button', { name: '다음 항목', exact: true }).isDisabled());
+  if (shots) await page.screenshot({ path: shots + '/evidence-dialog-review.png' });
+  // 노트북 화면 크기에서도 창이 화면 안에 들어온다
+  await page.setViewportSize({ width: 1366, height: 720 });
+  assert.ok(await next.evaluate(element => { const rect = element.getBoundingClientRect();
+    return rect.top >= 0 && rect.left >= 0 && rect.bottom <= innerHeight && rect.right <= innerWidth; }));
+  if (shots) await page.screenshot({ path: shots + '/evidence-dialog-small.png' });
+  // Esc로 닫으면 목록에서 보고 있던 항목으로 초점이 돌아간다
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('dialog'));   // 닫힘 이벤트까지 처리된 뒤
+  assert.match(await page.evaluate(() => document.activeElement.className + ' ' + document.activeElement.textContent), /rv-result-item-button is-selected[\s\S]*주최 기관 로고를 넣는다/);
+  assert.deepEqual(errors, []);
+});
