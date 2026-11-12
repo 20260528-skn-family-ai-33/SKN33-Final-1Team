@@ -1,22 +1,38 @@
 """Local video API retains the existing auth and CSRF boundary."""
 from dataclasses import replace
 import json
+from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
+from dotenv import dotenv_values
 from fastapi.testclient import TestClient
 
 from backend.app.config import ConfigurationError
 from backend.app.v1_config import load_v1_settings
+from backend.app.video import subtitle_vlm
 from backend.app.video.framework_service import create_video_app
 from backend.app.video.postgres import VideoApprovals
+from backend.app.video.review import subtitle_engine
 from tests.app.auth_fixtures import auth_environment
 
 
 @pytest.fixture(autouse=True)
 def no_postgres_extension_in_auth_doubles(monkeypatch):
     monkeypatch.setattr(VideoApprovals, 'open', lambda *_: None)
+
+
+def test_aws_video_example_selects_qwen_subtitles(monkeypatch):
+    example = Path(__file__).resolve().parents[2] / "deploy/agent-framework/video.aws-test.env.example"
+    settings = dotenv_values(example)
+    for name in ("VIDEO_SUBTITLE_ENGINE", "VIDEO_SUBTITLE_VLM_URL", "VIDEO_SUBTITLE_VLM_MODEL"):
+        monkeypatch.setenv(name, settings[name])
+
+    assert subtitle_engine() == "qwen3-vl"
+    config = subtitle_vlm.config()
+    assert config["base"] == "http://127.0.0.1:18000/v1"
+    assert config["model"] == subtitle_vlm.DEFAULT_MODEL
 
 
 @pytest.mark.parametrize('base',['http://localhost:8000','http://192.168.0.144:5173'])

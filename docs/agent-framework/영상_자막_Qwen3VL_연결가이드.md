@@ -45,6 +45,12 @@ VIDEO_SUBTITLE_VLM_CONCURRENCY=8
 - 같은 GPU에 영상 로고 워커·Paddle 서버가 함께 떠 있으므로 `--gpu-memory-utilization`은 남은 메모리에 맞춘다.
 - 로컬 PC에서는 SSH 터널로 연결한다: `ssh -N -L 18000:127.0.0.1:8000 -p <포트> root@<RunPod IP> -i <키>`
 
+### AWS 영상 API 전환
+
+새 영상 이미지에 `backend.app.video.subtitle_vlm` 모듈이 있는지 확인한다. 영상 API EC2에서 `127.0.0.1:18000`을 자막용 vLLM의 loopback 포트로 연결하고, [AWS 영상 환경 설정 예시](../../deploy/agent-framework/video.aws-test.env.example)의 값을 사용한다. vLLM 인증 키는 기존 비공개 런타임 설정에 추가한다.
+
+전환 전에 EC2에서 인증된 `/v1/models`가 설정한 모델 이름을 반환하는지 확인한다. 기존 영상 워커 터널 `18791`·`18792`는 영상 로고 처리에 사용한다. 새 API 기동 후 아래 상태와 실영상 결과를 확인한다. 오인식이 보고된 영상은 새 작업으로 제출해 `0:21–0:22` 구간을 다시 확인한다.
+
 ## 확인 방법
 
 1. `GET /api/video-reviews/status` → `subtitle_engine: "qwen3-vl"`, `pipeline: "qwen3vl_frames_v1"`, `ready: true`
