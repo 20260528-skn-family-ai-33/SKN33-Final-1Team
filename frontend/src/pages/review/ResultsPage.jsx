@@ -48,12 +48,15 @@ function RetryNote({ retry }) {
 }
 
 // The list, canvas and inspector always share one criterion ID.
+// evidence(선택): 항목을 누르면 열 판정 근거 창을 그리는 함수. 주면 항목을 누를 때마다 창이 열리고, 없으면 예전처럼 펼치고 접는다.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions }) {
+  busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
+  evidence }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
   const [selectedOnly, setSelectedOnly] = useState(false);
   const [closedId, setClosedId] = useState(null);
+  const [evidenceId, setEvidenceId] = useState(null);
   const list = useRef(null);
   const canvas = useRef(null);
   const focusRow = useRef(false);
@@ -92,6 +95,16 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   function chooseResult(result) {
     setClosedId(null);
     setActiveEvidence(result ? { criterion_id: result.criterion_id, evidence: result.evidence || EMPTY } : null);
+  }
+  const evidenceResult = evidence && evidenceId ? results.find(item => item.criterion_id === evidenceId) : null;
+  const evidenceIndex = evidenceResult ? visible.indexOf(evidenceResult) : -1;
+  function openEvidence(result) {
+    chooseResult(result);
+    setEvidenceId(result.criterion_id);
+  }
+  function closeEvidence() {
+    setEvidenceId(null);
+    list.current?.querySelector('.rv-result-item-button.is-selected')?.focus();
   }
   function chooseOverlay(id) {
     const result = results.find(item => item.criterion_id === id);
@@ -196,7 +209,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
       <aside className="rv-result-rail rv-panel" aria-labelledby="rv-result-list-title">
         <div className="rv-result-rail-heading"><div><h2 id="rv-result-list-title">검수 요구사항</h2>
-          <p>항목을 펼치면 판정 근거가 표시됩니다.</p></div><span>{results.length}개 항목</span></div>
+          <p>{evidence ? '항목을 누르면 판정 근거가 창으로 열립니다.' : '항목을 펼치면 판정 근거가 표시됩니다.'}</p></div><span>{results.length}개 항목</span></div>
         <details className="rv-result-search"><summary>항목 검색{query.trim() ? ` · ${visible.length}개 표시` : ''}</summary>
           <div><Icon name="search" /><input id="rv-result-search" type="search" value={query}
             aria-label="항목 검색" placeholder="기준·문구·판정 이유" onChange={event => setQuery(event.target.value)} /></div>
@@ -214,10 +227,12 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
           return <li key={result.criterion_id}>
             <button type="button" className={`rv-result-item-button${active ? ' is-selected' : ''}`} aria-pressed={active}
               aria-expanded={Boolean(open)} aria-controls={open ? 'rv-result-inspector' : undefined}
-              onClick={() => { if (open) setClosedId(result.criterion_id); else chooseResult(result); }}>
+              aria-haspopup={evidence ? 'dialog' : undefined}
+              onClick={() => { if (evidence) openEvidence(result); else if (open) setClosedId(result.criterion_id); else chooseResult(result); }}>
               <span className="rv-result-item-number">{String(results.indexOf(result) + 1).padStart(2, '0')}</span>
               <span className="rv-result-item-title">{result.criterion}</span>
-              <StatusLabel status={result.status} /><span aria-hidden="true">{open ? '⌃' : '⌄'}</span>
+              <StatusLabel status={result.status} />{evidence ? <span className="rv-result-item-open">근거 보기</span>
+                : <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>}
             </button>
             {open && details}
           </li>;
@@ -236,5 +251,12 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
       <div>{revise && <button type="button" className="rv-button secondary" disabled={busy} onClick={revise}>수정본 재검수</button>}
         <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>
+    {evidenceResult && evidence({
+      criterionId: evidenceResult.criterion_id, number: String(results.indexOf(evidenceResult) + 1).padStart(2, '0'),
+      position: evidenceIndex >= 0 ? { index: evidenceIndex + 1, total: visible.length } : null,
+      onPrev: evidenceIndex > 0 ? () => openEvidence(visible[evidenceIndex - 1]) : undefined,
+      onNext: evidenceIndex >= 0 && evidenceIndex < visible.length - 1 ? () => openEvidence(visible[evidenceIndex + 1]) : undefined,
+      onClose: closeEvidence,
+    })}
   </section>;
 }
