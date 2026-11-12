@@ -155,7 +155,7 @@ class ExtractionRejection(Contract):
 
 
 class ExtractionTrace(Contract):
-    mode: Literal['mock','qwen']
+    mode: Literal['mock','qwen','openai']  # openai: 2026-11-12 Qwen 실패 뒤 대체 추출
     model: str = Field(min_length=1,max_length=200)
     parser: str = Field(min_length=1,max_length=100)
     policy: Literal['a02-text-v1','a02-source-compile-v2','a02-semantic-v3','a02-semantic-v4'] = 'a02-text-v1'

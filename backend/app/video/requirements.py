@@ -28,6 +28,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from backend.agent_framework.a02_semantic import SourceRange, grounded_literal, selected_range
 from backend.agent_framework.a02_source_selection import index_sources
 from backend.agent_framework.contracts import PDFTextSource
+from backend.agent_framework.openai_fallback import (WARNING as FALLBACK_WARNING, FallbackFailure, call_openai,
+                                                     fallback_settings, should_fall_back)
 from backend.agent_framework.ports import AdapterFailure
 
 POLICY = "a02-video-v2"  # v2: 응답 필드 순서(값→근거 줄→ID), 제외 항목의 원문 밖 값은 비우고 표시
@@ -157,6 +159,9 @@ def readiness() -> dict:
     try:
         settings = config()
     except DocumentError as error:
+        fallback = fallback_settings()
+        if fallback is not None:
+            return {"configured": True, "model": fallback.model, "detail": "Qwen 대신 OpenAI 대체 모델로 문서를 읽습니다."}
         return {"configured": False, "model": None, "detail": str(error)}
     return {"configured": True, "model": settings.model, "detail": "문서 읽기 모델이 설정되어 있습니다."}
 
@@ -375,40 +380,51 @@ def _criterion_text(item: VideoRequirement, quote: str, expected: str) -> str:
     return _one_line(quote)
 
 
-def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
+def materialize(reply: VideoReply, index, *, skip_invalid: bool = False) -> tuple[list[dict], list[str]]:
+    """skip_invalid(2026-11-12 OpenAI 대체 결과 전용): 원문 대조에 실패한 항목만 빼고 경고로 남긴다.
+    Qwen 결과는 기존대로 한 항목이라도 틀리면 전체를 거부한다."""
     from backend.app.video.judge import requested_texts
     items, seen, warnings = [], set(), []
     for number, item in enumerate(reply.requirements, 1):
-        dropped = False
         try:
-            source, quote = selected_range(item.source, index)
-            if item.unresolved and item.expected:
-                _fail("A02_UNRESOLVED_VALUE_INVENTED")
+            dropped = False
             try:
-                expected = grounded_literal(item.expected, None, "video_" + item.target, quote) if item.expected else ""
+                source, quote = selected_range(item.source, index)
+                if item.unresolved and item.expected:
+                    _fail("A02_UNRESOLVED_VALUE_INVENTED")
+                try:
+                    expected = grounded_literal(item.expected, None, "video_" + item.target, quote) if item.expected else ""
+                except AdapterFailure as failure:
+                    # 제외 목록으로만 가는 항목은 값이 원문과 다르면 값만 비우고 원문 문장을 보여 준다.
+                    # 줄 범위·ID·조건 문구·중복 검사는 그대로 엄격하게 둔다.
+                    if failure.code != "A02_EXPECTED_UNGROUNDED" or item.target not in VALUE_OPTIONAL:
+                        raise
+                    expected, dropped = "", True
+                qualifiers = []
+                for chosen in item.qualifiers:
+                    parent, text = selected_range(chosen, index)
+                    if parent.block_id != source.block_id or text not in quote:
+                        if skip_invalid:
+                            warnings.append("fallback_qualifier_outside_source_dropped")
+                            continue
+                        _fail("A02_QUALIFIER_UNGROUNDED")
+                    qualifiers.append(text)
             except AdapterFailure as failure:
-                # 제외 목록으로만 가는 항목은 값이 원문과 다르면 값만 비우고 원문 문장을 보여 준다.
-                # 줄 범위·ID·조건 문구·중복 검사는 그대로 엄격하게 둔다.
-                if failure.code != "A02_EXPECTED_UNGROUNDED" or item.target not in VALUE_OPTIONAL:
-                    raise
-                expected, dropped = "", True
-            qualifiers = []
-            for chosen in item.qualifiers:
-                parent, text = selected_range(chosen, index)
-                if parent.block_id != source.block_id or text not in quote:
-                    _fail("A02_QUALIFIER_UNGROUNDED")
-                qualifiers.append(text)
-        except AdapterFailure as failure:
-            _fail(failure.code)
+                _fail(failure.code)
+            if item.item_id is not None and item.item_id not in quote:
+                _fail("A02_ITEM_ID_UNGROUNDED")
+            key = (source.block_id, quote, item.target, item.item_id, expected)
+            if key in seen:
+                _fail("A02_DUPLICATE_REQUIREMENT")
+        except DocumentError as error:
+            if not skip_invalid:
+                raise
+            warnings.append("fallback_item_rejected_" + error.code.lower())
+            continue
         if dropped:
             warnings.append("excluded_value_not_in_source_dropped")
         elif expected != item.expected:
             warnings.append("expected_spacing_copied_from_source")
-        if item.item_id is not None and item.item_id not in quote:
-            _fail("A02_ITEM_ID_UNGROUNDED")
-        key = (source.block_id, quote, item.target, item.item_id, expected)
-        if key in seen:
-            _fail("A02_DUPLICATE_REQUIREMENT")
         seen.add(key)
         text = _criterion_text(item, quote, expected)
         include, reason = False, EXCLUDED_REASON.get(item.target, "")
@@ -431,20 +447,60 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str]]:
                        "source_hash": sha256(quote.encode()).hexdigest()},
             "qualifiers": qualifiers,
         })
+    if skip_invalid and not items:
+        _fail("A02_RESPONSE_INVALID", "대체 모델 결과에서도 원문과 맞는 기준을 찾지 못했습니다.", 502)
     return items, list(dict.fromkeys(warnings))
 
 
-def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None) -> dict:
+_FROM_ENV = object()
+
+
+def call_fallback(fallback, payload: list, index, *, transport=None) -> tuple[VideoReply, str]:
+    """Qwen과 같은 프롬프트·원문 줄 스키마로 OpenAI를 1회 부른다. 결과는 같은 materialize 검증을 거친다."""
+    try:
+        content, _ = call_openai(fallback, system=PROMPT, user=json.dumps({"sources": payload}, ensure_ascii=False),
+                                 schema=schema(index), name="video_requirements", transport=transport)
+    except FallbackFailure as failure:
+        _fail(failure.code, "Qwen과 OpenAI 모두 문서를 읽지 못했습니다. 잠시 후 다시 시도해 주세요.", 502)
+    try:
+        return VideoReply.model_validate(_json(content, MAX_RESPONSE)), sha256(content).hexdigest()
+    except ValidationError:
+        _fail("A02_RESPONSE_INVALID", "모델이 올바른 기준 목록을 돌려주지 않았습니다.", 502)
+
+
+def extract(data: bytes, filename: str = "", *, settings: Settings | None = None, transport=None,
+            fallback=_FROM_ENV, fallback_transport=None) -> dict:
     kind, sources = read_sources(data, filename)
-    settings = settings or config()
+    qwen_settings, qwen_error = settings, None
+    if qwen_settings is None:
+        try:
+            qwen_settings = config()
+        except DocumentError as error:
+            qwen_error = error
     try:
         index, payload = index_sources(sources)
     except AdapterFailure as failure:
         _fail(failure.code, "문서가 너무 길거나 복잡해 줄 번호를 붙이지 못했습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
     # 포스터 semantic 경로처럼 줄 텍스트만 보낸다(부분 토큰 ID는 보내지 않음).
     payload = [{**block, "lines": [{"id": line["id"], "text": line["text"]} for line in block["lines"]]} for block in payload]
-    reply, response_hash = call_model(settings, payload, index, transport=transport)
-    items, warnings = materialize(reply, index)
+    # 2026-11-12 베타테스트: Qwen 단계(설정·호출·원문 대조)가 실패하면 OpenAI로 한 번 더 읽는다. 끄기: A02_OPENAI_FALLBACK=0.
+    fallback = fallback_settings() if fallback is _FROM_ENV else fallback
+    model, qwen_failure = None, None
+    try:
+        settings = settings or qwen_settings
+        if settings is None:
+            raise qwen_error
+        reply, response_hash = call_model(settings, payload, index, transport=transport)
+        items, warnings = materialize(reply, index)
+        model = settings.model
+    except DocumentError as error:
+        if fallback is None or not should_fall_back(error.code):
+            raise
+        qwen_failure = error.code
+        reply, response_hash = call_fallback(fallback, payload, index, transport=fallback_transport)
+        items, warnings = materialize(reply, index, skip_invalid=True)
+        warnings = [*warnings, FALLBACK_WARNING]
+        model = fallback.model
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
                 for n, item in enumerate((i for i in items if i["include"]), 1)]
     warnings = ["unapproved_draft", "exact_source_check_is_not_semantic_accuracy", *warnings]
@@ -454,7 +510,8 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
         "status": "draft", "approved": False, "items": items, "criteria": criteria, "warnings": warnings,
         "counts": {"items": len(items), "criteria": len(criteria),
                    "excluded": sum(not i["include"] for i in items), "unresolved": sum(i["unresolved"] for i in items)},
-        "trace": {"policy": POLICY, "model": settings.model, "input_kind": kind,
+        "trace": {"policy": POLICY, "model": model, "input_kind": kind,
+                  **({"fallback": {"provider": "openai", "qwen_failure": qwen_failure}} if qwen_failure else {}),
                   "document_sha256": sha256(data).hexdigest(), "prompt_sha256": PROMPT_SHA256,
                   "schema_sha256": SCHEMA_SHA256, "response_sha256": response_hash,
                   "sources": [{"block_id": s.block_id, "block": s.page, "text_sha256": s.text_sha256,
