@@ -109,12 +109,14 @@ def test_video_contract_falls_back_when_qwen_is_down():
     data=text.encode()
     _,sources=video.read_sources(data,'brief.txt')
     index,_=index_sources(sources);first=next(iter(index.lines))
-    lines=list(index.lines)
+    last=list(index.lines)[-1]
     reply={'requirements':[{'target':'screen_text','label':'내레이션 자막','expected':'공연봄날과 함께',
-        'source':{'start_line':first,'end_line':first},'item_id':'R01','required':True,'unresolved':False,
-        'qualifiers':[{'start_line':lines[-1],'end_line':lines[-1]}]},
+        'source':{'start_line':first,'end_line':first},'item_id':'R01','required':True,'unresolved':False,'qualifiers':[]},
         {'target':'video_spec','label':'해상도','expected':'1920','source':{'start_line':first,'end_line':first},
-         'item_id':'R99','required':True,'unresolved':False,'qualifiers':[]}]}
+         'item_id':'R99','required':True,'unresolved':False,'qualifiers':[]},
+        {'target':'screen_text','label':'내레이션 자막','expected':'공연봄날과 함께',
+         'source':{'start_line':first,'end_line':first},'item_id':'R01','required':True,'unresolved':False,
+         'qualifiers':[{'start_line':last,'end_line':last}]}]}
     calls=[]
     down=httpx.MockTransport(lambda request:(_ for _ in ()).throw(httpx.ConnectError('down',request=request)))
     result=video.extract(data,'brief.txt',settings=video.Settings(endpoint='https://qwen.invalid/v1/chat/completions',
@@ -122,11 +124,10 @@ def test_video_contract_falls_back_when_qwen_is_down():
     assert len(calls)==1 and result['trace']['model']=='gpt-6-luna'
     assert result['trace']['fallback']=={'provider':'openai','qwen_failure':'QWEN_UNAVAILABLE'}
     assert WARNING in result['warnings'] and result['items'][0]['expected']=='공연봄날과 함께'
-    # 대체 결과는 틀린 항목·범위 밖 조건 줄만 빼고 나머지를 살린다.
-    assert len(result['items'])==1 and result['items'][0]['qualifiers']==[]
-    assert {'fallback_item_rejected_a02_item_id_ungrounded','fallback_qualifier_outside_source_dropped'}<=set(result['warnings'])
-    # Qwen 결과는 기존대로 한 항목이라도 틀리면 전체 거부.
-    with pytest.raises(video.DocumentError):video.materialize(video.VideoReply.model_validate(reply),index)
+    # 원문 검증에 실패한 후보를 제외하고 유효한 자막은 남긴다.
+    assert len(result['items'])==1
+    assert [r['code'] for r in result['rejected_candidates']]==[
+        'A02_ITEM_ID_UNGROUNDED','A02_QUALIFIER_UNGROUNDED']
     with pytest.raises(video.DocumentError) as error:
         video.extract(data,'brief.txt',settings=video.Settings(endpoint='https://qwen.invalid/v1/chat/completions',
             model='Qwen/Qwen3.5-4B',api_key=None),transport=down,fallback=None)

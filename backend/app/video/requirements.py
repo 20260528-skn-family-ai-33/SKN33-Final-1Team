@@ -5,7 +5,9 @@
   키는 A02_QWEN_API_KEY 또는 CC_QWEN_API_KEY). 영상 자막 판독용 Qwen3-VL 서버와는 별개다.
 - 모델은 번호가 붙은 원문 줄 ID만 고르고, 서버가 그 범위의 원문을 그대로 복사한다.
   원문과 대조할 수 없는 후보는 제외 사유와 함께 기록한다.
-- Qwen 실패 시 설정된 OpenAI 대체 모델을 한 번 호출할 수 있다. 결과는 승인되지 않은 초안이다.
+- Qwen 실패 시 설정된 OpenAI 대체 모델을 한 번 호출한다(A02_OPENAI_FALLBACK=0으로 비활성화).
+  대체 결과에도 같은 원문 검증을 적용하고 실제 모델과 Qwen 실패 사유를 기록한다.
+  결과는 승인되지 않은 초안이다.
   사람이 화면의 기준 입력란에서 고친 뒤 '검수 시작'을 누를 때 기준이 고정된다(기존 영상 검수 계약).
 - 포스터 A02 코드는 바꾸지 않는다. 원문 줄 색인·범위 복사·기대값 대조 함수만 가져다 쓴다.
 - 로고 이미지 검수 파이프라인은 건드리지 않는다. 로고 요구는 '시각 기준(담당자 확인)' 초안으로만 돌려준다.
@@ -398,7 +400,7 @@ def _source_ref(source, quote):
             "source_hash": sha256(quote.encode()).hexdigest()}
 
 
-def materialize(reply: VideoReply, index, *, fallback_result: bool = False) -> tuple[list[dict], list[str], list[dict]]:
+def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[dict]]:
     from backend.app.video.judge import requested_texts
     items, seen, warnings = [], set(), []
     rejected = []
@@ -421,9 +423,6 @@ def materialize(reply: VideoReply, index, *, fallback_result: bool = False) -> t
             for chosen in item.qualifiers:
                 parent, text = selected_range(chosen, index)
                 if parent.block_id != source.block_id or text not in quote:
-                    if fallback_result:
-                        warnings.append("fallback_qualifier_outside_source_dropped")
-                        continue
                     _fail("A02_QUALIFIER_UNGROUNDED")
                 qualifiers.append(text)
             if item.item_id is not None and item.item_id not in quote:
@@ -434,8 +433,6 @@ def materialize(reply: VideoReply, index, *, fallback_result: bool = False) -> t
         except (AdapterFailure, DocumentError) as failure:
             rejected.append({"candidate_index": number, "code": failure.code,
                              "source": _source_ref(source, quote) if source is not None else None})
-            if fallback_result:
-                warnings.append("fallback_item_rejected_" + failure.code.lower())
             continue
         if dropped:
             warnings.append("excluded_value_not_in_source_dropped")
@@ -504,7 +501,7 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
             raise
         qwen_failure = error.code
         reply, response_hash = call_fallback(fallback, payload, index, transport=fallback_transport)
-        items, warnings, rejected = materialize(reply, index, fallback_result=True)
+        items, warnings, rejected = materialize(reply, index)
         warnings = [*warnings, FALLBACK_WARNING]
         model = fallback.model
     criteria = [{"id": f"criterion-{n}", "text": item["text"], "type": item["type"], "source": "document"}
