@@ -89,11 +89,6 @@
 .rv-evd-modes { display: inline-flex; margin-left: auto; padding: 2px; border: 1px solid var(--evd-line); border-radius: 9px; background: #fff; }
 .rv-evd .rv-evd-modes button { min-height: 26px; padding: 3px 10px; border: 0; border-radius: 7px; background: transparent; color: #55554f; font-size: 11.5px; white-space: nowrap; }
 .rv-evd .rv-evd-modes button[aria-pressed="true"] { background: var(--evd-ink); color: #fff; }
-.rv-evd .rv-evd-lookup-toggle { min-height: 32px; padding: 5px 10px; border: 1px solid var(--evd-line); border-radius: 9px; background: #fff; font-size: 11.5px; white-space: nowrap; }
-.rv-evd .rv-evd-lookup-toggle:hover { background: var(--evd-soft); }
-.rv-evd-lookup { padding: 10px 13px; border: 1px solid #dfddcf; border-radius: 10px; background: #f4f1e7; color: #4f4a3a; font-size: 11.5px; line-height: 1.65; }
-.rv-evd-lookup ul { margin: 0; padding-left: 16px; }
-.rv-evd-lookup p { margin: 6px 0 0; }
 .rv-evd code { margin-left: 5px; padding: 0 5px; border: 1px solid #dfddcf; border-radius: 4px; background: #fff; color: #383834;
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 10.5px; overflow-wrap: anywhere; }
 
@@ -156,9 +151,6 @@
 .rv-evd .rv-evd-path button:hover { background: var(--evd-soft); }
 .rv-evd .rv-evd-path button[aria-pressed="true"] { border-color: var(--evd-pen); background: #f6f0dd; color: #5a4a1d; font-weight: 650; }
 .rv-evd-foot { margin: 0; color: var(--evd-muted); font-size: 10.5px; line-height: 1.55; }
-
-/* 검수 요구사항 목록: 항목을 누르면 창이 열린다는 표시 */
-.rv-results .rv-result-item-open { color: var(--result-muted); font-size: 10px; white-space: nowrap; }
 
 @media (max-width: 900px) {
   .rv-evd-body { grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
