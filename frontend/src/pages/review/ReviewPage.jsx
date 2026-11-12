@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
@@ -20,10 +20,12 @@ export default function ReviewPage() {
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
-    checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
+    checkHealth, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
     addCriterion, navigate, retryPoll, newReview, changeFilter, openDocumentRun,
   } = useReviewContext();
   const [projectStatus, setProjectStatus] = useState({ ready: false, busy: true });
+  // 검수 이름 칸에서 Enter를 누르면 그 이름으로 저장할 프로젝트를 만들고 선택한다(DocumentProjectPicker.createFromName).
+  const projectPicker = useRef(null);
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const runId = params.get('framework');
@@ -49,15 +51,16 @@ export default function ReviewPage() {
   // 보안 여부·유형을 고르기 전에는 단계 표시를 숨기고, 로고 검수는 로고 대조 단계를 보여 준다.
   const steps = input && (!state.securityMode || !state.reviewMode) ? null : input && state.reviewMode === 'logo' ? logoSteps : undefined;
   return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy} steps={steps}
-    projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value) } : undefined}
+    projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value),
+      onEnter: state.reviewMode === 'logo' ? undefined : name => projectPicker.current?.createFromName(name) } : undefined}
     projectTools={input && (state.reviewMode === 'logo'
       // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
       ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
         <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
-      : <DocumentProjectPicker {...{ projectId, setProjectId }} projectName={state.projectName}
-        disabled={sampleBusy || fileBusy || documentBusy} onStatus={setProjectStatus} />)}
-    projectActions={input && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
-      {sampleBusy ? '불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" /></button>}>
+      : <DocumentProjectPicker ref={projectPicker} {...{ projectId, setProjectId }} projectName={state.projectName}
+        disabled={sampleBusy || fileBusy || documentBusy} onStatus={setProjectStatus}
+        // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
+        onPick={project => { if (project.name !== state.projectName) inputChange('projectName', project.name.slice(0, 60)); }} />)}>
     {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
       preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentProgress,
       documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}

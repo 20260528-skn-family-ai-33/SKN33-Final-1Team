@@ -82,8 +82,8 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
     <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={prepare}>
       <div className="rv-input-mode">
         <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
-          <Icon name={security === 'secure' ? 'lock' : 'shield'} />{securityModeLabels[security]}</span>
-        <span>검수 유형</span><strong>{reviewModeLabels[mode]}</strong>
+          {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
+        <strong>{reviewModeLabels[mode]}</strong>
         <button type="button" disabled={busy} onClick={() => inputChange('reviewMode', null)}>유형 바꾸기</button>
       </div>
       <div className="rv-editor-grid">

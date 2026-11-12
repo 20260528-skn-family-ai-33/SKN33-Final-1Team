@@ -3,12 +3,14 @@ import { waitForDocumentPoll } from '../review/frameworkDocument.js';
 
 const EXTRACTIONS = '/api/video-reviews/requirements/extractions';
 
+// modelRoute: 보안 여부(일반 자료 openai, 보안 자료 runpod). 비우면 서버 기본 경로다.
 export async function extractVideoDocument(file, {
-  signal, onProgress, request = fetchJson, waitFor = waitForDocumentPoll,
+  signal, onProgress, request = fetchJson, waitFor = waitForDocumentPoll, modelRoute,
 } = {}) {
   signal?.throwIfAborted();
   const body = new FormData();
   body.append('document', file);
+  if (modelRoute && modelRoute !== 'default') body.append('model_route', modelRoute);
   let job = await request(EXTRACTIONS, { method: 'POST', body, signal });
   if (typeof job?.id !== 'string' || !job.id || job.status !== 'queued') {
     throw new Error('영상 문서 분석 접수 결과를 확인하지 못했습니다.');
