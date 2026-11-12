@@ -299,6 +299,30 @@ class QwenProvider:
         except (KeyError,TypeError,IndexError,UnicodeError):_fail('A02_RESPONSE_INVALID')
 
 
+class OpenAIFallbackProvider:
+    """Qwen 실패 뒤 한 번만 부르는 OpenAI 추출(같은 프롬프트·원문 줄 스키마). 결과 검증은 Qwen과 같다."""
+    def __init__(self,settings,fallback,*,transport=None):
+        self.settings=settings;self.fallback=fallback;self._transport=transport
+
+    @property
+    def model(self):return self.fallback.model
+
+    def __call__(self,sources):
+        from .openai_fallback import FallbackFailure,call_openai
+        settings=self.settings
+        if settings.structuring!='semantic':_fail('OPENAI_FALLBACK_UNSUPPORTED')
+        source_index,source_payload=index_sources(sources)
+        source_payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
+        try:
+            content,_=call_openai(self.fallback,system=PRESENTATION_PROMPT if settings.presentation else SEMANTIC_PROMPT,
+                user=json.dumps({'sources':source_payload},ensure_ascii=False),
+                schema=semantic_schema(source_index,presentation=settings.presentation),name='poster_semantic_requirements',
+                transport=self._transport)
+        except FallbackFailure as failure:_fail(failure.code)
+        try:return SemanticProviderReply(SemanticReply.model_validate(_json(content)),sha256(content).hexdigest())
+        except ValidationError:_fail('A02_RESPONSE_INVALID')
+
+
 def validate_trace(document,draft):
     trace=draft.extraction
     if trace is None:return
@@ -384,16 +408,32 @@ def validate_trace(document,draft):
 
 
 class RegisteredPDFExtractor:
-    def __init__(self,read_document,settings,*,provider=None):
+    def __init__(self,read_document,settings,*,provider=None,fallback=None):
         self.read_document=read_document
         self.settings=PDFExtractionConfiguration.model_validate(settings.model_dump(mode='python'))
         self.provider=provider if provider is not None else (MockProvider() if settings.mode=='mock' else QwenProvider(settings))
+        # 2026-11-12 베타테스트: Qwen 단계가 실패하면 OpenAIFallbackProvider로 한 번 더 추출한다(None이면 기존과 같다).
+        self.fallback=fallback if settings.mode=='qwen' and settings.structuring=='semantic' else None
 
     def extract(self,request):
+        from .openai_fallback import WARNING,should_fall_back
         document=self.read_document(request)
         sources,image_pages=read_sources(document,self.settings)
         skipped_pages=tuple(sorted(set(range(1,request.document.page_count+1))-{source.page for source in sources}))
-        raw=self.provider(sources)
+        try:
+            return self._draft(request,document,sources,self.provider(sources),mode=self.settings.mode,model=self.settings.model,
+                image_pages=image_pages,skipped_pages=skipped_pages)
+        except Exception as failure:
+            code=failure.code if isinstance(failure,AdapterFailure) else 'QWEN_RESULT_INVALID'
+            if self.fallback is None or not should_fall_back(code):raise
+        try:
+            return self._draft(request,document,sources,self.fallback(sources),mode='openai',model=self.fallback.model,
+                image_pages=image_pages,skipped_pages=skipped_pages,extra_warnings=(WARNING,'qwen_failed_'+code.lower()))
+        except AdapterFailure as failure:
+            raise AdapterFailure(failure.code,f'Qwen extraction failed ({code}) and the OpenAI fallback also failed ({failure.code}).',
+                retryable=failure.retryable) from None
+
+    def _draft(self,request,document,sources,raw,*,mode,model,image_pages,skipped_pages,extra_warnings=()):
         response_hash=None
         rejections=()
         semantic_reply=raw if isinstance(raw,SemanticProviderReply) else None
@@ -438,7 +478,7 @@ class RegisteredPDFExtractor:
                     block_id=item.block_id,quote=item.quote,source_hash=sha256(item.quote.encode()).hexdigest())))
         prompt_hash=(PRESENTATION_PROMPT_HASH if semantic_reply is not None and self.settings.presentation else
             SEMANTIC_PROMPT_HASH if semantic_reply is not None else QWEN_PROMPT_HASH if self.settings.mode=='qwen' else PROMPT_HASH)
-        trace=ExtractionTrace(mode=self.settings.mode,model='mock-line-fixture-v1' if self.settings.mode=='mock' else self.settings.model,
+        trace=ExtractionTrace(mode=mode,model='mock-line-fixture-v1' if self.settings.mode=='mock' else model,
             parser='utf8-source-v1' if request.document.media_type=='text/plain' else 'pymupdf-'+self.settings.parser_version,
             document_sha256=document.reference.sha256,prompt_sha256=prompt_hash,
             response_sha256=response_hash or sha256(raw.encode() if isinstance(raw,str) else raw).hexdigest(),sources=sources,
@@ -453,6 +493,7 @@ class RegisteredPDFExtractor:
         if self.settings.mode=='mock':warnings.append('synthetic_mock_manual_candidates_not_qwen_results')
         if self.settings.mode=='qwen':warnings.extend((
             'semantic_draft_requires_human_review' if semantic_reply is not None else 'literal_compilation_requires_human_review',*compilation_warnings))
+        warnings.extend(extra_warnings)
         if unresolved:warnings.append('missing_values_require_client_clarification')
         elif any(UNRESOLVED_SOURCE.search(source.text) for source in sources):
             # Source grounding alone does not prove coverage. Keep a visible
@@ -492,7 +533,11 @@ def build_postgres_agents(configuration,store,storage,*,api_key=None,poster_stor
         if len(content)!=row['byte_size'] or sha256(content).hexdigest()!=row['sha256']:_fail('FILE_INTEGRITY_MISMATCH')
         return VerifiedDocument(context,request.document,content,row['page_count'])
     provider=MockProvider() if settings.mode=='mock' else QwenProvider(settings,api_key=api_key)
-    extractor=RegisteredPDFExtractor(read_document,settings,provider=provider)
+    from .openai_fallback import fallback_settings
+    fallback=fallback_settings()
+    if fallback is not None:print(json.dumps({'event':'a02_openai_fallback_enabled','model':fallback.model}),flush=True)
+    extractor=RegisteredPDFExtractor(read_document,settings,provider=provider,
+        fallback=OpenAIFallbackProvider(settings,fallback) if fallback is not None else None)
     if configuration.roles['A04_A05'].kind=='registered_poster':
         from .poster_review import RegisteredPosterInspector,build_poster_callback
         if poster_storage is None:_fail('POSTER_STORAGE_REQUIRED')
