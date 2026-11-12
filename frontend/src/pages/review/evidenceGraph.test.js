@@ -58,8 +58,7 @@ test('불충족 항목은 포스터에서 읽은 값부터 요구사항 원문�
     ['region', 'record'], ['reads', 'record'], ['evidence', 'record'], ['judged', 'record'], ['criterion', 'record'], ['source', 'graph']]);
   assert.deepEqual(graph.edges.filter(edge => edge.chain).map(edge => edge.label), ['영역', '읽음', '근거', '기준', '출처']);
   assert.deepEqual(graph.box, [.1, .7, .6, .9]);
-  assert.deepEqual(graph.lookup, { backend: 'neo4j', requiredRevision: 12, graphRevision: 12, fallback: null,
-    sourceKeys: ['source:cv-1:venue:document'], history: null });
+  assert.equal(graph.relationSource, 'neo4j');
   assert.deepEqual(graph.trail, []);
 });
 
@@ -78,7 +77,7 @@ test('확인 필요 항목은 없는 근거를 점선으로 두고 담당자 확
   assert.deepEqual(graph.edges.filter(edge => edge.dashed).map(edge => edge.id), ['region', 'reads', 'source', 'human']);
   assert.equal(graph.edges.find(edge => edge.id === 'human').label, '확인 요청');
   assert.deepEqual(graph.edges.filter(edge => edge.via !== 'record'), []);
-  assert.equal(graph.lookup.backend, null);
+  assert.equal(graph.relationSource, null);
   assert.equal(graph.box, null);
   // 담당자 결정이 끝났는데 이 항목의 확인 기록이 없으면 대기라고 하지 않는다
   const decided = evidenceGraph(run('run-1', 'asset-1', [review], { human_decision: 'changes_approved' }), 'venue');
@@ -97,7 +96,6 @@ test('충족 항목은 사유 대신 맞았다는 설명을 달고 담당자 노
   assert.equal(nodes.human, undefined);
   assert.equal(nodes.previous, undefined);
   assert.deepEqual(graph.trail, []);
-  assert.equal(graph.lookup.history, null);
 });
 
 test('수정본이면 이전 검수의 판정과 담당자 확인을 관계도에 더한다', () => {
@@ -118,7 +116,6 @@ test('수정본이면 이전 검수의 판정과 담당자 확인을 관계도�
   assert.deepEqual(nodes.previous.facts.find(([name]) => name === '판정 변화'), ['판정 변화', '불충족 → 확인 필요']);
   assert.deepEqual(graph.edges.find(edge => edge.id === 'previous'), { id: 'previous', from: 'previous', to: 'observation', label: '재검수',
     relation: 'reinspected_as', dashed: true, via: 'graph' });
-  assert.equal(graph.lookup.history, 'neo4j');
   assert.deepEqual([nodes.human.title, nodes.human.tone, nodes.human.dashed], ['담당자 판단 · 충족', 'pass', undefined]);
   assert.deepEqual(graph.edges.find(edge => edge.id === 'human'), { id: 'human', from: 'verdict', to: 'human', label: '직접 확인', via: 'record', dashed: false });
   assert.deepEqual(nodes.verdict.facts.at(-1), ['담당자', '담당자 판단 · 충족']);
@@ -146,5 +143,5 @@ test('없는 항목은 만들지 않고, 다른 포스터 버전의 위치와 Po
   assert.deepEqual(nodes.source.facts.at(-1), ['보완 회신', '시민공원으로 확정 · 출처 담당자 메일']);
   assert.deepEqual(graph.edges.filter(edge => edge.via === 'ledger').map(edge => edge.id), ['contains', 'source']);
   assert.equal(graph.edges.find(edge => edge.id === 'applies').via, 'record');
-  assert.deepEqual([graph.lookup.backend, graph.lookup.fallback], ['postgresql', 'GRAPH_REVISION_MISMATCH']);
+  assert.equal(graph.relationSource, 'postgresql');
 });

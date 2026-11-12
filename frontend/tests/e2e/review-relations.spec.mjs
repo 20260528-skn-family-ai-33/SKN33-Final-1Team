@@ -186,6 +186,11 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   await rows.nth(2).waitFor();
   await page.getByText('항목을 누르면 판정 근거가 창으로 열립니다.', { exact: true }).waitFor();
   assert.equal(await page.getByRole('dialog').count(), 0);
+  // 상세는 창에서 보여 주므로 목록 안에서는 펼치지 않는다
+  assert.equal(await page.locator('.rv-result-inspector').count(), 0);
+  assert.equal(await rows.first().getAttribute('aria-expanded'), null);
+  assert.deepEqual((await rows.allInnerTexts()).map(text => text.replace(/\s+/g, ' ')),
+    ['01 행사일: 11월 20일 충족', '02 행사 장소: 시민공원 위반', '03 주최 기관 로고를 넣는다 확인 필요']);
   if (shots) await page.screenshot({ path: shots + '/evidence-list.png' });
   // 다른 검수 결과는 창을 열기 전에는 읽지 않는다
   assert.equal(requested.filter(path => path.endsWith('/runs/poster-0')).length, 0);
@@ -239,9 +244,8 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   assert.match(await detail.innerText(), /요구사항 문서 1쪽[\s\S]*행사 장소: 시민공원[\s\S]*그래프 노드\s*source/);
   await main.getByRole('button', { name: '전체 관계', exact: true }).click();
   assert.equal(await graph.getAttribute('class'), 'rv-evg is-all');
-  await main.getByRole('button', { name: '조회 정보 보기', exact: true }).click();
-  await main.getByText(/Neo4j 그래프에서 조회했습니다\. 그래프 revision 9 · 원장 revision 9/).waitFor();
-  await main.getByText('source:criteria-v1:venue:document', { exact: true }).waitFor();
+  assert.equal(await main.getByRole('button', { name: /조회 정보/ }).count(), 0);
+  await main.getByText('기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.', { exact: true }).waitFor();
   // 버전별 판정에서 이전 검수본을 고르면 그 포스터와 읽은 위치를 보여 준다
   const trail = poster.getByRole('group', { name: '버전별 판정' });
   assert.deepEqual((await trail.getByRole('button').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), ['원본 불충족', '1차 수정본 불충족 지금']);
