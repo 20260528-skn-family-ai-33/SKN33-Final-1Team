@@ -48,7 +48,8 @@ function RetryNote({ retry }) {
 }
 
 // The list, canvas and inspector always share one criterion ID.
-// evidence(선택): 항목을 누르면 열 판정 근거 창을 그리는 함수. 주면 항목을 누를 때마다 창이 열리고, 없으면 예전처럼 펼치고 접는다.
+// evidence(선택): 항목을 누르면 열 판정 근거 창을 그리는 함수. 주면 항목을 누를 때마다 창이 열리고 목록 안 상세는 그리지 않는다.
+// 없으면 예전처럼 목록 안에서 펼치고 접는다.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
   busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
   evidence }) {
@@ -222,16 +223,15 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
         <span id="rv-result-keys" className="sr-only">위아래 화살표로 항목을 옮길 수 있습니다.</span>
         {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록" aria-describedby="rv-result-keys" onKeyDown={moveWithKeys}>{visible.map(result => {
           const active = selected?.criterion_id === result.criterion_id;
-          const open = active && expanded;
+          const open = !evidence && active && expanded;   // 판정 근거 창을 쓰면 목록 안에서는 펼치지 않는다
           return <li key={result.criterion_id}>
             <button type="button" className={`rv-result-item-button${active ? ' is-selected' : ''}`} aria-pressed={active}
-              aria-expanded={Boolean(open)} aria-controls={open ? 'rv-result-inspector' : undefined}
+              aria-expanded={evidence ? undefined : Boolean(open)} aria-controls={open ? 'rv-result-inspector' : undefined}
               aria-haspopup={evidence ? 'dialog' : undefined}
               onClick={() => { if (evidence) openEvidence(result); else if (open) setClosedId(result.criterion_id); else chooseResult(result); }}>
               <span className="rv-result-item-number">{String(results.indexOf(result) + 1).padStart(2, '0')}</span>
               <span className="rv-result-item-title">{result.criterion}</span>
-              <StatusLabel status={result.status} />{evidence ? <span className="rv-result-item-open">근거 보기</span>
-                : <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>}
+              <StatusLabel status={result.status} />{!evidence && <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>}
             </button>
             {open && details}
           </li>;

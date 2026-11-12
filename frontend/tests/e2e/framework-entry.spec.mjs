@@ -194,9 +194,12 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       }
       if (checkRejectedCandidates) {
         const rejected = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
-        await rejected.getByText('후보 2 · 기대값이 원문과 일치하지 않습니다.').waitFor();
-        await rejected.getByText('확인된 원문 · 2쪽').click();
-        assert.ok(await rejected.getByText(rejectedCandidate.source.quote, { exact: true }).isVisible());
+        await rejected.getByText('원문 검증에서 후보 1개를 제외했어요.', { exact: true }).waitFor();
+        await rejected.getByText('제외한 후보 사유별로 보기', { exact: true }).click();
+        await rejected.getByText('기대값이 원문과 일치하지 않습니다.', { exact: true }).waitFor();
+        assert.equal(await rejected.locator('.rv-rejection-candidates').innerText(), '후보 2');
+        await rejected.locator('details.rv-rejection-source > summary').click();
+        assert.equal(await rejected.locator('details.rv-rejection-source > p').innerText(), rejectedCandidate.source.quote);
         const checklist = page.getByRole('list', { name: '검수 항목 목록' });
         assert.equal(await checklist.getByRole('checkbox').count(), 1);
         assert.equal(await checklist.getByText(rejectedCandidate.source.quote).count(), 0);
@@ -270,14 +273,14 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       });
       assert.equal(await progress.locator('.rv-progress-shine').count(), 0);
       assert.equal(await progress.locator('.rv-progress-fill').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 23, 23)');
-      assert.equal(await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
+      assert.equal(await page.getByRole('heading', { name: '검수 요구사항', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
       assert.equal(await stageStatus.textContent(), '검수 보고서 정리');
       assert.equal(await steps.locator('button:disabled').count(), 4);
       if (mode === 'pdf' && process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
         await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/poster-progress.png', fullPage: true });
       }
       allowReviewResult = true;
-      await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
+      await page.getByRole('heading', { name: '검수 요구사항', exact: true }).waitFor();
       assert.equal(await stageStatus.textContent(), '');
       assert.ok(await steps.getByRole('button', { name: /보고서/ }).isEnabled());
       const columns = await page.locator('.rv-result-workbench').evaluate(element =>

@@ -97,6 +97,69 @@ test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으�
   assert.deepEqual(errors, []);
 });
 
+test('원문 검증에서 제외된 후보는 안내 한 상자로 접어 두고, 펴면 사유별로 묶어 보여 준다', { timeout: 60000 }, async t => {
+  const context = { run_id: 'criteria-rejected', project_id: 'project-fixture', actor_id: 'user-fixture',
+    document_version_id: 'doc-v2', criteria_version_id: 'draft' };
+  const criteria = [criterion('c001', '행사일: 11월 20일', '11월 20일', 'event_date', '행사일'),
+    criterion('c002', '행사 장소: 시민공원', '시민공원', 'venue', '행사 장소')];
+  const logoRule = '로고는 흰 배경에서만 사용하며, 주최 기관이 따로 승인한 경우에 한해 단색 배경에도 쓸 수 있다. 승인 내역은 담당자가 별도로 보관한다.';
+  const rejected = (index, code, page, quote) => ({ candidate_index: index, code,
+    source: quote ? { document_version_id: 'doc-v2', page, block_id: 'b' + page, quote, source_hash: 'a'.repeat(64) } : null });
+  const rejections = [
+    ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(index => rejected(index, 'A02_QUALIFIER_UNGROUNDED', 1, index < 8 ? logoRule : '행사명은 한 줄로 적는다.')),
+    rejected(16, 'A02_PRESENTATION_UNGROUNDED', 2, '후원 기관은 가나다순으로 적는다.'),
+    ...[22, 23, 24, 25].map(index => rejected(index, 'A02_RESPONSE_INVALID', 2, '후원 기관은 가나다순으로 적는다.')),
+    rejected(26, 'A02_RESPONSE_INVALID')];
+  const { page, errors } = await open(t, {
+    '/runs/criteria-rejected': { context, execution_status: 'waiting_criteria', human_decision: 'unreviewed', approvals: [],
+      criteria: { context, criteria, extraction: { rejected_candidates: rejections }, warnings: ['unapproved_draft'] } },
+    '/runs/criteria-rejected/criteria-review': { source_draft_sha256: 'b'.repeat(64), latest_version: null,
+      approved_criteria_version_id: null, synthetic: false, execution_status: 'waiting_criteria' },
+  });
+  await page.goto(base + '/review/new?framework=' + context.run_id);
+  const notice = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
+  await notice.getByText('원문 검증에서 후보 15개를 제외했어요.', { exact: true }).waitFor();
+  // 접힌 상태에서는 안내 한 상자뿐이라 기준 목록을 밀어내지 않는다
+  const list = notice.locator('.rv-rejection-list');
+  assert.equal(await list.getAttribute('open'), null);
+  assert.equal(await notice.locator('.rv-rejection-reason').first().isVisible(), false);
+  assert.ok((await notice.boundingBox()).height < 140, 'collapsed notice stays compact');
+  const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+  assert.equal(await checklist.getByRole('checkbox').count(), 2);
+  assert.ok(await checklist.getByRole('checkbox').first().evaluate(element => element.getBoundingClientRect().top < innerHeight));
+  if (shots) await page.screenshot({ path: shots + '/rejections-collapsed.png' });
+
+  // 펴면 사유마다 한 묶음, 같은 원문은 한 줄
+  await notice.getByText('제외한 후보 사유별로 보기', { exact: true }).click();
+  assert.deepEqual((await notice.locator('.rv-rejection-reason').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), [
+    '허용 조건이나 예외의 원문 근거가 일치하지 않습니다. 9개',
+    '표시 문구가 원문과 일치하지 않습니다. 1개',
+    '항목의 형식이나 비교 조건이 유효하지 않습니다. 5개']);
+  // 사유 코드는 화면에 적지 않고 마우스를 올렸을 때만 보인다
+  assert.equal(await notice.getByText(/A02_/).count(), 0);
+  assert.deepEqual(await notice.locator('.rv-rejection-reason').evaluateAll(nodes => nodes.map(node => node.title)),
+    ['A02_QUALIFIER_UNGROUNDED', 'A02_PRESENTATION_UNGROUNDED', 'A02_RESPONSE_INVALID']);
+  const groups = list.locator('> ul > li');
+  assert.deepEqual(await groups.nth(0).locator('.rv-rejection-candidates').allInnerTexts(), ['후보 1–7', '후보 8–9']);
+  assert.deepEqual((await groups.nth(2).locator('.rv-rejection-source').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')),
+    ['2쪽 후원 기관은 가나다순으로 적는다. 후보 22–25', '원문 없음 확인 가능한 원문이 없습니다. 후보 26']);
+  if (shots) await page.screenshot({ path: shots + '/rejections-open.png' });
+  // 긴 원문은 한 줄로 줄여 두고, 누르면 전문이 펴진다
+  const first = groups.nth(0).locator('details.rv-rejection-source').first();
+  assert.ok(await first.locator('.rv-rejection-preview').evaluate(element => element.scrollWidth > element.clientWidth), 'long quote is clipped to one line');
+  assert.ok((await first.boundingBox()).height < 40);
+  assert.equal(await first.locator('> p').isVisible(), false);
+  await first.locator('summary').click();
+  assert.equal(await first.locator('> p').innerText(), logoRule);
+  assert.equal(await first.locator('.rv-rejection-preview').isVisible(), false);
+  // 제외된 원문은 기준 목록에 섞이지 않고, 기준 검토를 막지 않는다
+  assert.equal(await checklist.getByText('후원 기관은 가나다순으로 적는다.').count(), 0);
+  assert.ok(await page.getByRole('button', { name: '기준 확인하고 승인', exact: true }).isEnabled());
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  if (shots) await page.screenshot({ path: shots + '/rejections-quote.png' });
+  assert.deepEqual(errors, []);
+});
+
 test('검수 결과 화면에서 수정본 검수 이력을 펼쳐 본다', { timeout: 60000 }, async t => {
   const context = { run_id: 'poster-2', project_id: 'project-fixture', actor_id: 'user-fixture', asset_version_id: 'asset-2',
     parent_run_id: 'poster-1' };
@@ -186,6 +249,11 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   await rows.nth(2).waitFor();
   await page.getByText('항목을 누르면 판정 근거가 창으로 열립니다.', { exact: true }).waitFor();
   assert.equal(await page.getByRole('dialog').count(), 0);
+  // 상세는 창에서 보여 주므로 목록 안에서는 펼치지 않는다
+  assert.equal(await page.locator('.rv-result-inspector').count(), 0);
+  assert.equal(await rows.first().getAttribute('aria-expanded'), null);
+  assert.deepEqual((await rows.allInnerTexts()).map(text => text.replace(/\s+/g, ' ')),
+    ['01 행사일: 11월 20일 충족', '02 행사 장소: 시민공원 위반', '03 주최 기관 로고를 넣는다 확인 필요']);
   if (shots) await page.screenshot({ path: shots + '/evidence-list.png' });
   // 다른 검수 결과는 창을 열기 전에는 읽지 않는다
   assert.equal(requested.filter(path => path.endsWith('/runs/poster-0')).length, 0);
@@ -239,9 +307,8 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   assert.match(await detail.innerText(), /요구사항 문서 1쪽[\s\S]*행사 장소: 시민공원[\s\S]*그래프 노드\s*source/);
   await main.getByRole('button', { name: '전체 관계', exact: true }).click();
   assert.equal(await graph.getAttribute('class'), 'rv-evg is-all');
-  await main.getByRole('button', { name: '조회 정보 보기', exact: true }).click();
-  await main.getByText(/Neo4j 그래프에서 조회했습니다\. 그래프 revision 9 · 원장 revision 9/).waitFor();
-  await main.getByText('source:criteria-v1:venue:document', { exact: true }).waitFor();
+  assert.equal(await main.getByRole('button', { name: /조회 정보/ }).count(), 0);
+  await main.getByText('기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.', { exact: true }).waitFor();
   // 버전별 판정에서 이전 검수본을 고르면 그 포스터와 읽은 위치를 보여 준다
   const trail = poster.getByRole('group', { name: '버전별 판정' });
   assert.deepEqual((await trail.getByRole('button').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), ['원본 불충족', '1차 수정본 불충족 지금']);

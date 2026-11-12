@@ -19,6 +19,7 @@ import ChangeImpactNotice from './ChangeImpactNotice.jsx';
 import { incompleteOutputPages, unreadImagePages, unreadTextPages } from './criteriaWarnings.js';
 import RevisionHistory from './RevisionHistory.jsx';
 import PosterEvidenceDialog from './PosterEvidenceDialog.jsx';
+import ExtractionRejections from './ExtractionRejections.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
@@ -44,38 +45,6 @@ const actionStatus = {
   final: '최종 승인을 저장하고 있어요.',
   changes: '수정 요청 승인을 저장하고 있어요.',
 };
-const rejectionReasons = {
-  A02_DUPLICATE_REQUIREMENT: '이미 포함된 기준과 중복됩니다.',
-  A02_EXPECTED_UNGROUNDED: '기대값이 원문과 일치하지 않습니다.',
-  A02_SOURCE_MISMATCH: '선택한 원문 범위를 확인할 수 없습니다.',
-  A02_UNIT_UNGROUNDED: '단위가 원문과 일치하지 않습니다.',
-  A02_UNRESOLVED_VALUE_INVENTED: '미확정 항목에 원문으로 확인할 수 없는 값이 있습니다.',
-  A02_QUALIFIER_UNGROUNDED: '허용 조건이나 예외의 원문 근거가 일치하지 않습니다.',
-  A02_NORMALIZATION_UNSUPPORTED: '이 항목에는 변환된 값 형식을 사용할 수 없습니다.',
-  A02_NORMALIZED_VALUE_UNGROUNDED: '변환된 값이 원문과 일치하지 않습니다.',
-  A02_NORMALIZED_VALUE_AMBIGUOUS: '변환된 값에 해당하는 원문 표기를 하나로 확인할 수 없습니다.',
-  A02_PRESENTATION_MISSING: '기준에 표시할 문구가 없습니다.',
-  A02_PRESENTATION_UNGROUNDED: '표시 문구가 원문과 일치하지 않습니다.',
-  A02_PRESENTATION_SCOPE_LOST: '표시 문구에서 가로 또는 세로 구분이 빠졌습니다.',
-  A02_COMPILED_SOURCE_TOO_LARGE: '원문 인용 범위가 너무 깁니다.',
-  A02_RESPONSE_INVALID: '항목의 형식이나 비교 조건이 유효하지 않습니다.',
-};
-
-function ExtractionRejections({ items }) {
-  return <section className="rv-criteria-rejections" aria-label="원문 검증에서 제외된 후보">
-    <h3>원문 검증에서 제외된 후보 {items.length}개</h3>
-    <p>아래 후보는 초안에서 제외했습니다. 원문을 확인한 뒤 필요한 기준을 보완해 주세요.</p>
-    <ul>{items.map(({ candidate_index, code, source }) => <li key={candidate_index}>
-      <strong>후보 {candidate_index} · {rejectionReasons[code] || '원문 검증에 실패했습니다.'}</strong>
-      <span className="rv-criteria-rejection-code">{code}</span>
-      {source ? <div className="rv-criteria-source">
-        <Icon name="file" /><details><summary>확인된 원문 · {source.page}쪽</summary><p>{source.quote}</p></details>
-      </div> : <p>확인 가능한 원문이 없습니다.</p>}
-    </li>)}</ul>
-  </section>;
-}
-
-
 function command(path, body, key, signal) {
   return frameworkJson(path, { method: 'POST', signal, body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });

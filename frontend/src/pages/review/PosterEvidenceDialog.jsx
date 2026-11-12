@@ -112,24 +112,9 @@ function PosterPane({ graph, image, shownId, onShow }) {
   </section>;
 }
 
-function lookupLines(lookup) {
-  const lines = [];
-  if (lookup.backend === 'neo4j') {
-    lines.push(`기준과 원문의 관계(포함·출처)는 검수할 때 Neo4j 그래프에서 조회했습니다. 그래프 revision ${lookup.graphRevision ?? '확인 안 됨'} · 원장 revision ${lookup.requiredRevision ?? '확인 안 됨'}`);
-  } else if (lookup.backend === 'postgresql') {
-    lines.push(`기준과 원문의 관계(포함·출처)는 검수할 때 PostgreSQL에서 조회했습니다.${lookup.fallback ? ` Neo4j 대신 쓴 사유 ${lookup.fallback}` : ''}`);
-  } else {
-    lines.push('이 검수에는 관계 조회 기록이 없어, 실행 기록에 적힌 기준과 원문을 그대로 보여 줍니다.');
-  }
-  if (lookup.history) lines.push(`이전 검수와의 재검수 관계는 ${lookup.history === 'neo4j' ? 'Neo4j 그래프' : 'PostgreSQL'}에서 조회했습니다.`);
-  lines.push('읽은 값·위치·판정과 담당자 확인은 이 검수의 실행 기록에서 읽어 연결했습니다.');
-  return lines;
-}
-
 function EvidenceBody({ graph, image }) {
   const [mode, setMode] = useState('chain');
   const [selectedId, setSelectedId] = useState('verdict');
-  const [showLookup, setShowLookup] = useState(false);
   const [shownId, setShownId] = useState(null);
   const nodes = Object.fromEntries(graph.nodes.map(node => [node.id, node]));
   const selected = nodes[selectedId] || nodes.verdict;
@@ -139,8 +124,8 @@ function EvidenceBody({ graph, image }) {
     if (node.id === 'previous') setShownId(node.runId);
     else if (['poster', 'region', 'observation'].includes(node.id)) setShownId(null);
   }
-  const source = graph.lookup.backend === 'neo4j' ? '기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
-    : graph.lookup.backend === 'postgresql' ? '기준과 원문의 관계는 PostgreSQL에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
+  const source = graph.relationSource === 'neo4j' ? '기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
+    : graph.relationSource === 'postgresql' ? '기준과 원문의 관계는 PostgreSQL에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
       : '기준·원문·읽은 값·판정을 이 검수의 실행 기록에서 읽어 연결했습니다.';
   return <div className="rv-evd-body">
     <PosterPane graph={graph} image={image} shownId={shownId} onShow={setShownId} />
@@ -161,13 +146,7 @@ function EvidenceBody({ graph, image }) {
           <button type="button" aria-pressed={mode === 'chain'} onClick={() => setMode('chain')}>근거 사슬 강조</button>
           <button type="button" aria-pressed={mode === 'all'} onClick={() => setMode('all')}>전체 관계</button>
         </div>
-        <button type="button" className="rv-evd-lookup-toggle" aria-expanded={showLookup} aria-controls="rv-evd-lookup"
-          onClick={() => setShowLookup(value => !value)}>조회 정보 {showLookup ? '닫기' : '보기'}</button>
       </div>
-      {showLookup && <div id="rv-evd-lookup" className="rv-evd-lookup">
-        <ul>{lookupLines(graph.lookup).map(line => <li key={line}>{line}</li>)}</ul>
-        {graph.lookup.sourceKeys.length > 0 && <p>이 항목의 원문 노드 {graph.lookup.sourceKeys.map(key => <code key={key}>{key}</code>)}</p>}
-      </div>}
       <div className="rv-evg-scroll">
         <div className={`rv-evg is-${mode}`} role="group" aria-label={`${graph.label} 근거 관계도`} style={{ height: HEIGHT }}>
           {graph.edges.map(edge => <Edge key={edge.id} edge={edge} nodes={nodes} />)}
