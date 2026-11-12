@@ -218,7 +218,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>
             <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
-              dedicated={status?.requirements?.enabled && status?.requirements?.configured}
+              dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} />
             <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />
             <details className="rv-form-block rv-video-ad-settings">

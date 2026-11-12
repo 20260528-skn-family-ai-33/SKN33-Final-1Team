@@ -1,6 +1,6 @@
 import { frameworkJson, frameworkResponse } from './frameworkClient.js';
 
-const wait = (ms, signal) => new Promise((resolve, reject) => {
+export const waitForDocumentPoll = (ms, signal) => new Promise((resolve, reject) => {
   signal?.throwIfAborted();
   const abort = () => { clearTimeout(timer); reject(new DOMException('취소됐습니다.', 'AbortError')); };
   const timer = setTimeout(() => { signal?.removeEventListener('abort', abort); resolve(); }, ms);
@@ -99,7 +99,7 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
 }
 
 // 취소는 화면 반영만 중단한다. 접수된 실행·요청 키는 유지해 중복 추론을 막는다.
-export async function extractDocumentWithProgress(file, { signal, onProgress, onAccepted, pollInterval = 1500, waitFor = wait, ...submission } = {}) {
+export async function extractDocumentWithProgress(file, { signal, onProgress, onAccepted, pollInterval = 1500, waitFor = waitForDocumentPoll, ...submission } = {}) {
   const attempt = await submitDocument(file, { ...submission, signal, onProgress });
   onAccepted?.(attempt.runId);
   const source = file.type === 'text/plain' ? '입력문' : file.type === DOCX_MEDIA_TYPE ? 'DOCX' : 'PDF';

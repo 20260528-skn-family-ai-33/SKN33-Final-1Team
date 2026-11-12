@@ -23,7 +23,7 @@ import time
 from typing import Callable
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -58,6 +58,8 @@ MIN_OCR_SUCCESS = 0.9
 PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "classifying": 88,
             "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "transcode": 99, "completed": 100}
 LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
+DOCUMENT_RESULT_TTL_SECONDS = 3600
+DOCUMENT_RESULT_LIMIT = 32
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
     "ocr": "프레임 글자 판독에 실패했습니다. 자막 판독 모델(Qwen3-VL) 서버 연결과 준비 상태를 확인한 뒤 다시 실행해 주세요.",
@@ -599,7 +601,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         if readonly:
             detail = "읽기 전용 모드라 새 동영상 검수를 받지 않습니다. 기존 결과만 볼 수 있습니다."
         from backend.app.video.requirements import readiness as requirements_readiness
-        requirements = {**requirements_readiness(), "enabled": not readonly}
+        requirements = {**requirements_readiness(), "enabled": not readonly, "async_jobs": not readonly}
         return {"requirements": requirements,"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
                 "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
                 "pipeline": pipeline_name(engine) if engine else None, "subtitle_engine": engine, "limits": policy,
@@ -683,24 +685,108 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return {"items": jobs[:20]}
 
     if not readonly:
+        from backend.app.video import requirements as video_a02
+
         requirements_lock = threading.Lock()
+        document_jobs_lock = threading.Lock()
+        document_jobs: dict[str, dict] = {}
+
+        def document_owner(request: Request) -> str:
+            identity = getattr(request.state, "video_identity", None)
+            if isinstance(identity, tuple):
+                return str(identity[0].user_id)
+            if isinstance(identity, dict):
+                return str(identity["id"])
+            return "local"
+
+        async def read_requirement_upload(document: UploadFile) -> tuple[bytes, str]:
+            try:
+                data = await document.read(video_a02.MAX_BYTES + 1)
+                filename = document.filename or ""
+            finally:
+                await document.close()
+            if not data:
+                raise HTTPException(400, {"code": "DOCUMENT_EMPTY", "message": "빈 파일입니다."})
+            if len(data) > video_a02.MAX_BYTES:
+                raise HTTPException(413, {"code": "DOCUMENT_TOO_LARGE", "message": "문서는 10MiB 이하로 올려 주세요."})
+            return data, filename
+
+        def prune_document_jobs() -> None:
+            cutoff = time.monotonic() - DOCUMENT_RESULT_TTL_SECONDS
+            for job_id, job in list(document_jobs.items()):
+                if job["finished_at"] is not None and job["finished_at"] <= cutoff:
+                    del document_jobs[job_id]
+
+        def run_document_job(job_id: str, data: bytes, filename: str) -> None:
+            try:
+                with document_jobs_lock:
+                    job = document_jobs[job_id]
+                    job["response"] = {"id": job_id, "status": "running"}
+                try:
+                    result = video_a02.extract(data, filename)
+                    outcome = {"status": "completed", "result": result}
+                except video_a02.DocumentError as error:
+                    outcome = {"status": "failed", "error": {"code": error.code, "message": str(error)}}
+                except Exception:
+                    outcome = {"status": "failed", "error": {
+                        "code": "VIDEO_DOCUMENT_ANALYSIS_FAILED", "message": "영상 문서 분석을 완료하지 못했습니다.",
+                    }}
+                with document_jobs_lock:
+                    job["response"] = {"id": job_id, **outcome}
+                    job["finished_at"] = time.monotonic()
+            finally:
+                requirements_lock.release()
 
         @router.post("/requirements/extract")
         async def extract_requirements(document: UploadFile = File(...)):
-            """계약·요구사항 문서 → 영상 기준 초안(영상 A02, 포스터와 같은 Qwen3.5-4B). 저장·승인하지 않는다."""
-            from backend.app.video import requirements as video_a02
-            try:
-                data = await document.read(video_a02.MAX_BYTES + 1)
-            finally:
-                await document.close()
+            """기존 클라이언트의 동기 추출 경로."""
+            data, filename = await read_requirement_upload(document)
             if not requirements_lock.acquire(blocking=False):
                 raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
             try:
-                return await run_in_threadpool(video_a02.extract, data, document.filename or "")
+                return await run_in_threadpool(video_a02.extract, data, filename)
             except video_a02.DocumentError as error:
                 raise HTTPException(error.status, {"code": error.code, "message": str(error)}) from None
             finally:
                 requirements_lock.release()
+
+        @router.post("/requirements/extractions", status_code=202)
+        async def submit_requirement_extraction(request: Request, response: Response,
+                                                background_tasks: BackgroundTasks, document: UploadFile = File(...)):
+            owner = document_owner(request)
+            data, filename = await read_requirement_upload(document)
+            if not requirements_lock.acquire(blocking=False):
+                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
+            job_id = str(uuid4())
+            pending = {"id": job_id, "status": "queued"}
+            try:
+                with document_jobs_lock:
+                    prune_document_jobs()
+                    if len(document_jobs) >= DOCUMENT_RESULT_LIMIT:
+                        document_jobs.pop(next(iter(document_jobs)))
+                    document_jobs[job_id] = {"owner": owner, "response": pending, "finished_at": None}
+                background_tasks.add_task(run_document_job, job_id, data, filename)
+            except BaseException:
+                with document_jobs_lock:
+                    document_jobs.pop(job_id, None)
+                requirements_lock.release()
+                raise
+            response.headers["Cache-Control"] = "private, no-store"
+            return pending
+
+        @router.get("/requirements/extractions/{job_id}")
+        def get_requirement_extraction(job_id: UUID, request: Request, response: Response):
+            owner = document_owner(request)
+            with document_jobs_lock:
+                prune_document_jobs()
+                job = document_jobs.get(str(job_id))
+                if job is None or job["owner"] != owner:
+                    raise HTTPException(404, {"code": "VIDEO_DOCUMENT_ANALYSIS_NOT_FOUND",
+                                              "message": "영상 문서 분석 작업을 찾을 수 없습니다."},
+                                        headers={"Cache-Control": "private, no-store"})
+                result = job["response"]
+            response.headers["Cache-Control"] = "private, no-store"
+            return result
 
         @router.post("", status_code=202)
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),

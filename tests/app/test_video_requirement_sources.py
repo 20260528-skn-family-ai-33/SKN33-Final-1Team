@@ -1,8 +1,14 @@
 """영상 요구사항 PDF: 글자층만 읽는다. 스캔 쪽은 거부하고 이미지가 섞인 쪽은 쪽 번호를 알린다. 모델 호출 없음."""
+from threading import Lock
+from types import SimpleNamespace
+
 import pymupdf
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from backend.app.video import requirements
+from backend.app.video.review import video_review_router
 
 
 def pdf(*pages):
@@ -44,3 +50,50 @@ def test_rejected_video_candidates_preserve_valid_items_and_sources():
     assert [(row["candidate_index"], row["code"], row["source"]["block"]) for row in rejected] == [
         (2, "A02_ITEM_ID_UNGROUNDED", 1), (3, "A02_DUPLICATE_REQUIREMENT", 1),
     ]
+
+
+@pytest.mark.parametrize("failed", [False, True])
+def test_video_document_job_responds_before_analysis_and_scopes_results_to_owner(tmp_path, monkeypatch, failed):
+    path = "/api/video-reviews/requirements/extractions"
+    app = FastAPI()
+    app.include_router(video_review_router(
+        root=tmp_path, inference_lock=Lock(),
+        authenticate=lambda request: (SimpleNamespace(user_id=request.headers["x-test-owner"]), False),
+    ))
+    result = {"items": [{"include": True, "text": "자막 확인"}], "approved": False}
+    events = []
+
+    def extract(data, filename):
+        assert events == [202, "response-sent"]
+        assert (data, filename) == (b"subtitle", "brief.txt")
+        if failed:
+            raise requirements.DocumentError("QWEN_OUTCOME_UNKNOWN", "모델 응답을 확인하지 못했습니다.", 504)
+        return result
+
+    async def trace_response(scope, receive, send):
+        async def capture(message):
+            await send(message)
+            if scope.get("path") == path and scope.get("method") == "POST":
+                if message["type"] == "http.response.start":
+                    events.append(message["status"])
+                elif message["type"] == "http.response.body" and not message.get("more_body"):
+                    events.append("response-sent")
+
+        await app(scope, receive, capture)
+
+    monkeypatch.setattr(requirements, "extract", extract)
+    with TestClient(trace_response, base_url="http://127.0.0.1", client=("127.0.0.1", 1234)) as client:
+        accepted = client.post(path, files={"document": ("brief.txt", b"subtitle")}, headers={"x-test-owner": "owner"})
+        assert accepted.status_code == 202 and accepted.json()["status"] == "queued"
+        assert accepted.headers["cache-control"] == "private, no-store"
+        job_path = path + "/" + accepted.json()["id"]
+        hidden = client.get(job_path, headers={"x-test-owner": "another-user"})
+        assert hidden.status_code == 404
+        response = client.get(job_path, headers={"x-test-owner": "owner"})
+        assert response.headers["cache-control"] == "private, no-store"
+        job = response.json()
+        assert job["id"] == accepted.json()["id"]
+        if failed:
+            assert job["status"] == "failed" and job["error"]["code"] == "QWEN_OUTCOME_UNKNOWN"
+        else:
+            assert job["status"] == "completed" and job["result"] == result

@@ -694,7 +694,8 @@
         "mode": {
           "enum": [
             "mock",
-            "qwen"
+            "qwen",
+            "openai"
           ],
           "title": "Mode",
           "type": "string"

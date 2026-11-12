@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fetchJson } from '../../api/client.js';
 import DocumentInput from '../review/DocumentInput.jsx';
 import { mergeDocumentRequirements } from '../review/documentRequirements.js';
 import { extractDocumentWithProgress, requirementDocument, watchDocumentDeadline } from '../review/frameworkDocument.js';
+import { extractVideoDocument } from './videoDocumentAnalysis.js';
 
 export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument, dedicated = false }) {
   const [progress, setProgress] = useState(null);
@@ -66,12 +66,9 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     const deadline = watchDocumentDeadline(controller);
     try {
       if (dedicatedEnabled) {
-        const body = new FormData();
-        body.append('document', file);
-        setProgress(deadline.update({ stage: 'extracting', percent: 60, message: '영상 계약서에서 기준과 제외 사유를 찾고 있습니다.' }));
-        const result = await fetchJson('/api/video-reviews/requirements/extract', { method: 'POST', body, signal });
+        const result = await extractVideoDocument(file, { signal,
+          onProgress: update => { if (!signal.aborted) setProgress(deadline.update(update)); } });
         if (signal.aborted) return;
-        if (!Array.isArray(result.items)) throw new Error('영상 문서 분석 결과를 확인하지 못했습니다.');
         const rows = result.items.filter(item => item.include).map(item => ({
           id: item.draft_id, text: item.text, type: item.type, source: item.source.quote, selected: false,
         }));
@@ -100,7 +97,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
       if (active.current === controller && (!signal.aborted || deadline.expired)) {
         setProgress(null);
         setInspectId(failure.runId || deadline.runId);
-        const waitMessage = dedicatedEnabled ? '영상 전용 분석의 응답을 받지 못했습니다. 이 방식은 별도 실행 이력을 저장하지 않습니다.'
+        const waitMessage = dedicatedEnabled ? '화면 대기 시간이 끝났습니다. 접수된 영상 문서 분석은 서버에서 계속될 수 있습니다.'
           : '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.';
         setError(deadline.expired ? waitMessage : failure.message);
       }
