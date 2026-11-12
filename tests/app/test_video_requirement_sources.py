@@ -53,7 +53,10 @@ def test_rejected_video_candidates_preserve_valid_items_and_sources():
 
 
 @pytest.mark.parametrize("failed", [False, True])
-def test_video_document_job_responds_before_analysis_and_scopes_results_to_owner(tmp_path, monkeypatch, failed):
+@pytest.mark.parametrize("model_route", [None, "runpod"], ids=["default", "runpod"])
+def test_video_document_job_responds_before_analysis_and_scopes_results_to_owner(
+    tmp_path, monkeypatch, failed, model_route,
+):
     path = "/api/video-reviews/requirements/extractions"
     app = FastAPI()
     app.include_router(video_review_router(
@@ -63,9 +66,10 @@ def test_video_document_job_responds_before_analysis_and_scopes_results_to_owner
     result = {"items": [{"include": True, "text": "자막 확인"}], "approved": False}
     events = []
 
-    def extract(data, filename):
+    def extract(data, filename, *, route):
         assert events == [202, "response-sent"]
         assert (data, filename) == (b"subtitle", "brief.txt")
+        assert route == (model_route or "default")
         if failed:
             raise requirements.DocumentError("QWEN_OUTCOME_UNKNOWN", "모델 응답을 확인하지 못했습니다.", 504)
         return result
@@ -83,7 +87,10 @@ def test_video_document_job_responds_before_analysis_and_scopes_results_to_owner
 
     monkeypatch.setattr(requirements, "extract", extract)
     with TestClient(trace_response, base_url="http://127.0.0.1", client=("127.0.0.1", 1234)) as client:
-        accepted = client.post(path, files={"document": ("brief.txt", b"subtitle")}, headers={"x-test-owner": "owner"})
+        accepted = client.post(
+            path, files={"document": ("brief.txt", b"subtitle")}, headers={"x-test-owner": "owner"},
+            data={"model_route": model_route} if model_route is not None else {},
+        )
         assert accepted.status_code == 202 and accepted.json()["status"] == "queued"
         assert accepted.headers["cache-control"] == "private, no-store"
         job_path = path + "/" + accepted.json()["id"]
