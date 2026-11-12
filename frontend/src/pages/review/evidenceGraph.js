@@ -191,12 +191,6 @@ export function evidenceGraph(run, criterionId, { image = null, history = null, 
     criterionId, label, text: criterion?.text || item.criterion_text || label, required: Boolean(item.required), verdict: view.verdict,
     expected, observed: view.value, observation: view.statusLabel, operator, reasons, box: view.box, hint, versionName: name,
     assetVersionId: view.asset, nodes, edges, path, trail,
-    lookup: {
-      backend: retrieval ? (retrieval.backend === 'neo4j' ? 'neo4j' : 'postgresql') : null,
-      requiredRevision: retrieval?.required_revision ?? null, graphRevision: retrieval?.observed_graph_revision ?? null,
-      fallback: retrieval?.fallback_reason || null,
-      sourceKeys: (retrieval?.source_keys || []).filter(row => row.criterion_id === criterionId).map(row => row.source_key),
-      history: trail.length ? (history.answered_by === 'neo4j' ? 'neo4j' : 'postgresql') : null,
-    },
+    relationSource: retrieval ? (retrieval.backend === 'neo4j' ? 'neo4j' : 'postgresql') : null,
   };
 }
