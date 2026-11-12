@@ -151,7 +151,11 @@ class PostgresQueue:
                 expected_model='mock-line-fixture-v1' if settings.mode=='mock' else settings.model
                 expected_policy=('a02-text-v1' if settings.mode=='mock' else
                     ('a02-semantic-v4' if settings.presentation else 'a02-semantic-v3') if settings.structuring=='semantic' else 'a02-source-compile-v2')
-                if (trace is None or trace.mode!=settings.mode or trace.model!=expected_model
+                # 2026-11-12: Qwen 실패 뒤 OpenAI 대체 추출 결과는 켜진 대체 모델 이름일 때만 받는다.
+                from .openai_fallback import fallback_settings
+                fallback=fallback_settings() if settings.mode=='qwen' and trace is not None and trace.mode=='openai' else None
+                if fallback is not None:expected_model=fallback.model
+                if (trace is None or trace.mode!=(settings.mode if fallback is None else 'openai') or trace.model!=expected_model
                         or trace.policy!=expected_policy
                         or trace.parser!=('utf8-source-v1' if request.document.media_type=='text/plain' else 'pymupdf-'+settings.parser_version)
                         or sum(len(s.text) for s in trace.sources)>settings.max_text_chars):
