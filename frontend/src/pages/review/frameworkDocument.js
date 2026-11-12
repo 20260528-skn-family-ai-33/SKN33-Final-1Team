@@ -52,7 +52,9 @@ function uploadPath(file, isText, isDocx) {
 }
 
 // DOCX는 서버가 본문 글자만 읽어 텍스트 원문으로 저장한다(원본 DOCX는 해시만 돌려받아 대조).
-export async function submitDocument(file, { projectId, attempt, attempts, signal, onProgress } = {}) {
+// modelRoute: 자료 입력 첫 화면의 보안 여부(일반 자료 openai, 보안 자료 runpod). 비우면 서버 기본 경로다.
+export async function submitDocument(file, { projectId, attempt, attempts, signal, onProgress, modelRoute } = {}) {
+  const route = modelRoute && modelRoute !== 'default' ? modelRoute : '';
   const isText = file.type === 'text/plain';
   const isDocx = file.type === DOCX_MEDIA_TYPE;
   const source = isText ? '입력문' : isDocx ? 'DOCX' : 'PDF';
@@ -64,14 +66,15 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer())))
     .map(byte => byte.toString(16).padStart(2, '0')).join('');
   signal?.throwIfAborted();
-  const cacheKey = `${projectId}:${file.type}:${digest}`;
+  // 같은 원문이라도 보안 여부가 다르면 다른 실행이다(서버가 실행 입력에 경로를 고정한다).
+  const cacheKey = `${projectId}:${file.type}:${digest}${route ? `:${route}` : ''}`;
   attempt = attempt || attempts?.get(cacheKey) || {};
   attempts?.set(cacheKey, attempt);
   if (attempt.sha256 && (attempt.sha256 !== digest || attempt.projectId !== projectId
-    || (attempt.mediaType && attempt.mediaType !== file.type))) {
+    || (attempt.mediaType && attempt.mediaType !== file.type) || (attempt.modelRoute || '') !== route)) {
     throw new Error('이전 문서 요청과 원문 또는 프로젝트가 다릅니다. 새 요청으로 진행해 주세요.');
   }
-  Object.assign(attempt, { sha256: digest, projectId, mediaType: file.type,
+  Object.assign(attempt, { sha256: digest, projectId, mediaType: file.type, modelRoute: route,
     uploadKey: attempt.uploadKey || crypto.randomUUID(), extractionKey: attempt.extractionKey || crypto.randomUUID() });
   const project = `/projects/${encodeURIComponent(projectId)}`;
   if (!attempt.documentVersionId) {
@@ -89,7 +92,8 @@ export async function submitDocument(file, { projectId, attempt, attempts, signa
   signal?.throwIfAborted();
   if (!attempt.runId) {
     onProgress?.({ stage: 'queued', percent: 15, message: '요구사항 분석을 접수하고 있습니다.' });
-    const run = await frameworkJson(project + `/document-versions/${encodeURIComponent(attempt.documentVersionId)}/extractions`, {
+    const run = await frameworkJson(project + `/document-versions/${encodeURIComponent(attempt.documentVersionId)}/extractions`
+      + (route ? `?model_route=${encodeURIComponent(route)}` : ''), {
       method: 'POST', signal, headers: { 'Idempotency-Key': attempt.extractionKey },
     });
     if (!run?.context?.run_id) throw new Error('문서 분석 접수 결과를 확인하지 못했습니다.');

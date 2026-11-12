@@ -17,6 +17,8 @@ MCP = frozenset("CC_MCP_URL CC_MCP_TOKEN".split())
 COOKIE = frozenset("CC_COOKIE_SECURE CC_SESSION_COOKIE CC_SESSION_HOURS".split())
 # 2026-11-12 A02 Qwen 실패 뒤 OpenAI 대체 추출(backend/agent_framework/openai_fallback.py와 같은 이름).
 OPENAI_FALLBACK = frozenset("A02_OPENAI_FALLBACK A02_OPENAI_MODEL A02_OPENAI_REASONING_EFFORT A02_OPENAI_API_KEY OPENAI_API_KEY creative_checker_openapi".split())
+# 같은 날 보안 여부 선택: 일반 자료는 A02·A04/A05·포스터 로고 위치 탐지를 OpenAI로 보낸다(backend/agent_framework/model_route.py).
+OPENAI_FALLBACK = OPENAI_FALLBACK | {"OPENAI_ROUTE_MODEL", "OPENAI_ROUTE_REASONING_EFFORT"}
 PROFILES = {
     "api": STORAGE | MODEL | GRAPH | COOKIE,
     "worker": frozenset({"DATABASE_URL"}) | MODEL | MCP,

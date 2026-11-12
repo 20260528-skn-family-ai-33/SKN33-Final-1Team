@@ -417,15 +417,22 @@ class RegisteredPDFExtractor:
 
     def extract(self,request):
         from .openai_fallback import WARNING,should_fall_back
+        from .model_route import current_route,openai_settings
+        # 보안 여부 선택(model_route.py): 일반 자료는 Qwen 없이 OpenAI로 바로, 보안 자료는 Qwen만(대체 추출 없음).
+        route=current_route() if self.settings.mode=='qwen' else 'default'
         document=self.read_document(request)
         sources,image_pages=read_sources(document,self.settings)
         skipped_pages=tuple(sorted(set(range(1,request.document.page_count+1))-{source.page for source in sources}))
+        if route=='openai':
+            provider=OpenAIFallbackProvider(self.settings,openai_settings(),transport=getattr(self.fallback,'_transport',None))
+            return self._draft(request,document,sources,provider(sources),mode='openai',model=provider.model,
+                image_pages=image_pages,skipped_pages=skipped_pages)
         try:
             return self._draft(request,document,sources,self.provider(sources),mode=self.settings.mode,model=self.settings.model,
                 image_pages=image_pages,skipped_pages=skipped_pages)
         except Exception as failure:
             code=failure.code if isinstance(failure,AdapterFailure) else 'QWEN_RESULT_INVALID'
-            if self.fallback is None or not should_fall_back(code):raise
+            if route=='runpod' or self.fallback is None or not should_fall_back(code):raise
         try:
             return self._draft(request,document,sources,self.fallback(sources),mode='openai',model=self.fallback.model,
                 image_pages=image_pages,skipped_pages=skipped_pages,extra_warnings=(WARNING,'qwen_failed_'+code.lower()))

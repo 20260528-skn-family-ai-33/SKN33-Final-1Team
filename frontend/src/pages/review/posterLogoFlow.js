@@ -46,27 +46,37 @@ async function rasterizeSvg(file) {
 const isSvg = file => file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
 
 // 포스터 검수 실행(runId)에 연결한 포스터 로고 작업을 만든다. 같은 실행에 이미 작업이 있으면 다시 만들지 않는다.
-export async function submitPosterLogoJob({ poster, logos, title, runId, signal }) {
+// 로고만 검수할 때는 runId 없이 실행과 연결하지 않은 작업을 만든다(서버의 run_id는 선택값).
+// detector: 위치 후보를 찾는 곳. 'openai'(일반 자료) 또는 'runpod'(보안 자료·기본). 정밀 대조는 둘 다 RunPod다.
+export async function submitPosterLogoJob({ poster, logos, title, runId, detector = 'runpod', signal }) {
   if (!poster || !logos?.length) return null;
-  const existing = await fetchJson(`${POSTER_LOGO_API}?run_id=${encodeURIComponent(runId)}`, { signal });
-  if (existing.items?.length) return existing.items[0];
+  if (runId) {
+    const existing = await fetchJson(`${POSTER_LOGO_API}?run_id=${encodeURIComponent(runId)}`, { signal });
+    if (existing.items?.length) return existing.items[0];
+  }
   const form = new FormData();
   form.append('poster', poster);
   for (const item of logos) form.append('logos', isSvg(item.file) ? await rasterizeSvg(item.file) : item.file);
   form.append('logo_texts', JSON.stringify(logos.map(item => (item.text || '').trim())));
   form.append('title', title || '포스터 로고 검수');
-  form.append('run_id', runId);
+  if (runId) form.append('run_id', runId);
+  form.append('detector', detector === 'openai' ? 'openai' : 'runpod');
   return fetchJson(POSTER_LOGO_API, { method: 'POST', body: form, signal });
 }
 
-// 수정본 재검수: 이전 실행의 로고 작업에서 원본 로고와 기준 문구를 가져와 새 포스터에 다시 쓴다.
-export async function previousLogos(runId, { signal } = {}) {
+// 수정본 재검수: 이전 실행의 로고 작업에서 원본 로고·기준 문구와 위치 탐지 경로를 가져와 새 포스터에 다시 쓴다.
+export async function previousLogoJob(runId, { signal } = {}) {
   const list = await fetchJson(`${POSTER_LOGO_API}?run_id=${encodeURIComponent(runId)}`, { signal });
   const job = list.items?.[0];
-  if (!job) return [];
+  if (!job) return { logos: [], detector: 'runpod' };
   const meta = await fetchJson(`${POSTER_LOGO_API}/${encodeURIComponent(job.id)}`, { signal });
-  return Promise.all((meta.logos || []).map(async (logo, index) => {
+  const logos = await Promise.all((meta.logos || []).map(async (logo, index) => {
     const response = await fetchResponse(`${POSTER_LOGO_API}/${encodeURIComponent(job.id)}/refs/${index}.png`, { signal });
     return { file: new File([await response.blob()], `${logo.name}.png`, { type: 'image/png' }), text: logo.text || '' };
   }));
+  return { logos, detector: meta.detector === 'openai' ? 'openai' : 'runpod' };
+}
+
+export async function previousLogos(runId, options) {
+  return (await previousLogoJob(runId, options)).logos;
 }

@@ -1,14 +1,15 @@
 import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { fetchJson, fetchResponse } from '../../api/client.js';
 import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
-import { initialState, workflowReducer, canConfirm, canRun } from './workflow.js';
+import { initialState, workflowReducer, canConfirm, canRun, logoDetectorFor, modelRouteFor } from './workflow.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
 import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, watchDocumentDeadline } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { makeInspectionCopy } from './posterImageCopy.js';
+import { submitPosterLogoJob } from './posterLogoFlow.js';
 
 const ReviewContext = createContext(null);
 const bundledSample = {
@@ -71,6 +72,7 @@ export function ReviewProvider({ children }) {
   const [activeEvidence, setActiveEvidence] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const routerNavigate = useNavigate();
   const fileInput = useRef(null);
   const documentInput = useRef(null);
   const documentRequest = useRef(null);
@@ -188,6 +190,8 @@ export function ReviewProvider({ children }) {
     if (!projectId) { setDocumentError('문서를 저장할 프로젝트를 선택해 주세요.'); return; }
     const file = files[0];
     if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF 또는 DOCX를 선택해 주세요.'); return; }
+    // 보안 여부에 따라 문서 분석(A02)을 OpenAI(일반 자료) 또는 RunPod(보안 자료)로 보낸다.
+    const modelRoute = modelRouteFor(state.securityMode);
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true);
@@ -199,7 +203,7 @@ export function ReviewProvider({ children }) {
       if (controller.signal.aborted) return;
       const isDocx = requirementFile.type === DOCX_MEDIA_TYPE;
       const result = await extractDocumentWithProgress(requirementFile, { projectId, attempts: documentAttempts.current, signal: controller.signal,
-        onAccepted: id => { deadline.runId = id; }, onProgress: update => {
+        modelRoute, onAccepted: id => { deadline.runId = id; }, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
           const progress = deadline.update(update);
           setDocumentProgress(previous => ({ ...previous, ...progress }));
@@ -217,7 +221,7 @@ export function ReviewProvider({ children }) {
       const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false,
         criterionIds: criterionIdsByText.get(row.text) || [] }));
       dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
-        originalCount: rows.length, rows, filename: file.name, projectId } });
+        originalCount: rows.length, rows, filename: file.name, projectId, modelRoute } });
       setDocumentProgress(null);
       const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
       setDocumentNotice(`추출을 완료했어요. ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
@@ -408,6 +412,10 @@ export function ReviewProvider({ children }) {
       setError('이 원문을 저장한 프로젝트를 선택해 주세요. 다른 프로젝트에서는 원문을 새로 등록해야 합니다.');
       return;
     }
+    if ((state.documentRun.modelRoute || 'default') !== modelRouteFor(state.securityMode)) {
+      setError('문서를 분석한 뒤 보안 여부가 바뀌었어요. 요구사항 문서를 다시 첨부해 주세요.');
+      return;
+    }
     // Reviewing an extracted draft does not require the poster model to be ready.
     // Registration and review execution still perform their readiness checks.
     setInputRunId(state.documentRun.id);
@@ -422,6 +430,9 @@ export function ReviewProvider({ children }) {
     if (sampleBusy || fileBusy || documentBusy) return;
     setError('');
     if (!state.file) { setError('검수할 이미지를 먼저 선택해 주세요.'); return; }
+    const mode = state.reviewMode;
+    if ((mode === 'logo' || mode === 'both') && !state.referenceLogos?.length) { setError('대조할 원본 로고를 1개 이상 첨부해 주세요.'); return; }
+    if (mode === 'logo') { startLogoReview(); return; }
     const direct = state.requirements.trim();
     const doc = state.documentRun;
     const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
@@ -439,11 +450,35 @@ export function ReviewProvider({ children }) {
       setError('첨부한 문서를 저장한 프로젝트를 선택해 주세요.');
       return;
     }
+    if (selectedRows.length && (doc.modelRoute || 'default') !== modelRouteFor(state.securityMode)) {
+      setError('문서를 분석한 뒤 보안 여부가 바뀌었어요. 요구사항 문서를 다시 첨부해 주세요.');
+      return;
+    }
     const lines = [...new Set([...direct.split(/\r?\n/), ...selectedRows.map(row => row.text)].map(line => line.trim()).filter(Boolean))];
     const requirements = lines.join('\n');
     if (!requirements) { setError('요구사항을 입력하거나 문서에서 추출한 항목을 선택해 주세요.'); return; }
     if (requirements.length > 6000 || lines.length > 100) { setError('검수 요구사항을 6,000자 및 100개 이내로 정리해 주세요.'); return; }
     startTextReview(requirements);
+  }
+
+  // 로고만 검수: 요구사항 실행 없이 포스터와 원본 로고로 로고 작업을 만들고 위치 확정 화면으로 이동한다.
+  async function startLogoReview() {
+    if (documentRequest.current) return;
+    const controller = new AbortController();
+    documentRequest.current = controller;
+    setDocumentBusy(true); setError('');
+    try {
+      const job = await submitPosterLogoJob({ poster: state.file, logos: state.referenceLogos,
+        title: `${(state.projectName || '').trim() || '포스터'} 로고 검수`, detector: logoDetectorFor(state.securityMode),
+        signal: controller.signal });
+      if (controller.signal.aborted || documentRequest.current !== controller) return;
+      if (!job?.id) throw new Error('로고 검수를 접수하지 못했습니다. 다시 시도해 주세요.');
+      routerNavigate(`/review/logo?job=${encodeURIComponent(job.id)}`);
+    } catch (err) {
+      if (documentRequest.current === controller && !controller.signal.aborted) setError(err.message);
+    } finally {
+      if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
+    }
   }
 
   async function startTextReview(text) {
@@ -457,7 +492,7 @@ export function ReviewProvider({ children }) {
     try {
       await requirePosterReview({ signal: controller.signal, freeText: true });
       const result = await extractTextWithProgress(text, { projectId, attempts: documentAttempts.current, signal: controller.signal,
-        onAccepted: id => { deadline.runId = id; },
+        modelRoute: modelRouteFor(state.securityMode), onAccepted: id => { deadline.runId = id; },
         onProgress: update => {
           if (!controller.signal.aborted && documentRequest.current === controller) {
             const progress = deadline.update(update);

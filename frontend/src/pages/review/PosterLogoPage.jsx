@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
+import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { POSTER_LOGO_API, posterLogoAnswer, rankedCandidates, TOP_N } from './posterLogoFlow.js';
@@ -301,6 +302,7 @@ function CompareResults({ base, refs, onBack, onStatus }) {
 }
 
 export default function PosterLogoPage() {
+  const go = useNavigate();
   const [params, setParams] = useSearchParams();
   const job = params.get('job');
   const view = params.get('view') === 'compare' ? 'compare' : 'confirm';
@@ -431,29 +433,33 @@ export default function PosterLogoPage() {
     }
   }
 
-  const back = meta?.run_id ? '/review/new?framework=' + encodeURIComponent(meta.run_id) : '/review/new';
+  // 둘 다 검수는 포스터 검수 실행에 연결된 작업이라 첫 단계가 그 실행으로, 로고만 검수는 자료 입력으로 돌아간다.
+  const linkedRun = meta?.run_id;
+  const back = linkedRun ? '/review/new?framework=' + encodeURIComponent(linkedRun) : '/review/new';
+  const steps = linkedRun ? { review: '포스터 검수', candidates: logoSteps.candidates, confirm: logoSteps.confirm, compare: logoSteps.compare } : logoSteps;
+  const step = !job ? 'input' : ready ? view : 'candidates';
+  const stepVersion = !ready ? '로고 검수' : view === 'compare'
+    ? (meta.compare_status === 'completed' ? '대조 완료' : comparing ? '대조 중' : '저장 후 실행')
+    : savedIndexes.length + ' / ' + refs.length + '개 저장';
   const saved = isSaved(refIndex);
 
   return <div className="rv-workspace rv-workspace--tool">
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <SiteHeader current="/review/new" />
+    <WorkspaceProjectBar name={meta?.id === job ? meta.title : '로고 검수'} version={stepVersion} step={step} steps={steps} locked={busy}
+      canNavigate={key => key === 'input' || key === 'review' || (ready && (key === 'confirm' || key === 'compare'))}
+      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }}>
+      {ready && <button type="button" className="rv-button primary" onClick={runCompare} disabled={!savedIndexes.length || busy || comparing}>
+        {comparing ? '정밀 대조 중' : busy ? '요청 중…' : savedIndexes.length ? '저장한 ' + savedIndexes.length + '개 로고 정밀 대조' : '저장한 로고 없음'}
+      </button>}
+    </WorkspaceProjectBar>
     <main id="review-content" className="vl-page" tabIndex={-1}>
-      <div className="vl-topbar">
-        <div className="vl-topbar-title"><span className="rv-eyebrow">POSTER LOGO REVIEW</span><strong>포스터 로고 검수</strong></div>
-        <div className="vl-topbar-actions">
-          <Link className="rv-button secondary" to={back}>포스터 검수로</Link>
-          {ready && <button type="button" className="rv-button primary" onClick={runCompare} disabled={!savedIndexes.length || busy || comparing}>
-            {comparing ? '정밀 대조 중' : busy ? '요청 중…' : savedIndexes.length ? '저장한 ' + savedIndexes.length + '개 로고 정밀 대조' : '저장한 로고 없음'}
-          </button>}
-        </div>
-      </div>
-
       {!job ? <section className="vl-empty-state">
         <div className="vl-empty-mark">01</div>
-        <span className="vl-kicker">포스터 검수에서 시작</span>
-        <h1>포스터 검수 화면에서 원본 로고를 첨부하세요</h1>
-        <p>자료 입력에서 원본 로고를 첨부하고 포스터를 등록하면 로고 후보를 찾습니다. 검수 화면의 ‘포스터 로고 검수’ 카드에서 이 화면을 열 수 있습니다.</p>
-        <Link className="vl-button primary" to="/review/new">포스터 검수 열기</Link>
+        <span className="vl-kicker">자료 입력에서 시작</span>
+        <h1>자료 입력에서 로고 검수를 시작하세요</h1>
+        <p>검수 유형에서 ‘로고 검수’ 또는 ‘둘 다 검수’를 고르고 포스터와 원본 로고를 첨부하면 포스터에서 로고 후보를 찾습니다.</p>
+        <Link className="vl-button primary" to="/review/new">자료 입력 열기</Link>
       </section> : <div className="vl-content">
         <div className="vl-jobbar">
           <div><span className="vl-kicker">작업</span><strong>{meta?.id === job ? meta.title : '작업 정보를 불러오는 중'}</strong>
@@ -469,21 +475,12 @@ export default function PosterLogoPage() {
         </section>}
         {meta?.id === job && meta.status === 'failed' && <section className="vl-panel">
           <ErrorMessage message={meta.error || '후보 찾기에 실패했습니다.'} />
-          <p className="vl-help">포스터 검수는 그대로 진행됩니다. 로고 워커 연결을 확인한 뒤 포스터를 다시 등록하면 새로 접수합니다.</p>
+          <p className="vl-help">{linkedRun ? '포스터 검수는 그대로 진행됩니다. 로고 워커 연결을 확인한 뒤 포스터를 다시 등록하면 새로 접수합니다.'
+            : '로고 워커 연결을 확인한 뒤 자료 입력에서 다시 접수해 주세요.'}</p>
         </section>}
         {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
         {ready && <>
-          <nav className="vl-stepbar" aria-label="검수 단계">
-            <button type="button" className={view === 'confirm' ? 'active' : 'done'} onClick={() => changeView('confirm')}>
-              <span>1</span><strong>후보 위치 확인</strong><small>{savedIndexes.length} / {refs.length}개 저장</small>
-            </button>
-            <i />
-            <button type="button" className={view === 'compare' ? 'active' : ''} onClick={() => changeView('compare')}>
-              <span>2</span><strong>정밀 대조 근거</strong><small>{meta.compare_status === 'completed' ? '대조 완료' : '저장 후 실행'}</small>
-            </button>
-          </nav>
-
           {view === 'confirm' ? <div className="vl-layout">
             <aside className="vl-logo-sidebar">
               <div className="vl-sidebar-title"><span className="vl-kicker">기준 로고</span><strong>{refs.length}개</strong></div>
@@ -502,7 +499,8 @@ export default function PosterLogoPage() {
               {refInfo && <div className="vl-current-ref">
                 <img src={base + '/' + refInfo.img} alt={refInfo.name + ' 원본'} />
                 <div><span className="vl-kicker">현재 확인 중 · {refIndex + 1} / {refs.length}</span><h1>{refInfo.name}</h1>
-                  <p>{refInfo.bonus_basis === 'input' ? '기준 문구: ' + refInfo.bonus_text
+                  <p>{refInfo.bonus_basis === 'openai' ? 'OpenAI가 포스터에서 찾은 위치를 확신도 순으로 보여 줍니다(일반 자료). 정밀 대조는 RunPod에서 합니다.'
+                    : refInfo.bonus_basis === 'input' ? '기준 문구: ' + refInfo.bonus_text
                     : refInfo.bonus_basis === 'ocr' ? '기준 문구가 없어 원본 로고 OCR(' + refInfo.bonus_text + ')로 후보 가산점을 계산했습니다.'
                       : '기준 문구가 없고 원본 로고에서 글자를 읽지 못해 이미지 유사도로만 순위를 매겼습니다.'}</p></div>
               </div>}

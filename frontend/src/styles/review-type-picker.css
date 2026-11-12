@@ -1,0 +1,92 @@
+/* 보안 여부·검수 유형 선택: 키오스크처럼 큰 그림 타일만 두고 누르면 바로 다음 화면으로 넘어간다. */
+.rv-workspace .rv-type-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  min-height: min(760px, calc(100dvh - 150px));
+  padding: 56px 32px 60px;
+  border-radius: 28px;
+  background: #171717;
+  color: #fff;
+}
+.rv-workspace .rv-type-picker h1 { color: #fff; font-size: clamp(26px, 2.4vw, 38px); font-weight: 600; letter-spacing: -.04em; text-align: center; }
+.rv-workspace .rv-type-picker h1:focus { outline: none; }
+.rv-type-heading { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.rv-type-context { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid #3c3c39; border-radius: 999px; color: #d8d8d3; font-size: 13px; }
+.rv-type-context .icon { width: 14px; height: 14px; }
+.rv-workspace .rv-type-back {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid #3c3c39;
+  border-radius: 10px;
+  background: transparent;
+  color: #d8d8d3;
+  font-size: 13px;
+}
+.rv-workspace .rv-type-back:hover:enabled { background: #262624; color: #fff; }
+.rv-workspace .rv-type-back:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.rv-type-back .icon { width: 15px; height: 15px; transform: scaleX(-1); }
+.rv-type-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(18px, 2.2vw, 36px); }
+.rv-workspace .rv-type-tile {
+  width: clamp(240px, 19vw, 330px);
+  aspect-ratio: 330 / 420;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 22px 30px;
+  border: 0;
+  border-radius: 20px;
+  background: #fff;
+  color: #171717;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 28%);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.rv-workspace .rv-type-tile:hover:enabled { transform: translateY(-6px); box-shadow: 0 26px 50px rgb(0 0 0 / 38%); }
+.rv-workspace .rv-type-tile:active:enabled { transform: scale(.97); box-shadow: 0 10px 24px rgb(0 0 0 / 30%); }
+.rv-workspace .rv-type-tile:focus-visible { outline: 4px solid #fff; outline-offset: 5px; }
+.rv-workspace .rv-type-tile:disabled { opacity: .5; }
+.rv-type-art { flex: 1; width: 100%; display: grid; place-items: center; }
+.rv-type-art svg { display: block; width: 100%; max-width: 230px; height: auto; }
+.rv-type-label { font-size: clamp(20px, 1.6vw, 26px); font-weight: 700; letter-spacing: -.04em; }
+.rv-type-label small { margin-left: 4px; font-size: .62em; font-weight: 500; color: #62645e; }
+.rv-workspace .rv-type-foot { color: #a7a8a2; font-size: 14px; text-align: center; }
+.rv-type-foot kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin: 0 2px;
+  padding: 0 5px;
+  border: 1px solid #4a4a47;
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  color: #e8e8e4;
+  font-family: inherit;
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-workspace .rv-type-tile { transition: none; }
+  .rv-workspace .rv-type-tile:is(:hover, :active):enabled { transform: none; }
+}
+
+/* 자료 입력 상단의 선택한 검수 유형 */
+.rv-workspace .rv-input-mode { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--rv-muted); font-size: 13px; }
+.rv-workspace .rv-input-mode strong { padding: 6px 11px; border-radius: 8px; background: #171717; color: #fff; font-size: 12px; font-weight: 600; }
+.rv-workspace .rv-input-mode button { padding: 4px 2px; border: 0; background: none; color: var(--rv-muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.rv-workspace .rv-input-mode button:hover:enabled { color: #171717; }
+.rv-workspace .rv-input-mode .rv-input-security { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--rv-line); border-radius: 8px; background: #fff; color: #171717; font-size: 12px; font-weight: 600; }
+.rv-workspace .rv-input-mode .rv-input-security.is-secure { border-color: #a34f3e; color: #a34f3e; }
+.rv-input-mode .rv-input-security .icon { width: 13px; height: 13px; }
+
+/* 로고만 검수할 때는 오른쪽 칸이 비지 않도록 로고 첨부 영역을 키운다. */
+.rv-workspace .rv-input-form--logo .rv-reference-logo-drop { min-height: 300px; display: flex; flex-direction: column; justify-content: center; }
+.rv-workspace .rv-input-form--logo .rv-reference-logo-drop:has(.rv-reference-logo-list) { justify-content: flex-start; }

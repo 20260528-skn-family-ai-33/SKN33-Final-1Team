@@ -157,6 +157,10 @@ class PostgresPosterReviews:
                 document_version_id=document.document_version_id,criteria_version_id=baseline.criteria_version_id,
                 asset_version_id=asset.asset_version_id,parent_run_id=parent_run_id)
             fixed={'context':payload(context),'document':payload(document),'asset':payload(asset),'baseline':payload(baseline)}
+            # 포스터 검사(A04/A05)는 기준을 만든 A02 실행의 모델 경로(보안 여부)를 그대로 물려받는다(수정본 재검수 포함).
+            from .model_route import route_of,stored
+            model_route=stored(route_of(source['input_json']))
+            if model_route is not None:fixed['model_route']=model_route
             old=c.execute(select(runs).where(runs.c.run_id==run_id)).mappings().one_or_none()
             if old is not None:
                 if (old['input_sha256']!=digest(fixed) or old['configuration_sha256']!=self.store.config_hash
@@ -184,7 +188,7 @@ class PostgresPosterReviews:
                     execution_status='waiting_criteria',criteria=draft,baseline=baseline,stages=('A01','A02_approved_version_reused'),
                     step_records=(StepRecord(ordinal=1,role='A02',status='reused',recorded_at=datetime.now(timezone.utc),
                         source_run_id=source_run_id,synthetic=approved.synthetic),))
-            self.store._create(c,snapshot,document,asset)
+            self.store._create(c,snapshot,document,asset,model_route=model_route)
             self.store.event(c,source_run_id,'poster.review_created',poster_run_id=run_id,criteria_sha256=baseline.criteria_sha256)
             return snapshot
 
@@ -222,6 +226,10 @@ class RegisteredPosterInspector:
         pdf_request=ExtractRequest(context=request.context,document=document,synthetic=request.synthetic)
         self.read_pdf(pdf_request)
         poster=read_registered_poster(self.store,self.storage,request.context,request.asset)
+        # 일반 자료(openai 경로)는 경로를 아는 어댑터만 처리한다. 모르는 어댑터가 Qwen으로 보내 경로가 바뀌지 않게 막는다.
+        from .model_route import current_route
+        if current_route()=='openai' and not getattr(self.callback,'openai_route',False):
+            raise AdapterFailure('OPENAI_ROUTE_UNSUPPORTED','설정된 포스터 검사 어댑터가 OpenAI 경로(일반 자료)를 지원하지 않습니다.')
         result=self.callback.inspect_poster(request,poster)
         # A provider can be slow. Recheck stored bytes after it returns, outside
         # transactions, so a changed file cannot produce a successful stage.

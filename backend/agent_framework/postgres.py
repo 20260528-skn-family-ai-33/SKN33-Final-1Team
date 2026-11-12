@@ -109,9 +109,11 @@ class PostgresStore:
             project_id=UUID(snapshot.context.project_id),phase=phase,state='queued',attempt_no=0))
         self.event(c,snapshot.context.run_id,'job.queued',phase=phase)
 
-    def _create(self,c,snapshot,document,asset,*,phase=None):
+    def _create(self,c,snapshot,document,asset,*,phase=None,model_route=None):
         fixed={'context':payload(snapshot.context),'document':payload(document),'asset':payload(asset) if asset else None}
         if snapshot.baseline is not None:fixed['baseline']=payload(snapshot.baseline)
+        # 보안 여부에 따른 모델 경로(model_route.py). default는 적지 않아 기존 입력 해시가 그대로다.
+        if model_route is not None:fixed['model_route']=model_route
         c.execute(insert(runs).values(run_id=snapshot.context.run_id,project_id=UUID(snapshot.context.project_id),
             actor_id=UUID(snapshot.context.actor_id),parent_run_id=snapshot.context.parent_run_id,
             input_json=fixed,input_sha256=digest(fixed),configuration_json=payload(self.configuration),
@@ -129,12 +131,15 @@ class PostgresStore:
             AssetRef.model_validate(row['input_json']['asset']) if row['input_json']['asset'] else None)
         return flow
 
-    def start(self,subject,context,document,asset):
+    def start(self,subject,context,document,asset,*,model_route=None):
+        from .model_route import stored
         context,document=_boundary(Context,context),_boundary(DocumentRef,document)
         asset=_boundary(AssetRef,asset) if asset is not None else None
         if asset is not None and self.configuration.roles['A04_A05'].kind=='registered_poster':
             raise AuthError('USE_POSTER_REVIEW_ENDPOINT',409)
+        model_route=stored(model_route)
         fixed={'context':payload(context),'document':payload(document),'asset':payload(asset) if asset else None}
+        if model_route is not None:fixed['model_route']=model_route
         with unit_of_work(self.engine) as c:
             self._access(c,subject,context)
             # Project locking serializes same-project admission and UUID collisions.
@@ -148,11 +153,12 @@ class PostgresStore:
             snapshot=flow.start(context,document,asset,defer=True)
             if asset is None and self.configuration.pdf_extraction is not None and self.configuration.pdf_extraction.mode=='mock':
                 snapshot=snapshot.model_copy(update={'synthetic':True})
-            self._create(c,snapshot,document,asset,phase='extract')
+            self._create(c,snapshot,document,asset,phase='extract',model_route=model_route)
         return snapshot
 
-    def start_pdf(self,subject,project_id,version_id,request_key):
-        """IDs and immutable PDF reference are resolved by the server, not the model."""
+    def start_pdf(self,subject,project_id,version_id,request_key,model_route=None):
+        """IDs and immutable PDF reference are resolved by the server, not the model.
+        model_route는 화면의 보안 여부 선택에서 정한 모델 경로 이름만 받는다(주소·키는 받지 않는다)."""
         from .documents import versions,_dto
         if self.configuration.pdf_extraction is None:raise AuthError('A02_EXTRACTION_DISABLED',503)
         with unit_of_work(self.engine) as c:
@@ -165,7 +171,7 @@ class PostgresStore:
         context=Context(project_id=str(project_id),actor_id=str(subject.user_id),
             run_id=str(uuid5(NAMESPACE_URL,name)),criteria_version_id=str(uuid5(NAMESPACE_URL,name+':criteria')),
             document_version_id=str(version_id),asset_version_id=None)
-        return self.start(subject,context,document,None)
+        return self.start(subject,context,document,None,model_route=model_route)
 
     def get(self,subject,run_id):
         with unit_of_work(self.engine) as c:
