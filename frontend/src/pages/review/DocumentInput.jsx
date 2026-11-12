@@ -7,6 +7,14 @@ import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
+function projectDate(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return '';
+  return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} 수정`;
+}
+
+// 저장할 프로젝트 고르기. 버튼에 고른 프로젝트 이름을 그대로 보이고, 목록·검색·새로 만들기를 한 패널에서 한다.
+// 고르면 패널이 닫히고, 바깥을 누르거나 Esc로도 닫힌다. 새 프로젝트 이름은 검수 이름으로 미리 채운다.
 export function DocumentProjectPicker({ projectId, setProjectId, projectName, disabled, onStatus }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +22,15 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
   const [reload, setReload] = useState(0);
   const [creating, setCreating] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [draft, setDraft] = useState('');
   const creation = useRef(null);
+  const root = useRef(null);
+  const trigger = useRef(null);
+  const search = useRef(null);
+  const nameAtOpen = useRef(projectName);
+  nameAtOpen.current = projectName;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,10 +54,29 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
     onStatus({ ready: connected && !loading && !creating && !!projectId, busy: loading || creating });
   }, [connected, projectId, loading, creating, onStatus]);
 
+  // 패널을 열면 검색칸에 초점을 두고, 바깥 누르기·Esc로 닫는다.
+  useEffect(() => {
+    if (!open) return undefined;
+    setQuery('');
+    setDraft(nameAtOpen.current?.trim() || '');
+    search.current?.focus({ preventScroll: true });
+    function outside(event) { if (!root.current?.contains(event.target)) setOpen(false); }
+    function escape(event) { if (event.key === 'Escape') { setOpen(false); trigger.current?.focus(); } }
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+  }, [open]);
+
+  function choose(id) {
+    setProjectId(id);
+    setOpen(false);
+    trigger.current?.focus();
+  }
+
   async function createProject() {
     if (creation.current) return;
-    const name = projectName?.trim();
-    if (!name) { setError('프로젝트 이름을 입력해 주세요.'); return; }
+    const name = draft.trim();
+    if (!name) { setError('새 프로젝트 이름을 입력해 주세요.'); return; }
     const controller = new AbortController();
     creation.current = controller;
     setCreating(true);
@@ -49,8 +84,8 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
     try {
       const project = await createDocumentProject(name, { signal: controller.signal });
       if (controller.signal.aborted) return;
-      setProjects(current => [...current, project]);
-      setProjectId(project.id);
+      setProjects(current => [project, ...current]);
+      choose(project.id);
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message + ' 목록을 다시 불러와 생성 여부를 확인해 주세요.');
     } finally {
@@ -61,24 +96,50 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 
   const unavailable = disabled || loading || creating;
   const selected = projects.find(project => project.id === projectId);
-  const needsProject = connected && !unavailable && !selected;
-  return <details className={`rv-project-picker${needsProject ? ' is-required' : ''}`}>
-    <summary title={selected?.name}>{loading ? '프로젝트 확인 중' : selected ? '저장 프로젝트' : '저장할 프로젝트 선택'}</summary>
-    <div className="rv-project-picker-panel">
-      <label htmlFor="document-project">요구사항을 저장할 프로젝트</label>
-      <select id="document-project" value={projectId} onChange={event => setProjectId(event.target.value)} disabled={unavailable}>
-        <option value="">프로젝트 선택</option>
-        {projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}
-      </select>
-      <div className="rv-project-picker-actions">
-        <button type="button" className="text-btn" disabled={unavailable} onClick={() => setReload(value => value + 1)}>목록 새로고침</button>
-        <button type="button" className="text-btn" disabled={unavailable || !connected} onClick={createProject}>
-          {creating ? '만드는 중…' : '위 이름으로 프로젝트 만들기'}
-        </button>
-      </div>
+  const state = loading ? 'loading' : !connected ? 'error' : selected ? 'selected' : 'required';
+  const words = query.trim().toLowerCase();
+  const shown = [...projects].sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
+    .filter(project => project.name.toLowerCase().includes(words));
+  return <div className="rv-project-picker" ref={root}>
+    <span className="rv-project-field-label">저장할 프로젝트</span>
+    <button ref={trigger} type="button" className={`rv-project-chip is-${state}`} aria-haspopup="dialog" aria-expanded={open}
+      title={selected?.name} disabled={disabled || loading} onClick={() => setOpen(value => !value)}>
+      {state === 'loading' ? <><Icon name="refresh" className="icon rv-project-spin" /><span className="rv-project-chip-text">프로젝트 확인 중…</span></>
+        : state === 'error' ? <><Icon name="warning" /><span className="rv-project-chip-text">목록을 불러오지 못했어요</span></>
+        : state === 'selected' ? <><Icon name="check" /><span className="rv-project-chip-text">{selected.name}</span></>
+        : <><Icon name="folder" /><span className="rv-project-chip-text">프로젝트 선택</span><span className="rv-project-required">필수</span></>}
+      {state !== 'loading' && <Icon name="chevron" className="icon rv-project-chevron" />}
+    </button>
+    {open && <div className="rv-project-picker-panel" role="dialog" aria-label="저장할 프로젝트 고르기">
+      <div className="rv-project-picker-head"><strong>저장할 프로젝트</strong>
+        <button type="button" disabled={unavailable} onClick={() => setReload(value => value + 1)}><Icon name="refresh" />새로고침</button></div>
+      {connected && <>
+        <label className="rv-project-search"><Icon name="search" />
+          <input ref={search} type="search" value={query} placeholder="프로젝트 검색" aria-label="프로젝트 검색" autoComplete="off"
+            onChange={event => setQuery(event.target.value)}
+            onKeyDown={event => { if (event.key === 'Enter' && shown[0] && !unavailable) { event.preventDefault(); choose(shown[0].id); } }} /></label>
+        <ul className="rv-project-list" role="listbox" aria-label="프로젝트 목록">
+          {shown.map(project => <li key={project.id}>
+            <button type="button" role="option" aria-selected={project.id === projectId} disabled={unavailable} onClick={() => choose(project.id)}>
+              <span className="rv-project-list-check">{project.id === projectId && <Icon name="check" />}</span>
+              <span className="rv-project-list-name">{project.name}</span>
+              <span className="rv-project-list-meta">{projectDate(project.updated_at)}</span>
+            </button></li>)}
+          {!shown.length && <li className="rv-project-list-empty">{projects.length
+            ? `‘${query.trim()}’와 맞는 프로젝트가 없어요. 아래에서 새로 만들 수 있어요.` : '아직 프로젝트가 없어요. 아래에서 새로 만들어 주세요.'}</li>}
+        </ul>
+        <div className="rv-project-create">
+          <label htmlFor="document-project-new">새 프로젝트</label>
+          <div><input id="document-project-new" type="text" maxLength={60} value={draft} placeholder="프로젝트 이름" autoComplete="off" disabled={unavailable}
+            onChange={event => setDraft(event.target.value)}
+            onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); createProject(); } }} />
+            <button type="button" className="rv-button primary" disabled={unavailable || !draft.trim()} onClick={createProject}>
+              {creating ? '만드는 중…' : '만들고 선택'}</button></div>
+        </div>
+      </>}
       <ErrorMessage message={error} />
-    </div>
-  </details>;
+    </div>}
+  </div>;
 }
 
 export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput,

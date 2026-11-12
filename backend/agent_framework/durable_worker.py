@@ -152,8 +152,12 @@ class PostgresQueue:
                 expected_policy=('a02-text-v1' if settings.mode=='mock' else
                     ('a02-semantic-v4' if settings.presentation else 'a02-semantic-v3') if settings.structuring=='semantic' else 'a02-source-compile-v2')
                 # 2026-11-12: Qwen 실패 뒤 OpenAI 대체 추출 결과는 켜진 대체 모델 이름일 때만 받는다.
+                # 같은 날 보안 여부 선택: 일반 자료(openai 경로)는 OpenAI 결과만, 보안 자료(runpod 경로)는 Qwen 결과만 받는다.
                 from .openai_fallback import fallback_settings
-                fallback=fallback_settings() if settings.mode=='qwen' and trace is not None and trace.mode=='openai' else None
+                from .model_route import openai_settings,route_of
+                route=route_of(run['input_json'])
+                fallback=(openai_settings() if route=='openai' and settings.mode=='qwen' else
+                    fallback_settings() if route=='default' and settings.mode=='qwen' and trace is not None and trace.mode=='openai' else None)
                 if fallback is not None:expected_model=fallback.model
                 if (trace is None or trace.mode!=(settings.mode if fallback is None else 'openai') or trace.model!=expected_model
                         or trace.policy!=expected_policy
@@ -273,7 +277,10 @@ def execute_claim(queue,claim,agents,*,heartbeat_seconds=15,stop=None):
                     prepare_for_claim(queue,claim)
                 request=queue.begin_step(claim,role)
                 started=perf_counter_ns()
-                result=invoke_role(role,getattr(agents,ROLE_CONTRACTS[role][0]),request)
+                # 보안 여부에 따른 모델 경로를 역할 호출 동안만 어댑터에 알린다(model_route.py).
+                from .model_route import route_of,using_route
+                with using_route(route_of(run['input_json'])):
+                    result=invoke_role(role,getattr(agents,ROLE_CONTRACTS[role][0]),request)
                 duration=max(0,perf_counter_ns()-started)/1_000_000
                 authority.check()
                 queue.complete_step(claim,role,request,result,duration)

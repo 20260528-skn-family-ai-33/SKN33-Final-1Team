@@ -50,7 +50,7 @@ const progressStages = [
 
 function seed(state) {
   const requirements = state.requirements.trim() ? state.requirements : brief;
-  return { ...state, projectName: state.projectName || '포스터 화면 미리보기', requirements,
+  return { ...state, securityMode: state.securityMode || 'general', reviewMode: state.reviewMode || 'both', projectName: state.projectName || '포스터 화면 미리보기', requirements,
     file: state.file || new File([poster], '미리보기_포스터.svg', { type: 'image/svg+xml' }),
     criteria: state.criteria.length ? state.criteria : parseRequirements(requirements) };
 }

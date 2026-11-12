@@ -1,7 +1,20 @@
+// securityMode: 가장 먼저 묻는 보안 자료 여부('secure' | 'general').
+// reviewMode: 그다음 고르는 검수 유형('text' 자막 | 'logo' 로고 | 'both' 둘 다). 값이 null이면 해당 선택 화면을 보여 준다.
 export const initialState = {
-  step: 'input', projectName: '', requirements: '', file: null,
+  step: 'input', securityMode: null, reviewMode: null, projectName: '', requirements: '', file: null,
   criteria: [], snapshot: null, version: 0, review: null, documentSources: [], documentRun: null, referenceLogos: [],
 };
+
+// 보안 여부에 따른 모델 경로(서버 backend/agent_framework/model_route.py와 같은 이름).
+// 일반 자료: 요구사항 추출·포스터 검사·로고 위치 탐지를 OpenAI API로. 보안 자료: 기존 RunPod 파이프라인만.
+export function modelRouteFor(securityMode) {
+  return securityMode === 'general' ? 'openai' : securityMode === 'secure' ? 'runpod' : 'default';
+}
+
+// 로고 위치 후보를 찾는 곳. 정밀 대조는 보안 여부와 관계없이 RunPod다.
+export function logoDetectorFor(securityMode) {
+  return securityMode === 'general' ? 'openai' : 'runpod';
+}
 
 export function parseRequirements(value, documentSources = []) {
   return value.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map((text, i) => ({
@@ -34,7 +47,8 @@ export function workflowReducer(state, action) {
     case 'input':
       return { ...state, [action.field]: action.value, criteria: [], snapshot: null, review: null };
     case 'sample':
-      return { ...state, step: 'input', projectName: action.projectName, requirements: action.requirements,
+      // 예시 자료는 공개용이고 요구사항과 로고를 모두 담고 있어, 고르기 전이면 일반 자료·둘 다 검수로 연다.
+      return { ...state, step: 'input', securityMode: state.securityMode || 'general', reviewMode: state.reviewMode || 'both', projectName: action.projectName, requirements: action.requirements,
         file: action.file, criteria: [], snapshot: null, review: null, documentSources: [], documentRun: null,
         referenceLogos: action.referenceLogos || [] };
     case 'document':

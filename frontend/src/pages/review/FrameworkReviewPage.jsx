@@ -22,7 +22,7 @@ import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
 import { useAuth } from '../../auth/AuthProvider.jsx';
 import { PosterLogoCard, usePosterLogoJobs } from './PosterLogoParts.jsx';
-import { previousLogos, submitPosterLogoJob } from './posterLogoFlow.js';
+import { previousLogoJob, submitPosterLogoJob } from './posterLogoFlow.js';
 import './posterLogo.css';
 
 // 로고 접수 실패 안내는 새 실행 화면으로 이동한 뒤에도 보이도록 실행 번호별로 잠시 보관한다.
@@ -78,7 +78,8 @@ function command(path, body, key, signal) {
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
 
-export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos, health }) {
+export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos,
+  logoDetector = 'runpod', health }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
@@ -106,6 +107,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [retrieval, setRetrieval] = useState(null);
   const [logoNotice] = useState(() => readLogoNotice(runId));
   const logoJobs = usePosterLogoJobs(runId);
+  const [secureMaterial, setSecureMaterial] = useState(false);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   const keys = useRef(new Map());
@@ -148,7 +150,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const canRevise = status === 'waiting_review' || status === 'waiting_revision';
   const revisionReady = status === 'waiting_revision';
   const canEditPoster = hasResults && Boolean(imageUrl) && (canRevise || status === 'completed');
-  const canEditText = canEditPoster && health?.poster_text_edit_ready === true;
+  // 문구 수정은 포스터 일부를 OpenAI 이미지 편집으로 보낸다. 보안 자료 실행은 서버가 거절하므로 버튼도 막는다.
+  const canEditText = canEditPoster && health?.poster_text_edit_ready === true && !secureMaterial;
+  const textEditBlock = secureMaterial ? '보안 자료는 외부 이미지 편집(OpenAI)으로 보내지 않아 문구 수정을 쓸 수 없어요.'
+    : !canEditText ? '문구 수정 서버 준비 상태를 확인해 주세요.' : undefined;
   const reviewItems = run ? reviewableItems(run) : [];
   const requiredItems = (run?.validated?.items || []).filter(item => item.required);
   const exceptionItems = run?.evidence?.status === 'complete' &&
@@ -159,6 +164,15 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       humanReviews[item.criterion_id]?.verdict === 'pass')) && !Object.values(humanReviews).some(item => item.verdict === 'fail');
 
   useEffect(() => () => active.current?.abort(), []);
+  // 이 실행이 보안 자료인지 서버에 묻는다. 조회가 안 되면(이전 서버) 버튼은 그대로 두고, 실제 요청은 서버가 다시 막는다.
+  useEffect(() => {
+    if (!canEditPoster) return undefined;
+    const controller = new AbortController();
+    frameworkJson(path + '/poster-text-edits', { signal: controller.signal })
+      .then(body => { if (!controller.signal.aborted) setSecureMaterial(body?.allowed === false); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [path, canEditPoster]);
   useEffect(() => {
     if (!evidenceId?.startsWith('rag-')) return undefined;
     const controller = new AbortController();
@@ -295,11 +309,14 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   }
   // 원본 로고를 첨부했으면 같은 포스터로 포스터 로고 작업을 만든다. 수정본은 이전 실행의 원본 로고·기준 문구를 다시 쓴다.
   // 로고 작업 접수가 실패해도 포스터 검수는 그대로 진행한다.
+  // 위치 후보 탐지 경로는 보안 여부를 따른다(일반 자료 openai, 보안 자료 runpod). 수정본은 이전 작업의 경로를 쓴다.
   async function attachPosterLogos(childRunId, revision, signal) {
     try {
-      const logos = revision ? await previousLogos(runId, { signal }) : referenceLogos || [];
+      const previous = revision ? await previousLogoJob(runId, { signal }) : null;
+      const logos = previous ? previous.logos : referenceLogos || [];
       if (!logos.length) return;
-      await submitPosterLogoJob({ poster: file, logos, title: (projectName || '포스터') + ' 로고 검수', runId: childRunId, signal });
+      await submitPosterLogoJob({ poster: file, logos, title: (projectName || '포스터') + ' 로고 검수', runId: childRunId,
+        detector: previous ? previous.detector : logoDetector, signal });
     } catch (failure) {
       if (signal.aborted) return;
       try {
@@ -351,8 +368,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const imageActions = imageUrl && <div className="rv-result-image-actions" role="group" aria-label="검수 이미지 작업">
     {canEditPoster && <>
       <button type="button" className="rv-button primary" disabled={busy || image.unavailable || !canEditText}
-        title={!canEditText ? '문구 수정 서버 준비 상태를 확인해 주세요.' : undefined}
-        onClick={() => setEditingPoster('text')}><Icon name="pencil" />포스터 문구 수정</button>
+        title={textEditBlock} onClick={() => setEditingPoster('text')}>
+        <Icon name={secureMaterial ? 'lock' : 'pencil'} />{secureMaterial ? '문구 수정 불가 · 보안 자료' : '포스터 문구 수정'}</button>
       <button type="button" className="rv-button secondary" disabled={busy || image.unavailable}
         onClick={() => setEditingPoster('qr')}>QR 생성</button>
     </>}
@@ -501,9 +518,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       <h2 id="poster-report-approval" tabIndex={-1}>{canRevise ? '담당자 승인과 수정본 재검수' : '검수 진행 기록'}</h2>
       {revisionReady && <>
         <p>수정 요청이 승인됐어요. 수정한 포스터를 등록하면 기존 승인 기준으로 재검수를 접수합니다.</p>
-        {canEditPoster && <button type="button" className="rv-button secondary" disabled={busy || image.unavailable || !canEditText}
-          title={!canEditText ? '문구 수정 서버 준비 상태를 확인해 주세요.' : undefined}
-          onClick={() => setEditingPoster('text')}><Icon name="pencil" />포스터 문구 수정</button>}
+        {canEditPoster && (secureMaterial
+          ? <p>보안 자료는 외부 이미지 편집(OpenAI)으로 보내지 않아 문구 수정을 쓸 수 없어요. 수정한 포스터 파일을 직접 등록해 주세요.</p>
+          : <button type="button" className="rv-button secondary" disabled={busy || image.unavailable || !canEditText}
+            title={textEditBlock} onClick={() => setEditingPoster('text')}><Icon name="pencil" />포스터 문구 수정</button>)}
         <label>수정 포스터 <input id="poster-revision-file" type="file" accept="image/png,image/jpeg,image/webp"
           disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
         {file && <p>{file.name}</p>}

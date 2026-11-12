@@ -231,8 +231,16 @@ class TeamPosterInspector:
         poster = files.read_asset(request.context, request.asset)
         return self._inspect(request, poster, model)
 
+    # 보안 여부 선택(agent_framework/model_route.py): 일반 자료 실행은 OpenAI API로, 보안 자료·기존 실행은 공용 Qwen 서버로 보낸다.
+    openai_route = True
+
     def _model(self):
-        return self.model if self.model is not None else OpenAICompatibleVisionModel(ModelSettings.from_environment())
+        if self.model is not None:
+            return self.model
+        from ..model_route import current_route
+        if current_route() == "openai":
+            return OpenAIVisionModel(ModelSettings.for_openai())
+        return OpenAICompatibleVisionModel(ModelSettings.from_environment())
 
     def inspect_poster(self, request: InspectRequest, poster: VerifiedPoster) -> InspectionResult:
         return self._inspect(request, poster, self._model())
@@ -325,6 +333,22 @@ class ModelSettings:
                    revision=environ.get("CC_QWEN_REVISION", "").strip() or "unverified",
                    box_format=environ.get("A04_A05_MODEL_BOX_FORMAT", "").strip() or "normalized",
                    timeout=timeout, max_pixels=max_pixels, origin="environment")
+
+    @classmethod
+    def for_openai(cls, environ: Mapping[str, str] | None = None) -> ModelSettings:
+        """일반 자료(openai 경로)용 설정. 키·모델은 model_route.openai_settings(), 시간·화소 한도는 기존 A04_A05 설정을 쓴다."""
+        from ..model_route import OPENAI_BASE_URL, openai_settings
+        environ = os.environ if environ is None else environ
+        route = openai_settings(environ)
+        try:
+            timeout = float(environ.get("A04_A05_MODEL_TIMEOUT", "120"))
+            max_pixels = int(environ.get("A04_A05_MODEL_MAX_PIXELS", "2000000"))
+        except ValueError:
+            _config_error("A04_A05_MODEL_TIMEOUT·A04_A05_MODEL_MAX_PIXELS는 숫자여야 합니다.")
+        # 추론 모델은 추론 토큰도 출력 한도에 포함하므로 Qwen보다 넉넉히 둔다.
+        return cls(base_url=OPENAI_BASE_URL, model=route.model, api_key=route.api_key, revision="openai-api",
+                   box_format="normalized", timeout=timeout, max_pixels=max_pixels, max_output_tokens=16_384,
+                   origin="environment")
 
     def describe(self) -> dict:
         """Run metadata to record next to results; excludes the endpoint and key."""
@@ -482,3 +506,23 @@ class OpenAICompatibleVisionModel:
         scale = {"normalized": (1, 1, 1, 1), "relative_1000": (1000, 1000, 1000, 1000),
                  "pixel": (width, height, width, height)}[self.settings.box_format]
         return tuple(value / divisor for value, divisor in zip(values, scale)), None
+
+
+class OpenAIVisionModel(OpenAICompatibleVisionModel):
+    """일반 자료(openai 경로)의 A04/A05 호출. 프롬프트·스키마·결과 변환은 Qwen과 같고 요청 본문만 OpenAI API에 맞춘다.
+
+    vLLM 전용 chat_template_kwargs를 빼고, 추론 모델이 받지 않는 temperature 대신 reasoning_effort를,
+    max_tokens 대신 max_completion_tokens를 보낸다. 자동 재시도는 하지 않는다(Qwen 경로와 같다).
+    """
+
+    def build_payload(self, criteria: Sequence[Criterion], image_part: dict, width: int, height: int) -> dict:
+        from ..model_route import openai_settings
+        from ..openai_fallback import strict_schema
+
+        payload = super().build_payload(criteria, image_part, width, height)
+        for name in ("temperature", "max_tokens", "chat_template_kwargs"):
+            payload.pop(name, None)
+        payload["max_completion_tokens"] = self.settings.max_output_tokens
+        payload["reasoning_effort"] = openai_settings().reasoning_effort
+        payload["response_format"]["json_schema"]["schema"] = strict_schema(ResponseSchema.model_json_schema())
+        return payload

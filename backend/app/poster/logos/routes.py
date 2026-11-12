@@ -45,7 +45,7 @@ MAX_LOGOS = 12
 MAX_LOCATIONS = 40       # 한 번의 정밀 대조에 보낼 위치(후보 + 직접 지정) 총수
 DISPLAY_LONG = 2000      # 확정 화면에 보내는 포스터 긴 변(좌표는 원본 기준이라 화면 크기와 무관하다)
 LIST_FIELDS = ("id", "title", "status", "stage", "progress", "stage_detail", "error", "warnings", "compare_status",
-               "compare_progress", "compare_error", "run_id", "candidate_count", "created_at")
+               "compare_progress", "compare_error", "run_id", "detector", "candidate_count", "created_at")
 
 
 def _flatten(image: Image.Image) -> Image.Image:
@@ -158,15 +158,27 @@ def poster_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: 
         from backend.app.poster.logos import candidates as C
         from backend.app.poster.logos import client as R
         meta = _read_json(target / "result.json")
+
+        def load():
+            poster = Image.open(target / "poster.png").convert("RGB")
+            refs = [{"name": r["name"], "image": Image.open(target / "refs" / r["file"]), "text": r["text"]} for r in meta["logos"]]
+            return poster, refs
+
+        def report(p, d):
+            update(target, progress=min(99, round(p)), stage_detail=d)
         try:
-            with slot_for(target, meta) as slot:
-                if worker_pool:
-                    update(target, worker_slot=slot)
+            if candidates is None and meta.get("detector") == "openai":
+                # 일반 자료: 위치 후보만 OpenAI로 찾는다. RunPod 슬롯을 잡지 않는다(정밀 대조는 아래 run_compare가 RunPod로).
+                from backend.app.poster.logos import openai_candidates as O
                 update(target, status="running", stage="candidates", progress=1)
-                poster = Image.open(target / "poster.png").convert("RGB")
-                refs = [{"name": r["name"], "image": Image.open(target / "refs" / r["file"]), "text": r["text"]} for r in meta["logos"]]
-                build = candidates or (R.build_candidates if R.worker_url() else C.build_candidates)
-                data = build(poster, refs, lambda p, d: update(target, progress=min(99, round(p)), stage_detail=d))
+                data = O.build_candidates(*load(), report)
+            else:
+                with slot_for(target, meta) as slot:
+                    if worker_pool:
+                        update(target, worker_slot=slot)
+                    update(target, status="running", stage="candidates", progress=1)
+                    build = candidates or (R.build_candidates if R.worker_url() else C.build_candidates)
+                    data = build(*load(), report)
             for i, r in enumerate(data["refs"]):
                 r["img"] = f"refs/{i}.png"
             data.update(title=meta["title"], image="poster.jpg")
@@ -248,11 +260,14 @@ def poster_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: 
         async def submit(request: Request, background: BackgroundTasks, poster: UploadFile = File(...),
                          logos: list[UploadFile] = File(...), logo_texts: str = Form("[]"),
                          title: str = Form("포스터 로고 검수", min_length=1, max_length=120),
-                         run_id: str | None = Form(None)):
+                         run_id: str | None = Form(None), detector: str = Form("runpod")):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분). 비우면 문자 비교는 원본 OCR로 대신한다.
-            run_id: 같은 포스터로 접수한 포스터 검수(프레임워크) 실행 번호."""
+            run_id: 같은 포스터로 접수한 포스터 검수(프레임워크) 실행 번호.
+            detector: 위치 후보를 찾는 곳. runpod(보안 자료·기본) 또는 openai(일반 자료). 정밀 대조는 둘 다 RunPod다."""
             if run_id is not None:
                 _uuid_or_422(run_id, "run_id")
+            if detector not in ("runpod", "openai"):
+                raise HTTPException(422, "detector는 runpod 또는 openai입니다.")
             if not 1 <= len(logos) <= MAX_LOGOS:
                 raise HTTPException(422, f"원본 로고는 1~{MAX_LOGOS}장입니다.")
             try:
@@ -288,7 +303,8 @@ def poster_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: 
                 raise
             _write_json(target / "result.json", {
                 "id": job_id, "title": title, "status": "queued", "stage": "queued", "progress": 0, "logos": items,
-                "run_id": run_id, "poster": {"name": Path(poster.filename or "poster").name[:200], "size": list(image.size)},
+                "run_id": run_id, "detector": detector,
+                "poster": {"name": Path(poster.filename or "poster").name[:200], "size": list(image.size)},
                 "created_at": _now(), "updated_at": _now()})
             background.add_task(run_candidates, target)
             return {"id": job_id, "status": "queued"}

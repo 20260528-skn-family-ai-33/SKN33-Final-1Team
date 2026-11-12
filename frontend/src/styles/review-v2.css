@@ -23,7 +23,7 @@
   align-items: center;
   gap: 13px;
 }
-.rv-project-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rv-project-identity { display: flex; align-items: flex-end; gap: 10px; min-width: 0; flex-wrap: wrap; }
 .rv-project-identity > div { min-width: 0; }
 .rv-project-identity strong { display: block; font-size: 14px; max-width: 26ch; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .rv-eyebrow { display: block; font: 10px/1.5 var(--font-signal); color: var(--rv-muted); letter-spacing: .06em; }
@@ -48,66 +48,118 @@
 @media(max-width:600px){.rv-projectbar{padding:20px 18px}.rv-project-identity strong{max-width:245px;font-size:12px}.rv-version{display:none}.rv-step-nav{border-radius:10px;gap:1px;padding:4px}.rv-step-nav>button{padding:10px 4px;font-size:10px;gap:5px}.rv-step-nav>button>span{font-size:8px}.rv-main{padding:4px 16px 28px}.rv-workspace-intro{display:block;margin-bottom:20px}.rv-workspace-intro h1{font-size:27px}.rv-workspace-intro>p{max-width:none;margin-top:9px}.rv-panel{border-radius:18px}.rv-panel-heading{padding:20px}.rv-actionbar{padding:18px 20px;flex-wrap:wrap}.rv-workspace input:not([type=checkbox]):not([type=radio]):not([type=file]),.rv-workspace textarea,.rv-workspace select:not(.image-stage select){font-size:16px}.rv-running-inspector{padding:24px}}
 @media(prefers-reduced-motion:reduce){.rv-workspace *,.rv-workspace *::before,.rv-workspace *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+/* ---------- 프로젝트 바: 검수 이름 · 상태 · 저장할 프로젝트 ---------- */
+.rv-project-field { display: grid; gap: 3px; min-width: 0; }
+.rv-project-field-label { display: block; font-size: 11px; line-height: 1.4; color: var(--rv-muted); }
+.rv-project-field--status .rv-version { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; cursor: help; }
+.rv-project-field--status .rv-version::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #a8a9a3; }
+.rv-project-identity .rv-project-field > strong { line-height: 36px; }
+
 .rv-workspace .rv-project-name-field {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
+  height: 36px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--rv-line);
+  border-radius: 9px;
+  background: #fff;
 }
-.rv-workspace .rv-project-name-field input {
+.rv-workspace .rv-project-name-field:focus-within { border-color: var(--rv-ink); box-shadow: 0 0 0 3px #17171712; }
+/* 작업 영역의 공통 입력칸 규칙(.rv-workspace input:not(...)…)보다 우선하도록 [type]과 상위 클래스를 붙인다. */
+.rv-workspace .rv-projectbar .rv-project-name-field input[type] {
   field-sizing: content;
   width: auto;
-  min-width: 8ch;
+  min-width: 14ch;
   max-width: 26ch;
-  padding: 1px 3px;
-  border: 1px solid transparent;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: transparent;
-  border-radius: 5px;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.55;
 }
-.rv-workspace .rv-project-name-field input::placeholder { color: var(--rv-ink); }
-.rv-workspace .rv-project-name-field input:is(:hover, :focus) { background: #fff; border-color: var(--rv-line); }
-.rv-workspace .rv-project-name-field .icon { width: 14px; height: 14px; color: var(--rv-muted); }
-.rv-project-picker { position: relative; flex: none; }
-.rv-project-picker summary { cursor: pointer; color: var(--rv-muted); font-size: 11px; }
-.rv-project-picker.is-required > summary {
-  padding: 6px 9px;
-  border: 1px solid var(--rv-ink);
-  border-radius: 8px;
+.rv-workspace .rv-projectbar .rv-project-name-field input[type]:focus { outline: 0; }
+.rv-workspace .rv-projectbar .rv-project-name-field input[type]::placeholder { color: #a8a9a3; font-weight: 500; }
+.rv-project-name-count { display: none; padding: 0 4px; color: #8a8b85; font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rv-project-name-field:focus-within .rv-project-name-count { display: inline; }
+.rv-workspace .rv-project-name-field button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--rv-muted); }
+.rv-workspace .rv-project-name-field button:hover:enabled { background: #f2f2ef; color: var(--rv-ink); }
+.rv-workspace .rv-project-name-field .icon { width: 15px; height: 15px; }
+
+.rv-project-picker { position: relative; display: grid; gap: 3px; flex: none; }
+.rv-workspace .rv-project-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 280px;
+  height: 36px;
+  padding: 0 10px 0 11px;
+  border: 1px solid var(--rv-line);
+  border-radius: 9px;
   background: #fff;
   color: var(--rv-ink);
-  font-weight: 700;
+  font-size: 13px;
 }
-.rv-project-picker.is-required:not([open]) > summary:not(:hover, :focus-visible) {
-  animation: rv-project-nudge 3.4s ease-in-out infinite;
-}
-@keyframes rv-project-nudge {
-  0%, 17%, 100% { transform: translateX(0); }
-  4% { transform: translateX(-3px); }
-  8% { transform: translateX(3px); }
-  12% { transform: translateX(-2px); }
-}
+.rv-project-chip .icon { width: 16px; height: 16px; flex: none; }
+.rv-project-chip-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+.rv-workspace .rv-project-chip.is-required { border: 1.5px solid var(--rv-ink); }
+.rv-project-required { padding: 2px 6px; border-radius: 5px; background: #f9ece9; color: #a34f3e; font-size: 10.5px; font-weight: 700; }
+.rv-workspace .rv-project-chip.is-selected { background: #f7f7f4; }
+.rv-project-chip.is-selected > .icon:first-child { color: #177d45; }
+.rv-project-chip.is-loading .rv-project-chip-text { color: var(--rv-muted); font-weight: 500; }
+.rv-workspace .rv-project-chip.is-error { border-color: #a34f3e; color: #a34f3e; }
+.rv-workspace .rv-project-chip[aria-expanded=true] { border-color: var(--rv-ink); box-shadow: 0 0 0 3px #17171712; }
+.rv-project-chevron { width: 14px !important; height: 14px !important; color: var(--rv-muted); transition: transform .15s; }
+.rv-project-chip[aria-expanded=true] .rv-project-chevron { transform: rotate(180deg); }
+.rv-project-spin { animation: rv-project-spin 1s linear infinite; }
+@keyframes rv-project-spin { to { transform: rotate(360deg); } }
+
 .rv-project-picker-panel {
   position: absolute;
   z-index: 10;
   top: calc(100% + 8px);
   left: 0;
-  display: grid;
-  gap: 8px;
-  width: 260px;
-  padding: 13px;
+  width: 320px;
+  padding: 8px;
   border: 1px solid var(--rv-line);
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 8px 24px #17171718;
+  box-shadow: 0 14px 34px #1717171f;
   font-size: 12px;
 }
-.rv-project-picker-actions { display: flex; justify-content: space-between; gap: 6px; }
-.rv-project-picker-actions .text-btn { font-size: 11px; }
+.rv-project-picker-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 8px; }
+.rv-project-picker-head strong { font-size: 13px; }
+.rv-workspace .rv-project-picker-head button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px; border: 0; border-radius: 6px; background: none; color: var(--rv-muted); font-size: 11.5px; }
+.rv-workspace .rv-project-picker-head button:hover:enabled { background: #f2f2ef; color: var(--rv-ink); }
+.rv-project-picker-head .icon { width: 13px; height: 13px; }
+.rv-project-search { display: flex; align-items: center; gap: 6px; height: 34px; margin: 0 4px 6px; padding: 0 9px; border: 1px solid var(--rv-line); border-radius: 8px; }
+.rv-project-search .icon { width: 15px; height: 15px; color: #8a8b85; flex: none; }
+.rv-workspace .rv-project-picker .rv-project-search input[type] { flex: 1; width: auto; min-width: 0; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 13px; line-height: 1.4; }
+.rv-workspace .rv-project-picker .rv-project-search input[type]:focus { outline: 0; }
+.rv-project-search:focus-within { border-color: var(--rv-ink); }
+.rv-project-list { max-height: 216px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+.rv-workspace .rv-project-list button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--rv-ink); font-size: 13px; text-align: left; }
+.rv-workspace .rv-project-list button:hover:enabled, .rv-workspace .rv-project-list button:focus-visible { background: #f4f4f1; }
+.rv-workspace .rv-project-list button[aria-selected=true] { background: #f2f2ef; font-weight: 600; }
+.rv-project-list-check { display: grid; place-items: center; width: 16px; height: 16px; flex: none; color: #177d45; }
+.rv-project-list-check .icon { width: 15px; height: 15px; }
+.rv-project-list-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.rv-project-list-meta { margin-left: auto; padding-left: 8px; color: #8a8b85; font-size: 11px; font-weight: 400; white-space: nowrap; }
+.rv-project-list-empty { padding: 14px 10px; color: var(--rv-muted); font-size: 12.5px; line-height: 1.6; text-align: center; }
+.rv-project-create { display: grid; gap: 6px; margin-top: 6px; padding: 10px 8px 4px; border-top: 1px solid #ececea; }
+.rv-project-create label { color: var(--rv-muted); font-size: 11.5px; }
+.rv-project-create > div { display: flex; gap: 6px; }
+.rv-workspace .rv-project-picker .rv-project-create input[type] { flex: 1; width: auto; min-width: 0; height: 34px; padding: 0 9px; border-radius: 8px; background: #fff; font-size: 13px; line-height: 1.4; }
+.rv-workspace .rv-project-create .rv-button { min-height: 34px; padding: 0 12px; border-radius: 8px; font-size: 12.5px; white-space: nowrap; }
+.rv-project-picker-panel .error-message, .rv-project-picker-panel [role=alert] { margin: 6px 8px 2px; }
+.rv-project-none { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 1px dashed var(--rv-line); border-radius: 9px; color: var(--rv-muted); font-size: 12.5px; white-space: nowrap; }
+.rv-project-none .icon { width: 15px; height: 15px; }
 .rv-workspace .rv-project-actions > .rv-button { min-height: 35px; padding: 7px 12px; border-radius: 9px; font-weight: 600; }
 
 @media (max-width: 600px) {
-  .rv-project-picker-panel { left: auto; right: 0; }
+  .rv-project-picker-panel { left: auto; right: 0; width: min(320px, calc(100vw - 32px)); }
+  .rv-project-field--status { display: none; }
 }

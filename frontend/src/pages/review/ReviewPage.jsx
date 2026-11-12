@@ -4,8 +4,9 @@ import { Icon } from '../../components/Icon.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import { DocumentProjectPicker } from './DocumentInput.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
-import ReviewLayout from '../../layouts/ReviewLayout.jsx';
+import ReviewLayout, { logoSteps } from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
+import { logoDetectorFor } from './workflow.js';
 import CriteriaPage from './CriteriaPage.jsx';
 import RunningPage from './RunningPage.jsx';
 import ResultsPage from './ResultsPage.jsx';
@@ -38,16 +39,23 @@ export default function ReviewPage() {
     health={health}
     projectName={state.projectName || location.state?.projectName}
     initialFile={runId === inputRunId ? state.file : null}
-    referenceLogos={runId === inputRunId ? state.referenceLogos : null}
+    referenceLogos={runId === inputRunId && state.reviewMode !== 'text' ? state.referenceLogos : null}
+    logoDetector={runId === inputRunId ? logoDetectorFor(state.securityMode) : 'runpod'}
     initialCriterionIds={location.state?.pdfSelection?.runId === runId ? location.state.pdfSelection.criterionIds : null}
     onInput={() => setParams({})}
     openRun={id => setParams({ framework: id }, { state: location.state })} onNew={() => { newReview(); setParams({}); }} />;
 
   const input = state.step === 'input';
-  return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy}
+  // 보안 여부·유형을 고르기 전에는 단계 표시를 숨기고, 로고 검수는 로고 대조 단계를 보여 준다.
+  const steps = input && (!state.securityMode || !state.reviewMode) ? null : input && state.reviewMode === 'logo' ? logoSteps : undefined;
+  return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy} steps={steps}
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value) } : undefined}
-    projectTools={input && <DocumentProjectPicker {...{ projectId, setProjectId }} projectName={state.projectName}
-      disabled={sampleBusy || fileBusy || documentBusy} onStatus={setProjectStatus} />}
+    projectTools={input && (state.reviewMode === 'logo'
+      // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
+      ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
+        <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
+      : <DocumentProjectPicker {...{ projectId, setProjectId }} projectName={state.projectName}
+        disabled={sampleBusy || fileBusy || documentBusy} onStatus={setProjectStatus} />)}
     projectActions={input && <button type="button" className="rv-button secondary" onClick={sample} disabled={busy || sampleBusy || fileBusy || documentBusy}>
       {sampleBusy ? '불러오는 중…' : '예시 자료 불러오기'}<Icon name="arrow" /></button>}>
     {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,

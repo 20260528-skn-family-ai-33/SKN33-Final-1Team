@@ -20,6 +20,9 @@ const iconPaths = {
   pencil: <path d="m4 16 12-12 4 4L8 20H4v-4Zm10-10 4 4" />,
   film: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7.5 4v16M16.5 4v16M3 9h4.5M3 15h4.5M16.5 9H21M16.5 15H21" /></>,
   clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  folder: <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z" />,
+  chevron: <path d="m6 9 6 6 6-6" />,
+  refresh: <path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6" />,
 };
 // 공통 아이콘 이름을 SVG로 표시한다.
 export function Icon({ name, ...props }) { return <svg viewBox="0 0 24 24" className="icon" aria-hidden="true" {...props}>{iconPaths[name] || iconPaths.check}</svg>; }

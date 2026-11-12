@@ -77,9 +77,10 @@ def strict_schema(schema: dict) -> dict:
     return value
 
 
-def call_openai(settings: FallbackSettings, *, system: str, user: str, schema: dict, name: str,
+def call_openai(settings: FallbackSettings, *, system: str, user: str | list, schema: dict, name: str,
                 transport=None) -> tuple[bytes, str]:
-    """요청 1회. 모델 응답 본문(JSON 문자열의 UTF-8)과 응답에 적힌 모델 이름을 돌려준다."""
+    """요청 1회. 모델 응답 본문(JSON 문자열의 UTF-8)과 응답에 적힌 모델 이름을 돌려준다.
+    user는 글자 또는 이미지가 섞인 content 배열(포스터 로고 위치 탐지, backend/app/poster/logos/openai_candidates.py)이다."""
     import httpx
     body = {'model': settings.model, 'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
             'max_completion_tokens': settings.max_completion_tokens, 'reasoning_effort': settings.reasoning_effort,

@@ -276,14 +276,17 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
 
     @app.post(prefix+'/projects/{project_id}/document-versions/{version_id}/extractions',response_model=RunSnapshot,status_code=202)
     async def extract_pdf(request:Request,project_id:UUID,version_id:UUID,
-                          idempotency_key:UUID=Header(alias='Idempotency-Key')):
+                          idempotency_key:UUID=Header(alias='Idempotency-Key'),
+                          model_route:Literal['default','openai','runpod']=Query('default')):
         service=documents()
         actor=await run_in_threadpool(subject,request)
         await run_in_threadpool(service.get,actor,developer_allowed(request,settings),project_id,version_id)
         # No answers, model URL, actor IDs or poster placeholders from the client.
+        # model_route는 경로 이름만 받는다(일반 자료 openai, 보안 자료 runpod). 주소·키는 서버 설정에서만 읽는다.
         async for chunk in request.stream():
             if chunk:raise AuthError('A02_EXTRACTION_BODY_NOT_ALLOWED',422)
-        try:return await run_in_threadpool(app.state.framework.start_pdf,actor,project_id,version_id,idempotency_key)
+        try:return await run_in_threadpool(partial(app.state.framework.start_pdf,actor,project_id,version_id,idempotency_key,
+                                                   model_route=model_route))
         except PersistenceError:raise AuthError('A02_ADMISSION_UNCONFIRMED',503) from None
 
     async def text_document(request,pid,request_key,document_id=None,previous=None):

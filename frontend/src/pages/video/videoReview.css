@@ -148,7 +148,10 @@
 .rv-video .rv-video-warning-list.is-inline li { padding: 7px 12px; }
 
 .rv-video-workbench { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 18px; }
-.rv-video .rv-video-center { min-width: 0; display: grid; gap: 12px; }
+/* 열을 minmax(0, 1fr)로 묶는다. auto 열이면 근거를 확대한 이미지 너비만큼 칸이 커지고 '화면에 맞춤'으로 돌아와도
+   줄지 않아(ImageStage가 현재 너비로 캔버스를 잡음) 오른쪽 검수 요구사항 칸을 덮는다. */
+.rv-video .rv-video-center { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.rv-video .rv-video-center > * { min-width: 0; }
 .rv-video .rv-video-evidence-stage .image-stage-viewport, .rv-video .rv-video-player .image-stage-viewport { height: 372px; }
 .rv-video .rv-video-evidence-stage .image-stage-box.is-excluded { --box-color: #5f5f5a; border-style: dashed; }
 .rv-video .rv-video-rail { border-radius: 17px; }
