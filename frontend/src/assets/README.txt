@@ -10,3 +10,6 @@ Landing page assets (2026-11-12, first-page proposal)
 landing-demo-poster.jpg: the exhibition poster used in the team's first-page proposal ("글(자)감(각): 쓰기와 도구", National Hangeul Museum), resized from the 5906px original embedded in the proposal file to 1200px. Shown with its source link (https://www.griun.co.kr/fonts/hangeul-fter) as in the proposal. Confirm usage rights before a public release.
 landing-video-frame-1..4.jpg: frames at 0:02, 0:05, 0:07 and 0:10 of sample-shortform.mp4 (270x480), used by the video 3D figure.
 fairweather-public-preview.png and poster-review-example.png are no longer imported by the app.
+
+2026-11-13: the landing page now shows sample-poster.png (the app's own "빛의 기록" example poster, the same example exhibition as sample-shortform.mp4)
+in the 3D figure, the review example and the evidence tile. landing-demo-poster.jpg is no longer imported by the app; the file is kept for reference.

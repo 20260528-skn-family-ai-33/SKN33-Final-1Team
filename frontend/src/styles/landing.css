@@ -66,7 +66,7 @@ html:has(.lp-page) { scrollbar-gutter: stable; }
 .lp-format-foot p { max-width: 430px; color: var(--lp-muted); font-size: 14px; line-height: 1.9; }
 .lp-3d { --turn: 0deg; --lean: 0deg; --lift: 112px; position: relative; display: grid; place-items: center; height: 520px; margin-top: 20px; overflow: hidden; background-color: var(--lp-surface); background-image: linear-gradient(color-mix(in srgb, var(--lp-border) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--lp-border) 45%, transparent) 1px, transparent 1px); background-size: 43px 43px; perspective: 2200px; perspective-origin: 50% 20%; }
 .lp-3d-stack { position: relative; transform: rotateX(calc(57deg + var(--lean))) rotateZ(calc(-37deg + var(--turn))); transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
-.lp-3d--poster .lp-3d-stack { width: 300px; height: 300px; margin-top: 196px; }
+.lp-3d--poster .lp-3d-stack { width: 264px; height: 352px; margin-top: 164px; }
 .lp-3d--video .lp-3d-stack { width: 384px; height: 172px; margin-top: 214px; }
 .lp-3d-plane { --z: 0px; position: absolute; inset: 0; transform: translateZ(var(--z)); transition: transform 1.1s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .lp-3d-source { background: var(--lp-card); box-shadow: -40px 54px 70px -22px rgb(0 0 0 / 34%); }
@@ -104,13 +104,13 @@ html:has(.lp-page) { scrollbar-gutter: stable; }
 .lp-demo-heading > p { color: var(--lp-muted); font-size: 13px; line-height: 1.9; }
 .lp-demo-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 50px; }
 .lp-demo-image { position: relative; display: grid; place-items: center; min-height: 480px; padding: 30px; border: 1px solid var(--lp-muted); background: color-mix(in srgb, var(--op-bg) 7%, var(--op-ink)); }
-.lp-demo-poster-surface { position: relative; width: min(420px, 100%); aspect-ratio: 1; }
+.lp-demo-poster-surface { position: relative; width: min(315px, 100%); aspect-ratio: 3 / 4; }
 .lp-page .lp-demo-poster-surface img { display: block; width: 100%; height: 100%; object-fit: contain; box-shadow: 0 13px 30px color-mix(in srgb, var(--op-ink) 20%, transparent); }
-.lp-demo-highlight { position: absolute; top: 89%; right: 2%; left: 70%; height: 5%; border: 1px solid var(--lp-bg); opacity: 0; transition: opacity 0.3s; }
+/* 표시 상자: 예시 포스터(sample-poster.png)의 전시 기간 자리 */
+.lp-demo-highlight { position: absolute; top: 82.6%; right: 52.5%; left: 8.6%; height: 6%; border: 1px solid var(--lp-bg); opacity: 0; transition: opacity 0.3s; }
 .lp-demo-highlight.is-active { opacity: 1; }
 .lp-demo-highlight > span { position: absolute; bottom: 100%; left: -1px; padding: 4px 7px; background: var(--lp-bg); color: var(--lp-fg); font-size: 10px; line-height: 1.3; white-space: nowrap; }
 .lp-image-corner { position: absolute; bottom: 13px; left: 16px; color: var(--lp-muted); font: 10px/1.5 var(--lp-mono); letter-spacing: 0.04em; }
-.lp-image-corner a { text-decoration: underline; text-underline-offset: 3px; }
 .lp-demo-inspector { min-width: 0; }
 .lp-demo-tabs { display: flex; gap: 17px; border-bottom: 1px solid var(--lp-muted); }
 .lp-demo-tabs button { padding: 13px 0 17px; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--lp-muted); font-size: 12px; text-align: left; }
@@ -161,7 +161,7 @@ html:has(.lp-page) { scrollbar-gutter: stable; }
   .lp-formats { gap: 24px; }
   .lp-format-foot { flex-direction: column; gap: 16px; }
   .lp-3d { --lift: 96px; height: 460px; }
-  .lp-3d--poster .lp-3d-stack { width: 252px; height: 252px; margin-top: 170px; }
+  .lp-3d--poster .lp-3d-stack { width: 222px; height: 296px; margin-top: 152px; }
   .lp-3d--video .lp-3d-stack { margin-top: 186px; transform: scale(0.82) rotateX(calc(57deg + var(--lean))) rotateZ(calc(-37deg + var(--turn))); }
 }
 @media (max-width: 1100px) {
@@ -189,7 +189,7 @@ html:has(.lp-page) { scrollbar-gutter: stable; }
   .lp-page .lp-entry-start { gap: 36px; }
   .lp-format-foot { flex-direction: column; }
   .lp-3d { --lift: 80px; height: 400px; }
-  .lp-3d--poster .lp-3d-stack { width: 204px; height: 204px; margin-top: 150px; }
+  .lp-3d--poster .lp-3d-stack { width: 180px; height: 240px; margin-top: 134px; }
   .lp-3d--video .lp-3d-stack { margin-top: 160px; transform: scale(0.6) rotateX(calc(57deg + var(--lean))) rotateZ(calc(-37deg + var(--turn))); }
   .lp-3d-chip { height: 26px; padding: 0 10px 0 8px; font-size: 12px; }
   .lp-feature-grid { grid-template-columns: 1fr; gap: 35px; }

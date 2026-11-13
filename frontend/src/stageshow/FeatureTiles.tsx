@@ -1,6 +1,6 @@
 import { Badge, Bar, Check, Roll, Row, Segmented, Stage, Text, Tooltip, type Act } from './kit'
 import { Icon } from '../components/Icon.jsx'
-import posterUrl from '../assets/landing-demo-poster.jpg'
+import posterUrl from '../assets/sample-poster.png'
 import './look.css'
 import './feature-tiles.css'
 
@@ -66,9 +66,9 @@ export function EvidenceTile() {
   return (
     <Stage width={W} height={H} compact={COMPACT} initial={evidenceStart} poster={evidenceEnd} script={readPoster} play="once" className="cc-look ft">
       {(s, rect) => <>
-        <img className="ft-poster" src={posterUrl} alt="" width={520} height={520} draggable={false} />
+        <img className="ft-poster" src={posterUrl} alt="" width={600} height={800} draggable={false} />
         <span className="ft-mark" data-target="date-box" data-show={s.found || undefined} />
-        <Tooltip className="ft-readout" side="above" show={s.read} at={rect('date-box')} gap={9}>2025.11.19.-2026.3.22.</Tooltip>
+        <Tooltip className="ft-readout" side="above" show={s.read} at={rect('date-box')} gap={9}>11.20–11.29</Tooltip>
       </>}
     </Stage>
   )

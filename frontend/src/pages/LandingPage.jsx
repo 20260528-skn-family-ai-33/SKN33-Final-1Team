@@ -7,7 +7,7 @@ import { PosterLayers, VideoLayers } from '../components/LayerFigure.jsx';
 import { SiteHeader } from '../components/SiteHeader.jsx';
 import { mediaChoicePath, mediaChoiceState } from '../workspace/mediaChoice.js';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
-import demoPoster from '../assets/landing-demo-poster.jpg';
+import demoPoster from '../assets/sample-poster.png';
 import '../styles/landing.css';
 
 // 기능 소개의 세 그림(Stageshow 장면)은 소개 화면에서만 쓰므로 따로 불러와 첫 화면 글과 버튼을 먼저 보여 준다.
@@ -17,13 +17,14 @@ const EvidenceTile = React.lazy(() => tiles().then(scenes => ({ default: scenes.
 const DecisionTile = React.lazy(() => tiles().then(scenes => ({ default: scenes.DecisionTile })));
 
 // 검수 예시의 세 단계. 포스터의 표시 상자는 '근거를 살펴보고'에서만 켠다.
+// 포스터는 우리 예시 전시('빛의 기록')의 포스터이고, 전시 기간은 그 포스터에 적힌 그대로다.
 const examples = [
   { kind: 'criteria', label: '기준을 정리하고', title: '무엇을 확인할지, 먼저 명확하게.',
     description: 'PDF 문서와 직접 입력한 요구사항을 검수할 항목으로 정리합니다. 실행 전, 담당자가 내용을 확인하고 기준을 확정합니다.',
-    tag: '검수 기준 예시', expected: '전시 기간: 2025.11.19 — 2026.3.22', actual: '전시 기간이 포스터에 정확하게 표기되었는지 확인', status: '기준 확정 전' },
+    tag: '검수 기준 예시', expected: '전시 기간: 11.20–11.29', actual: '전시 기간이 포스터에 정확하게 표기되었는지 확인', status: '기준 확정 전' },
   { kind: 'evidence', label: '근거를 살펴보고', title: '판정 옆에, 눈으로 볼 수 있는 근거.',
     description: '기준 문구와 포스터에 적힌 전시 기간을 나란히 놓습니다. 같은 내용인지, 어디에 적혀 있는지 함께 확인하세요.',
-    tag: '전시 기간 확인 예시', expected: '2025.11.19 — 2026.3.22', actual: '2025.11.19 — 2026.3.22', status: '전시 기간 일치 · 설명용 예시' },
+    tag: '전시 기간 확인 예시', expected: '11.20–11.29', actual: '11.20–11.29', status: '전시 기간 일치 · 설명용 예시' },
   { kind: 'decision', label: '사람이 결정합니다', title: '마지막 판단은, 작업을 아는 사람에게.',
     description: '충족·위반·확인 필요를 검토하고, 보완할 내용을 결정합니다. 자동 판단이 어려운 부분도 구분해 담당자에게 전달합니다.',
     tag: '담당자 검토 예시', expected: '일치하는 항목과 보완할 항목을 함께 검토', actual: '수정할 내용과 판단 이유를 확인', status: '담당자 확인 대기' },
@@ -166,10 +167,10 @@ export default function LandingPage({ profile = 'legacy' }) {
           <div className="lp-demo-grid">
             <figure className="lp-demo-image">
               <div className="lp-demo-poster-surface">
-                <img src={demoPoster} alt="국립한글박물관 글(자)감(각): 쓰기와 도구 전시 포스터" width="1200" height="1200" loading="lazy" />
+                <img src={demoPoster} alt="예시 포스터: 빛의 기록 전시" width="600" height="800" loading="lazy" />
                 <div className={`lp-demo-highlight${example === 1 ? ' is-active' : ''}`}><span>전시 기간</span></div>
               </div>
-              <figcaption className="lp-image-corner">글(자)감(각): 쓰기와 도구 · <a href="https://www.griun.co.kr/fonts/hangeul-fter" target="_blank" rel="noreferrer">이미지 출처 ↗</a></figcaption>
+              <figcaption className="lp-image-corner">빛의 기록 · 설명용 예시 포스터</figcaption>
             </figure>
             <div className="lp-demo-inspector">
               <div className="lp-demo-tabs" role="tablist" aria-label="검수 과정 예시">
