@@ -171,7 +171,26 @@ html .rv-workspace .rv-document-card.is-dragging .rv-form-upload { background: v
 html .rv-upload-name { font-size: 13px; }
 html .rv-workspace .rv-compact { min-height: 32px; padding: 5px 14px; border-radius: 999px; font-size: 12px; }
 html .rv-document-inline .rv-document-long-running { border-color: var(--op-line); border-radius: 6px; background: var(--op-card); }
+/* 문서 분석 진행: 회전 표시 대신 문서를 읽는 3D 그림(DocumentArt)을 둔다 */
+html .rv-document-art { display: grid; place-items: center; margin: 2px 0 4px; }
+html .rv-workspace .rv-document-inline :is(p, small) { font-size: 12px; }
+html .rv-workspace .rv-document-inline > p:first-of-type { color: var(--op-ink); font-size: 13px; }
 html .rv-extracted { border-color: var(--op-line); border-radius: 6px; background: var(--op-surface); }
+/* 문서에서 추출한 요구사항: 줄을 낮춘다(문구는 늘 한 줄, 그 자리에서 고친다). 뺀 항목은 흐리게, 많은 나머지는 접는다. */
+html .rv-extracted-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; margin-top: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--op-line); }
+html .rv-extracted-tools > label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+html .rv-workspace .rv-extracted-tools > .rv-form-hint { margin: 0; }
+html .rv-extracted ul { gap: 2px; margin-top: 6px; }
+html .rv-extracted li { align-items: center; gap: 8px; }
+html .rv-extracted input[type='checkbox'] { margin: 0; accent-color: var(--op-ink); }
+html .rv-workspace .rv-extracted textarea { height: 34px; min-height: 0; padding: 7px 10px; border-color: transparent; border-radius: 6px; background: none; font-size: 13px; line-height: 1.45; resize: none; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+html .rv-workspace .rv-extracted textarea:hover:enabled { border-color: var(--op-line); background: var(--op-card); }
+html .rv-workspace .rv-extracted textarea:focus { border-color: var(--op-ink); background: var(--op-card); text-overflow: clip; }
+html .rv-workspace .rv-extracted li.is-off textarea:not(:focus) { color: var(--op-muted); text-decoration: line-through; }
+html .rv-workspace .rv-extracted li > .rv-button { min-height: 28px; padding: 3px 10px; border-color: transparent; background: none; color: var(--op-muted); }
+html .rv-workspace .rv-extracted li > .rv-button:hover:enabled { border-color: var(--op-line); background: var(--op-card); color: var(--op-ink); }
+html .rv-extracted-more { display: block; margin-top: 8px; padding: 6px 2px; border: 0; background: none; color: var(--op-ink); font-size: 13px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+html .rv-extracted-more:focus-visible { outline: 2px solid var(--op-ink); outline-offset: 3px; }
 /* 다음 행동 줄 */
 html .rv-workspace :is(.rv-input-form .rv-input-actionbar, .rv-criteria-actionbar) { margin-top: 34px; padding: 18px 0 0; border: 0; border-top: 1px solid var(--op-ink); border-radius: 0; background: none; box-shadow: none; }
 html .rv-workspace .rv-actionbar :is(p, small) { font-size: 13px; line-height: 1.6; }
@@ -259,6 +278,8 @@ html .rv-workspace .rv-input-page { display: grid; grid-template-columns: minmax
 html .rv-workspace .rv-input-page > * { grid-column: 1 / -1; min-width: 0; }
 html .rv-workspace .rv-input-page > .rv-preview-entry { z-index: 1; grid-area: 1 / 2; align-self: start; margin: 4px 0 0; color: var(--op-muted); font: 11px/1.5 var(--font-signal); }
 html .rv-workspace .rv-input-page > .rv-type-picker { grid-row: 1; }
+/* 자료 종류 고르기(검수 첫 화면)는 검수 이름 줄이 없어 머리글에 붙는다. 다음 화면과 비슷한 높이에서 시작하게 위를 띄운다. */
+html .rv-workspace .rv-input-page.rv-media-choice { padding-top: clamp(40px, 8vh, 92px); }
 html .rv-workspace .rv-type-picker { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; justify-items: start; gap: 0; min-height: 0; padding: 6px 0 0; border-radius: 0; background: none; color: var(--op-ink); }
 /* 소개 화면 첫 장면의 점 구체를 제목 오른쪽 뒤에 둔다(장식) */
 html .rv-type-picker > .op-pixel-field { position: absolute; z-index: -1; top: -78px; right: -30px; width: 500px; height: 500px; pointer-events: none; -webkit-mask-image: radial-gradient(closest-side, #000 58%, transparent); mask-image: radial-gradient(closest-side, #000 58%, transparent); }
@@ -368,6 +389,10 @@ html .rv-results .rv-result-item-button:hover { background: var(--op-card); }
 html .rv-results .rv-result-item-button:is(.is-selected, [aria-expanded='true']) { background: var(--op-card); box-shadow: inset 2px 0 0 var(--op-ink); }
 html .rv-results .rv-result-item-number { color: var(--op-muted); font: 11px/1 var(--font-signal); }
 html .rv-results .rv-result-item-title { font-size: 15px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.5; }
+/* 이름(행사명·기간…)과 기준값을 먼저 보이고, 기준 문장은 그 아래 한 줄로 줄인다. 같은 문장에서 나온 항목도 값으로 구분된다. */
+html .rv-results .rv-result-item-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+html .rv-results .rv-result-item-name > b { margin-right: 6px; color: var(--op-muted); font-size: 12px; font-weight: 500; letter-spacing: 0; }
+html .rv-results .rv-result-item-rule { display: block; margin-top: 3px; overflow: hidden; color: var(--op-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
 html .rv-results .rv-result-status { padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 500; }
 html .rv-workspace.rv-workspace .rv-results .rv-result-items .rv-result-inspector { border-radius: 0; background: var(--op-card); }
 html .rv-results .rv-result-observation { border-radius: 6px; }
@@ -384,6 +409,13 @@ html .rv-revision-rows > li { border-top-color: var(--op-line); }
 html .rv-revision-detail { border-radius: 6px; background: var(--op-surface); }
 html .rv-relation-notice { border-color: var(--op-line); border-radius: 6px; }
 html .rv-relation-runs > summary { border-color: var(--op-line); border-radius: 999px; padding-inline: 14px; }
+/* 달라진 항목: 값이 길면 두 줄까지만 보이고, 앞의 몇 개 뒤로는 접어 둔다(ChangeImpactNotice.jsx) */
+html .rv-relation-values { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+html .rv-relation-more { margin-top: 10px; font-size: 12px; }
+html .rv-relation-more > summary { width: fit-content; padding: 6px 14px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); font-weight: 500; cursor: pointer; list-style: none; }
+html .rv-relation-more > summary::-webkit-details-marker { display: none; }
+html .rv-relation-more[open] > summary { margin-bottom: 2px; }
+html .rv-relation-more > .rv-relation-changes { max-height: 300px; overflow-y: auto; padding-right: 6px; overscroll-behavior: contain; }
 html .rv-relation-runs li { border-radius: 6px; }
 
 /* ── 판정 근거 창 ───────────────────────────────────────────────────────────
@@ -499,9 +531,12 @@ html .rv-workspace .rv-form-stack > .rv-form-block:nth-child(n + 4) { animation-
 html .rv-workspace .rv-poster-scan-stage { --turn: 0deg; --lean: 0deg; overflow: hidden; background-color: var(--op-stage); background-image: var(--op-stage-grid); perspective: 2000px; perspective-origin: 50% 16%; }
 html .rv-workspace .rv-poster-scan-sheet { --rise: clamp(60px, 9vh, 92px); margin-top: calc(var(--rise) * 1.3); transform: rotateX(calc(56deg + var(--lean))) rotateZ(calc(-36deg + var(--turn))); transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); animation: rv-poster-sweep 3.1s ease-in-out infinite alternate paused, op-float 6s ease-in-out infinite; }
 html .rv-workspace .rv-poster-scan-sheet > img { box-shadow: -40px 54px 70px -22px rgb(0 0 0 / 70%), 0 0 0 1px rgb(255 255 255 / 12%); }
-html .rv-workspace .rv-poster-scan-zoom { transform: translateZ(1px); }
-html .rv-workspace .rv-poster-scan-lens { width: 64px; height: 64px; border: 2px solid #fff; background: none; box-shadow: 0 0 0 1px rgb(0 0 0 / 40%), 0 0 26px rgb(255 255 255 / 55%); transform: translate(-50%, -50%) translateZ(2px); }
-html .rv-workspace .rv-poster-scan-lens::after { display: none; }
+/* 돋보기: 팀이 만든 모양(흰 테 · 잉크 윤곽 · 손잡이, review-progress.css)을 그대로 쓰고, 3D 무대에 맞게 포스터 위로 띄워 그림자를 떨군다.
+   확대한 그림(zoom)도 같은 높이로 올려야 테 안에 겹쳐 보인다. 샘플 진행 화면(.sd-scan-*)도 이 규칙을 같이 쓴다. */
+html :is(.rv-workspace .rv-poster-scan-sheet, .sd-scan-sheet) { --op-lens-lift: 26px; }
+html :is(.rv-workspace .rv-poster-scan-zoom, .sd-scan-zoom) { transform: translateZ(var(--op-lens-lift)); }
+html :is(.rv-workspace .rv-poster-scan-lens, .sd-scan-lens) { box-shadow: 0 0 0 2px #171717, 0 0 24px rgb(255 255 255 / 45%); transform: translate(-50%, -50%) translateZ(calc(var(--op-lens-lift) + 1px)); transform-style: preserve-3d; }
+html :is(.rv-workspace .rv-poster-scan-lens, .sd-scan-lens)::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgb(0 0 0 / 50%); filter: blur(8px); transform: translateZ(calc(var(--op-lens-lift) * -1)) translate(8px, 10px); }
 html .rv-workspace .rv-poster-plane { position: absolute; inset: 0; pointer-events: none; transition: transform 1.1s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.5s ease; }
 html .rv-workspace .rv-poster-plane > b { position: absolute; color: var(--op-bg); font: 400 11px/1 var(--font-signal); letter-spacing: 0.04em; white-space: nowrap; }
 html .rv-workspace .rv-poster-plane.is-source > b { top: -18px; left: 2px; color: var(--op-stage-muted); }
@@ -669,13 +704,14 @@ html .rv-video-film-track::before { content: '02 읽은 자리'; }
 html .rv-video-film-track::after { content: '03 판정'; background: rgb(255 255 255 / 6%) radial-gradient(rgb(255 255 255 / 46%) 1px, transparent 1.5px); background-size: 16px 16px; transition-delay: 0.12s; }
 html .rv-video-scanner:is(.is-reading, .is-organizing, .is-judging, .is-done) .rv-video-film-track::before { opacity: 1; transform: translateZ(var(--rise)); }
 html .rv-video-scanner:is(.is-organizing, .is-judging, .is-done) .rv-video-film-track::after { opacity: 1; transform: translateZ(calc(var(--rise) * 2)); }
-/* 돋보기는 필름 위에 뜬 읽는 창으로 바꾼다 */
-@keyframes op-lens-bob { 50% { transform: translateZ(20px); } }
-html .rv-video-lens { transform: translateZ(3px); }
+/* 돋보기: 팀이 만든 모양(흰 테 · 잉크 윤곽 · 손잡이, videoReview.css)을 그대로 쓰고 필름 위로 띄워 그림자를 떨군다. 기다리는 동안에는 천천히 오르내린다.
+   샘플 진행 화면(.sd-film-lens*)도 이 규칙을 같이 쓴다. */
+@keyframes op-lens-bob { 50% { transform: translateZ(34px); } }
+html :is(.rv-video-lens, .sd-film-lens) { transform: translateZ(18px); transform-style: preserve-3d; }
+html :is(.rv-video-lens, .sd-film-lens)::before { content: ''; position: absolute; inset: 2px; border-radius: 50%; background: rgb(0 0 0 / 55%); filter: blur(9px); transform: translateZ(-17px) translate(8px, 10px); }
 html .rv-video-scanner:is(.is-waiting, .is-preparing) .rv-video-lens { animation: op-lens-bob 2.6s ease-in-out infinite; }
-html .rv-video-lens-glass { border: 2px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 40%), 0 0 26px rgb(255 255 255 / 55%); }
+html :is(.rv-video-lens-glass, .sd-film-lens-glass) { box-shadow: 0 0 0 2px #171717, 0 0 24px rgb(255 255 255 / 45%); }
 html .rv-video-scanner.is-failed .rv-video-lens-glass { box-shadow: 0 0 0 2px #a34f3e, 0 0 26px rgb(163 79 62 / 60%); }
-html .rv-video-lens-handle { display: none; }
 html .rv-video-scanner-scale { align-self: end; justify-self: stretch; margin: 0; padding: 10px 16px; border-top: 1px solid var(--op-stage-line); background: var(--op-stage); color: var(--op-stage-muted); font: 11px/1.5 var(--font-signal); }
 html .rv-video-scanner-scale > span:nth-child(2) { color: var(--op-bg); font-size: 12px; font-weight: 400; }
 @media (min-width: 901px) {
@@ -890,11 +926,11 @@ html .sd-progress-card { display: grid; grid-template-columns: minmax(0, 1fr); a
 html .sd-progress-card > * { width: auto; max-width: none; }
 html .sd-scan { width: auto; margin: 0 0 28px; }
 html .sd-scan-stage { --turn: 0deg; --lean: 0deg; min-height: 320px; padding: 28px; overflow: hidden; border: 1px solid var(--op-stage-line); border-radius: 0; background-color: var(--op-stage); background-image: var(--op-stage-grid); background-size: 44px 44px; box-shadow: inset 0 0 140px rgb(0 0 0 / 38%); perspective: 2000px; perspective-origin: 50% 16%; }
-html .sd-scan-sheet { --rise: clamp(60px, 9vh, 92px); width: clamp(200px, 21vw, 300px); margin-top: calc(var(--rise) * 1.3); transform: rotateX(calc(56deg + var(--lean))) rotateZ(calc(-36deg + var(--turn))); transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); animation: sd-sweep 3.1s ease-in-out infinite alternate paused, op-float 6s ease-in-out infinite; }
+/* 샘플은 진행 화면 내내 읽는 중이라 돋보기(읽는 창)가 늘 포스터를 훑는다. 실제 화면은 처리 중(.is-working)일 때만 돈다. */
+html .sd-scan-sheet { --rise: clamp(60px, 9vh, 92px); width: clamp(200px, 21vw, 300px); margin-top: calc(var(--rise) * 1.3); transform: rotateX(calc(56deg + var(--lean))) rotateZ(calc(-36deg + var(--turn))); transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); animation: sd-sweep 3.1s ease-in-out infinite alternate, op-float 6s ease-in-out infinite; }
 html .sd-scan-sheet > img { box-shadow: -40px 54px 70px -22px rgb(0 0 0 / 70%), 0 0 0 1px rgb(255 255 255 / 12%); }
-html .sd-scan-zoom { background: var(--op-stage); transform: translateZ(1px); }
-html .sd-scan-lens { width: 64px; height: 64px; border: 2px solid #fff; background: none; box-shadow: 0 0 0 1px rgb(0 0 0 / 40%), 0 0 26px rgb(255 255 255 / 55%); transform: translate(-50%, -50%) translateZ(2px); }
-html .sd-scan-lens::after { display: none; }
+/* 돋보기 모양과 높이는 실제 진행 화면 규칙(.rv-poster-scan-lens)을 같이 쓴다 */
+html .sd-scan-zoom { background: var(--op-stage); }
 html .sd-plane { position: absolute; inset: 0; pointer-events: none; transition: transform 1.1s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.5s ease; }
 html .sd-plane > b { position: absolute; color: var(--op-bg); font: 400 11px/1 var(--font-signal); letter-spacing: 0.04em; white-space: nowrap; }
 html .sd-plane.is-source > b { top: -18px; left: 2px; color: var(--op-stage-muted); }
@@ -917,9 +953,7 @@ html .sd-film-track::before { content: '02 읽은 자리'; }
 html .sd-film-track::after { content: '03 판정'; background: rgb(255 255 255 / 6%) radial-gradient(rgb(255 255 255 / 46%) 1px, transparent 1.5px); background-size: 16px 16px; transition-delay: 0.12s; }
 html .sd-film-scanner:is([data-depth='1'], [data-depth='2']) .sd-film-track::before { opacity: 1; transform: translateZ(var(--rise)); }
 html .sd-film-scanner[data-depth='2'] .sd-film-track::after { opacity: 1; transform: translateZ(calc(var(--rise) * 2)); }
-html .sd-film-lens { transform: translateZ(3px); }
-html .sd-film-lens-glass { border: 2px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 40%), 0 0 26px rgb(255 255 255 / 55%); }
-html .sd-film-lens-handle { display: none; }
+/* 돋보기 모양과 높이는 실제 진행 화면 규칙(.rv-video-lens)을 같이 쓴다 */
 html .sd-film-scale { align-self: end; justify-self: stretch; margin: 0; padding: 10px 16px; border-top: 1px solid var(--op-stage-line); background: var(--op-stage); color: var(--op-stage-muted); font: 11px/1.5 var(--font-signal); }
 html .sd-film-scale span:nth-child(2) { color: var(--op-bg); font-size: 12px; font-weight: 400; }
 html .sd-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--op-muted); font: 12px/1.5 var(--font-signal); letter-spacing: 0.02em; }
@@ -1150,5 +1184,7 @@ html .cc-missing-sheet { border-color: var(--op-line); border-radius: 6px; }
 html .cc-missing-sheet h1 { font-size: 30px; }
 /* 팝업 */
 html :is(dialog, .dialog-card) { border-color: var(--op-line); border-radius: 8px; box-shadow: 0 24px 70px rgb(0 0 0 / 14%); }
+/* 검수 준비 중 팝업: 제목은 다른 창 제목과 같은 굵기·자간 */
+html .rv-start-overlay h2 { font-weight: 500; letter-spacing: -0.04em; }
 /* 로그인: 예시 그림은 제품 화면 장면(Stageshow)을 그대로 쓴다 */
 html .auth-page .auth-example { max-width: 358px; }

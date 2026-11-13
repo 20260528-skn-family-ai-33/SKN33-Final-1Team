@@ -9,6 +9,8 @@ export const reviewModeLabels = { text: '문구 검수', logo: '로고 검수', 
 // 검수 유형보다 먼저 묻는 보안 자료 여부. 보안 자료는 기존 RunPod 파이프라인만, 일반 자료는 OpenAI API로 처리한다
 // (요구사항 추출·포스터 검사·로고 위치 탐지. 로고 정밀 대조는 둘 다 RunPod) — workflow.js modelRouteFor 참고.
 export const securityModeLabels = { secure: '보안 자료', general: '일반 자료' };
+// 검수를 시작할 때 맨 먼저 고르는 자료 종류. 포스터는 포스터 검수 화면에서, 동영상은 동영상 검수 화면에서 이어 간다.
+export const mediaLabels = { poster: '포스터', video: '동영상' };
 
 const TYPE_TILES = [
   { value: 'text', key: '1', label: '문구 검수' },
@@ -40,6 +42,11 @@ const securityTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, [
 ]]));
 const typeTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, TYPE_TILES.map(tile => ({ ...tile,
   art: media === 'video' ? <VideoTypeArt mode={tile.value} /> : <TypeArt mode={tile.value} /> }))]));
+// 자료 종류 타일은 샘플 체험의 첫 화면과 같은 그림(자료 그 자체)을 쓴다.
+const mediaTiles = [
+  { value: 'poster', key: '1', label: '포스터', art: <PickerArt media="poster" variant="media" /> },
+  { value: 'video', key: '2', label: '동영상', art: <PickerArt media="video" variant="media" /> },
+];
 
 // 마우스를 따라 타일 그림이 입체로 기운다(--rx·--ry). 움직임을 줄인 환경과 터치 화면에서는 기울이지 않는다.
 export function tiltArt(event) {
@@ -90,10 +97,16 @@ function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel
   </section>;
 }
 
-// media: 'poster'(기본) | 'video'. 동영상 검수 화면은 영상 프레임 그림을 쓴다.
-export function SecurityPicker({ onSelect, disabled = false, media = 'poster' }) {
-  return <KioskChoice title="보안이 필요한 자료인가요?" kicker="SECURITY / 자료 구분" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
+// 종류가 정해지지 않은 채 검수를 시작하면(로그인 직후 등, workspace/mediaChoice.js) 맨 먼저 보여 주는 화면.
+export function MediaPicker({ onSelect, disabled = false }) {
+  return <KioskChoice title="어떤 자료를 검수할까요?" kicker="MEDIA / 자료 종류" tiles={mediaTiles} labels={mediaLabels}
     onSelect={onSelect} disabled={disabled} />;
+}
+
+// media: 'poster'(기본) | 'video'. 동영상 검수 화면은 영상 프레임 그림을 쓴다. onBack을 주면 자료 종류를 다시 고르는 단추를 둔다.
+export function SecurityPicker({ onSelect, onBack, disabled = false, media = 'poster' }) {
+  return <KioskChoice title="보안이 필요한 자료인가요?" kicker="SECURITY / 자료 구분" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
+    onSelect={onSelect} onBack={onBack} backLabel="자료 종류 다시 고르기" disabled={disabled} />;
 }
 
 export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false, media = 'poster' }) {

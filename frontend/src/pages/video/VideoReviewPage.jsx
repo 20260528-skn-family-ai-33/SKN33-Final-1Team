@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
@@ -13,6 +13,7 @@ import VideoProgress from './VideoProgress.jsx';
 import VideoResults from './VideoResults.jsx';
 import VideoReport from './VideoReport.jsx';
 import { isTerminal } from './videoFormat.js';
+import { mediaChoicePath, mediaChoiceState } from '../../workspace/mediaChoice.js';
 import '../../styles/review-editor-v2.css';
 import '../../styles/review-progress.css';
 import '../../styles/review-results-v2.css';
@@ -73,6 +74,7 @@ const securityFromRoute = route => route === 'openai' ? 'general' : route === 'r
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 화면. 포스터 검수와 같은 자료 입력 → 검수 진행 → 결과 확인 흐름을 따른다.
 export default function VideoReviewPage() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const id = params.get('id');
   const [draft, setDraft] = useState(blankDraft);
   const [uploading, setUploading] = useState(false);
@@ -166,7 +168,8 @@ export default function VideoReviewPage() {
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
       {submissionWarning && step === 'running' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
       {picker === 'security' && <section className="rv-input-page" aria-labelledby="page-title">
-        <SecurityPicker media="video" disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))} /></section>}
+        <SecurityPicker media="video" disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))}
+          onBack={() => navigate(mediaChoicePath, { state: mediaChoiceState })} /></section>}
       {picker === 'type' && <section className="rv-input-page" aria-labelledby="page-title">
         <ReviewTypePicker media="video" disabled={inputLocked} security={draft.securityMode}
           onSelect={value => setDraft(previous => ({ ...previous, reviewMode: value }))}

@@ -5,6 +5,7 @@ import { Icon } from '../../components/Icon.jsx';
 import { useTilt } from '../../components/LayerFigure.jsx';
 import { PixelField } from '../../components/PixelField.jsx';
 import { reviewModeLabels, SecurityArt, securityModeLabels, settleArt, tiltArt, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
+import { mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { LogoThumb, MediaArt, PlayIcon, SampleFrame, SamplePoster } from './SampleArt.jsx';
 import {
   CAPTIONS, firstIssue, formatSeconds, LOGO_STEPS, MEDIA_LABELS, POSTER_SIZE, RESULTS, REVIEW_STEPS, runningView, sampleItems,
@@ -25,6 +26,8 @@ export default function SampleDemoPage() {
   const update = patch => setState(previous => ({ ...previous, ...patch }));
   const { screen, media, security, mode } = state;
   const realPath = media === 'video' ? '/video' : '/review/new';
+  // 샘플에서 자료 종류를 고르기 전이면 실제 검수도 자료 종류부터 고른다.
+  const openReal = () => navigate(realPath, media ? undefined : { state: mediaChoiceState });
   const signedIn = auth?.status === 'authenticated';
 
   // 진행 화면: TICK_MS마다 한 칸씩 진행하고, 끝나면 결과 화면으로 넘어가며 첫 문제 항목을 펼친다.
@@ -67,7 +70,7 @@ export default function SampleDemoPage() {
         Creative Checker<small>REVIEW STUDIO</small></span>
       <div className="sd-site-actions">
         <button type="button" className="sd-btn" onClick={() => navigate('/')}>체험 끝내기</button>
-        <button type="button" className="sd-btn is-primary" onClick={() => navigate(realPath)}>{signedIn ? '실제 검수하기' : '로그인하고 실제 검수하기'}</button>
+        <button type="button" className="sd-btn is-primary" onClick={openReal}>{signedIn ? '실제 검수하기' : '로그인하고 실제 검수하기'}</button>
       </div>
     </header>
     <div className="sd-band"><span><b>샘플 체험</b>예시 자료로 검수 흐름을 둘러보는 화면입니다. 결과는 미리 만들어 둔 예시이고 서버로 아무것도 보내지 않아요.</span>

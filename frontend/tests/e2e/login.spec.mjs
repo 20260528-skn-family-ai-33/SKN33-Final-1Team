@@ -121,6 +121,8 @@ async function screenshot(page, filename) {
 
 // 로그인 뒤 검수 첫 화면은 보안 자료 여부를 묻고, 이어서 검수 유형을 묻는다. 자료 입력 칸은 둘을 고른 뒤에 나온다.
 const firstScreen = '보안이 필요한 자료인가요?';
+// 열려던 검수 화면 없이 로그인하면 자료 종류(포스터·동영상)부터 고른다.
+const mediaScreen = '어떤 자료를 검수할까요?';
 async function chooseReviewType(page, type = '문구 검수', security = '일반 자료') {
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   await page.getByRole('button', { name: security, exact: true }).click();
@@ -180,7 +182,13 @@ test('기존 서버 세션은 로그인 화면을 건너뛰고 새로고침 후 
   await page.goto(`${baseURL}/login`);
   await page.waitForURL('**/review/new');
   await page.reload();
+  // 포스터로 바로 들어가지 않는다. 포스터를 고르면 보안 여부를 묻고, 거기서 자료 종류로 되돌아갈 수 있다.
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
+  assert.equal(await page.getByRole('navigation', { name: '검수 도구', exact: true }).locator('[aria-current="page"]').count(), 0);
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
   await page.getByRole('heading', { name: firstScreen }).waitFor();
+  await page.getByRole('button', { name: '자료 종류 다시 고르기', exact: true }).click();
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
   assert.equal(state.requests.filter(request => request.path.endsWith('/login')).length, 0);
 });
 
@@ -298,6 +306,9 @@ test('저장된 검수 결과에서 서비스 메인 왕복 시 새 입력으로
   await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
   await page.waitForURL(`${baseURL}/`);
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).first().click();
+  // 소개 화면의 시작 단추는 포스터·동영상 중 무엇을 검수할지부터 묻는다.
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   assert.equal(await page.locator('#project-name').inputValue(), '');
   await chooseReviewType(page);

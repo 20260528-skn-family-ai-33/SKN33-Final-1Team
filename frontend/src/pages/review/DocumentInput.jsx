@@ -2,25 +2,25 @@ import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { DocumentArt } from '../../components/PickerArt.jsx';
 import { loadDocumentProjects, createDocumentProject } from './frameworkClient.js';
 import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
-export function DocumentAnalysisProgress({ documentProgress, totalSeconds, stageSeconds, lastChecked,
-  cancelLabel, documentResumeId, kind = 'poster' }) {
+// 분석하는 동안 문서를 읽는 3D 그림(components/PickerArt.jsx의 DocumentArt)과 단계 진행률을 보여 준다.
+// 분석 상태는 이 카드에서 자동으로 확인하므로 새 탭으로 여는 링크는 두지 않는다.
+export function DocumentAnalysisProgress({ documentProgress, totalSeconds, stageSeconds, lastChecked, cancelLabel }) {
   const longRunning = totalSeconds >= 5 * 60 && ['queued', 'extracting', 'formatting'].includes(documentProgress?.stage);
   const formatDuration = value => String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
   return <div className="rv-document-inline" role="status">
-    <span className="rv-progress-spinner" aria-hidden="true" />
+    <span className="rv-document-art" aria-hidden="true"><DocumentArt stage={documentProgress.stage} /></span>
     <p>{documentProgress.message}</p>
     <progress max={100} value={documentProgress.percent} aria-label="문서 분석 단계" />
     {documentProgress.startedAt && <small role="timer" aria-label="문서 분석 경과 시간">
       총 경과 {formatDuration(totalSeconds)} · 현재 단계 {formatDuration(stageSeconds)}
     </small>}
     {lastChecked && <small className="rv-document-last-checked">마지막 상태 확인: {lastChecked}</small>}
-    {kind === 'poster' && documentResumeId && <Link className="text-btn" target="_blank" rel="noopener noreferrer"
-      to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>새 탭에서 분석 상태 확인</Link>}
     {longRunning && <p className="rv-document-long-running">
       분석이 계속 진행 중입니다. 완료 시각은 문서 분량과 서버 대기 순서에 따라 달라 예측하기 어렵습니다.
       {cancelLabel === '대기 작업 취소'
@@ -265,8 +265,8 @@ export default function DocumentInput({ documentBusy, documentProgress, document
           <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
         </button>
       </div>
-      {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, lastChecked, cancelLabel,
-        documentResumeId, kind }} stageSeconds={seconds} />}
+      {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, lastChecked, cancelLabel }}
+        stageSeconds={seconds} />}
       <div className="rv-form-row rv-form-hint">
         <span>{!documentBusy && documentNotice ? documentNotice : 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
         {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>

@@ -67,7 +67,8 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
         onProgress: update => { if (!signal.aborted) setProgress(deadline.update(update)); } });
       if (signal.aborted) return;
       const { sources } = mergeDocumentRequirements('', result, file.name);
-      onDocument(file.name, sources.map((item, index) => ({ ...item, id: `document-${index}`, selected: false })));
+      // 추출한 항목은 처음부터 모두 검수에 포함한다(포스터와 같다). 뺄 항목만 화면에서 체크를 푼다.
+      onDocument(file.name, sources.map((item, index) => ({ ...item, id: `document-${index}`, selected: true })));
       setProgress({ startedAt, stage: 'completed', percent: 100, message: '요구사항 추출을 완료했습니다.' });
       setWarnings(result.warnings || []);
       if (result.warnings?.length) setInspectId(result.framework.run_id);

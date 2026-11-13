@@ -137,6 +137,44 @@
 .pa.is-poster .pa-band { left: -9px; top: 40px; width: 144px; }
 .pa.is-video .pa-band { left: 16px; top: 34px; width: 150px; transform: translateZ(calc(7.8px + 9px * var(--pa-gap))) rotate(-9deg); }
 
+/* 문서 분석 진행 그림(DocumentArt): 문서 한 장을 돋보기가 읽어 내려가고, 읽은 요구사항이 오른쪽에 카드로 쌓인다.
+   data-phase — waiting(업로드·대기): 문서와 돋보기만 · reading(읽는 중): 읽는 띠·돋보기가 움직이고 카드가 차례로 나온다 · sorting(정리): 카드가 다 나와 있다. */
+@keyframes pa-doc-read { to { translate: 0 104px; } }
+@keyframes pa-doc-lens { 0% { translate: 0 0; } 34% { translate: -30px 36px; } 67% { translate: -2px 72px; } 100% { translate: -28px 104px; } }
+@keyframes pa-card-1 { 0%, 8% { scale: 0; } 16%, 88% { scale: 1; } 96%, 100% { scale: 0; } }
+@keyframes pa-card-2 { 0%, 30% { scale: 0; } 38%, 88% { scale: 1; } 96%, 100% { scale: 0; } }
+@keyframes pa-card-3 { 0%, 52% { scale: 0; } 60%, 88% { scale: 1; } 96%, 100% { scale: 0; } }
+.pa.is-document { --pa-scale: 0.82; }
+.pa.is-document .pa-obj { --r: 7px; left: 24px; top: 8px; width: 126px; height: 178px; }
+.pa.is-document .pa-floor { left: 0; top: 200px; width: 232px; }
+.pa-doc-head { left: 10px; top: 13px; width: 56px; height: 9px; border-radius: 2px; background: var(--pa-ink); transform: translateZ(calc(0.5px + 3.5px * var(--pa-gap))); }
+.pa-doc-line { left: 10px; height: 4.5px; border-radius: 3px; background: #cdcbc3; transform: translateZ(calc(0.5px + 2px * var(--pa-gap))); }
+.pa-doc-line.is-1 { top: 36px; width: 104px; }
+.pa-doc-line.is-2 { top: 48px; width: 90px; }
+.pa-doc-line.is-3 { top: 60px; width: 98px; }
+.pa-doc-line.is-4 { top: 84px; width: 104px; }
+.pa-doc-line.is-5 { top: 96px; width: 74px; }
+.pa-doc-line.is-6 { top: 120px; width: 100px; }
+.pa-doc-line.is-7 { top: 132px; width: 58px; }
+/* 읽는 띠: 읽는 중에만 보이고, 줄을 따라 오르내린다 */
+.pa-doc-read { left: 5px; right: 5px; top: 26px; height: 18px; border-bottom: 1.5px solid var(--pa-green); border-radius: 3px; background: linear-gradient(rgb(27 138 77 / 0%), rgb(27 138 77 / 20%)); opacity: 0; transform: translateZ(calc(0.6px + 5px * var(--pa-gap))); transition: opacity 0.4s ease; }
+.pa.is-document[data-phase='reading'] .pa-doc-read { opacity: 1; animation: pa-doc-read 3.4s ease-in-out infinite alternate; }
+.pa.is-document[data-phase='reading'] .pa-lens { animation: pa-doc-lens 3.4s ease-in-out infinite alternate; }
+/* 뽑아낸 요구사항 카드 */
+.pa-card { left: 136px; width: 74px; height: 34px; border-radius: 6px; --z0: 6px; --z: 22px; --step: 1.2px; --face: linear-gradient(168deg, #fff 30%, #f2f1ec); --side-l: #bcb9b0; --side-t: #ecebe6; scale: 0; transition: scale 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.pa-card > i.is-face { box-shadow: 0 0 0 0.6px rgb(22 22 20 / 18%), inset 0 1px 0 #fff; }
+.pa-card.is-1 { top: 20px; }
+.pa-card.is-2 { top: 66px; }
+.pa-card.is-3 { top: 112px; }
+.pa-card-dot { left: 8px; top: 9px; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #2cab64, var(--pa-green) 72%); transform: translateZ(0.6px); }
+.pa-card-dot::after { content: ''; position: absolute; left: 5.6px; top: 2.6px; width: 4.2px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; border-radius: 1px; transform: rotate(42deg); }
+.pa-card-line { left: 31px; top: 10px; width: 34px; height: 5px; border-radius: 3px; background: var(--pa-ink); transform: translateZ(0.6px); }
+.pa-card-line::after { content: ''; position: absolute; left: 0; top: 9px; width: 23px; height: 4px; border-radius: 3px; background: #c9c7bf; }
+.pa.is-document[data-phase='reading'] .pa-card.is-1 { animation: pa-card-1 6s cubic-bezier(0.2, 0.7, 0.2, 1) infinite; }
+.pa.is-document[data-phase='reading'] .pa-card.is-2 { animation: pa-card-2 6s cubic-bezier(0.2, 0.7, 0.2, 1) infinite; }
+.pa.is-document[data-phase='reading'] .pa-card.is-3 { animation: pa-card-3 6s cubic-bezier(0.2, 0.7, 0.2, 1) infinite; }
+.pa.is-document[data-phase='sorting'] .pa-card { scale: 1; }
+
 /* 타일과 함께: 올리면 층이 벌어지고, 누르면 살짝 들어간다. 옆 타일과 박자가 겹치지 않게 조금씩 늦춘다. */
 :is(.rv-type-tile:hover:enabled, .sd-tile:hover) .pa { --pa-gap: 1.5; }
 :is(.rv-type-tile:active:enabled, .sd-tile:active) .pa-world { scale: 0.96; }
@@ -157,4 +195,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pa, .pa *, .pa *::before, .pa *::after { animation: none !important; transition: none !important; }
+  /* 움직임을 줄이면 읽는 중에도 카드를 그대로 보여 준다 */
+  .pa.is-document[data-phase='reading'] .pa-card { scale: 1; }
 }

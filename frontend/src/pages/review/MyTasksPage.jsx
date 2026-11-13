@@ -6,6 +6,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { PixelField } from '../../components/PixelField.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
+import { mediaChoicePath, mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { frameworkJson } from './frameworkClient.js';
 import '../../styles/my-tasks.css';
 
@@ -117,7 +118,7 @@ export default function MyTasksPage() {
       <header className="rv-task-heading"><PixelField monochrome /><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>
         <p>문서 분석과 포스터 검수 작업을 다시 열 수 있어요. 최근 동영상 검수는 기본 목록과 전체 이력의 첫 페이지에 표시돼요.</p></div>
         {busy ? <button type="button" className="rv-button primary" disabled>새 검수</button>
-          : <Link className="rv-button primary" to="/review/new" onClick={event => {
+          : <Link className="rv-button primary" to={mediaChoicePath} state={mediaChoiceState} onClick={event => {
             if (!event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) resetWorkspace();
           }}>새 검수</Link>}
       </header>

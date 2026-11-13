@@ -304,8 +304,8 @@ async function verifyDocx(t, mode) {
   await page.getByText(video ? '계약서.docx · 2개 추출' : /추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
   assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
   if (video) {
-    const selected = page.getByRole('checkbox', { name: '문서 요구사항 2번 검수에 포함', exact: true });
-    await selected.check();
+    // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 1번의 체크를 풀어 2번만 보낸다.
+    await page.getByRole('checkbox', { name: '문서 요구사항 1번 검수에 포함', exact: true }).uncheck();
     await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles(
       fileURLToPath(new URL('../../src/assets/sample-shortform.mp4', import.meta.url)));
     await page.getByText('검수 포함 1 / 2개', { exact: true }).waitFor();

@@ -224,7 +224,8 @@ export function ReviewProvider({ children }) {
           ? condition.criterion_ids.filter(id => typeof id === 'string' && id) : [];
         criterionIdsByText.set(text, [...new Set([...(criterionIdsByText.get(text) || []), ...ids])]);
       }
-      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false,
+      // 추출한 항목은 처음부터 모두 검수에 포함한다. 뺄 항목만 화면에서 체크를 푼다.
+      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: true,
         criterionIds: criterionIdsByText.get(row.text) || [] }));
       dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
         originalCount: rows.length, rows, filename: file.name, projectId, modelRoute } });

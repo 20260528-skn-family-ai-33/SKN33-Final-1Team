@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
@@ -7,6 +7,8 @@ import { DocumentProjectPicker } from './DocumentInput.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout, { logoSteps } from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
+import { MediaPicker } from './ReviewTypePicker.jsx';
+import { mediaChoicePath, mediaChoiceState, wantsMediaChoice } from '../../workspace/mediaChoice.js';
 import { logoDetectorFor } from './workflow.js';
 import CriteriaPage from './CriteriaPage.jsx';
 import RunningPage from './RunningPage.jsx';
@@ -29,14 +31,17 @@ export default function ReviewPage() {
   const projectPicker = useRef(null);
   const [params, setParams] = useSearchParams();
   const location = useLocation();
+  const go = useNavigate();
   const runId = params.get('framework');
+  // 종류가 정해지지 않은 진입(로그인 직후 · 소개 화면의 시작하기 · 내 작업의 새 검수)은 자료 종류부터 고른다.
+  const mediaChoice = !runId && wantsMediaChoice(location) && state.step === 'input' && !state.securityMode;
 
   // 단계 이동 후 제목으로 초점을 옮겨 키보드와 스크린 리더 사용을 돕는다.
   useEffect(() => {
     if (runId) return;
     document.getElementById('page-title')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
-  }, [state.step, runId]);
+  }, [state.step, runId, mediaChoice]);
 
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
     health={health}
@@ -48,6 +53,13 @@ export default function ReviewPage() {
     initialCriterionIds={location.state?.pdfSelection?.runId === runId ? location.state.pdfSelection.criterionIds : null}
     onInput={() => setParams({})}
     openRun={(id, reviewStarting = false) => setParams({ framework: id }, { state: { ...location.state, reviewStarting } })} onNew={() => { newReview(); setParams({}); }} />;
+
+  // 포스터를 고르면 같은 주소에서 고르기 표시만 지워 보안 여부로 넘어가고, 동영상을 고르면 동영상 검수 화면으로 간다.
+  if (mediaChoice) return <ReviewLayout state={state} busy={false} steps={null} showWorkspaceBar={false} headerCurrent={null}>
+    <section className="rv-input-page rv-media-choice" aria-labelledby="page-title">
+      <MediaPicker onSelect={media => media === 'video' ? go('/video') : go(mediaChoicePath, { replace: true })} />
+    </section>
+  </ReviewLayout>;
 
   const input = state.step === 'input';
   const submitting = input && documentBusy && !documentExtracting;
@@ -76,7 +88,8 @@ export default function ReviewPage() {
         onPick={project => { if (project.name !== state.projectName) inputChange('projectName', project.name.slice(0, 60)); }} />)}>
     {input && <InputPage {...{ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
       preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, documentBusy, documentExtracting, documentProgress,
-      documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }} />}
+      documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument, clearDocument, documentCancelBusy, cancelQueuedDocument }}
+      onChooseMedia={() => go(mediaChoicePath, { replace: true, state: mediaChoiceState })} />}
     {state.step === 'criteria' && <CriteriaPage {...{ state, locked, selected, selectedInfo, versionText, unlock, dispatch, addCriterion, newCriterion, setNewCriterion, newCategory, setNewCategory, navigate, confirm, error, run, preview }} />}
     {state.step === 'running' && <RunningPage {...{ state, pollError, retryPoll, navigate, run, preview, dimensions }} />}
     {state.step === 'results' && state.review?.status === 'completed' && <ResultsPage

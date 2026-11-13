@@ -5,6 +5,8 @@ import { Icon } from '../components/Icon.jsx';
 import { PixelField } from '../components/PixelField.jsx';
 import { PosterLayers, VideoLayers } from '../components/LayerFigure.jsx';
 import { SiteHeader } from '../components/SiteHeader.jsx';
+import { mediaChoicePath, mediaChoiceState } from '../workspace/mediaChoice.js';
+import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
 import demoPoster from '../assets/landing-demo-poster.jpg';
 import '../styles/landing.css';
 
@@ -35,6 +37,7 @@ const features = [
 // 소개 화면은 API 요청 없이 렌더링하고, 실제 작업은 각 프로필의 진입 경로에 맡긴다.
 export default function LandingPage({ profile = 'legacy' }) {
   const navigate = useNavigate();
+  const resetWorkspace = useWorkspaceReset();
   const { hash, key, state } = useLocation();
   const auth = useOptionalAuth();
   const [logoutPending, setLogoutPending] = useState(false);
@@ -86,7 +89,11 @@ export default function LandingPage({ profile = 'legacy' }) {
   }, []);
 
   function start() {
-    navigate(isV1 ? '/projects' : auth?.status === 'anonymous' ? '/login' : '/review/new');
+    if (isV1) navigate('/projects');
+    else if (auth?.status === 'anonymous') navigate('/login');
+    // 포스터인지 동영상인지 정하지 않고 시작하므로 자료 종류부터 고른다.
+    // 새로 시작하는 것이므로 앞서 보던 검수(입력·결과)는 비운다. 비우지 않으면 저장된 결과를 보다 온 경우 그 결과가 다시 나온다.
+    else { resetWorkspace(); navigate(mediaChoicePath, { state: mediaChoiceState }); }
   }
   // 샘플 체험은 로그인 없이 /sample에서 미리 만든 예시로 검수 흐름을 보여 준다(/review/new?sample=1의 예시 자료 불러오기는 그대로 둔다).
   function sample() { navigate(isV1 ? '/projects' : '/sample'); }

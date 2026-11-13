@@ -93,6 +93,33 @@ function Lock({ open = false }) {
   </span>;
 }
 
+// 문서 분석 진행 그림: 요구사항 문서를 돋보기가 읽어 내려가고, 읽은 요구사항이 오른쪽에 카드로 뽑혀 나온다.
+// stage는 서버가 알려 준 문서 분석 단계다. 읽는 중(extracting)에만 돋보기와 읽는 띠가 움직이고 카드가 차례로 나온다.
+// 정리 단계(formatting)부터는 카드 세 장이 다 나와 있고, 그 전(업로드·대기)에는 문서와 돋보기만 떠 있다.
+// 카드가 나오는 박자는 '일하는 중'이라는 표시일 뿐 진행률이 아니다. 진행률은 그림 아래 막대가 보여 준다.
+const DOC_LINES = [1, 2, 3, 4, 5, 6, 7];
+const DOC_CARDS = [1, 2, 3];
+export function DocumentArt({ stage }) {
+  const phase = stage === 'extracting' ? 'reading' : stage === 'formatting' || stage === 'completed' ? 'sorting' : 'waiting';
+  return <span className="pa is-document" data-phase={phase}>
+    <span className="pa-world">
+      <span className="pa-floor" />
+      <span className="pa-obj">
+        <Solid name="pa-sheet is-back" depth={6} />
+        <Solid name="pa-sheet" depth={6}>
+          <span className="pa-doc-head" />
+          {DOC_LINES.map(line => <span key={line} className={`pa-doc-line is-${line}`} />)}
+          <span className="pa-doc-read" />
+        </Solid>
+        <Lens at={[86, 44]} show="text" />
+        {DOC_CARDS.map(card => <Solid key={card} name={`pa-card is-${card}`} depth={3}>
+          <span className="pa-card-dot" /><span className="pa-card-line" />
+        </Solid>)}
+      </span>
+    </span>
+  </span>;
+}
+
 // media: 'poster' | 'video'
 // variant: 'media'(자료 종류) | 'secure' · 'general'(보안 여부) | 'text' · 'logo' · 'both'(검수 항목)
 export function PickerArt({ media = 'poster', variant = 'media' }) {

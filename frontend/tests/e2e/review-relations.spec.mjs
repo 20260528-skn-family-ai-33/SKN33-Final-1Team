@@ -253,12 +253,13 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   assert.equal(await page.locator('.rv-result-inspector').count(), 0);
   assert.equal(await rows.first().getAttribute('aria-expanded'), null);
   assert.deepEqual((await rows.allInnerTexts()).map(text => text.replace(/\s+/g, ' ')),
-    ['01 행사일: 11월 20일 충족', '02 행사 장소: 시민공원 위반', '03 주최 기관 로고를 넣는다 확인 필요']);
+    // 이름·기준값을 먼저 보이고, 그와 같은 말인 기준 문장('행사일: 11월 20일')은 다시 적지 않는다
+    ['01 행사일 11월 20일 충족', '02 행사 장소 시민공원 위반', '03 로고 주최 기관 로고 주최 기관 로고를 넣는다 확인 필요']);
   if (shots) await page.screenshot({ path: shots + '/evidence-list.png' });
   // 다른 검수 결과는 창을 열기 전에는 읽지 않는다
   assert.equal(requested.filter(path => path.endsWith('/runs/poster-0')).length, 0);
 
-  await rows.filter({ hasText: '행사 장소: 시민공원' }).click();
+  await rows.filter({ hasText: '시민공원' }).click();
   const dialog = page.getByRole('dialog', { name: '02 행사 장소 판정 근거' });
   await dialog.waitFor();
   assert.equal(await dialog.locator('.rv-evd-head .rv-evd-chip').innerText(), '불충족');

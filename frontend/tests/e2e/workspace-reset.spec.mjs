@@ -134,7 +134,9 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
   assert.equal(await page.getByRole('button', { name: /자료 입력/ }).isDisabled(), true);
   assert.equal(new URL(page.url()).pathname, '/review/new');
   await documentCard.getByText('요구사항 분석을 접수하고 있습니다.', { exact: true }).waitFor();
-  assert.ok(await documentCard.locator('.rv-progress-spinner').isVisible());
+  // 회전 표시 대신 문서를 읽는 3D 그림을 보여 준다. 분석 상태는 이 카드에서 확인하므로 새 탭으로 여는 링크는 두지 않는다.
+  assert.ok(await documentCard.locator('.rv-document-art .pa.is-document').isVisible());
+  assert.equal(await documentCard.getByRole('link', { name: '새 탭에서 분석 상태 확인' }).count(), 0);
   await documentCard.getByRole('timer', { name: '문서 분석 경과 시간', exact: true }).filter({ hasText: /총 경과 00:0[1-9]/ }).waitFor();
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
@@ -159,6 +161,9 @@ test('홈 버튼 왕복도 새 입력으로 초기화한다', { timeout: 30000 }
   await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
   await page.waitForURL(base + '/');
   await page.getByRole('button', { name: /^검수 시작하기/ }).first().click();
+  // 소개 화면의 시작 단추는 포스터·동영상 중 무엇을 검수할지부터 묻는다.
+  await page.getByRole('heading', { name: '어떤 자료를 검수할까요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
   await checkBlank(page);
 });
 

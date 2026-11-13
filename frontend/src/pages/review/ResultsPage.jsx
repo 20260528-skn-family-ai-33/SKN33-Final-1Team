@@ -230,7 +230,12 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
               aria-haspopup={evidence ? 'dialog' : undefined}
               onClick={() => { if (evidence) openEvidence(result); else if (open) setClosedId(result.criterion_id); else chooseResult(result); }}>
               <span className="rv-result-item-number">{String(results.indexOf(result) + 1).padStart(2, '0')}</span>
-              <span className="rv-result-item-title">{result.criterion}</span>
+              {/* 이름을 아는 기준은 이름·기준값을 먼저 보이고 기준 문장은 그 아래 한 줄로 줄인다(같은 문장에서 나온 항목을 값으로 구분한다).
+                  기준 문장이 이름·기준값과 같은 말이면(result.rule 없음) 다시 적지 않는다. */}
+              <span className="rv-result-item-title">{result.label ? <>
+                <span className="rv-result-item-name"><b>{result.label}</b>{result.expected && <> <span>{result.expected}</span></>}</span>
+                {result.rule && <small className="rv-result-item-rule">{result.rule}</small>}
+              </> : result.criterion}</span>
               <StatusLabel status={result.status} />{!evidence && <span aria-hidden="true">{open ? '⌃' : '⌄'}</span>}
             </button>
             {open && details}

@@ -14,7 +14,7 @@ import '../../styles/review-type-picker.css';
 export default function InputPage({ state, projectId, projectStatus, prepare, openDocumentRun, inputChange, sampleBusy, fileBusy,
   fileInput, selectFile, preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
   documentBusy, documentExtracting = false, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
-  clearDocument, documentCancelBusy, cancelQueuedDocument, previewMode = false }) {
+  clearDocument, documentCancelBusy, cancelQueuedDocument, previewMode = false, onChooseMedia }) {
   const doc = state.documentRun;
   const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
   const requirementCount = new Set([...parseRequirements(state.requirements).map(item => item.text), ...selectedRows.map(row => row.text.trim())]).size;
@@ -71,7 +71,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
 
   if (!security) return <section className="rv-input-page" aria-labelledby="page-title">
     {previewEntry}
-    <SecurityPicker disabled={locked} onSelect={value => inputChange('securityMode', value)} />
+    <SecurityPicker disabled={locked} onSelect={value => inputChange('securityMode', value)} onBack={onChooseMedia} />
   </section>;
 
   if (!mode) return <section className="rv-input-page" aria-labelledby="page-title">

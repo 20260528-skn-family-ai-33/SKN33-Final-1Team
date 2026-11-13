@@ -170,9 +170,10 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       await extracted.waitFor();
       assert.equal(await page.locator('#requirements').inputValue(), '');
       assert.equal(await extracted.inputValue(), '행사명은 봄');
+      // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 일부만 검수할 때는 뺄 항목의 체크를 푼다.
       const include = page.getByLabel('문서 요구사항 1번 검수에 포함', { exact: true });
-      assert.equal(await include.isChecked(), false);
-      await include.check();
+      assert.equal(await include.isChecked(), true);
+      if (subset) await page.getByLabel('문서 요구사항 2번 검수에 포함', { exact: true }).uncheck();
       if (mode === 'edited_pdf') await extracted.fill('행사명은 여름');
     }
     if (mode !== 'pdf' && !subset) await page.locator('#requirements').fill(mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');

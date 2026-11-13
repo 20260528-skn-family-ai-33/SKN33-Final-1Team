@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
 import { useHelpChatAnchor } from '../help-chat/HelpChatProvider.jsx';
+import { mediaChoicePath, mediaChoiceState } from '../workspace/mediaChoice.js';
 import { Brand } from './Brand.jsx';
 import { ErrorMessage } from './ErrorMessage.jsx';
 import { Icon } from './Icon.jsx';
@@ -58,7 +59,9 @@ export function SiteHeader({ current, locked = false, lockReason, onHome, onStar
   }
   function start() {
     if (onStart) onStart();
-    else navigate(auth?.status === 'anonymous' ? '/login' : '/review/new');
+    else if (auth?.status === 'anonymous') navigate('/login');
+    // 포스터인지 동영상인지 정하지 않고 시작하므로 자료 종류부터 고른다.
+    else navigate(mediaChoicePath, { state: mediaChoiceState });
   }
 
   return <>

@@ -4,7 +4,7 @@ export function filterResults(results, filter = 'all', query = '') {
   return results.filter(result => {
     if (filter !== 'all' && result.status !== filter) return false;
     if (!term) return true;
-    return [result.criterion, result.reason, result.observed_text,
+    return [result.label, result.expected, result.criterion, result.reason, result.observed_text,
       ...(result.evidence || []).map(item => item.text)]
       .filter(Boolean).join(' ').toLocaleLowerCase().includes(term);
   });

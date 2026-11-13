@@ -6,7 +6,8 @@ import { PixelField } from '../components/PixelField.jsx';
 import { useTilt } from '../components/LayerFigure.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { authErrorMessage, loginDestination } from '../auth/helpers.js';
+import { authErrorMessage, hasLoginReturn, loginDestination } from '../auth/helpers.js';
+import { mediaChoiceState, wantsMediaChoice } from '../workspace/mediaChoice.js';
 import { registerAccount } from '../api/auth.js';
 import { registrationErrorMessage, registrationIssue } from '../auth/registration.js';
 // 검수 결과 화면 예시(Stageshow 장면)는 로그인 입력보다 늦게 불러와도 되므로 따로 불러온다.
@@ -38,7 +39,10 @@ export function LoginPage() {
   // 예시 장면은 마우스를 따라 조금 기운다(움직임을 줄인 환경과 터치 화면에서는 고정).
   const exampleTilt = useTilt();
   const from = location.state?.from;
-  const destination = from?.pathname === '/review/tasks' ? '/review/tasks' : loginDestination(from);
+  const toTasks = from?.pathname === '/review/tasks';
+  const destination = toTasks ? '/review/tasks' : loginDestination(from);
+  // 열려던 검수 화면이 따로 없으면 포스터로 바로 들어가지 않고 자료 종류(포스터·동영상)부터 고른다.
+  const destinationState = !toTasks && (!hasLoginReturn(from) || wantsMediaChoice(from)) ? mediaChoiceState : undefined;
   const unavailable = status === 'unavailable';
   const checking = status === 'checking';
 
@@ -98,7 +102,7 @@ export function LoginPage() {
       const user = await login({ username: username.trim(), password });
       if (!mounted.current) return;
       setPassword('');
-      if (user) navigate(destination, { replace: true });
+      if (user) navigate(destination, { replace: true, state: destinationState });
     } catch (failure) {
       if (!mounted.current) return;
       setError(signup ? registrationErrorMessage(failure) : authErrorMessage(failure));
@@ -128,7 +132,7 @@ export function LoginPage() {
     setSuccess('');
   }
 
-  if (status === 'authenticated') return <Navigate to={destination} replace />;
+  if (status === 'authenticated') return <Navigate to={destination} replace state={destinationState} />;
 
   return <div className="auth-page auth-page--public">
     <SiteHeader />
