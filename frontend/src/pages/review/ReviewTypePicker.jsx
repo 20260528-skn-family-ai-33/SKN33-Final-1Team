@@ -22,7 +22,7 @@ function Check({ x, y }) {
 }
 
 // 타일 그림의 공통 포스터. highlight로 문구·로고 부분을 진하게 그린다.
-function Poster({ id, text = true, logo = true }) {
+export function Poster({ id, text = true, logo = true }) {
   const sky = `rv-type-sky-${id}`;
   const shadow = `rv-type-shadow-${id}`;
   return <>
@@ -46,7 +46,7 @@ function Poster({ id, text = true, logo = true }) {
 }
 
 // 포스터 한 장 위에 검수할 부분(문구·로고)을 점선과 체크로 표시한 그림.
-function TypeArt({ mode }) {
+export function TypeArt({ mode }) {
   const text = mode !== 'logo';
   const logo = mode !== 'text';
   return <svg viewBox="0 0 230 250" fill="none" focusable="false">
@@ -71,10 +71,37 @@ function TypeArt({ mode }) {
   </svg>;
 }
 
-// 보안 자료는 잠긴 자물쇠와 대외비 띠, 일반 자료는 열린 자물쇠로 표시한다.
-function SecurityArt({ secure }) {
+// 동영상 검수의 타일 그림(샘플 체험 목업과 같은 그림). 필름 구멍이 있는 가로 영상 프레임에 자막 줄과 로고를 둔다.
+export function VideoFrame({ text = true, logo = true }) {
+  return <>
+    <rect x="8" y="58" width="214" height="128" rx="10" fill="#171717" />
+    <rect x="18" y="68" width="194" height="108" rx="4" fill="#e7a97c" />
+    <path d="M18 176 L70 128 L104 152 L140 116 L212 176 Z" fill="#c97e55" />
+    <rect x="58" y="150" width="114" height="12" rx="3" fill={text ? '#171717' : '#d9d9d4'} opacity={text ? 1 : .8} />
+    <circle cx="176" cy="88" r="7" fill={logo ? '#171717' : '#d9d9d4'} />
+    <rect x="186" y="83" width="18" height="10" rx="2" fill={logo ? '#62645e' : '#e4e4df'} />
+    {[0, 1, 2, 3, 4, 5, 6].map(i => <g key={i}>
+      <rect x={16 + i * 30} y="62" width="14" height="3" rx="1" fill="#464642" />
+      <rect x={16 + i * 30} y="181" width="14" height="3" rx="1" fill="#464642" />
+    </g>)}
+  </>;
+}
+
+// 영상 프레임 위에 검수할 부분(자막 줄·로고)을 점선과 체크로 표시한 그림.
+export function VideoTypeArt({ mode }) {
+  const text = mode !== 'logo';
+  const logo = mode !== 'text';
   return <svg viewBox="0 0 230 250" fill="none" focusable="false">
-    <Poster id={secure ? 'secure' : 'general'} />
+    <VideoFrame text={text} logo={logo} />
+    {text && <><rect x="52" y="144" width="126" height="24" rx="5" stroke="#fff" strokeWidth="2.4" strokeDasharray="6 4" /><Check x={56} y={144} /></>}
+    {logo && <><rect x="168" y="76" width="42" height="24" rx="5" stroke="#fff" strokeWidth="2.4" strokeDasharray="6 4" /><Check x={208} y={76} /></>}
+  </svg>;
+}
+
+// 보안 자료는 잠긴 자물쇠와 대외비 띠, 일반 자료는 열린 자물쇠로 표시한다. media='video'면 포스터 대신 영상 프레임 위에 그린다.
+export function SecurityArt({ secure, media = 'poster' }) {
+  return <svg viewBox="0 0 230 250" fill="none" focusable="false">
+    {media === 'video' ? <VideoFrame /> : <Poster id={secure ? 'secure' : 'general'} />}
     {secure ? <g>
       <rect x="40" y="62" width="128" height="22" rx="3" fill="#a34f3e" transform="rotate(-12 104 73)" />
       <text x="104" y="78" textAnchor="middle" transform="rotate(-12 104 73)" fill="#fff" fontSize="13" fontWeight="700"
@@ -93,10 +120,14 @@ function SecurityArt({ secure }) {
   </svg>;
 }
 
-const SECURITY_TILES = [
-  { value: 'secure', key: '1', label: '보안 자료', art: <SecurityArt secure /> },
-  { value: 'general', key: '2', label: '일반 자료', art: <SecurityArt secure={false} /> },
-];
+// 타일 그림은 자료 종류(포스터·동영상)별로 한 번만 만든다.
+const TILE_MEDIA = ['poster', 'video'];
+const securityTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, [
+  { value: 'secure', key: '1', label: '보안 자료', art: <SecurityArt secure media={media} /> },
+  { value: 'general', key: '2', label: '일반 자료', art: <SecurityArt secure={false} media={media} /> },
+]]));
+const typeTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, TYPE_TILES.map(tile => ({ ...tile,
+  art: media === 'video' ? <VideoTypeArt mode={tile.value} /> : <TypeArt mode={tile.value} /> }))]));
 
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
 function KioskChoice({ title, tiles, labels, onSelect, onBack, backLabel, context, disabled = false }) {
@@ -130,15 +161,14 @@ function KioskChoice({ title, tiles, labels, onSelect, onBack, backLabel, contex
   </section>;
 }
 
-export function SecurityPicker({ onSelect, disabled = false }) {
-  return <KioskChoice title="보안이 필요한 자료인가요?" tiles={SECURITY_TILES} labels={securityModeLabels}
+// media: 'poster'(기본) | 'video'. 동영상 검수 화면은 영상 프레임 그림을 쓴다.
+export function SecurityPicker({ onSelect, disabled = false, media = 'poster' }) {
+  return <KioskChoice title="보안이 필요한 자료인가요?" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
     onSelect={onSelect} disabled={disabled} />;
 }
 
-const typeTiles = TYPE_TILES.map(tile => ({ ...tile, art: <TypeArt mode={tile.value} /> }));
-
-export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false }) {
-  return <KioskChoice title="검수할 항목을 선택해 주세요" tiles={typeTiles} labels={reviewModeLabels}
+export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false, media = 'poster' }) {
+  return <KioskChoice title="검수할 항목을 선택해 주세요" tiles={typeTiles[media] || typeTiles.poster} labels={reviewModeLabels}
     onSelect={onSelect} onBack={onBack} backLabel="보안 여부 다시 고르기" disabled={disabled}
     context={security && <>{security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</>} />;
 }

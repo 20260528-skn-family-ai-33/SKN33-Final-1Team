@@ -76,7 +76,8 @@ export default function LandingPage({ profile = 'legacy' }) {
   function start() {
     navigate(isV1 ? '/projects' : auth?.status === 'anonymous' ? '/login' : '/review/new');
   }
-  function sample() { navigate(isV1 ? '/projects' : '/review/new?sample=1'); }
+  // 샘플 체험은 로그인 없이 /sample에서 미리 만든 예시로 검수 흐름을 보여 준다(/review/new?sample=1의 예시 자료 불러오기는 그대로 둔다).
+  function sample() { navigate(isV1 ? '/projects' : '/sample'); }
   function home() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     title.current?.focus({ preventScroll: true });

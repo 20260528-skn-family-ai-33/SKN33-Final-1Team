@@ -11,6 +11,7 @@ import { ReviewProvider } from './pages/review/ReviewProvider.jsx';
 import VideoReviewPage from './pages/video/VideoReviewPage.jsx';
 const LogoConfirmPage = React.lazy(() => import('./pages/video/LogoConfirmPage.jsx'));
 const PosterLogoPage = React.lazy(() => import('./pages/review/PosterLogoPage.jsx'));
+const SampleDemoPage = React.lazy(() => import('./pages/sample/SampleDemoPage.jsx'));
 const LocalReviewPreview = import.meta.env.DEV ? React.lazy(() => import('./pages/review/LocalReviewPreview.jsx')) : null;
 const LocalImprovementPreview = import.meta.env.DEV ? React.lazy(() => import('./pages/review/LocalImprovementPreview.jsx')) : null;
 
@@ -19,6 +20,8 @@ function AppRoutes() {
   return <Routes>
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
+    {/* 로그인 없이 둘러보는 샘플 체험. 서버로 아무것도 보내지 않고 미리 만든 예시 결과를 보여 준다. */}
+    <Route path="/sample" element={<React.Suspense fallback={<p role="status">샘플 체험을 준비하고 있어요.</p>}><SampleDemoPage /></React.Suspense>} />
     <Route path="/review/new" element={<RequireAuth><ReviewPage /></RequireAuth>} />
     <Route path="/review/tasks" element={<RequireAuth><MyTasksPage /></RequireAuth>} />
     <Route path="/review/logo" element={<RequireAuth><React.Suspense fallback={<p role="status">포스터 로고 확정 화면을 준비하고 있어요.</p>}><PosterLogoPage /></React.Suspense></RequireAuth>} />

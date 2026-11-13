@@ -166,9 +166,9 @@ export default function VideoReviewPage() {
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
       {submissionWarning && step === 'running' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
       {picker === 'security' && <section className="rv-input-page" aria-labelledby="page-title">
-        <SecurityPicker disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))} /></section>}
+        <SecurityPicker media="video" disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))} /></section>}
       {picker === 'type' && <section className="rv-input-page" aria-labelledby="page-title">
-        <ReviewTypePicker disabled={inputLocked} security={draft.securityMode}
+        <ReviewTypePicker media="video" disabled={inputLocked} security={draft.securityMode}
           onSelect={value => setDraft(previous => ({ ...previous, reviewMode: value }))}
           onBack={() => setDraft(previous => ({ ...previous, securityMode: null }))} /></section>}
       {step === 'input' && !picker && <VideoInput status={status} draft={draft} setDraft={setDraft}
