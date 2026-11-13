@@ -3,7 +3,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { SiteHeader } from '../components/SiteHeader.jsx';
 import { Icon } from '../components/Icon.jsx';
 import { PixelField } from '../components/PixelField.jsx';
-import { useTilt } from '../components/LayerFigure.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { authErrorMessage, hasLoginReturn, loginDestination } from '../auth/helpers.js';
@@ -36,8 +35,6 @@ export function LoginPage() {
   const passwordInput = useRef(null);
   const nameInput = useRef(null);
   const confirmationInput = useRef(null);
-  // 예시 장면은 마우스를 따라 조금 기운다(움직임을 줄인 환경과 터치 화면에서는 고정).
-  const exampleTilt = useTilt();
   const from = location.state?.from;
   const toTasks = from?.pathname === '/review/tasks';
   const destination = toTasks ? '/review/tasks' : loginDestination(from);
@@ -138,11 +135,12 @@ export function LoginPage() {
     <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
+        {/* 예시 장면(태블릿)은 마우스를 따라 기울지 않고 기운 자세 그대로 고정한다. 뒤의 점 그림은 계속 움직인다(구 ↔ 포스터 검수 장면). */}
         <PixelField monochrome scene="poster" />
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
         <h1 id="login-intro-title">검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>
-        <figure className="auth-example" ref={exampleTilt}>
+        <figure className="auth-example">
           <div role="img" aria-label="포스터와 항목별 판정 근거를 나란히 표시한 예시"><Suspense fallback={<div className="auth-example-hold" aria-hidden="true" />}><ResultDemo /></Suspense></div>
           <figcaption>포스터 검수 결과 예시</figcaption></figure>
       </section>
@@ -184,7 +182,6 @@ export function LoginPage() {
           {unavailable && <div className="auth-unavailable"><ErrorMessage message={authErrorMessage(sessionError, 'session')} /><button className="text-btn" type="button" onClick={retrySession}>로그인 상태 다시 확인하기</button></div>}
           <button className="auth-submit" type="submit" disabled={submitting || checking || unavailable}>{submitting ? (signup ? '가입 중…' : '로그인 중…') : (signup ? '가입하기' : '로그인')}{!submitting && <Icon name="arrow" />}</button>
           <div className="auth-switch"><span>{signup ? '이미 계정이 있나요?' : '아직 계정이 없나요?'}</span><button className="text-btn" type="button" onClick={switchMode} disabled={submitting || checking}>{signup ? '로그인으로 돌아가기' : '회원가입'}</button></div>
-          <p className="auth-note">자동 판정과 담당자의 최종 승인은 구분됩니다.</p>
         </form>
       </section>
     </main>

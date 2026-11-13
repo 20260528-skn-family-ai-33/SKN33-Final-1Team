@@ -639,7 +639,8 @@ html .auth-page .auth-example > div { border-radius: 8px; box-shadow: -34px 46px
 html .auth-page .auth-example figcaption { margin-top: 22px; color: var(--op-muted); font: 11px/1.5 var(--font-signal); }
 html .auth-page--public .auth-card { position: sticky; top: 32px; padding: 40px; border-radius: 8px; animation: op-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both; }
 html .auth-page--public .auth-card h2 { font-size: 30px; font-weight: 500; letter-spacing: -0.05em; }
-html .auth-page--public .auth-submit { justify-content: space-between; min-height: 52px; padding: 15px 26px; border-radius: 32px; font-size: 14px; font-weight: 500; }
+/* 로그인·가입 단추: 입력 칸과 같은 폭. 글자와 화살표는 양 끝으로 벌리지 않고 가운데에 모은다(벌려 두면 긴 띠처럼 보여 어색했다). */
+html .auth-page--public .auth-submit { justify-content: center; gap: 10px; min-height: 52px; padding: 15px 26px; border-radius: 32px; font-size: 14px; font-weight: 500; }
 @media (max-width: 900px) {
   html .auth-page--public .auth-intro h1 { font-size: clamp(40px, 10.5vw, 64px); }
   html .auth-intro > .op-pixel-field { bottom: 64px; right: -6px; width: 360px; height: 360px; }
