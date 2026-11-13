@@ -104,7 +104,7 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
   const facts = [
     ['영상 길이', media ? formatTime(media.duration_ms) : '확인 중'],
     ['해상도', media ? `${media.width}×${media.height}` : '확인 중'],
-    ['검수 기준', criteriaCount == null ? '확인 중' : criteriaCount ? `${criteriaCount}개` : '없음 · 자막·광고만'],
+    ['검수 기준', criteriaCount == null ? '확인 중' : criteriaCount ? `${criteriaCount}개` : '없음 · 자막만 읽기'],
     ['처리 속도', runtime?.seconds_per_frame ? `장당 ${runtime.seconds_per_frame}초${runtime.device ? ` · ${runtime.device}` : ''}` : '글자 읽기 후 표시'],
   ];
   return <>
@@ -134,7 +134,6 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
             <div className="rv-progress-actions"><Link className="rv-button secondary" to="/review/tasks">내 작업에서 다시 열기</Link></div>
           </>}
         <ErrorMessage message={error} />
-        {job?.warnings?.length > 0 && <ul className="rv-video-warning-list">{job.warnings.map(warning => <li key={warning}><Icon name="warning" />{warning}</li>)}</ul>}
         {(failed || (!job && error)) && <div className="rv-progress-actions">
           <button type="button" className="rv-button primary" onClick={onRestart}>새 동영상으로 다시 검수<Icon name="arrow" /></button>
         </div>}

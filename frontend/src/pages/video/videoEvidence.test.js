@@ -75,50 +75,11 @@ test('위치 근거가 없는 항목은 점선 노드로 두고 영상의 한 �
   assert.equal(graph.quote, null);
 });
 
-test('광고·협찬 표시는 고른 규정의 근거 사슬을 만들고 입력한 정보로 보는 규정은 입력값을 근거로 둔다', () => {
-  const hit = { frame_id: 't001000', time_ms: 1000, text: '유료 광고 포함', bbox_xyxy: [184, 84, 356, 114], class: 'allowed' };
-  const data = job([], {
-    disclosure_input: { kind: 'endorsement', title: '가을 축제 브이로그', caption: '' },
-    disclosure: { applicable: true, status: 'review', text_time_status: 'pass', severity: 'warn', reviewer: 'manager', reason: '시인성 확인이 남았습니다.',
-      rules: { R0: { status: 'pass', note: '적용 대상 확정' }, R2: { status: 'review', note: '제목 앞 15자 안의 허용 문구' },
-        R3a: { status: 'pass', evidence: [hit], note: '[0, 3초) 0.2초 프레임' }, R5: { status: 'review', note: '담당자 확인' } },
-      notes: ['표본 문구 확인과 표시 규정 충족은 다른 상태입니다.'] },
-  });
-  const lead = open(data);
-  assert.equal(lead.kind, 'disclosure');
-  assert.equal(lead.rule, 'R2');   // 위반이 없으면 확인 필요인 첫 규정부터 본다
-  assert.deepEqual(lead.rules.map(rule => [rule.key, rule.label, rule.verdict.code]),
-    [['R0', '적용 대상', 'pass'], ['R2', '제목 앞 15자', 'review'], ['R3a', '시작 3초', 'pass'], ['R5', '형태·시인성', 'review']]);
-  const title = byId(lead);
-  assert.equal(title.observation.kind, '입력한 정보');
-  assert.equal(title.observation.sub, '‘가을 축제 브이로그’');
-  assert.equal(title.frame.dashed, true);
-  assert.equal(title.human.title, '결정 대기');
-  assert.deepEqual(lead.path.map(step => step.id), ['video', 'frame', 'observation', 'verdict', 'rule', 'guideline']);
-
-  const screen = open(data, 0, { rule: 'R3a' });
-  const nodes = byId(screen);
-  assert.equal(screen.rule, 'R3a');
-  assert.equal(nodes.observation.title, '‘유료 광고 포함’');
-  assert.equal(nodes.verdict.tone, 'pass');
-  assert.equal(nodes.rule.title, '시작 3초');
-  assert.equal(nodes.human, undefined);
-  assert.equal(screen.evidence[0].raw.label, '시작 3초');
-  assert.ok(nodes.guideline.facts.some(([name]) => name === '안내'));   // 숫자 기준은 내부 기준이라는 안내
-  for (const edge of screen.edges) assert.ok(nodes[edge.from] && nodes[edge.to], edge.id);
-});
-
-test('규정이 없는 광고·협찬 판정과 없는 항목도 처리한다', () => {
-  const data = job([], { disclosure_input: { kind: 'self' },
-    disclosure: { applicable: false, status: 'not_applicable', severity: 'info', reviewer: 'auto', reason: '광고주 자체 광고입니다.', rules: {} } });
-  const graph = open(data);
-  const nodes = byId(graph);
-  assert.deepEqual(graph.verdict, { code: 'not_applicable', label: '대상 아님' });
-  assert.equal(graph.rule, null);
-  assert.equal(nodes.policy, undefined);
-  assert.equal(nodes.rule.title, '적용 대상');
-  assert.equal(nodes.observation.sub, '광고주 자체 광고');
-  for (const edge of graph.edges) assert.ok(nodes[edge.from] && nodes[edge.to], edge.id);
+test('광고·협찬 판정이 기록된 이전 검수도 결과 목록과 근거 창에 넣지 않는다', () => {
+  const data = job([], { disclosure_input: { kind: 'endorsement' },
+    disclosure: { applicable: true, status: 'review', reason: '시인성 확인이 남았습니다.', rules: { R0: { status: 'pass' } } } });
+  assert.deepEqual(judgmentItems(data), []);
+  assert.equal(videoEvidence(data, { key: 'disclosure', kind: 'disclosure', disclosure: data.disclosure }), null);
   assert.equal(videoEvidence(data, null), null);
-  assert.equal(videoEvidence(null, judgmentItems(data)[0]), null);
+  assert.equal(videoEvidence(null, judgmentItems(job([result('fail')]))[0]), null);
 });

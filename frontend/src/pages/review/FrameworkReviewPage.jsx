@@ -339,11 +339,12 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       if (!logos.length) return;
       await submitPosterLogoJob({ poster: file, logos, title: (projectName || '포스터') + ' 로고 검수', runId: childRunId,
         detector: previous ? previous.detector : logoDetector, signal });
-    } catch (failure) {
+    } catch {
+      // 실패 원인(예: Not Found)은 화면에 보이지 않고 안내 문구만 남긴다.
       if (signal.aborted) return;
       try {
         sessionStorage.setItem(logoNoticeKey(childRunId),
-          '포스터 로고 검수를 접수하지 못했어요(' + failure.message + '). 기준 문구 검수는 그대로 진행합니다.');
+          '포스터 로고 검수를 접수하지 못했어요. 기준 문구 검수는 그대로 진행합니다');
       } catch { /* 브라우저 저장소를 쓸 수 없으면 안내만 생략한다 */ }
     }
   }
@@ -392,8 +393,9 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       <button type="button" className="rv-button primary" disabled={busy || image.unavailable || !canEditText}
         title={textEditBlock} onClick={() => setEditingPoster('text')}>
         <Icon name={secureMaterial ? 'lock' : 'pencil'} />{secureMaterial ? '문구 수정 불가 · 보안 자료' : '포스터 문구 수정'}</button>
-      <button type="button" className="rv-button secondary" disabled={busy || image.unavailable}
-        onClick={() => setEditingPoster('qr')}>QR 생성</button>
+      <button type="button" className="rv-button secondary" disabled={busy || image.unavailable || secureMaterial}
+        title={secureMaterial ? '보안 자료는 QR 생성을 쓸 수 없어요.' : undefined} onClick={() => setEditingPoster('qr')}>
+        {secureMaterial && <Icon name="lock" />}{secureMaterial ? 'QR 생성 불가 · 보안 자료' : 'QR 생성'}</button>
     </>}
     <a className="rv-button secondary" href={imageUrl} target="_blank" rel="noopener noreferrer"
       title="근거 박스 없이 원본 이미지 새 탭에서 열기">원본</a>
@@ -474,13 +476,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         revise={canRevise ? () => setReportTarget('approval') : undefined}
         evidence={props => <PosterEvidenceDialog run={run} image={image} history={history} runs={chainRuns} retrieval={retrieval}
           onOpen={() => setEvidenceOpened(true)} {...props} />}
-        header={<>
-          {history && <RevisionHistory history={history} />}
-          {retrieval && <details className="rv-framework-record"><summary>근거 조회 · {retrieval.backend === 'neo4j' ? 'Neo4j' : 'PostgreSQL'}</summary>
-            <p>원장 revision {retrieval.required_revision} · 그래프 revision {retrieval.observed_graph_revision ?? '확인 안 됨'}</p>
-            {retrieval.fallback_reason && <p>PostgreSQL 대체 사유 {retrieval.fallback_reason}</p>}
-          </details>}
-        </>}
+        // 근거 조회 경로(Neo4j/PostgreSQL·revision) 표시는 결과 화면에 두지 않는다. 조회 기록은 근거 관계도(PosterEvidenceDialog)에만 넘긴다.
+        header={history && <RevisionHistory history={history} />}
         imageActions={imageActions}
         actions={<>
           <button type="button" className="rv-button primary" disabled={busy} onClick={() => setReportTarget('summary')}>
@@ -618,7 +615,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         {run.context.parent_run_id && <p>수정 전 실행 <a href={'?framework=' + encodeURIComponent(run.context.parent_run_id)}>{run.context.parent_run_id}</a></p>}
       </details>}
       </section>}
-    {editingPoster && canEditPoster && (editingPoster !== 'text' || canEditText) && <PosterTextEditor key={runId} runPath={path} imageUrl={imageUrl}
+    {editingPoster && canEditPoster && (editingPoster === 'text' ? canEditText : !secureMaterial) && <PosterTextEditor key={runId} runPath={path} imageUrl={imageUrl}
       initialMode={editingPoster}
       placeCandidates={posterPlaceCandidates(run.criteria?.criteria || [], run.validated.items || [])}
       onClose={() => setEditingPoster(null)} />}

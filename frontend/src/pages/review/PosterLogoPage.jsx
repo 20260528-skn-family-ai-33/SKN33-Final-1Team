@@ -6,25 +6,13 @@ import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { POSTER_LOGO_API, posterLogoAnswer, rankedCandidates, TOP_N } from './posterLogoFlow.js';
+import { groupDifferences, OUTCOME } from '../video/logoFlow.js';
 import '../video/logoConfirm.css';
 import './posterLogo.css';
 
 // 포스터 로고 위치 확정(1) → 정밀 대조 근거(2). 영상 로고 확정 화면과 같은 흐름이며, 포스터는 한 장이라 시간 구간이 없다.
 // 순위는 후보를 찾는 데만 쓰고, 같은 로고인지와 최종 일치 여부는 사람이 판단한다.
 const RUNNING = new Set(['queued', 'running']);
-const OUTCOME = {
-  match: { label: '차이 근거 없음', tone: 'match' },
-  diff: { label: '차이 근거 있음', tone: 'diff' },
-  unknown: { label: '비교 정보 부족', tone: 'unknown' },
-};
-const ELEMENT_STATUS = {
-  present: '확인됨',
-  missing: '빠짐',
-  moved: '위치 다름',
-  changed: '형태 다름',
-  not_comparable_small: '크기 부족',
-  not_comparable_unread: '읽기 불가',
-};
 const EMPTY_SELECTION = { decision: null, checked: [], manuals: [] };
 
 function boxStyle(box, size) {
@@ -212,19 +200,11 @@ function CandidateWorkspace({ poster, refIndex, checked, manuals, decision, onTo
   </div>;
 }
 
-function colorLabel(color) {
-  if (!color) return '색상 정보 없음';
-  if (color.mono) return '단색(흰색·검은색) 로고 · 색 비교 생략';
-  const items = [];
-  if (color.hue != null) items.push('색상 차이 ' + color.hue + '°');
-  if (color.lostc != null) items.push('빠진 유채색 ' + Math.round(color.lostc * 100) + '%');
-  if (color.newc != null) items.push('새 유채색 ' + Math.round(color.newc * 100) + '%');
-  return items.join(' · ') || '색상 비교 근거 부족';
-}
-
 function LocationEvidence({ base, item, refInfo }) {
   const refName = refInfo?.name || item.reference || ('원본 로고 ' + (item.logo + 1));
-  const outcome = OUTCOME[item.outcome] || { label: item.outcome, tone: 'unknown' };
+  // 차이 근거가 있으면 보류, 없으면 통과. 보류면 차이만 종류별로 모아 보여 준다(포스터는 한 장이라 초 수가 없다).
+  const outcome = OUTCOME[item.outcome] || OUTCOME.unknown;
+  const differences = groupDifferences([{ sec: 0, outcome: item.outcome, findings: item.findings }]);
   return <article className="vl-evidence-card">
     <header className="vl-evidence-head">
       <div><span className="vl-kicker">{item.source === 'candidate' ? '후보 위치' : '직접 지정'}</span>
@@ -236,12 +216,14 @@ function LocationEvidence({ base, item, refInfo }) {
       <figure><img src={base + '/' + (refInfo?.img || ('refs/' + item.logo + '.png'))} alt={refName + ' 원본'} /><figcaption>원본 로고</figcaption></figure>
       <figure><img src={base + '/compare/crop/' + item.logo + '/' + item.crop + '.jpg'} alt={refName + ' 포스터 영역'} /><figcaption>포스터에서 대조한 영역</figcaption></figure>
       <div className="vl-evidence-summary">
-        <p className="vl-color-line">{colorLabel(item.color)}</p>
-        {item.findings?.length > 0 ? <ul className="vl-finding-list">{item.findings.map(text => <li key={text}><span>{text}</span></li>)}</ul>
-          : <p className="vl-muted-copy">계산된 차이 근거가 없습니다. 일치 확정이 아니라 비교한 항목 기준의 결과입니다.</p>}
-        <ul className="pl-element-list">{(item.elements || []).map((element, index) => <li key={index}>
-          <span>{element.name}</span><span>{ELEMENT_STATUS[element.status] || element.status}</span></li>)}</ul>
-        <p className="vl-muted-copy">OCR: {(item.ocr || []).join(' / ') || '읽힌 글자 없음'}</p>
+        {differences.length > 0 ? <div className="vl-diff-groups" aria-label="종류별 차이">
+          {differences.map(group => <section className="vl-diff-group" key={group.kind}>
+            <h3>{group.kind}</h3>
+            <ul className="vl-finding-list">{group.items.map(([text]) => <li key={text}><span>{text}</span></li>)}</ul>
+          </section>)}
+        </div> : <p className="vl-muted-copy">{outcome.tone === 'match'
+          ? '차이 근거가 없어 통과로 표시했어요. 일치 확정이 아니라 비교한 항목 기준의 결과입니다.'
+          : '로고가 작거나 글자를 읽지 못해 비교하지 못했어요. 원본과 직접 비교해 주세요.'}</p>}
         {item.small && <p className="pl-small-note">짧은 변이 60px 미만인 작은 영역입니다. 정상 로고도 차이 근거가 나오기 쉬우니 원본과 직접 비교해 주세요.</p>}
       </div>
     </div>
@@ -276,7 +258,7 @@ function CompareResults({ base, refs, onBack, onStatus }) {
   return <div className="vl-main-stack">
     <div className="vl-stage-heading">
       <div><span className="vl-kicker">02 / 근거 확인</span><h1>위치별 비교 근거를 확인하세요</h1>
-        <p>이 화면은 자동 최종 판정을 내리지 않습니다. 요소·문구·색 근거와 두 이미지를 보고 판단해 주세요.</p></div>
+        <p>차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 두 이미지를 보고 합니다.</p></div>
       <button type="button" className="vl-button secondary" onClick={onBack}>위치 확정으로 돌아가기</button>
     </div>
     {RUNNING.has(result.compare_status) && <section className="vl-panel vl-progress-card">

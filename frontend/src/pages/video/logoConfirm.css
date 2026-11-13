@@ -354,6 +354,11 @@
 .vl-finding-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
 .vl-finding-list li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 7px; color: #5c4c37; background: #fff8e9; font-size: 9px; }
 .vl-finding-list strong { font-variant-numeric: tabular-nums; }
+/* 동영상 정밀 대조: 묶음 결과(통과·보류)와 보류 묶음의 종류별 차이 */
+.vl-evidence-head h2 .vl-bundle-outcome { margin-left: 6px; vertical-align: middle; font-size: 10px; }
+.vl-diff-groups { display: grid; gap: 9px; }
+.vl-diff-group h3 { display: flex; align-items: baseline; gap: 6px; margin: 0 0 5px; color: #a43b3b; font-size: 11px; font-weight: 700; }
+.vl-diff-group h3 span { color: #7b6a55; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .vl-muted-copy { margin: 0; font-size: 10px; }
 /* 높이는 아래 여백 12px을 포함한다(막대 9px). 9px로 두면 border-box라 막대가 보이지 않는다. */
 .vl-sec-timeline { display: flex; gap: 2px; height: 21px; padding: 0 15px 12px; overflow: hidden; }

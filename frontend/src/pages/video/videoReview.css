@@ -15,9 +15,6 @@
 .rv-video .rv-result-status.not_applicable > span, .rv-video .rv-result-status.skipped > span { background: #a3a39b; }
 .rv-video .rv-progress-steps li.is-failed { color: #a34f3e; }
 .rv-video .rv-progress-steps li.is-failed > span { border-color: #a34f3e; background: #f9ece9; color: #a34f3e; }
-.rv-video .rv-video-warning-list { list-style: none; display: grid; gap: 6px; width: min(760px, 100%); margin: 16px 0 0; padding: 0; text-align: left; }
-.rv-video .rv-video-warning-list li { display: flex; align-items: flex-start; gap: 8px; padding: 9px 12px; border: 1px solid #e9dfbf; border-radius: 10px; background: #f8f3e2; color: #65551f; font-size: 11px; line-height: 1.7; }
-.rv-video .rv-video-warning-list .icon { width: 14px; height: 14px; margin-top: 2px; color: #806a28; }
 
 /* ---------- 01 자료 입력 ---------- */
 .rv-video .rv-video-input-column { min-width: 0; align-self: start; }
@@ -29,16 +26,6 @@
 .rv-video .rv-video-preview { display: block; max-width: calc(100% - 32px); max-height: calc(100% - 32px); border-radius: 8px; background: #171717; box-shadow: 0 10px 28px #17171726; }
 .rv-video .rv-video-preview-duration { position: absolute; right: 14px; bottom: 14px; padding: 3px 8px; border-radius: 5px; color: #fff; background: #171717; font: 12px var(--font-signal); pointer-events: none; }
 .rv-video .rv-video-stage .image-stage-empty { min-height: 0; }
-.rv-video .rv-video-ad-settings > summary { cursor: pointer; font-size: 13px; font-weight: 600; }
-.rv-video .rv-video-subsection { min-width: 0; margin: 12px 0 0; padding: 0; border: 0; }
-.rv-video .rv-video-subsection-hint { color: var(--rv-muted); font-size: 11px; line-height: 1.7; margin-bottom: 14px; }
-.rv-video .rv-video-subsection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.rv-video .rv-video-subsection:disabled { opacity: .6; }
-.rv-video .rv-video-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 8px; padding: 10px 12px; border-radius: 9px; background: #f7f7f4; cursor: pointer; }
-.rv-video .rv-video-check:hover { background: #f1f1ec; }
-.rv-video .rv-video-check input[type=checkbox] { flex-shrink: 0; width: 16px; height: 16px; margin: 2px 0 0; }
-.rv-video .rv-video-check strong { display: block; font-size: 12px; }
-.rv-video .rv-video-check small { display: block; margin-top: 2px; color: var(--rv-muted); font-size: 10px; line-height: 1.6; }
 
 .rv-reference-logo-drop.is-dragging { outline: 2px solid #265d51; outline-offset: 2px; }
 .rv-reference-logo-row { color: var(--rv-muted); font-size: 12px; flex-wrap: wrap; }
@@ -146,8 +133,6 @@
 .rv-video .rv-video-logo-inline-title .icon { width: 15px; height: 15px; color: #6e6e6b; }
 .rv-video .rv-video-logo-inline-progress { color: #6e6e6b; font-variant-numeric: tabular-nums; }
 .rv-video .rv-video-logo-inline .rv-video-logo-actions .rv-button { min-height: 30px; padding: 5px 11px; }
-.rv-video .rv-video-warning-list.is-inline { width: auto; margin: 0; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
-.rv-video .rv-video-warning-list.is-inline li { padding: 7px 12px; }
 
 .rv-video-workbench { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 18px; }
 /* 열을 minmax(0, 1fr)로 묶는다. auto 열이면 근거를 확대한 이미지 너비만큼 칸이 커지고 '화면에 맞춤'으로 돌아와도
@@ -242,7 +227,6 @@
   .rv-video-workbench { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
-  .rv-video .rv-video-subsection-grid { grid-template-columns: minmax(0, 1fr); }
   .rv-video .rv-video-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {

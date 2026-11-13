@@ -96,9 +96,6 @@
 .sd-file { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid #ececea; border-radius: 10px; font-size: 13px; }
 .sd-file small { margin-left: auto; color: var(--sd-muted-2); font-size: 11.5px; }
 .sd-thumb { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 8px; background: var(--sd-soft); font-size: 11px; }
-.sd-ad { color: #3d3e3a; font-size: 13px; }
-.sd-ad summary { cursor: pointer; font-size: 14px; font-weight: 600; }
-.sd-ad p { margin-top: 8px; color: var(--sd-muted); font-size: 12px; line-height: 1.6; }
 .sd-actionbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 16px; padding: 12px 15px; border: 1px solid var(--sd-line); border-radius: 17px; background: #fff; }
 
 /* 근거 상자 */

@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
 import VideoEvidenceDialog from './VideoEvidenceDialog.jsx';
-import VideoEvidenceGraph from './VideoEvidenceGraph.jsx';
 import VideoWorkflowActions from './VideoWorkflowActions.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
@@ -11,20 +10,14 @@ const EMPTY = [];
 const NO_VIEW = { segmentId: null, frameId: null, focus: null, key: '', time: null };
 const samplingLabels = { base: '1초 표본', head: '시작 0.2초 표본', tail: '끝 0.2초 표본' };
 const evidenceKey = item => (item ? `${item.frame_id}:${(item.bbox_xyxy || []).join(',')}:${item.time_ms}` : '');
-const itemEvidence = item => item?.result?.evidence_segments || (item?.disclosure ? disclosureEvidence(item.disclosure) : EMPTY);
-const itemTitle = item => item.result?.criterion || '광고·협찬 표시';
+const itemEvidence = item => item?.result?.evidence_segments || EMPTY;
+const itemTitle = item => item.result?.criterion || '검수 항목';
 
 function StatusLabel({ status }) {
   return <span className={`rv-result-status ${status || 'review'}`}><span aria-hidden="true" />{statusLabels[status] || '확인 필요'}</span>;
 }
 
 function joinLabels(...values) { return values.filter(Boolean).join(' · '); }
-
-// 광고 표시 규정 중 화면 위치가 있는 근거(R1·R3)만 모은다.
-function disclosureEvidence(disclosure) {
-  return Object.entries(disclosure?.rules || {}).flatMap(([key, rule]) => (rule.evidence || [])
-    .filter(item => item?.frame_id && Number.isFinite(item.time_ms)).map(item => ({ ...item, label: key })));
-}
 
 function EvidenceButton({ item, active, onShow, children }) {
   return <button type="button" className={`rv-video-evidence-button${active ? ' is-active' : ''}`} aria-pressed={active} onClick={() => onShow(item)}>
@@ -57,7 +50,7 @@ function SegmentDetail({ segment, tracks, frames, items, onSelectItem }) {
   const rep = frames.find(frame => frame.frame_id === segment.rep_frame_id);
   const users = items.filter(item => item.kind === 'criterion' && (item.result.evidence_segments || []).some(e => e.segment_id === segment.id));
   return <>
-    <div className="rv-result-verdict"><span className="rv-video-chip">{segment.id}</span><span>{((segment.end_ms - segment.start_ms) / 1000).toFixed(1)}초 구간</span></div>
+    <div className="rv-result-verdict"><span className="rv-video-chip">{segment.id}</span><span>{Math.round((segment.end_ms - segment.start_ms) / 1000)}초 구간</span></div>
     <section className="rv-result-detail-section"><h3>구간</h3><p>{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}{rep ? ` · 대표 프레임 ${formatTime(rep.time_ms)}` : ''}</p></section>
     <section className="rv-result-detail-section"><h3>자막 <span>{texts.length}</span></h3>
       {texts.length ? <ul className="rv-video-plain-list">{texts.map(track => <li key={track.id}>{track.text}</li>)}</ul> : <p className="rv-result-muted">이 구간에서 남긴 자막 줄이 없습니다.</p>}</section>
@@ -268,7 +261,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
       <p>자동 검수를 완료했어요. 판정은 검사한 표본 시각을 기준으로 합니다.</p>
       <LogoFlowInline jobs={logo?.jobs} error={logo?.error} notice={logoWarning} />
     </div>
-    {job.warnings?.length > 0 && <ul className="rv-video-warning-list is-inline">{job.warnings.map(warning => <li key={warning}><Icon name="warning" />{warning}</li>)}</ul>}
+    {/* 서버 처리 안내(job.warnings: 장면 경계 도구 미설치·OCR 실패 프레임 등)는 진행·결과·보고서 어디에도 띄우지 않는다. */}
 
     <div className="rv-video-workbench">
       <div className="rv-video-center">
@@ -332,7 +325,6 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
               <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
           </div>
-          {job.disclosure && <VideoEvidenceGraph jobId={job.id} onFrame={show} />}
           {job.workflow && <VideoWorkflowActions {...{ job, onDecision, onRevise, onOpenRun }} />}
           <RuntimeDetails job={job} />
         </div>

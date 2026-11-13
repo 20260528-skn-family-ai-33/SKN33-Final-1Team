@@ -7,7 +7,7 @@ import { Icon } from '../../components/Icon.jsx';
 // 동영상 검수 화면에 붙는 영상 로고 검수(/api/video-logos) 조각: 원본 로고 입력, 접수, 작업 상태.
 export const MAX_LOGOS = 12;
 const RUNNING = new Set(['queued', 'running']);
-export const logoStatusLabels = { queued: '접수됨', running: '후보 찾는 중', candidates_ready: '위치 확정 대기', failed: '실패' };
+export const logoStatusLabels = { queued: '접수됨', running: '후보 찾는 중', candidates_ready: '후보 찾기 완료', failed: '실패' };
 export const compareStatusLabels = { queued: '정밀 대조 대기', running: '정밀 대조 중', completed: '정밀 대조 완료', failed: '정밀 대조 실패' };
 
 export function useLogoStatus() {
@@ -128,13 +128,14 @@ export function useLogoJobs(reviewId) {
 }
 
 // 로고 작업은 판정이 아니라 처리 상태라서 충족·위반 색을 쓰지 않는다: 처리 중 · 사람 차례 · 끝남 · 오류.
-const logoState = job => (job.status === 'failed' ? 'is-error' : job.status === 'candidates_ready' ? 'is-todo' : 'is-running');
+// 후보를 찾으면 서버가 정밀 대조까지 자동으로 이어서 하므로, 사람 차례는 정밀 대조가 끝난 뒤(결과 확인)다.
+const logoState = job => (job.status === 'failed' ? 'is-error' : job.status === 'candidates_ready' ? 'is-done' : 'is-running');
 const compareState = job => (job.compare_status === 'failed' ? 'is-error' : job.compare_status === 'completed' ? 'is-done' : 'is-running');
 
 function LogoChips({ job }) {
   return <>
     <span className={`rv-video-logo-state ${logoState(job)}`}><span aria-hidden="true" />{logoStatusLabels[job.status] || job.status}</span>
-    {job.compare_status && <span className={`rv-video-logo-state ${compareState(job)}`} title={job.compare_status === 'completed' ? '정밀 대조는 판정 없이 근거만 모읍니다.' : undefined}>
+    {job.compare_status && <span className={`rv-video-logo-state ${compareState(job)}`} title={job.compare_status === 'completed' ? '차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 합니다.' : undefined}>
       <span aria-hidden="true" />{compareStatusLabels[job.compare_status]}{RUNNING.has(job.compare_status) ? ` ${job.compare_progress || 0}%` : ''}</span>}
   </>;
 }
@@ -142,8 +143,8 @@ function LogoChips({ job }) {
 function LogoActions({ job }) {
   if (job.status !== 'candidates_ready') return null;
   return <div className="rv-video-logo-actions">
-    <Link className="rv-button primary" to={`/video/logo?job=${job.id}`}>로고 위치 확정하기</Link>
-    {job.compare_status === 'completed' && <Link className="rv-button secondary" to={`/video/logo?job=${job.id}&view=compare`}>정밀 대조 근거 보기</Link>}
+    <Link className={`rv-button ${job.compare_status === 'completed' ? 'primary' : 'secondary'}`} to={`/video/logo?job=${job.id}`}>
+      {job.compare_status === 'completed' ? '로고 검수 결과 확인' : '로고 검수 보기'}</Link>
   </div>;
 }
 
@@ -152,7 +153,7 @@ export function LogoFlowCard({ jobs, error }) {
   if (!jobs?.length && !error) return null;
   return <section className="rv-panel rv-video-logo-card" aria-labelledby="video-logo-title">
     <div className="rv-panel-heading"><div><h2 id="video-logo-title">영상 로고 검수</h2>
-      <p>후보를 고른 뒤 영상에서 위치를 확정하고, 정밀 대조 근거를 확인합니다. 최종 판정은 담당자가 합니다.</p></div></div>
+      <p>후보를 찾으면 순위가 높은 후보로 정밀 대조까지 자동으로 진행합니다. 결과를 보고 검수하려던 로고가 아니면 위치를 직접 확인해 다시 대조하세요. 최종 판정은 담당자가 합니다.</p></div></div>
     <div className="rv-video-logo-body">
       <ErrorMessage message={error} />
       <ul className="rv-video-logo-jobs">{(jobs || []).map(job => <li key={job.id}>
@@ -169,12 +170,12 @@ export function LogoFlowCard({ jobs, error }) {
   </section>;
 }
 
-// 결과 화면 머리글에 두는 한 줄 요약. 다음에 할 일(위치 확정·근거 보기)은 버튼으로, 실패 사유·빠진 구간 경고는 그 아래에 남긴다.
+// 결과 화면 머리글에 두는 한 줄 요약. 다음에 할 일(로고 검수 결과 확인)은 버튼으로, 실패 사유·빠진 구간 경고는 그 아래에 남긴다.
 export function LogoFlowInline({ jobs, error, notice }) {
   if (!jobs?.length && !error && !notice) return null;
   return <div className="rv-video-logo-inline" role="group" aria-label="영상 로고 검수">
     {jobs?.length > 0 && <p className="rv-video-logo-inline-help">
-      후보 선택 → 위치 확정 → 정밀 대조 근거 확인 순서로 진행합니다. 최종 판정은 담당자가 합니다.
+      후보 찾기 → 정밀 대조까지 자동으로 진행합니다. 결과를 보고 필요하면 위치를 직접 확인해 다시 대조하세요. 최종 판정은 담당자가 합니다.
     </p>}
     {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
     {error && <p className="rv-video-inline-warning"><Icon name="warning" />{error}</p>}

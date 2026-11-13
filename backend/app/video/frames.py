@@ -1,7 +1,7 @@
 """숏폼 검수 0~2단계 — 영상 검사, 표본 시각 프레임 추출, 검사 범위 기록, 장면 경계.
 
 계획 문서(숏폼_검수_최종판 2026-10-20)의 규칙을 따른다.
-- 표본 시각: 1초 간격 전체 + 시작·끝 3초는 0.2초 간격(광고 표시 검사용).
+- 표본 시각: 1초 간격 전체. 시작·끝 3초 0.2초 간격(edges=True)은 동영상 검수에서 쓰지 않는다(광고·협찬 표시 판정을 없앰).
 - 시각 k의 프레임은 'pts가 k 이하인 마지막 프레임'(ffmpeg fps=5:round=up 슬롯과 같음).
 - 파일명 t012000.jpg는 요청한 표본 시각이다. 긴 변 1920 이하, JPEG 품질 90.
 문서는 PyAV(av==19.0.1)를 권하지만 이 시연 환경에는 없으므로 같은 규칙을 ffmpeg로 구현한다.
@@ -114,7 +114,7 @@ def probe(ffmpeg: str, demuxer: str, path: Path) -> dict:
 # 1단계 — 표본 시각과 검사 범위
 # ---------------------------------------------------------------------------
 def plan_times(duration_ms: int, *, edges: bool = True) -> list[dict]:
-    """1초 격자 전체와 (광고 표시 검사 대상이면) 시작·끝 3초의 0.2초 슬롯. 겹치는 시각은 1초 쪽으로.
+    """1초 격자 전체와 (edges=True면) 시작·끝 3초의 0.2초 슬롯. 겹치는 시각은 1초 쪽으로. 동영상 검수는 edges=False로 부른다.
     ffmpeg fps=5 필터는 0.2초를 다 채우는 슬롯만 내므로, 영상 안에서 0.2초를 다 채우는 슬롯(t + 0.2초 ≤ 길이)만 계획한다.
     (예: 88.967초 영상의 88.8초 슬롯은 나오지 않아 정상 파일이 잘린 파일로 실패했다.) 0.2초보다 짧은 영상도 첫 프레임은 본다."""
     end = max(duration_ms - EDGE_MS + 1, 1)
@@ -136,7 +136,8 @@ def coverage(plan: list[dict], duration_ms: int) -> dict:
         gaps.append([inspected[-1], duration_ms])
     return {"duration_ms": duration_ms, "inspected_ms": inspected, "uninspected": gaps,
             "intervals_ms": {"base": BASE_MS, "edge": EDGE_MS, "edge_window": EDGE_WINDOW_MS},
-            "note": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
+            "note": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"
+            if any(item["sampling"] != "base" for item in plan) else "1초 간격 표본 검사"}
 
 
 def extract_frames(ffmpeg: str, demuxer: str, path: Path, out_dir: Path, plan: list[dict]) -> list[dict]:

@@ -56,7 +56,7 @@ export default function VideoWorkflowActions({ job, onDecision, onRevise, onOpen
     <h3>{decisionLabels[decision]} · 영상 v{job.workflow.asset_version}</h3>
     {decision === 'unreviewed' && <>
       {(options?.human_check_ids || []).map(id => <label key={id}>
-        {job.criteria.find(item => item.id === id)?.text || '광고·협찬 표시'} 직접 확인 내용과 근거
+        {job.criteria.find(item => item.id === id)?.text || '검수 항목'} 직접 확인 내용과 근거
         <textarea value={notes[id] || ''} maxLength={500} disabled={pending}
           onChange={event => setNotes(previous => ({ ...previous, [id]: event.target.value }))} />
       </label>)}

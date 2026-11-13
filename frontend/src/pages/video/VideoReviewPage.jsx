@@ -3,11 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
+import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { DocumentProjectPicker } from '../review/DocumentInput.jsx';
 import ReviewTypePicker, { SecurityPicker } from '../review/ReviewTypePicker.jsx';
 import { useLogoJobs } from './LogoFlowParts.jsx';
+import { videoLogoSteps } from './logoFlow.js';
 import VideoInput from './VideoInput.jsx';
 import VideoProgress from './VideoProgress.jsx';
 import VideoResults from './VideoResults.jsx';
@@ -67,8 +68,7 @@ function useVideoJob(id, onFinish) {
 
 const steps = { input: '자료 입력', running: '검수 진행', results: '결과 확인', report: '보고서' };
 // securityMode('secure'|'general')·reviewMode('text'|'logo'|'both')는 포스터 검수와 같은 키오스크 선택(ReviewTypePicker.jsx).
-const blankDraft = () => ({ securityMode: null, reviewMode: null, projectName: '', requirements: '', documentRows: [], documentName: '',
-  ad: { kind: 'endorsement', celebrity_exposure: false, title: '', caption: '', platform: '' } });
+const blankDraft = () => ({ securityMode: null, reviewMode: null, projectName: '', requirements: '', documentRows: [], documentName: '' });
 const securityFromRoute = route => route === 'openai' ? 'general' : route === 'runpod' ? 'secure' : null;
 
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 화면. 포스터 검수와 같은 자료 입력 → 검수 진행 → 결과 확인 흐름을 따른다.
@@ -130,8 +130,7 @@ export default function VideoReviewPage() {
     setDraft({ ...blankDraft(), securityMode: securityFromRoute(job.model_route), reviewMode: 'text',
       projectName: job.project_name || '숏폼 검수', parentRunId: revision ? job.id : null,
       requirements: criteria.filter(item => !extracted(item)).map(item => item.text).join('\n'),
-      documentRows: criteria.filter(extracted).map((item, index) => ({ ...item, id: `reused-${index}`, selected: true })),
-      ad: { ...blankDraft().ad, ...(job.disclosure_input || {}) } });
+      documentRows: criteria.filter(extracted).map((item, index) => ({ ...item, id: `reused-${index}`, selected: true })) });
     backToInput();
   }
   const enabled = key => key === 'input' || key === 'running' && step === 'running' || completed && (key === 'results' || key === 'report');
@@ -149,7 +148,7 @@ export default function VideoReviewPage() {
     <SiteHeader current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
     <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
-      step={step} steps={picker ? null : logoOnly ? logoSteps : steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
+      step={step} steps={picker ? null : logoOnly ? videoLogoSteps : steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
       projectEditor={step === 'input' ? { id: 'video-project-name', maxLength: 120, disabled: inputLocked,
         onChange: value => setDraft(previous => ({ ...previous, projectName: value })),
         // 검수 이름 칸에서 Enter를 누르면 그 이름으로 저장할 프로젝트를 만들고 선택한다(로고만 검수는 프로젝트 없음).

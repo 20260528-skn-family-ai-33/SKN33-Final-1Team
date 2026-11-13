@@ -9,7 +9,7 @@ export const POSTER_SIZE = '1200×1600';
 export const CAPTIONS = [
   { from: 0, to: 2, kind: 'sub', text: '당신은 지금 어디에 있나요?' },
   { from: 2, to: 5, kind: 'title', text: '빛의 기록' },
-  { from: 5, to: 8, kind: 'ad', text: '유료 광고 포함' },
+  { from: 5, to: 8, kind: 'badge', text: '관람료 무료' },
   { from: 12, to: 18, kind: 'sub', text: '11.20 – 11.28 · 시립미술관' },
 ];
 
@@ -26,7 +26,7 @@ export const RESULTS = {
   video: {
     text: [
       { id: 't1', req: '예고편에서 ‘빛의 기록’ 제목이 보여야 합니다.', verdict: 'pass', box: [92, 66, 228, 104], at: 2, span: [2, 5], observed: '빛의 기록', why: '0:02–0:05 표본 프레임에서 제목이 읽혔습니다.' },
-      { id: 't2', req: '영상 시작 3초 안에 ‘유료 광고 포함’이 보여야 합니다.', verdict: 'fail', box: [10, 10, 88, 28], at: 5, span: [5, 8], observed: '유료 광고 포함 (처음 보인 시점 0:05)', why: '문구는 있지만 처음 보인 시점이 0:05로, 요구한 시작 3초 안에 들지 않습니다.' },
+      { id: 't2', req: '영상 시작 3초 안에 ‘관람료 무료’가 보여야 합니다.', verdict: 'fail', box: [10, 10, 88, 28], at: 5, span: [5, 8], observed: '관람료 무료 (처음 보인 시점 0:05)', why: '문구는 있지만 처음 보인 시점이 0:05로, 요구한 시작 3초 안에 들지 않습니다.' },
       { id: 't3', req: '전시 기간 ‘11.20–11.28’을 자막으로 보여 주세요.', verdict: 'pass', box: [60, 146, 260, 166], at: 12, span: [12, 18], observed: '11.20 – 11.28 · 시립미술관', why: '0:12–0:18 자막에서 요구한 기간이 읽혔습니다.' },
     ],
     logo: { id: 'l1', req: '예고편 마지막 구간에 원본 주최 로고를 표시합니다.', verdict: 'review', box: [250, 140, 308, 168], at: 27, span: [26, 30], observed: '0:26–0:30 오른쪽 아래에서 원본 로고와 닮은 위치', why: '모양은 원본과 비슷하지만 4초 동안 크기가 작아 선명도가 낮습니다. 담당자가 확인해 주세요.' },
@@ -51,7 +51,7 @@ export const VIDEO_PHASES = [
   { label: '글자 읽기', title: '프레임마다 글자를 읽고 있어요.', until: 13 },
   { label: '자막 분류', title: '자막과 배경 글자를 나누고 있어요.', until: 14 },
   { label: '트랙·구간', title: '같은 자막을 트랙과 구간으로 묶고 있어요.', until: 16 },
-  { label: '기준 판정', title: '확정한 기준과 광고 표시를 판정하고 있어요.', until: 18 },
+  { label: '기준 판정', title: '확정한 기준으로 판정하고 있어요.', until: 18 },
   { label: '결과 정리', title: '결과를 정리하고 있어요.', until: 21 },
 ];
 // 로고 검수는 후보 찾기 작업까지가 진행 화면이다(위치 확정·정밀 대조는 다음 단계).

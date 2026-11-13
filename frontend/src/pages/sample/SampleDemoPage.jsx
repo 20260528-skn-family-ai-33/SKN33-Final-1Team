@@ -166,12 +166,10 @@ function InputScreen({ state, onType, onStart }) {
           <div className="sd-block"><h2>검수 요구사항</h2>
             <div className="sd-req-text">{RESULTS[media].text.map(item => <p key={item.id}>{item.req}</p>)}</div></div>
           <div className="sd-block"><h2>요구사항 문서 첨부</h2>
-            <div className="sd-file"><span className="sd-thumb">PDF</span>{video ? '숏폼_광고_요구사항.pdf' : '전시_홍보물_요구사항.pdf'}<small>예시 · 1쪽</small></div></div>
+            <div className="sd-file"><span className="sd-thumb">PDF</span>{video ? '숏폼_홍보_요구사항.pdf' : '전시_홍보물_요구사항.pdf'}<small>예시 · 1쪽</small></div></div>
         </>}
         {checksLogo && <div className="sd-block"><h2>원본 로고 첨부</h2>
           <div className="sd-file"><span className="sd-thumb"><LogoThumb /></span>주최 로고.png<small>예시</small></div></div>}
-        {checksText && video && <div className="sd-block"><details className="sd-ad"><summary>광고·협찬 설정</summary>
-          <p>게시물 제목·캡션과 화면 문구로 광고 표시 규정을 판정합니다. 예시: 협찬 광고 · 캡션 “#빛의기록 #광고”</p></details></div>}
       </aside>
     </div>
     <div className="sd-actionbar">

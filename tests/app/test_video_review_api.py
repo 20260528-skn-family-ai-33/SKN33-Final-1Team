@@ -82,9 +82,8 @@ def make_client(tmp_path, *, ready=True, ocr=None, logo_review=None, logo_readin
                     base_url="http://127.0.0.1", client=("127.0.0.1", 12345))
 
 
-def upload(client, data, *, name="clip.mp4", criteria=None, disclosure=None, logo=None):
-    form = {"criteria": json.dumps(criteria or []), "criteria_version": "1", "project_name": "숏폼 시험",
-            "disclosure": json.dumps(disclosure or {})}
+def upload(client, data, *, name="clip.mp4", criteria=None, logo=None):
+    form = {"criteria": json.dumps(criteria or []), "criteria_version": "1", "project_name": "숏폼 시험"}
     files = {"video": (name, data, "video/mp4")}
     if logo is not None:
         files["logo"] = ("logo.png", logo, "image/png")
@@ -132,8 +131,7 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
         assert policy["duration_seconds"] == 180
         assert policy["upload_bytes"] == 1024 ** 3
         response = upload(client, data, name="../../etc/passwd.mp4",
-                          criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")],
-                          disclosure={"kind": "endorsement", "title": "#광고 신상 소개"})
+                          criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")])
         assert response.status_code == 202
         job = client.get(f"/api/video-reviews/{response.json()['id']}").json()
 
@@ -143,10 +141,11 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     assert (stored / "original.bin").read_bytes() == data
     assert json.loads((stored / "media.json").read_text(encoding="utf-8"))["sha256"] == job["media"]["sha256"]
     assert not any("passwd" in str(path) for path in (tmp_path / "videos").rglob("*"))
-    # 1단계: 1초 격자 + 시작·끝 0.2초 창, 검사 범위가 [0, 길이)를 덮음
+    # 1단계: 1초 격자만(시작·끝 0.2초 창은 광고·협찬 표시 판정과 함께 없앰), 검사 범위가 [0, 길이)를 덮음
     kinds = [f["sampling"] for f in job["frames"]]
-    assert kinds.count("base") == 6 and kinds.count("head") == 12 and kinds.count("tail") == 12
-    assert len(calls[0]) == 30 and all((stored / "frames" / f"{fid}.jpg").is_file() for fid in calls[0])
+    assert kinds == ["base"] * 6
+    assert len(calls[0]) == 6 and all((stored / "frames" / f"{fid}.jpg").is_file() for fid in calls[0])
+    assert job["coverage"]["note"] == "1초 간격 표본 검사"
     cover = job["coverage"]
     points, gaps = cover["inspected_ms"], cover["uninspected"]
     assert points[0] == 0 and gaps[-1][1] == cover["duration_ms"]
@@ -170,33 +169,10 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
     assert first["evidence_segments"] and all(s["start_ms"] <= e["time_ms"] < s["end_ms"]
                                               for e in first["evidence_segments"] for s in seg if s["id"] == e["segment_id"])
     assert second["status"] == "review" and second["reviewer"] == "manager"
-    # 6-A: 시작·중간·끝 모두 허용 문구 → 표시 문구·시간 통과, 시인성·가상인물 남아 전체는 확인 필요
-    disclosure = job["disclosure"]
-    assert disclosure["text_time_status"] == "pass" and disclosure["status"] == "review"
+    # 광고·협찬 표시 판정은 없앴다: 결과에도 접수 기록에도 남지 않는다.
+    assert "disclosure" not in job and "disclosure_input" not in job
+    assert "disclosure" not in json.loads((stored / "review.json").read_text(encoding="utf-8"))
     assert job["double_check"]["status"] == "skipped"
-
-
-def test_evidence_graph_endpoint_reads_completed_result(tmp_path):
-    """근거 관계도: 완료 결과의 노드·관계만 돌려주고 OCR을 다시 부르지 않는다."""
-    calls = []
-    data = make_video(tmp_path / "clip.mp4")
-    with make_client(tmp_path, ocr=fake_ocr(calls, ad_text="협찬받았습니다")) as client:
-        job_id = upload(client, data, disclosure={"kind": "endorsement", "title": "신상 소개"}).json()["id"]
-        job = client.get(f"/api/video-reviews/{job_id}").json()
-        full = client.get(f"/api/video-reviews/{job_id}/evidence-graph")
-        one = client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R1"})
-        assert client.get(f"/api/video-reviews/{job_id}/evidence-graph", params={"rule": "R9"}).status_code == 404
-        missing = "00000000-0000-4000-8000-000000000000"
-        assert client.get(f"/api/video-reviews/{missing}/evidence-graph").status_code == 404
-    assert job["status"] == "completed", job.get("error")
-    assert full.status_code == 200 and one.status_code == 200 and len(calls) == 1
-    graph = one.json()
-    assert graph["answered_by"] == "result_json" and graph["job_id"] == job_id
-    assert [v["status"] for v in graph["verdicts"]] == [job["disclosure"]["rules"]["R1"]["status"]]
-    [observation] = [n for n in graph["nodes"] if n["kind"] == "observation"]
-    assert observation["label"] == "협찬받았습니다" and observation["phrase_class"] == "ambiguous"
-    assert observation["count"] == job["disclosure"]["rules"]["R1"]["counts"]["ambiguous"]
-    assert [v["rule"] for v in full.json()["verdicts"]] == list(job["disclosure"]["rules"])
 
 
 def test_webm_audio_longer_than_video_extracts(tmp_path):
@@ -243,16 +219,21 @@ def test_video_sampling_does_not_use_ffmpeg_progress_time(tmp_path, monkeypatch,
     assert sum(frame["sampling"] == "tail" for frame in frames) == 12
 
 
-def test_self_ad_skips_edge_frames(tmp_path):
+def test_legacy_disclosure_field_is_ignored(tmp_path):
+    """예전 화면이 광고 입력(disclosure)을 보내도 무시하고, 시작·끝 0.2초 표본 없이 1초 표본만 뽑는다."""
     calls = []
     with make_client(tmp_path, ocr=fake_ocr(calls)) as client:
-        job_id = upload(client, make_video(tmp_path / "clip.mp4"), disclosure={"kind": "self"}).json()["id"]
-        job = client.get(f"/api/video-reviews/{job_id}").json()
-    assert len(calls[0]) == 6 and job["disclosure"]["status"] == "not_applicable"
+        files = {"video": ("clip.mp4", make_video(tmp_path / "clip.mp4"), "video/mp4")}
+        response = client.post("/api/video-reviews", files=files,
+                               data={"criteria": "[]", "disclosure": json.dumps({"kind": "endorsement", "title": "#광고"})})
+        assert response.status_code == 202
+        job = client.get(f"/api/video-reviews/{response.json()['id']}").json()
+    assert len(calls[0]) == 6 and "disclosure" not in job
 
 
 def test_ocr_frame_failures(tmp_path):
-    data = make_video(tmp_path / "clip.mp4")
+    # 1초 표본만 뽑으므로 6초 영상에서 1장이 실패하면 성공률 83%로 기준(90%) 아래다. 12초 영상(1장 실패 → 92%)으로 본다.
+    data = make_video(tmp_path / "clip.mp4", seconds=12)
     with make_client(tmp_path, ocr=fake_ocr([], fail={"t001000"})) as client:
         job = client.get(f"/api/video-reviews/{upload(client, data).json()['id']}").json()
     assert job["status"] == "completed" and any("실패한 프레임" in w for w in job["warnings"])
@@ -321,7 +302,6 @@ def test_limits_and_status_codes(tmp_path, monkeypatch):
         assert upload(client, data).status_code == 503
     with make_client(tmp_path) as client:
         assert upload(client, data, criteria=[{"id": "x"}]).status_code == 422
-        assert upload(client, data, disclosure={"kind": "maybe"}).status_code == 422
         assert upload(client, make_video(tmp_path / "small.mp4", size="320x240")).status_code == 422
     monkeypatch.setenv("VIDEO_MAX_SECONDS", "2")
     with make_client(tmp_path) as client:

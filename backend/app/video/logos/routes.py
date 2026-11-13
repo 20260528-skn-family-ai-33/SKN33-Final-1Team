@@ -1,7 +1,8 @@
 """영상 로고 확정·정밀 대조 API (/api/video-logos).
 
-흐름: 영상 + 원본 로고 업로드 → 1부 후보(video_logo_candidates) → 사용자가 확정 화면에서 위치 확정
-      → 2부 정밀 대조(video_logo_compare) → 묶음별 근거(판정 없음, 최종 판단은 사람).
+흐름: 영상 + 원본 로고 업로드 → 1부 후보(video_logo_candidates) → 원본 로고마다 순위가 높은 후보를 자동으로 골라
+      2부 정밀 대조(video_logo_compare)까지 바로 진행 → 묶음별 근거(판정 없음, 최종 판단은 사람).
+      검수하려던 로고가 아니면 사용자가 확정 화면에서 위치를 직접 고르고 POST /{id}/compare로 다시 대조한다.
 
 확정 화면(LogoConfirmPage.jsx)이 정적 시연 데이터와 같은 경로로 읽을 수 있게, 작업 하나를 세트 하나처럼 낸다:
   {base}/index.json, {base}/video/data.json, {base}/video/f/<sec>.jpg, {base}/refs/<i>.png   (base = /api/video-logos/<id>)
@@ -9,6 +10,7 @@
 """
 from __future__ import annotations
 
+from contextlib import nullcontext
 from io import BytesIO
 from ipaddress import ip_address
 import json
@@ -79,6 +81,46 @@ def seconds_text(secs: list[int], limit: int = 20) -> str:
 
 def missing_text(missing: list[int], total: int) -> str:
     return f"영상 {total}초 중 {len(missing)}초의 프레임을 읽지 못해 후보 찾기·정밀 대조에서 빠졌습니다: {seconds_text(missing)}"
+
+
+AUTO_LINK_RATIO = 0.92   # 화면 logoFlow.js LINK_RATIO와 같다: 1위 점수의 92% 이상이면 같은 로고의 다른 구간 후보로 본다
+AUTO_MAX_GROUPS = 3      # 원본 로고마다 자동으로 대조할 묶음 수 상한(화면의 상위 후보 3개와 같다)
+
+
+def _js_round(value: float) -> int:
+    """화면(logoFlow.js handoff)의 Math.round와 같은 반올림. 파이썬 round는 .5를 짝수로 보내 값이 달라진다."""
+    return math.floor(value + 0.5)
+
+
+def auto_selection(groups: list[dict], refs: int) -> list[dict]:
+    """사람이 위치를 확인하기 전에 정밀 대조할 묶음. 원본 로고마다 순위 1위 묶음과, 그 점수의 92% 이상인 다른 묶음을
+    점수 순으로 최대 3개까지 고른다. 후보가 없으면 decision='none'(대조하지 않음)이다. 순서는 화면 topGroups와 같다."""
+    picks = []
+    for li in range(refs):
+        order = sorted(range(len(groups)), key=lambda i: groups[i]["rank"][li], reverse=True)
+        if not order:
+            picks.append({"logo": li, "decision": "none", "groups": []})
+            continue
+        top = groups[order[0]]["rank"][li]
+        floor = AUTO_LINK_RATIO * top if top > 0 else math.inf
+        chosen = [order[0]] + [i for i in order[1:] if groups[i]["rank"][li] >= floor]
+        picks.append({"logo": li, "decision": "done", "groups": chosen[:AUTO_MAX_GROUPS]})
+    return picks
+
+
+def auto_answers(picks: list[dict], groups: list[dict], logos: list[dict]) -> list[dict]:
+    """auto_selection을 POST /compare와 같은 정답 값으로 바꾼다(화면 logoFlow.js handoff의 후보 crop과 같은 모양)."""
+    answers = []
+    for pick in picks:
+        li = pick["logo"]
+        crops = []
+        for gi in pick["groups"]:
+            sec, box = groups[gi]["rep"][li]
+            bbox = [_js_round(v) for v in box]
+            if bbox[0] < bbox[2] and bbox[1] < bbox[3]:
+                crops.append({"group": gi, "sec": int(sec), "bbox": bbox, "source": "candidate"})
+        answers.append({"logo": li, "reference": logos[li]["name"], "decision": "done" if crops else "none", "crops": crops})
+    return answers
 
 
 def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: bool = False,
@@ -169,11 +211,22 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             for i, r in enumerate(data["refs"]):
                 r["img"] = f"refs/{i}.png"
             _write_json(target / "data.json", data)
-            update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None, seconds=total)
+            picks = auto_selection(data["groups"], len(meta["logos"]))
+            # 사람이 위치를 확인하는 단계 없이 정밀 대조까지 이어서 한다. 후보 준비와 대조 대기를 한 번에 적어
+            # 화면이 그 사이에 '대조하지 않음'을 보지 않게 한다. 자동으로 고른 묶음(auto_selection)은 확정 화면이 미리 선택해 둔다.
+            with lock:
+                (target / "compare.json").unlink(missing_ok=True)
+                update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None, seconds=total,
+                       auto_selection=picks, compare_status="queued", compare_progress=0, compare_error=None)
         except Exception as exc:
             update(target, status="failed", error=f"후보 찾기에 실패했습니다: {failure_text(exc)}")
+            return
+        answers = auto_answers(picks, data["groups"], meta["logos"])
+        run_compare(target, [a for a in answers if a["decision"] == "done"], origin="auto")
 
-    def run_compare(target: Path, answers: list[dict]) -> None:
+    def run_compare(target: Path, answers: list[dict], origin: str = "manual") -> None:
+        """origin: auto(후보 찾기 직후 자동으로 고른 묶음) · manual(확정 화면에서 사람이 고른 묶음). 대조할 묶음이 없으면
+        워커 슬롯을 잡지 않고 빈 결과만 남긴다."""
         from backend.app.video.logos import compare as V
         from backend.app.video.logos import client as R
         meta, data = _read_json(target / "result.json"), _read_json(target / "data.json")
@@ -192,8 +245,10 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             return results
 
         try:
-            with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
-                if worker_pool:
+            hold = nullcontext() if not answers else (
+                worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock)
+            with hold as slot:
+                if worker_pool and answers:
                     update(target, worker_slot=slot)
                 update(target, compare_status="running", compare_progress=0)
                 total = sum(len(V.bundle_seconds(c, data["groups"])) for a in answers for c in a.get("crops", [])) or 1; done = 0
@@ -230,7 +285,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             small = sum(x["reason"] == "crop_too_small" for b in out for x in b["skipped"])
             warnings = ([f"프레임이 없어 대조하지 못한 초 {len(lost)}개: {seconds_text(lost)}"] if lost else []) + \
                 ([f"자른 영역이 너무 작아(4px 미만) 대조하지 못한 초 {small}개"] if small else [])
-            _write_json(target / "compare.json", {"bundles": out, "warnings": warnings, "created_at": _now()})
+            _write_json(target / "compare.json", {"bundles": out, "warnings": warnings, "origin": origin, "created_at": _now()})
             update(target, compare_status="completed", compare_progress=100)
         except Exception as exc:
             update(target, compare_status="failed", compare_error=f"정밀 대조에 실패했습니다: {failure_text(exc)}")
@@ -324,7 +379,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
         @router.post("/{job_id}/compare", status_code=202)
         def compare(request: Request, job_id: str, background: BackgroundTasks, answers: list[dict] = Body(...)):
             """확정 화면이 내려받는 정답 값(원본 로고마다 {logo, reference, decision, crops})의 목록을 받는다.
-            logo는 원본 로고 번호(업로드 순서)다. 파일 이름이 같은 로고가 있어도 번호로 구분한다."""
+            logo는 원본 로고 번호(업로드 순서)다. 파일 이름이 같은 로고가 있어도 번호로 구분한다.
+            후보 찾기 직후 자동 대조(origin=auto)를 마친 뒤, 사람이 위치를 고쳐 다시 대조할 때 부른다(origin=manual)."""
             target = directory(request, job_id); meta = _read_json(target / "result.json")
             if meta.get("status") != "candidates_ready":
                 raise HTTPException(409, "후보 찾기가 끝난 뒤에 정밀 대조를 실행할 수 있습니다.")

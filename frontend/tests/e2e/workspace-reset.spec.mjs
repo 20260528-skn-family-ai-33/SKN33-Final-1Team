@@ -223,20 +223,17 @@ test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을
   assert.equal(new URL(page.url()).search, '');
 });
 
-test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실행을 유지한다', { timeout: 30000 }, async t => {
+test('영상 결과에서 수정 사유와 부모 실행을 유지한다', { timeout: 30000 }, async t => {
   const path = '/api/video-reviews/checked';
   const frame = { frame_id: 't001000', time_ms: 1000, width: 640, height: 360, lines: [] };
   const job = { id: 'checked', status: 'completed', project_name: '시연', criteria_version: 1, criteria: [],
     media: { duration_ms: 2000, sha256: 'a'.repeat(64) }, coverage: { duration_ms: 2000, inspected_ms: [1000] },
-    frames: [frame], disclosure: { applicable: true, status: 'pass', rules: {} },
+    frames: [frame],
     workflow: { project_id: 'project', asset_version: 1, human_decision: 'unreviewed', decisions: [] },
     approval_options: { blocked: false, human_check_ids: [] } };
   const { page, base } = await fixture(t, { route: async (route, requested) => {
     if (requested === path) await route.fulfill({ json: job });
-    else if (requested === path + '/evidence-graph') {
-      await route.fulfill({ json: { nodes: [{ ...frame, id: 'frame', kind: 'frame', label: '프레임 0:01' }],
-        verdicts: [{ id: 'rule-a', rule: 'A', title: '광고 표시', status: 'pass', chain: ['frame'] }] } });
-    } else if (requested === path + '/frames/' + frame.frame_id) {
+    else if (requested === path + '/frames/' + frame.frame_id) {
       await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"/>' });
     } else if (requested === path + '/video') {
       await route.fulfill({ path: fileURLToPath(new URL('../../src/assets/sample-shortform.mp4', import.meta.url)) });
@@ -244,7 +241,7 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
       const decision = route.request().postDataJSON();
       assert.equal(decision.decision, 'approve_changes');
       assert.equal(decision.asset_sha256, job.media.sha256);
-      assert.equal(decision.reason, '광고 위치 수정');
+      assert.equal(decision.reason, '자막 위치 수정');
       job.workflow.human_decision = 'changes_approved';
       job.workflow.decisions.push({ ...decision, approved_at: '2026-11-11T00:00:00Z' });
       await route.fulfill({ json: job });
@@ -257,6 +254,8 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
       }).formData();
       assert.equal(form.get('parent_run_id'), job.id);
       assert.equal(form.get('project_id'), job.workflow.project_id);
+      // 광고·협찬 표시 판정을 없앴으므로 광고 입력을 보내지 않는다.
+      assert.equal(form.get('disclosure'), null);
       await route.fulfill({ status: 202, json: { id: 'child' } });
     } else if (requested === '/api/video-reviews/child') {
       await route.fulfill({ json: { id: 'child', status: 'queued' } });
@@ -264,13 +263,10 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
     return true;
   } });
   await page.goto(base + '/video?id=checked');
-  await page.getByText('광고·협찬 근거 관계', { exact: true }).click();
-  await page.getByRole('button', { name: '프레임 0:01', exact: true }).click();
-  await page.getByRole('img', { name: /프레임과 읽은 글자 영역/ }).waitFor();
-  await page.getByLabel('수정 요청 사유', { exact: true }).fill('광고 위치 수정');
+  await page.getByLabel('수정 요청 사유', { exact: true }).fill('자막 위치 수정');
   await page.getByRole('button', { name: '수정 요청 승인', exact: true }).click();
   await page.getByText('영상·기준·승인 이력', { exact: true }).click();
-  await page.getByText(/광고 위치 수정 · 2026-11-11/).waitFor();
+  await page.getByText(/자막 위치 수정 · 2026-11-11/).waitFor();
   await page.getByRole('button', { name: '수정본 등록', exact: true }).click();
   // 보안 여부 기록이 없는 검수라 수정본을 올릴 때 보안 여부를 다시 묻는다. 유형은 문구 검수로 이어진다.
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();

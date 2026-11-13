@@ -2,6 +2,11 @@
 // 판정은 A06 결과를 그대로 옮기고, 담당자 확인은 같은 줄에 덧붙인다(기계 판정은 덮어쓰지 않는다).
 // 코드표는 템플릿 JSON과 같아야 한다(reportBrief.test.js가 대조한다).
 
+// 근거 조회 정책·PostgreSQL 대체 경로 안내(backend/agent_framework/evidence_context.py)는 내부 실행 기록이라
+// 보고서 참고 사항에 넣지 않는다. 실행 기록 원본(run.evidence.warnings)에는 그대로 남는다.
+const internalEvidenceNote = text => text === 'Approved original/value sources only; historical decisions are not model evidence.'
+  || String(text).startsWith('PostgreSQL equivalent-query fallback:');
+
 export const CODES = {
   verdict: { pass: '충족', fail: '불충족', review: '확인 필요', na: '해당 없음' },
   observation: { observed: '읽음', absent: '포스터에서 찾지 못함', unreadable: '읽을 수 없음', not_checked: '검사하지 않음', unknown: '관측 상태 모름' },
@@ -246,7 +251,7 @@ export function buildReportContext(run, { projectName, targetName = null, docume
   const notes = [DRAFT_NOTICE, ...(synthetic ? [SYNTHETIC_NOTICE] : []), ...(Object.keys(polished).length ? [POLISH_NOTICE] : []),
     ...(validated?.limitations || []).map(text => CODES.limitation_ko[text] || text),
     ...(EVIDENCE_STATUS[run?.evidence?.status] ? [EVIDENCE_STATUS[run.evidence.status]] : []),
-    ...(run?.evidence?.warnings || []).map(text => CODES.limitation_ko[text] || text)];
+    ...(run?.evidence?.warnings || []).filter(text => !internalEvidenceNote(text)).map(text => CODES.limitation_ko[text] || text)];
   const finished = [...(run?.step_records || [])].reverse().find(record => record.role === 'A06' && record.finished_at);
   const verdictCode = validated?.verdict || run?.machine_verdict;   // A06 판정. 실행 기록 요약값으로 보충한다
   return {

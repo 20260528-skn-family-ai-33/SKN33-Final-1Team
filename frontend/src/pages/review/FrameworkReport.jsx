@@ -36,14 +36,6 @@ function LocationViewer({ mark, verdict, image, onClose }) {
   </dialog>;
 }
 
-function downloadJson(context) {
-  const blob = new Blob([JSON.stringify(context, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = Object.assign(document.createElement('a'), { href: url, download: `report-${context.run_id || 'run'}.json` });
-  document.body.append(link); link.click(); link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
-}
-
 export default function FrameworkReport({ run, projectName, image = null, standalone = false }) {
   const context = useMemo(() => buildReportContext(run, { projectName }), [run, projectName]);
   const marks = useMemo(() => Object.fromEntries(posterMarks(run, context.items).marks.map(mark => [mark.criterion_id, mark])), [run, context]);
@@ -53,7 +45,6 @@ export default function FrameworkReport({ run, projectName, image = null, standa
   const { counts } = context;
   return <article className="rv-report-print rv-poster-report" aria-label="검수 보고서">
     <div className="rv-report-actions">
-      <button type="button" className="rv-button secondary" onClick={() => downloadJson(context)}>보고서 데이터(JSON)</button>
       <button type="button" className="rv-button secondary" onClick={() => window.print()}>인쇄 / PDF 저장</button>
     </div>
     <div className="rv-report-shell"><div className="rv-report-paper">
@@ -63,8 +54,7 @@ export default function FrameworkReport({ run, projectName, image = null, standa
         <p>{projectName ? `${projectName} · 포스터 검수` : '포스터 검수'}</p>
         <dl className="rv-report-meta">
           <div><dt>검수 시각</dt><dd>{context.checked_at || '기록 없음'}</dd></div>
-          <div><dt>포스터</dt><dd>{context.target.name || context.target.version || '정보 없음'}</dd></div>
-          <div><dt>승인 기준</dt><dd>{context.criteria.document ? `${context.criteria.document} · ` : ''}{context.criteria.version || '정보 없음'}</dd></div>
+          {/* 포스터·승인 기준 식별값(내부 ID)은 보고서 머리에 보이지 않는다. */}
           <div><dt>담당자 결정</dt><dd>{decisions[run.human_decision] || '기록 확인 필요'}</dd></div>
         </dl>
       </header>

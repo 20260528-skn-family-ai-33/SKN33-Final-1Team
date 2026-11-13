@@ -18,8 +18,9 @@ test('video criteria payload drops screen-only fields that the server rejects', 
   assert.deepEqual(payload.map(item => item.type), ['information', 'visual']);
 });
 
-test('time labels never overflow the tenth digit', () => {
-  assert.deepEqual([5963, 29800, 3000, 65200].map(formatTime), ['0:05.9', '0:29.8', '0:03', '1:05.2']);
+test('time labels show whole seconds only', () => {
+  // 영상 시각은 1초 단위로만 보인다(1초 아래는 버림).
+  assert.deepEqual([5963, 29800, 3000, 65200, 104200].map(formatTime), ['0:05', '0:29', '0:03', '1:05', '1:44']);
 });
 
 test('diff marks only the differing characters', () => {
@@ -51,7 +52,7 @@ test('the sampling plan mirrors the server plan_times rule', () => {
   assert.equal(plan.length, 36);
   assert.deepEqual(plan.slice(0, 3).map(item => [item.time_ms, item.sampling]), [[0, 'base'], [200, 'head'], [400, 'head']]);
   assert.deepEqual(plan.at(-1), { time_ms: 11800, sampling: 'tail', frame_id: 't011800' });
-  // 자체 광고는 시작·끝 0.2초 슬롯 없이 1초 격자만 뽑는다.
+  // 지금 서버는 시작·끝 0.2초 슬롯 없이 1초 격자만 뽑는다(edges=False).
   assert.deepEqual(planTimes(12000, false).map(item => item.time_ms), Array.from({ length: 12 }, (_, i) => i * 1000));
   // 0.2초를 다 채우지 못하는 끝 슬롯은 계획에 없다(30.1초 영상의 30초 슬롯).
   assert.equal(planTimes(30100, false).at(-1).time_ms, 29000);
@@ -79,15 +80,17 @@ test('the magnifier position reflects reported work, not elapsed time', () => {
   assert.equal(scanState({ status: 'completed' }).phase, 'done');
 });
 
-test('read frames map onto the time-ordered sampling plan, including dense edge slots', () => {
+test('read frames map onto the time-ordered sampling plan, including dense edge slots of older jobs', () => {
   const media = { duration_ms: 12000, width: 540, height: 960 };
+  const legacy = { kind: 'endorsement' };   // 광고 판정이 있던 예전 검수 기록
   // 36장 계획의 앞 15장은 시작 3초(0.2초 간격)라서, 5장을 읽었으면 아직 1초 근처를 읽는 중이다.
-  const early = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 5 / 36', media });
+  const early = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 5 / 36', media, disclosure_input: legacy });
   assert.deepEqual([early.readUpTo, early.lensTime], [800, 1000]);
-  const half = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 18 / 36', media });
+  const half = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 18 / 36', media, disclosure_input: legacy });
   assert.deepEqual([half.readUpTo, half.lensTime], [5000, 6000]);
-  const self = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 6 / 12', media, disclosure_input: { kind: 'self' } });
-  assert.deepEqual([self.readUpTo, self.lensTime], [5000, 6000]);
+  // 지금 검수(광고 입력 없음)는 1초 격자 12장만 뽑는다.
+  const current = scanState({ status: 'running', stage: 'ocr', stage_detail: '프레임 6 / 12', media });
+  assert.deepEqual([current.readUpTo, current.lensTime], [5000, 6000]);
   assert.equal(scanState({ status: 'running', stage: 'review', media }).readUpTo, Infinity);
   assert.equal(scanState({ status: 'running', stage: 'scene_detection', media }).readUpTo, -1);
 });
@@ -108,14 +111,15 @@ test('film cells use real one-second sample frame ids and fit the strip', () => 
   assert.equal(frameId(5963.4), 't005963');
 });
 
-test('judgment items keep criteria, whole-video checks and disclosure in one filterable list', () => {
+test('judgment items keep criteria and whole-video checks in one filterable list without disclosure', () => {
   const job = { review: { results: [
     { criterion_id: 'c2', status: 'pass', whole_video: true },
     { criterion_id: 'c1', status: 'fail' },
   ] }, disclosure: { status: 'review' } };
   const items = judgmentItems(job);
-  assert.deepEqual(items.map(item => [item.key, item.group]), [['criterion:c1', 'criteria'], ['criterion:c2', 'whole'], ['disclosure', 'disclosure']]);
-  assert.deepEqual(filterItems(items, 'review').map(item => item.key), ['disclosure']);
-  assert.equal(filterItems(items, 'all').length, 3);
+  // 광고·협찬 표시 판정(disclosure)은 목록에 넣지 않는다.
+  assert.deepEqual(items.map(item => [item.key, item.group]), [['criterion:c1', 'criteria'], ['criterion:c2', 'whole']]);
+  assert.deepEqual(filterItems(items, 'fail').map(item => item.key), ['criterion:c1']);
+  assert.equal(filterItems(items, 'all').length, 2);
   assert.deepEqual(judgmentItems({}), []);
 });

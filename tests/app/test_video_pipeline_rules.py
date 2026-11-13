@@ -1,11 +1,8 @@
-"""숏폼 검수 4·6·6-A단계 규칙(계획 문서의 완료 기준·판정표). 모델·영상 없이 순수 함수만 본다."""
+"""숏폼 검수 4·6단계 규칙(계획 문서의 완료 기준·판정표). 모델·영상 없이 순수 함수만 본다."""
 from __future__ import annotations
 
 import pytest
 
-from backend.app.video.disclosure import classify_phrase
-from backend.app.video.disclosure import judge_disclosure
-from backend.app.video.disclosure import validate_input
 from backend.app.video.judge import judge
 from backend.app.video.judge import mismatch_kind
 from backend.app.video.tracks import build_segments
@@ -130,60 +127,10 @@ def test_sampled_frames_cannot_confirm_continuity_or_audio(scope):
     }
 
 
-@pytest.mark.parametrize("text,kind", [
-    ("#광고", "allowed"), ("유료 광고 포함", "allowed"), ("#협찬", "allowed"), ("협찬: 김천시", "excluded"),
-    ("체험단", "disallowed"), ("AD", "disallowed"), ("Sponsored", "disallowed"), ("광고 문의", "ambiguous"), ("맛있다", "none"),
-])
-def test_disclosure_lexicon(text, kind):
-    assert classify_phrase(text) == kind
-
-
-def _frames(duration):
-    from backend.app.video.frames import plan_times
-    return [{**p, "ocr_status": "ok"} for p in plan_times(duration)]
-
-
-def _lines(frames, text, predicate=lambda t: True):
-    return [{"frame_id": f["frame_id"], "time_ms": f["time_ms"], "text": text, "bbox_xyxy": [0, 0, 10, 10]}
-            for f in frames if predicate(f["time_ms"])]
-
-
-def test_disclosure_table():
-    d = 30000
-    fr = _frames(d)
-    endorsement = validate_input({"kind": "endorsement", "title": "신상 리뷰"})
-    everywhere = judge_disclosure(endorsement, fr, _lines(fr, "#광고"), d)
-    assert everywhere["text_time_status"] == "pass" and everywhere["status"] == "review"  # R5·R6 남음
-    edges_only = judge_disclosure(endorsement, fr, _lines(fr, "#광고", lambda t: t < 3000 or t >= d - 3000), d)
-    assert edges_only["rules"]["R3c"]["status"] == "review" and edges_only["status"] == "review"  # 중간 미확인은 위반 아님
-    nothing = judge_disclosure(endorsement, fr, [], d)
-    assert nothing["status"] == "fail" and nothing["severity"] == "block"  # 조건이 모두 맞을 때만 위반
-    unknown = judge_disclosure(validate_input({"kind": "unknown", "title": "x"}), fr, [], d)
-    assert unknown["status"] == "review"
-    failed = [dict(f, ocr_status="failed") if f["time_ms"] == 0 else f for f in fr]
-    assert judge_disclosure(endorsement, failed, [], d)["status"] == "review"  # 창 OCR 실패면 위반 아님
-    credit = judge_disclosure(endorsement, fr, _lines(fr, "협찬: 김천시"), d)
-    assert credit["status"] == "fail"  # 크레딧은 표시 문구가 아님
-    titled = judge_disclosure(validate_input({"kind": "endorsement", "title": "#광고 신상 리뷰"}), fr, [], d)
-    assert titled["rules"]["R2"]["status"] == "pass" and titled["text_time_status"] == "pass"
-    late = judge_disclosure(validate_input({"kind": "endorsement", "title": "신상 리뷰 영상입니다 꼭 보세요 #광고"}), fr, [], d)
-    assert late["rules"]["R2"]["status"] == "review"
-    assert judge_disclosure(validate_input({"kind": "self"}), fr, [], d)["status"] == "not_applicable"
-
-
-def test_ambiguous_disclosure_is_not_auto_violation():
-    """허용 문구는 없지만 '광고'·'협찬' 같은 모호한 표시가 화면에 있으면 자동 위반이 아니라 확인 필요."""
-    d = 30000
-    fr = _frames(d)
-    endorsement = validate_input({"kind": "endorsement", "title": "신상 리뷰"})
-    ambiguous = judge_disclosure(endorsement, fr, _lines(fr, "광고 문의"), d)
-    assert ambiguous["status"] == "review" and ambiguous["severity"] == "warn"
-    assert ambiguous["rules"]["R1"]["counts"]["ambiguous"] >= 1
-    assert judge_disclosure(endorsement, fr, [], d)["status"] == "fail"  # 아무 표시도 없으면 종전대로 위반(회귀 방지)
-
-
-@pytest.mark.parametrize("duration", [5000, 6000])
-def test_short_video_merges_edge_windows(duration):
-    fr = _frames(duration)
-    result = judge_disclosure(validate_input({"kind": "endorsement"}), fr, _lines(fr, "#광고", lambda t: t == 0), duration)
-    assert result["rules"]["R3c"]["status"] == "skipped" and result["text_time_status"] == "pass"
+def test_final_requirements_ignore_legacy_disclosure():
+    """광고·협찬 표시 판정은 없앴다. 예전 검수에 남은 disclosure 판정은 승인 조건에 넣지 않는다."""
+    from backend.app.video.workflow import final_requirements
+    criteria = [{"id": "a", "text": '"할인 쿠폰"', "type": "information"}]
+    job = {"criteria": criteria, "review": {"results": [{"criterion_id": "a", "status": "pass"}]}, "coverage": {"samples": 3},
+           "disclosure": {"applicable": True, "status": "fail", "rules": {"R1": {"status": "fail", "evidence": []}}}}
+    assert final_requirements(job) == {"blocked": False, "human_check_ids": []}

@@ -2,7 +2,7 @@
 
 계획 문서(숏폼_검수_최종판 2026-10-20)의 0~7단계를 따른다.
   0 입력 검증 → 1 프레임 추출·검사 범위 → 2 장면 경계 → 3 프레임 OCR(배치) → 3-1 자막 줄 분류
-  → 4 자막 트랙·구간 → 5 대표 프레임 → 6 기준 판정(영상당 1회) + 6-A 광고·협찬 표시 → (6-1 이중 검수: 꺼짐) → 7 결과
+  → 4 자막 트랙·구간 → 5 대표 프레임 → 6 기준 판정(영상당 1회) → (6-1 이중 검수: 꺼짐) → 7 결과
 결과는 .runtime/video-reviews/<id>/ 아래에만 둔다. 문서의 실행 구조(v1 PostgreSQL 큐·독립 worker·DB 저장)는
 팀 결정 사항이라 여기서는 기존 시제품의 추론 잠금으로 대신하며, v1 앱(main.py)에는 연결하지 않는다.
 """
@@ -29,8 +29,6 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.app.video import subtitle_roles as roles
 from backend.app.video import subtitle_vlm as vlm
-from backend.app.video.disclosure import judge_disclosure
-from backend.app.video.disclosure import validate_input
 from backend.app.video.frames import coverage
 from backend.app.video.frames import detect_scenes
 from backend.app.video.frames import extract_frames
@@ -62,7 +60,7 @@ FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
     "ocr": "프레임 글자 판독에 실패했습니다. 자막 판독 모델(Qwen3-VL) 서버 연결과 준비 상태를 확인한 뒤 다시 실행해 주세요.",
     "segmenting": "판독 결과를 자막 트랙과 구간으로 정리하지 못했습니다. 실행 기록을 확인해 주세요.",
-    "review": "기준 판정 또는 광고 표시 판정을 완료하지 못했습니다. 기준 형식을 확인해 주세요.",
+    "review": "기준 판정을 완료하지 못했습니다. 기준 형식을 확인해 주세요.",
 }
 CONTAINER_MIME = {"mov": "video/mp4", "matroska": "video/webm", "avi": "video/x-msvideo"}
 FRAME_ID = re.compile(r"^t\d{6}$")
@@ -353,11 +351,11 @@ class Pipeline:
         target = self.target
         media, snapshot = _read_json(target / "media.json"), _read_json(target / "snapshot.json")
         duration = media["duration_ms"]
-        disclosure = snapshot["disclosure"]
 
         self.stage = "extracting"
         self.update(target, status="running", stage=self.stage, progress=PROGRESS["extracting"])
-        plan = plan_times(duration, edges=disclosure["kind"] != "self")  # 자체 광고면 시작·끝 창 전용 프레임 생략
+        # 시작·끝 3초 0.2초 표본은 광고·협찬 표시 판정 전용이었다. 그 판정을 없앴으므로 1초 표본만 뽑는다.
+        plan = plan_times(duration, edges=False)
         frames = extract_frames(ffmpeg, demuxer, target / "original.bin", target / "frames", plan)
         cover = coverage(plan, duration)
         _write_json(target / "frames.json", frames)
@@ -459,8 +457,7 @@ class Pipeline:
         self.stage = "review"
         self.update(target, stage=self.stage, progress=PROGRESS["review"], stage_detail=f"구간 {len(segments)}개")
         review = judge(snapshot["criteria"], tracks, segments, frames)
-        disclosure_result = judge_disclosure(disclosure, frames, lines, duration)
-        _write_json(target / "review.json", {**review, "disclosure": disclosure_result})
+        _write_json(target / "review.json", review)
 
         # 6-B 로고 검수(선택) — 지정 로고를 올렸을 때만. 미준비·실패여도 OCR 검수 결과는 그대로 둔다.
         logo_match = {"status": "skipped", "reason": "검사할 지정 로고를 올리지 않았습니다."}
@@ -507,7 +504,7 @@ class Pipeline:
             "scenes": {"status": scenes["status"], "cut_ms": scenes["cut_ms"]},
             "tracks": tracks, "text_groups": groups, "segments": segments,
             "review": {"results": review["results"], "mismatch": review["mismatch"], "calls": review["calls"]},
-            "disclosure": disclosure_result, "logo_match": logo_match, "playback": playback,
+            "logo_match": logo_match, "playback": playback,
             "double_check": double_check, "warnings": self.warnings,
             "counts": {"frames": len(frames), "ocr_frames": total, "lines": len(lines), "kept": kept,
                        "excluded": len(lines) - kept, "tracks": len(tracks), "segments": len(segments),
@@ -619,7 +616,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return {"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
                 "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
                 "pipeline": pipeline_name(engine) if engine else None, "subtitle_engine": engine, "limits": policy,
-                "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
+                "sampling": "1초 간격 표본 검사"}
 
     def active_jobs() -> Counter[str]:
         counts = Counter()
@@ -705,7 +702,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
                          project_name: str = Form("동영상 검수", min_length=1, max_length=120),
-                         disclosure: str = Form("{}"), logo: UploadFile = File(None),
+                         logo: UploadFile = File(None),
                          project_id: UUID | None = Form(None), parent_run_id: UUID | None = Form(None),
                          criteria_confirmed: bool = Form(False), model_route: str = Form("default")):
             job_id = str(uuid4())
@@ -723,9 +720,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     frozen = [Criterion.model_validate(item).model_dump() for item in parsed]
                     if len({item["id"] for item in frozen}) != len(frozen):
                         raise ValueError
-                    ad = validate_input(json.loads(disclosure))
                 except (ValueError, TypeError):
-                    raise HTTPException(422, "검수 기준 또는 광고 입력 형식을 확인해 주세요.") from None
+                    raise HTTPException(422, "검수 기준 형식을 확인해 주세요.") from None
                 account_root = owner_root(request)
                 project = str(project_id) if project_id else None
                 if (project and not criteria_confirmed) or (parent_run_id and not project):
@@ -734,8 +730,6 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 if project and store is None:
                     raise AuthError("VIDEO_APPROVAL_SCHEMA_NOT_READY", 503)
                 actor = await run_in_threadpool(project_actor, request, project, "write") if project else None
-                if project and any(item["id"] == "disclosure" for item in frozen):
-                    raise AuthError("INVALID_REQUEST", 422)
                 keys = request.headers.getlist("idempotency-key")
                 if keys:
                     try:
@@ -747,7 +741,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     job_id = str(uuid5(NAMESPACE_URL, f"creative-checker/video-review/{actor}/{key}"))
                     existing = account_root / job_id
                     if (existing / "result.json").is_file():
-                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, ad, route)
+                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, route)
                 parent = None
                 if parent_run_id:
                     target = await run_in_threadpool(directory, request, str(parent_run_id))
@@ -769,7 +763,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 account_root.mkdir(mode=0o700, parents=True, exist_ok=True)
                 with TemporaryDirectory(dir=account_root, prefix=".video-upload-") as staging:
                     return await accept(request, Path(staging), account_root / job_id, background_tasks, video,
-                                        frozen, criteria_version, project_name, ad, logo, job_id, slot, project, actor, parent,
+                                        frozen, criteria_version, project_name, logo, job_id, slot, project, actor, parent,
                                         route)
             finally:
                 if slot is not None:
@@ -781,11 +775,11 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 if logo is not None:
                     await logo.close()
 
-        async def replay(target, video, logo, project, parent, title, criteria, disclosure, route="default"):
+        async def replay(target, video, logo, project, parent, title, criteria, route="default"):
             job = await run_in_threadpool(_read_json, target / "result.json")
             workflow = job["workflow"]
             if (workflow["project_id"] != project or workflow["parent_run_id"] != (str(parent) if parent else None)
-                    or job["project_name"] != title or job["criteria"] != criteria or job["disclosure_input"] != disclosure
+                    or job["project_name"] != title or job["criteria"] != criteria
                     or job["media"]["bytes"] != video.size or (job.get("model_route") or "default") != route):
                 raise AuthError("IDEMPOTENCY_KEY_REUSED", 409)
             digest = await run_in_threadpool(hashlib.file_digest, video.file, "sha256")
@@ -796,7 +790,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             return {"id": job["id"], "status": job["status"]}
 
         async def accept(request, staged, target, background_tasks, video, frozen, criteria_version, project_name,
-                         ad, logo, job_id, slot, project, actor, parent, route="default"):
+                         logo, job_id, slot, project, actor, parent, route="default"):
             source = staged / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
             with source.open("wb") as output:  # 1MiB씩 디스크에 흘려 쓰면서 SHA-256 계산
@@ -830,17 +824,17 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             created = _now()
             workflow = None
             if project:
-                criteria_version, workflow = prepare_review(job_id, project, actor, frozen, ad, parent, created)
+                criteria_version, workflow = prepare_review(job_id, project, actor, frozen, parent, created)
             media = {**info, "bytes": size, "sha256": digest.hexdigest()}
             _write_json(staged / "media.json", media)
             _write_json(staged / "snapshot.json", {"project_name": project_name, "criteria_version": criteria_version,
-                                                   "criteria": frozen, "disclosure": ad, "logo_query": has_logo,
+                                                   "criteria": frozen, "logo_query": has_logo,
                                                    "created_at": created})
             warnings = ["HDR 영상입니다. 톤매핑 없이 처리해 색이 다르게 보일 수 있습니다."] if info["hdr"] else []
             result = {
                 "id": job_id, "status": "queued", "stage": "queued", "progress": PROGRESS["queued"],
                 "stage_detail": f"대기 {sum((await run_in_threadpool(active_jobs)).values())}건", "project_name": project_name,
-                "criteria_version": criteria_version, "criteria": frozen, "disclosure_input": ad, "media": media,
+                "criteria_version": criteria_version, "criteria": frozen, "media": media,
                 "logo_query": has_logo, "runtime": None, "warnings": warnings, "error": None,
                 "created_at": created, "updated_at": created,
             }
@@ -905,20 +899,6 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 return job
 
             return await run_in_threadpool(save)
-
-    @router.get("/{job_id}/evidence-graph")
-    def evidence_graph(request: Request, job_id: str, rule: str | None = None):
-        """광고·협찬 판정의 근거 관계도(노드·관계). 저장된 완료 결과만 읽고 모델·그래프DB를 부르지 않는다."""
-        from backend.app.video.evidence_graph import GraphNotReady, UnknownRule, build_evidence_graph
-        with lock:
-            job = _read_json(directory(request, job_id) / "result.json")
-        try:
-            return build_evidence_graph(job, rule)
-        except GraphNotReady:
-            raise HTTPException(409, {"code": "evidence_graph_not_ready",
-                                      "message": "검수가 끝난 뒤 근거 관계도를 볼 수 있습니다."}) from None
-        except UnknownRule:
-            raise HTTPException(404, "판정 규칙을 찾을 수 없습니다.") from None
 
     @router.get("/{job_id}/video")
     def video_file(request: Request, job_id: str):

@@ -54,13 +54,11 @@ function FramePane({ jobId, graph, onShow }) {
 }
 
 function EvidenceBody({ job, item, onFrame }) {
-  const [rule, setRule] = useState(null);
   const [shown, setShown] = useState(0);
   const [selectedId, setSelectedId] = useState('verdict');
-  const graph = useMemo(() => videoEvidence(job, item, { rule, shown }), [job, item, rule, shown]);
+  const graph = useMemo(() => videoEvidence(job, item, { shown }), [job, item, shown]);
   // 근거 위치를 바꾸면 창 뒤 결과 화면의 프레임도 같은 곳으로 옮겨, 창을 닫았을 때 같은 장면이 보이게 한다.
   function show(index) { setShown(index); if (graph.evidence[index]) onFrame?.(graph.evidence[index].raw); }
-  function chooseRule(key) { setRule(key); setShown(0); setSelectedId('verdict'); }
   return <div className="rv-evd-body">
     <FramePane jobId={job.id} graph={graph} onShow={show} />
     <section className="rv-evd-main" aria-label="판정 근거">
@@ -75,12 +73,6 @@ function EvidenceBody({ job, item, onFrame }) {
         <h3>불일치 <span>{graph.mismatch.length}</span></h3>
         <ul>{graph.mismatch.map((entry, index) => <Mismatch key={index} item={entry} />)}</ul>
         <p>OCR이 잘못 읽었을 수도 있으니 원본을 확인해 주세요.</p>
-      </section>}
-      {graph.rules.length > 0 && <section className="rv-evd-rules" aria-label="규정별 확인">
-        <h3>규정별 확인 <span>{graph.rules.length}</span></h3>
-        <ul>{graph.rules.map(entry => <li key={entry.key}>
-          <button type="button" className={`rv-evd-rule is-${entry.verdict.code}`} aria-pressed={entry.key === graph.rule} title={entry.note || undefined}
-            onClick={() => chooseRule(entry.key)}><span>{entry.label}</span><b><i aria-hidden="true" />{entry.verdict.label}</b></button></li>)}</ul>
       </section>}
       <EvidenceRelations graph={graph} selectedId={selectedId} onSelect={node => setSelectedId(node.id)}
         foot="영상·읽은 문구·판정을 이 검수의 결과 기록에서 읽어 연결했습니다. 판정은 검사한 표본 시각을 기준으로 합니다." />

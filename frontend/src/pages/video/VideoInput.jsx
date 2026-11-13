@@ -33,7 +33,7 @@ function useLocalPreview(file) {
   return { url, meta, failed, read, setFailed };
 }
 
-// 영상·확정 기준·광고 입력을 한 화면에서 받아 접수한다(기준과 광고 입력은 이 시점에 고정).
+// 영상·확정 기준을 한 화면에서 받아 접수한다(기준은 이 시점에 고정).
 export default function VideoInput({ status, draft, setDraft, file, setFile, logos, setLogos, onSubmitted, busy, sampleBusy, setBusy,
   documentBusy, setDocumentBusy, projectId, projectReady }) {
   const [error, setError] = useState('');
@@ -56,7 +56,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const go = useNavigate();
   const preview = useLocalPreview(file);
   const limits = status?.limits;
-  // 보안 여부·검수 유형(포스터와 같은 선택). 자막은 요구사항·광고 입력, 로고는 원본 로고, 둘 다는 모두를 받는다.
+  // 보안 여부·검수 유형(포스터와 같은 선택). 문구는 요구사항, 로고는 원본 로고, 둘 다는 모두를 받는다.
   const security = draft.securityMode;
   const mode = draft.reviewMode || 'both';
   const checksText = mode !== 'logo';
@@ -72,15 +72,12 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     const extracted = draft.documentRows.filter(row => row.selected && row.text.trim()).map(row => ({ ...row, text: row.text.trim() }));
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
   }, [draft.requirements, draft.documentRows]);
-  const { ad } = draft;
   const uploadLimit = formatVideoUploadLimit(limits?.upload_bytes);
   const durationSeconds = limits?.duration_seconds;
   const durationLimit = durationSeconds && (durationSeconds % 60 === 0 ? `${durationSeconds / 60}분` : `${durationSeconds}초`);
   const formats = limits?.formats?.length ? limits.formats.map(format => format.toUpperCase()).join(' · ') : 'MP4 · MOV · WEBM · AVI';
   const limitText = [uploadLimit && `최대 ${uploadLimit}`, durationLimit && `${durationLimit} 이하`,
     limits?.short_side_min && `짧은 변 ${limits.short_side_min}px 이상`].filter(Boolean).join(' · ');
-  // 자체 광고는 서버가 시작·끝 0.2초 표본을 뽑지 않으므로 1초 표본만 안내한다.
-  const sampling = status?.sampling && (ad.kind === 'self' ? '1초 간격 표본 검사' : status.sampling);
 
   // 파일을 고르거나 지우면 초점을 다음에 누를 버튼으로 옮겨 키보드 사용자가 위치를 잃지 않게 한다.
   useEffect(() => {
@@ -122,7 +119,6 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
   function removeFile() { setFile(null); setError(''); if (input.current) input.current.value = ''; }
   const update = (key, value) => { setError(''); setDraft(previous => ({ ...previous, [key]: value })); };
-  const field = (key, value) => { setError(''); setDraft(previous => ({ ...previous, ad: { ...previous.ad, [key]: value } })); };
 
   function applyDocument(documentName, documentRows) {
     setError('');
@@ -155,17 +151,15 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     }
     try {
       const criteriaJson = JSON.stringify(criteriaPayload(criteria));
-      const disclosure = JSON.stringify(ad);
       const form = new FormData();
       form.append('video', file);
       form.append('criteria', criteriaJson);
       form.append('project_name', title);
-      form.append('disclosure', disclosure);
       // 보안 여부: 일반 자료는 자막 판독을 OpenAI로, 보안 자료는 RunPod로 처리한다.
       if (modelRoute !== 'default') form.append('model_route', modelRoute);
       let headers;
       if (projectWorkflow) {
-        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, disclosure, modelRoute]);
+        const fields = JSON.stringify([projectId, draft.parentRunId, title, criteriaJson, modelRoute]);
         if (submission.current?.file !== file || submission.current.fields !== fields) {
           submission.current = { file, fields, key: crypto.randomUUID() };
         }
@@ -245,27 +239,13 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
 
         <aside className="rv-form-stack" aria-label="검수 요구사항과 첨부 자료">
             {checksText && <RequirementInput id="video-requirements" value={draft.requirements} onChange={value => update('requirements', value)} disabled={busy}
-              placeholder={'예: 영상에 ‘빛의 기록’ 제목을 표시해 주세요.\n시작 3초 안에 ‘유료 광고 포함’을 표시해 주세요.'}>
+              placeholder={'예: 영상에 ‘빛의 기록’ 제목을 표시해 주세요.\n전시 기간 ‘11.20–11.28’을 자막으로 표시해 주세요.'}>
               {(draft.documentName || draft.documentRows.length > 0) &&
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
             {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
             {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
-            {checksText && <details className="rv-form-block rv-video-ad-settings">
-              <summary>광고·협찬 설정</summary>
-            <fieldset className="rv-video-subsection" disabled={busy}><legend className="sr-only">광고·협찬 표시</legend>
-              <p className="rv-video-subsection-hint">기준과 따로, 게시물 제목·캡션과 화면 문구로 광고 표시 규정을 판정합니다.</p>
-              <div className="rv-video-subsection-grid">
-                <div className="rv-input-field"><label htmlFor="video-ad-title">게시물 제목</label><input id="video-ad-title" value={ad.title} maxLength={500} autoComplete="off" onChange={event => field('title', event.target.value)} /></div>
-                <div className="rv-input-field"><label htmlFor="video-ad-caption">캡션·태그</label><input id="video-ad-caption" value={ad.caption} maxLength={5000} autoComplete="off" onChange={event => field('caption', event.target.value)} /></div>
-              </div>
-              <label className="rv-video-check"><input type="checkbox" checked={ad.kind === 'self'} onChange={event => field('kind', event.target.checked ? 'self' : 'endorsement')} />
-                <span><strong>자사·자체 광고</strong><small>표시 의무가 없어 광고 표시 검수에서 제외합니다.</small></span></label>
-              <label className="rv-video-check"><input type="checkbox" checked={ad.celebrity_exposure} onChange={event => field('celebrity_exposure', event.target.checked)} />
-                <span><strong>PPL/협찬</strong><small>화면 표시를 시작·끝 3초 기준으로 판단합니다.</small></span></label>
-            </fieldset>
-            </details>}
         </aside>
       </div>
       <div className="rv-input-error"><ErrorMessage message={error} />
@@ -276,10 +256,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         <p>{documentBusy ? '문서를 분석하는 동안 다른 자료를 먼저 준비해 두세요. 분석이 끝나면 검수를 시작할 수 있어요.'
           : !file ? '검수할 동영상을 첨부해 주세요.' : needsProject ? '상단에서 검수를 저장할 프로젝트를 선택해 주세요.'
           : checksLogo && !logos.length ? '대조할 원본 로고를 1개 이상 첨부해 주세요.'
-          : mode === 'logo' ? `로고 ${logos.length}장 · 1초마다 영상에서 로고 위치 후보를 찾습니다.` : [
-          criteria.length ? `기준 ${criteria.length}개` : '기준 없음 · 자막·광고 표시만 검수', ad.kind === 'self' && '광고 표시 제외',
-          checksLogo && logos.length ? `로고 ${logos.length}장` : null, sampling,
-        ].filter(Boolean).join(' · ')}</p>
+          : mode === 'logo' ? `로고 ${logos.length}장 · 1초마다 영상에서 로고 위치 후보를 찾습니다.` : null}</p>
         <button type="button" className="rv-button primary" onClick={submit} disabled={submitDisabled}>
           {busy && !sampleBusy ? '올리는 중…' : '검수 시작하기'}{(!busy || sampleBusy) && <Icon name="arrow" />}</button>
       </div>
