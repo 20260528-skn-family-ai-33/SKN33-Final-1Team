@@ -40,6 +40,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
     // 응답이 먼저 끝나면 시작 버튼이 사라져 확인 단계가 실행 속도에 따라 실패했다.
     const criteriaApproval = Promise.withResolvers();
+    const textAdmission = Promise.withResolvers();
     let posterApprovalRequests = 0;
     let allowDocumentResult = mode !== 'pdf', allowReviewResult = false, allowReviewStages = false;
     let configured = mode !== 'not_ready';
@@ -74,7 +75,10 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       else if (path.endsWith('/text-documents')) {
         const input = request.postDataJSON(); textInputs.push(input); extractedText = true;
         body = { document: { document_version_id: 'text-document', sha256: createHash('sha256').update(input.text).digest('hex') } };
-      } else if (path.endsWith('/extractions')) { extractionRequests++; body = { context }; }
+      } else if (path.endsWith('/extractions')) {
+        if (mode === 'direct') await textAdmission.promise;
+        extractionRequests++; body = { context };
+      }
       else if (path.endsWith('/requirements')) body = { conditions: [
         { text: '행사명은 봄', type: 'information', page: 1, source: '행사명은 봄', criterion_ids: subset ? ['title', 'subtitle'] : ['title'] },
         ...(subset ? [{ text: '장소는 전시장', type: 'information', page: 1, source: '장소는 전시장', criterion_ids: ['venue'] }] : []),
@@ -182,12 +186,38 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       configured = false; // Draft review must work even if poster models are not ready yet.
     }
     if (mode === 'edited_pdf') await page.getByText(/선택·수정한 문구는 새 기준 초안으로 분석합니다/).waitFor();
-    await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+    const overlay = page.getByRole('dialog', { name: '검수 준비 중', exact: true });
+    const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
+    await start.click();
+    if (mode === 'direct') {
+      try {
+        await overlay.waitFor();
+        const spinner = overlay.locator('.rv-start-spinner');
+        assert.equal(await spinner.evaluate(node => getComputedStyle(node).animationName), 'rv-button-spin');
+        assert.equal(await overlay.evaluate(node => getComputedStyle(node, '::backdrop').backgroundColor), 'rgba(0, 0, 0, 0.48)');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Tab');
+        assert.ok(await overlay.evaluate(node => node.matches(':modal') &&
+          (document.activeElement === document.body || node.contains(document.activeElement))));
+        const chat = page.locator('.cc-header-help').getByRole('button', { name: '사용 안내', exact: true, includeHidden: true });
+        const box = await chat.boundingBox();
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        assert.equal(await chat.getAttribute('aria-expanded'), 'false');
+        assert.ok(await overlay.isVisible());
+        if (process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
+          mkdirSync(process.env.E2E_PROGRESS_SCREENSHOT_DIR, { recursive: true });
+          await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/review-start-overlay.png' });
+        }
+      } finally { textAdmission.resolve(); }
+    }
     if (mode === 'not_ready') {
       await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
       assert.equal(textInputs.length, 0);
+      await overlay.waitFor({ state: 'hidden' });
+      assert.ok(await start.isEnabled());
     } else {
       await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
+      await overlay.waitFor({ state: 'hidden' });
       configured = true;
       assert.ok(await page.locator('.rv-criteria-canvas-column').isVisible());
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
@@ -255,10 +285,13 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         try {
           await submit.click();
           await page.waitForFunction(() => document.querySelector('.rv-step-status')?.textContent === '기준을 승인하고 있어요.');
-          assert.ok(await submit.isDisabled());
-          assert.equal(await steps.locator('button:disabled').count(), 4);
-          assert.ok(await page.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄' }).isDisabled());
-          await submit.evaluate(button => button.click());
+          await overlay.waitFor();
+          assert.ok(await overlay.getByText('기준을 승인하고 있어요.').isVisible());
+          const backgroundSubmit = page.locator('button').filter({ hasText: /^기준 승인하고 검수 시작$/ });
+          assert.ok(await backgroundSubmit.isDisabled());
+          assert.equal(await page.locator('.rv-step-nav button:disabled').count(), 4);
+          assert.ok(await page.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄', includeHidden: true }).isDisabled());
+          await backgroundSubmit.evaluate(button => button.click());
         } finally {
           criteriaApproval.resolve();
           posterApproval.resolve();
@@ -280,6 +313,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       }
       if (mode !== 'direct' && mode !== 'skip') await startReview.click();
       await page.getByRole('heading', { name: '포스터의 문구와 시각 조건을 확인하고 있어요.' }).waitFor();
+      await overlay.waitFor({ state: 'hidden' });
       assert.equal(posterApprovalRequests, 1);
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();

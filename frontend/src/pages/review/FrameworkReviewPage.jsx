@@ -51,12 +51,13 @@ function command(path, body, key, signal) {
 }
 
 export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos,
-  logoDetector = 'runpod', health }) {
+  logoDetector = 'runpod', health, reviewStarting = false }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
   const [loadState, setLoadState] = useState('checking');
+  const initialStart = useRef(reviewStarting);
   const [file, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
@@ -191,10 +192,12 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           ? await frameworkJson(path + '/criteria-review', { signal: controller.signal }) : null;
         if (controller.signal.aborted) return;
         hasSnapshot = true;
+        initialStart.current = false;
         setRun(snapshot); setOverview(info); setError(''); setLoadState('ready');
         if (running.has(snapshot.execution_status)) timer = setTimeout(read, 1000);
       } catch (err) {
         if (controller.signal.aborted || isAnonymousError(err)) return;
+        initialStart.current = false;
         if ([403, 404].includes(err.status)) {
           setRun(null); setOverview(null); setError(''); setLoadState('denied');
           return;
@@ -340,7 +343,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         context: child.context, actor_id: child.context.actor_id, decision: 'approve_criteria', reason: '',
       }, null, signal);
     } finally {
-      if (!signal.aborted) openRun(child.context.run_id);
+      if (!signal.aborted) openRun(child.context.run_id, true);
     }
   }
   async function decide(decision, signal) {
@@ -387,13 +390,16 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
 
   if (loadState !== 'ready') {
     return <ReviewLayout state={{ step: 'running', projectName: '', criteria: [] }} busy={false}
-      mainClassName="rv-framework-workspace" showWorkspaceBar={false}>
+      mainClassName="rv-framework-workspace" showWorkspaceBar={false}
+      startMessage={loadState === 'checking' && initialStart.current ? '검수 상태를 확인하고 있어요.' : null}>
       <FrameworkRunStatus state={loadState} onRetry={retryRunStatus} />
     </ReviewLayout>;
   }
 
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing}
+    startMessage={busy && (pending === 'decide-start' || (file && ['start', 'start-skip'].includes(pending)))
+      ? actionStatus[pending] : null}
     mainClassName="rv-framework-workspace"
     versionLabel={latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}
     projectActions={<>
