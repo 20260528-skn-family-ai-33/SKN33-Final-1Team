@@ -21,6 +21,7 @@ function Mismatch({ item }) {
 
 function FramePane({ jobId, graph, onShow }) {
   const [zoomed, setZoomed] = useState(false);
+  const [fitted, setFitted] = useState(false);
   const shown = graph.shown;
   const view = shown || graph.still;
   const src = view ? framePath(jobId, view.frameId) : null;
@@ -34,7 +35,7 @@ function FramePane({ jobId, graph, onShow }) {
       {time && <span>{time}</span>}
     </header>
     <EvidenceFrame src={src} alt={time ? `${time} 프레임${box ? ', 읽은 위치를 상자로 표시' : ''}` : '근거 프레임'} box={box} tone={graph.tone}
-      ratio={view?.ratio} zoomed={zoomed} empty="표시할 프레임이 없습니다." />
+      ratio={view?.ratio} zoomed={zoomed} fit="ocr" onFit={setFitted} empty="표시할 프레임이 없습니다." />
     <div className="rv-evd-poster-caption">
       <p>{shown ? box ? <>읽은 위치 <b>{time} · 화면 {shown.hint}</b></> : <><b>{time}</b> 프레임 · 위치 상자가 없어 프레임 전체를 보여 줍니다.</>
         : view ? '이 항목은 위치 근거가 없어 영상의 한 장면만 보여 줍니다. 영상 전체에서 확인해 주세요.' : '이 항목에는 표시할 프레임이 없습니다.'}</p>
@@ -49,7 +50,7 @@ function FramePane({ jobId, graph, onShow }) {
           <b><i aria-hidden="true" /><span>{entry.text || '위치만 기록'}</span></b>
         </button></li>)}</ol>
     </div>}
-    <p className="rv-evd-poster-note">상자는 OCR이 글자를 읽은 위치입니다. 원본 영상과 맞는지 확인해 주세요.</p>
+    <p className="rv-evd-poster-note">{fitted ? '상자는 OCR이 읽은 위치를 화면의 글자에 맞춰 다듬은 것입니다.' : '상자는 OCR이 글자를 읽은 위치입니다.'} 원본 영상과 맞는지 확인해 주세요.</p>
   </section>;
 }
 

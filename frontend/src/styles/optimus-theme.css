@@ -130,6 +130,9 @@ html .rv-workspace .image-stage .image-stage-zoom select option { background: va
 html .rv-workspace .image-stage .image-stage-focus { padding: 5px 13px; border-color: var(--op-stage-line); border-radius: 999px; background: none; color: var(--op-bg); }
 html .rv-workspace .image-stage .image-stage-focus:hover:enabled { background: rgb(255 255 255 / 10%); }
 html .rv-workspace .image-stage .image-stage-evidence-toggle { color: var(--op-bg); }
+html .rv-workspace .image-stage .image-stage-fit-toggle { padding: 5px 13px; border-color: var(--op-stage-line); border-radius: 999px; background: none; color: var(--op-bg); }
+html .rv-workspace .image-stage .image-stage-fit-toggle:hover { background: rgb(255 255 255 / 10%); }
+html .rv-workspace .image-stage .image-stage-fit-toggle[aria-pressed='true'] { border-color: var(--op-bg); }
 html .rv-workspace .image-stage-warning { color: #e6cd86; }
 html .rv-workspace .image-stage-extra { border-top-color: var(--op-stage-line); }
 html .rv-workspace .image-stage :is(button, a, select):focus-visible { outline-color: var(--op-bg); }
@@ -505,7 +508,6 @@ html .rv-evd-rule > b { font-weight: 500; }
 @keyframes op-pop { from { opacity: 0; transform: translateY(20px) scale(0.98); } }
 @keyframes op-float { 50% { translate: 0 -9px; } }
 @keyframes op-read { from { transform: translateY(0); } to { transform: translateY(525%); } }
-@keyframes op-pulse { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--box-color, #806a28) 75%, transparent); } to { box-shadow: 0 0 0 16px transparent; } }
 /* 화면이 바뀌면 본문이 아래에서 올라온다 */
 html .rv-workspace .rv-main > :is(section, header, div):not(.rv-preview-toolbar, .rv-preview-scan-stages) { animation: op-rise 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 /* 단계 탭과 판정 필터의 밑줄은 왼쪽에서 자라난다 */
@@ -533,9 +535,8 @@ html .rv-workspace .rv-input-drop-target:is(:hover, .is-dragging) .rv-input-empt
 html .rv-workspace .rv-input-drop-target:is(:hover, .is-dragging) .rv-input-empty-icon::after { transform: translateZ(-68px); }
 html .rv-workspace .rv-input-empty-icon .icon { width: 26px; height: 26px; }
 
-/* 무대에 올라오는 포스터와, 고른 근거 상자의 맥박 */
+/* 무대에 올라오는 포스터. 고른 근거 상자의 강조(굵은 선·퍼지는 고리·상자 밖 어둠)는 image-stage.css의 image-stage--emphasis가 맡는다. */
 html .rv-workspace .image-stage-surface { animation: op-settle 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-html .rv-results .image-stage-box.is-selected { animation: op-pulse 1.7s ease-out infinite; }
 html .rv-results .rv-result-items > li { animation: op-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 html .rv-results .rv-result-items > li:nth-child(2) { animation-delay: 0.05s; }
 html .rv-results .rv-result-items > li:nth-child(3) { animation-delay: 0.1s; }

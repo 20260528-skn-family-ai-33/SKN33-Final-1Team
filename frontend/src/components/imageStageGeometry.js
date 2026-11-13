@@ -16,6 +16,22 @@ export function imageStageBounds(contentWidth, contentHeight) {
 export function evidenceLabelOnRight(bbox, width) {
   return Array.isArray(bbox) && bbox.length === 4 && Number.isFinite(width) && width > 0 && (bbox[0] + bbox[2]) / 2 > width / 2;
 }
+// 이름표는 상자 위에 붙는다. 그 자리가 다른 상자와 겹치면(바로 윗줄에 다른 근거가 있을 때) 아래로 내린다.
+// boxes: 화면에 그리는 모든 상자(원본 픽셀) · scale: 원본 픽셀 → 화면 픽셀 배율 · label: 이름표 글자
+// 돌려주는 값: true면 아래에 둔다. 위·아래가 모두 겹치면 위(기본 자리)에 둔다.
+export function evidenceLabelBelow(index, boxes, scale, label = '') {
+  const box = boxes[index];
+  if (!Array.isArray(box) || !(scale > 0)) return false;
+  const wide = Math.min(220, String(label).length * 9 + 18) / scale, tall = 28 / scale;   // 이름표 크기(바깥 선 포함, 원본 픽셀)
+  const onRight = evidenceLabelOnRight(box, Infinity);
+  const spot = below => {
+    const x1 = onRight ? box[2] - wide : box[0], y1 = below ? box[3] : box[1] - tall;
+    return [x1, y1, x1 + wide, y1 + tall];
+  };
+  const blocked = area => boxes.some((other, at) => at !== index && Array.isArray(other)
+    && Math.min(area[2], other[2]) - Math.max(area[0], other[0]) > 0 && Math.min(area[3], other[3]) - Math.max(area[1], other[1]) > 0);
+  return blocked(spot(false)) && !blocked(spot(true));
+}
 export function canShowImageEvidence(naturalWidth, naturalHeight, declaredWidth, declaredHeight) {
   if (![naturalWidth, naturalHeight].every(value => Number.isFinite(value) && value > 0)) return false;
   if (declaredWidth == null && declaredHeight == null) return true;

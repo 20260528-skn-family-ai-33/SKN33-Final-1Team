@@ -191,7 +191,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
 
     <div className="rv-result-workbench">
       <div className="rv-result-canvas-column" ref={canvas}>
-        <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`} heading={false} bare
+        <ImageStage src={image?.url} alt={`${review.project_name || '검수 대상'} 원본 이미지`} heading={false} bare fitEvidence="model" emphasis
           headingActions={imageActions}
           width={image?.width} height={image?.height} overlays={selectedOnly ? selectedOverlays : allOverlays}
           selectedOverlayId={selected?.criterion_id} onOverlaySelect={chooseOverlay}

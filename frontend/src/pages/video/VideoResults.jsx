@@ -275,7 +275,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
         <div className="rv-video-evidence-stage">
           <ImageStage src={frame ? `/api/video-reviews/${job.id}/frames/${frame.frame_id}` : null}
             alt={frame ? `${formatTime(frame.time_ms)} 프레임과 읽은 글자 영역` : '근거 프레임'}
-            heading={false} bare toolbarNote={subtitle} width={frame?.width} height={frame?.height}
+            heading={false} bare toolbarNote={subtitle} width={frame?.width} height={frame?.height} fitEvidence="ocr" emphasis
             overlays={overlays} selectedOverlayId={view.focus ? 'focus' : null} onOverlaySelect={selectOverlay} viewKey={view.key}
             empty={<><Icon name="image" /><strong className="rv-video-empty-title">표시할 표본 프레임이 없어요.</strong><p>다른 시점을 고르거나 원본 영상을 확인해 주세요.</p></>} />
         </div>
