@@ -41,3 +41,21 @@ export function mergeDocumentRequirements(current, document, filename) {
   }
   return { requirements, sources, addedCount: added.length };
 }
+
+// 직접 입력과 문서 항목을 함께 검수하면 전체를 한 묶음의 글로 다시 분석한다(서버가 기준에 '추가'를 받지 않아, 문서 기준에 직접 입력만 덧붙일 수 없다).
+// 그때 문서 항목을 한 줄로 적는다. 고치지 않은 항목은 문서에서 읽은 허용 범위·검사 방법(document_condition.inspection)을 뒤에 붙여,
+// 다시 만든 기준에서 그 내용이 빠지지 않게 한다. 사람이 문구를 고친 항목은 고친 문구만 보낸다(이전 설명이 고친 내용과 어긋날 수 있다).
+export function documentRowLine(row) {
+  const text = row.text.trim();
+  if (row.originalText !== undefined && text !== row.originalText) return text;
+  const rule = (row.document_condition?.inspection || '').split(/[\r\n]+/).map(part => part.trim()).filter(Boolean).join(' ');
+  return rule && !text.includes(rule) ? `${text} ${rule}` : text;
+}
+
+// 직접 입력 줄과 고른 문서 항목을 합친 요구사항 줄들. 같은 줄은 한 번만 넣는다.
+// 허용 범위를 붙여 글자 수 한도를 넘으면 문구만으로 다시 합친다(이 경우 허용 범위는 빠진다).
+export function combinedRequirementLines(direct, rows, limit = 6000) {
+  const build = line => [...new Set([...direct.split(/\r?\n/), ...rows.map(line)].map(item => item.trim()).filter(Boolean))];
+  const full = build(documentRowLine);
+  return full.join('\n').length <= limit ? full : build(row => row.text);
+}

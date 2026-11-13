@@ -189,8 +189,13 @@ html .rv-workspace .rv-extracted textarea:focus { border-color: var(--op-ink); b
 html .rv-workspace .rv-extracted li.is-off textarea:not(:focus) { color: var(--op-muted); text-decoration: line-through; }
 html .rv-workspace .rv-extracted li > .rv-button { min-height: 28px; padding: 3px 10px; border-color: transparent; background: none; color: var(--op-muted); }
 html .rv-workspace .rv-extracted li > .rv-button:hover:enabled { border-color: var(--op-line); background: var(--op-card); color: var(--op-ink); }
-html .rv-extracted-more { display: block; margin-top: 8px; padding: 6px 2px; border: 0; background: none; color: var(--op-ink); font-size: 13px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-html .rv-extracted-more:focus-visible { outline: 2px solid var(--op-ink); outline-offset: 3px; }
+/* 쪽 넘기기(components/Pager.jsx): 긴 목록은 펼치지 않고 몇 개씩 넘겨 본다 */
+html .op-pager { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 10px; color: var(--op-muted); font: 12px/1 var(--font-signal); }
+html .rv-workspace .op-pager > button { min-height: 30px; padding: 0 13px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); color: var(--op-ink); font: 12px/1 var(--font-ui); cursor: pointer; transition: border-color 0.2s ease; }
+html .rv-workspace .op-pager > button:hover:enabled { border-color: var(--op-ink); }
+html .rv-workspace .op-pager > button:disabled { opacity: 0.4; cursor: default; }
+html .rv-workspace .op-pager > button:focus-visible { outline: 2px solid var(--op-ink); outline-offset: 2px; }
+html .op-pager-count > b { color: var(--op-ink); font-weight: 500; }
 /* 다음 행동 줄 */
 html .rv-workspace :is(.rv-input-form .rv-input-actionbar, .rv-criteria-actionbar) { margin-top: 34px; padding: 18px 0 0; border: 0; border-top: 1px solid var(--op-ink); border-radius: 0; background: none; box-shadow: none; }
 html .rv-workspace .rv-actionbar :is(p, small) { font-size: 13px; line-height: 1.6; }
@@ -220,6 +225,14 @@ html .rv-workspace .rv-criteria-select { min-height: 50px; }
 html .rv-workspace .rv-criteria-item-index { color: var(--op-muted); font-size: 11px; }
 html .rv-workspace .rv-criteria-item-text { font-size: 14px; }
 html .rv-workspace .rv-criteria-item-type { color: var(--op-muted); font-size: 11px; }
+/* 검수 항목 목록: 안에서 스크롤하지 않고 쪽으로 넘긴다. 한 줄에 이름·기준값을 먼저, 기준 문장은 그 아래 한 줄로 줄인다. */
+html .rv-workspace .rv-criteria-list { max-height: none; overflow: visible; }
+html .rv-workspace .rv-criteria-item-text:has(> .rv-criteria-item-name) { white-space: normal; }
+html .rv-workspace .rv-criteria-item-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html .rv-workspace .rv-criteria-item-name > b { margin-right: 6px; color: var(--op-muted); font-size: 12px; font-weight: 500; }
+html .rv-workspace .rv-criteria-item-rule { display: block; margin-top: 2px; overflow: hidden; color: var(--op-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+html .rv-workspace .rv-criteria-item.is-excluded .rv-criteria-item-name { color: var(--op-muted); text-decoration: line-through; }
+html .rv-workspace .rv-criteria-inspector > .op-pager { margin: 10px 6px 4px; }
 html .rv-workspace .rv-criteria-detail { padding: 24px 0 22px; border-top: 0; background: none; }
 html .rv-workspace .rv-criteria-detail-heading .rv-eyebrow { font-size: 10px; }
 html .rv-workspace .rv-criteria-detail-heading h3 { font-size: 18px; letter-spacing: -0.03em; }
@@ -236,6 +249,18 @@ html .rv-workspace .rv-rejection-source { border-radius: 6px; background: var(--
 html .rv-workspace.rv-workspace .rv-criteria-actionbar { z-index: 14; bottom: 0; padding: 16px 0 18px; background: var(--op-bg); }
 html .rv-workspace .rv-criteria-action-context strong { font-size: 14px; }
 html .rv-workspace .rv-criteria-action-context p { color: var(--op-muted); font-size: 12px; }
+/* 아래 행동 줄: 단추가 많아져도(저장 뒤 확인 필요 항목) 옆 글을 밀어내거나 화면 밖으로 나가지 않게 줄을 바꾼다.
+   바탕 스타일은 단추 묶음이 줄어들지 않아(flex-shrink: 0) 좁은 창에서 안내 글이 세로로 찌그러졌다. */
+html .rv-workspace .rv-criteria-actionbar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+html .rv-workspace .rv-criteria-action-context { flex: 1 1 340px; flex-wrap: wrap; gap: 8px 18px; }
+html .rv-workspace .rv-criteria-action-context > p { flex: 1 1 240px; min-width: 0; margin: 0; }
+html .rv-workspace .rv-criteria-action-buttons { flex: 0 1 auto; min-width: 0; max-width: 100%; justify-content: flex-end; }
+html .rv-workspace .rv-criteria-blockers { flex: 1 1 100%; min-width: 0; gap: 8px 12px; }
+html .rv-workspace .rv-criteria-blockers > p { flex: 1 1 260px; min-width: 0; margin: 0; }
+/* 확인 필요 항목은 목록의 번호로 적는다(내부 기준 번호는 쓰지 않는다). 누르면 그 항목이 있는 쪽으로 넘어간다. */
+html .rv-criteria-blocker-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+html .rv-workspace .rv-criteria-blockers .rv-criteria-blocker-chips > button { min-width: 38px; padding: 6px 9px; border: 1px solid #d9c9ad; border-radius: 999px; background: var(--op-card); color: var(--op-ink); font: 12px/1 var(--font-signal); }
+html .rv-workspace .rv-criteria-blockers .rv-criteria-blocker-chips > button:hover { border-color: var(--op-ink); }
 
 /* 진행 · 결과 */
 html :is(.rv-progress-card, .run-card) { border-radius: 6px; background: var(--op-card); box-shadow: none; }
@@ -409,13 +434,9 @@ html .rv-revision-rows > li { border-top-color: var(--op-line); }
 html .rv-revision-detail { border-radius: 6px; background: var(--op-surface); }
 html .rv-relation-notice { border-color: var(--op-line); border-radius: 6px; }
 html .rv-relation-runs > summary { border-color: var(--op-line); border-radius: 999px; padding-inline: 14px; }
-/* 달라진 항목: 값이 길면 두 줄까지만 보이고, 앞의 몇 개 뒤로는 접어 둔다(ChangeImpactNotice.jsx) */
+/* 달라진 항목: 값이 길면 두 줄까지만 보이고, 몇 개씩 쪽으로 넘겨 본다(ChangeImpactNotice.jsx) */
 html .rv-relation-values { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-html .rv-relation-more { margin-top: 10px; font-size: 12px; }
-html .rv-relation-more > summary { width: fit-content; padding: 6px 14px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); font-weight: 500; cursor: pointer; list-style: none; }
-html .rv-relation-more > summary::-webkit-details-marker { display: none; }
-html .rv-relation-more[open] > summary { margin-bottom: 2px; }
-html .rv-relation-more > .rv-relation-changes { max-height: 300px; overflow-y: auto; padding-right: 6px; overscroll-behavior: contain; }
+html .rv-relation-notice > .op-pager { justify-content: flex-start; }
 html .rv-relation-runs li { border-radius: 6px; }
 
 /* ── 판정 근거 창 ───────────────────────────────────────────────────────────

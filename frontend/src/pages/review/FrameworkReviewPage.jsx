@@ -4,8 +4,10 @@ import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { Pager, usePaged } from '../../components/Pager.jsx';
 import ResultsPage from './ResultsPage.jsx';
 import { frameworkResults } from './frameworkResults.js';
+import { criterionLine } from './criterionLabel.js';
 import ReviewProgress from './ReviewProgress.jsx';
 import FrameworkRunStatus from './FrameworkRunStatus.jsx';
 import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
@@ -45,6 +47,23 @@ const actionStatus = {
   final: '최종 승인을 저장하고 있어요.',
   changes: '수정 요청 승인을 저장하고 있어요.',
 };
+// 검수 항목 목록은 CRITERIA_PER_PAGE개씩 쪽으로 넘겨 본다.
+const CRITERIA_PER_PAGE = 6;
+// 목록 한 줄: 이름(전시명·개막일…)과 기준값을 먼저 보이고 기준 문장은 그 아래 한 줄로 줄인다. 이름을 모르는 기준은 문장만 보인다.
+// 한 원문 문장에서 나온 여러 기준은 문장이 같으므로, 값으로 구분되게 한다.
+function CriterionText({ criterion }) {
+  const line = criterionLine(criterion);
+  return <span className="rv-criteria-item-text">{line.label ? <>
+    <span className="rv-criteria-item-name"><b>{line.label}</b>{line.expected && <> <span>{line.expected}</span></>}</span>
+    {line.rule && <small className="rv-criteria-item-rule">{line.rule}</small>}
+  </> : criterion.text}</span>;
+}
+// 기준 번호(c001 같은 내부 번호) 대신 화면에 적을 이름
+function criterionTitle(criterion) {
+  if (!criterion) return '검수 항목';
+  const line = criterionLine(criterion);
+  return line.label ? [line.label, line.expected].filter(Boolean).join(' ') : criterion.text;
+}
 function command(path, body, key, signal) {
   return frameworkJson(path, { method: 'POST', signal, body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
@@ -108,6 +127,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     criteria.some(item => item.kind === 'visual') && '시각 조건',
   ].filter(Boolean).join(' · ');
   const selected = criteria.find(item => item.criterion_id === (amendment?.criterion_id || activeId)) || criteria[0];
+  const criteriaPages = usePaged(criteria, CRITERIA_PER_PAGE);
   const imageUrl = run?.baseline && run.context.asset_version_id
     ? frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content' : null;
   const image = useMemo(() => ({ url: imageUrl, ...(imageSize?.url === imageUrl ? imageSize : {}) }), [imageUrl, imageSize]);
@@ -383,6 +403,22 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
   </>;
 
+  // 목록의 순번(01부터). 확인 필요 단추와 목록이 같은 번호를 쓴다.
+  const criterionNumber = id => String(criteria.findIndex(item => item.criterion_id === id) + 1).padStart(2, '0');
+  // 다른 쪽에 있는 항목을 고르면 그 쪽으로 넘긴 뒤 보여 준다.
+  function showCriterion(id) {
+    const index = criteria.findIndex(item => item.criterion_id === id);
+    if (index < 0) return;
+    criteriaPages.setPage(Math.floor(index / CRITERIA_PER_PAGE));
+    setActiveId(id);
+    requestAnimationFrame(() => document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }));
+  }
+  // 쪽을 넘기면 그 쪽의 첫 항목을 골라, 아래 상세가 늘 보이는 줄과 맞게 한다(보완하는 중에는 고른 항목을 바꾸지 않는다).
+  function turnCriteriaPage(page) {
+    criteriaPages.setPage(page);
+    if (!amendment) setActiveId(criteria[page * CRITERIA_PER_PAGE]?.criterion_id || null);
+  }
+
   function retryRunStatus() {
     setRun(null); setOverview(null); setError(''); setLoadState('checking');
     setReload(value => value + 1);
@@ -477,7 +513,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           </div>
           {reviewingDraft && (
             <div className="rv-criteria-action-buttons">{needsVersion && <button className="rv-button secondary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion, 'save')} aria-busy={working('save')} title={exclusionBlock}>검토한 기준 버전 저장</button>}
-            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}<button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
+            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p><span className="rv-criteria-blocker-chips">{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} aria-label={criterionNumber(id) + '번 항목 확인하기'} title={criterionTitle(criteria.find(item => item.criterion_id === id))} onClick={() => showCriterion(id)}>{criterionNumber(id)}</button>)}</span><button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
             {(needsVersion || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart, 'start')} aria-busy={working('start')} title={exclusionBlock}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
             </div>
           )}
@@ -503,14 +539,15 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             </section>}
             {rejections.length > 0 && <ExtractionRejections items={rejections} />}
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
-            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
+            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteriaPages.shown.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
               <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
                 checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
               <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
                 disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
-                <span className="rv-criteria-item-index">{String(index + 1).padStart(2, '0')}</span><span className="rv-criteria-item-text">{c.text}</span><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
+                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
               </button>
             </li>)}</ul>
+            <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
             {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
               <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
               <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
@@ -530,7 +567,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
               }}>기준 보완</button>)}
             </div>}
             {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
-            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
+            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
       {!processing && (!hasResults || showingReport) && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">

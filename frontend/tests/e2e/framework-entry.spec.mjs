@@ -260,7 +260,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       }
       if (mode === 'blocker') {
         await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
-        await page.getByRole('button', { name: 'title 확인하기', exact: true }).click();
+        // 확인 필요 항목은 내부 기준 번호 대신 목록의 번호로 적는다.
+        await page.getByRole('button', { name: '01번 항목 확인하기', exact: true }).click();
         assert.ok(await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).isDisabled());
         assert.equal(approved, false);
         assert.equal(uploads, 0);

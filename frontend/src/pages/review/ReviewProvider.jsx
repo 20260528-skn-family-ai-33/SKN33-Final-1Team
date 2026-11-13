@@ -4,7 +4,7 @@ import { fetchJson, fetchResponse } from '../../api/client.js';
 import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun, logoDetectorFor, modelRouteFor } from './workflow.js';
-import { mergeDocumentRequirements } from './documentRequirements.js';
+import { combinedRequirementLines, mergeDocumentRequirements } from './documentRequirements.js';
 import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, watchDocumentDeadline } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
@@ -465,7 +465,8 @@ export function ReviewProvider({ children }) {
       setError('문서를 분석한 뒤 보안 여부가 바뀌었어요. 요구사항 문서를 다시 첨부해 주세요.');
       return;
     }
-    const lines = [...new Set([...direct.split(/\r?\n/), ...selectedRows.map(row => row.text)].map(line => line.trim()).filter(Boolean))];
+    // 직접 입력이 있거나 문서 항목을 고쳤으면 전체를 새 기준 초안으로 다시 분석한다. 고치지 않은 문서 항목에는 문서에서 읽은 허용 범위를 붙여 보낸다.
+    const lines = combinedRequirementLines(direct, selectedRows);
     const requirements = lines.join('\n');
     if (!requirements) { setError('요구사항을 입력하거나 문서에서 추출한 항목을 선택해 주세요.'); return; }
     if (requirements.length > 6000 || lines.length > 100) { setError('검수 요구사항을 6,000자 및 100개 이내로 정리해 주세요.'); return; }

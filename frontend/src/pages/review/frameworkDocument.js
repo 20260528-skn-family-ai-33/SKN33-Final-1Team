@@ -124,8 +124,11 @@ export async function extractDocumentWithProgress(file, { signal, onProgress, on
       }
       throw error;
     }
+    // 직접 입력(입력문)을 분석할 때는 문서를 다시 읽는 것처럼 보이지 않게 따로 적는다.
+    const typed = file.type === 'text/plain';
     onProgress?.({ runId: attempt.runId, stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
-      message: run.execution_status === 'queued' ? '문서 분석 차례를 기다리고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
+      message: run.execution_status === 'queued' ? (typed ? '요구사항 분석 차례를 기다리고 있습니다.' : '문서 분석 차례를 기다리고 있습니다.')
+        : typed ? '입력한 요구사항을 검수 기준으로 정리하고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
     await waitFor(pollInterval, signal);
   }
   signal?.throwIfAborted();

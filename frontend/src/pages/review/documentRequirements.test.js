@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mergeDocumentRequirements } from './documentRequirements.js';
+import { combinedRequirementLines, documentRowLine, mergeDocumentRequirements } from './documentRequirements.js';
 import { initialState, workflowReducer, parseRequirements } from './workflow.js';
 
 const document = { conditions: [
@@ -77,4 +77,20 @@ test('병합한 PDF 조건의 모든 페이지 근거와 긴 보완 설명을 �
   assert.equal(actual.document_condition.inspection, item.inspection);
   assert.deepEqual(actual.document_condition.sources, item.source_references);
   assert.match(actual.source, /1·2페이지/);
+});
+
+test('직접 입력과 함께 다시 분석할 때 고치지 않은 문서 항목은 허용 범위를 붙여 보낸다', () => {
+  const rule = '글자와 숫자가 일치해야 함.\n줄바꿈·공백은 허용.';
+  const row = (text, extra = {}) => ({ text, originalText: text, selected: true, document_condition: { label: '행사명', requirement: '봄 축제', inspection: rule, level: '필수' }, ...extra });
+  assert.equal(documentRowLine(row('행사명: 봄 축제')), '행사명: 봄 축제 글자와 숫자가 일치해야 함. 줄바꿈·공백은 허용.');
+  // 사람이 고친 문구는 고친 대로만 보낸다
+  assert.equal(documentRowLine(row('행사명: 여름 축제', { originalText: '행사명: 봄 축제' })), '행사명: 여름 축제');
+  // 허용 범위가 없거나 이미 문구에 들어 있으면 덧붙이지 않는다
+  assert.equal(documentRowLine({ text: '장소: 시민공원', originalText: '장소: 시민공원' }), '장소: 시민공원');
+  assert.equal(documentRowLine(row('행사명: 봄 축제 글자와 숫자가 일치해야 함. 줄바꿈·공백은 허용.')), '행사명: 봄 축제 글자와 숫자가 일치해야 함. 줄바꿈·공백은 허용.');
+
+  assert.deepEqual(combinedRequirementLines('문의 전화를 넣는다\n\n장소: 시민공원', [row('행사명: 봄 축제'), { text: '장소: 시민공원', originalText: '장소: 시민공원' }]),
+    ['문의 전화를 넣는다', '장소: 시민공원', '행사명: 봄 축제 글자와 숫자가 일치해야 함. 줄바꿈·공백은 허용.']);
+  // 허용 범위를 붙여 한도를 넘으면 문구만 보낸다
+  assert.deepEqual(combinedRequirementLines('직접 입력', [row('행사명: 봄 축제')], 20), ['직접 입력', '행사명: 봄 축제']);
 });
