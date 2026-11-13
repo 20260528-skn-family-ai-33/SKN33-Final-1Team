@@ -627,7 +627,8 @@ html .rv-task-state-icon { border-color: var(--op-line); border-radius: 50%; bac
    왼쪽은 소개 화면 첫 장면의 구성(머리글 줄 · 큰 제목 · 점 구체)에 제품 장면을 입체로 띄우고, 오른쪽은 입력 판. */
 html .auth-page--public .auth-main { max-width: 1336px; grid-template-columns: minmax(0, 1.25fr) minmax(360px, 440px); align-items: start; gap: clamp(48px, 7vw, 120px); padding: 64px 48px 96px; }
 html .auth-page--public .auth-intro { position: relative; isolation: isolate; padding-top: 18px; }
-html .auth-intro > .op-pixel-field { position: absolute; z-index: -1; top: -110px; right: -70px; width: 620px; height: 620px; pointer-events: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 34%); mask-image: linear-gradient(90deg, transparent, #000 34%); }
+/* 점 그림(포스터 검수 장면)은 큰 제목 뒤가 아니라 검수 목록 예시 옆 빈자리에 세운다: 목록과 그 목록이 가리키는 포스터가 나란히 보인다 */
+html .auth-intro > .op-pixel-field { position: absolute; z-index: -1; top: auto; bottom: 124px; right: -56px; width: 420px; height: 420px; pointer-events: none; }
 html .auth-page--public .auth-intro > .pill { display: flex; align-items: center; gap: 12px; padding: 0; border-radius: 0; background: none; color: var(--op-muted); font: 12px/1.5 var(--font-signal); }
 html .auth-page--public .auth-intro > .pill::before { content: ''; width: 32px; height: 1px; background: currentColor; }
 html .auth-page--public .auth-intro h1 { margin: 28px 0 24px; font-size: clamp(56px, 6vw, 96px); font-weight: 450; letter-spacing: -0.065em; line-height: 1.04; animation: op-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
@@ -641,7 +642,7 @@ html .auth-page--public .auth-card h2 { font-size: 30px; font-weight: 500; lette
 html .auth-page--public .auth-submit { justify-content: space-between; min-height: 52px; padding: 15px 26px; border-radius: 32px; font-size: 14px; font-weight: 500; }
 @media (max-width: 900px) {
   html .auth-page--public .auth-intro h1 { font-size: clamp(40px, 10.5vw, 64px); }
-  html .auth-intro > .op-pixel-field { top: -60px; right: -80px; width: 380px; height: 380px; }
+  html .auth-intro > .op-pixel-field { bottom: 64px; right: -6px; width: 360px; height: 360px; }
   html .auth-page .auth-example > div { transform: none; }
   html .auth-page--public .auth-main { grid-template-columns: minmax(0, 1fr); padding: 32px 22px 60px; }
   html .auth-page--public .auth-card { position: static; }

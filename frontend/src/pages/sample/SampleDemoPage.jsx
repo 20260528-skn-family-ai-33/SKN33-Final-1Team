@@ -88,11 +88,11 @@ export default function SampleDemoPage() {
     <main className="sd-main">
       {screen === 'media' && <Kiosk title="어떤 샘플 자료를 검수할까요?" onPick={value => update({ media: value, screen: 'security' })}
         tiles={[{ value: 'poster', label: '포스터', art: <MediaArt kind="poster" /> }, { value: 'video', label: '동영상', art: <MediaArt kind="video" /> }]} />}
-      {screen === 'security' && <Kiosk title="보안이 필요한 자료인가요?" context={context}
+      {screen === 'security' && <Kiosk title="보안이 필요한 자료인가요?" context={context} scene={media}
         back={{ label: '자료 종류 다시 고르기', onClick: restart }} onPick={value => update({ security: value, screen: 'type' })}
         tiles={[{ value: 'secure', label: securityModeLabels.secure, art: <SecurityArt secure media={media} /> },
           { value: 'general', label: securityModeLabels.general, art: <SecurityArt secure={false} media={media} /> }]} />}
-      {screen === 'type' && <Kiosk title="검수할 항목을 선택해 주세요" context={context}
+      {screen === 'type' && <Kiosk title="검수할 항목을 선택해 주세요" context={context} scene={media}
         back={{ label: '보안 여부 다시 고르기', onClick: () => update({ security: null, screen: 'security' }) }}
         onPick={value => update({ mode: value, screen: 'input' })}
         tiles={['text', 'logo', 'both'].map(value => ({ value, label: reviewModeLabels[value],
@@ -105,7 +105,7 @@ export default function SampleDemoPage() {
 }
 
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
-function Kiosk({ title, tiles, onPick, back, context }) {
+function Kiosk({ title, tiles, onPick, back, context, scene }) {
   const latest = useRef({ tiles, onPick });
   latest.current = { tiles, onPick };
   useEffect(() => {
@@ -123,7 +123,7 @@ function Kiosk({ title, tiles, onPick, back, context }) {
 
   return <section className="sd-kiosk" aria-labelledby="page-title">
     {back && <button type="button" className="sd-kiosk-back" onClick={back.onClick}><span aria-hidden="true">←</span> {back.label}</button>}
-    <PixelField monochrome />
+    <PixelField monochrome quiet scene={scene} />
     <div className="sd-kiosk-heading"><p className="op-eyebrow"><span aria-hidden="true" />SAMPLE / 샘플 체험{context}</p>
       <h1 id="page-title" tabIndex={-1}>{title}</h1></div>
     <div className="sd-tiles">

@@ -138,7 +138,7 @@ export function LoginPage() {
     <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
-        <PixelField monochrome />
+        <PixelField monochrome scene="poster" />
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
         <h1 id="login-intro-title">검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>

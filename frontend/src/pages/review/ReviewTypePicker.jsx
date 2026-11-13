@@ -64,7 +64,8 @@ export function settleArt(event) {
 }
 
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
-function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel, context, disabled = false }) {
+// scene: 배경 점 그림이 보여 줄 장면('poster' | 'video'). 자료 종류를 고르기 전에는 비워 둬 포스터와 영상을 모두 보여 준다.
+function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel, context, scene, disabled = false }) {
   useEffect(() => {
     function choose(event) {
       if (disabled || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -79,7 +80,7 @@ function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel
   }, [disabled, onSelect, tiles]);
 
   return <section className="rv-type-picker" aria-labelledby="page-title">
-    <PixelField monochrome />
+    <PixelField monochrome quiet scene={scene} />
     {onBack && <button type="button" className="rv-type-back" disabled={disabled} onClick={onBack}>
       <Icon name="arrow" />{backLabel}</button>}
     <div className="rv-type-heading">
@@ -106,11 +107,11 @@ export function MediaPicker({ onSelect, disabled = false }) {
 // media: 'poster'(기본) | 'video'. 동영상 검수 화면은 영상 프레임 그림을 쓴다. onBack을 주면 자료 종류를 다시 고르는 단추를 둔다.
 export function SecurityPicker({ onSelect, onBack, disabled = false, media = 'poster' }) {
   return <KioskChoice title="보안이 필요한 자료인가요?" kicker="SECURITY / 자료 구분" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
-    onSelect={onSelect} onBack={onBack} backLabel="자료 종류 다시 고르기" disabled={disabled} />;
+    onSelect={onSelect} onBack={onBack} backLabel="자료 종류 다시 고르기" disabled={disabled} scene={media} />;
 }
 
 export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false, media = 'poster' }) {
   return <KioskChoice title="검수할 항목을 선택해 주세요" kicker="REVIEW TYPE / 검수 유형" tiles={typeTiles[media] || typeTiles.poster} labels={reviewModeLabels}
-    onSelect={onSelect} onBack={onBack} backLabel="보안 여부 다시 고르기" disabled={disabled}
+    onSelect={onSelect} onBack={onBack} backLabel="보안 여부 다시 고르기" disabled={disabled} scene={media}
     context={security && <>{security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</>} />;
 }
