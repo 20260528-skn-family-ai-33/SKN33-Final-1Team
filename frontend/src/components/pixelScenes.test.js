@@ -60,7 +60,7 @@ test('움직임을 줄인 환경의 한 장은 상자가 모두 그려진 검수
   for (const scene of [undefined, 'poster', 'video']) {
     const phase = phaseAt(stillAt(scene), scene), shape = sceneOrder(scene)[1];
     assert.equal(phase.from, shape); assert.equal(phase.mix, 0);
-    assert.ok(MARKS[shape].every(mark => phase.hold - mark.at > 0.85), '상자와 판정 표시가 다 그려진 뒤');
+    assert.ok(MARKS[shape].every(mark => phase.hold - mark.at > 0.85), '상자와 이름표가 다 그려진 뒤');
     assert.ok(HOLD[shape] - phase.hold >= 0.5, '옅어지기 전');
   }
 });

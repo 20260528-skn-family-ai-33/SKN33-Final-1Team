@@ -940,8 +940,34 @@ html .sd-thumb { border-radius: 4px; background: var(--op-surface); }
 html .sd-ad summary { font-size: 17px; font-weight: 500; letter-spacing: -0.03em; }
 html .sd-actionbar { gap: 10px; margin-top: 26px; padding: 18px 0 0; border: 0; border-top: 1px solid var(--op-ink); border-radius: 0; background: none; }
 html .sd-actionbar .sd-btn.is-primary, html .sd-cta .sd-btn { min-height: 52px; padding-inline: 28px; font-size: 16px; }
-/* 근거 상자: 잉크 무대 위에서 잘 보이게 */
-html .sd-box.is-selected { background: rgb(255 255 255 / 10%); outline-color: rgb(255 255 255 / 55%); }
+/* 근거 상자: 실제 결과 화면의 상자(image-stage.css의 image-stage--emphasis)와 같은 생김새.
+   판정 색 선을 상자 바깥에 긋고 흰 띠와 어두운 실선을 둘러 어느 바탕에서도 보이게 하고, 고른 상자 밖은 어둡게 한다.
+   샘플 화면은 따로 불러오는 묶음이라 실제 화면의 규칙을 함께 쓰지 못한다 → 값을 바꿀 때는 두 곳을 같이 고친다. */
+html .sd-boxes { position: absolute; inset: 0; pointer-events: none; }
+html .sd-box { --box-color: var(--sd-green); pointer-events: auto; border: 0; border-radius: 1px; background: transparent; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%), 0 0 0 2px var(--box-color), 0 0 0 3.5px #fff, 0 0 0 4.5px rgb(17 17 17 / 58%); }
+html .sd-box.is-fail { --box-color: var(--sd-red); }
+html .sd-box.is-review { --box-color: var(--sd-amber); }
+html .sd-box:hover, html .sd-box:focus-visible { background: rgb(255 255 255 / 10%); outline: 2px solid #fff; outline-offset: 5px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 80%), 0 0 0 3px var(--box-color), 0 0 0 4.5px #fff, 0 0 0 5.5px rgb(17 17 17 / 62%); }
+html .sd-box.is-selected { z-index: 2; background: transparent; outline: 0;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 85%), 0 0 0 3px var(--box-color), 0 0 0 5px #fff, 0 0 0 6px rgb(17 17 17 / 66%), 0 8px 26px 6px rgb(0 0 0 / 38%); }
+html .sd-box.is-selected::after { content: ''; position: absolute; inset: -7px; border: 2px solid var(--box-color); border-radius: 3px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 70%); pointer-events: none; opacity: 0; animation: op-box-ping 1.9s cubic-bezier(0.2, 0.7, 0.2, 1) infinite; }
+@keyframes op-box-ping { 0% { inset: -7px; opacity: 0.9; } 70%, 100% { inset: -22px; opacity: 0; } }
+html .sd-box > span { left: -4.5px; bottom: calc(100% + 4.5px); padding: 3px 7px; border-radius: 3px 3px 0 0; font: 700 11px/1.25 Arial, sans-serif;
+  background: var(--box-color); box-shadow: 0 0 0 1px #fff, 0 0 0 2px rgb(17 17 17 / 58%); pointer-events: none; }
+html .sd-box.is-right > span { left: auto; right: -4.5px; }
+html .sd-box.is-selected > span { left: -6px; bottom: calc(100% + 6px); }
+html .sd-box.is-selected.is-right > span { left: auto; right: -6px; }
+html .sd-box.is-below > span { bottom: auto; top: calc(100% + 4.5px); border-radius: 0 0 3px 3px; }
+html .sd-box.is-selected.is-below > span { bottom: auto; top: calc(100% + 6px); }
+html .sd-dim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: rgb(10 10 10 / 38%); animation: op-box-dim 0.26s ease-out both; }
+@keyframes op-box-dim { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  html .sd-box.is-selected::after { animation: none; inset: -9px; opacity: 0.55; }
+  html .sd-dim { animation: none; }
+}
 /* 검수 진행: 왼쪽 잉크 무대에 포스터·필름을 3D로 눕히고 단계에 따라 유리판 '02 읽은 자리'·'03 판정'이 떠오른다(실제 진행 화면과 같은 연출).
    무대는 마우스를 따라 조금 기운다(--turn·--lean). 오른쪽에는 진행률 큰 숫자 · 단계 · 작업 정보를 선으로 나눠 쌓는다. */
 html .sd-progress { margin-top: 0; }

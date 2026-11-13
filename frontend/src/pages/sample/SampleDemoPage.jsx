@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOptionalAuth } from '../../auth/AuthProvider.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { evidenceLabelBelow, evidenceLabelOnRight } from '../../components/imageStageGeometry.js';
 import { useTilt } from '../../components/LayerFigure.jsx';
 import { PixelField } from '../../components/PixelField.jsx';
 import { reviewModeLabels, SecurityArt, securityModeLabels, settleArt, tiltArt, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
@@ -253,14 +254,35 @@ function RunningScreen({ state, tick, elapsed }) {
 }
 
 // 근거 상자. 좌표(x1,y1,x2,y2)를 그림 크기(width·height) 대비 비율로 놓는다.
+// 생김새는 실제 결과 화면의 상자(ImageStage의 강조 모양)와 같다: 고른 상자 밖은 어둡게 하고,
+// 이름표는 위에 두면 다른 상자를 가릴 때 아래로 내린다(오른쪽 절반의 상자는 이름표를 오른쪽 끝에 맞춘다).
 function EvidenceBoxes({ items, width, height, selected, onSelect }) {
-  return items.map(item => {
-    const [x1, y1, x2, y2] = item.box;
-    return <button key={item.id} type="button" className={`sd-box is-${item.verdict}${selected === item.id ? ' is-selected' : ''}`}
-      style={{ left: `${x1 / width * 100}%`, top: `${y1 / height * 100}%`, width: `${(x2 - x1) / width * 100}%`, height: `${(y2 - y1) / height * 100}%` }}
-      aria-label={`${item.id.toUpperCase()} 근거 위치: ${item.req}`} aria-pressed={selected === item.id} onClick={() => onSelect(item.id)}>
-      <span>{item.id.toUpperCase()}</span></button>;
-  });
+  const layer = useRef(null);
+  const [scale, setScale] = useState(1);   // 자료 좌표 → 화면 픽셀
+  const dimId = `sd-dim-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / width || 1));
+    observer.observe(layer.current);
+    return () => observer.disconnect();
+  }, [width]);
+  const boxes = items.map(item => item.box);
+  const chosen = items.find(item => item.id === selected);
+  return <div className="sd-boxes" ref={layer}>
+    {chosen && <svg className="sd-dim" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true">
+      <mask id={dimId}><rect width={width} height={height} fill="#fff" />
+        <rect x={chosen.box[0]} y={chosen.box[1]} width={chosen.box[2] - chosen.box[0]} height={chosen.box[3] - chosen.box[1]} fill="#000" /></mask>
+      <rect width={width} height={height} mask={`url(#${dimId})`} />
+    </svg>}
+    {items.map((item, index) => {
+      const [x1, y1, x2, y2] = item.box;
+      const name = item.id.toUpperCase();
+      const place = `${evidenceLabelOnRight(item.box, width) ? ' is-right' : ''}${evidenceLabelBelow(index, boxes, scale, name) ? ' is-below' : ''}`;
+      return <button key={item.id} type="button" className={`sd-box is-${item.verdict}${selected === item.id ? ' is-selected' : ''}${place}`}
+        style={{ left: `${x1 / width * 100}%`, top: `${y1 / height * 100}%`, width: `${(x2 - x1) / width * 100}%`, height: `${(y2 - y1) / height * 100}%` }}
+        aria-label={`${name} 근거 위치: ${item.req}`} aria-pressed={selected === item.id} onClick={() => onSelect(item.id)}>
+        <span>{name}</span></button>;
+    })}
+  </div>;
 }
 
 function ResultList({ items, labels, selected, onSelect }) {

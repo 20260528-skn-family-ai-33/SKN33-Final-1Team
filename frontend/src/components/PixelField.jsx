@@ -3,7 +3,8 @@ import { COUNT, SHAPES, MARKS, SCAN, PLAY, SHEET_SIZE, FILM_TRACK, FILM_FRAMES, 
 
 // 첫 화면 배경의 점 그림. 작은 눈금 520개가 구로 돌다가 포스터와 영상으로 모이고, 그 위에서 검수가 일어난다:
 // 점들이 자리를 잡으면 그 아래로 종이(포스터)와 겹친 화면(영상)이 옅게 떠오르고,
-// 읽는 띠가 지나가면 근거 상자가 그려지고 번호와 판정 표시가 붙는다(결과 화면의 상자·판정 색과 같다).
+// 읽는 띠가 지나가면 근거 상자가 그려지고 번호 이름표가 붙는다. 상자의 선과 이름표는 결과 화면의 상자와 같은 모양·같은 판정 색이고,
+// 판정도 결과 화면처럼 색으로만 구분한다(충족 초록 · 확인 필요 황갈색 · 불충족 붉은색).
 //   구(모아 둔 자료) → 포스터(위에서 아래로 읽고 자리를 짚는다) → 영상(시간 줄을 따라가며 짚는다) → 다시 구
 // scene(선택): 'poster'면 구↔포스터, 'video'면 구↔영상만 돈다. 없으면 셋을 모두 돈다.
 // quiet(선택): 글자·타일 뒤에 깔리는 자리에서 쓴다. 종이 면과 판정 색 없이 눈금과 가는 선만 그려 내용을 가리지 않는다.
@@ -12,11 +13,9 @@ import { COUNT, SHAPES, MARKS, SCAN, PLAY, SHEET_SIZE, FILM_TRACK, FILM_FRAMES, 
 // dribbble의 문서 스캔·항목 인식 화면(읽은 칸에 상자와 꼬리표가 붙는 연출). 코드는 가져오지 않고 우리 눈금과 판정 색으로 새로 그렸다.
 
 const TONES = { pass: '23,125,69', review: '128,106,40', fail: '163,79,62' };
-const PAPER = '#fbfaf7';
 const STAGGER = 0.4;   // 옮겨 갈 때 위쪽 점이 먼저 떠나는 정도
 const clamp = (value, low = 0, high = 1) => Math.min(high, Math.max(low, value));
 const ease = value => (value < 0.5 ? 4 * value * value * value : 1 - Math.pow(-2 * value + 2, 3) / 2);
-const pop = value => { const back = value - 1; return 1 + 2.4 * back * back * back + 1.4 * back * back; };   // 살짝 넘쳤다 돌아오는 등장
 
 // 모양마다의 자세 [좌우로 돈 각, 앞뒤로 누운 각]: 구는 계속 돌고, 종이와 영상은 비스듬히 선 채 천천히 흔들린다
 const POSE = {
@@ -150,6 +149,7 @@ export function PixelField({ monochrome = false, scene, quiet = false }) {
         context.strokeStyle = `rgba(${ink},${0.55 * show})`; context.lineWidth = 1.2 * unit;
         context.beginPath(); spot.forEach(([x, y], at) => (at ? context.lineTo(x, y) : context.moveTo(x, y))); context.closePath(); context.stroke();
       }
+      const middle = phase.from === 'video' ? FILM_FRAMES.centers[2][0] : 0;   // 그 그림(포스터·앞 화면)의 가로 가운데
       for (const mark of MARKS[phase.from] || []) {
         const since = phase.hold - mark.at;
         if (since <= 0) continue;
@@ -158,40 +158,48 @@ export function PixelField({ monochrome = false, scene, quiet = false }) {
         const corners = [flat(x1, y1, mark.z), flat(x2, y1, mark.z), flat(x2, y2, mark.z), flat(x1, y2, mark.z)];
         let around = 0;
         for (let side = 0; side < 4; side++) { const next = corners[(side + 1) % 4]; around += Math.hypot(next[0] - corners[side][0], next[1] - corners[side][1]); }
-        context.beginPath();
-        corners.forEach(([x, y], at) => (at ? context.lineTo(x, y) : context.moveTo(x, y)));
-        context.closePath();
-        if (grow >= 1 && !quiet) { context.fillStyle = `rgba(${tone},${0.06 * fade})`; context.fill(); }
+        const outline = () => { context.beginPath(); corners.forEach(([x, y], at) => (at ? context.lineTo(x, y) : context.moveTo(x, y))); context.closePath(); };
         // 상자는 왼쪽 위에서 시계 방향으로 그려진다
         context.setLineDash([around * grow, around]);
-        context.strokeStyle = quiet ? `rgba(${ink},${0.36 * fade})` : `rgba(${tone},${0.92 * fade})`;
-        context.lineWidth = (quiet ? 1 : 1.5) * unit; context.lineJoin = 'round';
-        context.stroke();
-        context.setLineDash([]);
-        if (quiet) continue;   // 조용한 모드: 가는 상자 선만 남긴다
-        // 번호 꼬리표(상자 왼쪽 위). 작은 그림에서도 번호가 읽히게 꼬리표와 판정 표시는 일정 크기 아래로 줄이지 않는다.
-        const sign = Math.max(unit, 0.9);
-        const tag = clamp(since / 0.2) * fade, [tx, ty] = corners[0];
-        context.fillStyle = `rgba(${tone},${0.94 * tag})`;
-        context.fillRect(tx - 0.75 * unit, ty - 12.5 * sign, 19 * sign, 12.5 * sign);
-        context.fillStyle = `rgba(251,250,247,${tag})`;
-        context.font = `700 ${Math.round(9 * sign)}px Consolas, 'SFMono-Regular', monospace`;
-        context.textAlign = 'center'; context.textBaseline = 'middle';
-        context.fillText(mark.id, tx - 0.75 * unit + 9.5 * sign, ty - 6 * sign);
-        // 판정 표시(상자 오른쪽 위): 충족은 체크, 확인 필요는 느낌표, 불충족은 가위표
-        const seal = clamp((since - 0.55) / 0.3);
-        if (seal > 0) {
-          const [sx, sy] = corners[1], size = 6.5 * sign * pop(seal);
-          context.fillStyle = `rgba(${tone},${fade})`;
-          context.beginPath(); context.arc(sx, sy, size, 0, Math.PI * 2); context.fill();
-          context.strokeStyle = PAPER; context.globalAlpha = fade; context.lineWidth = 1.5 * sign; context.lineCap = 'round';
-          context.beginPath();
-          if (mark.tone === 'pass') { context.moveTo(sx - size * 0.45, sy + size * 0.02); context.lineTo(sx - size * 0.12, sy + size * 0.36); context.lineTo(sx + size * 0.46, sy - size * 0.32); }
-          else if (mark.tone === 'fail') { context.moveTo(sx - size * 0.34, sy - size * 0.34); context.lineTo(sx + size * 0.34, sy + size * 0.34); context.moveTo(sx + size * 0.34, sy - size * 0.34); context.lineTo(sx - size * 0.34, sy + size * 0.34); }
-          else { context.moveTo(sx, sy - size * 0.48); context.lineTo(sx, sy + size * 0.1); context.moveTo(sx, sy + size * 0.44); context.lineTo(sx, sy + size * 0.45); }
-          context.stroke();
-          context.globalAlpha = 1; context.lineCap = 'butt';
+        if (quiet) {   // 조용한 모드: 가는 상자 선만 남긴다
+          outline(); context.strokeStyle = `rgba(${ink},${0.36 * fade})`; context.lineWidth = unit; context.lineJoin = 'round'; context.stroke();
+          context.setLineDash([]);
+          continue;
         }
+        // 실제 결과 화면의 상자와 같은 선(image-stage.css의 image-stage--emphasis와 같은 값):
+        // 판정 색 2px을 상자 '바깥'에 긋고 그 밖으로 흰 띠 1.5px과 어두운 실선 1px, 상자 안쪽 가장자리에 흰 실선 1px. 안은 칠하지 않는다.
+        context.lineJoin = 'miter';
+        context.save();
+        context.beginPath(); context.rect(0, 0, width, height);
+        corners.forEach(([x, y], at) => (at ? context.lineTo(x, y) : context.moveTo(x, y))); context.closePath();
+        context.clip('evenodd');   // 상자 바깥만 남긴다
+        for (const [reach, color] of [[4.5, `rgba(17,17,17,${0.58 * fade})`], [3.5, `rgba(255,255,255,${fade})`], [2, `rgba(${tone},${fade})`]]) {
+          outline(); context.strokeStyle = color; context.lineWidth = reach * 2; context.stroke();
+        }
+        context.restore();
+        context.save();
+        outline(); context.clip();   // 상자 안쪽만 남긴다
+        outline(); context.strokeStyle = `rgba(255,255,255,${0.72 * fade})`; context.lineWidth = 2; context.stroke();
+        context.restore();
+        context.setLineDash([]);
+        // 이름표도 실제 화면과 같다: 판정 색 바탕에 굵은 11px 흰 글자, 둘레에 흰 띠와 어두운 실선, 위쪽 모서리만 둥글다.
+        // 상자 바깥 선 위에 붙고, 그림의 오른쪽 절반에 있는 상자는 오른쪽 끝에 맞춘다. 판정은 실제 화면처럼 선과 이름표의 색으로만 구분한다.
+        const show = clamp(since / 0.2) * fade;
+        context.font = "700 11px Arial, 'Malgun Gothic', sans-serif";
+        const wide = Math.ceil(context.measureText(mark.id).width) + 14, tall = 20;
+        const onRight = (x1 + x2) / 2 > middle;
+        const [ax, ay] = onRight ? corners[1] : corners[0];
+        const left = onRight ? ax + 4.5 - wide : ax - 4.5, top = ay - 4.5 - tall;
+        for (const [more, color] of [[2, `rgba(17,17,17,${0.58 * show})`], [1, `rgba(255,255,255,${show})`], [0, `rgba(${tone},${show})`]]) {
+          context.fillStyle = color;
+          context.beginPath();
+          if (context.roundRect) context.roundRect(left - more, top - more, wide + more * 2, tall + more * 2, [3 + more, 3 + more, 0, 0]);
+          else context.rect(left - more, top - more, wide + more * 2, tall + more * 2);
+          context.fill();
+        }
+        context.fillStyle = `rgba(255,255,255,${show})`;
+        context.textAlign = 'center'; context.textBaseline = 'middle';
+        context.fillText(mark.id, left + wide / 2, top + tall / 2 + 0.5);
       }
     }
     function tick(now) {
