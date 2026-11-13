@@ -39,7 +39,8 @@ ANSWERED_BY = 'postgres'
 
 
 def _quote(source):
-    return {'page': source.page, 'block_id': source.block_id, 'quote': source.quote}
+    return {'page': source.page, 'block_id': source.block_id, 'quote': source.quote,
+            **({'kind': source.kind} if source.kind else {})}
 
 
 def _value(value):
@@ -193,8 +194,10 @@ class PostgresEvidence:
             baseline, row, source = self._open(c, run_id)
             record = self._approved(c, baseline, row['run_id'])
             step = c.execute(select(steps).where(steps.c.run_id == row['run_id'], steps.c.role == 'A02')).mappings().one_or_none()
-            document = self._document(c, row['project_id'], record.criteria.version.context.document_version_id)
-        version, trace = record.criteria.version, source.criteria.extraction
+            version = record.criteria.version
+            document = self._document(c, row['project_id'], version.context.document_version_id)
+            added_blocks = self._addition_blocks(c, row, version)
+        trace = source.criteria.extraction
         latest = document is not None and document['latest']
         checks = {
             'a02_output_intact': (step is not None and step['state'] == 'completed'
@@ -205,7 +208,8 @@ class PostgresEvidence:
                                       == trace.document_sha256),
         }
         blocks = {(block.page, block.block_id): block for block in trace.sources}
-        items = [self._check(criterion, blocks) for criterion in version.criteria]
+        items = [self._check(criterion, added_blocks.get(criterion.source.document_version_id, {})
+                             if criterion.source.kind == 'direct_input' else blocks) for criterion in version.criteria]
         return {
             'run_id': run_id, 'source_run_id': row['run_id'], 'answered_by': ANSWERED_BY,
             'status': source_status(checks, items, latest),
@@ -213,6 +217,27 @@ class PostgresEvidence:
             'document_is_latest': latest, 'checks': checks, 'criteria': items,
             'scope': 'Stored A02 text blocks and database hashes; PDF bytes are not reread.',
         }
+
+    @staticmethod
+    def _addition_blocks(c, row, version):
+        if not version.addition_run_ids:
+            return {}
+        results = c.execute(select(runs.c.input_json, runs.c.snapshot_json, steps.c.output_json, steps.c.output_sha256)
+            .join(steps, steps.c.run_id == runs.c.run_id)
+            .where(runs.c.run_id.in_(version.addition_run_ids), runs.c.project_id == row['project_id'],
+                runs.c.actor_id == row['actor_id'], steps.c.role == 'A02', steps.c.state == 'completed')).mappings()
+        blocks = {}
+        for result in results:
+            fixed, snapshot = result['input_json'], result['snapshot_json']
+            draft = result['output_json']
+            if ((fixed.get('criteria_addition') or {}).get('source_run_id') != row['run_id']
+                    or not draft or draft != snapshot.get('criteria') or digest(draft) != result['output_sha256']):
+                continue
+            added = RunSnapshot.model_validate(snapshot).criteria
+            trace = added.extraction
+            if trace and trace.input_kind == 'free_text' and trace.document_sha256 == fixed['document']['sha256']:
+                blocks[added.context.document_version_id] = {(block.page, block.block_id): block for block in trace.sources}
+        return blocks
 
     @staticmethod
     def _document(c, pid, document_version_id):
@@ -242,10 +267,15 @@ class PostgresEvidence:
         value = criterion.value_source
         if value is not None:
             # Human-supplied values are grounded in their own quote, not the document block.
+            details = criterion.details
+            normalized = (source.kind == 'direct_input' and details is not None
+                          and details.normalized_expected == criterion.expected and details.expected_source)
+            expected = normalized.quote if normalized else criterion.expected
             checks['value_source_grounded'] = (sha256(value.quote.encode()).hexdigest() == value.quote_sha256
-                                               and criterion.expected in value.quote)
+                                               and expected in value.quote)
         return {'criterion_id': criterion.criterion_id, 'page': source.page, 'block_id': source.block_id,
-                'status': 'verified' if all(checks.values()) else 'mismatch', 'checks': checks}
+                'status': 'verified' if all(checks.values()) else 'mismatch', 'checks': checks,
+                **({'source_kind': source.kind} if source.kind else {})}
 
     # --- Relations: PostgreSQL -> Neo4j -> PostgreSQL ---
 

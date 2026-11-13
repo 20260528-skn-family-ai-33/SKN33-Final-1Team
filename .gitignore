@@ -99,6 +99,7 @@ secrets.toml
 
 # Local Docker volume data
 /docker-data/
+/creative-checker-framework-api-*.tar
 
 # Operating system files
 .DS_Store

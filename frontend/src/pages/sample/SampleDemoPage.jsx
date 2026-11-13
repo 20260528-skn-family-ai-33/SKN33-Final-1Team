@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOptionalAuth } from '../../auth/AuthProvider.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { useTilt } from '../../components/LayerFigure.jsx';
+import { evidenceLabelBelow, evidenceLabelOnRight } from '../../components/imageStageGeometry.js';
 import { PixelField } from '../../components/PixelField.jsx';
-import { reviewModeLabels, SecurityArt, securityModeLabels, settleArt, tiltArt, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
+import { glowAt, glowOff, reviewModeLabels, SecurityArt, securityModeLabels, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
 import { mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { LogoThumb, MediaArt, PlayIcon, SampleFrame, SamplePoster } from './SampleArt.jsx';
 import {
@@ -88,11 +88,11 @@ export default function SampleDemoPage() {
     <main className="sd-main">
       {screen === 'media' && <Kiosk title="어떤 샘플 자료를 검수할까요?" onPick={value => update({ media: value, screen: 'security' })}
         tiles={[{ value: 'poster', label: '포스터', art: <MediaArt kind="poster" /> }, { value: 'video', label: '동영상', art: <MediaArt kind="video" /> }]} />}
-      {screen === 'security' && <Kiosk title="보안이 필요한 자료인가요?" context={context}
+      {screen === 'security' && <Kiosk title="보안이 필요한 자료인가요?" context={context} scene={media}
         back={{ label: '자료 종류 다시 고르기', onClick: restart }} onPick={value => update({ security: value, screen: 'type' })}
         tiles={[{ value: 'secure', label: securityModeLabels.secure, art: <SecurityArt secure media={media} /> },
           { value: 'general', label: securityModeLabels.general, art: <SecurityArt secure={false} media={media} /> }]} />}
-      {screen === 'type' && <Kiosk title="검수할 항목을 선택해 주세요" context={context}
+      {screen === 'type' && <Kiosk title="검수할 항목을 선택해 주세요" context={context} scene={media}
         back={{ label: '보안 여부 다시 고르기', onClick: () => update({ security: null, screen: 'security' }) }}
         onPick={value => update({ mode: value, screen: 'input' })}
         tiles={['text', 'logo', 'both'].map(value => ({ value, label: reviewModeLabels[value],
@@ -105,7 +105,7 @@ export default function SampleDemoPage() {
 }
 
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
-function Kiosk({ title, tiles, onPick, back, context }) {
+function Kiosk({ title, tiles, onPick, back, context, scene }) {
   const latest = useRef({ tiles, onPick });
   latest.current = { tiles, onPick };
   useEffect(() => {
@@ -123,12 +123,12 @@ function Kiosk({ title, tiles, onPick, back, context }) {
 
   return <section className="sd-kiosk" aria-labelledby="page-title">
     {back && <button type="button" className="sd-kiosk-back" onClick={back.onClick}><span aria-hidden="true">←</span> {back.label}</button>}
-    <PixelField monochrome />
+    <PixelField monochrome quiet scene={scene} />
     <div className="sd-kiosk-heading"><p className="op-eyebrow"><span aria-hidden="true" />SAMPLE / 샘플 체험{context}</p>
       <h1 id="page-title" tabIndex={-1}>{title}</h1></div>
     <div className="sd-tiles">
       {tiles.map(tile => <button key={tile.value} type="button" className="sd-tile" aria-label={tile.label} onClick={() => onPick(tile.value)}
-        onPointerMove={tiltArt} onPointerLeave={settleArt}>
+        onPointerMove={glowAt} onPointerLeave={glowOff}>
         <span className="op-tile-glow" aria-hidden="true" />
         <span className="sd-tile-art" aria-hidden="true">{tile.art}</span>
         <span className="sd-tile-label">{tile.label}</span>
@@ -179,11 +179,10 @@ function InputScreen({ state, onType, onStart }) {
   </section>;
 }
 
-// 실제 진행 화면처럼 포스터를 3D로 눕히고, 단계(depth 0~2)에 따라 유리판 '읽은 자리'·'판정'이 떠오른다. 무대는 마우스를 따라 조금 기운다.
+// 실제 진행 화면처럼 포스터를 3D로 눕히고, 단계(depth 0~2)에 따라 유리판 '읽은 자리'·'판정'이 떠오른다. 무대는 제자리에 고정한다(마우스를 따라 기울지 않는다).
 function PosterScan({ depth = 0 }) {
-  const tilt = useTilt();
   return <figure className="sd-scan" data-depth={depth}>
-    <div className="sd-scan-stage" ref={tilt}><div className="sd-scan-sheet"><SamplePoster decorative />
+    <div className="sd-scan-stage"><div className="sd-scan-sheet"><SamplePoster decorative />
       <span className="sd-scan-zoom"><SamplePoster decorative /></span><span className="sd-scan-lens" />
       <span className="sd-plane is-source" aria-hidden="true"><b>01 원본</b></span>
       <span className="sd-plane is-read" aria-hidden="true"><i /><b>02 읽은 자리</b></span>
@@ -196,8 +195,7 @@ function PosterScan({ depth = 0 }) {
 }
 
 function FilmScanner({ scanPart, caption, depth = 0 }) {
-  const tilt = useTilt();
-  return <div className="sd-film-scanner" aria-hidden="true" data-depth={depth} ref={tilt}>
+  return <div className="sd-film-scanner" aria-hidden="true" data-depth={depth}>
     <div className="sd-film"><div className="sd-film-track">
       <div className="sd-film-cells">{Array.from({ length: 8 }, (_, index) =>
         <span key={index} className={`sd-film-cell${scanPart * 8 > index + .2 ? ' is-read' : ''}`}><SampleFrame t={Math.round(index * 29 / 7)} /></span>)}</div>
@@ -251,14 +249,35 @@ function RunningScreen({ state, tick, elapsed }) {
 }
 
 // 근거 상자. 좌표(x1,y1,x2,y2)를 그림 크기(width·height) 대비 비율로 놓는다.
+// 생김새는 실제 결과 화면의 상자(ImageStage의 강조 모양)와 같다: 고른 상자 밖은 어둡게 하고,
+// 이름표는 위에 두면 다른 상자를 가릴 때 아래로 내린다(오른쪽 절반의 상자는 이름표를 오른쪽 끝에 맞춘다).
 function EvidenceBoxes({ items, width, height, selected, onSelect }) {
-  return items.map(item => {
-    const [x1, y1, x2, y2] = item.box;
-    return <button key={item.id} type="button" className={`sd-box is-${item.verdict}${selected === item.id ? ' is-selected' : ''}`}
-      style={{ left: `${x1 / width * 100}%`, top: `${y1 / height * 100}%`, width: `${(x2 - x1) / width * 100}%`, height: `${(y2 - y1) / height * 100}%` }}
-      aria-label={`${item.id.toUpperCase()} 근거 위치: ${item.req}`} aria-pressed={selected === item.id} onClick={() => onSelect(item.id)}>
-      <span>{item.id.toUpperCase()}</span></button>;
-  });
+  const layer = useRef(null);
+  const [scale, setScale] = useState(1);   // 자료 좌표 → 화면 픽셀
+  const dimId = `sd-dim-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / width || 1));
+    observer.observe(layer.current);
+    return () => observer.disconnect();
+  }, [width]);
+  const boxes = items.map(item => item.box);
+  const chosen = items.find(item => item.id === selected);
+  return <div className="sd-boxes" ref={layer}>
+    {chosen && <svg className="sd-dim" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden="true">
+      <mask id={dimId}><rect width={width} height={height} fill="#fff" />
+        <rect x={chosen.box[0]} y={chosen.box[1]} width={chosen.box[2] - chosen.box[0]} height={chosen.box[3] - chosen.box[1]} fill="#000" /></mask>
+      <rect width={width} height={height} mask={`url(#${dimId})`} />
+    </svg>}
+    {items.map((item, index) => {
+      const [x1, y1, x2, y2] = item.box;
+      const name = item.id.toUpperCase();
+      const place = `${evidenceLabelOnRight(item.box, width) ? ' is-right' : ''}${evidenceLabelBelow(index, boxes, scale, name) ? ' is-below' : ''}`;
+      return <button key={item.id} type="button" className={`sd-box is-${item.verdict}${selected === item.id ? ' is-selected' : ''}${place}`}
+        style={{ left: `${x1 / width * 100}%`, top: `${y1 / height * 100}%`, width: `${(x2 - x1) / width * 100}%`, height: `${(y2 - y1) / height * 100}%` }}
+        aria-label={`${name} 근거 위치: ${item.req}`} aria-pressed={selected === item.id} onClick={() => onSelect(item.id)}>
+        <span>{name}</span></button>;
+    })}
+  </div>;
 }
 
 function ResultList({ items, labels, selected, onSelect }) {

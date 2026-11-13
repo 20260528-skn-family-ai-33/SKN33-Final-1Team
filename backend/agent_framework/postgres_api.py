@@ -33,7 +33,7 @@ from .postgres_schema import (
 from .documents import PostgresDocuments,RegisteredDocument,TextDocumentInput,open_document_storage
 from .files import FileLimits
 from .criteria_review import PostgresCriteriaReview
-from .criteria_contracts import CriteriaVersionRequest,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord
+from .criteria_contracts import CriteriaAdditionRequest,CriteriaVersionRequest,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord
 from .poster_review import PosterReviewRequest,PostgresPosterReviews,open_poster_storage
 from .my_tasks import MyTasks, HistoryVisibility
 from .help_chat import LunaResponder, help_chat_router
@@ -261,6 +261,10 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
     @app.post(prefix+'/runs/{run_id}/criteria-versions',response_model=CriteriaVersionRecord,status_code=201)
     async def revise_criteria(request:Request,run_id:str,idempotency_key:UUID=Header(alias='Idempotency-Key')):
         return await review_command(request,run_id,CriteriaVersionRequest,criteria_review().create,idempotency_key)
+
+    @app.post(prefix+'/runs/{run_id}/criteria-additions',response_model=RunSnapshot,status_code=202)
+    async def add_direct_criteria(request:Request,run_id:str,idempotency_key:UUID=Header(alias='Idempotency-Key')):
+        return await review_command(request,run_id,CriteriaAdditionRequest,criteria_review().start_addition,idempotency_key)
 
     @app.get(prefix+'/runs/{run_id}/criteria-versions',response_model=list[CriteriaVersionRecord])
     def criteria_history(request:Request,run_id:str):

@@ -173,6 +173,13 @@ class PostgresQueue:
             if role=='A06':changes['machine_verdict']=result.verdict
             if role in ('A02','A07'):changes['execution_status']='waiting_criteria' if role=='A02' else 'waiting_review'
             accepted=_boundary(RunSnapshot,snapshot.model_copy(update=changes))
+            if role == 'A02' and run['input_json'].get('criteria_addition') is not None:
+                from .criteria_review import PostgresCriteriaReview
+                from .ports import AdapterFailure
+                try:
+                    PostgresCriteriaReview(self.store).complete_addition(c, run, result, now)
+                except AuthError as error:
+                    raise AdapterFailure(error.code, 'The direct input could not be added to the selected criteria version.') from None
             c.execute(update(steps).where(steps.c.run_id==run['run_id'],steps.c.role==role).values(state='completed',
                 record_json=payload(finished),output_json=payload(result),output_sha256=digest(result)))
             self.store._save(c,accepted)

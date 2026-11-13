@@ -24,14 +24,19 @@ def _criteria(context, criteria):
     _unique((c.criterion_id for c in criteria), "CRITERION")
     for criterion in criteria:
         source = criterion.source
-        if source.document_version_id != context.document_version_id:
+        direct_input = source.kind == 'direct_input'
+        if direct_input:
+            if (source.document_version_id == context.document_version_id
+                    or not criterion.human_added or criterion.value_source is None):
+                raise ValueError('DIRECT_INPUT_SOURCE_INVALID')
+        elif source.document_version_id != context.document_version_id:
             raise ValueError("CRITERION_DOCUMENT_MISMATCH")
         if sha256(source.quote.encode("utf-8")).hexdigest() != source.source_hash:
             raise ValueError("SOURCE_HASH_MISMATCH")
-        if criterion.details is not None:
-            details=criterion.details
+        details = criterion.details
+        if details is not None:
             for reference in details.qualifiers+((details.expected_source,) if details.expected_source is not None else ()):
-                if (reference.document_version_id!=context.document_version_id or reference.page!=source.page
+                if (reference.document_version_id!=source.document_version_id or reference.kind!=source.kind or reference.page!=source.page
                         or reference.block_id!=source.block_id or reference.quote not in source.quote
                         or not reference.quote.strip() or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
                     raise ValueError('DETAILS_SOURCE_MISMATCH')
@@ -52,18 +57,23 @@ def _criteria(context, criteria):
                 raise ValueError('VALUE_SOURCE_INVALID')
             if sha256(value.quote.encode()).hexdigest()!=value.quote_sha256:
                 raise ValueError('VALUE_SOURCE_HASH_MISMATCH')
-            if criterion.expected and criterion.expected not in value.quote:
+            grounded_value = (details.expected_source.quote if details is not None
+                and details.expected_source is not None and details.normalized_expected == criterion.expected
+                and direct_input else criterion.expected)
+            if grounded_value and grounded_value not in value.quote:
                 raise ValueError('VALUE_SOURCE_EXPECTED_UNGROUNDED')
             if criterion.unit is not None and (not criterion.unit.strip() or criterion.unit not in value.quote):
                 raise ValueError('VALUE_SOURCE_UNIT_UNGROUNDED')
 
 
-def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft) -> None:
+def validate_draft(context: Context, document: DocumentRef, draft: CriteriaDraft, *, approved_version=False) -> None:
     ensure_context(context, draft)
     if document.document_version_id != context.document_version_id:
         raise ValueError("DOCUMENT_VERSION_MISMATCH")
     _criteria(context, draft.criteria)
-    if any(c.source.page > document.page_count for c in draft.criteria):
+    if any(c.source.kind is not None for c in draft.criteria) and (not approved_version or draft.extraction is not None):
+        raise ValueError('DRAFT_SOURCE_KIND_INVALID')
+    if any(c.source.page > document.page_count for c in draft.criteria if c.source.kind is None):
         raise ValueError("SOURCE_PAGE_OUT_OF_RANGE")
     if draft.extraction is not None:
         from .a02 import validate_trace
@@ -95,9 +105,12 @@ def validate_evidence_envelope(context: Context, bundle: EvidenceBundle) -> None
             if (not value.quote.strip() or not value.reference.strip()
                     or sha256(value.quote.encode()).hexdigest()!=value.quote_sha256):
                 raise ValueError('EVIDENCE_VALUE_SOURCE_INVALID')
-        if (evidence.kind == "current_requirement"
-                and evidence.source.document_version_id != context.document_version_id):
-            raise ValueError("EVIDENCE_SOURCE_MISMATCH")
+        if evidence.kind == 'current_requirement':
+            if evidence.source.kind == 'direct_input':
+                if evidence.source.document_version_id == context.document_version_id or evidence.value_source is None:
+                    raise ValueError('EVIDENCE_SOURCE_MISMATCH')
+            elif evidence.source.document_version_id != context.document_version_id:
+                raise ValueError('EVIDENCE_SOURCE_MISMATCH')
         if evidence.kind == "approved_exception":
             if (evidence.source.document_version_id != context.document_version_id
                     or evidence.applicable_asset_version_id != context.asset_version_id):

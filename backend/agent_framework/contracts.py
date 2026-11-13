@@ -56,6 +56,14 @@ class SourceRef(Contract):
     block_id: Identifier
     quote: str = Field(min_length=1)
     source_hash: Hash
+    kind: Literal['direct_input'] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_source(self, handler):
+        data = handler(self)
+        if self.kind is None:
+            data.pop('kind', None)
+        return data
 
 
 class CriteriaValueSource(Contract):

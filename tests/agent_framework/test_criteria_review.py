@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from backend.agent_framework.contracts import CriteriaDraft
-from backend.agent_framework.criteria_contracts import CriteriaVersionRequest,CriteriaApprovalRequest
+from backend.agent_framework.criteria_contracts import CriteriaAddition,CriteriaVersionRequest,CriteriaApprovalRequest
 from backend.agent_framework.criteria_review import revise_criteria,approval_blockers
 from backend.agent_framework.postgres import digest
 from backend.agent_framework.context import freeze_approved_context
@@ -58,6 +58,39 @@ def test_frozen_evidence_carries_human_value_provenance_and_cannot_drop_it():
     bad=evidence.evidence[0].model_copy(update={'value_source':None})
     with pytest.raises(ValueError,match='EVIDENCE_VALUE_SOURCE_MISMATCH'):
         validate_evidence(revised.context,revised.criteria,evidence.model_copy(update={'evidence':(bad,)}))
+
+
+def test_added_semantic_requirements_keep_document_qualifiers_and_support_normalized_dates():
+    from dataclasses import replace
+    from tests.agent_framework.test_a02_semantic import extract, model_reply, requirement, text_document
+    from backend.agent_framework.validation import validate_draft
+    from backend.agent_framework.contracts import DocumentRef
+
+    _, source, _, _ = extract({'requirements': [requirement(1, 'event_name', '숲의 기록')]},
+        text_document('행사명은 ‘숲의 기록’으로 표기한다.\n허용 범위: 줄바꿈과 공백 차이는 허용한다.'))
+    assert source.criteria[0].details.qualifiers
+    document = text_document()
+    document_version_id = 'typed-input-document'
+    typed_context = document.context.model_copy(update={'document_version_id': document_version_id})
+    _, typed, _, _ = extract(model_reply(), replace(document, context=typed_context,
+        reference=document.reference.model_copy(update={'document_version_id': document_version_id})))
+    admission = CriteriaAddition(source_run_id=source.context.run_id, request_key=uuid4(),
+        parent_version_id=None, expected_base_sha256=digest(source), criterion_ids=None)
+    request = CriteriaVersionRequest(parent_version_id=None, expected_base_sha256=digest(source), purpose='human_review')
+    result = revise_criteria(source, None, request, version_id=uuid4(), created_by=source.context.actor_id,
+        created_at=datetime.now(timezone.utc), addition=(admission, typed))
+    assert result.criteria[:len(source.criteria)] == source.criteria
+    dates = [c for c in result.criteria if c.source.kind == 'direct_input' and c.details.normalized_expected]
+    assert dates and all(c.details.expected_source.quote in c.source.quote for c in dates)
+    assert not set(approval_blockers(result.criteria)) & {c.criterion_id for c in dates}
+    approved_context = result.context.model_copy(update={'asset_version_id': 'test-asset'})
+    approved_draft = CriteriaDraft(context=approved_context, criteria=result.criteria, synthetic=True)
+    original_document = DocumentRef(file_id='test-pdf', document_version_id=source.context.document_version_id,
+        sha256=source.extraction.document_sha256, page_count=len(source.extraction.sources))
+    validate_draft(approved_context, original_document, approved_draft, approved_version=True)
+    with pytest.raises(ValueError, match='DRAFT_SOURCE_KIND_INVALID'):
+        validate_draft(approved_context, original_document, approved_draft)
+    freeze_approved_context(approved_context, result.criteria, synthetic=True)
 
 
 def test_excluded_condition_can_be_restored_only_as_a_new_revision_with_provenance():

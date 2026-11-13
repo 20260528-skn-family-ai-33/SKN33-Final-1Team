@@ -16,6 +16,7 @@ from backend.app.persistence.transaction import unit_of_work
 from backend.app.security.errors import AuthError
 from backend.app.services.business import table as business_table
 from .contracts import Approval, AssetRef, Context, DocumentRef, RunSnapshot, StepTimeline
+from .criteria_contracts import CriteriaAddition
 from .composition import TeamConfiguration
 from .ports import Agents
 from .runtime import Workflow, _boundary
@@ -49,6 +50,14 @@ def digest(value):
     if hasattr(value,'model_dump'): value = payload(value)
     return sha256(json.dumps(value,sort_keys=True,ensure_ascii=False,separators=(',',':'),
                              allow_nan=False).encode()).hexdigest()
+
+
+def extraction_run_id(project_id, request_key):
+    return str(uuid5(NAMESPACE_URL, _extraction_name(project_id, request_key)))
+
+
+def _extraction_name(project_id, request_key):
+    return f'creative-checker-a02:{project_id}:{request_key}'
 
 
 def runtime_revision():
@@ -109,11 +118,12 @@ class PostgresStore:
             project_id=UUID(snapshot.context.project_id),phase=phase,state='queued',attempt_no=0))
         self.event(c,snapshot.context.run_id,'job.queued',phase=phase)
 
-    def _create(self,c,snapshot,document,asset,*,phase=None,model_route=None):
+    def _create(self,c,snapshot,document,asset,*,phase=None,model_route=None,criteria_addition=None):
         fixed={'context':payload(snapshot.context),'document':payload(document),'asset':payload(asset) if asset else None}
         if snapshot.baseline is not None:fixed['baseline']=payload(snapshot.baseline)
         # 보안 여부에 따른 모델 경로(model_route.py). default는 적지 않아 기존 입력 해시가 그대로다.
         if model_route is not None:fixed['model_route']=model_route
+        if criteria_addition is not None:fixed['criteria_addition']=payload(criteria_addition)
         c.execute(insert(runs).values(run_id=snapshot.context.run_id,project_id=UUID(snapshot.context.project_id),
             actor_id=UUID(snapshot.context.actor_id),parent_run_id=snapshot.context.parent_run_id,
             input_json=fixed,input_sha256=digest(fixed),configuration_json=payload(self.configuration),
@@ -131,7 +141,7 @@ class PostgresStore:
             AssetRef.model_validate(row['input_json']['asset']) if row['input_json']['asset'] else None)
         return flow
 
-    def start(self,subject,context,document,asset,*,model_route=None):
+    def start(self,subject,context,document,asset,*,model_route=None,criteria_addition=None):
         from .model_route import stored
         context,document=_boundary(Context,context),_boundary(DocumentRef,document)
         asset=_boundary(AssetRef,asset) if asset is not None else None
@@ -140,9 +150,13 @@ class PostgresStore:
         model_route=stored(model_route)
         fixed={'context':payload(context),'document':payload(document),'asset':payload(asset) if asset else None}
         if model_route is not None:fixed['model_route']=model_route
+        if criteria_addition is not None:fixed['criteria_addition']=payload(criteria_addition)
         with unit_of_work(self.engine) as c:
             self._access(c,subject,context)
-            # Project locking serializes same-project admission and UUID collisions.
+            if criteria_addition is not None:
+                # Concurrent replays share the same analysis ID after text registration.
+                from backend.app.storage.local import operation_key
+                c.exec_driver_sql('SELECT pg_advisory_xact_lock(%s)', (operation_key(context.run_id),))
             old=c.execute(select(runs).where(runs.c.run_id==context.run_id)).mappings().one_or_none()
             if old:
                 if (old['project_id']!=UUID(context.project_id) or old['input_sha256']!=digest(fixed)
@@ -153,10 +167,10 @@ class PostgresStore:
             snapshot=flow.start(context,document,asset,defer=True)
             if asset is None and self.configuration.pdf_extraction is not None and self.configuration.pdf_extraction.mode=='mock':
                 snapshot=snapshot.model_copy(update={'synthetic':True})
-            self._create(c,snapshot,document,asset,phase='extract',model_route=model_route)
+            self._create(c,snapshot,document,asset,phase='extract',model_route=model_route,criteria_addition=criteria_addition)
         return snapshot
 
-    def start_pdf(self,subject,project_id,version_id,request_key,model_route=None):
+    def start_pdf(self,subject,project_id,version_id,request_key,model_route=None,*,criteria_addition: CriteriaAddition | None = None):
         """IDs and immutable PDF reference are resolved by the server, not the model.
         model_route는 화면의 보안 여부 선택에서 정한 모델 경로 이름만 받는다(주소·키는 받지 않는다)."""
         from .documents import versions,_dto
@@ -167,11 +181,11 @@ class PostgresStore:
                 versions.c.document_version_id==version_id)).mappings().one_or_none()
             if row is None:raise AuthError('RESOURCE_NOT_FOUND',404)
             document=_dto(row).document
-        name='creative-checker-a02:'+str(project_id)+':'+str(request_key)
         context=Context(project_id=str(project_id),actor_id=str(subject.user_id),
-            run_id=str(uuid5(NAMESPACE_URL,name)),criteria_version_id=str(uuid5(NAMESPACE_URL,name+':criteria')),
+            run_id=extraction_run_id(project_id,request_key),
+            criteria_version_id=str(uuid5(NAMESPACE_URL,_extraction_name(project_id,request_key)+':criteria')),
             document_version_id=str(version_id),asset_version_id=None)
-        return self.start(subject,context,document,None,model_route=model_route)
+        return self.start(subject,context,document,None,model_route=model_route,criteria_addition=criteria_addition)
 
     def get(self,subject,run_id):
         with unit_of_work(self.engine) as c:

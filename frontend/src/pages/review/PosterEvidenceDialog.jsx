@@ -11,6 +11,7 @@ const imagePath = assetVersionId => assetVersionId ? frameworkPrefix + '/images/
 // 검수 포스터와 읽은 위치 상자. 상자는 0~1 비율이라 이미지 크기를 몰라도 그릴 수 있다.
 function PosterPane({ graph, image, shownId, onShow }) {
   const [zoomed, setZoomed] = useState(false);
+  const [fitted, setFitted] = useState(false);
   const current = { runId: null, name: graph.versionName, current: true, verdict: graph.verdict, value: graph.observed,
     statusLabel: graph.observation, box: graph.box, assetVersionId: graph.assetVersionId };
   const shown = graph.trail.find(point => !point.current && point.runId === shownId) || current;
@@ -24,7 +25,7 @@ function PosterPane({ graph, image, shownId, onShow }) {
       <Icon name="image" /><strong>{title}</strong>
       {graph.trail.length > 0 && <span>{shown.current ? '지금 검수본' : '이전 검수본'}</span>}
     </header>
-    <EvidenceFrame src={src} alt={`${title}${box ? ', 읽은 위치를 상자로 표시' : ''}`} box={box} tone={shown.verdict.code} zoomed={zoomed}
+    <EvidenceFrame src={src} alt={`${title}${box ? ', 읽은 위치를 상자로 표시' : ''}`} box={box} tone={shown.verdict.code} zoomed={zoomed} fit="model" onFit={setFitted}
       ratio={shown.current && image?.width > 0 && image?.height > 0 ? image.width / image.height : null}
       empty="포스터 이미지를 표시할 수 없습니다." />
     <div className="rv-evd-poster-caption">
@@ -42,7 +43,7 @@ function PosterPane({ graph, image, shownId, onShow }) {
           <span>{point.name}</span><b><i aria-hidden="true" />{point.verdict.label}</b>{point.current && <small>지금</small>}
         </button></li>)}</ol>
     </div>}
-    <p className="rv-evd-poster-note">상자는 검사 모델이 읽은 위치입니다. 실제 포스터와 맞는지 확인해 주세요.</p>
+    <p className="rv-evd-poster-note">{fitted ? '상자는 검사 모델이 알려 준 위치를 둘레의 글자에 맞춰 다듬은 것입니다.' : '상자는 검사 모델이 읽은 위치입니다.'} 실제 포스터와 맞는지 확인해 주세요.</p>
   </section>;
 }
 

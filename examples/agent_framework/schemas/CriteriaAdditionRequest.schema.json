@@ -1,0 +1,61 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "parent_version_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Parent Version Id"
+    },
+    "expected_base_sha256": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Expected Base Sha256",
+      "type": "string"
+    },
+    "criterion_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "maxItems": 128,
+          "minItems": 1,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Criterion Ids"
+    },
+    "text": {
+      "maxLength": 6000,
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    }
+  },
+  "required": [
+    "parent_version_id",
+    "expected_base_sha256",
+    "criterion_ids",
+    "text"
+  ],
+  "title": "CriteriaAdditionRequest",
+  "type": "object"
+}

@@ -34,7 +34,10 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     const subset = mode === 'pdf_subset';
+    const adding = mode === 'pdf_addition';
+    const selectsSubset = subset || adding;
     let extractionRequests = 0;
+    let additionRequests = 0;
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
     const posterApproval = Promise.withResolvers();
     // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
@@ -51,6 +54,10 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const subtitle = { ...criterion, criterion_id: 'subtitle', text: '보조 제목은 전시', expected: '전시' };
     const venue = { ...criterion, criterion_id: 'venue', text: '장소는 전시장', expected: '전시장' };
     const selectedPdfCriteria = [criterion, subtitle];
+    const directInput = '장소를 아카이브 홀로 표기합니다.';
+    const added = { ...criterion, criterion_id: 'input-job-c001', text: '장소를 아카이브 홀로 표기', expected: '아카이브 홀',
+      human_added: true, source: { kind: 'direct_input', page: 1, quote: directInput },
+      value_source: { reference: '담당자 직접 입력', quote: '아카이브 홀' } };
     const rejectedCandidate = { candidate_index: 2, code: 'A02_EXPECTED_UNGROUNDED',
       source: { page: 2, quote: '행사 장소는 전시장 A입니다.' } };
     const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
@@ -80,11 +87,22 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         extractionRequests++; body = { context };
       }
       else if (path.endsWith('/requirements')) body = { conditions: [
-        { text: '행사명은 봄', type: 'information', page: 1, source: '행사명은 봄', criterion_ids: subset ? ['title', 'subtitle'] : ['title'] },
-        ...(subset ? [{ text: '장소는 전시장', type: 'information', page: 1, source: '장소는 전시장', criterion_ids: ['venue'] }] : []),
+        { text: '행사명은 봄', type: 'information', page: 1, source: '행사명은 봄', criterion_ids: selectsSubset ? ['title', 'subtitle'] : ['title'] },
+        ...(selectsSubset ? [{ text: '장소는 전시장', type: 'information', page: 1, source: '장소는 전시장', criterion_ids: ['venue'] }] : []),
       ],
         pending: [], page_count: 1, framework: { run_id: 'draft', document_version_id: extractedText ? 'text-document' : 'pdf-document' } };
       else if (path.endsWith('/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
+      else if (path.endsWith('/runs/draft/criteria-additions') && adding) {
+        additionRequests++;
+        assert.deepEqual(request.postDataJSON(), { parent_version_id: null, expected_base_sha256: 'a'.repeat(64),
+          criterion_ids: ['title', 'subtitle'], text: directInput });
+        assert.ok(request.headers()['idempotency-key']);
+        return route.fulfill({ status: 202, json: { context: { run_id: 'input-job' }, execution_status: 'queued' } });
+      } else if (path.endsWith('/runs/input-job') && adding) {
+        latest = { version: { ...baseline, version_no: 1, criteria: [...selectedPdfCriteria, added], exclusions: [],
+          addition_run_ids: ['input-job'] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
+        body = { execution_status: 'waiting_criteria' };
+      }
       else if (path.endsWith('/criteria-versions')) {
         const input = request.postDataJSON();
         assert.equal(input.purpose, 'human_review');
@@ -123,7 +141,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
       } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
       else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria',
-        criteria: { criteria: subset ? [...selectedPdfCriteria, venue, pending] : mode === 'skip' ? [criterion, pending] : [criterion],
+        criteria: { criteria: selectsSubset ? [...selectedPdfCriteria, venue, pending] : mode === 'skip' ? [criterion, pending] : [criterion],
           ...(checkRejectedCandidates ? { extraction: { rejected_candidates: [rejectedCandidate] } } : {}) } };
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
@@ -152,7 +170,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       return canvas.toDataURL().split(',')[1];
     }), 'base64');
     await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
-    if (mode === 'pdf' || mode === 'edited_pdf' || subset) {
+    if (mode === 'pdf' || mode === 'edited_pdf' || selectsSubset) {
       await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
       if (mode === 'pdf') {
         const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
@@ -173,10 +191,10 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 일부만 검수할 때는 뺄 항목의 체크를 푼다.
       const include = page.getByLabel('문서 요구사항 1번 검수에 포함', { exact: true });
       assert.equal(await include.isChecked(), true);
-      if (subset) await page.getByLabel('문서 요구사항 2번 검수에 포함', { exact: true }).uncheck();
+      if (selectsSubset) await page.getByLabel('문서 요구사항 2번 검수에 포함', { exact: true }).uncheck();
       if (mode === 'edited_pdf') await extracted.fill('행사명은 여름');
     }
-    if (mode !== 'pdf' && !subset) await page.locator('#requirements').fill(mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');
+    if (mode !== 'pdf' && !subset) await page.locator('#requirements').fill(adding ? directInput : mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');
     if (mode === 'pdf') {
       // 프로젝트 선택을 비우는 방법과 필수 안내의 흔들림 효과는 없어졌다. 다른 프로젝트로 바꾼 경우를 확인한다.
       await pickProject(page, '다른 프로젝트');
@@ -222,8 +240,25 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       configured = true;
       assert.ok(await page.locator('.rv-criteria-canvas-column').isVisible());
       assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
-      assert.deepEqual(textInputs, mode === 'pdf' || subset ? [] : [{ text: mode === 'edited_pdf' ? '장소: 아카이브 홀\n행사명은 여름' : '행사명은 봄' }]);
+      assert.deepEqual(textInputs, mode === 'pdf' || selectsSubset ? [] : [{ text: mode === 'edited_pdf' ? '장소: 아카이브 홀\n행사명은 여름' : '행사명은 봄' }]);
       assert.equal(reviewed, false);
+      if (adding) {
+        assert.equal(extractionRequests, 1);
+        assert.equal(additionRequests, 1);
+        await page.waitForURL('**/review/new?framework=draft');
+        await page.reload();
+        const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+        await checklist.getByRole('button').filter({ hasText: '직접 입력' }).click();
+        assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+          ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시', '검수에 포함: 장소를 아카이브 홀로 표기']);
+        const details = page.locator('#rv-active-criterion');
+        await details.getByText('담당자 직접 입력 원문', { exact: true }).waitFor();
+        await details.getByText(directInput, { exact: true }).waitFor();
+        assert.equal(approved, false);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
       if (subset) {
         assert.equal(extractionRequests, 1);
         assert.equal(latest, null, 'selection stays unapproved and unsaved when entering the review');
@@ -404,3 +439,6 @@ test('포스터 PDF 부분 초안은 제외된 후보의 사유와 원문을 기
 
 test('PDF 일부 문단을 선택하면 연결된 기준과 원문을 첫 A02 결과에서 재사용한다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf_subset']));
+
+test('문서 기준에 직접 입력만 추가하고 새로고침 후 같은 실행에서 원문을 본다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf_addition']));

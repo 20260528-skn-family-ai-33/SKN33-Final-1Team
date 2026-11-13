@@ -18,8 +18,8 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
   const doc = state.documentRun;
   const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
   const requirementCount = new Set([...parseRequirements(state.requirements).map(item => item.text), ...selectedRows.map(row => row.text.trim())]).size;
-  const usesNewText = doc && selectedRows.length > 0 && (state.requirements.trim()
-    || selectedRows.some(row => row.text.trim() !== row.originalText));
+  const editedDocument = selectedRows.some(row => row.text.trim() !== row.originalText);
+  const addsDirectInput = selectedRows.length > 0 && state.requirements.trim() && !editedDocument;
   const uploadMiB = Math.floor((health?.limits?.upload_bytes || 20 * 1024 * 1024) / 1024 / 1024);
   const imagePixels = ((health?.limits?.image_pixels || 10_000_000) / 10_000).toLocaleString();
   const imageSide = (health?.limits?.image_side || 8192).toLocaleString();
@@ -150,7 +150,8 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
       </div>}
       <div className="rv-actionbar rv-input-actionbar">
         <div><p>{documentExtracting ? '문서를 분석하는 동안 다른 자료를 먼저 준비해 두세요. 분석이 끝나면 검수를 시작할 수 있어요.' : ready ? readyText : missingText}</p>
-          {checksText && usesNewText && <p>선택·수정한 문구는 새 기준 초안으로 분석합니다. PDF 원문은 첨부 카드에서 확인할 수 있어요.</p>}</div>
+          {checksText && editedDocument && <p>선택·수정한 문구는 새 기준 초안으로 분석합니다. 문서 원문은 첨부 카드에서 확인할 수 있어요.</p>}
+          {checksText && addsDirectInput && <p>직접 입력한 요구사항을 분석해 선택한 문서 기준에 더합니다.</p>}</div>
         <button type="submit" className="rv-button primary" disabled={locked || (!previewMode && !ready)}>
           {mode === 'logo' && documentBusy ? '로고 검수 접수 중…' : '검수 시작하기'}<Icon name="arrow" /></button>
       </div>

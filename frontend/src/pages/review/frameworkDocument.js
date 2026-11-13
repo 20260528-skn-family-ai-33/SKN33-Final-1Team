@@ -110,27 +110,7 @@ export async function extractDocumentWithProgress(file, { signal, onProgress, on
   onAccepted?.(attempt.runId);
   const source = file.type === 'text/plain' ? '입력문' : file.type === DOCX_MEDIA_TYPE ? 'DOCX' : 'PDF';
   const runPath = `/runs/${encodeURIComponent(attempt.runId)}`;
-  while (true) {
-    signal?.throwIfAborted();
-    const run = await frameworkJson(runPath, { signal });
-    if (['waiting_criteria', 'waiting_asset'].includes(run.execution_status)) break;
-    if (!['queued', 'extracting'].includes(run.execution_status)) {
-      const error = new Error(`문서 분석을 완료하지 못했습니다. 실행 기록을 확인해 주세요. (${run.error?.code || run.execution_status})`);
-      error.runId = attempt.runId;
-      if (run.error?.code === 'USER_CANCELLED') {
-        error.message = '대기 작업이 취소되었습니다. 원본과 기록은 보존됩니다.';
-        // Only a later explicit upload starts a new extraction; never retry here.
-        delete attempt.runId; delete attempt.extractionKey;
-      }
-      throw error;
-    }
-    // 직접 입력(입력문)을 분석할 때는 문서를 다시 읽는 것처럼 보이지 않게 따로 적는다.
-    const typed = file.type === 'text/plain';
-    onProgress?.({ runId: attempt.runId, stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
-      message: run.execution_status === 'queued' ? (typed ? '요구사항 분석 차례를 기다리고 있습니다.' : '문서 분석 차례를 기다리고 있습니다.')
-        : typed ? '입력한 요구사항을 검수 기준으로 정리하고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
-    await waitFor(pollInterval, signal);
-  }
+  await waitForExtraction(attempt, { source, signal, onProgress, pollInterval, waitFor });
   signal?.throwIfAborted();
   onProgress?.({ stage: 'formatting', percent: 95, message: '원문 근거와 문단별 요구사항을 불러오고 있습니다.' });
   const result = await frameworkJson(runPath + '/requirements', { signal });
@@ -142,6 +122,77 @@ export async function extractDocumentWithProgress(file, { signal, onProgress, on
     throw new Error(`${source}에서 검토할 요구사항을 찾지 못했습니다. 기존 입력은 유지됩니다.`);
   }
   return result;
+}
+
+const additionFailures = {
+  CRITERIA_VERSION_CONFLICT: '분석 중 기준 버전이 바뀌었어요. 최신 기준을 확인한 뒤 다시 시도해 주세요.',
+  CRITERIA_ALREADY_APPROVED: '기준이 이미 승인됐어요. 자료를 다시 첨부해 새 검수를 시작해 주세요.',
+  CRITERIA_ADDITION_LIMIT_EXCEEDED: '선택한 문서 기준과 추가 기준이 저장 한도를 넘었어요. 항목 수를 줄여 주세요.',
+  CRITERIA_ADDITION_INCOMPLETE: '직접 입력한 요구사항 일부의 분석 결과를 확인할 수 없어요. 문장을 정리해 다시 시도해 주세요.',
+  CRITERIA_ADDITION_SELECTION_INVALID: '이미 제외된 문서 기준이 있어요. 저장된 기준을 확인해 주세요.',
+};
+
+async function waitForExtraction(attempt, { source, signal, onProgress, pollInterval = 1500, waitFor = waitForDocumentPoll }) {
+  const runPath = `/runs/${encodeURIComponent(attempt.runId)}`;
+  while (true) {
+    signal?.throwIfAborted();
+    const run = await frameworkJson(runPath, { signal });
+    if (['waiting_criteria', 'waiting_asset'].includes(run.execution_status)) return;
+    if (!['queued', 'extracting'].includes(run.execution_status)) {
+      const code = run.error?.code || run.execution_status;
+      const error = new Error(additionFailures[code] || `${source} 분석을 완료하지 못했습니다. 실행 기록을 확인해 주세요. (${code})`);
+      error.code = code;
+      error.retryable = run.execution_status === 'failed' && run.error?.retryable === true;
+      error.runId = attempt.runId;
+      if (run.error?.code === 'USER_CANCELLED') {
+        error.message = '대기 작업이 취소되었습니다. 원본과 기록은 보존됩니다.';
+        // Only a later explicit upload starts a new extraction; never retry here.
+        delete attempt.runId; delete attempt.extractionKey;
+      }
+      throw error;
+    }
+    // 직접 입력(입력문)을 분석할 때는 문서를 다시 읽는 것처럼 보이지 않게 따로 적는다.
+    const typed = source === '입력문';
+    onProgress?.({ runId: attempt.runId, stage: run.execution_status, percent: run.execution_status === 'queued' ? 20 : 60,
+      message: run.execution_status === 'queued' ? (typed ? '요구사항 분석 차례를 기다리고 있습니다.' : '문서 분석 차례를 기다리고 있습니다.')
+        : typed ? '입력한 요구사항을 검수 기준으로 정리하고 있습니다.' : '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.' });
+    await waitFor(pollInterval, signal);
+  }
+}
+
+export async function addDirectRequirements(runId, criterionIds, text, { attempts, signal, onAccepted, onProgress }) {
+  const path = `/runs/${encodeURIComponent(runId)}`;
+  const key = JSON.stringify(['criteria-addition', runId, criterionIds, text]);
+  let attempt = attempts.get(key);
+  if (!attempt) {
+    const overview = await frameworkJson(path + '/criteria-review', { signal });
+    attempt = {
+      extractionKey: crypto.randomUUID(),
+      body: {
+        parent_version_id: overview.latest_version?.version.criteria_version_id || null,
+        expected_base_sha256: overview.latest_version?.sha256 || overview.source_draft_sha256,
+        criterion_ids: criterionIds,
+        text,
+      },
+    };
+    attempts.set(key, attempt);
+  }
+  try {
+    if (!attempt.runId) {
+      const queued = await frameworkJson(path + '/criteria-additions', {
+        method: 'POST', signal, body: JSON.stringify(attempt.body),
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': attempt.extractionKey },
+      });
+      if (!queued?.context?.run_id) throw new Error('직접 입력 분석 접수 결과를 확인하지 못했습니다.');
+      attempt.runId = queued.context.run_id;
+    }
+    onAccepted?.(attempt.runId);
+    await waitForExtraction(attempt, { source: '입력문', signal, onProgress });
+  } catch (error) {
+    if (error.retryable || ['CRITERIA_VERSION_CONFLICT', 'USER_CANCELLED'].includes(error.code)) attempts.delete(key);
+    if (additionFailures[error.code]) error.message = additionFailures[error.code];
+    throw error;
+  }
 }
 
 export function extractTextWithProgress(text, options) {

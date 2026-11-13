@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useBoxFit } from './useBoxFit.js';
 import '../styles/evidence-dialog.css';
 
 // 판정 근거 창(포스터·동영상 공통)의 틀, 근거 이미지 칸, 근거 관계도.
@@ -60,10 +61,23 @@ export function boxZoom(box) {
 
 // 근거 이미지와 읽은 위치 상자. 상자는 0~1 비율([왼쪽, 위, 오른쪽, 아래])이라 이미지 크기를 몰라도 그릴 수 있다.
 // ratio(가로÷세로)를 알면 이미지를 불러오기 전에도 자리를 잡는다.
-export function EvidenceFrame({ src, alt, box, tone, ratio: known, zoomed, empty }) {
+// fit(선택): 상자를 그림에 맞춰 다듬어 그린다('model' | 'ocr', useBoxFit 참고). 이때 상자는 그림을 불러온 뒤에 그린다.
+// onFit(선택): 다듬은 상자를 그리고 있는지(true/false)를 알려 준다 — 안내 문구를 바꾸는 데 쓴다.
+export function EvidenceFrame({ src, alt, box: given, tone, ratio: known, zoomed, empty, fit, onFit }) {
   const [natural, setNatural] = useState(null);
   const [failedSrc, setFailedSrc] = useState(null);
-  const ratio = natural?.src === src ? natural.width / natural.height : known > 0 ? known : null;
+  const boxFit = useBoxFit(fit, src);
+  const loaded = natural?.src === src;
+  const ratio = loaded ? natural.width / natural.height : known > 0 ? known : null;
+  const fitted = useMemo(() => {
+    if (!fit || !given || !loaded) return null;
+    const { width, height } = natural;
+    const result = boxFit.fit([given[0] * width, given[1] * height, given[2] * width, given[3] * height]);
+    return result.changed ? [result.box[0] / width, result.box[1] / height, result.box[2] / width, result.box[3] / height] : null;
+  }, [fit, given, loaded, natural, boxFit.fit]);
+  const isFitted = Boolean(fitted);
+  useEffect(() => { onFit?.(isFitted); }, [isFitted]);
+  const box = fitted || (fit && given && !loaded ? null : given);
   const { scale, canZoom } = boxZoom(box);
   const zoom = zoomed && canZoom ? scale : 1;
   const middle = box ? [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2] : [.5, .5];
@@ -74,9 +88,9 @@ export function EvidenceFrame({ src, alt, box, tone, ratio: known, zoomed, empty
           transformOrigin: `${middle[0] * 100}% ${middle[1] * 100}%`,
           transform: zoom > 1 ? `translate(${(.5 - middle[0]) * 100}%, ${(.5 - middle[1]) * 100}%) scale(${zoom})` : undefined }}>
         <img src={src} alt={alt} draggable={false}
-          onLoad={event => setNatural({ src, width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+          onLoad={event => { const element = event.currentTarget; setNatural({ src, width: element.naturalWidth, height: element.naturalHeight }); boxFit.read(element, src); }}
           onError={() => setFailedSrc(src)} />
-        {box && <span className={`rv-evd-box is-${tone}`} data-testid="evidence-read-box"
+        {box && <span className={`rv-evd-box is-${tone}`} data-testid="evidence-read-box" data-fit={isFitted ? 'fitted' : undefined}
           style={{ left: box[0] * 100 + '%', top: box[1] * 100 + '%', width: (box[2] - box[0]) * 100 + '%', height: (box[3] - box[1]) * 100 + '%' }} />}
       </div>}
   </div>;

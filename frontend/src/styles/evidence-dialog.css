@@ -41,10 +41,11 @@
 .rv-evd-surface { position: relative; line-height: 0; overflow: hidden; box-shadow: 0 6px 22px rgba(23, 23, 23, .16); transition: transform .32s cubic-bezier(.2, .7, .2, 1); }
 .rv-evd-surface > img { display: block; max-width: 100cqw; max-height: 100cqh; user-select: none; }
 .rv-evd-surface.is-sized > img { width: 100%; height: 100%; max-width: none; max-height: none; }
-/* 읽은 위치 상자: 판정 색 테두리에 흰 띠를 두르고, 상자 밖은 살짝 어둡게 해서 주변 글자를 가리지 않고 선택한 곳만 밝힌다.
-   확대해도 테두리 굵기가 같게 --zoom으로 나눈다. */
-.rv-evd-box { --box: #806a28; position: absolute; box-sizing: border-box; border: calc(2.5px / var(--zoom, 1)) solid var(--box); border-radius: calc(3px / var(--zoom, 1));
-  box-shadow: 0 0 0 calc(2px / var(--zoom, 1)) rgba(255, 255, 255, .92), 0 0 0 100vmax rgba(23, 23, 23, .3); }
+/* 읽은 위치 상자: 판정 색 선을 상자 '바깥'에 긋는다(선이 글자를 덮지 않고, 상자 안쪽이 곧 읽은 범위다).
+   색 선 안에 흰 실선, 밖에 흰 띠와 어두운 실선을 둘러 어느 바탕에서도 보이고, 상자 밖은 어둡게 해서 읽은 곳만 밝힌다.
+   확대해도 선 굵기가 같게 --zoom으로 나눈다. */
+.rv-evd-box { --box: #806a28; --w: calc(1px / var(--zoom, 1)); position: absolute; box-sizing: border-box; border: 0; border-radius: var(--w);
+  box-shadow: inset 0 0 0 var(--w) rgb(255 255 255 / 80%), 0 0 0 calc(3 * var(--w)) var(--box), 0 0 0 calc(5 * var(--w)) #fff, 0 0 0 calc(6 * var(--w)) rgb(17 17 17 / 62%), 0 0 0 100vmax rgb(17 17 17 / 40%); }
 .rv-evd-box.is-pass { --box: #177d45; }
 .rv-evd-box.is-fail { --box: #a34f3e; }
 .rv-evd-poster-caption { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; min-height: 30px; padding: 10px 14px 0; }

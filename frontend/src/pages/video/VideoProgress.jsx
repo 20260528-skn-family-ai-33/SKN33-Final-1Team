@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { useTilt } from '../../components/LayerFigure.jsx';
 import { LogoFlowCard } from './LogoFlowParts.jsx';
 import { filmCells, formatTime, progressSteps, scanState, stageLabels, stageIndex, stageOrder, stepLabels } from './videoFormat.js';
 
@@ -20,8 +19,7 @@ function FilmCell({ src, className, style }) {
 
 // 돋보기가 표본 프레임 필름을 따라 읽는 연출. 읽은 칸과 돋보기 위치는 서버가 알려 준 처리량을 표본 계획의 시각에 대응시켜 정한다.
 function FilmScanner({ job, scan }) {
-  // 필름은 3D로 눕혀 놓고(스타일), 마우스를 따라 조금 기운다. 움직임을 줄인 환경과 터치 화면에서는 고정한다.
-  const tilt = useTilt();
+  // 필름은 3D로 눕혀 놓는다(스타일). 자세는 고정이고(마우스를 따라 기울지 않는다), 돋보기와 유리판만 움직인다.
   const { height, gap, cells } = filmCells(job?.media, 502, 61, 5);
   const count = cells.length;
   const lastTime = cells[count - 1]?.time_ms || 0;
@@ -37,7 +35,7 @@ function FilmScanner({ job, scan }) {
   const caption = scan.phase === 'reading' && frames?.total ? `프레임 ${frames.done} / ${frames.total} 읽음`
     : scan.phase === 'preparing' && frames?.total ? `표본 프레임 ${frames.total}장 준비`
       : allRead ? '표본 프레임 읽기 완료' : scan.phase === 'failed' ? '처리 멈춤' : '표본 프레임 준비 전';
-  return <div className={`rv-video-scanner is-${scan.phase}`} aria-hidden="true" ref={tilt}
+  return <div className={`rv-video-scanner is-${scan.phase}`} aria-hidden="true"
     style={{ '--cell-h': `${height}px`, '--cell-gap': `${gap}px`, '--cells': count }}>
     <div className="rv-video-film">
       <div className="rv-video-film-track">

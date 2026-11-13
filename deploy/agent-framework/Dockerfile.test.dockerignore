@@ -13,6 +13,8 @@
 !docs/poster-baselines/
 !docs/poster-baselines/**
 !deploy/
+!deploy/agent-framework/
+!deploy/agent-framework/expire-aws-test-reviews.py
 !deploy/qwen-a02/
 !deploy/qwen-a02/worker-config*.example.json
 **/__pycache__/

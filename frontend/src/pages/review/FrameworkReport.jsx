@@ -18,6 +18,7 @@ function StatusChip({ verdict }) {
 function LocationViewer({ mark, verdict, image, onClose }) {
   const dialog = useRef(null);
   useEffect(() => { const element = dialog.current; if (element && !element.open) element.showModal(); }, []);
+  const [fitted, setFitted] = useState(false);
   const sized = image?.width > 0 && image?.height > 0;
   const overlays = sized ? [{ id: mark.criterion_id, tone: mark.code, label: `${mark.number}. ${mark.label}`,
     bbox_xyxy: mark.bbox.map((value, index) => value * (index % 2 ? image.height : image.width)) }] : [];
@@ -30,9 +31,9 @@ function LocationViewer({ mark, verdict, image, onClose }) {
     </header>
     <ImageStage src={image?.url || null} alt={`${mark.number}. ${mark.label} 위치를 표시한 검수 포스터`} title={`${mark.number}. ${mark.label}`}
       width={sized ? image.width : undefined} height={sized ? image.height : undefined}
-      overlays={overlays} selectedOverlayId={mark.criterion_id} viewKey={mark.criterion_id}
+      overlays={overlays} selectedOverlayId={mark.criterion_id} viewKey={mark.criterion_id} fitEvidence="model" onEvidenceFit={setFitted} emphasis
       empty={<p>포스터 이미지를 불러올 수 없습니다.</p>} />
-    <p className="rv-report-viewer-note">상자는 검사 모델이 읽은 위치입니다. 실제 포스터와 맞는지 담당자가 확인해 주세요.</p>
+    <p className="rv-report-viewer-note">{fitted ? '상자는 검사 모델이 알려 준 위치를 둘레의 글자에 맞춰 다듬은 것입니다.' : '상자는 검사 모델이 읽은 위치입니다.'} 실제 포스터와 맞는지 담당자가 확인해 주세요.</p>
   </dialog>;
 }
 

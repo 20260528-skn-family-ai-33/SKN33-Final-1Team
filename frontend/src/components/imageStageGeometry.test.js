@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imageStageSize, imageStageBounds, evidenceLabelOnRight, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
+import { imageStageSize, imageStageBounds, evidenceLabelOnRight, evidenceLabelBelow, canShowImageEvidence, imageEvidenceFocus, imageStageScroll } from './imageStageGeometry.js';
 import { evidenceBoxStyle } from '../pages/review/workflow.js';
 test('fit preserves aspect ratio and keeps portrait inside canvas', () => {
   const size = imageStageSize(600, 848, 700, 650);
@@ -40,6 +40,14 @@ test('evidence labels in the right half open toward the image', () => {
   assert.equal(evidenceLabelOnRight([400, 0, 600, 10], 1000), false);
   assert.equal(evidenceLabelOnRight(null, 1000), false);
   assert.equal(evidenceLabelOnRight([860, 400, 970, 460], 0), false);
+});
+test('a label moves below its box only when the spot above covers another box', () => {
+  const date = [58, 665, 277, 703], place = [58, 720, 332, 737], title = [55, 120, 420, 218];
+  assert.equal(evidenceLabelBelow(1, [date, place, title], 1, '04'), true);    // 바로 윗줄에 날짜 상자가 있다
+  assert.equal(evidenceLabelBelow(0, [date, place, title], 1, '03'), false);   // 위가 비어 있다
+  assert.equal(evidenceLabelBelow(1, [date, place, [58, 740, 332, 760]], 1, '04'), false);   // 위·아래가 모두 막히면 기본 자리
+  assert.equal(evidenceLabelBelow(1, [date, place, title], 4, '04'), false);   // 크게 확대하면 이름표가 작아져 겹치지 않는다
+  assert.equal(evidenceLabelBelow(0, [null], 1, '01'), false);
 });
 test('evidence stays attached to original pixels through zoom', () => {
   const box = evidenceBoxStyle([60, 84.8, 300, 424], 600, 848);

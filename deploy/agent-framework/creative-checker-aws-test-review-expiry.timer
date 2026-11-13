@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Creative Checker AWS_TEST review expiry every five minutes
+
+[Timer]
+OnCalendar=*-*-* *:00/5:00
+Persistent=true
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

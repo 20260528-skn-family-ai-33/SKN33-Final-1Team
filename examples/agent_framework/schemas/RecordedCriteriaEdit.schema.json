@@ -90,7 +90,8 @@
     "action": {
       "enum": [
         "amend",
-        "exclude"
+        "exclude",
+        "add"
       ],
       "title": "Action",
       "type": "string"

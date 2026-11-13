@@ -24,9 +24,9 @@
 .ft .ft-list { padding: 6px; }
 .ft .ft-list-top { padding-bottom: 0; }
 
-/* 근거: 포스터의 오른쪽 아래 모서리를 크게 두고 읽은 자리(전시 기간)만 표시한다 */
-.ft .ft-poster { position: absolute; left: -128px; top: -338px; width: 520px; height: 520px; }
-.ft .ft-mark { will-change: transform; position: absolute; left: 240px; top: 124px; width: 146px; height: 28px; box-shadow: inset 0 0 0 1.5px #fff, 0 0 0 1px rgb(0 0 0 / 25%); opacity: 0; transform: scale(0.97); transition: opacity 0.35s ease, transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
+/* 근거: 예시 포스터(600×800)의 아래쪽을 제 크기로 두고 읽은 자리(전시 기간)만 표시한다 */
+.ft .ft-poster { position: absolute; left: 0; top: -562px; width: 600px; height: 800px; }
+.ft .ft-mark { will-change: transform; position: absolute; left: 49px; top: 97px; width: 238px; height: 51px; box-shadow: inset 0 0 0 1.5px #fff, 0 0 0 1px rgb(0 0 0 / 25%); opacity: 0; transform: scale(0.97); transition: opacity 0.35s ease, transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
 .ft .ft-mark[data-show] { opacity: 1; transform: none; }
 .ft .ft-readout { height: 26px; padding: 0 10px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 14%); color: #171717; font-size: 11.5px; font-variant-numeric: tabular-nums; font-weight: 500; transition-duration: 0.35s; }
 
@@ -39,5 +39,4 @@
 
 /* 휴대폰 폭(354px): 같은 부품을 제 크기로 두고 여백만 줄인다 */
 .ft .ss-stage[data-layout='compact'] .ft-sheet { left: 22px; width: 310px; }
-.ft .ss-stage[data-layout='compact'] .ft-poster { left: -194px; }
-.ft .ss-stage[data-layout='compact'] .ft-mark { left: 174px; }
+/* 전시 기간이 포스터 왼쪽에 있어, 좁은 폭에서도 포스터와 표시 상자는 같은 자리에 둔다 */
