@@ -145,11 +145,12 @@ export function evidenceGraph(run, criterionId, { image = null, history = null, 
       facts: [['기준', criterion?.text || item.criterion_text || label], ['기대값', expected ? quoted(expected) : '아직 정해지지 않음'],
         ...(operator ? [['비교 방법', operator]] : []), ['조건', item.required ? '필수 조건' : '참고 조건 · 전체 판정에서 제외']] },
     { id: 'source', kind: '요구사항 원문', slot: [3, 2], chain: true, dashed: !source,
-      title: !source ? '원문 정보 없음' : freeText ? '직접 입력한 요구사항' : `요구사항 문서 ${source.page}쪽`,
+      title: !source ? '원문 정보 없음' : freeText || source.kind === 'direct_input' ? '직접 입력한 요구사항' : `요구사항 문서 ${source.page}쪽`,
       sub: source?.quote || '기준의 원문 인용을 찾지 못함',
-      graph: source && versionId ? { kind: 'source', key: `source:${versionId}:${criterionId}:document` } : null,
+      graph: source && versionId ? { kind: 'source', key: `source:${versionId}:${criterionId}:${source.kind || 'document'}` } : null,
       facts: source ? [['원문', source.quote],
-        ...(criterion.value_source ? [['보완 회신', `${criterion.value_source.quote} · 출처 ${criterion.value_source.reference}`]] : [])]
+        ...(criterion.value_source && (source.kind !== 'direct_input' || criterion.value_source.reference !== '담당자 직접 입력')
+          ? [['보완 회신', `${criterion.value_source.quote} · 출처 ${criterion.value_source.reference}`]] : [])]
         : [['원문', '이 기준의 원문 인용이 실행 기록에 없습니다.']] },
   ];
   const edges = [

@@ -11,7 +11,7 @@ export function frameworkResults(run, image, projectName) {
     image,
     criteria: criteria.map(item => ({ id: item.criterion_id, document_condition: {
       level: item.required ? '필수 조건' : '참고 조건',
-      inspection: `${item.source.page}쪽 · ${item.source.quote}${item.value_source ? `\n보완 회신: ${item.value_source.quote} · ${item.value_source.reference}` : ''}`,
+      inspection: `${item.source.kind === 'direct_input' ? '담당자 직접 입력' : `${item.source.page}쪽`} · ${item.source.quote}${item.value_source && (item.source.kind !== 'direct_input' || item.value_source.reference !== '담당자 직접 입력') ? `\n보완 회신: ${item.value_source.quote} · ${item.value_source.reference}` : ''}`,
     } })),
     results: (run.validated?.items || []).map(item => {
       const box = item.image?.asset_version_id === run.context.asset_version_id && item.image.bbox;

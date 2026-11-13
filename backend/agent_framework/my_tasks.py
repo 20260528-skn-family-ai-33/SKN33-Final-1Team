@@ -51,6 +51,7 @@ class MyTasks:
                  .join(members, and_(members.c.project_id == runs.c.project_id,
                                     members.c.user_id == subject.user_id))
                  .where(runs.c.actor_id == subject.user_id, members.c.is_active,
+                        runs.c.input_json['criteria_addition'].as_string().is_(None),
                         members.c.role.in_(('owner', 'editor', 'viewer'))))
         with unit_of_work(self.store.engine) as c:
             self.store.authorization.identity(c, subject, developer_allowed=False)

@@ -544,15 +544,17 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
                 checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
               <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
                 disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
-                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
+                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{c.source.kind === 'direct_input' ? '직접 입력' : !c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
               </button>
             </li>)}</ul>
             <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
             {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
               <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
               <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
-              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>요구사항 원문 · {selected.source.page}쪽</summary><p>{selected.source.quote}</p>
-                {selected.value_source && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
+              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>{selected.source.kind === 'direct_input'
+                ? '담당자 직접 입력 원문' : `요구사항 원문 · ${selected.source.page}쪽`}</summary><p>{selected.source.quote}</p>
+                {selected.value_source && (selected.source.kind !== 'direct_input' || selected.value_source.reference !== '담당자 직접 입력')
+                  && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
               {sourceDraft && (amendment ? <>
                 <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveVersion, 'save'); }}><CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} /></form>
                 <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
@@ -567,7 +569,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
               }}>기준 보완</button>)}
             </div>}
             {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
-            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
+            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
       {!processing && (!hasResults || showingReport) && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">

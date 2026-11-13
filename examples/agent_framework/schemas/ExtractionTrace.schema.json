@@ -121,6 +121,19 @@
           "pattern": "^[a-f0-9]{64}$",
           "title": "Source Hash",
           "type": "string"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "const": "direct_input",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
         }
       },
       "required": [
