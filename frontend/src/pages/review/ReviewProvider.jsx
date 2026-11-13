@@ -411,7 +411,7 @@ export function ReviewProvider({ children }) {
     navigateToDocumentRun();
   }
 
-  function navigateToDocumentRun(criterionIds = null) {
+  function navigateToDocumentRun(criterionIds = null, reviewStarting = false) {
     if (documentRequest.current || sampleBusy || fileBusy) return;
     setError('');
     if (!state.documentRun) return;
@@ -428,7 +428,10 @@ export function ReviewProvider({ children }) {
     setInputRunId(state.documentRun.id);
     const runId = state.documentRun.id;
     setSearchParams({ framework: runId }, {
-      state: criterionIds ? { pdfSelection: { runId, criterionIds } } : null,
+      state: {
+        reviewStarting,
+        ...(criterionIds ? { pdfSelection: { runId, criterionIds } } : {}),
+      },
     });
   }
 
@@ -445,9 +448,9 @@ export function ReviewProvider({ children }) {
     const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
     if (!direct && selectedRows.length && selectedRows.every(row => row.text.trim() === row.originalText)) {
       if (doc.originalCount === selectedRows.length) {
-        openDocumentRun();
+        navigateToDocumentRun(null, true);
       } else if (selectedRows.every(row => row.criterionIds?.length)) {
-        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))]);
+        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))], true);
       } else {
         setError('선택한 항목의 원문 연결을 확인할 수 없습니다. PDF 원문과 기준 확인에서 항목을 선택해 주세요.');
       }
@@ -510,7 +513,7 @@ export function ReviewProvider({ children }) {
       setInputRunId(result.framework.run_id);
       setDocumentProgress(null);
       setDocumentResumeId('');
-      setSearchParams({ framework: result.framework.run_id });
+      setSearchParams({ framework: result.framework.run_id }, { state: { reviewStarting: true } });
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentProgress(null);

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
+import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import { DocumentProjectPicker } from './DocumentInput.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
@@ -39,18 +40,30 @@ export default function ReviewPage() {
 
   if (runId) return <FrameworkReviewPage key={runId} runId={runId}
     health={health}
+    reviewStarting={location.state?.reviewStarting === true}
     projectName={state.projectName || location.state?.projectName}
     initialFile={runId === inputRunId ? state.file : null}
     referenceLogos={runId === inputRunId && state.reviewMode !== 'text' ? state.referenceLogos : null}
     logoDetector={runId === inputRunId ? logoDetectorFor(state.securityMode) : 'runpod'}
     initialCriterionIds={location.state?.pdfSelection?.runId === runId ? location.state.pdfSelection.criterionIds : null}
     onInput={() => setParams({})}
-    openRun={id => setParams({ framework: id }, { state: location.state })} onNew={() => { newReview(); setParams({}); }} />;
+    openRun={(id, reviewStarting = false) => setParams({ framework: id }, { state: { ...location.state, reviewStarting } })} onNew={() => { newReview(); setParams({}); }} />;
 
   const input = state.step === 'input';
+  const submitting = input && documentBusy && !documentExtracting;
+  const queued = documentProgress?.stage === 'queued' && documentProgress.runId;
+  const startMessage = submitting
+    ? documentProgress?.message || '로고 검수를 접수하고 있어요.'
+    : null;
   // 보안 여부·유형을 고르기 전에는 단계 표시를 숨기고, 로고 검수는 로고 대조 단계를 보여 준다.
   const steps = input && (!state.securityMode || !state.reviewMode) ? null : input && state.reviewMode === 'logo' ? logoSteps : undefined;
   return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy} steps={steps}
+    startMessage={startMessage}
+    startActions={submitting && state.reviewMode !== 'logo' && <>
+      <ErrorMessage message={documentError} />
+      <button type="button" className="rv-button secondary" disabled={documentCancelBusy}
+        onClick={queued ? cancelQueuedDocument : cancelDocument}>{queued ? '대기 작업 취소' : '입력 반영 취소'}</button>
+    </>}
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value),
       onEnter: state.reviewMode === 'logo' ? undefined : name => projectPicker.current?.createFromName(name) } : undefined}
     projectTools={input && (state.reviewMode === 'logo'

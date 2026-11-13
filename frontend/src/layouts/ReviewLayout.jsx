@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useId, useLayoutEffect, useRef } from 'react';
 import { Icon } from '../components/Icon.jsx';
 import { SiteHeader } from '../components/SiteHeader.jsx';
 import '../styles/review-v2.css';
@@ -53,10 +53,29 @@ export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, 
   </div>;
 }
 
+function ReviewStartOverlay({ message, children }) {
+  const dialog = useRef(null);
+  const title = useId();
+  useLayoutEffect(() => {
+    const element = dialog.current;
+    element.showModal();
+    return () => element.close();
+  }, []);
+
+  return <dialog ref={dialog} className="rv-start-overlay" aria-labelledby={title}
+    onCancel={event => event.preventDefault()}
+    onKeyDown={event => event.stopPropagation()} onPaste={event => event.stopPropagation()}>
+    <span className="rv-start-spinner" aria-hidden="true" />
+    <h2 id={title}>검수 준비 중</h2>
+    <p role="status">{message}</p>
+    {children}
+  </dialog>;
+}
+
 // steps를 null로 주면 단계 표시를 숨긴다(검수 유형을 고르기 전).
 export default function ReviewLayout({ state, busy, navigate, children, steps = posterSteps,
   canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions,
-  showWorkspaceBar = true }) {
+  showWorkspaceBar = true, startMessage, startActions }) {
   const navigationLocked = topbarLocked || busy;
   const enabled = canNavigate || (key => key === 'input' || key === 'criteria' && state.criteria.length > 0
     || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed');
@@ -72,5 +91,6 @@ export default function ReviewLayout({ state, busy, navigate, children, steps = 
       </WorkspaceProjectBar>
     </>}
     <main id="review-content" className={`rv-main ${mainClassName}`.trim()} tabIndex={-1} aria-busy={busy || undefined}>{children}</main>
+    {startMessage && <ReviewStartOverlay message={startMessage}>{startActions}</ReviewStartOverlay>}
   </div>;
 }
