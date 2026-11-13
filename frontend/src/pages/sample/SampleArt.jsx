@@ -1,5 +1,5 @@
 import React from 'react';
-import { Poster, VideoFrame } from '../review/ReviewTypePicker.jsx';
+import { PickerArt } from '../../components/PickerArt.jsx';
 import { CAPTIONS, formatSeconds } from './sampleData.js';
 
 // 예시 포스터·동영상 프레임은 SVG 글을 data URL 이미지(<img>)로 그린다.
@@ -58,15 +58,9 @@ export function LogoThumb() {
   </svg>;
 }
 
-// 첫 화면(자료 종류) 타일 그림. 포스터·동영상 선택 화면과 같은 그림을 쓴다.
+// 첫 화면(자료 종류) 타일 그림. 실제 고르기 화면과 같은 3D 그림을 쓴다.
 export function MediaArt({ kind }) {
-  return <svg viewBox="0 0 230 250" fill="none" focusable="false">
-    {kind === 'video' ? <>
-      <VideoFrame />
-      <circle cx="115" cy="122" r="22" fill="#171717" opacity=".75" />
-      <path d="M108 110v24l20-12z" fill="#fff" />
-    </> : <Poster id="sample-media" />}
-  </svg>;
+  return <PickerArt media={kind} variant="media" />;
 }
 
 export function PlayIcon() {

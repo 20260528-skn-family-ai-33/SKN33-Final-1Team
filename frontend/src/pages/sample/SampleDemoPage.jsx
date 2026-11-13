@@ -126,6 +126,7 @@ function Kiosk({ title, tiles, onPick, back, context }) {
     <div className="sd-tiles">
       {tiles.map(tile => <button key={tile.value} type="button" className="sd-tile" aria-label={tile.label} onClick={() => onPick(tile.value)}
         onPointerMove={tiltArt} onPointerLeave={settleArt}>
+        <span className="op-tile-glow" aria-hidden="true" />
         <span className="sd-tile-art" aria-hidden="true">{tile.art}</span>
         <span className="sd-tile-label">{tile.label}</span>
       </button>)}

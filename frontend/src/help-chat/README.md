@@ -20,6 +20,8 @@
 
 독립 미리보기의 기본 위치는 우측 하단(`bottom-right`)입니다. `mountHelpChat`의 `position`에 `bottom-left` 또는 `header`를 넘길 수 있습니다. `header`를 쓰면 `container`에 지정한 헤더 슬롯에서 버튼이 열립니다. 패널 스타일은 Shadow DOM 안에 있습니다.
 
+화면 테마: 챗봇을 넣는 화면이 `--cc-help-*` CSS 변수(글자색·강조색·선·모서리·글꼴)를 주면 패널이 그 톤을 따릅니다. 변수가 없으면 기본 색을 씁니다. 받는 변수는 `help-chat.css` 맨 아래 묶음에, Creative Checker 화면의 값은 `src/styles/optimus-theme.css`에 있습니다.
+
 ## API
 
 `POST /api/framework/v1/help/chat`은 기존 세션 쿠키와 `GET /api/framework/v1/csrf`에서 받은 `X-CSRFToken`을 확인합니다. JSON 요청의 `question`은 최대 500자이고 `history`는 생략하거나 최근 3회 `{ question, reply }`를 전달합니다. 성공 응답은 `{ reply }`입니다. 같은 계정은 API 프로세스당 1분 10회, 동시 1건으로 제한되며 OpenAI 호출 제한 시간은 20초입니다.
