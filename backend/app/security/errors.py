@@ -3,6 +3,14 @@ class AuthError(RuntimeError):
     def __init__(self, code, status=400, *, retry_after=None):
         messages={
             'INVALID_CREDENTIALS':'이메일 또는 비밀번호를 확인해 주세요.',
+            'HELP_CHAT_INVALID_INPUT':'질문을 확인해 주세요.',
+            'HELP_CHAT_NOT_CONFIGURED':'이 서버에서는 자유 질문을 아직 사용할 수 없어요.',
+            'HELP_CHAT_BUSY':'답변을 준비 중이에요. 잠시 후 다시 보내 주세요.',
+            'HELP_CHAT_RATE_LIMITED':'질문을 너무 많이 보냈어요. 잠시 후 다시 시도해 주세요.',
+            'HELP_CHAT_PROVIDER_ACCESS':'현재 자유 질문 서비스에 연결할 수 없어요.',
+            'HELP_CHAT_PROVIDER_LIMIT':'자유 질문 서비스의 사용량 한도에 도달했어요. 잠시 후 다시 시도해 주세요.',
+            'HELP_CHAT_PROVIDER_FAILED':'답변을 가져오지 못했어요. 잠시 후 다시 시도해 주세요.',
+            'HELP_CHAT_TIMEOUT':'답변이 늦어지고 있어요. 잠시 후 다시 시도해 주세요.',
             'INVALID_AUTH_REQUEST':'인증 입력을 확인해 주세요.',
             'AUTHENTICATION_REQUIRED':'로그인이 필요합니다.',
             'AUTH_ROUTE_NOT_FOUND':'인증 경로를 찾을 수 없습니다.',

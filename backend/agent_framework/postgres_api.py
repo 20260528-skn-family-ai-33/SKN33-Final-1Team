@@ -36,6 +36,7 @@ from .criteria_review import PostgresCriteriaReview
 from .criteria_contracts import CriteriaVersionRequest,CriteriaVersionRecord,CriteriaApprovalRequest,CriteriaApprovalRecord
 from .poster_review import PosterReviewRequest,PostgresPosterReviews,open_poster_storage
 from .my_tasks import MyTasks, HistoryVisibility
+from .help_chat import LunaResponder, help_chat_router
 
 
 def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=None,poster_storage_root=None):
@@ -110,6 +111,9 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
 
     prefix='/api/framework/v1'
     app.include_router(project_router(),prefix=prefix)
+    openai_key = settings.poster_edit_key
+    responder = LunaResponder(openai_key.reveal()) if openai_key is not None else None
+    app.include_router(help_chat_router(subject, responder), prefix=prefix)
     if poster_storage_root is not None and configuration.roles['A04_A05'].kind == 'registered_poster':
         app.include_router(image_router(), prefix=prefix)
     from backend.app.routes.v1.auth import csrf_response
