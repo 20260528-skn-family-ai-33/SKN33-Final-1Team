@@ -1,0 +1,9 @@
+[Unit]
+Description=Expire idle Creative Checker AWS_TEST reviews
+After=docker.service nginx.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/creative-checker/expire-aws-test-reviews.py --apply
+TimeoutStartSec=120

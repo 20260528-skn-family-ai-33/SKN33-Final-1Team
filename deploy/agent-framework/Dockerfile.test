@@ -8,6 +8,7 @@ COPY backend/ ./backend/
 COPY examples/ ./examples/
 COPY tests/ ./tests/
 COPY scripts/ ./scripts/
+COPY deploy/agent-framework/expire-aws-test-reviews.py ./deploy/agent-framework/
 COPY docs/poster-baselines/ ./docs/poster-baselines/
 COPY deploy/qwen-a02/worker-config*.example.json ./deploy/qwen-a02/
 ARG TEST_RUN_ID
