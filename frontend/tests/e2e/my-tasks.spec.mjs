@@ -102,6 +102,8 @@ test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { 
     else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
     else if (path.endsWith('/cancel')) { cancelled = true; body = snapshot(); }
     else if (path.endsWith('/runs/queued')) body = snapshot();
+    // 실행 화면은 이 실행에 연결된 포스터 로고 작업도 함께 읽는다. 이 시험에는 로고 작업이 없다.
+    else if (path === '/api/poster-logos') body = { items: [] };
     else throw new Error('Unexpected route ' + path);
     await route.fulfill({ json: body });
   });

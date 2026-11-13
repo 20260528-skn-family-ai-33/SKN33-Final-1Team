@@ -5,6 +5,24 @@ import test from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
+// 자료 입력 전에 보안 여부와 검수 유형을 고른다. 요구사항만으로 접수하는 흐름이라 문구 검수로 연다.
+async function chooseReview(page) {
+  await page.getByRole('heading', { name: '보안이 필요한 자료인가요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: '문구 검수', exact: true }).click();
+  await page.getByRole('heading', { name: '문구 검수 자료 입력', exact: true }).waitFor();
+}
+
+// 저장할 프로젝트 버튼에는 고른 프로젝트 이름이 보인다. 고르기 패널의 목록에서 프로젝트를 바꾼다.
+const projectChip = page => page.locator('.rv-project-chip');
+async function pickProject(page, name) {
+  await projectChip(page).click();
+  await page.getByRole('dialog', { name: '저장할 프로젝트 고르기', exact: true })
+    .getByRole('option', { name }).click();
+  await page.waitForFunction(expected => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === expected, name);
+}
+
 // API replies are scripted; this checks the real input/approval/report UI, not model quality.
 async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false } = {}) {
   const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
@@ -19,6 +37,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     let extractionRequests = 0;
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
     const posterApproval = Promise.withResolvers();
+    // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
+    // 응답이 먼저 끝나면 시작 버튼이 사라져 확인 단계가 실행 속도에 따라 실패했다.
+    const criteriaApproval = Promise.withResolvers();
     let posterApprovalRequests = 0;
     let allowDocumentResult = mode !== 'pdf', allowReviewResult = false, allowReviewStages = false;
     let configured = mode !== 'not_ready';
@@ -43,7 +64,11 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       else if (path.endsWith('/health')) body = { requirements_presentation: true, pdf_extraction_mode: 'qwen',
         poster_review_ready: configured, free_text_registration: true };
       else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
-      else if (path.endsWith('/projects')) body = { items: [{ id: 'project', name: '검수', my_role: 'owner' }] };
+      // PDF 흐름은 저장 프로젝트를 바꿔 보므로 프로젝트를 두 개 둔다(둘 이상이면 저절로 고르지 않는다).
+      else if (path.endsWith('/projects')) body = { items: [{ id: 'project', name: '검수', my_role: 'owner' },
+        ...(mode === 'pdf' ? [{ id: 'other', name: '다른 프로젝트', my_role: 'owner' }] : [])] };
+      // 실행 화면은 연결된 포스터 로고 작업도 읽는다. 이 시험에는 로고 작업이 없다.
+      else if (path === '/api/poster-logos') body = { items: [] };
       else if (path.endsWith('/documents')) body = { document: { document_version_id: 'pdf-document',
         sha256: createHash('sha256').update(request.postDataBuffer()).digest('hex') } };
       else if (path.endsWith('/text-documents')) {
@@ -76,7 +101,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
             : mode === 'skip' && !skipped ? { pending: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
-        assert.equal(request.postDataJSON().reviewed_all_criteria, true); approved = true; body = {};
+        assert.equal(request.postDataJSON().reviewed_all_criteria, true);
+        if (mode === 'direct') await criteriaApproval.promise;
+        approved = true; body = {};
       } else if (path.endsWith('/images')) {
         assert.ok(approved, 'image registration follows criteria approval'); uploads++; body = { id: 'image' };
       } else if (path.endsWith('/poster-reviews')) {
@@ -102,14 +129,20 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
             { role: 'A06', status: allowReviewStages ? 'completed' : 'pending' },
             { role: 'A07', status: allowReviewResult ? 'completed' : allowReviewStages ? 'running' : 'pending' }],
           ...(allowReviewResult ? { report: { summary: 'A07 보고: 행사명이 기준과 다릅니다.', change_requests: ['행사명을 봄으로 수정해 주세요.'] } } : {}) } : {}) };
-      // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
-      else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
+      // 관계 조회(이전 기준 대비 변경 · 수정본 이력)와 문구 수정 가능 여부 조회는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
+      else if (/\/(criteria-change-impact|revision-history|poster-text-edits)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
       else throw new Error('unexpected test route: ' + path);
       await route.fulfill({ json: body });
     });
     await page.goto(base + '/review/new');
-    await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
-    await page.waitForFunction(() => document.querySelector('#document-project')?.value === 'project');
+    await chooseReview(page);
+    if (mode === 'pdf') {
+      // 프로젝트를 고르기 전에는 필수 표시가 보이고 문서를 첨부할 수 없다.
+      await page.locator('.rv-project-chip.is-required').filter({ hasText: '프로젝트 선택' }).getByText('필수', { exact: true }).waitFor();
+      assert.ok(await page.getByLabel('요구사항 문서 선택', { exact: true }).isDisabled());
+      await pickProject(page, '검수');
+    }
+    await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
     png = Buffer.from(await page.evaluate(() => {
       const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
       return canvas.toDataURL().split(',')[1];
@@ -140,26 +173,12 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     }
     if (mode !== 'pdf' && !subset) await page.locator('#requirements').fill(mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');
     if (mode === 'pdf') {
-      const picker = page.locator('.rv-project-picker summary');
-      const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
-      await picker.click();
-      await page.locator('#document-project').selectOption('');
-      await page.getByText('저장할 프로젝트 선택', { exact: true }).waitFor();
-      assert.ok(await documentCard.getByLabel('요구사항 문서 선택', { exact: true }).isDisabled());
-      await picker.click();
-      await page.mouse.move(0, 0);
-      await page.waitForFunction(() => getComputedStyle(document.querySelector('.rv-project-picker summary')).animationName === 'rv-project-nudge');
-      await page.emulateMedia({ reducedMotion: 'reduce' });
-      assert.equal(await picker.evaluate(element => getComputedStyle(element).animationName), 'none');
-      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      // 프로젝트 선택을 비우는 방법과 필수 안내의 흔들림 효과는 없어졌다. 다른 프로젝트로 바꾼 경우를 확인한다.
+      await pickProject(page, '다른 프로젝트');
       await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).click();
       await page.getByText(/이 원문을 저장한 프로젝트를 선택/).waitFor();
       assert.equal(textInputs.length, 0, 'a project change must not silently convert PDF criteria to a new text source');
-      await picker.click();
-      await page.locator('#document-project').selectOption('project');
-      await page.getByText('저장 프로젝트', { exact: true }).waitFor();
-      await picker.click();
-      assert.equal(await picker.evaluate(element => getComputedStyle(element).animationName), 'none');
+      await pickProject(page, '검수');
       configured = false; // Draft review must work even if poster models are not ready yet.
     }
     if (mode === 'edited_pdf') await page.getByText(/선택·수정한 문구는 새 기준 초안으로 분석합니다/).waitFor();
@@ -241,6 +260,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
           assert.ok(await page.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄' }).isDisabled());
           await submit.evaluate(button => button.click());
         } finally {
+          criteriaApproval.resolve();
           posterApproval.resolve();
         }
       } else if (mode === 'text') {
@@ -272,7 +292,16 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         return bar && Math.abs(bar.firstElementChild.getBoundingClientRect().width - bar.clientWidth * .67) < 2;
       });
       assert.equal(await progress.locator('.rv-progress-shine').count(), 0);
-      assert.equal(await progress.locator('.rv-progress-fill').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 23, 23)');
+      // 채움은 무늬 없이 화면의 잉크 색(--rv-ink, 기본 #171717) 한 가지다. 테마가 잉크 색을 바꾸면 그 색을 따른다.
+      const fill = await progress.locator('.rv-progress-fill').evaluate(element => {
+        const ink = document.createElement('i'); ink.style.backgroundColor = 'var(--rv-ink)'; element.append(ink);
+        const seen = { color: getComputedStyle(element).backgroundColor, image: getComputedStyle(element).backgroundImage,
+          ink: getComputedStyle(ink).backgroundColor };
+        ink.remove();
+        return seen;
+      });
+      assert.notEqual(fill.ink, 'rgba(0, 0, 0, 0)');
+      assert.deepEqual([fill.color, fill.image], [fill.ink, 'none']);
       assert.equal(await page.getByRole('heading', { name: '검수 요구사항', exact: true }).count(), 0, 'partial validation must not hide the running report stage');
       assert.equal(await stageStatus.textContent(), '검수 보고서 정리');
       assert.equal(await steps.locator('button:disabled').count(), 4);
@@ -330,7 +359,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
   }
 }
 
-test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 60000 }, t =>
+// 일곱 가지 흐름을 차례로 끝까지 돌아 60초로는 모자란다(흐름 하나에 12~15초, 전체 약 75초로 측정).
+test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 150000 }, t =>
   verifyFrameworkEntry(t, ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'skip', 'not_ready']));
 
 test('포스터 PDF 부분 초안은 제외된 후보의 사유와 원문을 기준 목록과 분리한다', { timeout: 30000 }, t =>

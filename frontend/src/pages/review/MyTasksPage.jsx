@@ -6,6 +6,7 @@ import PdfBatches from './PdfBatches.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { PixelField } from '../../components/PixelField.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { frameworkJson } from './frameworkClient.js';
 import '../../styles/my-tasks.css';
@@ -116,7 +117,7 @@ export default function MyTasksPage() {
     <SiteHeader current="/review/tasks" locked={busy} lockReason="작업 변경을 저장하고 있습니다." />
     {busy && <span id="mt-lock-reason" className="sr-only">작업 변경을 저장하고 있습니다.</span>}
     <main className="rv-main rv-my-tasks" id="review-content" aria-labelledby="tasks-title" tabIndex={-1}>
-      <header className="rv-task-heading"><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>
+      <header className="rv-task-heading"><PixelField monochrome /><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>
         <p>문서 분석과 포스터 검수 작업을 다시 열 수 있어요. 최근 동영상 검수는 기본 목록과 전체 이력의 첫 페이지에 표시돼요.</p></div>
         {busy ? <button type="button" className="rv-button primary" disabled>새 검수</button>
           : <Link className="rv-button primary" to="/review/new" onClick={event => {

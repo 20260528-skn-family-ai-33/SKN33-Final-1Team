@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import { useTilt } from '../../components/LayerFigure.jsx';
 import { scanFocus } from './progressScan.js';
 import '../../styles/review-progress.css';
 
@@ -12,15 +13,23 @@ function PartArt({ kind }) {
 }
 
 // 포스터 위의 확대 위치와 렌즈의 중심은 같은 좌표를 쓴다.
-function PosterScan({ image, working }) {
+// 포스터는 3D로 눕혀 놓고, 처리 단계가 나아가면 그 위로 유리판 두 장(02 읽은 자리 · 03 판정)이 차례로 떠오른다.
+// 유리판은 진행 정도만 알리는 장식이다. 실제 읽은 위치와 판정은 결과 화면에서 보여 준다.
+function PosterScan({ image, working, depth = 0 }) {
+  const tilt = useTilt();
   const ready = image?.url && image.width > 0 && image.height > 0;
   const width = ready ? Math.min(460, 248 * image.width / image.height) : 0;
-  return <figure className={`rv-poster-scan${working ? ' is-working' : ''}`}>
-    <div className="rv-poster-scan-stage">
+  return <figure className={`rv-poster-scan${working ? ' is-working' : ''}`} data-depth={depth}>
+    <div className="rv-poster-scan-stage" ref={tilt}>
       {ready ? <div className="rv-poster-scan-sheet" style={{ '--rv-poster-width': `${width}px` }}>
         <img src={image.url} alt="검수 대상 포스터" width={image.width} height={image.height} />
         <span className="rv-poster-scan-zoom" aria-hidden="true"><img src={image.url} alt="" /></span>
         <span className="rv-poster-scan-lens" aria-hidden="true" />
+        <span className="rv-poster-plane is-source" aria-hidden="true"><b>01 원본</b></span>
+        <span className="rv-poster-plane is-read" aria-hidden="true"><i /><b>02 읽은 자리</b></span>
+        <span className="rv-poster-plane is-verdict" aria-hidden="true"><b>03 판정</b></span>
+        {[[0, 0], [100, 0], [0, 100], [100, 100]].map(([left, top]) => <span key={`${left}-${top}`} className="rv-poster-post"
+          aria-hidden="true" style={{ left: `${left}%`, top: `${top}%` }} />)}
       </div> : <span className="rv-poster-scan-placeholder"><Icon name="image" />
         {image?.unavailable ? '포스터 미리보기를 표시할 수 없습니다.' : '포스터 미리보기를 불러오고 있어요.'}</span>}
     </div>
@@ -75,7 +84,8 @@ export default function ReviewProgress({ title, message, detail, percent, starte
   const phases = [{ key: 'queue', label: '순서 대기', status: queued ? 'active' : 'completed' }, ...steps];
   return <section className={`rv-progress-page${poster ? ' rv-poster-progress' : ''}`} aria-labelledby="review-process-title">
     <div className="rv-progress-card rv-scan-card">
-      {poster ? <PosterScan image={image} working={steps.some(step => step.status === 'active')} />
+      {poster ? <PosterScan image={image} working={steps.some(step => step.status === 'active')}
+        depth={Math.min(2, steps.filter(step => ['active', 'completed'].includes(step.status)).length)} />
         : steps.length ? <ProgressScanner steps={steps} />
         : <span className="rv-progress-symbol" aria-hidden="true"><Icon name="search" /></span>}
       <span className="rv-eyebrow">{poster ? 'POSTER REVIEW IN PROGRESS' : 'REVIEW IN PROGRESS'}</span>

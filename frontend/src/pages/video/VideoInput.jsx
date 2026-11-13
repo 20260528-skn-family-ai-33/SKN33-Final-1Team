@@ -195,6 +195,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
   return <section className="rv-video-input" aria-labelledby="page-title">
+    <p className="op-eyebrow"><span aria-hidden="true" />INPUT / 자료 입력</p>
     <h1 id="page-title" className="sr-only" tabIndex={-1}>숏폼 동영상 {reviewModeLabels[mode]} 자료 입력</h1>
     {/* 입력란에서 Enter를 눌러도 접수되지 않도록 폼 제출을 막고, 접수는 버튼으로만 한다. */}
     <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={event => event.preventDefault()}>

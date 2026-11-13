@@ -3,6 +3,10 @@ declare module '*LandingPage.jsx' {
   const LandingPage: ComponentType<{ profile?: string }>;
   export default LandingPage;
 }
+declare module '*components/Icon.jsx' {
+  import type { ComponentType, SVGProps } from 'react';
+  export const Icon: ComponentType<{ name: string } & SVGProps<SVGSVGElement>>;
+}
 declare module '*ImageStage.jsx' {
   import type { ComponentType, ReactNode } from 'react';
   const ImageStage: ComponentType<{

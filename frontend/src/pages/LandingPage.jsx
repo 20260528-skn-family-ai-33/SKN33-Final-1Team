@@ -1,55 +1,36 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { Icon } from '../components/Icon.jsx';
+import { PixelField } from '../components/PixelField.jsx';
+import { PosterLayers, VideoLayers } from '../components/LayerFigure.jsx';
 import { SiteHeader } from '../components/SiteHeader.jsx';
-import { useScrollScene } from '../hooks/useScrollScene.js';
-import skyPreview from '../assets/fairweather-public-preview.png';
-import '../styles/landing-fairweather.css';
+import demoPoster from '../assets/landing-demo-poster.jpg';
+import '../styles/landing.css';
 
-const features = [
-  { number: '01', label: 'SET THE STANDARD', title: <>기준이 되는 내용을<br />한곳에 모으고.</>, text: '포스터와 요구사항을 준비하세요. 행사명, 기간, 필수 문구를 검수할 항목으로 정리합니다.', kind: 'criteria' },
-  { number: '02', label: 'LOOK AT THE EVIDENCE', title: <>결과를 넘어<br />근거까지 살펴보고.</>, text: '이미지에서 읽은 문구와 위치를 함께 확인하세요. 자동 판단이 어려운 항목도 구분해 보여줍니다.', kind: 'evidence' },
-  { number: '03', label: 'MAKE THE CALL', title: <>놓친 곳을 확인하고<br />다음 작업을 결정해요.</>, text: '충족, 위반, 확인 필요를 항목별로 검토하세요. 결과를 바탕으로 마지막 판단은 담당자가 내립니다.', kind: 'review' },
+// 기능 소개의 세 그림(Stageshow 장면)은 소개 화면에서만 쓰므로 따로 불러와 첫 화면 글과 버튼을 먼저 보여 준다.
+const tiles = () => import('../stageshow/FeatureTiles.tsx');
+const CriteriaTile = React.lazy(() => tiles().then(scenes => ({ default: scenes.CriteriaTile })));
+const EvidenceTile = React.lazy(() => tiles().then(scenes => ({ default: scenes.EvidenceTile })));
+const DecisionTile = React.lazy(() => tiles().then(scenes => ({ default: scenes.DecisionTile })));
+
+// 검수 예시의 세 단계. 포스터의 표시 상자는 '근거를 살펴보고'에서만 켠다.
+const examples = [
+  { kind: 'criteria', label: '기준을 정리하고', title: '무엇을 확인할지, 먼저 명확하게.',
+    description: 'PDF 문서와 직접 입력한 요구사항을 검수할 항목으로 정리합니다. 실행 전, 담당자가 내용을 확인하고 기준을 확정합니다.',
+    tag: '검수 기준 예시', expected: '전시 기간: 2025.11.19 — 2026.3.22', actual: '전시 기간이 포스터에 정확하게 표기되었는지 확인', status: '기준 확정 전' },
+  { kind: 'evidence', label: '근거를 살펴보고', title: '판정 옆에, 눈으로 볼 수 있는 근거.',
+    description: '기준 문구와 포스터에 적힌 전시 기간을 나란히 놓습니다. 같은 내용인지, 어디에 적혀 있는지 함께 확인하세요.',
+    tag: '전시 기간 확인 예시', expected: '2025.11.19 — 2026.3.22', actual: '2025.11.19 — 2026.3.22', status: '전시 기간 일치 · 설명용 예시' },
+  { kind: 'decision', label: '사람이 결정합니다', title: '마지막 판단은, 작업을 아는 사람에게.',
+    description: '충족·위반·확인 필요를 검토하고, 보완할 내용을 결정합니다. 자동 판단이 어려운 부분도 구분해 담당자에게 전달합니다.',
+    tag: '담당자 검토 예시', expected: '일치하는 항목과 보완할 항목을 함께 검토', actual: '수정할 내용과 판단 이유를 확인', status: '담당자 확인 대기' },
 ];
-
-function WindowDots() {
-  return <span className="fw-window-dots" aria-hidden="true"><i /><i /><i /></span>;
-}
-
-function PosterExample() {
-  return <div className="fw-poster" aria-label="가상의 가을 문화축제 포스터">
-    <small>A SEASON TOGETHER</small><strong>가을<br />문화축제</strong>
-    <span className="fw-poster-leaves" aria-hidden="true"><i /><i /><i /></span>
-    <span className="fw-poster-date">10.30 — 11.02</span><small>함께 만드는 가을의 순간</small>
-  </div>;
-}
-
-function ReviewWindow() {
-  return <div className="fw-review-window">
-    <WindowDots />
-    <div className="fw-window-heading"><span>Creative Checker</span><span className="fw-example-label">화면 예시</span></div>
-    <div className="fw-window-body">
-      <PosterExample />
-      <div className="fw-window-results">
-        <div className="fw-window-project"><span>포스터 · 가을 문화축제</span><strong>기준과 실제 내용을 나란히.</strong></div>
-        <div className="fw-window-result"><span className="fw-example-status">확인할 내용</span><strong>행사 기간</strong><dl><div><dt>기준</dt><dd>10.30 — 11.01</dd></div><div><dt>포스터</dt><dd>10.30 — 11.02</dd></div></dl></div>
-        <div className="fw-window-row"><span><i aria-hidden="true" />행사명 문구</span><span>일치</span></div>
-        <div className="fw-window-row"><span>로고 가독성</span><span>담당자 확인</span></div>
-      </div>
-    </div>
-  </div>;
-}
-
-function FeatureArtwork({ kind }) {
-  return <div className={`fw-feature-art fw-feature-art-${kind}`} aria-hidden="true">
-    <div className="fw-mini-window"><WindowDots />
-      {kind === 'criteria' && <><span className="fw-mini-kicker">검수 기준</span><div className="fw-mini-rule"><i>✓</i><span>행사명과 기간</span></div><div className="fw-mini-rule"><i>✓</i><span>필수 안내 문구</span></div><div className="fw-mini-rule"><i>✓</i><span>로고와 배치</span></div></>}
-      {kind === 'evidence' && <><span className="fw-mini-kicker">포스터에서 확인한 근거</span><div className="fw-mini-quote">10.30 — <mark>11.02</mark></div><div className="fw-mini-source"><span>행사 기간</span><span>위치와 문구 함께 보기 ↗</span></div></>}
-      {kind === 'review' && <><span className="fw-mini-kicker">항목별 검토</span><div className="fw-mini-verdict"><i />충족<span>기준과 일치</span></div><div className="fw-mini-verdict">↗ 위반<span>수정할 내용</span></div><div className="fw-mini-verdict">○ 확인 필요<span>담당자 판단</span></div></>}
-    </div>
-  </div>;
-}
+const features = [
+  { icon: 'file', title: '흩어진 조건을 한곳에.', text: 'PDF 문서와 자유 입력으로 검수할 내용을 준비하고, 실행 전에 기준을 확인합니다.', tag: 'BRIEF → CRITERIA', Art: CriteriaTile },
+  { icon: 'search', title: '눈으로 확인하는 근거.', text: '포스터에서 읽은 문구와 위치를 함께 보고, 기준과 다른 부분을 살펴봅니다.', tag: 'IMAGE → EVIDENCE', Art: EvidenceTile },
+  { icon: 'eye', title: '판단의 주도권은 사람에게.', text: '자동 판단이 어려운 항목은 구분해 보여주고, 담당자가 최종 검토합니다.', tag: 'EVIDENCE → DECISION', Art: DecisionTile },
+];
 
 // 소개 화면은 API 요청 없이 렌더링하고, 실제 작업은 각 프로필의 진입 경로에 맡긴다.
 export default function LandingPage({ profile = 'legacy' }) {
@@ -57,11 +38,13 @@ export default function LandingPage({ profile = 'legacy' }) {
   const { hash, key, state } = useLocation();
   const auth = useOptionalAuth();
   const [logoutPending, setLogoutPending] = useState(false);
+  const [example, setExample] = useState(1);
+  const root = useRef(null);
   const title = useRef(null);
   const loginLink = useRef(null);
-  const { rootRef, sceneRef, stageRef } = useScrollScene();
   const isV1 = profile === 'v1' || profile === 'rebuild';
   const sampleLabel = isV1 ? '프로젝트 둘러보기' : '샘플로 체험하기';
+  const shown = examples[example];
 
   useEffect(() => {
     if (hash) {
@@ -73,6 +56,35 @@ export default function LandingPage({ profile = 'legacy' }) {
     (state?.focusLogin ? loginLink : title).current?.focus({ preventScroll: true });
   }, [hash, key, state]);
 
+  // 구역이 화면에 들어올 때 한 번만 또렷해진다. 움직임을 줄인 환경에서는 처음부터 다 보인다.
+  useEffect(() => {
+    const page = root.current;
+    if (!page) return undefined;
+    const sections = [...page.querySelectorAll('[data-lp-reveal]')];
+    const show = node => { node.dataset.lpShown = 'true'; };
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      sections.forEach(show);
+      return undefined;
+    }
+    page.dataset.lpMotion = 'on';
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        show(entry.target);
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.12 });
+    sections.forEach(node => observer.observe(node));
+    // 키보드로 먼저 도착한 구역은 기다리지 않고 보여 준다.
+    const focused = event => { const section = event.target.closest?.('[data-lp-reveal]'); if (section) show(section); };
+    page.addEventListener('focusin', focused);
+    return () => {
+      observer.disconnect();
+      page.removeEventListener('focusin', focused);
+      delete page.dataset.lpMotion;
+    };
+  }, []);
+
   function start() {
     navigate(isV1 ? '/projects' : auth?.status === 'anonymous' ? '/login' : '/review/new');
   }
@@ -83,46 +95,118 @@ export default function LandingPage({ profile = 'legacy' }) {
     title.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' });
   }
+  // 예시 탭은 ←·→ 로 옮긴다.
+  function moveExample(event, index) {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    const next = (index + (event.key === 'ArrowRight' ? 1 : -1) + examples.length) % examples.length;
+    setExample(next);
+    document.getElementById(`lp-tab-${next}`)?.focus();
+  }
 
-  return <section className="fw-landing" ref={rootRef} aria-label="서비스 소개">
-    <a className="fw-skip-link" href="#landing-content">본문으로 바로 가기</a>
+  return <section className="lp-page" ref={root} aria-label="서비스 소개">
+    <a className="lp-skip" href="#lp-main">본문으로 이동</a>
     <SiteHeader onHome={home} onStart={start} loginRef={loginLink} onLogoutPending={setLogoutPending}
       afterLogout={() => { if (window.location.pathname === '/') navigate('/', { replace: true, state: { focusLogin: true } }); }} />
-    <main id="landing-content" tabIndex={-1}>
-      <div className="fw-container">
-        <div className="fw-intro-line"><span><i aria-hidden="true" />이미지 · 포스터 검수</span><a href="#how-it-works">기준부터 결과까지 <span aria-hidden="true">↗</span></a></div>
-        <section className="fw-scene" ref={sceneRef} aria-labelledby="fw-hero-title">
-          <div className="fw-scene-stage" ref={stageRef}>
-            <div className="fw-hero-sky">
-              <div className="fw-sky-viewport" aria-hidden="true"><img src={skyPreview} alt="" fetchPriority="high" /></div>
-              <ReviewWindow />
-            </div>
-            <div className="fw-hero-copy">
-              <div><h1 id="fw-hero-title" ref={title} tabIndex={-1}>좋은 작업이<br />좋은 마무리를<br />만날 수 있도록.</h1><p>포스터 속 작은 문구부터 놓치기 쉬운 조건까지.<br className="fw-desktop-break" /> 확정한 기준과 이미지 근거를 함께 확인하세요.</p><div className="fw-actions"><button className="fw-button fw-button-dark" disabled={logoutPending} onClick={start}>검수 시작하기 <Icon name="arrow" /></button><button className="fw-button fw-button-light" disabled={logoutPending} onClick={sample}>{sampleLabel}</button></div></div>
-              <div className="fw-hero-aside"><span className="fw-overline">A CLEARER FINISH</span><p>기준을 정하고.<br />근거를 살피고.<br />사람이 판단합니다.</p><a className="fw-scroll-hint" href="#features">아래로 이어서 보기 <span aria-hidden="true">↓</span></a></div>
-            </div>
+    <main id="lp-main" tabIndex={-1}>
+      <section className="lp-entry-hero lp-container" aria-labelledby="lp-hero-title">
+        <PixelField monochrome />
+        <div className="lp-entry-copy">
+          <p className="lp-entry-eyebrow"><span aria-hidden="true" />A workspace for your next creative</p>
+          <h1 id="lp-hero-title" ref={title} tabIndex={-1}>CREATIVE<br /><span>CHECKER</span></h1>
+          <p className="lp-entry-description">좋은 디자인의 마지막 확인.<br />포스터와 요구사항을 함께 놓고, 디테일까지 살펴보세요.</p>
+          <div className="lp-entry-actions">
+            <button type="button" className="lp-entry-start" disabled={logoutPending} onClick={start}>시작하기<Icon name="arrow" /></button>
+            <button type="button" className="lp-text-link" disabled={logoutPending} onClick={sample}>{sampleLabel}</button>
           </div>
-        </section>
-      </div>
-      <section className="fw-section fw-container" id="features" aria-labelledby="fw-features-title">
-        <div className="fw-section-heading"><span className="fw-overline">ONE PLACE, A CLEARER VIEW</span><h2 id="fw-features-title">각각 보던 정보를,<br />하나의 흐름으로.</h2><p>반복해서 확인하던 내용을 기준, 근거, 결과로 연결합니다.</p></div>
-        <div className="fw-feature-grid">{features.map(feature => <article className="fw-feature-card" key={feature.number}>
-          <FeatureArtwork kind={feature.kind} />
-          <div className="fw-feature-copy"><span className="fw-overline"><i aria-hidden="true" />{feature.number} · {feature.label}</span><h3>{feature.title}</h3><p>{feature.text}</p></div>
-        </article>)}</div>
+        </div>
+        <a href="#lp-about" className="lp-entry-scroll">SCROLL TO DISCOVER <span aria-hidden="true">↓</span></a>
       </section>
-      <section className="fw-section fw-container" aria-labelledby="fw-evidence-title">
-        <div className="fw-section-heading"><span className="fw-overline">THE DETAIL MAKES THE DIFFERENCE</span><h2 id="fw-evidence-title">같은 기준을 확인하고,<br />같은 근거를 바라보세요.</h2><p>결과만으로는 알기 어려운 차이. 원래 조건과 관측한 내용을 함께 봅니다.</p></div>
-        <div className="fw-evidence-grid">
-          <article className="fw-detail-card"><div className="fw-card-heading"><h3>확인하려는 내용</h3><span className="fw-example-label">화면 예시</span></div><span className="fw-field-caption">검수 기준</span><div className="fw-example-field">행사 기간은 10월 30일부터 11월 1일까지입니다.</div><span className="fw-field-caption">필수 안내 문구</span><div className="fw-example-field">“사전 예약 없이 누구나 참여 가능합니다.”</div><p className="fw-detail-note"><Icon name="check" />실행 전에 담당자가 항목을 검토하고 확정합니다.</p></article>
-          <article className="fw-detail-card"><div className="fw-card-heading"><h3>이미지에서 읽은 내용</h3><span className="fw-example-label">화면 예시</span></div><div className="fw-evidence-callout"><span>행사 기간</span><strong>10.30 — <mark>11.02</mark></strong><p>기준과 포스터의 종료일이 다릅니다.</p></div><p className="fw-detail-note"><Icon name="search" />문구와 위치를 확인하고 수정할 내용을 판단하세요.</p></article>
+
+      <section className="lp-about lp-container" id="lp-about" aria-labelledby="lp-about-title">
+        <span className="lp-kicker">WHAT IS CREATIVE CHECKER?</span>
+        <div className="lp-about-copy">
+          <h2 id="lp-about-title">포스터와 요구사항,<br />같은 기준으로 확인하세요.</h2>
+          <p>Creative Checker는 포스터가 제작 요구사항을 충족하는지 확인하는 검수 시스템입니다.<br /><br />PDF 문서나 직접 적은 조건을 기준으로 정리하고, 이미지에서 읽은 문구와 위치를 함께 보여줍니다. AI가 찾은 근거를 살펴보고, 최종 판단은 담당자가 내립니다.</p>
+        </div>
+        <div className="lp-formats" data-lp-reveal>
+          <article className="lp-format">
+            <div className="lp-format-top"><span className="lp-kicker">POSTER / 포스터 검수</span><span className="lp-format-legend">01 원본 · 02 읽은 자리 · 03 판정</span></div>
+            <PosterLayers />
+            <div className="lp-format-foot">
+              <p>포스터 한 장을 세 겹으로 읽습니다. 올린 이미지 위에 문구와 로고를 읽은 자리를 표시하고, 기준과 대조한 판정을 그 위에 얹습니다.</p>
+              <Link className="lp-text-link" to="/review/new">포스터 검수<Icon name="arrow" /></Link>
+            </div>
+          </article>
+          <article className="lp-format">
+            <div className="lp-format-top"><span className="lp-kicker">VIDEO / 동영상 검수</span><span className="lp-format-legend">01 장면 · 02 읽은 자리 · 03 판정</span></div>
+            <VideoLayers />
+            <div className="lp-format-foot">
+              <p>영상은 장면을 따라 읽습니다. 자막과 로고가 나온 자리와 시각을 장면마다 표시하고, 같은 방식으로 판정합니다.</p>
+              <Link className="lp-text-link" to="/video">동영상 검수<Icon name="arrow" /></Link>
+            </div>
+          </article>
         </div>
       </section>
-      <section className="fw-section fw-container" id="how-it-works" aria-labelledby="fw-how-title">
-        <div className="fw-section-heading fw-heading-with-action"><div><span className="fw-overline">FROM A POSTER TO A CLEAR ANSWER</span><h2 id="fw-how-title">시작은 가볍게.<br />확인은 차근차근.</h2></div><button className="fw-button fw-button-light" disabled={logoutPending} onClick={sample}>{sampleLabel}</button></div>
-        <ol className="fw-how-list">{[['이미지 업로드', '검수할 이미지나 포스터를 올립니다.'], ['요구사항 입력', '확인할 문구와 시각 조건을 입력합니다.'], ['검수 기준 확정', '개별 항목을 검토하고 선택합니다.'], ['결과와 근거 확인', '확정한 기준으로 검수를 실행하고 결과를 살펴봅니다.']].map(([title, text], i) => <li key={title}><span className="fw-step-index">0{i + 1}</span><h3>{title}</h3><p>{text}</p><Icon name={i === 3 ? 'check' : 'arrow'} /></li>)}</ol>
+
+      <section className="lp-demo-section" id="lp-demo" aria-labelledby="lp-demo-title">
+        <div className="lp-container">
+          <div className="lp-section-top"><span className="lp-kicker">01 / SEE THE DIFFERENCE</span><span className="lp-example-note">설명을 위한 예시 · 실제 검수 결과가 아닙니다.</span></div>
+          <div className="lp-demo-heading" data-lp-reveal>
+            <h2 id="lp-demo-title">결과만 말하지 않고,<br /><span>이유를 보여줍니다.</span></h2>
+            <p>기준, 포스터, 관측한 내용을 한 화면에.<br />직접 비교하고 다음 작업을 결정하세요.</p>
+          </div>
+          <div className="lp-demo-grid">
+            <figure className="lp-demo-image">
+              <div className="lp-demo-poster-surface">
+                <img src={demoPoster} alt="국립한글박물관 글(자)감(각): 쓰기와 도구 전시 포스터" width="1200" height="1200" loading="lazy" />
+                <div className={`lp-demo-highlight${example === 1 ? ' is-active' : ''}`}><span>전시 기간</span></div>
+              </div>
+              <figcaption className="lp-image-corner">글(자)감(각): 쓰기와 도구 · <a href="https://www.griun.co.kr/fonts/hangeul-fter" target="_blank" rel="noreferrer">이미지 출처 ↗</a></figcaption>
+            </figure>
+            <div className="lp-demo-inspector">
+              <div className="lp-demo-tabs" role="tablist" aria-label="검수 과정 예시">
+                {examples.map((item, index) => <button key={item.kind} type="button" role="tab" id={`lp-tab-${index}`} aria-selected={example === index}
+                  aria-controls="lp-example-panel" tabIndex={example === index ? 0 : -1} onClick={() => setExample(index)} onKeyDown={event => moveExample(event, index)}>
+                  <span>0{index + 1}</span>{item.label}
+                </button>)}
+              </div>
+              <div id="lp-example-panel" role="tabpanel" aria-labelledby={`lp-tab-${example}`} aria-live="polite">
+                <span className="lp-inspector-tag">{shown.tag}</span>
+                <h3>{shown.title}</h3>
+                <p>{shown.description}</p>
+                <dl>
+                  <div><dt>검수 기준</dt><dd>{shown.expected}</dd></div>
+                  <div><dt>{example === 1 ? '포스터에 적힌 내용' : '확인할 내용'}</dt><dd>{shown.actual}</dd></div>
+                </dl>
+                <div className={`lp-inspector-status is-${shown.kind}`}><Icon name={example === 1 ? 'check' : 'eye'} />{shown.status}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
-      <section className="fw-invite fw-container" aria-labelledby="fw-invite-title"><span className="fw-overline">READY WHEN YOU ARE</span><h2 id="fw-invite-title">맑게 확인하고,<br />가볍게 마무리하세요.</h2><p>오늘의 포스터에 필요한 기준과 근거.<br />Creative Checker에서 함께 확인하세요.</p><button className="fw-button fw-button-dark" disabled={logoutPending} onClick={start}>검수 시작하기 <Icon name="arrow" /></button></section>
+
+      <section className="lp-features lp-container" id="lp-features" aria-labelledby="lp-features-title">
+        <div className="lp-section-top"><span className="lp-kicker">02 / BUILT FOR THE LAST MILE</span><span className="lp-section-index" aria-hidden="true">✳</span></div>
+        <div className="lp-section-heading" data-lp-reveal>
+          <h2 id="lp-features-title">좋은 작업에 필요한<br />명확한 마무리.</h2>
+          <p>따로 보던 자료를 하나의 흐름으로 연결합니다.</p>
+        </div>
+        <div className="lp-feature-grid">{features.map(({ icon, title: heading, text, tag, Art }, index) => <article key={icon} data-lp-reveal>
+          <div className="lp-feature-icon"><Icon name={icon} /><span>0{index + 1}</span></div>
+          <div className="lp-feature-art" aria-hidden="true"><Suspense fallback={<div className="lp-feature-hold" />}><Art /></Suspense></div>
+          <h3>{heading}</h3>
+          <p>{text}</p>
+          <span className="lp-feature-tag">{tag}</span>
+        </article>)}</div>
+      </section>
+
+      <section className="lp-final-cta lp-container" aria-labelledby="lp-cta-title">
+        <span className="lp-kicker">YOUR NEXT CREATIVE, CLEARER.</span>
+        <h2 id="lp-cta-title">좋은 작업의<br />마지막 체크.</h2>
+        <button type="button" className="lp-button lp-button-dark" disabled={logoutPending} onClick={start}>검수 시작하기<Icon name="arrow" /></button>
+        <span className="lp-cta-note">포스터와 요구사항을 준비하고 검수를 시작하세요.</span>
+      </section>
     </main>
   </section>;
 }

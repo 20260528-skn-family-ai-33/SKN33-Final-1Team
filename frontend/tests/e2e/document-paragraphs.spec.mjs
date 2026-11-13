@@ -10,6 +10,15 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const base = process.env.E2E_REQUIREMENTS_URL || 'http://127.0.0.1:5177';
 
+// 포스터·동영상 검수 모두 자료 입력 전에 보안 여부와 검수 유형을 고른다. 요구사항 문서 칸이 있는 문구 검수로 연다.
+async function chooseReview(page, title = '문구 검수 자료 입력') {
+  await page.getByRole('heading', { name: '보안이 필요한 자료인가요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: '문구 검수', exact: true }).click();
+  await page.getByRole('heading', { name: title, exact: true }).waitFor();
+}
+
 for (const mode of ['resolved', 'pending_empty', 'pending_existing', 'pending_visual']) {
 test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한다 (${mode})`, { timeout: 60000 }, async t => {
   const pendingOnly = mode !== 'resolved';
@@ -106,7 +115,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     return route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new');
-  try { await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor(); }
+  try { await chooseReview(page); }
   catch (error) { throw new Error(`${error.message}\n${page.url()}\n${(await page.locator('body').innerText()).slice(0, 1800)}\n${errors.join('\n')}`); }
   const current = mode === 'pending_empty' ? '' : '직접 입력: 보존';
   await page.locator('#requirements').fill(current);
@@ -267,6 +276,7 @@ async function verifyDocx(t, mode) {
     return route.fulfill({ json: body });
   });
   await page.goto(base + (video ? '/video' : '/review/new'));
+  await chooseReview(page, video ? '숏폼 동영상 문구 검수 자료 입력' : undefined);
   await page.waitForFunction(() => document.querySelector('input[aria-label="요구사항 문서 선택"]')?.disabled === false);
   const card = page.getByRole('region', { name: '요구사항 문서 첨부' });
   const upload = page.getByLabel('요구사항 문서 선택', { exact: true });

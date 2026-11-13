@@ -10,6 +10,7 @@ import { AuthProvider } from './auth/AuthProvider.jsx';
 import { WorkspaceSession } from './workspace/WorkspaceSession.jsx';
 import './styles.css';
 import './styles/fairweather.css';
+import './styles/optimus-theme.css';
 
 // 모든 페이지에 URL 라우팅과 서버 세션 상태를 공유한다.
 createRoot(document.getElementById('root')).render(

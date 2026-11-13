@@ -81,6 +81,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
   </section>;
 
   return <section className="rv-input-page" aria-labelledby="page-title">
+    <p className="op-eyebrow"><span aria-hidden="true" />INPUT / 자료 입력</p>
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{reviewModeLabels[mode]} 자료 입력</h1>
     {previewEntry}
     <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={prepare}>

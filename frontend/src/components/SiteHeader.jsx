@@ -8,7 +8,7 @@ import { Icon } from './Icon.jsx';
 import '../styles/site-header.css';
 
 const tools = [['/review/new', '포스터 검수'], ['/video', '동영상 검수'], ['/review/tasks', '내 작업']];
-const guides = [['features', '서비스 소개'], ['how-it-works', '이용 방법']];
+const guides = [['lp-features', '서비스 소개'], ['lp-demo', '검수 예시']];
 const plainClick = event => !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
 // 소개·로그인·검수·내 작업·안내 화면이 같은 상단 바를 쓴다.

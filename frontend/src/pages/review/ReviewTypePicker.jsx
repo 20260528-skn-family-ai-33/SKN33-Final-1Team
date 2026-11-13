@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Icon } from '../../components/Icon.jsx';
+import { PixelField } from '../../components/PixelField.jsx';
 import '../../styles/review-type-picker.css';
 
 // 자료 입력 전에 고르는 검수 유형. text는 요구사항 문구 검수, logo는 원본 로고 대조, both는 둘 다(화면 이름 '종합 검수').
@@ -129,8 +130,21 @@ const securityTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, [
 const typeTiles = Object.fromEntries(TILE_MEDIA.map(media => [media, TYPE_TILES.map(tile => ({ ...tile,
   art: media === 'video' ? <VideoTypeArt mode={tile.value} /> : <TypeArt mode={tile.value} /> }))]));
 
+// 마우스를 따라 타일 그림이 입체로 기운다(--rx·--ry). 움직임을 줄인 환경과 터치 화면에서는 기울이지 않는다.
+export function tiltArt(event) {
+  if (!window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) return;
+  const tile = event.currentTarget;
+  const area = tile.getBoundingClientRect();
+  tile.style.setProperty('--ry', `${(((event.clientX - area.left) / area.width - 0.5) * 16).toFixed(2)}deg`);
+  tile.style.setProperty('--rx', `${((0.5 - (event.clientY - area.top) / area.height) * 12).toFixed(2)}deg`);
+}
+export function settleArt(event) {
+  event.currentTarget.style.removeProperty('--rx');
+  event.currentTarget.style.removeProperty('--ry');
+}
+
 // 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
-function KioskChoice({ title, tiles, labels, onSelect, onBack, backLabel, context, disabled = false }) {
+function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel, context, disabled = false }) {
   useEffect(() => {
     function choose(event) {
       if (disabled || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -145,15 +159,16 @@ function KioskChoice({ title, tiles, labels, onSelect, onBack, backLabel, contex
   }, [disabled, onSelect, tiles]);
 
   return <section className="rv-type-picker" aria-labelledby="page-title">
+    <PixelField monochrome />
     {onBack && <button type="button" className="rv-type-back" disabled={disabled} onClick={onBack}>
       <Icon name="arrow" />{backLabel}</button>}
     <div className="rv-type-heading">
-      {context && <span className="rv-type-context">{context}</span>}
+      <p className="op-eyebrow"><span aria-hidden="true" />{kicker}{context && <span className="rv-type-context">{context}</span>}</p>
       <h1 id="page-title" tabIndex={-1}>{title}</h1>
     </div>
     <div className="rv-type-tiles">
       {tiles.map(tile => <button key={tile.value} type="button" className="rv-type-tile" disabled={disabled}
-        aria-label={labels[tile.value]} onClick={() => onSelect(tile.value)}>
+        aria-label={labels[tile.value]} onClick={() => onSelect(tile.value)} onPointerMove={tiltArt} onPointerLeave={settleArt}>
         <span className="rv-type-art" aria-hidden="true">{tile.art}</span>
         <span className="rv-type-label">{tile.label}{tile.note && <small>({tile.note})</small>}</span>
       </button>)}
@@ -163,12 +178,12 @@ function KioskChoice({ title, tiles, labels, onSelect, onBack, backLabel, contex
 
 // media: 'poster'(기본) | 'video'. 동영상 검수 화면은 영상 프레임 그림을 쓴다.
 export function SecurityPicker({ onSelect, disabled = false, media = 'poster' }) {
-  return <KioskChoice title="보안이 필요한 자료인가요?" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
+  return <KioskChoice title="보안이 필요한 자료인가요?" kicker="SECURITY / 자료 구분" tiles={securityTiles[media] || securityTiles.poster} labels={securityModeLabels}
     onSelect={onSelect} disabled={disabled} />;
 }
 
 export default function ReviewTypePicker({ onSelect, onBack, security, disabled = false, media = 'poster' }) {
-  return <KioskChoice title="검수할 항목을 선택해 주세요" tiles={typeTiles[media] || typeTiles.poster} labels={reviewModeLabels}
+  return <KioskChoice title="검수할 항목을 선택해 주세요" kicker="REVIEW TYPE / 검수 유형" tiles={typeTiles[media] || typeTiles.poster} labels={reviewModeLabels}
     onSelect={onSelect} onBack={onBack} backLabel="보안 여부 다시 고르기" disabled={disabled}
     context={security && <>{security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</>} />;
 }

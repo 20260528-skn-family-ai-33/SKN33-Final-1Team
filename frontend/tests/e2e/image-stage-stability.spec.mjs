@@ -125,6 +125,12 @@ async function unstableSizes(page) {
 for (const scale of SCALES) test(`입력 화면(배율 ${scale * 100}%): 어떤 포스터 모양·칸 크기에서도 이미지 칸이 떨리거나 넘치지 않는다`, async t => {
   const { page } = await fixture(t, scale);
   await page.goto(`${baseURL}/review/new`);
+  // 이미지 칸은 보안 여부와 검수 유형을 고른 뒤에 나온다. 요구사항·문서·로고 칸이 모두 있는 종합 검수 화면에서 잰다.
+  await page.getByRole('heading', { name: '보안이 필요한 자료인가요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: '종합 검수', exact: true }).click();
+  await page.getByRole('heading', { name: '종합 검수 자료 입력', exact: true }).waitFor();
   const problems = [];
   for (const [width, height] of SHAPES) {
     await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles(await poster(page, width, height));

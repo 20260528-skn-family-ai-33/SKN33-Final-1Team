@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOptionalAuth } from '../../auth/AuthProvider.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { reviewModeLabels, SecurityArt, securityModeLabels, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
+import { useTilt } from '../../components/LayerFigure.jsx';
+import { PixelField } from '../../components/PixelField.jsx';
+import { reviewModeLabels, SecurityArt, securityModeLabels, settleArt, tiltArt, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
 import { LogoThumb, MediaArt, PlayIcon, SampleFrame, SamplePoster } from './SampleArt.jsx';
 import {
   CAPTIONS, firstIssue, formatSeconds, LOGO_STEPS, MEDIA_LABELS, POSTER_SIZE, RESULTS, REVIEW_STEPS, runningView, sampleItems,
@@ -118,9 +120,12 @@ function Kiosk({ title, tiles, onPick, back, context }) {
 
   return <section className="sd-kiosk" aria-labelledby="page-title">
     {back && <button type="button" className="sd-kiosk-back" onClick={back.onClick}><span aria-hidden="true">←</span> {back.label}</button>}
-    <div className="sd-kiosk-heading">{context && <div>{context}</div>}<h1 id="page-title" tabIndex={-1}>{title}</h1></div>
+    <PixelField monochrome />
+    <div className="sd-kiosk-heading"><p className="op-eyebrow"><span aria-hidden="true" />SAMPLE / 샘플 체험{context}</p>
+      <h1 id="page-title" tabIndex={-1}>{title}</h1></div>
     <div className="sd-tiles">
-      {tiles.map(tile => <button key={tile.value} type="button" className="sd-tile" aria-label={tile.label} onClick={() => onPick(tile.value)}>
+      {tiles.map(tile => <button key={tile.value} type="button" className="sd-tile" aria-label={tile.label} onClick={() => onPick(tile.value)}
+        onPointerMove={tiltArt} onPointerLeave={settleArt}>
         <span className="sd-tile-art" aria-hidden="true">{tile.art}</span>
         <span className="sd-tile-label">{tile.label}</span>
       </button>)}
@@ -172,16 +177,25 @@ function InputScreen({ state, onType, onStart }) {
   </section>;
 }
 
-function PosterScan() {
-  return <figure className="sd-scan">
-    <div className="sd-scan-stage"><div className="sd-scan-sheet"><SamplePoster decorative />
-      <span className="sd-scan-zoom"><SamplePoster decorative /></span><span className="sd-scan-lens" /></div></div>
+// 실제 진행 화면처럼 포스터를 3D로 눕히고, 단계(depth 0~2)에 따라 유리판 '읽은 자리'·'판정'이 떠오른다. 무대는 마우스를 따라 조금 기운다.
+function PosterScan({ depth = 0 }) {
+  const tilt = useTilt();
+  return <figure className="sd-scan" data-depth={depth}>
+    <div className="sd-scan-stage" ref={tilt}><div className="sd-scan-sheet"><SamplePoster decorative />
+      <span className="sd-scan-zoom"><SamplePoster decorative /></span><span className="sd-scan-lens" />
+      <span className="sd-plane is-source" aria-hidden="true"><b>01 원본</b></span>
+      <span className="sd-plane is-read" aria-hidden="true"><i /><b>02 읽은 자리</b></span>
+      <span className="sd-plane is-verdict" aria-hidden="true"><b>03 판정</b></span>
+      {[[0, 0], [100, 0], [0, 100], [100, 100]].map(([left, top]) => <span key={`${left}-${top}`} className="sd-post"
+        aria-hidden="true" style={{ left: `${left}%`, top: `${top}%` }} />)}
+    </div></div>
     <figcaption><span>검수 대상 포스터</span><span>첨부 이미지</span></figcaption>
   </figure>;
 }
 
-function FilmScanner({ scanPart, caption }) {
-  return <div className="sd-film-scanner" aria-hidden="true">
+function FilmScanner({ scanPart, caption, depth = 0 }) {
+  const tilt = useTilt();
+  return <div className="sd-film-scanner" aria-hidden="true" data-depth={depth} ref={tilt}>
     <div className="sd-film"><div className="sd-film-track">
       <div className="sd-film-cells">{Array.from({ length: 8 }, (_, index) =>
         <span key={index} className={`sd-film-cell${scanPart * 8 > index + .2 ? ' is-read' : ''}`}><SampleFrame t={Math.round(index * 29 / 7)} /></span>)}</div>
@@ -199,6 +213,8 @@ function RunningScreen({ state, tick, elapsed }) {
   const logoOnly = mode === 'logo';
   const view = runningView(tick, state);
   const time = formatSeconds(elapsed);
+  // 유리판이 떠오르는 정도: 화면을 훑는 단계가 있으면 그 진행에, 없으면(포스터 문구 검수) 진행률에 맞춘다.
+  const depth = video || logoOnly ? (view.scanPart >= 1 ? 2 : view.scanPart > 0 ? 1 : 0) : view.percent >= 67 ? 2 : view.percent >= 33 ? 1 : 0;
   const facts = logoOnly
     ? video ? [['영상 길이', formatSeconds(VIDEO.seconds)], ['해상도', `${VIDEO.width}×${VIDEO.height}`], ['원본 로고', '1개'], ['경과 시간', time]]
       : [['해상도', POSTER_SIZE], ['원본 로고', '1개'], ['검수 범위', '로고 위치 후보'], ['경과 시간', time]]
@@ -208,7 +224,7 @@ function RunningScreen({ state, tick, elapsed }) {
     {/* 진행 카드 전체를 알림 영역으로 두면 0.28초마다 바뀌는 숫자까지 읽어 무거워진다. 단계 제목이 바뀔 때만 알린다. */}
     <p className="sd-sr-only" role="status">{view.title}</p>
     <div className="sd-progress-card">
-      {video ? <FilmScanner scanPart={view.scanPart} caption={view.filmCaption} /> : <PosterScan />}
+      {video ? <FilmScanner scanPart={view.scanPart} caption={view.filmCaption} depth={depth} /> : <PosterScan depth={depth} />}
       <span className="sd-eyebrow">{video ? 'VIDEO' : 'POSTER'}{logoOnly ? ' LOGO' : ''} REVIEW IN PROGRESS</span>
       <h1 id="page-title" tabIndex={-1}>{view.title}</h1>
       <p className="sd-progress-message">{view.message}</p>

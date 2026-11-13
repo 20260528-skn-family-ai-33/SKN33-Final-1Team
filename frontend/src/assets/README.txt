@@ -5,3 +5,8 @@ Public preview: https://uiverse.io/design/systems/fairweather/assets/screenshots
 Only the publicly displayed preview image is included. No paid system.css, font package or sky.png source was retrieved. The landing page uses CSS viewports of the visible sky; the product window and controls are React components.
 
 Color tokens measured with zanwei/design-dna: canvas #f2f2f1, dots #dcdcd9 (2px every 8px), panel #ffffff, ink #171717, muted #6e6e6b, field #ececea, live #1db954. Typeface and spacing are inferred from the preview.
+
+Landing page assets (2026-11-12, first-page proposal)
+landing-demo-poster.jpg: the exhibition poster used in the team's first-page proposal ("글(자)감(각): 쓰기와 도구", National Hangeul Museum), resized from the 5906px original embedded in the proposal file to 1200px. Shown with its source link (https://www.griun.co.kr/fonts/hangeul-fter) as in the proposal. Confirm usage rights before a public release.
+landing-video-frame-1..4.jpg: frames at 0:02, 0:05, 0:07 and 0:10 of sample-shortform.mp4 (270x480), used by the video 3D figure.
+fairweather-public-preview.png and poster-review-example.png are no longer imported by the app.
