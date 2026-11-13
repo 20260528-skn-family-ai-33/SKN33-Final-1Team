@@ -55,6 +55,8 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   });
   await page.goto(base + '/review/tasks');
   const row = name => page.getByRole('row').filter({ hasText: name });
+  await row('대기 중인 문서').waitFor();
+  assert.equal(await page.getByRole('heading', { name: 'PDF 묶음 분석' }).count(), 0);
   await row('대기 중인 문서').getByRole('button', { name: '대기 취소' }).click();
   await row('대기 중인 문서').getByText('취소됨', { exact: true }).waitFor();
   await row('방금 시작된 문서').getByRole('button', { name: '대기 취소' }).click();

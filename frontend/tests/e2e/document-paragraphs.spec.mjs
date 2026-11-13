@@ -281,6 +281,8 @@ async function verifyDocx(t, mode) {
   const card = page.getByRole('region', { name: '요구사항 문서 첨부' });
   const upload = page.getByLabel('요구사항 문서 선택', { exact: true });
   assert.match(await upload.getAttribute('accept'), /\.docx/);
+  assert.equal(await upload.getAttribute('multiple'), null);
+  assert.equal(await card.getByRole('link', { name: 'PDF 여러 개 올리기' }).count(), 0);
   await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MiB', { exact: true }).waitFor();
   await card.getByText(/별도로 보관한 Word 원본에서 확인해 주세요/).waitFor();
   if (mode === 'video-drop') {

@@ -276,7 +276,6 @@ export default function DocumentInput({ documentBusy, documentProgress, document
     </div>
     {!documentBusy && <p className="rv-form-hint">DOCX는 본문 글자만 읽습니다. 이미지와 배치는 별도로 보관한 Word 원본에서 확인해 주세요.</p>}
     {!documentBusy && documentResumeId && kind === 'poster' && <Link className="text-btn" to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>저장된 문서 분석 보기</Link>}
-    {kind === 'poster' && !off && <Link className="text-btn" to="/review/tasks#pdf-batches">PDF 여러 개 올리기</Link>}
     <ErrorMessage message={documentError} />
     {children}
   </section>;
