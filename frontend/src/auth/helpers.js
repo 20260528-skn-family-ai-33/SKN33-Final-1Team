@@ -19,6 +19,11 @@ export function loginDestination(from) {
   return `${from.pathname}${search}${hash}`;
 }
 
+// 로그인 전에 열려던 검수 화면이 있는지. 없으면 로그인 뒤 자료 종류(포스터·동영상)부터 고른다.
+export function hasLoginReturn(from) {
+  return Boolean(from && typeof from === 'object' && loginReturnPaths.has(from.pathname));
+}
+
 // 로그인 실패, CSRF 검증 실패, 연결 장애를 서로 다른 안내로 표시한다.
 export function authErrorMessage(error, action = 'login') {
   const code = normalizedCode(error);

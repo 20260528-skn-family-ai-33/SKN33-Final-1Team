@@ -4,8 +4,8 @@ import { fetchJson, fetchResponse } from '../../api/client.js';
 import samplePoster from '../../assets/sample-poster.png';
 import sampleLogo from '../../assets/sample-organizer-logo.png';
 import { initialState, workflowReducer, canConfirm, canRun, logoDetectorFor, modelRouteFor } from './workflow.js';
-import { mergeDocumentRequirements } from './documentRequirements.js';
-import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, watchDocumentDeadline } from './frameworkDocument.js';
+import { combinedRequirementLines, mergeDocumentRequirements } from './documentRequirements.js';
+import { addDirectRequirements, extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE, watchDocumentDeadline } from './frameworkDocument.js';
 import { frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { makeInspectionCopy } from './posterImageCopy.js';
@@ -51,6 +51,8 @@ export function ReviewProvider({ children }) {
   const [sampleBusy, setSampleBusy] = useState(false);
   const [fileBusy, setFileBusy] = useState(false);
   const [documentBusy, setDocumentBusy] = useState(false);
+  // documentBusy 가운데 요구사항 문서 추출 중인 경우. 추출은 서버에서 따로 돌아 포스터·로고·요구사항 입력은 막지 않는다.
+  const [documentExtracting, setDocumentExtracting] = useState(false);
   const [documentCancelBusy, setDocumentCancelBusy] = useState(false);
   const [documentProgress, setDocumentProgress] = useState(null);
   const [documentNotice, setDocumentNotice] = useState('');
@@ -154,15 +156,18 @@ export function ReviewProvider({ children }) {
     setSampleBusy(false);
   }, []);
 
-  const cancelDocument = useCallback(() => {
+  const cancelDocument = useCallback((options = {}) => {
+    // 입력 반영만 중단한 경우 서버에 접수된 실행을 다시 열 수 있도록 ID를 남긴다.
+    const resumeId = options?.preserveResume === false ? '' : documentResumeId || documentProgress?.runId || '';
     documentRequest.current?.abort();
     documentRequest.current = null;
     setDocumentBusy(false);
+    setDocumentExtracting(false);
     setDocumentProgress(null);
     setDocumentNotice('');
-    setDocumentResumeId('');
+    setDocumentResumeId(resumeId);
     setDocumentError('');
-  }, []);
+  }, [documentProgress, documentResumeId]);
 
   async function cancelQueuedDocument() {
     const controller = documentRequest.current;
@@ -172,10 +177,12 @@ export function ReviewProvider({ children }) {
     try {
       await frameworkJson(`/runs/${encodeURIComponent(runId)}/cancel`, { method: 'POST', signal: controller.signal });
       if (controller.signal.aborted || (documentRequest.current && documentRequest.current !== controller)) return;
-      for (const attempt of documentAttempts.current.values()) {
-        if (attempt.runId === runId) { delete attempt.runId; delete attempt.extractionKey; }
+      for (const [key, attempt] of documentAttempts.current) {
+        if (attempt.runId !== runId) continue;
+        if (attempt.body) documentAttempts.current.delete(key);
+        else { delete attempt.runId; delete attempt.extractionKey; }
       }
-      cancelDocument();
+      cancelDocument({ preserveResume: false });
       setDocumentNotice('대기 작업을 취소했습니다. 원본과 기록은 보존됩니다.');
     } catch (err) {
       if (!controller.signal.aborted) setDocumentError(err.message);
@@ -183,7 +190,7 @@ export function ReviewProvider({ children }) {
   }
 
   async function selectDocument(files, projectId) {
-    cancelDocument();
+    cancelDocument({ preserveResume: false });
     invalidateSample();
     if (documentInput.current) documentInput.current.value = '';
     if (files.length !== 1) { setDocumentError('요구사항 문서(PDF·DOCX)는 한 번에 1개만 선택해 주세요.'); return; }
@@ -195,6 +202,7 @@ export function ReviewProvider({ children }) {
     const controller = new AbortController();
     documentRequest.current = controller;
     setDocumentBusy(true);
+    setDocumentExtracting(true);
     setDocumentProgress({ percent: 0, stage: 'uploading', message: '문서를 업로드하고 있습니다.', startedAt: Date.now(), source: file.name });
     setDocumentNotice(`${file.name} · 분석이 끝나면 추출된 요구사항을 확인할 수 있습니다.`);
     const deadline = watchDocumentDeadline(controller);
@@ -203,7 +211,7 @@ export function ReviewProvider({ children }) {
       if (controller.signal.aborted) return;
       const isDocx = requirementFile.type === DOCX_MEDIA_TYPE;
       const result = await extractDocumentWithProgress(requirementFile, { projectId, attempts: documentAttempts.current, signal: controller.signal,
-        modelRoute, onAccepted: id => { deadline.runId = id; }, onProgress: update => {
+        modelRoute, onAccepted: id => { deadline.runId = id; setDocumentResumeId(id); }, onProgress: update => {
         if (!controller.signal.aborted && documentRequest.current === controller) {
           const progress = deadline.update(update);
           setDocumentProgress(previous => ({ ...previous, ...progress }));
@@ -218,11 +226,13 @@ export function ReviewProvider({ children }) {
           ? condition.criterion_ids.filter(id => typeof id === 'string' && id) : [];
         criterionIdsByText.set(text, [...new Set([...(criterionIdsByText.get(text) || []), ...ids])]);
       }
-      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: false,
+      // 추출한 항목은 처음부터 모두 검수에 포함한다. 뺄 항목만 화면에서 체크를 푼다.
+      const rows = sources.map((row, index) => ({ ...row, id: index, originalText: row.text, selected: true,
         criterionIds: criterionIdsByText.get(row.text) || [] }));
       dispatch({ type: 'input', field: 'documentRun', value: { id: result.framework.run_id,
         originalCount: rows.length, rows, filename: file.name, projectId, modelRoute } });
       setDocumentProgress(null);
+      setDocumentResumeId('');
       const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
       setDocumentNotice(`추출을 완료했어요. ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
     } catch (err) {
@@ -234,14 +244,14 @@ export function ReviewProvider({ children }) {
       }
     } finally {
       deadline.stop();
-      if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); }
+      if (documentRequest.current === controller) { documentRequest.current = null; setDocumentBusy(false); setDocumentExtracting(false); }
     }
   }
 
   // 샘플 이미지와 요구사항을 함께 읽고 최신 요청일 때만 화면에 적용한다.
   const sample = useCallback(async () => {
     if (sampleRequest.current) return;
-    cancelDocument();
+    cancelDocument({ preserveResume: false });
     const controller = new AbortController();
     sampleRequest.current = controller;
     const epoch = ++generation.current;
@@ -341,7 +351,7 @@ export function ReviewProvider({ children }) {
   }
 
   function clearDocument() {
-    cancelDocument();
+    cancelDocument({ preserveResume: false });
     inputChange('documentRun', null);
   }
 
@@ -404,7 +414,7 @@ export function ReviewProvider({ children }) {
     navigateToDocumentRun();
   }
 
-  function navigateToDocumentRun(criterionIds = null) {
+  function navigateToDocumentRun(criterionIds = null, reviewStarting = false) {
     if (documentRequest.current || sampleBusy || fileBusy) return;
     setError('');
     if (!state.documentRun) return;
@@ -421,7 +431,10 @@ export function ReviewProvider({ children }) {
     setInputRunId(state.documentRun.id);
     const runId = state.documentRun.id;
     setSearchParams({ framework: runId }, {
-      state: criterionIds ? { pdfSelection: { runId, criterionIds } } : null,
+      state: {
+        reviewStarting,
+        ...(criterionIds ? { pdfSelection: { runId, criterionIds } } : {}),
+      },
     });
   }
 
@@ -438,9 +451,9 @@ export function ReviewProvider({ children }) {
     const selectedRows = doc?.rows.filter(row => row.selected && row.text.trim()) || [];
     if (!direct && selectedRows.length && selectedRows.every(row => row.text.trim() === row.originalText)) {
       if (doc.originalCount === selectedRows.length) {
-        openDocumentRun();
+        navigateToDocumentRun(null, true);
       } else if (selectedRows.every(row => row.criterionIds?.length)) {
-        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))]);
+        navigateToDocumentRun([...new Set(selectedRows.flatMap(row => row.criterionIds))], true);
       } else {
         setError('선택한 항목의 원문 연결을 확인할 수 없습니다. PDF 원문과 기준 확인에서 항목을 선택해 주세요.');
       }
@@ -454,7 +467,20 @@ export function ReviewProvider({ children }) {
       setError('문서를 분석한 뒤 보안 여부가 바뀌었어요. 요구사항 문서를 다시 첨부해 주세요.');
       return;
     }
-    const lines = [...new Set([...direct.split(/\r?\n/), ...selectedRows.map(row => row.text)].map(line => line.trim()).filter(Boolean))];
+    if (direct && selectedRows.length && selectedRows.every(row => row.text.trim() === row.originalText)) {
+      if (direct.length > 6000 || direct.split(/\r?\n/).filter(line => line.trim()).length > 100) {
+        setError('직접 입력한 요구사항을 6,000자 및 100개 이내로 정리해 주세요.');
+      } else if (doc.originalCount !== selectedRows.length && !selectedRows.every(row => row.criterionIds?.length)) {
+        setError('선택한 항목의 원문 연결을 확인할 수 없습니다. PDF 원문과 기준 확인에서 항목을 선택해 주세요.');
+      } else {
+        const criterionIds = doc.originalCount === selectedRows.length
+          ? null : [...new Set(selectedRows.flatMap(row => row.criterionIds))];
+        startTextReview(direct, { runId: doc.id, criterionIds });
+      }
+      return;
+    }
+    // 자료 입력에서 문서 문구 자체를 바꾼 경우에는 바뀐 문구로 새 기준 초안을 만든다.
+    const lines = combinedRequirementLines(direct, selectedRows);
     const requirements = lines.join('\n');
     if (!requirements) { setError('요구사항을 입력하거나 문서에서 추출한 항목을 선택해 주세요.'); return; }
     if (requirements.length > 6000 || lines.length > 100) { setError('검수 요구사항을 6,000자 및 100개 이내로 정리해 주세요.'); return; }
@@ -481,7 +507,7 @@ export function ReviewProvider({ children }) {
     }
   }
 
-  async function startTextReview(text) {
+  async function startTextReview(text, addition = null) {
     if (documentRequest.current) return;
     if (!projectId) { setError('요구사항을 저장할 프로젝트를 선택해 주세요.'); return; }
     const controller = new AbortController();
@@ -489,24 +515,32 @@ export function ReviewProvider({ children }) {
     setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setDocumentResumeId(''); setError('');
     setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now(), source: '직접 입력한 요구사항' });
     const deadline = watchDocumentDeadline(controller);
+    const onProgress = update => {
+      if (!controller.signal.aborted && documentRequest.current === controller) {
+        const progress = deadline.update(update);
+        setDocumentProgress(previous => ({ ...previous, ...progress }));
+      }
+    };
     try {
       await requirePosterReview({ signal: controller.signal, freeText: true });
-      const result = await extractTextWithProgress(text, { projectId, attempts: documentAttempts.current, signal: controller.signal,
-        modelRoute: modelRouteFor(state.securityMode), onAccepted: id => { deadline.runId = id; },
-        onProgress: update => {
-          if (!controller.signal.aborted && documentRequest.current === controller) {
-            const progress = deadline.update(update);
-            setDocumentProgress(previous => ({ ...previous, ...progress }));
-          }
-        } });
+      const options = { attempts: documentAttempts.current, signal: controller.signal, onProgress,
+        onAccepted: id => { deadline.runId = id; setDocumentResumeId(addition?.runId || id); } };
+      let runId = addition?.runId;
+      if (addition) {
+        await addDirectRequirements(runId, addition.criterionIds, text, options);
+      } else {
+        const result = await extractTextWithProgress(text, { ...options, projectId, modelRoute: modelRouteFor(state.securityMode) });
+        runId = result.framework.run_id;
+      }
       if (controller.signal.aborted || documentRequest.current !== controller) return;
-      setInputRunId(result.framework.run_id);
+      setInputRunId(runId);
       setDocumentProgress(null);
-      setSearchParams({ framework: result.framework.run_id });
+      setDocumentResumeId('');
+      setSearchParams({ framework: runId }, { state: { reviewStarting: true } });
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentProgress(null);
-        setDocumentResumeId(err.runId || deadline.runId);
+        setDocumentResumeId(addition?.runId || err.runId || deadline.runId);
         setError(deadline.expired ? '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.' : err.message);
       }
     } finally {
@@ -562,7 +596,7 @@ export function ReviewProvider({ children }) {
   function newReview() {
     clearSavedReview();
     invalidateSample();
-    cancelDocument();
+    cancelDocument({ preserveResume: false });
     fileValidation.current += 1;
     documentAttempts.current.clear();
     dispatch({ type: 'reset' });
@@ -586,7 +620,7 @@ export function ReviewProvider({ children }) {
   const value = {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
-    documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
+    documentBusy, documentExtracting, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
     state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
     dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,

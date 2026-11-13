@@ -12,7 +12,60 @@
 @media(max-width:760px){.image-stage{border-radius:17px}.image-stage-heading{padding:14px 16px;min-height:68px}.image-stage-viewport{height:440px}.image-stage-original{display:none}.image-stage-toolbar{padding:10px 12px}.image-stage .image-stage-zoom select{font-size:16px;width:123px}.image-stage-empty{padding:32px 20px}}
 @media(prefers-reduced-motion:reduce){.image-stage *{scroll-behavior:auto;transition:none}}
 
-.image-stage-tools { display: flex; align-items: center; gap: 12px; }
+.image-stage-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 12px; }
+/* 제목 상자를 뺀 화면(heading=false)에서 확대 버튼 옆에 두는 짧은 정보. */
+.image-stage-note { flex: 1; min-width: 0; overflow: hidden; color: #6e6e6b; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
 .image-stage .image-stage-focus { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 5px 9px; border: 1px solid #e3e3df; background: #fff; border-radius: 7px; color: #171717; font-size: 11px; white-space: nowrap; }
 .image-stage .image-stage-focus:hover:enabled { background: #f5f5f2; }
 .image-stage-focus .icon { width: 13px; height: 13px; }
+
+/* ── 근거 상자 강조(결과 화면·보고서): image-stage--emphasis ──
+   · 판정 색 선을 상자 '바깥'에 긋는다 → 선이 글자를 덮지 않고, 상자 안쪽이 곧 가리키는 범위다.
+   · 색 선 안에 흰 실선, 밖에 흰 띠와 어두운 실선을 둘러 밝은 바탕·어두운 바탕·선과 같은 색 바탕 어디서나 보인다.
+   · 고른 상자는 선을 굵게 하고 상자 밖을 어둡게 해서(image-stage-dim) 한눈에 찾게 한다. 상자 안에는 색을 입히지 않아 원본 그대로 보인다. */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box { --box-color: #177d45; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-review { --box-color: #806a28; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-fail { --box-color: #a34f3e; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-not_applicable,
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-skipped { --box-color: #5f5f5a; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box:not(.is-excluded) { border: 0; border-radius: 1px; background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%), 0 0 0 2px var(--box-color), 0 0 0 3.5px #fff, 0 0 0 4.5px rgb(17 17 17 / 58%); }
+/* 판정이 붙지 않은 상자(영상에서 읽은 글자 줄)는 가늘게 긋는다 */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-plain:not(.is-selected) { box-shadow: 0 0 0 1.5px var(--box-color), 0 0 0 2.5px rgb(255 255 255 / 85%); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box:not(.is-excluded):hover,
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box:not(.is-excluded):focus-visible { background: rgb(255 255 255 / 10%); outline: 2px solid #fff; outline-offset: 5px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 80%), 0 0 0 3px var(--box-color), 0 0 0 4.5px #fff, 0 0 0 5.5px rgb(17 17 17 / 62%); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected { border: 0; background: transparent; z-index: 2;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 85%), 0 0 0 3px var(--box-color), 0 0 0 5px #fff, 0 0 0 6px rgb(17 17 17 / 66%), 0 8px 26px 6px rgb(0 0 0 / 38%); }
+/* 고른 상자에서 바깥으로 퍼지는 고리 */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected::after { content: ''; position: absolute; inset: -7px; border: 2px solid var(--box-color); border-radius: 3px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 70%); pointer-events: none; opacity: 0; animation: image-stage-ping 1.9s cubic-bezier(.2, .7, .2, 1) infinite; }
+@keyframes image-stage-ping { 0% { inset: -7px; opacity: .9; } 70%, 100% { inset: -22px; opacity: 0; } }
+/* 이름표: 상자 바깥 선 위에 붙는 판정 색 꼬리표. 흰 띠와 어두운 실선으로 어느 바탕에서도 읽힌다. */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box > span { left: -4.5px; bottom: calc(100% + 4.5px); max-width: 220px; padding: 3px 7px; border-radius: 3px 3px 0 0;
+  font-size: 11px; font-weight: 700; line-height: 1.25; background: var(--box-color); color: #fff; box-shadow: 0 0 0 1px #fff, 0 0 0 2px rgb(17 17 17 / 58%); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-right > span { left: auto; right: -4.5px; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected > span { left: -6px; bottom: calc(100% + 6px); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected.is-right > span { left: auto; right: -6px; }
+/* 판정이 붙지 않은 상자의 이름표(영상에서 읽은 글자)는 작고 조용하게 */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-plain:not(.is-selected) > span { left: -2.5px; bottom: calc(100% + 2.5px); padding: 2px 5px; font-size: 10px; font-weight: 600; box-shadow: 0 0 0 1px rgb(255 255 255 / 85%); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-plain.is-right:not(.is-selected) > span { left: auto; right: -2.5px; }
+/* 고른 상자와 같은 자리에 겹친 상자는 선과 이름표를 그리지 않는다(누를 자리는 고른 상자가 맡는다) */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-covered { box-shadow: none; border: 0; pointer-events: none; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-covered > span { display: none; }
+/* 위에 두면 다른 근거 상자를 가릴 때는 이름표를 아래에 붙인다 */
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-below > span { bottom: auto; top: calc(100% + 4.5px); border-radius: 0 0 3px 3px; }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected.is-below > span { bottom: auto; top: calc(100% + 6px); }
+.image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-plain.is-below:not(.is-selected) > span { bottom: auto; top: calc(100% + 2.5px); }
+/* 고른 상자 밖을 덮는 어둠(고른 상자 자리만 뚫려 있다) */
+.image-stage-dim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: rgb(10 10 10 / 38%); animation: image-stage-dim-in .26s ease-out both; }
+@keyframes image-stage-dim-in { from { opacity: 0; } }
+/* '상자 맞춤' 단추: 켜면 다듬은 상자, 끄면 받은 그대로의 상자 */
+.image-stage .image-stage-fit-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 5px 10px; border: 1px solid #e3e3df; border-radius: 7px; background: #fff; color: #171717; font-size: 11px; white-space: nowrap; }
+.image-stage .image-stage-fit-toggle::before { content: ''; width: 7px; height: 7px; border: 1.5px solid currentColor; border-radius: 50%; }
+.image-stage .image-stage-fit-toggle[aria-pressed='true']::before { background: currentColor; }
+.image-stage .image-stage-fit-toggle:hover { background: #f5f5f2; }
+@media (prefers-reduced-motion: reduce) {
+  .image-stage.image-stage--emphasis .image-stage-surface .image-stage-box.is-selected::after { animation: none; inset: -9px; opacity: .55; }
+  .image-stage-dim { animation: none; }
+}

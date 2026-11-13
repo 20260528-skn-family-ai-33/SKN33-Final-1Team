@@ -23,6 +23,7 @@
 .rv-video .rv-video-input-column { min-width: 0; align-self: start; }
 .rv-video .rv-video-stage .image-stage-viewport { display: grid; place-items: center; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
 .rv-video .rv-video-stage .image-stage-viewport:has(.rv-video-preview) { background: #e9e9e6; }
+.rv-video .rv-video-stage.image-stage--bare .image-stage-viewport:has(.rv-video-preview) { background: transparent; }
 .rv-video .rv-video-stage .rv-input-empty { min-height: 0; height: 100%; }
 .rv-video .rv-video-stage .rv-input-empty > * { flex-shrink: 0; }
 .rv-video .rv-video-preview { display: block; max-width: calc(100% - 32px); max-height: calc(100% - 32px); border-radius: 8px; background: #171717; box-shadow: 0 10px 28px #17171726; }
@@ -139,6 +140,7 @@
 .rv-video .rv-video-logo-inline { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 0; max-width: 60%; }
 .rv-video .rv-video-logo-inline .rv-video-inline-warning { max-width: 560px; padding: 6px 10px; }
 .rv-video .rv-video-logo-inline .rv-video-inline-warning { margin: 0; }
+.rv-video .rv-video-logo-inline-help { max-width: 560px; margin: 0; color: #6e6e6b; font-size: 10px; line-height: 1.5; text-align: right; }
 .rv-video .rv-video-logo-inline-item { display: flex; align-items: center; gap: 12px; padding: 5px 5px 5px 12px; border: 1px solid #e3e3df; border-radius: 12px; background: #fff; font-size: 11px; }
 .rv-video .rv-video-logo-inline-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .rv-video .rv-video-logo-inline-title .icon { width: 15px; height: 15px; color: #6e6e6b; }
@@ -152,7 +154,8 @@
    줄지 않아(ImageStage가 현재 너비로 캔버스를 잡음) 오른쪽 검수 요구사항 칸을 덮는다. */
 .rv-video .rv-video-center { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .rv-video .rv-video-center > * { min-width: 0; }
-.rv-video .rv-video-evidence-stage .image-stage-viewport, .rv-video .rv-video-player .image-stage-viewport { height: 372px; }
+/* 근거 프레임과 원본 영상은 제목 상자 없이 크게 보여 준다(시각·표본 정보는 아래 도구 줄에). */
+.rv-video .rv-video-evidence-stage .image-stage-viewport, .rv-video .rv-video-player .image-stage-viewport { height: clamp(440px, calc(100dvh - 340px), 640px); }
 .rv-video .rv-video-evidence-stage .image-stage-box.is-excluded { --box-color: #5f5f5a; border-style: dashed; }
 .rv-video .rv-video-rail { border-radius: 17px; }
 .rv-video .rv-video-rail-heading { display: flex; align-items: center; justify-content: space-between; gap: 9px; padding: 13px 16px; border-bottom: 1px solid var(--result-line); }
@@ -164,14 +167,11 @@
 .rv-video .rv-video-verdict { border-top: 1px solid var(--result-line); }
 .rv-video .rv-video-verdict-trigger { display: flex; align-items: center; gap: 9px; width: 100%; padding: 11px 4px; border: 0; background: #fff; text-align: left; }
 .rv-video .rv-video-verdict-trigger strong { flex: 1; min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
-.rv-video .rv-video-verdict-trigger[aria-expanded=true] { background: #f4f4f0; }
+.rv-video .rv-video-verdict-trigger:hover { background: #f9f9f6; }
+.rv-video .rv-video-verdict-trigger.is-selected { background: #f4f4f0; }
 .rv-video .rv-video-verdict-index { color: var(--result-muted); font: 10px var(--font-signal); }
 .rv-video .rv-video-verdict-detail { padding: 9px 11px 12px; border-left: 2px solid #806a28; background: #fbfbf9; }
-.rv-video .rv-video-verdict-detail.is-pass { border-left-color: #177d45; }
-.rv-video .rv-video-verdict-detail.is-fail { border-left-color: #a34f3e; }
 .rv-video .rv-video-verdict-detail .rv-result-verdict { margin-bottom: 9px; }
-.rv-video .rv-video-source { margin-top: 4px; color: var(--result-muted); font-size: 11px; }
-.rv-video .rv-video-source p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .rv-video .rv-video-rail .rv-result-items { max-height: 280px; padding: 0; margin: 9px 0; overflow-y: auto; }
 .rv-video .rv-video-rail-note { margin: 12px 0; color: var(--result-muted); font-size: 12px; }
 .rv-video .rv-video-tabs { display: flex; gap: 3px; margin-top: 10px; padding: 4px; border-radius: 9px; background: #efefeb; }
@@ -235,24 +235,6 @@
 .rv-video .rv-video-evidence-text { font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
 .rv-video .rv-video-evidence-go { color: #6e6e6b; font-size: 10px; white-space: nowrap; padding-top: 2px; }
 .rv-video .rv-video-evidence-button.is-active .rv-video-evidence-go { color: #806a28; font-weight: 600; }
-.rv-video .rv-video-mismatch { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.rv-video .rv-video-mismatch > li { padding: 10px 12px; border: 1px solid #e9dfbf; border-radius: 9px; background: #fcfaf3; }
-.rv-video .rv-video-mismatch-kind { color: #806a28; font-size: 10px; font-weight: 600; }
-.rv-video .rv-video-mismatch-pair { display: grid; gap: 4px; margin: 7px 0 0; }
-.rv-video .rv-video-mismatch-pair > div { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 8px; }
-.rv-video .rv-video-mismatch-pair dt { color: #6e6e6b; font-size: 10px; padding-top: 2px; }
-.rv-video .rv-video-mismatch-pair dd { margin: 0; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.rv-video .rv-video-mismatch-pair mark { padding: 0 1px; border-radius: 2px; background: #f1d5cd; color: #7a2f20; }
-.rv-video .rv-video-rules { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.rv-video .rv-video-rules > li { padding: 10px 12px; border: 1px solid #e3e3df; border-radius: 9px; }
-.rv-video .rv-video-rule-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
-.rv-video .rv-video-rule-key { padding: 3px 5px; border-radius: 4px; background: #f2f2ef; color: #55554f; font: 600 10px/1 var(--font-signal); }
-.rv-video .rv-video-rule-head strong { font-size: 12px; font-weight: 500; }
-.rv-video .rv-video-rules p { margin-top: 6px; color: #6e6e6b; font-size: 11px; line-height: 1.7; }
-.rv-video .rv-video-rule-evidence { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; color: #6e6e6b; font-size: 10px; }
-.rv-video .rv-video-rule-evidence button { padding: 4px 8px; border: 1px solid #e3e3df; border-radius: 6px; background: #fff; color: #171717; font-size: 10px; font-variant-numeric: tabular-nums; }
-.rv-video .rv-video-rule-evidence button:hover { background: #f7f7f4; }
-.rv-video .rv-video-rule-evidence button.is-active { border-color: #806a28; background: #fbf7ea; color: #6b5a22; }
 .rv-video .rv-video-plain-list { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.8; }
 .rv-video .rv-video-plain-list .rv-video-text-button { font-size: 12px; text-align: left; }
 

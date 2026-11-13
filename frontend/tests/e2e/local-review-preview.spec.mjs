@@ -3,6 +3,16 @@ import test from 'node:test';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
+// 미리보기도 실제 화면처럼 보안 여부와 검수 유형을 고른 뒤에 자료 입력 칸이 나온다.
+const firstScreen = '보안이 필요한 자료인가요?';
+async function chooseReview(page, type) {
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: type, exact: true }).click();
+  await page.getByRole('heading', { name: `${type} 자료 입력`, exact: true }).waitFor();
+}
+
 test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업무 API를 호출하지 않는다', { timeout: 30000 }, async t => {
   const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
   t.after(() => vite.close()); await vite.listen();
@@ -20,8 +30,10 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   await page.goto(base + '/review/preview');
   const toolbar = page.getByRole('complementary', { name: '로컬 화면 미리보기' });
   await toolbar.waitFor();
+  // 요구사항·문서·원본 로고 칸을 모두 보는 종합 검수로 연다.
+  await chooseReview(page, '종합 검수');
   assert.equal(await page.locator('#requirements').inputValue(), '');
-  assert.equal(await page.getByRole('button', { name: '요구사항 PDF 선택', exact: true }).isDisabled(), true);
+  assert.equal(await page.getByRole('button', { name: '요구사항 문서 선택', exact: true }).isDisabled(), true);
   const logoCard = page.getByRole('region', { name: '원본 로고 첨부', exact: true });
   const chooser = page.waitForEvent('filechooser');
   await logoCard.getByRole('button', { name: '로고 선택', exact: true }).click();
@@ -46,7 +58,8 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
   await page.getByRole('status').filter({ hasText: '화면 미리보기 · 예시 판정' }).waitFor();
   await toolbar.getByRole('button', { name: '자료 입력', exact: true }).click();
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  // 고른 보안 여부와 유형을 그대로 둔 채 자료 입력으로 돌아온다.
+  await page.getByRole('heading', { name: '종합 검수 자료 입력', exact: true }).waitFor();
   assert.deepEqual(calls.filter(call => call.path.startsWith('/api/framework') || call.method !== 'GET'), []);
   await page.getByRole('link', { name: '실제 검수로 돌아가기' }).click();
   await page.getByRole('heading', { name: '로그인 상태를 확인할 수 없어요.' }).waitFor();
@@ -73,8 +86,10 @@ test('UI 전용 모드는 기존 검수 URL에서도 인증·Qwen·상태 조회
   await toolbar.getByRole('button', { name: '다음 화면으로 →', exact: true }).click();
   await page.getByRole('heading', { name: '선택 항목 상세', exact: true }).waitFor();
   await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  // 홈으로 가면 첫 화면(보안 여부)부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다.
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   assert.equal(await page.locator('#project-name').inputValue(), '');
+  await chooseReview(page, '종합 검수');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('progressbar').count(), 0);
   assert.deepEqual(requests, []);

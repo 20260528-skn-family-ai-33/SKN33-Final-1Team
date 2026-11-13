@@ -227,6 +227,7 @@
 .vl-player-options > span { margin-left: auto; color: #8592a3; font-size: 10px; text-align: right; }
 .vl-candidate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .vl-candidate-grid-extra { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px; }
+.vl-candidate-help { margin: -4px 0 12px; color: var(--vl-muted); font-size: 10px; line-height: 1.6; }
 .vl-candidate { overflow: hidden; min-width: 0; border: 1px solid #dfe7f1; border-radius: 11px; background: #fff; transition: border-color .15s, box-shadow .15s; }
 .vl-candidate.selected { border-color: var(--vl-blue); box-shadow: 0 0 0 2px rgba(23, 23, 23, .11); }
 .vl-candidate-image { position: relative; display: grid; width: 100%; padding: 7px; background: #f7f9fc; }

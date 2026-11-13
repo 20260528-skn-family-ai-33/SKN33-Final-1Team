@@ -67,7 +67,8 @@ def _value(criterion) -> tuple:
 def _shown(criterion) -> dict:
     return {'criterion_id': criterion.criterion_id, 'text': criterion.text, 'expected': criterion.expected,
             'unit': criterion.unit, 'operator': criterion.operator, 'required': criterion.required,
-            'qualifiers': _qualifiers(criterion)}
+            'qualifiers': _qualifiers(criterion),
+            **({'source_kind': 'direct_input'} if criterion.source.kind == 'direct_input' else {})}
 
 
 def _label(*criteria) -> str | None:

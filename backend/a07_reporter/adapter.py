@@ -57,7 +57,7 @@ class ItemReport:
     observation: str = OBSERVATION["unknown"]
     location: str | None = None
     reason_code: str | None = None
-    source: str | None = None                               # "PDF 1쪽"
+    source: str | None = None                               # "PDF 1쪽" 또는 "담당자 직접 입력"
 
 
 class Polisher(Protocol):
@@ -72,7 +72,10 @@ def _with_unit(value: str | None, unit: str | None) -> str | None:
 
 
 def _pages(sources: tuple[Evidence, ...]) -> str | None:
-    pages = sorted({e.source.page for e in sources if e.kind == "current_requirement"})
+    current = [e.source for e in sources if e.kind == "current_requirement"]
+    if any(source.kind == "direct_input" for source in current):
+        return "담당자 직접 입력"
+    pages = sorted({source.page for source in current})
     return f"PDF {'·'.join(map(str, pages))}쪽" if pages else None
 
 

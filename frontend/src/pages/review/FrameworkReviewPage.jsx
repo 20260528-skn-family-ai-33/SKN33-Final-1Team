@@ -4,9 +4,12 @@ import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { Pager, usePaged } from '../../components/Pager.jsx';
 import ResultsPage from './ResultsPage.jsx';
 import { frameworkResults } from './frameworkResults.js';
+import { criterionLine } from './criterionLabel.js';
 import ReviewProgress from './ReviewProgress.jsx';
+import FrameworkRunStatus from './FrameworkRunStatus.jsx';
 import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
@@ -17,10 +20,13 @@ import { posterPlaceCandidates } from './posterMapQr.js';
 import ChangeImpactNotice from './ChangeImpactNotice.jsx';
 import { incompleteOutputPages, unreadImagePages, unreadTextPages } from './criteriaWarnings.js';
 import RevisionHistory from './RevisionHistory.jsx';
+import PosterEvidenceDialog from './PosterEvidenceDialog.jsx';
+import ExtractionRejections from './ExtractionRejections.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import '../../styles/review-editor-v2.css';
 import { useAuth } from '../../auth/AuthProvider.jsx';
+import { isAnonymousError } from '../../auth/helpers.js';
 import { PosterLogoCard, usePosterLogoJobs } from './PosterLogoParts.jsx';
 import { previousLogoJob, submitPosterLogoJob } from './posterLogoFlow.js';
 import './posterLogo.css';
@@ -41,49 +47,36 @@ const actionStatus = {
   final: '최종 승인을 저장하고 있어요.',
   changes: '수정 요청 승인을 저장하고 있어요.',
 };
-const rejectionReasons = {
-  A02_DUPLICATE_REQUIREMENT: '이미 포함된 기준과 중복됩니다.',
-  A02_EXPECTED_UNGROUNDED: '기대값이 원문과 일치하지 않습니다.',
-  A02_SOURCE_MISMATCH: '선택한 원문 범위를 확인할 수 없습니다.',
-  A02_UNIT_UNGROUNDED: '단위가 원문과 일치하지 않습니다.',
-  A02_UNRESOLVED_VALUE_INVENTED: '미확정 항목에 원문으로 확인할 수 없는 값이 있습니다.',
-  A02_QUALIFIER_UNGROUNDED: '허용 조건이나 예외의 원문 근거가 일치하지 않습니다.',
-  A02_NORMALIZATION_UNSUPPORTED: '이 항목에는 변환된 값 형식을 사용할 수 없습니다.',
-  A02_NORMALIZED_VALUE_UNGROUNDED: '변환된 값이 원문과 일치하지 않습니다.',
-  A02_NORMALIZED_VALUE_AMBIGUOUS: '변환된 값에 해당하는 원문 표기를 하나로 확인할 수 없습니다.',
-  A02_PRESENTATION_MISSING: '기준에 표시할 문구가 없습니다.',
-  A02_PRESENTATION_UNGROUNDED: '표시 문구가 원문과 일치하지 않습니다.',
-  A02_PRESENTATION_SCOPE_LOST: '표시 문구에서 가로 또는 세로 구분이 빠졌습니다.',
-  A02_COMPILED_SOURCE_TOO_LARGE: '원문 인용 범위가 너무 깁니다.',
-  A02_RESPONSE_INVALID: '항목의 형식이나 비교 조건이 유효하지 않습니다.',
-};
-
-function ExtractionRejections({ items }) {
-  return <section className="rv-criteria-rejections" aria-label="원문 검증에서 제외된 후보">
-    <h3>원문 검증에서 제외된 후보 {items.length}개</h3>
-    <p>아래 후보는 초안에서 제외했습니다. 원문을 확인한 뒤 필요한 기준을 보완해 주세요.</p>
-    <ul>{items.map(({ candidate_index, code, source }) => <li key={candidate_index}>
-      <strong>후보 {candidate_index} · {rejectionReasons[code] || '원문 검증에 실패했습니다.'}</strong>
-      <span className="rv-criteria-rejection-code">{code}</span>
-      {source ? <div className="rv-criteria-source">
-        <Icon name="file" /><details><summary>확인된 원문 · {source.page}쪽</summary><p>{source.quote}</p></details>
-      </div> : <p>확인 가능한 원문이 없습니다.</p>}
-    </li>)}</ul>
-  </section>;
+// 검수 항목 목록은 CRITERIA_PER_PAGE개씩 쪽으로 넘겨 본다.
+const CRITERIA_PER_PAGE = 6;
+// 목록 한 줄: 이름(전시명·개막일…)과 기준값을 먼저 보이고 기준 문장은 그 아래 한 줄로 줄인다. 이름을 모르는 기준은 문장만 보인다.
+// 한 원문 문장에서 나온 여러 기준은 문장이 같으므로, 값으로 구분되게 한다.
+function CriterionText({ criterion }) {
+  const line = criterionLine(criterion);
+  return <span className="rv-criteria-item-text">{line.label ? <>
+    <span className="rv-criteria-item-name"><b>{line.label}</b>{line.expected && <> <span>{line.expected}</span></>}</span>
+    {line.rule && <small className="rv-criteria-item-rule">{line.rule}</small>}
+  </> : criterion.text}</span>;
 }
-
-
+// 기준 번호(c001 같은 내부 번호) 대신 화면에 적을 이름
+function criterionTitle(criterion) {
+  if (!criterion) return '검수 항목';
+  const line = criterionLine(criterion);
+  return line.label ? [line.label, line.expected].filter(Boolean).join(' ') : criterion.text;
+}
 function command(path, body, key, signal) {
   return frameworkJson(path, { method: 'POST', signal, body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
 
 export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos,
-  logoDetector = 'runpod', health }) {
+  logoDetector = 'runpod', health, reviewStarting = false }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
+  const [loadState, setLoadState] = useState('checking');
+  const initialStart = useRef(reviewStarting);
   const [file, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
@@ -105,8 +98,11 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [changeImpact, setChangeImpact] = useState(null);
   const [revisions, setRevisions] = useState(null);
   const [retrieval, setRetrieval] = useState(null);
+  const [evidenceOpened, setEvidenceOpened] = useState(false);
+  const [chainRuns, setChainRuns] = useState({});
   const [logoNotice] = useState(() => readLogoNotice(runId));
-  const logoJobs = usePosterLogoJobs(runId);
+  // 실행 조회가 계정 권한으로 허용된 뒤에만 관련 로고 작업을 요청한다.
+  const logoJobs = usePosterLogoJobs(loadState === 'ready' ? runId : null);
   const [secureMaterial, setSecureMaterial] = useState(false);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
@@ -131,13 +127,14 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     criteria.some(item => item.kind === 'visual') && '시각 조건',
   ].filter(Boolean).join(' · ');
   const selected = criteria.find(item => item.criterion_id === (amendment?.criterion_id || activeId)) || criteria[0];
+  const criteriaPages = usePaged(criteria, CRITERIA_PER_PAGE);
   const imageUrl = run?.baseline && run.context.asset_version_id
     ? frameworkPrefix + '/images/' + encodeURIComponent(run.context.asset_version_id) + '/content' : null;
   const image = useMemo(() => ({ url: imageUrl, ...(imageSize?.url === imageUrl ? imageSize : {}) }), [imageUrl, imageSize]);
   const resultView = useMemo(() => run ? frameworkResults(run, image, projectName) : null, [run, image, projectName]);
   const hasResults = !!run?.validated;
   const evidenceId = run?.evidence?.context_id;
-  const processing = !run || running.has(status);
+  const processing = loadState === 'ready' && running.has(status);
   const progress = processing ? frameworkProgress(run) : null;
   const stageStatus = actionStatus[pending] || (progress && !error
     ? run ? progress.message : '검수 상태를 불러오고 있어요.'
@@ -207,16 +204,29 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   useEffect(() => {
     const controller = new AbortController();
     let timer;
+    let hasSnapshot = false;
     async function read() {
       try {
         const snapshot = await frameworkJson(path, { signal: controller.signal });
         const info = !snapshot.baseline && ['waiting_criteria', 'waiting_asset'].includes(snapshot.execution_status)
           ? await frameworkJson(path + '/criteria-review', { signal: controller.signal }) : null;
         if (controller.signal.aborted) return;
-        setRun(snapshot); setOverview(info);
+        hasSnapshot = true;
+        initialStart.current = false;
+        setRun(snapshot); setOverview(info); setError(''); setLoadState('ready');
         if (running.has(snapshot.execution_status)) timer = setTimeout(read, 1000);
-      } catch (err) { if (!controller.signal.aborted) setError(err.message); }
+      } catch (err) {
+        if (controller.signal.aborted || isAnonymousError(err)) return;
+        initialStart.current = false;
+        if ([403, 404].includes(err.status)) {
+          setRun(null); setOverview(null); setError(''); setLoadState('denied');
+          return;
+        }
+        setError('검수 상태를 확인하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.');
+        setLoadState(hasSnapshot ? 'ready' : 'unavailable');
+      }
     }
+    setLoadState('checking');
     read();
     return () => { controller.abort(); clearTimeout(timer); };
   }, [path, reload]);
@@ -241,6 +251,18 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       .then(value => { if (!controller.signal.aborted) setRevisions(value); }).catch(() => {});
     return () => controller.abort();
   }, [path, posterRun, status, humanDecision]);
+  // 판정 근거 창을 처음 열 때 같은 수정본 이력의 다른 검수 결과를 읽는다(가까운 8건까지). 못 읽은 검수는 버전별 판정에서 빠진다.
+  const history = revisions?.run_id === runId ? revisions : null;
+  const chainKey = evidenceOpened ? (history?.entries || []).filter(entry => !entry.current).map(entry => entry.run_id).slice(-8).join('\n') : '';
+  useEffect(() => {
+    setChainRuns(value => (Object.keys(value).length ? {} : value));
+    if (!chainKey) return undefined;
+    const controller = new AbortController();
+    Promise.all(chainKey.split('\n').map(id => frameworkJson('/runs/' + encodeURIComponent(id), { signal: controller.signal })
+      .then(snapshot => [id, snapshot]).catch(() => null)))
+      .then(found => { if (!controller.signal.aborted) setChainRuns(Object.fromEntries(found.filter(Boolean))); });
+    return () => controller.abort();
+  }, [chainKey]);
 
   function requestKey(name) {
     if (!keys.current.has(name)) keys.current.set(name, crypto.randomUUID());
@@ -341,7 +363,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         context: child.context, actor_id: child.context.actor_id, decision: 'approve_criteria', reason: '',
       }, null, signal);
     } finally {
-      if (!signal.aborted) openRun(child.context.run_id);
+      if (!signal.aborted) openRun(child.context.run_id, true);
     }
   }
   async function decide(decision, signal) {
@@ -381,8 +403,39 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     <button disabled={busy} onClick={() => { setExcluded([]); setReason(''); setError(''); setReload(n => n + 1); }}>서버 상태 다시 확인</button>
   </>;
 
+  // 목록의 순번(01부터). 확인 필요 단추와 목록이 같은 번호를 쓴다.
+  const criterionNumber = id => String(criteria.findIndex(item => item.criterion_id === id) + 1).padStart(2, '0');
+  // 다른 쪽에 있는 항목을 고르면 그 쪽으로 넘긴 뒤 보여 준다.
+  function showCriterion(id) {
+    const index = criteria.findIndex(item => item.criterion_id === id);
+    if (index < 0) return;
+    criteriaPages.setPage(Math.floor(index / CRITERIA_PER_PAGE));
+    setActiveId(id);
+    requestAnimationFrame(() => document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }));
+  }
+  // 쪽을 넘기면 그 쪽의 첫 항목을 골라, 아래 상세가 늘 보이는 줄과 맞게 한다(보완하는 중에는 고른 항목을 바꾸지 않는다).
+  function turnCriteriaPage(page) {
+    criteriaPages.setPage(page);
+    if (!amendment) setActiveId(criteria[page * CRITERIA_PER_PAGE]?.criterion_id || null);
+  }
+
+  function retryRunStatus() {
+    setRun(null); setOverview(null); setError(''); setLoadState('checking');
+    setReload(value => value + 1);
+  }
+
+  if (loadState !== 'ready') {
+    return <ReviewLayout state={{ step: 'running', projectName: '', criteria: [] }} busy={false}
+      mainClassName="rv-framework-workspace" showWorkspaceBar={false}
+      startMessage={loadState === 'checking' && initialStart.current ? '검수 상태를 확인하고 있어요.' : null}>
+      <FrameworkRunStatus state={loadState} onRetry={retryRunStatus} />
+    </ReviewLayout>;
+  }
+
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing}
+    startMessage={busy && (pending === 'decide-start' || (file && ['start', 'start-skip'].includes(pending)))
+      ? actionStatus[pending] : null}
     mainClassName="rv-framework-workspace"
     versionLabel={latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}
     projectActions={<>
@@ -412,15 +465,17 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           try { setRun(await command(path + '/cancel', {}, null, signal)); }
           finally { setReload(n => n + 1); }
         }) : undefined}
-        onRetry={error ? () => { setError(''); setReload(n => n + 1); } : undefined} />
+        onRetry={error ? retryRunStatus : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title" tabIndex={-1}>대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
       : showingReport ? <FrameworkReport run={run} projectName={projectName} image={image} standalone />
       : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved} exceptionApproved={exceptionApproved}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
         revise={canRevise ? () => setReportTarget('approval') : undefined}
+        evidence={props => <PosterEvidenceDialog run={run} image={image} history={history} runs={chainRuns} retrieval={retrieval}
+          onOpen={() => setEvidenceOpened(true)} {...props} />}
         header={<>
-          {revisions?.run_id === runId && <RevisionHistory history={revisions} />}
+          {history && <RevisionHistory history={history} />}
           {retrieval && <details className="rv-framework-record"><summary>근거 조회 · {retrieval.backend === 'neo4j' ? 'Neo4j' : 'PostgreSQL'}</summary>
             <p>원장 revision {retrieval.required_revision} · 그래프 revision {retrieval.observed_graph_revision ?? '확인 안 됨'}</p>
             {retrieval.fallback_reason && <p>PostgreSQL 대체 사유 {retrieval.fallback_reason}</p>}
@@ -434,7 +489,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         </>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
         canvas={<>
           <ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
-            title="검수 포스터" alt="현재 버전의 검수 포스터" subtitle={file?.name}
+            alt="현재 버전의 검수 포스터" heading={false} showControls={false} bare
             empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
             <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
         </>}
@@ -458,7 +513,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           </div>
           {reviewingDraft && (
             <div className="rv-criteria-action-buttons">{needsVersion && <button className="rv-button secondary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion, 'save')} aria-busy={working('save')} title={exclusionBlock}>검토한 기준 버전 저장</button>}
-            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p>{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} onClick={() => { setActiveId(id); document.getElementById('rv-criterion-' + id)?.scrollIntoView({ block: 'nearest' }); }}>{id} 확인하기</button>)}<button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
+            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p><span className="rv-criteria-blocker-chips">{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} aria-label={criterionNumber(id) + '번 항목 확인하기'} title={criterionTitle(criteria.find(item => item.criterion_id === id))} onClick={() => showCriterion(id)}>{criterionNumber(id)}</button>)}</span><button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
             {(needsVersion || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart, 'start')} aria-busy={working('start')} title={exclusionBlock}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
             </div>
           )}
@@ -484,19 +539,22 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             </section>}
             {rejections.length > 0 && <ExtractionRejections items={rejections} />}
             <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
-            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteria.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
+            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteriaPages.shown.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
               <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
                 checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
               <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
                 disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
-                <span className="rv-criteria-item-index">{String(index + 1).padStart(2, '0')}</span><span className="rv-criteria-item-text">{c.text}</span><span className="rv-criteria-item-type">{!c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
+                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{c.source.kind === 'direct_input' ? '직접 입력' : !c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
               </button>
             </li>)}</ul>
+            <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
             {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
               <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
               <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
-              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>요구사항 원문 · {selected.source.page}쪽</summary><p>{selected.source.quote}</p>
-                {selected.value_source && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
+              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>{selected.source.kind === 'direct_input'
+                ? '담당자 직접 입력 원문' : `요구사항 원문 · ${selected.source.page}쪽`}</summary><p>{selected.source.quote}</p>
+                {selected.value_source && (selected.source.kind !== 'direct_input' || selected.value_source.reference !== '담당자 직접 입력')
+                  && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
               {sourceDraft && (amendment ? <>
                 <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveVersion, 'save'); }}><CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} /></form>
                 <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
@@ -511,7 +569,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
               }}>기준 보완</button>)}
             </div>}
             {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
-            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id} · {c.reason}</li>)}</ul></details>}
+            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
       {!processing && (!hasResults || showingReport) && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">

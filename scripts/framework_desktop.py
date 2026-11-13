@@ -34,7 +34,8 @@ def read_env(path):
         line=raw.strip()
         if not line or line.startswith('#'):continue
         key,sep,value=line.partition('=')
-        if not sep or not re.fullmatch(r'[A-Z][A-Z0-9_]*',key) or key in values:raise ValueError('ENV_FORMAT_INVALID')
+        valid_key = key == 'creative_checker_openapi' or re.fullmatch(r'[A-Z][A-Z0-9_]*', key)
+        if not sep or not valid_key or key in values:raise ValueError('ENV_FORMAT_INVALID')
         values[key]=value
     return values
 

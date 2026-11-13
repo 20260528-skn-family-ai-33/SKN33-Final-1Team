@@ -433,7 +433,7 @@ export default function PosterLogoPage() {
     }
   }
 
-  // 둘 다 검수는 포스터 검수 실행에 연결된 작업이라 첫 단계가 그 실행으로, 로고만 검수는 자료 입력으로 돌아간다.
+  // 종합 검수는 포스터 검수 실행에 연결된 작업이라 첫 단계가 그 실행으로, 로고만 검수는 자료 입력으로 돌아간다.
   const linkedRun = meta?.run_id;
   const back = linkedRun ? '/review/new?framework=' + encodeURIComponent(linkedRun) : '/review/new';
   const steps = linkedRun ? { review: '포스터 검수', candidates: logoSteps.candidates, confirm: logoSteps.confirm, compare: logoSteps.compare } : logoSteps;
@@ -458,7 +458,7 @@ export default function PosterLogoPage() {
         <div className="vl-empty-mark">01</div>
         <span className="vl-kicker">자료 입력에서 시작</span>
         <h1>자료 입력에서 로고 검수를 시작하세요</h1>
-        <p>검수 유형에서 ‘로고 검수’ 또는 ‘둘 다 검수’를 고르고 포스터와 원본 로고를 첨부하면 포스터에서 로고 후보를 찾습니다.</p>
+        <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 포스터와 원본 로고를 첨부하면 포스터에서 로고 후보를 찾습니다.</p>
         <Link className="vl-button primary" to="/review/new">자료 입력 열기</Link>
       </section> : <div className="vl-content">
         <div className="vl-jobbar">

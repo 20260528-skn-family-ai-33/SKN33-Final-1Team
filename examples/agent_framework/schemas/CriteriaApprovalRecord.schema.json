@@ -348,6 +348,17 @@
         "synthetic": {
           "title": "Synthetic",
           "type": "boolean"
+        },
+        "addition_run_ids": {
+          "default": [],
+          "items": {
+            "maxLength": 160,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "title": "Addition Run Ids",
+          "type": "array"
         }
       },
       "required": [
@@ -771,7 +782,8 @@
         "action": {
           "enum": [
             "amend",
-            "exclude"
+            "exclude",
+            "add"
           ],
           "title": "Action",
           "type": "string"
@@ -958,6 +970,19 @@
           "pattern": "^[a-f0-9]{64}$",
           "title": "Source Hash",
           "type": "string"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "const": "direct_input",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
         }
       },
       "required": [

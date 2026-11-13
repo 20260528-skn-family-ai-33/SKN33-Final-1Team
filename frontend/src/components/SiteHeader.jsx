@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
+import { useHelpChatAnchor } from '../help-chat/HelpChatProvider.jsx';
+import { mediaChoicePath, mediaChoiceState } from '../workspace/mediaChoice.js';
 import { Brand } from './Brand.jsx';
 import { ErrorMessage } from './ErrorMessage.jsx';
 import { Icon } from './Icon.jsx';
 import '../styles/site-header.css';
 
 const tools = [['/review/new', '포스터 검수'], ['/video', '동영상 검수'], ['/review/tasks', '내 작업']];
-const guides = [['features', '서비스 소개'], ['how-it-works', '이용 방법']];
+const guides = [['lp-features', '서비스 소개'], ['lp-demo', '검수 예시']];
 const plainClick = event => !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
 // 소개·로그인·검수·내 작업·안내 화면이 같은 상단 바를 쓴다.
@@ -19,6 +21,7 @@ export function SiteHeader({ current, locked = false, lockReason, onHome, onStar
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const resetWorkspace = useWorkspaceReset();
+  const helpChatAnchor = useHelpChatAnchor();
   const [logoutPending, setLogoutPending] = useState(false);
   const [logoutError, setLogoutError] = useState('');
   const lock = { disabled: locked, title: locked ? lockReason : undefined, 'aria-describedby': locked && lockReason ? 'mt-lock-reason' : undefined };
@@ -56,12 +59,17 @@ export function SiteHeader({ current, locked = false, lockReason, onHome, onStar
   }
   function start() {
     if (onStart) onStart();
-    else navigate(auth?.status === 'anonymous' ? '/login' : '/review/new');
+    else if (auth?.status === 'anonymous') navigate('/login');
+    // 포스터인지 동영상인지 정하지 않고 시작하므로 자료 종류부터 고른다.
+    else navigate(mediaChoicePath, { state: mediaChoiceState });
   }
 
   return <>
     <header className="cc-header"><div className="cc-header-inner">
-      <div className="cc-header-brand"><Brand onClick={home} {...lock} /><span className="cc-header-edition">REVIEW STUDIO</span></div>
+      <div className="cc-header-brand">
+        <Brand onClick={home} {...lock} />
+        {user && helpChatAnchor && <div className="cc-header-help" ref={helpChatAnchor} />}
+      </div>
       <div className="cc-header-actions">
         {showTools ? <nav className="cc-header-nav" aria-label="검수 도구">{tools.map(([to, label]) => locked ? <span key={to}
           className="cc-header-link" role="link" aria-disabled="true" tabIndex={-1}

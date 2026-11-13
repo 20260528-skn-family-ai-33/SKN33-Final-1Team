@@ -55,6 +55,8 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   });
   await page.goto(base + '/review/tasks');
   const row = name => page.getByRole('row').filter({ hasText: name });
+  await row('대기 중인 문서').waitFor();
+  assert.equal(await page.getByRole('heading', { name: 'PDF 묶음 분석' }).count(), 0);
   await row('대기 중인 문서').getByRole('button', { name: '대기 취소' }).click();
   await row('대기 중인 문서').getByText('취소됨', { exact: true }).waitFor();
   await row('방금 시작된 문서').getByRole('button', { name: '대기 취소' }).click();
@@ -102,6 +104,8 @@ test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { 
     else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
     else if (path.endsWith('/cancel')) { cancelled = true; body = snapshot(); }
     else if (path.endsWith('/runs/queued')) body = snapshot();
+    // 실행 화면은 이 실행에 연결된 포스터 로고 작업도 함께 읽는다. 이 시험에는 로고 작업이 없다.
+    else if (path === '/api/poster-logos') body = { items: [] };
     else throw new Error('Unexpected route ' + path);
     await route.fulfill({ json: body });
   });

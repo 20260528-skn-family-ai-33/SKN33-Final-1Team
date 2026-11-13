@@ -58,21 +58,6 @@
 .rv-type-art svg { display: block; width: 100%; max-width: 230px; height: auto; }
 .rv-type-label { font-size: clamp(20px, 1.6vw, 26px); font-weight: 700; letter-spacing: -.04em; }
 .rv-type-label small { margin-left: 4px; font-size: .62em; font-weight: 500; color: #62645e; }
-.rv-workspace .rv-type-foot { color: #a7a8a2; font-size: 14px; text-align: center; }
-.rv-type-foot kbd {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  margin: 0 2px;
-  padding: 0 5px;
-  border: 1px solid #4a4a47;
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  color: #e8e8e4;
-  font-family: inherit;
-  font-size: 12px;
-}
 @media (prefers-reduced-motion: reduce) {
   .rv-workspace .rv-type-tile { transition: none; }
   .rv-workspace .rv-type-tile:is(:hover, :active):enabled { transform: none; }
@@ -80,10 +65,12 @@
 
 /* 자료 입력 상단의 선택한 검수 유형 */
 .rv-workspace .rv-input-mode { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--rv-muted); font-size: 13px; }
-.rv-workspace .rv-input-mode strong { padding: 6px 11px; border-radius: 8px; background: #171717; color: #fff; font-size: 12px; font-weight: 600; }
+/* 보안 여부 칩과 검수 유형 칩은 같은 크기(높이 30px·글자 12px) */
+.rv-workspace .rv-input-mode :is(strong, .rv-input-security) { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 11px; border: 1px solid #171717; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1; }
+.rv-workspace .rv-input-mode strong { background: #171717; color: #fff; }
 .rv-workspace .rv-input-mode button { padding: 4px 2px; border: 0; background: none; color: var(--rv-muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 .rv-workspace .rv-input-mode button:hover:enabled { color: #171717; }
-.rv-workspace .rv-input-mode .rv-input-security { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--rv-line); border-radius: 8px; background: #fff; color: #171717; font-size: 12px; font-weight: 600; }
+.rv-workspace .rv-input-mode .rv-input-security { border-color: var(--rv-line); background: #fff; color: #171717; }
 .rv-workspace .rv-input-mode .rv-input-security.is-secure { border-color: #a34f3e; color: #a34f3e; }
 .rv-input-mode .rv-input-security .icon { width: 13px; height: 13px; }
 

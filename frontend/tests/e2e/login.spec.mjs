@@ -68,12 +68,13 @@ async function fixture(t, options = {}) {
       state.authenticated = false;
       return route.fulfill({ status: 204 });
     }
-    if (path === '/api/health') {
+    // 화면이 직접 읽는 업무 API. 동영상 검수로 옮기면 준비 상태(/api/video-reviews/status)를 읽는다.
+    if (path === '/api/health' || path === '/api/video-reviews/status') {
       if (state.healthStatus !== 200) {
         state.authenticated = false;
         return json({ error: { code: 'session_expired', message: '세션이 만료되었습니다.' } }, state.healthStatus);
       }
-      return json({ runtime: { ready: true, engine: 'easyocr' }, limits: {} });
+      return json(path === '/api/health' ? { runtime: { ready: true, engine: 'easyocr' }, limits: {} } : { ready: true });
     }
     if (path === '/api/framework/v1/health') return json({ poster_review_ready: true });
     if (path === '/api/sample') return json({ project_name: '샘플 프로젝트', requirements: '행사명: 테스트 축제' });
@@ -118,6 +119,18 @@ async function screenshot(page, filename) {
   await page.screenshot({ path: join(process.env.E2E_SCREENSHOT_DIR, filename), fullPage: true });
 }
 
+// 로그인 뒤 검수 첫 화면은 보안 자료 여부를 묻고, 이어서 검수 유형을 묻는다. 자료 입력 칸은 둘을 고른 뒤에 나온다.
+const firstScreen = '보안이 필요한 자료인가요?';
+// 열려던 검수 화면 없이 로그인하면 자료 종류(포스터·동영상)부터 고른다.
+const mediaScreen = '어떤 자료를 검수할까요?';
+async function chooseReviewType(page, type = '문구 검수', security = '일반 자료') {
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: security, exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: type, exact: true }).click();
+  await page.getByRole('heading', { name: `${type} 자료 입력`, exact: true }).waitFor();
+}
+
 test('로그인 직접 접근·새로고침·필수 입력·비밀번호 표시·모바일 배치', async t => {
   const { page, state } = await fixture(t);
   const response = await page.goto(`${baseURL}/login`);
@@ -145,11 +158,11 @@ test('진입 제어·CSRF·로그인·중복 제출 방지·원래 경로 복귀
   const { page, state } = await fixture(t, { loginDelay: 250 });
   await page.goto(`${baseURL}/review/new?source=login#input`);
   await page.waitForURL('**/login');
-  assert.equal(await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).count(), 0);
+  assert.equal(await page.getByRole('heading', { name: firstScreen }).count(), 0);
   await submitLogin(page);
   await page.locator('form.auth-form').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
   await page.waitForURL('**/review/new?source=login#input');
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  await page.getByRole('heading', { name: firstScreen }).waitFor();
   const loginRequests = state.requests.filter(request => request.path.endsWith('/login'));
   assert.equal(loginRequests.length, 1);
   assert.deepEqual(JSON.parse(loginRequests[0].body), { username: 'tester', password: 'test-password' });
@@ -169,7 +182,13 @@ test('기존 서버 세션은 로그인 화면을 건너뛰고 새로고침 후 
   await page.goto(`${baseURL}/login`);
   await page.waitForURL('**/review/new');
   await page.reload();
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  // 포스터로 바로 들어가지 않는다. 포스터를 고르면 보안 여부를 묻고, 거기서 자료 종류로 되돌아갈 수 있다.
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
+  assert.equal(await page.getByRole('navigation', { name: '검수 도구', exact: true }).locator('[aria-current="page"]').count(), 0);
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
+  await page.getByRole('heading', { name: firstScreen }).waitFor();
+  await page.getByRole('button', { name: '자료 종류 다시 고르기', exact: true }).click();
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
   assert.equal(state.requests.filter(request => request.path.endsWith('/login')).length, 0);
 });
 
@@ -193,24 +212,24 @@ test('일환 예시 자료를 로그인 복귀 뒤 채우고 쿼리를 소비한
   await submitLogin(page);
   await page.waitForURL('**/review/new');
   await page.getByRole('img', { name: '업로드한 검수 이미지 미리보기' }).waitFor();
-  assert.equal(await page.getByLabel('프로젝트 이름', { exact: true }).inputValue(), '빛의 기록 · 전시 포스터');
+  assert.equal(await page.getByLabel('검수 이름', { exact: true }).inputValue(), '빛의 기록 · 전시 포스터');
   assert.match(await page.getByLabel('검수 요구사항', { exact: true }).inputValue(), /빛의 기록/);
   assert.equal(state.requests.filter(request => request.path.startsWith('/api/sample')).length, 0);
-  await page.getByLabel('프로젝트 이름', { exact: true }).fill('임시 입력');
-  await page.getByRole('button', { name: '예시 자료 불러오기', exact: true }).click();
-  await page.waitForFunction(() => document.getElementById('project-name')?.value === '빛의 기록 · 전시 포스터');
+  // 입력 화면의 '예시 자료 불러오기' 버튼은 없어져, 고친 이름을 버튼으로 되돌리는 단계는 뺐다. 예시의 주최 로고는 그대로 확인한다.
   await page.getByText('주최 로고.png', { exact: true }).waitFor();
 });
 
 test('업무 API의 명시적 세션 만료는 로그인 화면으로 복귀한다', async t => {
   const { page, state } = await fixture(t, { authenticated: true });
   await page.goto(`${baseURL}/review/new`);
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
-  await page.getByRole('button', { name: '검수 서버 연결됨' }).waitFor();
+  await page.getByRole('heading', { name: firstScreen }).waitFor();
+  // '검수 서버 연결됨' 버튼은 없어졌다. 동영상 검수로 옮기면 화면이 준비 상태(업무 API)를 읽으므로 그 응답으로 만료를 알린다.
+  const videoTool = page.getByRole('navigation', { name: '검수 도구', exact: true }).getByRole('link', { name: '동영상 검수', exact: true });
+  await videoTool.waitFor();
   state.healthStatus = 401;
-  await page.getByRole('button', { name: '검수 서버 연결됨' }).click();
+  await videoTool.click();
   await page.waitForURL('**/login');
-  assert.equal(await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).count(), 0);
+  assert.equal(await page.getByRole('heading', { name: firstScreen }).count(), 0);
 });
 
 for (const scenario of [
@@ -256,60 +275,70 @@ test('로그아웃 실패는 현재 세션을 유지하고 재시도 성공 후 
   await page.waitForURL('**/login');
 });
 
-test('이미지 입력·검수 결과를 확인하고 서비스 메인 왕복 시 새 입력으로 초기화한다', async t => {
-  const { page, state } = await fixture(t, { authenticated: true });
-  await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('프로젝트 이름', { exact: true }).fill('화면 통합 검증');
-  await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('검수 요구사항').fill('행사명: 테스트 축제');
-  await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
-  await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
-  assert.equal(await page.getByRole('button', { name: '검수 시작하기', exact: true }).isDisabled(), true);
-  await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
-  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
+// 입력 화면의 '검수 시작하기'는 공통 실행(/api/framework)으로 접수한다(framework-entry가 검증).
+// 예전 실행(/api/reviews)의 결과 화면은 저장된 검수를 여는 경로(?review=)로만 열리므로 그 경로로 확인한다.
+const savedReview = { authenticated: true, reviewCriteria: [{ id: 'criterion-1', text: '행사명: 테스트 축제', type: 'information' }] };
+
+test('저장된 검수 결과를 확인하고 결과 JSON을 저장한다', async t => {
+  const { page, state } = await fixture(t, savedReview);
+  await page.goto(`${baseURL}/review/new?review=test-review`);
   await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
   const resultList = page.getByRole('list', { name: '검수 항목 목록', exact: true });
   assert.equal(await resultList.getByRole('button', { name: /행사명: 테스트 축제/ }).getAttribute('aria-pressed'), 'true');
   await page.getByRole('button', { name: '근거 영역: 테스트 축제', exact: true }).waitFor();
   assert.equal(await page.getByRole('button', { name: '근거 영역: 테스트 축제', exact: true }).getAttribute('aria-pressed'), 'true');
   await page.getByRole('complementary', { name: '선택 항목 상세', exact: true }).getByText('이미지 문구에서 행사명을 확인했습니다.', { exact: true }).waitFor();
-  assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
+  // 저장된 결과를 여는 것만으로는 예전 실행을 새로 접수하지 않는다.
+  assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);
   const downloadEvent = page.waitForEvent('download');
   await page.getByRole('button', { name: '결과 JSON 저장', exact: true }).click();
   const download = await downloadEvent;
   assert.match(download.suggestedFilename(), /\.json$/);
-  await page.getByRole('button', { name: '서비스 메인으로', exact: true }).click();
+});
+
+// 알려진 화면 문제: 저장된 검수(?review=)에서 홈으로 나갔다 오면 새 입력이 열리지 않는다(이전 결과가 다시 보이거나 첫 화면이 잠김).
+// 화면을 고치기 전에는 실패한다. 단정은 원래 기대(새 입력으로 초기화)를 그대로 둔다.
+test('저장된 검수 결과에서 서비스 메인 왕복 시 새 입력으로 초기화한다', async t => {
+  const { page, state } = await fixture(t, savedReview);
+  await page.goto(`${baseURL}/review/new?review=test-review`);
+  await page.getByRole('heading', { name: '화면 통합 검증', level: 1, exact: true }).waitFor();
+  // 프로젝트 줄의 '서비스 메인으로' 버튼은 없어졌고, 서비스 메인으로는 머리글의 로고로 간다.
+  await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
   await page.waitForURL(`${baseURL}/`);
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).first().click();
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?', exact: true }).waitFor();
+  // 소개 화면의 시작 단추는 포스터·동영상 중 무엇을 검수할지부터 묻는다.
+  await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   assert.equal(await page.locator('#project-name').inputValue(), '');
+  await chooseReviewType(page);
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('list', { name: '검수 항목 목록', exact: true }).count(), 0);
-  assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 1);
+  assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);
 });
 
 // 후보가 충돌하면 처음 읽은 문구와 재인식 문구를 모두 화면에 표시한다.
 test('재인식 충돌은 확인 필요와 원문·후보·근거 위치를 함께 표시한다', async t => {
-  const { page } = await fixture(t, { authenticated: true, reviewResults: [{
-    criterion_id: 'place', criterion: '장소: 친환경생태공원', type: 'information', status: 'review',
-    reason: '서로 다른 OCR 후보를 확인해 주세요.', observed_text: '친환경생대공원',
-    evidence: [{ ocr_id: 'r1', text: '친환경생대공원', baseline_text: '친환경생대공원',
-      requires_review: true, bbox_xyxy: [0, 0, 1, 1],
-      alternatives: [{ text: '친환경생태공원', engine: 'qwen3-vl', bbox_xyxy: [0, 0, 1, 1] },
-        { text: '친환경생태공원', engine: 'paddleocr', bbox_xyxy: [0, 0, 1, 1] }] }],
-  }] });
-  await page.goto(`${baseURL}/review/new`);
-  await page.getByLabel('프로젝트 이름', { exact: true }).fill('재인식 검증');
-  await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'test.png', mimeType: 'image/png', buffer: png });
-  await page.getByLabel('검수 요구사항').fill('장소: 친환경생태공원');
-  await page.getByRole('button', { name: '검수 항목 확인하기', exact: true }).first().click();
-  await page.getByRole('button', { name: '선택한 기준 확정하기', exact: true }).click();
-  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-  await page.getByLabel('재인식 비교', { exact: true }).waitFor();
-  await page.getByText('처음 읽기: 친환경생대공원', { exact: true }).waitFor();
-  await page.getByText('다시 읽기: Qwen: 친환경생태공원 / PaddleOCR: 친환경생태공원', { exact: true }).waitFor();
+  const { page } = await fixture(t, { authenticated: true,
+    reviewCriteria: [{ id: 'place', text: '장소: 친환경생태공원', type: 'information' }],
+    reviewResults: [{
+      criterion_id: 'place', criterion: '장소: 친환경생태공원', type: 'information', status: 'review',
+      reason: '서로 다른 OCR 후보를 확인해 주세요.', observed_text: '친환경생대공원',
+      evidence: [{ ocr_id: 'r1', text: '친환경생대공원', baseline_text: '친환경생대공원',
+        requires_review: true, bbox_xyxy: [0, 0, 1, 1],
+        alternatives: [{ text: '친환경생태공원', engine: 'qwen3-vl', bbox_xyxy: [0, 0, 1, 1] },
+          { text: '친환경생태공원', engine: 'paddleocr', bbox_xyxy: [0, 0, 1, 1] }] }],
+    }] });
+  // 예전 실행의 결과 화면은 저장된 검수를 여는 경로로 확인한다(위 시험과 같은 이유).
+  await page.goto(`${baseURL}/review/new?review=test-review`);
   const inspector = page.getByRole('complementary', { name: '선택 항목 상세', exact: true });
-  assert.equal(await inspector.locator('.rv-result-verdict .rv-result-status').textContent(), '확인 필요');
+  await inspector.getByLabel('재인식 비교', { exact: true }).waitFor();
+  await inspector.getByText('처음 읽기: 친환경생대공원', { exact: true }).waitFor();
+  await inspector.getByText('다시 읽기: Qwen: 친환경생태공원 / PaddleOCR: 친환경생태공원', { exact: true }).waitFor();
+  // 판정 상태는 선택한 항목의 줄에 표시된다.
+  const row = page.getByRole('list', { name: '검수 항목 목록', exact: true }).getByRole('button', { name: /장소: 친환경생태공원/ });
+  assert.equal(await row.getAttribute('aria-pressed'), 'true');
+  assert.equal(await row.locator('.rv-result-status').textContent(), '확인 필요');
   const evidence = page.getByRole('button', { name: '근거 영역: 친환경생대공원', exact: true });
   await evidence.waitFor();
   assert.equal(await evidence.getAttribute('aria-pressed'), 'true');
@@ -401,14 +430,18 @@ test('포스터 결과에서 모든 근거와 선택 근거를 오가며 항목�
   await assertSelection('행사명: 테스트 축제', '행사명 근거 문구');
   assert.equal(await list.locator('.rv-result-item-button').count(), 4);
 
+  // 항목 검색은 접혀 있어 먼저 펼친다.
+  await page.getByText('항목 검색', { exact: true }).click();
   await search.fill('심볼');
   await assertSelection('시 로고 포함', '브랜드 심볼 영역');
   assert.equal(await list.locator('.rv-result-item-button').count(), 1);
   await search.fill('일치하는-항목-절대없음-xyz');
-  await inspector.getByText('표시할 항목이 없습니다.', { exact: true }).waitFor();
+  // 맞는 항목이 없으면 안내는 목록 칸에 나오고, 앞서 고른 항목의 상세는 화면에 남지 않는다.
+  await page.getByRole('complementary', { name: '검수 요구사항', exact: true }).getByText('표시할 항목이 없습니다.', { exact: true }).waitFor();
   assert.equal(await selectedButtons.count(), 0);
   assert.equal(await page.getByTestId('evidence-box').count(), 0);
-  assert.equal(await inspector.getByText('시 로고처럼 보이는 도형', { exact: true }).count(), 0);
+  assert.equal(await inspector.count(), 0);
+  assert.equal(await page.getByText('시 로고처럼 보이는 도형', { exact: true }).count(), 0);
   await page.getByRole('button', { name: '검색·필터 초기화', exact: true }).click();
   await assertSelection('기간: 10월 30일~11월 1일', '날짜 근거 문구', '날짜 추가 표기');
   assert.equal(await search.inputValue(), '');

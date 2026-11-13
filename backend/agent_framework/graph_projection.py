@@ -30,10 +30,11 @@ def source_rows(version_id, criteria):
     rows=[]
     for item in criteria:
         cid=item['criterion_id']
-        rows.append({'criterion_id':cid,'source_key':f'source:{version_id}:{cid}:document',
+        kind = 'direct_input' if item['source'].get('kind') == 'direct_input' else 'document'
+        rows.append({'criterion_id':cid,'source_key':f'source:{version_id}:{cid}:{kind}',
                      'source_hash':item['source']['source_hash']})
         value=item.get('value_source')
-        if value:
+        if value and (kind != 'direct_input' or value['quote_sha256'] != item['source']['source_hash']):
             rows.append({'criterion_id':cid,'source_key':f'source:{version_id}:{cid}:value',
                          'source_hash':value['quote_sha256']})
     return sorted(rows,key=lambda row:(row['criterion_id'],row['source_key']))

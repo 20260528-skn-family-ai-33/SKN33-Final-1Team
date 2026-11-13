@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
+import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { handoff, intervalText, LINK_RATIO, linkCandidates, toIntervals, topGroups } from './logoFlow.js';
@@ -339,7 +340,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   return <div className="vl-main-stack">
     <div className="vl-stage-heading">
       <div><span className="vl-kicker">01 / 위치 확인</span><h1>이 원본 로고가 나오는 구간을 고르세요</h1>
-        <p>순위는 후보를 찾는 데 쓰고, 같은 로고인지 최종 확인은 상현님이 진행합니다.</p></div>
+        <p>순위는 후보를 찾는 데 씁니다. 같은 로고인지 최종 확인은 담당자가 진행합니다.</p></div>
       <div className="vl-stage-actions">
         <button type="button" className="vl-button subtle" onClick={onManual}>후보에 없음 · 직접 지정</button>
         <button type="button" className="vl-button secondary" onClick={onNone}>영상에 없음</button>
@@ -352,6 +353,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
         <section className="vl-panel">
           <div className="vl-section-heading"><div><span className="vl-kicker">상위 후보</span><h2>비교할 묶음을 선택하세요</h2></div>
             <span className="vl-soft-tag">여러 묶음 선택 가능</span></div>
+          <p className="vl-candidate-help">기본 선택된 후보는 없습니다. 영상에서 같은 로고로 보이는 묶음만 선택해 확정하세요.</p>
           <div className="vl-candidate-grid">
             {top.map((groupIndex, index) => <CandidateCard key={groupIndex} video={video} refIndex={refIndex} groupIndex={groupIndex}
               rank={index + 1} selected={checked.has(groupIndex)} onToggle={() => {
@@ -514,6 +516,7 @@ function EvidenceBundle({ base, bundle, refInfo }) {
 }
 
 export default function LogoConfirmPage() {
+  const go = useNavigate();
   const [params, setParams] = useSearchParams();
   const job = params.get('job');
   const view = params.get('view') === 'compare' ? 'compare' : 'confirm';
@@ -707,31 +710,37 @@ export default function LogoConfirmPage() {
     }
   }
 
-  const back = meta?.review_id ? '/video?id=' + meta.review_id : '/video';
+  // 포스터 로고 화면과 같은 로고 단계 표시. 종합 검수(동영상 검수에 연결된 작업)는 첫 단계가 그 검수로,
+  // 로고만 검수는 자료 입력으로 돌아간다. 일반 자료(detector=openai)는 위치 후보를 OpenAI로 찾았다고 알린다.
+  const linkedReview = meta?.review_id;
+  const back = linkedReview ? '/video?id=' + linkedReview : '/video';
   const missing = video?.missing || [];
+  const openaiDetector = meta?.id === job && meta?.detector === 'openai';
+  const steps = linkedReview ? { review: '동영상 검수', candidates: logoSteps.candidates, confirm: logoSteps.confirm, compare: logoSteps.compare } : logoSteps;
+  const step = !job ? 'input' : ready ? view : 'candidates';
+  const stepVersion = !ready ? '로고 검수' : view === 'compare'
+    ? (meta.compare_status === 'completed' ? '대조 완료' : comparing ? '대조 중' : '저장 후 실행')
+    : savedCount + ' / ' + refNames.length + '개 저장';
 
   return <div className="rv-workspace rv-workspace--tool">
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <SiteHeader current="/video" />
+    <WorkspaceProjectBar name={meta?.id === job ? meta.title : '동영상 로고 검수'} version={stepVersion} step={step} steps={steps} locked={busy}
+      canNavigate={key => key === 'input' || key === 'review' || (ready && (key === 'confirm' || key === 'compare'))}
+      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }}>
+      {ready && <button type="button" className="rv-button primary" onClick={runCompare}
+        disabled={!compareCount || busy || comparing}>
+        {comparing ? '정밀 대조 중' : busy ? '요청 중…' : compareCount
+          ? '저장한 ' + compareCount + '개 로고 정밀 대조' : '정밀 대조할 위치 없음'}
+      </button>}
+    </WorkspaceProjectBar>
     <main id="review-content" className="vl-page" tabIndex={-1}>
-    <div className="vl-topbar">
-      <div className="vl-topbar-title"><span className="rv-eyebrow">VIDEO LOGO REVIEW</span><strong>동영상 로고 검수</strong></div>
-      <div className="vl-topbar-actions">
-        <Link className="rv-button secondary" to={back}>동영상 검수로</Link>
-        {ready && <button type="button" className="rv-button primary" onClick={runCompare}
-          disabled={!compareCount || busy || comparing}>
-          {comparing ? '정밀 대조 중' : busy ? '요청 중…' : compareCount
-            ? '저장한 ' + compareCount + '개 로고 정밀 대조' : '정밀 대조할 위치 없음'}
-        </button>}
-      </div>
-    </div>
-
     {!job ? <section className="vl-empty-state">
       <div className="vl-empty-mark">01</div>
-      <span className="vl-kicker">백엔드 작업 연결</span>
-      <h1>동영상 검수 화면에서 작업을 시작하세요</h1>
-      <p>영상과 원본 로고를 함께 올리면 후보 묶음이 만들어집니다. 여기서 위치를 확인한 뒤 초별 비교 근거를 살펴볼 수 있습니다.</p>
-      <Link className="vl-button primary" to="/video">동영상 검수 화면 열기</Link>
+      <span className="vl-kicker">자료 입력에서 시작</span>
+      <h1>자료 입력에서 로고 검수를 시작하세요</h1>
+      <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 영상과 원본 로고를 첨부하면 후보 묶음이 만들어집니다. 여기서 위치를 확인한 뒤 초별 비교 근거를 살펴볼 수 있습니다.</p>
+      <Link className="vl-button primary" to="/video">자료 입력 열기</Link>
     </section> : <div className="vl-content">
       <div className="vl-jobbar">
         <div><span className="vl-kicker">작업</span><strong>{meta?.id === job ? meta.title : '작업 정보를 불러오는 중'}</strong></div>
@@ -743,24 +752,17 @@ export default function LogoConfirmPage() {
       {meta?.id === job && RUNNING.has(meta.status) && <section className="vl-panel vl-progress-card">
         <div className="vl-progress-title"><strong>영상 후보를 찾고 있습니다</strong><span>{meta.progress || 0}%</span></div>
         <div className="vl-progress-track"><span style={{ width: Math.min(100, meta.progress || 0) + '%' }} /></div>
-        <p>{meta.stage_detail || 'RunPod에서 프레임별 후보를 찾고 있습니다.'}</p>
+        <p>{meta.stage_detail || (openaiDetector ? 'OpenAI로 프레임별 위치를 찾고 있습니다.' : 'RunPod에서 프레임별 후보를 찾고 있습니다.')}</p>
       </section>}
       {meta?.id === job && meta.status === 'failed' && <section className="vl-panel">
         <ErrorMessage message={meta.error || '후보 찾기에 실패했습니다.'} />
-        <p className="vl-help">작업이 실패했습니다. 영상 검수 화면에서 다시 접수할 수 있습니다.</p>
+        <p className="vl-help">작업이 실패했습니다. {linkedReview ? '영상 검수 화면에서' : '자료 입력에서'} 다시 접수할 수 있습니다.</p>
       </section>}
+      {openaiDetector && meta.status === 'candidates_ready' && <p className="vl-help">
+        일반 자료라 위치 후보는 OpenAI가 프레임마다 찾은 결과를 확신도 순으로 보여 줍니다. 정밀 대조는 RunPod에서 합니다.</p>}
       {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
       {ready && <>
-        <nav className="vl-stepbar" aria-label="검수 단계">
-          <button type="button" className={view === 'confirm' ? 'active' : 'done'} onClick={() => changeView('confirm')}>
-            <span>1</span><strong>후보 위치 확인</strong><small>{savedCount} / {refNames.length}개 저장</small>
-          </button>
-          <i />
-          <button type="button" className={view === 'compare' ? 'active' : ''} onClick={() => changeView('compare')}>
-            <span>2</span><strong>정밀 대조 근거</strong><small>{meta.compare_status === 'completed' ? '대조 완료' : '저장 후 실행'}</small>
-          </button>
-        </nav>
         {missing.length > 0 && <div className="vl-warning">
           <strong>프레임 누락 {missing.length}초</strong>
           <span>누락된 시점은 후보 찾기와 정밀 대조에서 제외됩니다: {spanText(missing)}</span>

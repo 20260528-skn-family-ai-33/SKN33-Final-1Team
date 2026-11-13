@@ -101,34 +101,3 @@ def test_settings_switch_key_order_and_document_errors():
     assert should_fall_back('QWEN_UNAVAILABLE') and should_fall_back('A02_SOURCE_MISMATCH')
     assert strict_schema({'properties':{'a':{},'b':{}},'required':['a']})['required']==['a','b']
 
-
-def test_video_contract_falls_back_when_qwen_is_down():
-    from backend.app.video import requirements as video
-    from backend.agent_framework.a02_source_selection import index_sources
-    text='R01 필수 내레이션 자막: 공연봄날과 함께\n해상도 1920 × 1080 px'
-    data=text.encode()
-    _,sources=video.read_sources(data,'brief.txt')
-    index,_=index_sources(sources);first=next(iter(index.lines))
-    last=list(index.lines)[-1]
-    reply={'requirements':[{'target':'screen_text','label':'내레이션 자막','expected':'공연봄날과 함께',
-        'source':{'start_line':first,'end_line':first},'item_id':'R01','required':True,'unresolved':False,'qualifiers':[]},
-        {'target':'video_spec','label':'해상도','expected':'1920','source':{'start_line':first,'end_line':first},
-         'item_id':'R99','required':True,'unresolved':False,'qualifiers':[]},
-        {'target':'screen_text','label':'내레이션 자막','expected':'공연봄날과 함께',
-         'source':{'start_line':first,'end_line':first},'item_id':'R01','required':True,'unresolved':False,
-         'qualifiers':[{'start_line':last,'end_line':last}]}]}
-    calls=[]
-    down=httpx.MockTransport(lambda request:(_ for _ in ()).throw(httpx.ConnectError('down',request=request)))
-    result=video.extract(data,'brief.txt',settings=video.Settings(endpoint='https://qwen.invalid/v1/chat/completions',
-        model='Qwen/Qwen3.5-4B',api_key=None),transport=down,fallback=FALLBACK,fallback_transport=openai(calls,reply))
-    assert len(calls)==1 and result['trace']['model']=='gpt-6-luna'
-    assert result['trace']['fallback']=={'provider':'openai','qwen_failure':'QWEN_UNAVAILABLE'}
-    assert WARNING in result['warnings'] and result['items'][0]['expected']=='공연봄날과 함께'
-    # 원문 검증에 실패한 후보를 제외하고 유효한 자막은 남긴다.
-    assert len(result['items'])==1
-    assert [r['code'] for r in result['rejected_candidates']]==[
-        'A02_ITEM_ID_UNGROUNDED','A02_QUALIFIER_UNGROUNDED']
-    with pytest.raises(video.DocumentError) as error:
-        video.extract(data,'brief.txt',settings=video.Settings(endpoint='https://qwen.invalid/v1/chat/completions',
-            model='Qwen/Qwen3.5-4B',api_key=None),transport=down,fallback=None)
-    assert error.value.code=='QWEN_UNAVAILABLE'

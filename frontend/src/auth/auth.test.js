@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { authErrorMessage, csrfToken, isAnonymousError, loginDestination, sessionUser } from './helpers.js';
+import { authErrorMessage, csrfToken, hasLoginReturn, isAnonymousError, loginDestination, sessionUser } from './helpers.js';
 import { ApiError, fetchJson } from '../api/client.js';
 import { getSession, loginSession, logoutSession, registerAccount } from '../api/auth.js';
 import { registrationIssue, registrationErrorMessage } from './registration.js';
@@ -48,6 +48,14 @@ test('외부 주소와 허용되지 않은 경로는 로그인 복귀에 사용�
   assert.equal(loginDestination({ pathname: '/video', search: '?id=abc' }), '/video?id=abc');
   for (const from of ['https://example.com', { pathname: '//example.com' }, { pathname: '/login' }, null]) {
     assert.equal(loginDestination(from), '/review/new');
+  }
+});
+
+test('열려던 검수 화면이 없는 로그인만 자료 종류 고르기로 보낸다', () => {
+  assert.equal(hasLoginReturn({ pathname: '/review/new', search: '?framework=run' }), true);
+  assert.equal(hasLoginReturn({ pathname: '/video' }), true);
+  for (const from of [undefined, null, 'https://example.com', { pathname: '/login' }, { pathname: '//example.com' }]) {
+    assert.equal(hasLoginReturn(from), false);
   }
 });
 

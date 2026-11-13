@@ -88,14 +88,16 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
   </section>;
 }
 
-// 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다.
-export async function submitLogoJob({ video, logos, title, reviewId, signal }) {
+// 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다. 로고만 검수하면 reviewId 없이 만든다.
+// detector: 위치 후보를 찾는 곳. 'openai'(일반 자료) 또는 'runpod'(보안 자료·기본). 정밀 대조는 둘 다 RunPod다.
+export async function submitLogoJob({ video, logos, title, reviewId, detector = 'runpod', signal }) {
   const form = new FormData();
   form.append('video', video);
   logos.forEach(item => form.append('logos', item.file));
   form.append('logo_texts', JSON.stringify(logos.map(item => item.text.trim())));
   form.append('title', title);
-  form.append('review_id', reviewId);
+  if (reviewId) form.append('review_id', reviewId);
+  form.append('detector', detector === 'openai' ? 'openai' : 'runpod');
   return fetchJson('/api/video-logos', { method: 'POST', body: form, signal });
 }
 
@@ -149,7 +151,8 @@ function LogoActions({ job }) {
 export function LogoFlowCard({ jobs, error }) {
   if (!jobs?.length && !error) return null;
   return <section className="rv-panel rv-video-logo-card" aria-labelledby="video-logo-title">
-    <div className="rv-panel-heading"><div><h2 id="video-logo-title">영상 로고 검수</h2><p>위치 확정 → 정밀 대조 순서로 진행합니다. 판정은 사람이 합니다.</p></div></div>
+    <div className="rv-panel-heading"><div><h2 id="video-logo-title">영상 로고 검수</h2>
+      <p>후보를 고른 뒤 영상에서 위치를 확정하고, 정밀 대조 근거를 확인합니다. 최종 판정은 담당자가 합니다.</p></div></div>
     <div className="rv-video-logo-body">
       <ErrorMessage message={error} />
       <ul className="rv-video-logo-jobs">{(jobs || []).map(job => <li key={job.id}>
@@ -170,6 +173,9 @@ export function LogoFlowCard({ jobs, error }) {
 export function LogoFlowInline({ jobs, error, notice }) {
   if (!jobs?.length && !error && !notice) return null;
   return <div className="rv-video-logo-inline" role="group" aria-label="영상 로고 검수">
+    {jobs?.length > 0 && <p className="rv-video-logo-inline-help">
+      후보 선택 → 위치 확정 → 정밀 대조 근거 확인 순서로 진행합니다. 최종 판정은 담당자가 합니다.
+    </p>}
     {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
     {error && <p className="rv-video-inline-warning"><Icon name="warning" />{error}</p>}
     {(jobs || []).map(job => <React.Fragment key={job.id}>

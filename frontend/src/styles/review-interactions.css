@@ -50,3 +50,31 @@ a.rv-button:hover { text-decoration: none; }
   .rv-button:active:not(:disabled), .rv-icon-button:active:not(:disabled), .rv-result-item-navigation button:active:not(:disabled) { transform: none; }
   .rv-button[aria-busy="true"]::before { animation-duration: 2.4s; }
 }
+
+/* Native modal keeps clicks and keyboard focus inside the start overlay. */
+.rv-start-overlay {
+  width: min(340px, calc(100% - 32px));
+  padding: 28px 24px;
+  border: 1px solid var(--rv-line, #deded9);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--rv-ink, #171717);
+  text-align: center;
+  cursor: progress;
+}
+.rv-start-overlay::backdrop { background: rgb(0 0 0 / 48%); }
+.rv-start-overlay h2 { margin: 14px 0 0; font-size: 18px; font-weight: 700; }
+.rv-start-overlay p { margin: 8px 0 0; font-size: 13px; line-height: 1.55; }
+.rv-start-overlay .rv-button { margin-top: 16px; }
+.rv-start-spinner {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #deded9;
+  border-top-color: var(--rv-ink, #171717);
+  border-radius: 50%;
+  animation: rv-button-spin .8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-start-spinner { animation: none; }
+}

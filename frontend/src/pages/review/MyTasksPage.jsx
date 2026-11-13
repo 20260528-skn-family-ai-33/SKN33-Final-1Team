@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
-import { useAuth } from '../../auth/AuthProvider.jsx';
-import PdfBatches from './PdfBatches.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { PixelField } from '../../components/PixelField.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
+import { mediaChoicePath, mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { frameworkJson } from './frameworkClient.js';
 import '../../styles/my-tasks.css';
 
@@ -18,7 +18,6 @@ const taskTime = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short', timeStyl
 
 export default function MyTasksPage() {
   const resetWorkspace = useWorkspaceReset();
-  const { user } = useAuth();
   const [visibility, setVisibility] = useState('visible');
   const [cursors, setCursors] = useState([null]);
   const [page, setPage] = useState(null);
@@ -116,14 +115,13 @@ export default function MyTasksPage() {
     <SiteHeader current="/review/tasks" locked={busy} lockReason="작업 변경을 저장하고 있습니다." />
     {busy && <span id="mt-lock-reason" className="sr-only">작업 변경을 저장하고 있습니다.</span>}
     <main className="rv-main rv-my-tasks" id="review-content" aria-labelledby="tasks-title" tabIndex={-1}>
-      <header className="rv-task-heading"><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>
+      <header className="rv-task-heading"><PixelField monochrome quiet /><div><span className="rv-eyebrow">MY TASKS</span><h1 id="tasks-title" ref={title} tabIndex={-1}>내 작업</h1>
         <p>문서 분석과 포스터 검수 작업을 다시 열 수 있어요. 최근 동영상 검수는 기본 목록과 전체 이력의 첫 페이지에 표시돼요.</p></div>
         {busy ? <button type="button" className="rv-button primary" disabled>새 검수</button>
-          : <Link className="rv-button primary" to="/review/new" onClick={event => {
+          : <Link className="rv-button primary" to={mediaChoicePath} state={mediaChoiceState} onClick={event => {
             if (!event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) resetWorkspace();
           }}>새 검수</Link>}
       </header>
-      {user?.id != null && <PdfBatches key={user.id} userId={user.id} onAccepted={() => setReload(value => value + 1)} />}
       <section className="rv-panel rv-task-panel" aria-label="내 작업 목록">
         <div className="rv-task-toolbar">
           <div className="rv-task-view"><label>이력 표시 <select ref={visibilitySelect} value={visibility} disabled={busy}

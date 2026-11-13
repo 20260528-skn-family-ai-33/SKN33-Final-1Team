@@ -264,7 +264,8 @@ class PostgresDocuments:
                 versions.c.request_key==UUID(intent['request_key']))).mappings().one_or_none()
             return dict(row) if row and self._matches(row,intent) else None
 
-    def register(self,subject,dev,pid,request_key,raw,*,filename='document.pdf',document_id=None,previous_version_id=None,media_type='application/pdf'):
+    def register(self,subject,dev,pid,request_key,raw,*,filename='document.pdf',document_id=None,previous_version_id=None,
+                 media_type='application/pdf',wait_for_replay=False):
         self.preflight(subject,dev,pid,document_id,previous_version_id)
         if media_type not in ('application/pdf','text/plain'):raise AuthError('UNSUPPORTED_MEDIA_TYPE',415)
         if media_type=='text/plain':
@@ -281,7 +282,7 @@ class PostgresDocuments:
         fingerprint=sha256(json.dumps(fixed,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
         op=uuid5(NAMESPACE_URL,('creative-checker-text:' if media_type=='text/plain' else 'creative-checker-pdf:')+str(pid)+':'+str(request_key))
         try:
-            with self.storage.lock('operation-'+str(op)):
+            with self.storage.lock('operation-'+str(op), nonblocking=not wait_for_replay):
                 intent=self._intent(op,pid,subject.user_id,request_key,fingerprint,name,count,raw,document_id,previous_version_id,media_type)
                 self._publish(intent,raw)
                 intent.update(phase='finalized',db_outcome='unconfirmed');self.storage.journal(intent)

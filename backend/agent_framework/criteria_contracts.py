@@ -85,9 +85,34 @@ class CriteriaVersionRequest(Contract):
         return self
 
 
+class CriteriaAdditionRequest(Contract):
+    parent_version_id: UUID | None
+    expected_base_sha256: Hash
+    criterion_ids: tuple[Identifier, ...] | None = Field(min_length=1, max_length=128)
+    text: str = Field(strict=True, min_length=1, max_length=6000)
+
+    @model_validator(mode='after')
+    def valid_selection_and_text(self):
+        if self.criterion_ids is not None and len(set(self.criterion_ids)) != len(self.criterion_ids):
+            raise ValueError('duplicate selection')
+        lines = [line for line in self.text.splitlines() if line.strip()]
+        if not lines or len(lines) > 100:
+            raise ValueError('enter between one and 100 requirements')
+        return self
+
+
+class CriteriaAddition(Contract):
+    """Immutable admission data for the text-only A02 job."""
+    source_run_id: Identifier
+    request_key: UUID
+    parent_version_id: UUID | None
+    expected_base_sha256: Hash
+    criterion_ids: tuple[Identifier, ...] | None = Field(min_length=1, max_length=128)
+
+
 class RecordedCriteriaEdit(Contract):
     criterion_id: Identifier
-    action: Literal['amend','exclude']
+    action: Literal['amend','exclude','add']
     reason: Text
     source: CriteriaValueSource
 
@@ -107,6 +132,14 @@ class CriteriaVersion(Contract):
     created_at: AwareDatetime
     purpose: Purpose
     synthetic: bool
+    addition_run_ids: tuple[Identifier, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_version(self, handler):
+        data = handler(self)
+        if not self.addition_run_ids:
+            data.pop('addition_run_ids', None)
+        return data
 
 
 class CriteriaVersionRecord(Contract):

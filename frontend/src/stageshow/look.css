@@ -1,0 +1,50 @@
+/* Creative Checker 룩: 제품 화면(styles/optimus-theme.css)의 색·글꼴·모서리 값을 Stageshow 토큰에 맞춘다.
+   소개 화면의 모든 장면이 이 파일 하나를 쓴다(Stage className="cc-look …"). */
+.cc-look .ss-stage {
+  /* 글꼴은 제품과 같은 스택을 쓴다(외부 글꼴 요청 없음) */
+  --ss-font: var(--font-ui, 'Helvetica Neue', Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif);
+  --ss-mono: var(--font-signal, 'SFMono-Regular', Consolas, monospace);
+
+  /* 바탕: 작업 화면의 종이색 캔버스와 흰 카드 */
+  --ss-canvas: #fafaf8;
+  --ss-surface: #fff;
+  --ss-chrome: #fff;
+  --ss-well: #ecebe7;
+  --ss-raised: #fff;
+  --ss-line: #d9d7d0;
+  --ss-line-faint: #ecebe7;
+
+  /* 글자: 잉크 · 보조 · 흐림 (흰 바탕 대비 16:1 · 6:1 · 3.5:1) */
+  --ss-text-strong: #171717;
+  --ss-text: #62645e;
+  --ss-text-faint: #8b8b85;
+  --ss-icon: #62645e;
+  --ss-icon-faint: #b9b9b3;
+
+  /* 강조는 잉크 하나. 상태색은 결과 화면의 충족·위반·확인 필요와 같다 */
+  --ss-accent: #171717;
+  --ss-accent-2: #171717;
+  --ss-accent-soft: #ececea;
+  --ss-accent-text: #171717;
+  --ss-success: #1db954;
+  --ss-success-soft: #e4f7ec;
+  --ss-success-text: #177d45;
+  --ss-danger: #c0513d;
+  --ss-danger-soft: #f9ece9;
+  --ss-danger-text: #a34f3e;
+  --ss-warning: #b0933a;
+  --ss-warning-soft: #f6f0dc;
+  --ss-warning-text: #806a28;
+
+  /* 모양: 작업 화면과 같은 6px 모서리, 창 8px */
+  --ss-radius-sm: 5px;
+  --ss-radius-md: 6px;
+  --ss-radius-lg: 6px;
+  --ss-radius-window: 8px;
+
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+
+/* 제품 아이콘(components/Icon.jsx)을 kit 버튼 안에 넣을 때의 크기 */
+.cc-look .ss-button__icon > .icon { width: var(--ss-button-icon); height: var(--ss-button-icon); stroke-width: 1.9; }

@@ -23,7 +23,7 @@ import time
 from typing import Callable
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -58,8 +58,6 @@ MIN_OCR_SUCCESS = 0.9
 PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "classifying": 88,
             "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "transcode": 99, "completed": 100}
 LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
-DOCUMENT_RESULT_TTL_SECONDS = 3600
-DOCUMENT_RESULT_LIMIT = 32
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
     "ocr": "프레임 글자 판독에 실패했습니다. 자막 판독 모델(Qwen3-VL) 서버 연결과 준비 상태를 확인한 뒤 다시 실행해 주세요.",
@@ -144,6 +142,24 @@ def subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int
     """Pipeline의 기본 recognize. qwen3-vl이면 Qwen3-VL 판독, paddleocr이면 기존 Paddle 판독."""
     return vlm.read_frames(frames, directory, progress) if subtitle_engine() == "qwen3-vl" \
         else paddle_frames(frames, directory, progress)
+
+
+# 보안 여부에 따른 모델 경로(backend/agent_framework/model_route.py, 2026-11-12 사용자 결정).
+# 일반 자료(openai)는 문서 분석·자막 판독을 OpenAI API로, 보안 자료(runpod)는 기존 Qwen/RunPod만 쓴다.
+VIDEO_ROUTES = ("default", "openai", "runpod")
+
+
+def route_form(value: str) -> str:
+    """요청의 model_route 값. 경로 이름만 받고 주소·키는 받지 않는다."""
+    value = (value or "default").strip().lower()
+    if value not in VIDEO_ROUTES:
+        raise HTTPException(422, "model_route는 default, openai, runpod 중 하나여야 합니다.")
+    return value
+
+
+def openai_subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
+    """일반 자료의 자막 판독: 같은 프롬프트·형식으로 OpenAI 비전 모델이 프레임을 읽는다."""
+    return vlm.read_frames(frames, directory, progress, route="openai")
 
 
 # ---------------------------------------------------------------------------
@@ -600,9 +616,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         detail = ocr_detail if ffmpeg else "ffmpeg를 찾을 수 없습니다. `pip install imageio-ffmpeg` 하거나 FFMPEG_BIN을 지정하세요."
         if readonly:
             detail = "읽기 전용 모드라 새 동영상 검수를 받지 않습니다. 기존 결과만 볼 수 있습니다."
-        from backend.app.video.requirements import readiness as requirements_readiness
-        requirements = {**requirements_readiness(), "enabled": not readonly, "async_jobs": not readonly}
-        return {"requirements": requirements,"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
+        return {"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
                 "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
                 "pipeline": pipeline_name(engine) if engine else None, "subtitle_engine": engine, "limits": policy,
                 "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
@@ -644,7 +658,9 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             reserved.pop(result["id"])
 
     def run(target: Path, demuxer: str, slot: str) -> None:
-        pipeline = Pipeline(target, recognize, update, do_logo)
+        # 일반 자료(openai)는 자막 판독을 OpenAI로, 보안 자료·기존 작업은 설정된 엔진(Qwen3-VL/RunPod)으로 읽는다.
+        route = _read_json(target / "result.json").get("model_route") or "default"
+        pipeline = Pipeline(target, openai_subtitle_frames if route == "openai" and ocr is None else recognize, update, do_logo)
         pipeline.stage = "extracting"
         try:
             with worker_pool.acquire(slot, target.name) if worker_pool else inference_lock:
@@ -685,122 +701,20 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return {"items": jobs[:20]}
 
     if not readonly:
-        from backend.app.video import requirements as video_a02
-
-        requirements_lock = threading.Lock()
-        document_jobs_lock = threading.Lock()
-        document_jobs: dict[str, dict] = {}
-
-        def document_owner(request: Request) -> str:
-            identity = getattr(request.state, "video_identity", None)
-            if isinstance(identity, tuple):
-                return str(identity[0].user_id)
-            if isinstance(identity, dict):
-                return str(identity["id"])
-            return "local"
-
-        async def read_requirement_upload(document: UploadFile) -> tuple[bytes, str]:
-            try:
-                data = await document.read(video_a02.MAX_BYTES + 1)
-                filename = document.filename or ""
-            finally:
-                await document.close()
-            if not data:
-                raise HTTPException(400, {"code": "DOCUMENT_EMPTY", "message": "빈 파일입니다."})
-            if len(data) > video_a02.MAX_BYTES:
-                raise HTTPException(413, {"code": "DOCUMENT_TOO_LARGE", "message": "문서는 10MiB 이하로 올려 주세요."})
-            return data, filename
-
-        def prune_document_jobs() -> None:
-            cutoff = time.monotonic() - DOCUMENT_RESULT_TTL_SECONDS
-            for job_id, job in list(document_jobs.items()):
-                if job["finished_at"] is not None and job["finished_at"] <= cutoff:
-                    del document_jobs[job_id]
-
-        def run_document_job(job_id: str, data: bytes, filename: str) -> None:
-            try:
-                with document_jobs_lock:
-                    job = document_jobs[job_id]
-                    job["response"] = {"id": job_id, "status": "running"}
-                try:
-                    result = video_a02.extract(data, filename)
-                    outcome = {"status": "completed", "result": result}
-                except video_a02.DocumentError as error:
-                    outcome = {"status": "failed", "error": {"code": error.code, "message": str(error)}}
-                except Exception:
-                    outcome = {"status": "failed", "error": {
-                        "code": "VIDEO_DOCUMENT_ANALYSIS_FAILED", "message": "영상 문서 분석을 완료하지 못했습니다.",
-                    }}
-                with document_jobs_lock:
-                    job["response"] = {"id": job_id, **outcome}
-                    job["finished_at"] = time.monotonic()
-            finally:
-                requirements_lock.release()
-
-        @router.post("/requirements/extract")
-        async def extract_requirements(document: UploadFile = File(...)):
-            """기존 클라이언트의 동기 추출 경로."""
-            data, filename = await read_requirement_upload(document)
-            if not requirements_lock.acquire(blocking=False):
-                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
-            try:
-                return await run_in_threadpool(video_a02.extract, data, filename)
-            except video_a02.DocumentError as error:
-                raise HTTPException(error.status, {"code": error.code, "message": str(error)}) from None
-            finally:
-                requirements_lock.release()
-
-        @router.post("/requirements/extractions", status_code=202)
-        async def submit_requirement_extraction(request: Request, response: Response,
-                                                background_tasks: BackgroundTasks, document: UploadFile = File(...)):
-            owner = document_owner(request)
-            data, filename = await read_requirement_upload(document)
-            if not requirements_lock.acquire(blocking=False):
-                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
-            job_id = str(uuid4())
-            pending = {"id": job_id, "status": "queued"}
-            try:
-                with document_jobs_lock:
-                    prune_document_jobs()
-                    if len(document_jobs) >= DOCUMENT_RESULT_LIMIT:
-                        document_jobs.pop(next(iter(document_jobs)))
-                    document_jobs[job_id] = {"owner": owner, "response": pending, "finished_at": None}
-                background_tasks.add_task(run_document_job, job_id, data, filename)
-            except BaseException:
-                with document_jobs_lock:
-                    document_jobs.pop(job_id, None)
-                requirements_lock.release()
-                raise
-            response.headers["Cache-Control"] = "private, no-store"
-            return pending
-
-        @router.get("/requirements/extractions/{job_id}")
-        def get_requirement_extraction(job_id: UUID, request: Request, response: Response):
-            owner = document_owner(request)
-            with document_jobs_lock:
-                prune_document_jobs()
-                job = document_jobs.get(str(job_id))
-                if job is None or job["owner"] != owner:
-                    raise HTTPException(404, {"code": "VIDEO_DOCUMENT_ANALYSIS_NOT_FOUND",
-                                              "message": "영상 문서 분석 작업을 찾을 수 없습니다."},
-                                        headers={"Cache-Control": "private, no-store"})
-                result = job["response"]
-            response.headers["Cache-Control"] = "private, no-store"
-            return result
-
         @router.post("", status_code=202)
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
                          project_name: str = Form("동영상 검수", min_length=1, max_length=120),
                          disclosure: str = Form("{}"), logo: UploadFile = File(None),
                          project_id: UUID | None = Form(None), parent_run_id: UUID | None = Form(None),
-                         criteria_confirmed: bool = Form(False)):
+                         criteria_confirmed: bool = Form(False), model_route: str = Form("default")):
             job_id = str(uuid4())
             parent_key = None
             slot = None
             try:
                 if "content-length" not in request.headers:
                     raise HTTPException(411, "Content-Length가 필요합니다.")
+                route = route_form(model_route)
                 from backend.app.criteria_contracts import CRITERIA_MAX_JSON, Criterion
                 try:
                     parsed = json.loads(criteria) if len(criteria) <= CRITERIA_MAX_JSON else None
@@ -833,7 +747,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     job_id = str(uuid5(NAMESPACE_URL, f"creative-checker/video-review/{actor}/{key}"))
                     existing = account_root / job_id
                     if (existing / "result.json").is_file():
-                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, ad)
+                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, ad, route)
                 parent = None
                 if parent_run_id:
                     target = await run_in_threadpool(directory, request, str(parent_run_id))
@@ -855,7 +769,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 account_root.mkdir(mode=0o700, parents=True, exist_ok=True)
                 with TemporaryDirectory(dir=account_root, prefix=".video-upload-") as staging:
                     return await accept(request, Path(staging), account_root / job_id, background_tasks, video,
-                                        frozen, criteria_version, project_name, ad, logo, job_id, slot, project, actor, parent)
+                                        frozen, criteria_version, project_name, ad, logo, job_id, slot, project, actor, parent,
+                                        route)
             finally:
                 if slot is not None:
                     with admission:
@@ -866,12 +781,12 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 if logo is not None:
                     await logo.close()
 
-        async def replay(target, video, logo, project, parent, title, criteria, disclosure):
+        async def replay(target, video, logo, project, parent, title, criteria, disclosure, route="default"):
             job = await run_in_threadpool(_read_json, target / "result.json")
             workflow = job["workflow"]
             if (workflow["project_id"] != project or workflow["parent_run_id"] != (str(parent) if parent else None)
                     or job["project_name"] != title or job["criteria"] != criteria or job["disclosure_input"] != disclosure
-                    or job["media"]["bytes"] != video.size):
+                    or job["media"]["bytes"] != video.size or (job.get("model_route") or "default") != route):
                 raise AuthError("IDEMPOTENCY_KEY_REUSED", 409)
             digest = await run_in_threadpool(hashlib.file_digest, video.file, "sha256")
             logo_data = await logo.read(LOGO_QUERY_MAX_BYTES + 1) if logo and logo.filename else b""
@@ -881,7 +796,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             return {"id": job["id"], "status": job["status"]}
 
         async def accept(request, staged, target, background_tasks, video, frozen, criteria_version, project_name,
-                         ad, logo, job_id, slot, project, actor, parent):
+                         ad, logo, job_id, slot, project, actor, parent, route="default"):
             source = staged / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
             with source.open("wb") as output:  # 1MiB씩 디스크에 흘려 쓰면서 SHA-256 계산
@@ -933,6 +848,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 result["worker_slot"] = slot
             if workflow:
                 result["workflow"] = workflow
+            if route != "default":  # 보안 여부(일반 openai / 보안 runpod). 기존 작업에는 적지 않는다.
+                result["model_route"] = route
             publish(staged, target, result)
             background_tasks.add_task(run, target, demuxer, slot)
             return {"id": job_id, "status": "queued"}

@@ -33,15 +33,29 @@ async function fixture(t, options = {}) {
     await route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new');
-  await page.waitForFunction(() => document.querySelector('#document-project')?.value === 'project');
+  // 저장할 프로젝트가 하나뿐이면 저절로 고르고, 고른 프로젝트 이름을 프로젝트 버튼에 보여 준다.
+  await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
   const authReads = calls.filter(call => call.path.endsWith('/auth/me')).length;
   t.after(() => { assert.deepEqual(errors, []); assert.deepEqual(unexpected, []); });
   return { page, base, calls, authReads };
 }
 
+// 포스터·동영상 검수 모두 자료 입력 전에 보안 여부와 검수 유형을 고른다.
+const firstScreen = '보안이 필요한 자료인가요?';
+const videoInput = '숏폼 동영상 문구 검수 자료 입력';
+async function chooseReview(page, title = '문구 검수 자료 입력') {
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: '문구 검수', exact: true }).click();
+  await page.getByRole('heading', { name: title, exact: true }).waitFor();
+}
+
+// 새 입력은 보안 여부를 묻는 첫 화면부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다.
 async function checkBlank(page) {
-  await page.getByRole('heading', { name: '어떤 광고물을 검수할까요?' }).waitFor();
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   assert.equal(await page.locator('#project-name').inputValue(), '');
+  await chooseReview(page);
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByLabel('검수 이미지 선택', { exact: true }).evaluate(input => input.files.length), 0);
   assert.equal(await page.getByRole('progressbar').count(), 0);
@@ -54,6 +68,7 @@ test('현재 메뉴 재클릭과 영상 도구 왕복은 입력·첨부를 초�
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
     return canvas.toDataURL().split(',')[1];
   });
+  await chooseReview(page);
   await page.locator('#project-name').fill('이전 포스터');
   await page.locator('#requirements').fill('행사명: 이전 축제');
   await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
@@ -67,11 +82,13 @@ test('현재 메뉴 재클릭과 영상 도구 왕복은 입력·첨부를 초�
   await checkBlank(page);
   await page.locator('#requirements').fill('새 입력');
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
-  await page.getByRole('heading', { name: '숏폼 동영상 검수', exact: true }).waitFor();
+  await chooseReview(page, videoInput);
   await page.getByLabel('검수 요구사항', { exact: true }).fill('이전 영상 기준');
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
   await checkBlank(page);
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
+  // 동영상 검수도 첫 화면부터 다시 시작하고, 앞서 적은 기준은 남지 않는다.
+  await chooseReview(page, videoInput);
   assert.equal(await page.getByLabel('검수 요구사항', { exact: true }).inputValue(), '');
   // 모델 테스트 화면은 없앴다. 메뉴에도 남지 않는다.
   assert.equal(await tools.getByRole('link', { name: '모델 테스트', exact: true }).count(), 0);
@@ -96,6 +113,7 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
     } else return false;
     return true;
   } });
+  await chooseReview(page);
   await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
   await pending;
   const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
@@ -109,14 +127,17 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
     assert.equal(await link.getAttribute('href'), null, 'locked tools cannot open another route or tab');
     await link.dispatchEvent('click');
   }
-  for (const name of ['크리에이티브체커 홈', '서비스 메인으로', '로그아웃']) {
+  // 프로젝트 줄의 '서비스 메인으로' 버튼은 없어졌다. 서비스 메인으로 가는 길은 머리글의 로고(홈)뿐이다.
+  for (const name of ['크리에이티브체커 홈', '로그아웃']) {
     assert.equal(await page.getByRole('button', { name, exact: true }).isDisabled(), true);
   }
   assert.equal(await page.getByRole('button', { name: /자료 입력/ }).isDisabled(), true);
   assert.equal(new URL(page.url()).pathname, '/review/new');
   await documentCard.getByText('요구사항 분석을 접수하고 있습니다.', { exact: true }).waitFor();
-  assert.ok(await documentCard.locator('.rv-progress-spinner').isVisible());
-  await documentCard.getByRole('timer', { name: '경과 시간' }).filter({ hasText: /경과 0:0[1-9]/ }).waitFor();
+  // 회전 표시 대신 문서를 읽는 3D 그림을 보여 준다. 분석 상태는 이 카드에서 확인하므로 새 탭으로 여는 링크는 두지 않는다.
+  assert.ok(await documentCard.locator('.rv-document-art .pa.is-document').isVisible());
+  assert.equal(await documentCard.getByRole('link', { name: '새 탭에서 분석 상태 확인' }).count(), 0);
+  await documentCard.getByRole('timer', { name: '문서 분석 경과 시간', exact: true }).filter({ hasText: /총 경과 00:0[1-9]/ }).waitFor();
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
@@ -133,14 +154,17 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
 
 test('홈 버튼 왕복도 새 입력으로 초기화한다', { timeout: 30000 }, async t => {
   const { page, base } = await fixture(t);
-  for (const home of ['크리에이티브체커 홈', '서비스 메인으로']) {
-    await page.locator('#project-name').fill('이전 작업');
-    await page.locator('#requirements').fill('홈으로 이동하기 전 기준');
-    await page.getByRole('button', { name: home, exact: true }).click();
-    await page.waitForURL(base + '/');
-    await page.getByRole('button', { name: /^검수 시작하기/ }).first().click();
-    await checkBlank(page);
-  }
+  await chooseReview(page);
+  await page.locator('#project-name').fill('이전 작업');
+  await page.locator('#requirements').fill('홈으로 이동하기 전 기준');
+  // 프로젝트 줄의 '서비스 메인으로' 버튼은 없어졌다. 서비스 메인으로는 머리글의 로고(홈)로 간다.
+  await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
+  await page.waitForURL(base + '/');
+  await page.getByRole('button', { name: /^검수 시작하기/ }).first().click();
+  // 소개 화면의 시작 단추는 포스터·동영상 중 무엇을 검수할지부터 묻는다.
+  await page.getByRole('heading', { name: '어떤 자료를 검수할까요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '포스터', exact: true }).click();
+  await checkBlank(page);
 });
 
 test('포스터 실행 중 이동을 잠그고 실행이 끝나면 메뉴 초기화를 허용한다', { timeout: 30000 }, async t => {
@@ -185,6 +209,7 @@ test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을
   } });
   const tools = page.getByRole('navigation', { name: '검수 도구', exact: true });
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
+  await chooseReview(page, videoInput);
   await page.locator('#video-file').setInputFiles({ name: 'video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video') });
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
   await pending;
@@ -247,6 +272,10 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
   await page.getByText('영상·기준·승인 이력', { exact: true }).click();
   await page.getByText(/광고 위치 수정 · 2026-11-11/).waitFor();
   await page.getByRole('button', { name: '수정본 등록', exact: true }).click();
+  // 보안 여부 기록이 없는 검수라 수정본을 올릴 때 보안 여부를 다시 묻는다. 유형은 문구 검수로 이어진다.
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: videoInput, exact: true }).waitFor();
   await page.getByText(/수정본을 등록/).waitFor();
   await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles({
     name: 'revised.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video'),

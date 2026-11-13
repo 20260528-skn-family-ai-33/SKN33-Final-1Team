@@ -125,6 +125,12 @@ async function unstableSizes(page) {
 for (const scale of SCALES) test(`입력 화면(배율 ${scale * 100}%): 어떤 포스터 모양·칸 크기에서도 이미지 칸이 떨리거나 넘치지 않는다`, async t => {
   const { page } = await fixture(t, scale);
   await page.goto(`${baseURL}/review/new`);
+  // 이미지 칸은 보안 여부와 검수 유형을 고른 뒤에 나온다. 요구사항·문서·로고 칸이 모두 있는 종합 검수 화면에서 잰다.
+  await page.getByRole('heading', { name: '보안이 필요한 자료인가요?', exact: true }).waitFor();
+  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
+  await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
+  await page.getByRole('button', { name: '종합 검수', exact: true }).click();
+  await page.getByRole('heading', { name: '종합 검수 자료 입력', exact: true }).waitFor();
   const problems = [];
   for (const [width, height] of SHAPES) {
     await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles(await poster(page, width, height));
@@ -133,6 +139,14 @@ for (const scale of SCALES) test(`입력 화면(배율 ${scale * 100}%): 어떤 
   }
   assert.deepEqual(problems, []);
 });
+
+// 결과 화면에서 항목을 누르면 판정 근거 창이 열린다. 뒤의 이미지 칸을 확인하려면 창을 닫고 이어 간다.
+async function chooseRow(page, row) {
+  await row.click();
+  await page.locator('dialog.rv-evd[open]').waitFor();
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('dialog.rv-evd'));
+}
 
 for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장자리 근거 상자의 긴 이름표가 있어도 이미지 칸이 떨리거나 넘치지 않는다`, async t => {
   const { page, state } = await fixture(t, scale);
@@ -159,7 +173,7 @@ for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장�
     const list = page.getByRole('list', { name: '검수 항목 목록', exact: true });
     // 세 위치를 이미지 모양마다 번갈아 선택한다. 스크린샷용 이미지는 오른쪽 끝 항목을 사용한다.
     const selected = width === 2480 ? 0 : index % 3;
-    await list.locator('.rv-result-item-button').nth(selected).click();
+    await chooseRow(page, list.locator('.rv-result-item-button').nth(selected));
     await page.getByRole('button', { name: `근거 영역: ${state.review.results[selected].observed_text}`, exact: true }).waitFor();
     assert.equal(await page.getByTestId('evidence-box').count(), 1);
     if (process.env.E2E_SCREENSHOT_DIR && width === 2480 && scale === SCALES[0]) {
@@ -169,7 +183,7 @@ for (const scale of SCALES) test(`결과 화면(배율 ${scale * 100}%): 가장�
     }
     for (const problem of await unstableSizes(page)) problems.push(`${width}x${height} ${problem}`);
     if (width === 2480) {
-      await list.getByRole('button', { name: /파일 형식: JPEG/ }).click();
+      await chooseRow(page, list.getByRole('button', { name: /파일 형식: JPEG/ }));
       await page.getByText('이 항목에는 이미지 위치 근거가 제공되지 않았습니다.', { exact: true }).waitFor();
       assert.equal(await page.getByTestId('evidence-box').count(), 0);
       assert.equal(await page.getByRole('button', { name: '선택 근거 표시', exact: true }).isEnabled(), true);

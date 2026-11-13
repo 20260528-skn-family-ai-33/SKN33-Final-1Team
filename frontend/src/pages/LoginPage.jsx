@@ -1,13 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { SiteHeader } from '../components/SiteHeader.jsx';
 import { Icon } from '../components/Icon.jsx';
+import { PixelField } from '../components/PixelField.jsx';
+import { useTilt } from '../components/LayerFigure.jsx';
 import { ErrorMessage } from '../components/ErrorMessage.jsx';
 import { useAuth } from '../auth/AuthProvider.jsx';
-import { authErrorMessage, loginDestination } from '../auth/helpers.js';
+import { authErrorMessage, hasLoginReturn, loginDestination } from '../auth/helpers.js';
+import { mediaChoiceState, wantsMediaChoice } from '../workspace/mediaChoice.js';
 import { registerAccount } from '../api/auth.js';
 import { registrationErrorMessage, registrationIssue } from '../auth/registration.js';
-import posterReviewExample from '../assets/poster-review-example.png';
+// 검수 결과 화면 예시(Stageshow 장면)는 로그인 입력보다 늦게 불러와도 되므로 따로 불러온다.
+const ResultDemo = React.lazy(() => import('../stageshow/ResultDemo.tsx').then(scenes => ({ default: scenes.ResultDemo })));
 import '../styles/auth.css';
 
 // 로그인 입력과 세션 확인 결과를 표시하고 성공한 사용자를 검수 화면으로 연결한다.
@@ -32,8 +36,13 @@ export function LoginPage() {
   const passwordInput = useRef(null);
   const nameInput = useRef(null);
   const confirmationInput = useRef(null);
+  // 예시 장면은 마우스를 따라 조금 기운다(움직임을 줄인 환경과 터치 화면에서는 고정).
+  const exampleTilt = useTilt();
   const from = location.state?.from;
-  const destination = from?.pathname === '/review/tasks' ? '/review/tasks' : loginDestination(from);
+  const toTasks = from?.pathname === '/review/tasks';
+  const destination = toTasks ? '/review/tasks' : loginDestination(from);
+  // 열려던 검수 화면이 따로 없으면 포스터로 바로 들어가지 않고 자료 종류(포스터·동영상)부터 고른다.
+  const destinationState = !toTasks && (!hasLoginReturn(from) || wantsMediaChoice(from)) ? mediaChoiceState : undefined;
   const unavailable = status === 'unavailable';
   const checking = status === 'checking';
 
@@ -93,7 +102,7 @@ export function LoginPage() {
       const user = await login({ username: username.trim(), password });
       if (!mounted.current) return;
       setPassword('');
-      if (user) navigate(destination, { replace: true });
+      if (user) navigate(destination, { replace: true, state: destinationState });
     } catch (failure) {
       if (!mounted.current) return;
       setError(signup ? registrationErrorMessage(failure) : authErrorMessage(failure));
@@ -123,16 +132,18 @@ export function LoginPage() {
     setSuccess('');
   }
 
-  if (status === 'authenticated') return <Navigate to={destination} replace />;
+  if (status === 'authenticated') return <Navigate to={destination} replace state={destinationState} />;
 
   return <div className="auth-page auth-page--public">
     <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
+        <PixelField monochrome scene="poster" />
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
         <h1 id="login-intro-title">검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>
-        <figure className="auth-example"><img src={posterReviewExample} alt="포스터와 항목별 판정 근거를 나란히 표시한 예시" width="921" height="543" />
+        <figure className="auth-example" ref={exampleTilt}>
+          <div role="img" aria-label="포스터와 항목별 판정 근거를 나란히 표시한 예시"><Suspense fallback={<div className="auth-example-hold" aria-hidden="true" />}><ResultDemo /></Suspense></div>
           <figcaption>포스터 검수 결과 예시</figcaption></figure>
       </section>
       <section className="auth-card" aria-labelledby="login-title">

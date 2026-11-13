@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative Checker · 챗봇 모듈 미리보기</title>
+  <style>
+    body { margin: 0; color: #20231f; background: #f3f3ef; font: 15px/1.65 system-ui, sans-serif; }
+    main { max-width: 760px; margin: 12vh auto; padding: 0 24px; }
+    h1 { letter-spacing: -.04em; line-height: 1.2; }
+    button, a { color: #214e3b; }
+    button { font: inherit; padding: 7px 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Creative Checker 챗봇 미리보기</h1>
+    <p id="status" role="status">로그인 상태를 확인하고 있어요.</p>
+    <p><a href="/login">Creative Checker 로그인</a> · <button id="refresh" type="button">세션 다시 확인</button></p>
+  </main>
+  <script type="module">
+    import { mountHelpChat } from './src/help-chat/index.js';
+
+    const status = document.querySelector('#status');
+    let checkNumber = 0;
+    const chat = mountHelpChat({ onSessionExpired: () => {
+      checkNumber += 1;
+      status.textContent = '로그인 세션이 만료됐어요. 다시 로그인해 주세요.';
+    } });
+
+    async function checkSession() {
+      const current = ++checkNumber;
+      try {
+        const response = await fetch('/api/v1/auth/me', { credentials: 'same-origin', cache: 'no-store' });
+        if (!response.ok) throw new Error('session request failed');
+        const session = await response.json();
+        if (current !== checkNumber) return;
+        const userId = session.authenticated === true ? session.user?.id : null;
+        chat.setUser(userId);
+        status.textContent = userId ? '로그인 확인 완료. 우측 하단의 사용 안내를 열어보세요.' : 'Creative Checker에 로그인한 뒤 이 페이지로 돌아오세요.';
+      } catch {
+        if (current !== checkNumber) return;
+        chat.setUser(null);
+        status.textContent = '로그인 서버에 연결하지 못했어요. API 프록시 설정을 확인해 주세요.';
+      }
+    }
+
+    document.querySelector('#refresh').addEventListener('click', checkSession);
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) checkSession();
+    });
+    checkSession();
+  </script>
+</body>
+</html>

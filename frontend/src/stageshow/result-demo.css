@@ -1,0 +1,98 @@
+/* 히어로 데모(ResultDemo.tsx): 검수 결과 화면.
+   구도는 '넓은 히어로' — 창이 위·좌우 한 여백(56px)만큼 들어와 앉고 아래로 화면 밖까지 이어진다.
+   잉크색 바탕 위의 흰 창 하나가 주인공이고, 색은 포스터와 판정 상태에만 쓴다. */
+.rd .ss-stage {
+  --rd-gutter: 56px;
+  --rd-move: 0.7s cubic-bezier(0.45, 0, 0.1, 1);
+  overflow: hidden;
+  border-radius: 6px;
+  background: #0b0a09;
+  /* 작업 화면의 버튼은 알약 모양 */
+  --ss-radius-sm: 999px;
+  --ss-radius-md: 999px;
+}
+.rd .rd-window {
+  position: absolute;
+  left: var(--rd-gutter);
+  top: var(--rd-gutter);
+  width: 1040px;
+  height: 680px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 30px 60px -12px rgb(0 0 0 / 60%);
+}
+.rd .rd-body {
+  display: grid;
+  grid-template-columns: 440px 540px;
+  grid-template-rows: 396px auto;
+  gap: 16px 20px;
+  padding: 20px;
+  background: var(--ss-canvas);
+}
+
+/* 카드: 작업 화면의 흰 카드 */
+.rd .rd-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--ss-line); border-radius: 6px; background: var(--ss-surface); }
+.rd .rd-head { display: flex; flex: none; align-items: center; gap: 10px; height: 52px; padding: 0 16px; border-bottom: 1px solid var(--ss-line-faint); }
+.rd .rd-head-icon { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: #f4f4f1; color: var(--ss-icon); }
+.rd .rd-head-icon .icon { width: 15px; height: 15px; stroke-width: 1.8; }
+.rd .rd-head-title { flex: 1; min-width: 0; color: var(--ss-text-strong); font-size: 13.5px; font-weight: 650; line-height: 18px; }
+
+/* 포스터 보기 영역: 포스터와 근거 상자는 같은 값으로 함께 움직인다 */
+.rd .rd-view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #efefea; }
+.rd .rd-poster { position: absolute; left: 0; top: 0; width: 483px; height: 644px; border-radius: 3px; box-shadow: 0 8px 22px rgb(0 0 0 / 12%); transform-origin: 0 0; transition: transform var(--rd-move); }
+/* 고른 항목의 상자만 또렷하고 번호표를 단다. 나머지는 가는 선으로 물러난다.
+   상자는 포스터와 같은 값·같은 곡선으로 움직여 늘 같은 자리에 붙어 있다. */
+.rd .rd-mark { position: absolute; border-radius: 4px; box-shadow: inset 0 0 0 1.5px var(--rd-tone); opacity: 0.5; will-change: transform; transition: left var(--rd-move), top var(--rd-move), width var(--rd-move), height var(--rd-move), opacity 0.3s ease, box-shadow 0.3s ease, visibility 0s; }
+.rd .rd-mark[data-tone='pass'] { --rd-tone: #2bb56b; }
+.rd .rd-mark[data-tone='review'] { --rd-tone: #d3a53a; }
+.rd .rd-mark[data-tone='fail'] { --rd-tone: #e0634a; }
+.rd .rd-mark[data-on] { box-shadow: inset 0 0 0 2.5px var(--rd-tone); opacity: 1; }
+.rd .rd-mark[data-off] { opacity: 0; visibility: hidden; transition: left var(--rd-move), top var(--rd-move), width var(--rd-move), height var(--rd-move), opacity 0.3s ease, box-shadow 0.3s ease, visibility 0s 0.3s; }
+.rd .rd-mark-tag { position: absolute; left: 0; bottom: 100%; padding: 0 5px; border-radius: 4px 4px 0 0; background: var(--rd-tone); color: #fff; font: 600 9.5px/15px var(--ss-mono); letter-spacing: 0.02em; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+.rd .rd-mark[data-on] .rd-mark-tag { opacity: 1; visibility: visible; transition: opacity 0.3s ease, visibility 0s; }
+
+.rd .rd-tools { display: flex; flex: none; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; border-top: 1px solid var(--ss-line-faint); }
+
+/* 검수 요구사항: 상태별 개수와 항목 */
+.rd .rd-filters { display: grid; flex: none; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 14px 16px 8px; }
+.rd .rd-filter { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--ss-line); color: var(--ss-text-strong); font-size: 12px; font-weight: 500; line-height: 16px; white-space: nowrap; }
+.rd .rd-filter b { color: var(--ss-text); font: 600 11px/16px var(--ss-mono); }
+.rd .rd-filter[data-on] { background: #0b0a09; box-shadow: none; color: #fff; }
+.rd .rd-filter[data-on] b { color: #fff; }
+.rd .rd-rows { padding: 2px 8px 16px; }
+.rd .rd-rows .ss-row { --ss-row-title: 13px; --ss-row-line: 18px; }
+.rd .rd-idx { color: var(--ss-text-faint); font: 500 10.5px/18px var(--ss-mono); }
+
+/* 펼친 상세: 기준 · 읽은 문구 · 판정 이유 · 근거. 왼쪽 선은 그 항목의 판정색 */
+.rd .rd-detail-wrap { position: relative; margin: 6px 12px 14px 38px; padding-left: 16px; }
+.rd .rd-detail-wrap::before { content: ''; position: absolute; left: 0; top: 2px; bottom: 2px; width: 2px; border-radius: 1px; background: var(--rd-edge); }
+.rd .rd-detail-wrap[data-tone='success'] { --rd-edge: var(--ss-success-text); }
+.rd .rd-detail-wrap[data-tone='danger'] { --rd-edge: var(--ss-danger-text); }
+.rd .rd-detail { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 12px; font-size: 12px; line-height: 18px; }
+.rd .rd-term { color: var(--ss-text); white-space: nowrap; }
+.rd .rd-value { min-width: 0; color: var(--ss-text-strong); }
+.rd .rd-read, .rd .rd-where { will-change: transform; }
+.rd .rd-read { display: inline-block; padding: 0 8px; border-radius: 6px; background: #f1f1ee; font-variant-numeric: tabular-nums; font-weight: 600; }
+.rd .rd-where { display: inline-flex; align-items: center; gap: 6px; height: 24px; margin: -3px 0; padding: 0 10px 0 8px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--ss-line); color: var(--ss-text-strong); font-weight: 500; }
+.rd .rd-where .icon { width: 12px; height: 12px; color: var(--ss-icon); stroke-width: 2; }
+
+/* 창 아래로 이어지는 구역 */
+.rd .rd-below { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 12px; height: 132px; padding: 20px; border: 1px solid var(--ss-line); border-radius: 6px; background: var(--ss-surface); }
+
+.rd .rd-spot { position: absolute; width: 1px; height: 1px; }
+
+/* 좁은 화면(358px): 줄이지 않고 다시 짠다. 창 틀을 버리고 요구사항 카드 하나만 실제 크기로 올려 아래로 흘려보낸다.
+   근거는 펼친 상세 안의 포스터 조각으로 보여 준다. */
+.rd .ss-stage[data-layout='compact'] { --rd-gutter: 16px; }
+.rd .ss-stage[data-layout='compact'] .rd-list { position: absolute; left: var(--rd-gutter); top: var(--rd-gutter); width: 326px; height: 520px; border-color: transparent; }
+.rd .ss-stage[data-layout='compact'] .rd-head { height: 46px; padding: 0 14px; }
+.rd .ss-stage[data-layout='compact'] .rd-rows { padding: 6px 6px 8px; }
+.rd .ss-stage[data-layout='compact'] .rd-detail-wrap { margin: 4px 28px 10px 16px; padding-left: 12px; }
+.rd .ss-stage[data-layout='compact'] .rd-detail { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.rd .ss-stage[data-layout='compact'] .rd-value { margin-bottom: 8px; }
+/* 포스터 조각: 포스터에서 근거가 있는 줄만 보이게 배경으로 깔고, 상자는 같은 비율로 얹는다. */
+/* 조각은 카드 오른쪽 끝까지 이어져 잘린다(일부러 흘려보낸 자리) */
+.rd .rd-crop { position: relative; display: block; height: 78px; margin: 2px -40px 0 0; overflow: hidden; border-radius: 8px 0 0 8px; background-color: #19392f; background-repeat: no-repeat; }
+.rd .rd-crop .rd-mark { transition: none; }
+.rd .rd-crop[data-part='date'] { background-position: 0 -446px; background-size: 420px 560px; }
+.rd .rd-crop[data-part='date'] .rd-mark { left: 32px; top: 10px; width: 171px; height: 45px; }
+.rd .rd-crop[data-part='title'] { background-position: 0 -41px; background-size: 280px 373px; }
+.rd .rd-crop[data-part='title'] .rd-mark { left: 20px; top: 11px; width: 179px; height: 56px; }

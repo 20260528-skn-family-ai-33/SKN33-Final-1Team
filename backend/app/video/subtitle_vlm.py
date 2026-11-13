@@ -81,16 +81,45 @@ def _int_env(name: str, default: int, low: int, high: int) -> int:
     return value
 
 
-def config() -> dict:
+def config(route: str = "default") -> dict:
+    """route=openai(일반 자료, backend/agent_framework/model_route.py)면 OpenAI API로 같은 프롬프트를 보낸다.
+    키·모델은 model_route.openai_settings(), 동시 요청 수·제한 시간은 VIDEO_SUBTITLE_VLM_* 값을 함께 쓴다."""
+    if route == "openai":
+        from backend.agent_framework.model_route import OPENAI_BASE_URL, openai_settings
+        from backend.agent_framework.ports import AdapterFailure
+        try:
+            settings = openai_settings()
+        except AdapterFailure:
+            raise VlmConfigError("일반 자료 자막 판독에 쓸 OpenAI API 키가 설정되지 않았습니다.") from None
+        return {"base": OPENAI_BASE_URL, "key": settings.api_key, "model": settings.model, "openai": True,
+                "effort": settings.reasoning_effort,
+                "concurrency": _int_env("VIDEO_SUBTITLE_VLM_CONCURRENCY", 8, 1, 64),
+                "timeout": _int_env("VIDEO_SUBTITLE_VLM_TIMEOUT", 180, 10, 900)}
     base = os.getenv("VIDEO_SUBTITLE_VLM_URL", "").strip().rstrip("/")
     if not base:
         raise VlmConfigError("VIDEO_SUBTITLE_VLM_URL이 설정되지 않았습니다.")
     if not base.startswith(("http://", "https://")):
         raise VlmConfigError("VIDEO_SUBTITLE_VLM_URL은 http(s) 주소여야 합니다.")
     return {"base": base, "key": os.getenv("VIDEO_SUBTITLE_VLM_API_KEY", "").strip(),
-            "model": os.getenv("VIDEO_SUBTITLE_VLM_MODEL", "").strip() or DEFAULT_MODEL,
+            "model": os.getenv("VIDEO_SUBTITLE_VLM_MODEL", "").strip() or DEFAULT_MODEL, "openai": False,
             "concurrency": _int_env("VIDEO_SUBTITLE_VLM_CONCURRENCY", 8, 1, 64),
             "timeout": _int_env("VIDEO_SUBTITLE_VLM_TIMEOUT", 180, 10, 900)}
+
+
+OPENAI_MAX_TOKENS = 8192  # 추론 모델은 추론 토큰도 출력 한도에 포함하므로 vLLM 경로보다 넉넉히 둔다
+
+
+def _payload(cfg: dict, data: str) -> dict:
+    """프레임 1장 요청 본문. OpenAI 경로는 vLLM 전용 값(chat_template_kwargs)과 temperature를 빼고
+    max_completion_tokens·reasoning_effort를 쓴다. 프롬프트·이미지 크기는 같다."""
+    messages = [{"role": "user", "content": [
+        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{data}"}},
+        {"type": "text", "text": PROMPT}]}]
+    if cfg.get("openai"):
+        return {"model": cfg["model"], "max_completion_tokens": OPENAI_MAX_TOKENS,
+                "reasoning_effort": cfg["effort"], "messages": messages}
+    return {"model": cfg["model"], "temperature": 0, "max_tokens": MAX_TOKENS,
+            "chat_template_kwargs": {"enable_thinking": False}, "messages": messages}
 
 
 def _headers(cfg: dict) -> dict:
@@ -163,11 +192,7 @@ def region_box(region: str, width: int, height: int) -> list[float]:
 
 def _read_one(client: httpx.Client, cfg: dict, path: Path) -> dict:
     data, width, height = encode(path)
-    payload = {"model": cfg["model"], "temperature": 0, "max_tokens": MAX_TOKENS,
-               "chat_template_kwargs": {"enable_thinking": False},
-               "messages": [{"role": "user", "content": [
-                   {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{data}"}},
-                   {"type": "text", "text": PROMPT}]}]}
+    payload = _payload(cfg, data)
     raw, error, texts, seconds = "", None, [], 0.0
     for _ in range(ATTEMPTS):
         began = time.perf_counter()
@@ -189,9 +214,10 @@ def _read_one(client: httpx.Client, cfg: dict, path: Path) -> dict:
     return {"status": "ok", "records": records, "raw": raw[:4000], "error": None, "seconds": seconds}
 
 
-def read_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
-    """Pipeline의 recognize 자리에 들어가는 함수. 프레임 하나의 실패는 그 프레임만 'failed'로 남긴다."""
-    cfg = config()
+def read_frames(frames: list[Path], directory: Path, progress: Callable[[int], None], route: str = "default") -> dict:
+    """Pipeline의 recognize 자리에 들어가는 함수. 프레임 하나의 실패는 그 프레임만 'failed'로 남긴다.
+    route=openai면 OpenAI API로 읽는다(일반 자료). 응답 형식·후처리는 같다."""
+    cfg = config(route)
     done, lock = [0], threading.Lock()
     began = time.perf_counter()
 
@@ -208,11 +234,13 @@ def read_frames(frames: list[Path], directory: Path, progress: Callable[[int], N
             results = list(pool.map(task, frames))
     with (directory / "vlm.raw.jsonl").open("w", encoding="utf-8") as handle:
         handle.write(json.dumps({"kind": "header", "engine": ENGINE, "model": cfg["model"], "max_side": MAX_SIDE,
-                                 "max_tokens": MAX_TOKENS, "temperature": 0, "prompt": PROMPT}, ensure_ascii=False) + "\n")
+                                 "provider": "openai" if cfg["openai"] else "vllm",
+                                 "max_tokens": OPENAI_MAX_TOKENS if cfg["openai"] else MAX_TOKENS,
+                                 "temperature": None if cfg["openai"] else 0, "prompt": PROMPT}, ensure_ascii=False) + "\n")
         for index, (path, row) in enumerate(zip(frames, results)):
             handle.write(json.dumps({"index": index, "frame": path.name, "status": row["status"], "error": row["error"],
                                      "seconds": row["seconds"], "raw": row["raw"]}, ensure_ascii=False) + "\n")
-    return {"engine": ENGINE, "model": cfg["model"], "device": "vllm", "load_seconds": None,
+    return {"engine": ENGINE, "model": cfg["model"], "device": "openai" if cfg["openai"] else "vllm", "load_seconds": None,
             "wall_seconds": round(time.perf_counter() - began, 2),
             "inference_seconds": [row["seconds"] for row in results],
             "frames": [{"status": row["status"], "records": row["records"], "unread_boxes": 0} for row in results]}

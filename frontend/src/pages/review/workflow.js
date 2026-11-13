@@ -47,7 +47,7 @@ export function workflowReducer(state, action) {
     case 'input':
       return { ...state, [action.field]: action.value, criteria: [], snapshot: null, review: null };
     case 'sample':
-      // 예시 자료는 공개용이고 요구사항과 로고를 모두 담고 있어, 고르기 전이면 일반 자료·둘 다 검수로 연다.
+      // 예시 자료는 공개용이고 요구사항과 로고를 모두 담고 있어, 고르기 전이면 일반 자료·종합 검수로 연다.
       return { ...state, step: 'input', securityMode: state.securityMode || 'general', reviewMode: state.reviewMode || 'both', projectName: action.projectName, requirements: action.requirements,
         file: action.file, criteria: [], snapshot: null, review: null, documentSources: [], documentRun: null,
         referenceLogos: action.referenceLogos || [] };

@@ -238,7 +238,7 @@ class Workflow:
         asset = _boundary(AssetRef, asset) if asset is not None else None
         self._input_scope(snapshot.context, document, asset)
         if snapshot.criteria is not None:
-            validate_draft(snapshot.context, document, snapshot.criteria)
+            validate_draft(snapshot.context, document, snapshot.criteria, approved_version=snapshot.baseline is not None)
         with self._registry_lock:
             if snapshot.context.run_id in self._runs:
                 raise ValueError('run_id already exists')
@@ -328,7 +328,7 @@ class Workflow:
             if old.criteria is None:
                 raise ValueError('parent has no reusable criteria draft')
             draft = _boundary(CriteriaDraft, old.criteria.model_copy(update={'context': new_context}))
-            validate_draft(new_context, parent.document, draft)
+            validate_draft(new_context, parent.document, draft, approved_version=old.baseline is not None)
             child = _Run(_copy(parent.document), asset, RunSnapshot(context=new_context, profile=self.profile,
                 synthetic=old.synthetic, execution_status='waiting_criteria', criteria=draft,
                 baseline=old.baseline,
