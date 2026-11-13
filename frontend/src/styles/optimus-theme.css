@@ -1135,6 +1135,13 @@ html :is(.sd-grid, .rv-results .rv-result-workbench, .rv-workspace :is(.rv-input
   html :is(.image-stage, .sd-stage, .sd-grid, .rv-result-workbench, .rv-editor-grid)::after { animation: none !important; }
 }
 
+/* ── 사용 안내 챗봇(help-chat) ───────────────────────────────────────────────────
+   패널 안은 Shadow DOM이라 여기서 직접 꾸밀 수 없다. 챗봇이 읽는 --cc-help-* 값만 넘겨 잉크·종이 톤으로 맞춘다
+   (받는 쪽은 help-chat/help-chat.css 맨 아래 '화면 테마 연결'). 강조색은 잉크, 옅은 면은 종이 면 색, 모서리는 창과 같은 8px이다. */
+html:root { --cc-help-ink: var(--op-ink); --cc-help-muted: var(--op-muted); --cc-help-accent: var(--op-ink); --cc-help-accent-hover: #292927; --cc-help-tint: var(--op-surface); --cc-help-line: var(--op-line);
+  --cc-help-panel: var(--op-bg); --cc-help-card: var(--op-card); --cc-help-radius: 8px; --cc-help-radius-inner: 6px; --cc-help-radius-round: 999px; --cc-help-weight: 500;
+  --cc-help-font: var(--font-ui); --cc-help-font-signal: var(--font-signal); --cc-help-shadow: 0 24px 70px rgb(0 0 0 / 14%); }
+
 /* ── 제시안의 테마 블록에 이어 맞춘 부분 ───────────────────────────────────────── */
 /* 화면 제목은 어디서나 얇고 크게. 이동 뒤 초점을 받는 제목에는 테두리를 그리지 않는다(읽기 위치일 뿐 조작 대상이 아니다). */
 html :is(.rv-workspace, .vl-page, .cc-missing-page) h1 { font-weight: 500; letter-spacing: -0.05em; }

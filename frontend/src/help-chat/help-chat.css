@@ -165,3 +165,35 @@ textarea::placeholder { color: #6b736a; }
     width: min(390px, calc(100% - 36px));
   }
 }
+
+/* 화면 테마 연결: 챗봇을 넣는 화면이 --cc-help-* 값을 주면 그 톤을 따른다.
+   패널은 Shadow DOM 안이라 밖에서는 이 값으로만 꾸밀 수 있다. 값을 주지 않으면(독립 미리보기) 위의 기본 색·모양 그대로다.
+   Creative Checker 화면의 값은 styles/optimus-theme.css에 있다. */
+:host {
+  --ink: var(--cc-help-ink, #20231f);
+  --muted: var(--cc-help-muted, #62675e);
+  --green: var(--cc-help-accent, #214e3b);
+  --green-dark: var(--cc-help-accent-hover, #173c2c);
+  --green-light: var(--cc-help-tint, #edf4ee);
+  font-family: var(--cc-help-font, Inter, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif);
+}
+:focus-visible { outline-color: var(--cc-help-accent, #3c785b); }
+.launcher, .chat-title h2, .welcome strong { font-weight: var(--cc-help-weight, 700); }
+.chat-title p, .composer-note { font-family: var(--cc-help-font-signal, inherit); }
+.chat-panel {
+  border-color: var(--cc-help-line, #dfe3dc); border-radius: var(--cc-help-radius, 20px);
+  background: var(--cc-help-card, #fff); box-shadow: var(--cc-help-shadow, 0 22px 64px #18261c2b, 0 4px 12px #18261c0d);
+}
+.chat-header, .quick-actions { border-color: var(--cc-help-line, #ebeee8); }
+.avatar { border-radius: var(--cc-help-radius-inner, 12px); }
+.chat-action:hover { background: var(--cc-help-tint, #eef0eb); }
+.messages { background: var(--cc-help-panel, #fafbf8); }
+.welcome { border-radius: var(--cc-help-radius-inner, 13px); color: var(--cc-help-ink, #213c2d); }
+.message { border-radius: var(--cc-help-radius-inner, 13px); }
+.message.assistant { border-color: var(--cc-help-line, #e3e6de); background: var(--cc-help-card, #fff); }
+.quick-actions button { border-color: var(--cc-help-line, #dce5dc); background: var(--cc-help-card, #fff); font-weight: var(--cc-help-weight, 650); }
+.input-row { border-color: var(--cc-help-line, #dfe3db); border-radius: var(--cc-help-radius-inner, 12px); background: var(--cc-help-panel, #f7f8f5); }
+.input-row:focus-within { border-color: var(--cc-help-accent, #63927a); background: var(--cc-help-card, #fff); }
+textarea::placeholder { color: var(--cc-help-muted, #6b736a); }
+.send { border-radius: var(--cc-help-radius-round, 9px); }
+.send:disabled { background: var(--cc-help-tint, #e3e9e1); color: var(--cc-help-muted, #657463); }
