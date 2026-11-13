@@ -271,14 +271,10 @@ html .rv-workspace .rv-type-picker h1 { color: var(--op-ink); font-size: clamp(4
 html .rv-type-tiles { counter-reset: rv-tile; display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; justify-self: stretch; gap: 0; border-top: 1px solid var(--op-ink); border-bottom: 1px solid var(--op-line); }
 html .rv-workspace .rv-type-tile { counter-increment: rv-tile; position: relative; display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); place-content: normal; align-items: center; justify-items: start; width: auto; min-height: clamp(340px, calc(100dvh - 470px), 500px); aspect-ratio: auto; padding: 18px 26px 28px; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--op-ink); text-align: left; transition: background-color 0.18s ease; }
 html .rv-workspace .rv-type-tile + .rv-type-tile { border-left: 1px solid var(--op-line); }
-html .rv-workspace .rv-type-tile::before { content: counter(rv-tile, decimal-leading-zero); color: var(--op-muted); font: 11px/1.5 var(--font-signal); letter-spacing: 0.06em; }
-html .rv-workspace .rv-type-tile::after { content: '↗'; position: absolute; top: 14px; right: 24px; color: var(--op-muted); font-size: 18px; line-height: 1.4; transition: transform 0.18s ease, color 0.18s ease; }
 html .rv-workspace .rv-type-tile:hover:enabled { background: var(--op-card); box-shadow: none; transform: none; }
-html .rv-workspace .rv-type-tile:hover:enabled::after { color: var(--op-ink); transform: translate(3px, -3px); }
 html .rv-workspace .rv-type-tile:active:enabled { background: var(--op-surface); box-shadow: none; transform: none; }
 html .rv-workspace .rv-type-tile:focus-visible { outline: 2px solid var(--op-ink); outline-offset: -2px; }
 html .rv-type-art { justify-self: stretch; padding-block: 8px; }
-html .rv-type-art svg { max-width: 250px; }
 html .rv-type-label { font-size: clamp(24px, 2.1vw, 32px); font-weight: 500; letter-spacing: -0.05em; }
 html .rv-type-label small { color: var(--op-muted); }
 @media (max-width: 900px) {
@@ -473,8 +469,6 @@ html .rv-workspace .rv-type-tile:nth-child(2) { animation-delay: 0.09s; }
 html .rv-workspace .rv-type-tile:nth-child(3) { animation-delay: 0.18s; }
 html .rv-workspace .rv-type-tile:nth-child(4) { animation-delay: 0.27s; }
 html .rv-type-art { transform-style: preserve-3d; }
-html .rv-type-art svg { filter: drop-shadow(0 10px 14px rgb(0 0 0 / 10%)); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.3s ease; will-change: transform; }
-html .rv-workspace .rv-type-tile:hover:enabled .rv-type-art svg { filter: drop-shadow(0 30px 28px rgb(0 0 0 / 20%)); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(46px); }
 html .rv-type-heading > * { animation: op-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 html .rv-type-heading > h1 { animation-delay: 0.06s; }
 
@@ -860,16 +854,11 @@ html .sd .sd-tile { counter-increment: sd-tile; position: relative; display: gri
 html .sd .sd-tile:nth-child(2) { animation-delay: 0.09s; }
 html .sd .sd-tile:nth-child(3) { animation-delay: 0.18s; }
 html .sd .sd-tile + .sd-tile { border-left: 1px solid var(--op-line); }
-html .sd .sd-tile::before { content: counter(sd-tile, decimal-leading-zero); color: var(--op-muted); font: 11px/1.5 var(--font-signal); letter-spacing: 0.06em; }
-html .sd .sd-tile::after { content: '↗'; position: absolute; top: 14px; right: 24px; color: var(--op-muted); font-size: 18px; line-height: 1.4; transition: transform 0.18s ease, color 0.18s ease; }
 html .sd .sd-tile:hover { background: var(--op-card); transform: none; }
-html .sd .sd-tile:hover::after { color: var(--op-ink); transform: translate(3px, -3px); }
 html .sd .sd-tile:focus-visible { outline: 2px solid var(--op-ink); outline-offset: -2px; }
-/* 타일 그림은 마우스를 따라 입체로 기운다(--rx·--ry는 화면 코드가 넣는다) */
+/* 타일 그림(3D)은 마우스를 따라 기운다. --rx·--ry는 화면 코드가 넣고, 그림 쪽 styles/picker-art.css가 받아 쓴다. */
 html .sd .sd-tile { perspective: 900px; }
 html .sd-tile-art { justify-self: stretch; transform-style: preserve-3d; }
-html .sd-tile-art svg { max-width: 220px; filter: drop-shadow(0 10px 14px rgb(0 0 0 / 10%)); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.3s ease; will-change: transform; }
-html .sd .sd-tile:hover .sd-tile-art svg { filter: drop-shadow(0 30px 28px rgb(0 0 0 / 20%)); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(46px); }
 html .sd-tile-label { font-size: clamp(24px, 2.2vw, 34px); font-weight: 500; letter-spacing: -0.05em; }
 html .sd-kiosk-foot { margin-top: 18px; color: var(--op-muted); font: 12px/1.6 var(--font-signal); }
 /* 자료 입력 */
@@ -1026,6 +1015,124 @@ html .sd-cta .sd-btn { border-color: var(--op-bg); background: var(--op-bg); col
 }
 @media (prefers-reduced-motion: reduce) {
   html .sd * { animation: none !important; transition: none !important; }
+}
+
+/* ── uiverse.io에서 고른 요소를 우리 톤으로 옮긴 부분 ─────────────────────────────
+   공개 요소(uiverse.io, MIT)의 움직임만 가져와 종이색·잉크색 토큰으로 다시 썼다. 고르는 타일·뒤로 가기·시작 단추는
+   실제 화면과 샘플 체험에 같이 넣고, 첨부 칸·체험 띠는 샘플 체험에만 넣는다.
+   · 숫자 키 모양(눌리는 키캡): 20essentials/purple-rattlesnake-49
+   · 동그라미가 단추 전체로 번지는 화살표 단추: cssbuttons-io/massive-mayfly-74
+   · 밑줄이 자라는 링크: alexmaracinaru/empty-moose-12
+   · 누르면 살짝 들어가는 카드: SteveBloX/dangerous-warthog-85
+   · 통통 튀는 체크: cssbuttons-io/short-shrimp-54
+   · 점선 첨부 칸: Yaya12085/tender-moose-95 */
+@keyframes op-jelly { 0% { transform: scale(0); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
+@keyframes op-ping { from { box-shadow: 0 0 0 0 rgb(255 255 255 / 70%); } to { box-shadow: 0 0 0 7px rgb(255 255 255 / 0%); } }
+/* 타일: 번호는 숫자 키 모양(그 키로도 고른다), 모서리 화살표는 잉크 동그라미, 바닥에는 마우스 둘레에만 점 무늬 */
+html :is(.rv-workspace .rv-type-tile, .sd .sd-tile) { isolation: isolate; }
+html .rv-workspace .rv-type-tile::before { content: counter(rv-tile); }
+html .sd .sd-tile::before { content: counter(sd-tile); }
+html :is(.rv-workspace .rv-type-tile, .sd .sd-tile)::before { display: grid; place-items: center; box-sizing: border-box; width: 32px; height: 33px; padding-bottom: 4px; border: 1px solid color-mix(in srgb, var(--op-ink) 24%, transparent); border-radius: 8px; background-color: var(--op-card); box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--op-ink) 10%, transparent), 0 3px 6px rgb(0 0 0 / 8%); color: var(--op-ink); font: 500 12px/1 var(--font-signal); transition: transform 0.12s ease, padding 0.12s ease, box-shadow 0.12s ease, background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
+html :is(.rv-workspace .rv-type-tile, .sd .sd-tile)::after { content: '↗'; position: absolute; top: 14px; right: 22px; box-sizing: border-box; width: 38px; height: 38px; border: 1px solid var(--op-line); border-radius: 50%; background-color: transparent; color: var(--op-ink); font: 400 16px/36px var(--font-ui); text-align: center; transition: transform 0.45s cubic-bezier(0.65, 0, 0.076, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+html :is(.rv-workspace .rv-type-tile:hover:enabled, .rv-workspace .rv-type-tile:focus-visible, .sd .sd-tile:hover, .sd .sd-tile:focus-visible)::before { border-color: var(--op-ink); background-color: var(--op-ink); box-shadow: inset 0 -4px 0 rgb(255 255 255 / 16%), 0 6px 12px rgb(0 0 0 / 16%); color: var(--op-card); }
+html :is(.rv-workspace .rv-type-tile:hover:enabled, .rv-workspace .rv-type-tile:focus-visible, .sd .sd-tile:hover, .sd .sd-tile:focus-visible)::after { border-color: var(--op-ink); background-color: var(--op-ink); color: var(--op-card); transform: rotate(45deg) scale(1.12); }
+html :is(.rv-workspace .rv-type-tile:active:enabled, .sd .sd-tile:active)::before { padding-bottom: 1px; box-shadow: inset 0 -1px 0 rgb(255 255 255 / 16%), 0 1px 2px rgb(0 0 0 / 14%); transform: translateY(3px); }
+html :is(.rv-workspace .rv-type-tile:active:enabled, .sd .sd-tile:active)::after { transform: rotate(45deg) scale(0.94); }
+html .op-tile-glow { position: absolute; z-index: -1; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--op-ink) 42%, transparent) 1px, transparent 1.6px) 0 0 / 15px 15px; -webkit-mask-image: radial-gradient(circle 250px at var(--mx, 50%) var(--my, 50%), #000 8%, transparent 74%); mask-image: radial-gradient(circle 250px at var(--mx, 50%) var(--my, 50%), #000 8%, transparent 74%); transition: opacity 0.35s ease; }
+html :is(.rv-workspace .rv-type-tile:hover:enabled, .sd .sd-tile:hover) > .op-tile-glow { opacity: 1; }
+/* 타일 이름 밑줄은 왼쪽에서 자라난다 */
+html :is(.rv-type-label, .sd-tile-label) { padding-bottom: 5px; background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 2px; transition: background-size 0.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html :is(.rv-workspace .rv-type-tile:hover:enabled, .rv-workspace .rv-type-tile:focus-visible, .sd .sd-tile:hover, .sd .sd-tile:focus-visible) > :is(.rv-type-label, .sd-tile-label) { background-size: 100% 2px; }
+/* 뒤로 가기: 밑줄이 오른쪽에서 사라졌다 왼쪽에서 자라나고, 화살표가 뒤로 밀린다 */
+html :is(.rv-workspace .rv-type-back, .sd .sd-kiosk-back) { border-bottom: 0; background: linear-gradient(var(--op-ink), var(--op-ink)) no-repeat 100% 100% / 0 1px, linear-gradient(var(--op-line), var(--op-line)) no-repeat 0 100% / 100% 1px; transition: background-size 0.3s ease-out, color 0.2s ease; }
+html :is(.rv-workspace .rv-type-back:hover:enabled, .sd .sd-kiosk-back:hover) { background: linear-gradient(var(--op-ink), var(--op-ink)) no-repeat 0 100% / 100% 1px, linear-gradient(var(--op-line), var(--op-line)) no-repeat 0 100% / 100% 1px; }
+html .sd .sd-kiosk-back > span:first-child { display: inline-block; transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html .rv-workspace .rv-type-back > .icon { transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html .sd .sd-kiosk-back:hover > span:first-child { transform: translateX(-4px); }
+html .rv-workspace .rv-type-back:hover:enabled > .icon { transform: translateX(-4px) scaleX(-1); }
+/* 검수 시작 단추: 화살표가 든 종이색 동그라미가 단추 전체로 번지고 글자가 잉크색으로 바뀐다 */
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child), .sd .sd-actionbar .sd-btn.is-primary) { --go: 38px; position: relative; isolation: isolate; gap: 16px; padding-right: 6px; transition: color 0.3s ease 0.06s, background-color 0.2s ease, transform 0.12s ease; }
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child), .sd .sd-actionbar .sd-btn.is-primary)::before { content: ''; position: absolute; z-index: -1; top: 50%; right: 6px; width: var(--go); height: var(--go); border-radius: 999px; background: var(--op-card); translate: 0 -50%; transition: width 0.45s cubic-bezier(0.65, 0, 0.076, 1); }
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child), .sd .sd-actionbar .sd-btn.is-primary) > .icon:last-child { box-sizing: border-box; flex: none; width: var(--go); height: var(--go); padding: 10px; color: var(--op-ink); }
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child):hover:enabled, .sd .sd-actionbar .sd-btn.is-primary:hover) { color: var(--op-ink); }
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child):hover:enabled, .sd .sd-actionbar .sd-btn.is-primary:hover)::before { width: calc(100% - 12px); }
+html :is(.rv-workspace .rv-input-actionbar > .rv-button.primary:has(> .icon:last-child):active:enabled, .sd .sd-actionbar .sd-btn.is-primary:active) { transform: scale(0.97); }
+/* 샘플 체험: 체험 띠 · 프로젝트 체크 · 첨부 칸 */
+html .sd-band b { align-items: center; }
+html .sd-band b::before { content: ''; flex: none; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--op-card); animation: op-ping 1.8s ease-out infinite; }
+html .sd-band .sd-btn::before { content: '↺' / ''; display: inline-block; font-size: 15px; line-height: 1; transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html .sd-band .sd-btn:hover::before { transform: rotate(-360deg); }
+html .sd-chip .icon { box-sizing: border-box; width: 18px; height: 18px; padding: 4px; border-radius: 50%; background: var(--op-ink); color: var(--op-card); stroke-width: 3.2; animation: op-jelly 0.7s 0.35s both; }
+html .sd-file { border: 1px dashed color-mix(in srgb, var(--op-ink) 30%, transparent); box-shadow: 0 26px 20px -26px rgb(0 0 0 / 16%); transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.2s ease, box-shadow 0.25s ease; }
+html .sd-file:hover { border-color: var(--op-ink); box-shadow: 0 30px 22px -24px rgb(0 0 0 / 24%); transform: translateY(-2px); }
+html .sd-thumb:not(:has(svg)) { position: relative; align-content: end; width: 30px; height: 36px; padding-bottom: 7px; border-radius: 3px; clip-path: polygon(0 0, 68% 0, 100% 27%, 100% 100%, 0 100%); font: 500 9px/1 var(--font-signal); letter-spacing: 0.02em; }
+html .sd-thumb:not(:has(svg))::after { content: ''; position: absolute; top: 0; right: 0; width: 32%; height: 27%; background: color-mix(in srgb, var(--op-ink) 24%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  html :is(.rv-type-tile, .sd-tile, .rv-type-back, .sd-kiosk-back, .rv-input-actionbar > .rv-button, .sd *)::before, html :is(.rv-type-tile, .sd-tile, .sd *)::after,
+  html :is(.op-tile-glow, .rv-type-label, .sd-tile-label, .rv-type-back, .rv-type-back > .icon, .rv-input-actionbar > .rv-button) { animation: none !important; transition: none !important; }
+}
+
+/* ── 배경: 잉크 무대는 교정 작업대처럼, 종이 면의 빈 자리는 망점으로 ─────────────────────
+   uiverse.io의 배경 무늬(MIT 공개 요소)에서 방식만 가져와 우리 톤(잉크·종이·가는 선)으로 다시 썼다.
+   · 점 격자 캔버스: kennyotsu/short-warthog-33 · Juanes200122/yellow-zebra-53
+   · 큰 눈금 선: kennyotsu-monochromia/spotty-cheetah-65
+   소개 화면 마지막 구역(.lp-final-cta)의 점 무늬, 팀이 처음 만든 무대의 점 바탕과 같은 계열이다. */
+@keyframes op-lamp { 50% { opacity: 0.45; scale: 1.06; } }
+@keyframes op-halftone { 50% { opacity: 0.12; scale: 0.95; } }
+html :is(.rv-workspace, .rv-evd, .sd) {
+  /* 무대 바탕: 가운데 조명 + 22px 점 격자 + 88px 큰 눈금 선. 가운데 기준으로 깔아 창 크기가 바뀌어도 그림 둘레가 대칭이다. */
+  --op-canvas: radial-gradient(ellipse 62% 56% at 50% 44%, rgb(255 255 255 / 6%), transparent 74%) no-repeat,
+    radial-gradient(circle, rgb(255 255 255 / 17%) 0.9px, transparent 1.4px) 50% 50% / 22px 22px,
+    linear-gradient(rgb(255 255 255 / 5.5%) 1px, transparent 1px) 50% 50% / 88px 88px,
+    linear-gradient(90deg, rgb(255 255 255 / 5.5%) 1px, transparent 1px) 50% 50% / 88px 88px;
+  /* 네 모서리의 꺾쇠(화면 틀 표시) */
+  --op-bracket: rgb(255 255 255 / 46%);
+  --op-brackets: linear-gradient(var(--op-bracket), var(--op-bracket)) 15px 15px / 17px 1px no-repeat, linear-gradient(var(--op-bracket), var(--op-bracket)) 15px 15px / 1px 17px no-repeat,
+    linear-gradient(var(--op-bracket), var(--op-bracket)) calc(100% - 15px) 15px / 17px 1px no-repeat, linear-gradient(var(--op-bracket), var(--op-bracket)) calc(100% - 15px) 15px / 1px 17px no-repeat,
+    linear-gradient(var(--op-bracket), var(--op-bracket)) 15px calc(100% - 15px) / 17px 1px no-repeat, linear-gradient(var(--op-bracket), var(--op-bracket)) 15px calc(100% - 15px) / 1px 17px no-repeat,
+    linear-gradient(var(--op-bracket), var(--op-bracket)) calc(100% - 15px) calc(100% - 15px) / 17px 1px no-repeat, linear-gradient(var(--op-bracket), var(--op-bracket)) calc(100% - 15px) calc(100% - 15px) / 1px 17px no-repeat; }
+html .rv-workspace.rv-workspace .image-stage, html .rv-workspace .rv-poster-scan-stage, html .sd-scan-stage, html .rv-video-scanner, html .sd-film-scanner, html .rv-evd-frame, html .sd-cta { background: var(--op-canvas), var(--op-stage); }
+html .sd-stage { background: var(--op-brackets), var(--op-canvas), var(--op-stage); }
+/* 실제 무대는 그림이 스크롤되는 칸(viewport)에 꺾쇠를 둔다. 바탕 그림은 스크롤을 따라가지 않아 늘 칸 모서리에 있다. */
+html .rv-workspace .image-stage .image-stage-viewport { background: var(--op-brackets); }
+html .rv-workspace .rv-input-form .image-stage-viewport:has(.rv-input-empty) { background: none; }
+/* 큰 무대(자료 입력·결과): 위·왼쪽 가장자리에 눈금자, 그림 뒤에 천천히 숨 쉬는 조명. 둘 다 내용 뒤에 깔리고 자리를 차지하지 않는다. */
+html .rv-workspace.rv-workspace .image-stage, html .sd-stage { position: relative; isolation: isolate; }
+html .rv-workspace.rv-workspace .image-stage::before, html .sd-stage::before { content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgb(255 255 255 / 30%) 1px, transparent 1px) calc(50% + 22px) 0 / 44px 10px repeat-x,
+    linear-gradient(90deg, rgb(255 255 255 / 16%) 1px, transparent 1px) calc(50% + 5.5px) 0 / 11px 5px repeat-x,
+    linear-gradient(rgb(255 255 255 / 30%) 1px, transparent 1px) 0 calc(50% + 22px) / 10px 44px repeat-y,
+    linear-gradient(rgb(255 255 255 / 16%) 1px, transparent 1px) 0 calc(50% + 5.5px) / 5px 11px repeat-y;
+  -webkit-mask-image: linear-gradient(135deg, #000 38%, transparent 90%); mask-image: linear-gradient(135deg, #000 38%, transparent 90%); }
+html .rv-workspace.rv-workspace .image-stage::after, html .sd-stage::after { content: ''; position: absolute; z-index: -1; inset: 2% 4% 5%; border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgb(255 244 222 / 15%), rgb(255 244 222 / 5%) 62%, transparent); animation: op-lamp 8s ease-in-out infinite; }
+/* 그림 둘레의 재단선: 인쇄 교정지처럼 그림 바깥에 가는 점선을 두른다(outline이라 자리를 차지하지 않는다) */
+html .rv-workspace .image-stage-surface, html .sd-poster-wrap > img, html .sd-frame-wrap > img { outline: 1px dashed rgb(255 255 255 / 24%); outline-offset: 9px; }
+/* 종이 면: 두 칸 화면에서 오른쪽 칸 아래에 남는 자리에 동심원 선과 망점(모서리로 갈수록 점이 커진다)을 둔다.
+   남는 자리를 둘째 줄 한 칸으로 따로 잡고 그 칸에만 그리므로 글자 밑에는 깔리지 않는다. 남는 높이가 작으면 위쪽이 흐려져 보이지 않는다.
+   왼쪽 칸이 두 줄을 차지하고 둘째 줄은 남는 만큼만 늘어나 전체 높이는 전과 같다. 한 칸으로 접히는 좁은 화면에서는 만들지 않는다(--op-rest). */
+html :is(.sd-grid, .rv-results .rv-result-workbench, .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid)::before,
+html :is(.sd-grid, .rv-results .rv-result-workbench, .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid)::after { content: var(--op-rest, none); align-self: stretch; justify-self: stretch; min-height: 0; pointer-events: none; }
+html :is(.sd-grid, .rv-results .rv-result-workbench, .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid)::before { background: repeating-radial-gradient(circle at 100% 100%, transparent 0 43px, color-mix(in srgb, var(--op-ink) 12%, transparent) 43px 44px);
+  -webkit-mask-image: radial-gradient(circle 600px at 100% 100%, #000 16%, transparent 100%), linear-gradient(transparent 26px, #000 150px); -webkit-mask-composite: source-in;
+  mask-image: radial-gradient(circle 600px at 100% 100%, #000 16%, transparent 100%), linear-gradient(transparent 26px, #000 150px); mask-composite: intersect; }
+html :is(.sd-grid, .rv-results .rv-result-workbench, .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid)::after { background: radial-gradient(circle 430px at 100% 100%, rgb(255 255 255 / 0%) 0, #fff 100%), radial-gradient(circle, #000 0, #fff 68%) 100% 100% / 11px 11px;
+  filter: contrast(22); opacity: 0.18; -webkit-mask-image: linear-gradient(transparent 26px, #000 150px); mask-image: linear-gradient(transparent 26px, #000 150px); transform-origin: 100% 100%; animation: op-halftone 9s ease-in-out infinite; }
+@media (min-width: 901px) {
+  html .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid { --op-rest: ''; grid-template-rows: auto minmax(0, 1fr); row-gap: 0; }
+  html .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid > :first-child { grid-column: 1; grid-row: 1 / span 2; }
+  html .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid > aside { grid-column: 2; grid-row: 1; }
+  html .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid::before, html .rv-workspace :is(.rv-input-form, .rv-video-input) .rv-editor-grid::after { grid-column: 2; grid-row: 2; }
+  html .rv-results .rv-result-workbench { --op-rest: ''; grid-template-areas: 'canvas rail' 'canvas rest'; grid-template-rows: auto minmax(0, 1fr); row-gap: 0; }
+  html .rv-results .rv-result-workbench::before, html .rv-results .rv-result-workbench::after { grid-area: rest; }
+}
+@media (min-width: 1081px) {
+  html .sd-grid { --op-rest: ''; grid-template-rows: auto minmax(0, 1fr); row-gap: 0; }
+  html .sd-grid > :first-child { grid-column: 1; grid-row: 1 / span 2; }
+  html .sd-grid > aside { grid-column: 2; grid-row: 1; }
+  html .sd-grid::before, html .sd-grid::after { grid-column: 2; grid-row: 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html :is(.image-stage, .sd-stage, .sd-grid, .rv-result-workbench, .rv-editor-grid)::after { animation: none !important; }
 }
 
 /* ── 제시안의 테마 블록에 이어 맞춘 부분 ───────────────────────────────────────── */
