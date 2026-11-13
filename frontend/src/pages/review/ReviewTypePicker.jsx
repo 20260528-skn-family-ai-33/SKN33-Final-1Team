@@ -48,22 +48,20 @@ const mediaTiles = [
   { value: 'video', key: '2', label: '동영상', art: <PickerArt media="video" variant="media" /> },
 ];
 
-// 마우스를 따라 타일 그림이 입체로 기운다(--rx·--ry). 움직임을 줄인 환경과 터치 화면에서는 기울이지 않는다.
-export function tiltArt(event) {
+// 타일 그림은 제자리에 고정한다(마우스를 따라 기울지 않는다). 마우스를 올렸을 때의 동작(층이 벌어짐·돋보기·체크 등)은 그림 쪽 CSS가 맡는다.
+// 여기서는 타일 바닥의 점 무늬가 마우스 둘레에서만 드러나게 마우스 자리(--mx·--my)만 넘긴다.
+export function glowAt(event) {
   if (!window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) return;
   const tile = event.currentTarget;
   const area = tile.getBoundingClientRect();
-  tile.style.setProperty('--ry', `${(((event.clientX - area.left) / area.width - 0.5) * 16).toFixed(2)}deg`);
-  tile.style.setProperty('--rx', `${((0.5 - (event.clientY - area.top) / area.height) * 12).toFixed(2)}deg`);
-  // 타일 바닥의 점 무늬가 마우스 둘레에서만 드러나게 마우스 자리를 넘긴다.
   tile.style.setProperty('--mx', `${Math.round(event.clientX - area.left)}px`);
   tile.style.setProperty('--my', `${Math.round(event.clientY - area.top)}px`);
 }
-export function settleArt(event) {
-  for (const name of ['--rx', '--ry', '--mx', '--my']) event.currentTarget.style.removeProperty(name);
+export function glowOff(event) {
+  for (const name of ['--mx', '--my']) event.currentTarget.style.removeProperty(name);
 }
 
-// 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키로도 고른다.
+// 키오스크처럼 큰 그림 타일만 두고, 누르면 바로 다음 화면으로 넘어간다. 숫자 키(1·2·3)로도 고를 수 있다(화면에 번호는 표시하지 않는다).
 // scene: 배경 점 그림이 보여 줄 장면('poster' | 'video'). 자료 종류를 고르기 전에는 비워 둬 포스터와 영상을 모두 보여 준다.
 function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel, context, scene, disabled = false }) {
   useEffect(() => {
@@ -89,7 +87,7 @@ function KioskChoice({ title, kicker, tiles, labels, onSelect, onBack, backLabel
     </div>
     <div className="rv-type-tiles">
       {tiles.map(tile => <button key={tile.value} type="button" className="rv-type-tile" disabled={disabled}
-        aria-label={labels[tile.value]} onClick={() => onSelect(tile.value)} onPointerMove={tiltArt} onPointerLeave={settleArt}>
+        aria-label={labels[tile.value]} onClick={() => onSelect(tile.value)} onPointerMove={glowAt} onPointerLeave={glowOff}>
         <span className="op-tile-glow" aria-hidden="true" />
         <span className="rv-type-art" aria-hidden="true">{tile.art}</span>
         <span className="rv-type-label">{tile.label}{tile.note && <small>({tile.note})</small>}</span>

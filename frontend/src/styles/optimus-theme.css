@@ -317,14 +317,15 @@ html .rv-workspace .rv-type-back:focus-visible { outline: 2px solid var(--op-ink
 html .rv-type-heading { align-items: flex-start; gap: 20px; margin: 0 0 clamp(30px, 5vh, 54px); }
 html .rv-type-context { display: inline-flex; align-items: center; gap: 5px; padding: 2px 11px; border: 1px solid var(--op-line); border-radius: 999px; color: var(--op-ink); font: 12px/1.6 var(--font-ui); letter-spacing: -0.01em; }
 html .rv-workspace .rv-type-picker h1 { color: var(--op-ink); font-size: clamp(46px, 5.2vw, 80px); font-weight: 450; letter-spacing: -0.06em; line-height: 1.08; text-align: left; }
-html .rv-type-tiles { counter-reset: rv-tile; display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; justify-self: stretch; gap: 0; border-top: 1px solid var(--op-ink); border-bottom: 1px solid var(--op-line); }
-html .rv-workspace .rv-type-tile { counter-increment: rv-tile; position: relative; display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); place-content: normal; align-items: center; justify-items: start; width: auto; min-height: clamp(340px, calc(100dvh - 470px), 500px); aspect-ratio: auto; padding: 18px 26px 28px; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--op-ink); text-align: left; transition: background-color 0.18s ease; }
+html .rv-type-tiles { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; justify-self: stretch; gap: 0; border-top: 1px solid var(--op-ink); border-bottom: 1px solid var(--op-line); }
+html .rv-workspace .rv-type-tile { position: relative; display: grid; grid-template: 33px minmax(0, 1fr) auto / minmax(0, 1fr); place-content: normal; align-items: center; justify-items: start; width: auto; min-height: clamp(340px, calc(100dvh - 470px), 500px); aspect-ratio: auto; padding: 18px 26px 28px; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--op-ink); text-align: left; transition: background-color 0.18s ease; }
 html .rv-workspace .rv-type-tile + .rv-type-tile { border-left: 1px solid var(--op-line); }
 html .rv-workspace .rv-type-tile:hover:enabled { background: var(--op-card); box-shadow: none; transform: none; }
 html .rv-workspace .rv-type-tile:active:enabled { background: var(--op-surface); box-shadow: none; transform: none; }
 html .rv-workspace .rv-type-tile:focus-visible { outline: 2px solid var(--op-ink); outline-offset: -2px; }
-html .rv-type-art { justify-self: stretch; padding-block: 8px; }
-html .rv-type-label { font-size: clamp(24px, 2.1vw, 32px); font-weight: 500; letter-spacing: -0.05em; }
+/* 첫 줄(33px)은 오른쪽 위 화살표가 놓이는 높이만큼 비워 둔다. 그림은 가운데 줄, 이름은 아랫줄. */
+html .rv-type-art { grid-row: 2; justify-self: stretch; padding-block: 8px; }
+html .rv-type-label { grid-row: 3; font-size: clamp(24px, 2.1vw, 32px); font-weight: 500; letter-spacing: -0.05em; }
 html .rv-type-label small { color: var(--op-muted); }
 @media (max-width: 900px) {
   html .rv-type-tiles { grid-auto-flow: row; }
@@ -518,7 +519,7 @@ html .rv-step-nav > button.is-active::after, html .rv-results .rv-result-filters
 html .rv-step-nav > button:not(.is-active):is(:hover, :active):enabled, html .rv-results .rv-result-filters button:not(.is-active):hover { border-bottom-color: transparent; }
 html .rv-step-nav > button:not(.is-active):hover:enabled::after, html .rv-results .rv-result-filters button:not(.is-active):hover::after { background: var(--op-line); transform: scaleX(1); }
 
-/* 고르기 타일: 차례로 올라오고, 마우스를 따라 그림이 입체로 기운다 */
+/* 고르기 타일: 차례로 올라온다. 그림은 입체로 서 있되 제자리에 고정한다 */
 html .rv-workspace .rv-type-tile { animation: op-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; perspective: 900px; }
 html .rv-workspace .rv-type-tile:nth-child(2) { animation-delay: 0.09s; }
 html .rv-workspace .rv-type-tile:nth-child(3) { animation-delay: 0.18s; }
@@ -906,17 +907,17 @@ html .sd-kiosk-heading > * { animation: op-rise 0.6s cubic-bezier(0.2, 0.7, 0.2,
 html .sd-kiosk-heading > h1 { animation-delay: 0.06s; }
 html .sd-kiosk h1 { font-size: clamp(46px, 5.2vw, 80px); font-weight: 450; letter-spacing: -0.06em; line-height: 1.08; }
 html .sd-kiosk-context { gap: 5px; margin: 0; padding: 2px 11px; border-color: var(--op-line); color: var(--op-ink); font: 12px/1.6 var(--font-ui); letter-spacing: -0.01em; }
-html .sd-tiles { counter-reset: sd-tile; display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; justify-self: stretch; gap: 0; border-top: 1px solid var(--op-ink); border-bottom: 1px solid var(--op-line); }
-html .sd .sd-tile { counter-increment: sd-tile; position: relative; display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); align-items: center; justify-items: start; width: auto; min-height: clamp(340px, calc(100dvh - 520px), 500px); aspect-ratio: auto; padding: 18px 26px 28px; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--op-ink); text-align: left; transition: background-color 0.18s ease; animation: op-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+html .sd-tiles { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; justify-self: stretch; gap: 0; border-top: 1px solid var(--op-ink); border-bottom: 1px solid var(--op-line); }
+html .sd .sd-tile { position: relative; display: grid; grid-template: 33px minmax(0, 1fr) auto / minmax(0, 1fr); align-items: center; justify-items: start; width: auto; min-height: clamp(340px, calc(100dvh - 520px), 500px); aspect-ratio: auto; padding: 18px 26px 28px; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--op-ink); text-align: left; transition: background-color 0.18s ease; animation: op-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 html .sd .sd-tile:nth-child(2) { animation-delay: 0.09s; }
 html .sd .sd-tile:nth-child(3) { animation-delay: 0.18s; }
 html .sd .sd-tile + .sd-tile { border-left: 1px solid var(--op-line); }
 html .sd .sd-tile:hover { background: var(--op-card); transform: none; }
 html .sd .sd-tile:focus-visible { outline: 2px solid var(--op-ink); outline-offset: -2px; }
-/* 타일 그림(3D)은 마우스를 따라 기운다. --rx·--ry는 화면 코드가 넣고, 그림 쪽 styles/picker-art.css가 받아 쓴다. */
+/* 타일 그림(3D)은 제자리에 고정한다. 마우스를 올렸을 때의 동작은 그림 쪽 styles/picker-art.css가 맡는다. */
 html .sd .sd-tile { perspective: 900px; }
-html .sd-tile-art { justify-self: stretch; transform-style: preserve-3d; }
-html .sd-tile-label { font-size: clamp(24px, 2.2vw, 34px); font-weight: 500; letter-spacing: -0.05em; }
+html .sd-tile-art { grid-row: 2; justify-self: stretch; transform-style: preserve-3d; }
+html .sd-tile-label { grid-row: 3; font-size: clamp(24px, 2.2vw, 34px); font-weight: 500; letter-spacing: -0.05em; }
 html .sd-kiosk-foot { margin-top: 18px; color: var(--op-muted); font: 12px/1.6 var(--font-signal); }
 /* 자료 입력 */
 html .sd-mode-row { gap: 8px; margin-bottom: 18px; }
@@ -970,7 +971,7 @@ html .sd-dim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-
   html .sd-dim { animation: none; }
 }
 /* 검수 진행: 왼쪽 잉크 무대에 포스터·필름을 3D로 눕히고 단계에 따라 유리판 '02 읽은 자리'·'03 판정'이 떠오른다(실제 진행 화면과 같은 연출).
-   무대는 마우스를 따라 조금 기운다(--turn·--lean). 오른쪽에는 진행률 큰 숫자 · 단계 · 작업 정보를 선으로 나눠 쌓는다. */
+   무대는 제자리에 고정한다(--turn·--lean은 0으로 둔다). 오른쪽에는 진행률 큰 숫자 · 단계 · 작업 정보를 선으로 나눠 쌓는다. */
 html .sd-progress { margin-top: 0; }
 html .sd-progress-card { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; align-items: start; justify-items: stretch; padding: 26px 0 0; border: 0; border-top: 1px solid var(--op-ink); border-radius: 0; background: none; text-align: left; }
 html .sd-progress-card > * { width: auto; max-width: none; }
@@ -1101,7 +1102,6 @@ html .sd-cta .sd-btn { border-color: var(--op-bg); background: var(--op-bg); col
 /* ── uiverse.io에서 고른 요소를 우리 톤으로 옮긴 부분 ─────────────────────────────
    공개 요소(uiverse.io, MIT)의 움직임만 가져와 종이색·잉크색 토큰으로 다시 썼다. 고르는 타일·뒤로 가기·시작 단추는
    실제 화면과 샘플 체험에 같이 넣고, 첨부 칸·체험 띠는 샘플 체험에만 넣는다.
-   · 숫자 키 모양(눌리는 키캡): 20essentials/purple-rattlesnake-49
    · 동그라미가 단추 전체로 번지는 화살표 단추: cssbuttons-io/massive-mayfly-74
    · 밑줄이 자라는 링크: alexmaracinaru/empty-moose-12
    · 누르면 살짝 들어가는 카드: SteveBloX/dangerous-warthog-85
@@ -1109,15 +1109,10 @@ html .sd-cta .sd-btn { border-color: var(--op-bg); background: var(--op-bg); col
    · 점선 첨부 칸: Yaya12085/tender-moose-95 */
 @keyframes op-jelly { 0% { transform: scale(0); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
 @keyframes op-ping { from { box-shadow: 0 0 0 0 rgb(255 255 255 / 70%); } to { box-shadow: 0 0 0 7px rgb(255 255 255 / 0%); } }
-/* 타일: 번호는 숫자 키 모양(그 키로도 고른다), 모서리 화살표는 잉크 동그라미, 바닥에는 마우스 둘레에만 점 무늬 */
+/* 타일: 모서리 화살표는 잉크 동그라미, 바닥에는 마우스 둘레에만 점 무늬(번호 상자는 두지 않는다) */
 html :is(.rv-workspace .rv-type-tile, .sd .sd-tile) { isolation: isolate; }
-html .rv-workspace .rv-type-tile::before { content: counter(rv-tile); }
-html .sd .sd-tile::before { content: counter(sd-tile); }
-html :is(.rv-workspace .rv-type-tile, .sd .sd-tile)::before { display: grid; place-items: center; box-sizing: border-box; width: 32px; height: 33px; padding-bottom: 4px; border: 1px solid color-mix(in srgb, var(--op-ink) 24%, transparent); border-radius: 8px; background-color: var(--op-card); box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--op-ink) 10%, transparent), 0 3px 6px rgb(0 0 0 / 8%); color: var(--op-ink); font: 500 12px/1 var(--font-signal); transition: transform 0.12s ease, padding 0.12s ease, box-shadow 0.12s ease, background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
 html :is(.rv-workspace .rv-type-tile, .sd .sd-tile)::after { content: '↗'; position: absolute; top: 14px; right: 22px; box-sizing: border-box; width: 38px; height: 38px; border: 1px solid var(--op-line); border-radius: 50%; background-color: transparent; color: var(--op-ink); font: 400 16px/36px var(--font-ui); text-align: center; transition: transform 0.45s cubic-bezier(0.65, 0, 0.076, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
-html :is(.rv-workspace .rv-type-tile:hover:enabled, .rv-workspace .rv-type-tile:focus-visible, .sd .sd-tile:hover, .sd .sd-tile:focus-visible)::before { border-color: var(--op-ink); background-color: var(--op-ink); box-shadow: inset 0 -4px 0 rgb(255 255 255 / 16%), 0 6px 12px rgb(0 0 0 / 16%); color: var(--op-card); }
 html :is(.rv-workspace .rv-type-tile:hover:enabled, .rv-workspace .rv-type-tile:focus-visible, .sd .sd-tile:hover, .sd .sd-tile:focus-visible)::after { border-color: var(--op-ink); background-color: var(--op-ink); color: var(--op-card); transform: rotate(45deg) scale(1.12); }
-html :is(.rv-workspace .rv-type-tile:active:enabled, .sd .sd-tile:active)::before { padding-bottom: 1px; box-shadow: inset 0 -1px 0 rgb(255 255 255 / 16%), 0 1px 2px rgb(0 0 0 / 14%); transform: translateY(3px); }
 html :is(.rv-workspace .rv-type-tile:active:enabled, .sd .sd-tile:active)::after { transform: rotate(45deg) scale(0.94); }
 html .op-tile-glow { position: absolute; z-index: -1; inset: 0; opacity: 0; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--op-ink) 42%, transparent) 1px, transparent 1.6px) 0 0 / 15px 15px; -webkit-mask-image: radial-gradient(circle 250px at var(--mx, 50%) var(--my, 50%), #000 8%, transparent 74%); mask-image: radial-gradient(circle 250px at var(--mx, 50%) var(--my, 50%), #000 8%, transparent 74%); transition: opacity 0.35s ease; }
 html :is(.rv-workspace .rv-type-tile:hover:enabled, .sd .sd-tile:hover) > .op-tile-glow { opacity: 1; }

@@ -25,42 +25,9 @@ const videoMarks = [
   { id: '03', tone: 'review', label: '확인 필요', box: [91.6, 70.4, 4.4, 9.6] },
 ];
 
-// 마우스가 지나가면 쌓인 판이 조금 따라 돈다. 움직임을 줄인 환경과 터치 화면에서는 고정한다.
-// 검수 진행 화면의 3D 포스터도 같은 방식으로 기울인다.
-export function useTilt() {
-  const figure = useRef(null);
-  useEffect(() => {
-    const node = figure.current;
-    if (!node || !window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) return undefined;
-    let frame = 0;
-    function follow(event) {
-      const area = node.getBoundingClientRect();
-      const x = (event.clientX - area.left) / area.width - 0.5;
-      const y = (event.clientY - area.top) / area.height - 0.5;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        node.style.setProperty('--turn', `${(x * 10).toFixed(2)}deg`);
-        node.style.setProperty('--lean', `${(-y * 6).toFixed(2)}deg`);
-      });
-    }
-    function settle() {
-      cancelAnimationFrame(frame);
-      node.style.removeProperty('--turn');
-      node.style.removeProperty('--lean');
-    }
-    node.addEventListener('pointermove', follow);
-    node.addEventListener('pointerleave', settle);
-    return () => {
-      node.removeEventListener('pointermove', follow);
-      node.removeEventListener('pointerleave', settle);
-      cancelAnimationFrame(frame);
-    };
-  }, []);
-  return figure;
-}
-
 // 소개 화면의 도해는 마우스로 잡고 돌려 볼 수 있다: 좌우로 끌면 판 더미가 제한 없이 돌고, 위아래로 끌면 눕거나 선다.
-// 놓으면 가까운 방향으로 제자리에 돌아온다. 끌지 않을 때는 useTilt처럼 마우스를 조금 따라 돈다.
+// 놓으면 가까운 방향으로 제자리에 돌아온다. 끌지 않을 때는 마우스를 조금 따라 돈다(움직임을 줄인 환경과 터치 화면에서는 따라 돌지 않는다).
+// 마우스를 따라 도는 것은 이 도해뿐이다. 고르는 화면·진행 화면·로그인 예시의 3D 그림은 제자리에 고정한다.
 // 터치 화면에서는 끌기를 받지 않는다(세로로 화면을 넘기는 손짓을 막지 않게).
 const ORBIT = { spin: 0.45, tilt: 0.3, flat: -45, steep: 31 };   // 1px에 도는 각도와, 기본 자세에서 눕히고(위에서 봄) 세울 수 있는 한도(도)
 function useOrbit() {

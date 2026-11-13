@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router';
 import { useOptionalAuth } from '../../auth/AuthProvider.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { evidenceLabelBelow, evidenceLabelOnRight } from '../../components/imageStageGeometry.js';
-import { useTilt } from '../../components/LayerFigure.jsx';
 import { PixelField } from '../../components/PixelField.jsx';
-import { reviewModeLabels, SecurityArt, securityModeLabels, settleArt, tiltArt, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
+import { glowAt, glowOff, reviewModeLabels, SecurityArt, securityModeLabels, TypeArt, VideoTypeArt } from '../review/ReviewTypePicker.jsx';
 import { mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { LogoThumb, MediaArt, PlayIcon, SampleFrame, SamplePoster } from './SampleArt.jsx';
 import {
@@ -129,7 +128,7 @@ function Kiosk({ title, tiles, onPick, back, context, scene }) {
       <h1 id="page-title" tabIndex={-1}>{title}</h1></div>
     <div className="sd-tiles">
       {tiles.map(tile => <button key={tile.value} type="button" className="sd-tile" aria-label={tile.label} onClick={() => onPick(tile.value)}
-        onPointerMove={tiltArt} onPointerLeave={settleArt}>
+        onPointerMove={glowAt} onPointerLeave={glowOff}>
         <span className="op-tile-glow" aria-hidden="true" />
         <span className="sd-tile-art" aria-hidden="true">{tile.art}</span>
         <span className="sd-tile-label">{tile.label}</span>
@@ -182,11 +181,10 @@ function InputScreen({ state, onType, onStart }) {
   </section>;
 }
 
-// 실제 진행 화면처럼 포스터를 3D로 눕히고, 단계(depth 0~2)에 따라 유리판 '읽은 자리'·'판정'이 떠오른다. 무대는 마우스를 따라 조금 기운다.
+// 실제 진행 화면처럼 포스터를 3D로 눕히고, 단계(depth 0~2)에 따라 유리판 '읽은 자리'·'판정'이 떠오른다. 무대는 제자리에 고정한다(마우스를 따라 기울지 않는다).
 function PosterScan({ depth = 0 }) {
-  const tilt = useTilt();
   return <figure className="sd-scan" data-depth={depth}>
-    <div className="sd-scan-stage" ref={tilt}><div className="sd-scan-sheet"><SamplePoster decorative />
+    <div className="sd-scan-stage"><div className="sd-scan-sheet"><SamplePoster decorative />
       <span className="sd-scan-zoom"><SamplePoster decorative /></span><span className="sd-scan-lens" />
       <span className="sd-plane is-source" aria-hidden="true"><b>01 원본</b></span>
       <span className="sd-plane is-read" aria-hidden="true"><i /><b>02 읽은 자리</b></span>
@@ -199,8 +197,7 @@ function PosterScan({ depth = 0 }) {
 }
 
 function FilmScanner({ scanPart, caption, depth = 0 }) {
-  const tilt = useTilt();
-  return <div className="sd-film-scanner" aria-hidden="true" data-depth={depth} ref={tilt}>
+  return <div className="sd-film-scanner" aria-hidden="true" data-depth={depth}>
     <div className="sd-film"><div className="sd-film-track">
       <div className="sd-film-cells">{Array.from({ length: 8 }, (_, index) =>
         <span key={index} className={`sd-film-cell${scanPart * 8 > index + .2 ? ' is-read' : ''}`}><SampleFrame t={Math.round(index * 29 / 7)} /></span>)}</div>

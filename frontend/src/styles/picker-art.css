@@ -1,6 +1,6 @@
 /* 고르는 화면 타일의 3D 그림(components/PickerArt.jsx).
    검수 대상(포스터 한 장 · 영상 프레임 묶음)을 비스듬히 세우고, 그 앞에 유리판·돋보기·자물쇠를 층으로 띄운다.
-   · 통째로 도는 축은 .pa-world 하나다. 타일이 넣는 --rx·--ry(마우스 기울기)를 그대로 더한다.
+   · 통째로 도는 축은 .pa-world 하나다. 자세는 고정이다(마우스를 따라 기울지 않는다). 마우스를 올리면 층이 벌어지고 부품이 움직인다.
    · 층 사이 간격은 --pa-gap 하나로 조절한다(처음 0 → 1로 펼쳐지고, 마우스를 올리면 1.5).
    · 두께는 같은 모양을 얇게 여러 장 겹쳐 만든다(.pa-solid > i). 뒤 장의 왼쪽·위쪽 테두리가 옆면으로 보인다.
    · 3D 층이 납작해지지 않도록 .pa-world에서 얼굴(.is-face)까지는 overflow·filter·opacity를 쓰지 않는다. */
@@ -22,7 +22,7 @@
 
 /* 무대: 위에서 조금 내려다보며 왼쪽 옆면이 보이게 돌린다. 도는 중심은 층 묶음의 가운데(앞으로 24px)다. */
 .pa-world { inset: 0; transform-style: preserve-3d; transform-origin: 50% 50% 24px;
-  transform: rotateX(calc(-14deg + var(--rx, 0deg))) rotateY(calc(30deg + var(--ry, 0deg)));
+  transform: rotateX(-14deg) rotateY(30deg);
   transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), scale 0.18s ease; }
 .pa-obj { transform-style: preserve-3d; animation: pa-bob 6.4s ease-in-out infinite; }
 .pa.is-poster .pa-obj { --r: 7px; left: 57px; top: 8px; width: 126px; height: 178px; }
