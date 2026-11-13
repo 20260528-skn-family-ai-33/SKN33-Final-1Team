@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useOptionalAuth } from '../auth/AuthProvider.jsx';
 import { useWorkspaceReset } from '../workspace/WorkspaceSession.jsx';
+import { useHelpChatAnchor } from '../help-chat/HelpChatProvider.jsx';
 import { Brand } from './Brand.jsx';
 import { ErrorMessage } from './ErrorMessage.jsx';
 import { Icon } from './Icon.jsx';
@@ -19,6 +20,7 @@ export function SiteHeader({ current, locked = false, lockReason, onHome, onStar
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const resetWorkspace = useWorkspaceReset();
+  const helpChatAnchor = useHelpChatAnchor();
   const [logoutPending, setLogoutPending] = useState(false);
   const [logoutError, setLogoutError] = useState('');
   const lock = { disabled: locked, title: locked ? lockReason : undefined, 'aria-describedby': locked && lockReason ? 'mt-lock-reason' : undefined };
@@ -61,7 +63,10 @@ export function SiteHeader({ current, locked = false, lockReason, onHome, onStar
 
   return <>
     <header className="cc-header"><div className="cc-header-inner">
-      <div className="cc-header-brand"><Brand onClick={home} {...lock} /><span className="cc-header-edition">REVIEW STUDIO</span></div>
+      <div className="cc-header-brand">
+        <Brand onClick={home} {...lock} />
+        {user && helpChatAnchor && <div className="cc-header-help" ref={helpChatAnchor} />}
+      </div>
       <div className="cc-header-actions">
         {showTools ? <nav className="cc-header-nav" aria-label="검수 도구">{tools.map(([to, label]) => locked ? <span key={to}
           className="cc-header-link" role="link" aria-disabled="true" tabIndex={-1}

@@ -45,14 +45,12 @@ html:has(.cc-header) { scrollbar-gutter: stable; }
 }
 .cc-header .brand-symbol { width: 26px; height: 26px; }
 .cc-header .brand-button:disabled { opacity: .49; cursor: not-allowed; }
-.cc-header-edition {
-  margin-left: 9px;
-  padding-left: 16px;
+.cc-header-help {
+  flex: none;
+  margin-left: 6px;
+  padding-left: 10px;
   border-left: 1px solid var(--cc-header-line);
-  color: var(--cc-header-muted);
-  font: 9px/1.5 var(--font-signal, Consolas, monospace);
-  letter-spacing: .06em;
-  white-space: nowrap;
+  --cc-help-background: var(--op-bg, #fff);
 }
 .cc-header-link {
   padding: 8px 11px;
@@ -108,7 +106,7 @@ a.cc-header-link:active { background: #e8e8e4; }
 .cc-header-error { max-width: 1700px; margin: 14px auto 0; padding: 0 clamp(15px, 2.3vw, 36px); }
 
 /* 여백은 작업 화면 본문(.rv-main, .rv-projectbar)의 구간별 여백과 같은 값을 쓴다. */
-@media (max-width: 1100px) { .cc-header-edition { display: none; } .cc-header-inner, .cc-header-error { padding-inline: 24px; } }
+@media (max-width: 1100px) { .cc-header-inner, .cc-header-error { padding-inline: 24px; } }
 @media (max-width: 900px) { .cc-header-user { display: none; } .cc-header-account { padding-left: 9px; } }
 @media (max-width: 760px) {
   .cc-header-inner { flex-wrap: wrap; row-gap: 4px; padding-block: 10px; }
