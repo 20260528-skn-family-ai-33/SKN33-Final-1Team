@@ -301,7 +301,7 @@ function ResultsScreen({ state, onSelect, onReal }) {
   const logoCard = mode !== 'text' && <section className="sd-panel sd-logo-result" aria-label="로고 정밀 대조 예시">
     <div className="sd-panel-head"><strong>로고 정밀 대조 (예시)</strong><span>위치 확정 → 정밀 대조</span></div>
     <div className="sd-logo-result-row"><span className="sd-thumb"><LogoThumb /></span>
-      주최 로고 · 확정한 위치 1곳 · {video ? '4초 묶음 · 선명도 낮음 근거 1건' : '형태 일치, 색 차이 근거 1건'}
+      주최 로고 · 확정한 위치 1곳 · {video ? '4초 구간 · 선명도 낮음 근거 1건' : '형태 일치, 색 차이 근거 1건'}
       <span className="sd-verdict is-review">확인 필요</span></div>
   </section>;
   const cta = <div className="sd-cta"><div><strong>내 {video ? '동영상으로' : '포스터로'} 실제 검수를 해 볼까요?</strong>

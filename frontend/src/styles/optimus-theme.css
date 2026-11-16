@@ -40,10 +40,13 @@ html .rv-project-identity > :is(.rv-project-field, .rv-project-picker) { padding
 html .rv-project-identity > * + :is(.rv-project-field, .rv-project-picker) { padding-left: 26px; border-left: 1px solid var(--op-line); }
 html .rv-project-field-label { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
 /* 검수 이름은 화면의 제목 역할을 하므로 크게 쓴다(자료 입력의 큰 제목은 없앴다). */
-/* 프로젝트 이름 앞의 '프로젝트 명' 상자(2026-11-17): 이름과 한 줄로 두고, 가는 선 알약 상자에 넣는다. */
-html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) { display: flex; align-items: center; gap: 12px; }
-html .rv-project-field-badge { flex-shrink: 0; padding: 4px 11px; border: 1px solid var(--op-line); border-radius: 6px; background: var(--op-surface);
-  color: var(--op-ink); font-size: 12px; font-weight: 500; line-height: 1.4; white-space: nowrap; }
+/* 프로젝트 이름 앞의 '프로젝트 명'(2026-11-17 다듬기): 튀는 회색 상자 대신 작은 모노 이름표 + 가는 세로선으로 이름과 한 덩어리로 보인다. */
+html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) { display: flex; align-items: center; gap: 14px; }
+html .rv-project-field-badge { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; padding-right: 14px; border-right: 1px solid var(--op-line);
+  color: var(--op-muted); font: 500 12px/1.4 var(--font-ui, inherit); letter-spacing: 0.02em; white-space: nowrap; }
+html .rv-project-field-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--op-ink); }
+html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) > strong { font-size: clamp(20px, 1.6vw, 24px); line-height: 36px; }
+html .rv-workspace .rv-projectbar .rv-project-field:has(> .rv-project-field-badge) .rv-project-name-field input[type] { font-size: clamp(20px, 1.6vw, 24px); }
 html .rv-project-identity .rv-project-field > strong { max-width: 36ch; font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 44px; }
 html .rv-workspace .rv-project-name-field { height: 44px; padding: 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; }
 html .rv-workspace .rv-project-name-field:hover { border-bottom-color: var(--op-line); }

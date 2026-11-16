@@ -89,7 +89,7 @@ export function firstIssue(media, mode) {
 
 // 로고 후보 찾기 문구. 일반 자료는 OpenAI 위치 탐지, 보안 자료는 RunPod 후보 탐지로 표시한다.
 export function logoDetail(part, media, security) {
-  if (part >= 1) return media === 'video' ? '원본 로고 1개 · 후보 묶음 3개를 찾았어요.' : '원본 로고 1개 · 후보 4개를 찾았어요.';
+  if (part >= 1) return media === 'video' ? '원본 로고 1개 · 후보 구간 3개를 찾았어요.' : '원본 로고 1개 · 후보 4개를 찾았어요.';
   const percent = Math.round(part * 100);
   if (media === 'video') {
     const second = Math.min(VIDEO.seconds, Math.ceil(part * VIDEO.seconds));

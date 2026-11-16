@@ -484,11 +484,6 @@ html .vl-cmp-title h2 { margin: 0; font-size: 22px; font-weight: 500; letter-spa
 html .vl-cmp-title .vl-result-pill { gap: 7px; padding: 4px 12px; border-radius: 999px; font-size: 13px; }
 html .vl-cmp-title .vl-bundle-outcome::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 html .vl-cmp-tag { padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; color: var(--op-muted, #6e6e6b); font-size: 12px; }
-html .vl-cmp-facts { display: flex; flex-wrap: wrap; gap: 0; margin: 0; }
-html .vl-cmp-facts > div { display: grid; gap: 2px; padding: 0 18px; border-left: 1px solid var(--op-line, #e3e3df); }
-html .vl-cmp-facts > div:first-child { padding-left: 0; border-left: 0; }
-html .vl-cmp-facts dt { color: var(--op-muted, #8a8a84); font: 11px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .06em; }
-html .vl-cmp-facts dd { margin: 0; color: var(--op-ink, #171717); font-size: 18px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 
 html .vl-cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; padding: 4px 24px 20px; }
 html .vl-cmp-pair figure { display: grid; gap: 8px; min-width: 0; margin: 0; }
@@ -542,11 +537,6 @@ html .vl-cmp-head { padding: 18px 24px; border-bottom: 1px solid var(--op-line, 
 html .vl-cmp-card.is-match .vl-cmp-head { background: linear-gradient(180deg, #f1f7f3, var(--op-card, #fff)); }
 html .vl-cmp-card.is-diff .vl-cmp-head { background: linear-gradient(180deg, #fbf1ee, var(--op-card, #fff)); }
 html .vl-cmp-title h2 { font-size: 24px; }
-html .vl-cmp-facts { gap: 0; padding: 6px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); }
-html .vl-cmp-facts > div, html .vl-cmp-facts > div:first-child { min-width: 64px; padding: 4px 14px; border-left: 1px solid var(--op-line, #e3e3df); text-align: center; }
-html .vl-cmp-facts > div:first-child { border-left: 0; }
-html .vl-cmp-facts dt { font-size: 11px; }
-html .vl-cmp-facts dd { font-size: 20px; }
 
 html .vl-cmp-pair { padding: 22px 24px 20px; }
 html .vl-cmp-pair figure { position: relative; }
@@ -615,10 +605,6 @@ html .vl-page .vl-player-controls strong span { font-size: 12px; font-weight: 40
 html .vl-page .vl-player-options { align-items: center; gap: 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--op-line, #e3e3df); }
 html .vl-page .vl-player-options label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; }
 html .vl-page .vl-player-options select { min-height: 32px; padding: 0 10px; border-radius: 999px; font-size: 12px; }
-html .vl-keys { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--op-muted, #8a8a84); font-size: 11px; }
-html .vl-keys kbd { padding: 1px 6px; border: 1px solid var(--op-line, #e3e3df); border-bottom-width: 2px; border-radius: 4px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
-  font: 10px/1.5 var(--font-signal, ui-monospace, monospace); }
-html .vl-keys kbd + kbd { margin-left: -1px; }
 
 html .vl-page .vl-candidate-grid { gap: 12px; }
 html .vl-page .vl-candidate { border-radius: 8px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
@@ -643,3 +629,67 @@ html .vl-page .vl-savebar strong { font-size: 14px; font-weight: 500; }
 html .vl-page .vl-save-actions .vl-button { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; }
 html .vl-page .vl-exposure p, html .vl-page .vl-timeline-axis { font-size: 12px; }
 html .vl-page .vl-player-options label { white-space: nowrap; }
+
+/* 영상 위 후보 상자(2026-11-17): 이름표는 상자 바깥 위에 붙여 로고를 가리지 않는다(화면 맨 위 상자는 바깥 아래).
+   고르지 않은 후보는 금색 점선, 고른 후보는 굵은 흰 테 + 잉크 외곽선 + 흰 빛 번짐으로 구분하고 이름표에 체크를 붙인다. */
+html .vl-page .vl-frame { overflow: hidden; }
+html .vl-page .vl-box { border: 2px dashed #e0b85a; border-radius: 4px; background: transparent; box-shadow: none; transition: border-color .15s ease, box-shadow .15s ease; }
+html .vl-page .vl-box:hover { border-style: solid; background: #e0b85a1f; }
+html .vl-page .vl-box > span { top: auto; bottom: calc(100% + 4px); left: -2px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+  background: #e0b85a; color: #171717; font-size: 11px; font-weight: 600; line-height: 1.4; white-space: nowrap; box-shadow: 0 1px 4px #00000040; }
+html .vl-page .vl-box.label-below > span { top: calc(100% + 4px); bottom: auto; }
+html .vl-page .vl-box.selected { z-index: 4; border: 3px solid #fff; border-radius: 5px; background: transparent;
+  box-shadow: 0 0 0 2px var(--op-ink, #171717), 0 0 16px 2px #ffffffb3; }
+html .vl-page .vl-box.selected > span { background: #fff; color: var(--op-ink, #171717); box-shadow: 0 0 0 2px var(--op-ink, #171717), 0 2px 6px #00000040; }
+html .vl-page .vl-box.selected > span > i { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; background: var(--op-ink, #171717);
+  color: #fff; font-size: 9px; font-style: normal; }
+
+/* '선택한 구간' 항목 글자 키우기(2026-11-17): 구분 이름표 14px, 구간 시각 20px. 프레임 수·점수 줄은 뺐다. */
+html .vl-page .vl-selected-item { align-items: center; gap: 16px; padding: 12px 14px; }
+html .vl-page .vl-selected-item > div { display: grid; gap: 4px; }
+html .vl-page .vl-selected-item .vl-mini-label { font-size: 14px; font-weight: 500; }
+html .vl-page .vl-selected-item strong { font: 500 20px/1.3 var(--font-signal, ui-monospace, monospace); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+html .vl-page .vl-selected-item small { font-size: 14px; }
+html .vl-page .vl-selected-item > button { width: 32px; height: 32px; font-size: 16px; }
+
+/* ---------- 위치 직접 확인 글자·원본 로고 키우기(2026-11-17) ----------
+   후보 카드·옵션 줄 글자를 13~16px로 올리고, 위쪽 원본 로고는 모눈 바탕 큰 틀(260×130)에 넣어 이름보다 먼저 눈에 들어오게 한다. */
+html .vl-page .vl-player-options label, html .vl-page .vl-player-options select { font-size: 14px; }
+html .vl-page .vl-player-options select { min-height: 36px; padding: 0 12px; }
+html .vl-page .vl-section-heading h2 { font-size: 18px; }
+html .vl-page .vl-soft-tag, html .vl-page .vl-count { font-size: 13px; }
+html .vl-page .vl-candidate-info { gap: 6px; padding: 12px 14px 14px; }
+html .vl-page .vl-candidate-score span { font-size: 14px; }
+html .vl-page .vl-candidate-score strong { font-size: 17px; }
+html .vl-page .vl-candidate-info p { font-size: 15px; color: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-info p.vl-candidate-frames { font-size: 14px; color: var(--op-muted, #6e6e6b) !important; }
+html .vl-page .vl-rank { padding: 3px 10px; font-size: 13px; }
+html .vl-page .vl-candidate-check { padding: 4px 12px; font-size: 13px; }
+html .vl-page .vl-ocr-chip { font-size: 13px; }
+html .vl-page .vl-text-button { font-size: 14px; }
+html .vl-page .vl-player-jump button, html .vl-page .vl-step { font-size: 14px; }
+html .vl-page .vl-play { font-size: 14px; }
+
+html .vl-page .vl-current-ref { gap: 24px; padding: 18px 24px; }
+html .vl-page .vl-current-ref img { width: 260px; height: 130px; padding: 16px; object-fit: contain; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px;
+  background-color: #fff; background-image: linear-gradient(#17171708 1px, transparent 1px), linear-gradient(90deg, #17171708 1px, transparent 1px); background-size: 14px 14px;
+  box-shadow: 0 2px 10px #17171712; }
+html .vl-current-label { font-size: 12px; }
+html .vl-page .vl-current-ref h1 { font-size: 20px; color: var(--op-muted, #4a4a46); }
+
+/* 선택한 구간·다른 구간 항목의 로고 조각: 128×72 칸에 조각 전체를 줄여 넣는다(예전 76×48 칸에서는 오른쪽이 잘렸다). */
+html .vl-page .vl-selected-item { grid-template-columns: 128px minmax(0, 1fr) 32px; }
+html .vl-page .vl-linked-item { grid-template-columns: 18px 128px minmax(0, 1fr); }
+html .vl-page :is(.vl-selected-item, .vl-linked-item) .vl-crop { width: 128px; height: 72px; border: 1px solid var(--op-line, #e3e3df); border-radius: 6px; background: #fff; }
+
+/* 후보 카드 순위·선택 표시(2026-11-17): 로고 조각 위에 겹치지 않게 조각 위쪽의 얇은 줄로 옮기고 작게 줄인다.
+   순위는 모노 글자만, 선택은 18px 원(고르면 잉크색 ✓, 아니면 빈 원). */
+html .vl-page .vl-candidate-image { gap: 6px; padding: 8px 10px 10px; }
+html .vl-candidate-top { display: flex; align-items: center; justify-content: space-between; min-height: 18px; }
+html .vl-page .vl-candidate-top .vl-rank { position: static; padding: 0; border-radius: 0; background: none; color: var(--op-muted, #6e6e6b);
+  font: 500 12px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-rank { color: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-top .vl-candidate-check { position: static; display: grid; place-items: center; width: 18px; height: 18px; padding: 0;
+  border: 1.5px solid #b9b9b2; border-radius: 50%; background: var(--op-card, #fff); color: #fff; font-size: 11px; line-height: 1; }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-candidate-check { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-image:hover .vl-candidate-check { border-color: var(--op-ink, #171717); }

@@ -272,7 +272,7 @@ function LogoCompareJob({ job, onSeek }) {
   else if (!status) state = <LogoProgress label="자동으로 고른 후보로 정밀 대조 시작" value="대기" />;
   else if (RUNNING.has(status)) state = <LogoProgress label="정밀 대조 중" value={status === 'queued' ? '대기' : percent(result.compare_progress)} />;
   else if (status === 'failed') state = <ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} />;
-  else if (!bundles.length) state = <p className="rv-video-logo-result-note">영상에서 원본 로고 후보를 찾지 못해 대조한 묶음이 없어요. 후보를 직접 골라 다시 대조할 수 있어요.</p>;
+  else if (!bundles.length) state = <p className="rv-video-logo-result-note">영상에서 원본 로고 후보를 찾지 못해 대조한 구간이 없어요. 후보를 직접 골라 다시 대조할 수 있어요.</p>;
   const warnings = [...(job.warnings || []), ...(result?.warnings || [])];
   const tally = bundles.reduce((counts, bundle) => {
     const tone = OUTCOME[bundleOutcome(bundle.evidence?.outcomes)].tone;
@@ -307,7 +307,7 @@ function LogoCompareJob({ job, onSeek }) {
             alt={`${secondText(rep.sec)} 영상 속 ${name}`} /></span>
             : <span className="rv-video-logo-thumb is-empty">프레임 없음</span>}
         </div>
-        <div className="rv-video-logo-row-text"><strong title={name}>{name}{several ? ` · 묶음 ${bundle.crop + 1}` : ''}</strong>
+        <div className="rv-video-logo-row-text"><strong title={name}>{name}{several ? ` · 구간 ${bundle.crop + 1}` : ''}</strong>
           <span>{facts}</span></div>
         {rep && (onSeek
           ? <button type="button" className="rv-video-logo-seek" onClick={() => onSeek(rep.sec * 1000)}

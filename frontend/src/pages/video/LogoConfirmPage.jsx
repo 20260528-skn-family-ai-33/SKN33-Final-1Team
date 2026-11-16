@@ -39,7 +39,8 @@ function boxStyle(box, size) {
   };
 }
 
-function CropPreview({ video, sec, box, compact = false }) {
+// fit=[너비, 높이](선택): 이 크기 안에 로고 조각 전체가 들어가게 줄인다(작은 칸에서 잘려 보이지 않게).
+function CropPreview({ video, sec, box, compact = false, fit }) {
   if (!video || !box) return <div className="vl-crop vl-crop-empty">미리보기 없음</div>;
   const W = video.size[0], H = video.size[1];
   const x1 = Math.max(0, Math.min(W - 1, box[0]));
@@ -47,8 +48,9 @@ function CropPreview({ video, sec, box, compact = false }) {
   const x2 = Math.max(x1 + 1, Math.min(W, box[2]));
   const y2 = Math.max(y1 + 1, Math.min(H, box[3]));
   const width = x2 - x1, height = y2 - y1;
-  const scale = Math.min((compact ? 248 : 350) / width, (compact ? 112 : 166) / height);
-  return <div className={'vl-crop' + (compact ? ' compact' : '')} aria-label={sec + '초 로고 영역'}>
+  const [maxW, maxH] = fit || (compact ? [248, 112] : [350, 166]);
+  const scale = Math.min(maxW / width, maxH / height);
+  return <div className={'vl-crop' + (compact ? ' compact' : '') + (fit ? ' is-fit' : '')} aria-label={sec + '초 로고 영역'}>
     <span style={{
       width: width * scale,
       height: height * scale,
@@ -63,15 +65,18 @@ function FrameViewer({ video, sec, overlays = [], onSelect, className = '' }) {
   const missing = (video.missing || []).includes(sec);
   return <div className={'vl-frame ' + className} style={{ aspectRatio: video.size[0] + ' / ' + video.size[1] }}>
     <img src={frameUrl(video, sec)} alt={sec + '초 전체 프레임'} />
+    {/* 이름표는 상자 바깥 위(화면 맨 위에 붙은 상자는 바깥 아래)에 두어 로고를 가리지 않는다.
+        선택 여부는 글자 대신 상자 모양(점선 → 굵은 흰 테 + 잉크 외곽선, 이름표 앞 체크)으로 보인다. */}
     {overlays.map(item => <button
       type="button"
       key={item.id}
-      className={'vl-box' + (item.selected ? ' selected' : '')}
+      className={'vl-box' + (item.selected ? ' selected' : '') + (item.box[1] / (video.size[1] || 1) < 0.08 ? ' label-below' : '')}
       style={boxStyle(item.box, video.size)}
-      aria-label={item.label}
+      aria-label={item.label + (item.selected ? ' (선택됨)' : '')}
+      aria-pressed={!!item.selected}
       title={item.label}
       onClick={() => onSelect && onSelect(item.id)}
-    ><span>{item.label}</span></button>)}
+    ><span>{item.selected && <i aria-hidden="true">✓</i>}{item.label}</span></button>)}
     {missing && <div className="vl-frame-missing">이 초의 프레임을 읽지 못했습니다.</div>}
     <span className="vl-frame-time">{timeText(sec)}</span>
   </div>;
@@ -83,10 +88,11 @@ function CandidateCard({ video, refIndex, groupIndex, rank, selected, onToggle }
   const [sec, box] = representative;
   const ocr = video.refs[refIndex].ocr[String(groupIndex)];
   return <article className={'vl-candidate' + (selected ? ' selected' : '')}>
-    <button type="button" className="vl-candidate-image" onClick={onToggle} aria-pressed={selected}>
+    {/* 순위와 선택 표시는 로고 조각 위가 아니라 그 위쪽 줄에 작게 둬서 로고를 가리지 않는다. */}
+    <button type="button" className="vl-candidate-image" onClick={onToggle} aria-pressed={selected} aria-label={'#' + rank + ' 후보 ' + (selected ? '선택 해제' : '선택')}>
+      <span className="vl-candidate-top"><span className="vl-rank">#{rank}</span>
+        <span className="vl-candidate-check" aria-hidden="true">{selected ? '✓' : ''}</span></span>
       <CropPreview video={video} sec={sec} box={box} compact />
-      <span className="vl-rank">#{rank}</span>
-      <span className="vl-candidate-check">{selected ? '선택됨' : '선택'}</span>
     </button>
     <div className="vl-candidate-info">
       <div className="vl-candidate-score"><span>순위 점수</span><strong>{Number(group.rank[refIndex]).toFixed(3)}</strong></div>
@@ -113,7 +119,7 @@ function CandidatePlayer({ video, refIndex, sec, setSec, checked, onToggle }) {
       id: groupIndex,
       box,
       selected: checked.has(groupIndex),
-      label: '#' + (order + 1) + ' 후보' + (checked.has(groupIndex) ? ' · 선택됨' : ''),
+      label: '#' + (order + 1) + ' 후보',
     }];
   });
   // 지금 보이는 후보 묶음에 상자가 있는 시점(초). '이전·다음 후보' 단추와 Shift+←/→가 이 시점으로 건너뛴다.
@@ -177,7 +183,6 @@ function CandidatePlayer({ video, refIndex, sec, setSec, checked, onToggle }) {
           {[1, 2, 4, 8].map(value => <option key={value} value={value}>{value}배</option>)}
         </select>
       </label>
-      <span className="vl-keys" aria-hidden="true"><kbd>←</kbd><kbd>→</kbd> 1초 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 후보 <kbd>Space</kbd> 재생</span>
     </div>
   </section>;
 }
@@ -192,16 +197,16 @@ function GroupLinks({ video, refIndex, confirmed, checked, onToggle }) {
   const shown = expanded ? candidates : candidates.slice(0, 8);
   return <section className="vl-panel">
     <div className="vl-section-heading">
-      <h2>같은 로고의 다른 묶음</h2>
+      <h2>같은 로고의 다른 구간</h2>
       <span className="vl-soft-tag">점수 {Math.round(LINK_RATIO * 100)}%+</span>
     </div>
-    {!candidates.length ? <p className="vl-empty-inline">다른 묶음이 없어요.</p> :
+    {!candidates.length ? <p className="vl-empty-inline">다른 구간이 없어요.</p> :
       <div className="vl-linked-list">{shown.map(groupIndex => {
         const group = video.groups[groupIndex];
         const [sec, box] = group.rep[refIndex];
         return <label key={groupIndex} className={'vl-linked-item' + (checked.has(groupIndex) ? ' selected' : '')}>
           <input type="checkbox" checked={checked.has(groupIndex)} onChange={() => onToggle(groupIndex)} />
-          <CropPreview video={video} sec={sec} box={box} compact />
+          <CropPreview video={video} sec={sec} box={box} compact fit={[120, 64]} />
           <span className="vl-linked-copy"><strong>{spanText(group.secs)}</strong><small>점수 {Number(group.rank[refIndex]).toFixed(3)} · {group.secs.length}프레임</small></span>
         </label>;
       })}</div>}
@@ -303,13 +308,13 @@ function SelectionSummary({ video, refIndex, checked, confirmed, manuals, onRemo
       const [sec, box] = group.rep[refIndex];
       const kind = confirmed.includes(groupIndex) ? '선택 후보' : '연결 후보';
       return <article className="vl-selected-item" key={'group-' + groupIndex}>
-        <CropPreview video={video} sec={sec} box={box} compact />
-        <div><span className="vl-mini-label">{kind}</span><strong>{spanText(group.secs)}</strong><small>{group.secs.length}개 프레임 · 점수 {Number(group.rank[refIndex]).toFixed(3)}</small></div>
+        <CropPreview video={video} sec={sec} box={box} compact fit={[120, 64]} />
+        <div><span className="vl-mini-label">{kind}</span><strong>{spanText(group.secs)}</strong></div>
         <button type="button" aria-label="후보에서 제거" onClick={() => onRemoveGroup(groupIndex)}>×</button>
       </article>;
     })}
     {manuals.map((manual, index) => <article className="vl-selected-item" key={'manual-' + index}>
-      <CropPreview video={video} sec={manual.sec} box={manual.box} compact />
+      <CropPreview video={video} sec={manual.sec} box={manual.box} compact fit={[120, 64]} />
       <div><span className="vl-mini-label manual">직접 지정</span><strong>{spanText(manual.secs)}</strong><small>{manual.secs.length}초 · 고정 영역</small></div>
       <button type="button" aria-label="직접 지정 영역 제거" onClick={() => onRemoveManual(index)}>×</button>
     </article>)}
@@ -363,7 +368,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
       <div className="vl-review-left">
         <CandidatePlayer video={video} refIndex={refIndex} sec={sec} setSec={setSec} checked={checked} onToggle={onToggle} />
         <section className="vl-panel">
-          <div className="vl-section-heading"><h2>후보 묶음</h2>
+          <div className="vl-section-heading"><h2>후보 구간</h2>
             <span className="vl-soft-tag">여러 개 선택 가능</span></div>
           <div className="vl-candidate-grid">
             {top.map((groupIndex, index) => <CandidateCard key={groupIndex} video={video} refIndex={refIndex} groupIndex={groupIndex}
@@ -397,7 +402,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
             onRemoveGroup={onRemoveGroup} onRemoveManual={onRemoveManual} />
           {decision === 'none' && <div className="vl-none-state">이 원본 로고는 영상에 없는 것으로 표시했습니다.</div>}
           {checked.size > 0 && decision !== 'done' && <button type="button" className="vl-button primary vl-wide"
-            onClick={onConfirm}>선택한 {checked.size}개 묶음 확정</button>}
+            onClick={onConfirm}>선택한 {checked.size}개 구간 확정</button>}
           {decision === 'done' && <button type="button" className="vl-button subtle vl-wide" onClick={onManual}>영역 직접 추가</button>}
           {decision === 'done' && <button type="button" className="vl-button secondary vl-wide" onClick={() => onNone()}>해당 없음으로 변경</button>}
         </section>
@@ -460,7 +465,7 @@ function CompareResults({ base, video, refs, onConfirm, onStatus }) {
     {running && <section className="vl-panel vl-progress-card">
       <div className="vl-progress-title"><strong>정밀 대조 중</strong><span>{result.compare_progress || 0}%</span></div>
       <div className="vl-progress-track"><span style={{ width: Math.min(100, result.compare_progress || 0) + '%' }} /></div>
-      <p>고른 묶음의 초별 영역을 원본 로고와 비교하고 있습니다.</p>
+      <p>고른 구간의 초별 영역을 원본 로고와 비교하고 있습니다.</p>
     </section>}
     {result.compare_status === 'failed' && <section className="vl-panel"><ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} /></section>}
     {!result.compare_status && <section className="vl-panel vl-progress-card" role="status">
@@ -489,14 +494,9 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
   const differences = groupDifferences(bundle.per_sec);
   return <article className={'vl-evidence-card vl-cmp-card is-' + outcome.tone}>
     <header className="vl-cmp-head">
-      <div className="vl-cmp-title"><h2>{refName}{several ? ' · 묶음 ' + (bundle.crop + 1) : ''}</h2>
+      <div className="vl-cmp-title"><h2>{refName}{several ? ' · 구간 ' + (bundle.crop + 1) : ''}</h2>
         <span className={'vl-result-pill vl-bundle-outcome ' + outcome.tone}>{outcome.label}</span>
         {bundle.source !== 'candidate' && <span className="vl-cmp-tag">직접 지정</span>}</div>
-      <dl className="vl-cmp-facts">
-        <div><dt>비교</dt><dd>{evidence.n_secs || 0}초</dd></div>
-        <div><dt>건너뜀</dt><dd>{bundle.skipped?.length || 0}초</dd></div>
-        {Object.entries(evidence.outcomes || {}).map(([key, count]) => <div key={key}><dt>{OUTCOME[key]?.label || key}</dt><dd>{count}초</dd></div>)}
-      </dl>
     </header>
     <div className="vl-cmp-pair">
       <figure><div className="vl-cmp-frame"><img src={base + '/' + (refInfo?.img || ('refs/' + bundle.logo + '.png'))} alt={refName + ' 원본'} /></div>
