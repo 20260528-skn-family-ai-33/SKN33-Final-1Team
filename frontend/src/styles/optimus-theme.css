@@ -230,6 +230,22 @@ html .rv-workspace .rv-actionbar :is(p, small) { font-size: 13px; line-height: 1
 html .rv-workspace .rv-input-actionbar > .rv-button { gap: 26px; min-height: 50px; padding: 13px 22px 13px 26px; font-size: 14px; }
 html .rv-workspace .rv-input-actionbar > .rv-button .icon { width: 18px; height: 18px; }
 html .rv-workspace :is(.rv-input-error, .rv-criteria-error) { margin-top: 22px; }
+/* 자료 입력 한 화면: 검수 항목이 붙으면 오른쪽이 길어지므로, 시작 줄을 화면 아래에 붙여 둔다(목록을 넘겨 보는 동안에도 시작 단추가 보인다). */
+html .rv-workspace .rv-input-form .rv-input-actionbar.is-sticky { position: sticky; z-index: 14; bottom: 0; padding: 16px 0 18px; background: var(--op-bg); }
+/* 시작 줄의 확인 필요 항목(값이 정해지지 않은 기준): 번호 단추를 누르면 그 항목으로 가고, 빼고 바로 검수할 수도 있다. */
+html .rv-workspace .rv-input-actionbar .rv-criteria-blockers { margin-top: 10px; }
+/* 기준 보완 양식의 저장·취소 */
+html .rv-workspace .rv-criteria-amend-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+/* 자료 입력 화면의 검수 항목 상자: 직접 입력란 아래 · 문서 첨부 위(예전에 문서에서 추출한 요구사항 목록이 있던 자리와 같은 모양).
+   상자 안에서는 제목을 한 줄로 작게 쓰고, 목록은 쪽으로 넘겨 본다. 고른 줄과 안내 상자는 종이 색으로 띄운다. */
+html .rv-workspace.rv-workspace .rv-criteria-box.rv-criteria-inspector { margin-top: 14px; padding: 14px 14px 4px; border: 1px solid var(--op-line); border-radius: 6px; background: var(--op-surface); }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-panel-heading { align-items: center; padding: 0 0 10px; }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-panel-heading .rv-eyebrow { display: none; }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-panel-heading h2 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.02em; }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-criteria-selection-count { background: var(--op-card); }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-criteria-toolbar { padding: 10px 0; }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-criteria-detail { padding: 18px 0 14px; }
+html .rv-workspace .rv-criteria-box.rv-criteria-inspector .rv-criteria-empty { padding: 14px 0 18px; }
 /* 기준 확인: 항목 목록은 판 대신 선으로 나눈 줄, 고른 줄은 왼쪽 잉크 선 */
 html .rv-workspace .rv-criteria-page .rv-workspace-intro { align-items: flex-end; margin-block: 0 26px; }
 html .rv-workspace .rv-criteria-page .rv-workspace-intro p { max-width: 62ch; font-size: 14px; line-height: 1.7; }

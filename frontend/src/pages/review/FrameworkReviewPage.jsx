@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
+import InputPage from './InputPage.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
@@ -40,7 +41,6 @@ function readLogoNotice(runId) {
 const verdicts = { pass: '충족', fail: '불충족', review: '확인 필요' };
 const running = processingStatuses;
 const actionStatus = {
-  approve: '기준을 승인하고 있어요.',
   start: '기준을 승인하고 있어요.',
   'start-skip': '기준을 승인하고 있어요.',
   'decide-start': '포스터 검수를 접수하고 있어요.',
@@ -68,16 +68,30 @@ function command(path, body, key, signal) {
   return frameworkJson(path, { method: 'POST', signal, body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
+// 목록에서 체크를 푼 기준과, 값이 정해지지 않아 빼고 시작한 기준에 남기는 제외 사유.
+// 첫 문구는 서버가 직접 입력을 더하면서 고르지 않은 문서 기준을 뺄 때 쓰는 문구와 같다(criteria_review.py).
+const NOT_SELECTED = '자료 입력에서 검수 대상으로 선택하지 않았습니다.';
+const UNRESOLVED_SKIPPED = '담당자가 확인 필요 항목을 제외하고 검수를 시작했습니다.';
 
-export default function FrameworkReviewPage({ runId, initialFile, initialCriterionIds, projectName, openRun, onInput, onNew, referenceLogos,
-  logoDetector = 'runpod', health, reviewStarting = false }) {
+// 포스터 검수의 자료 입력 화면과, 접수된 검수 한 건(실행)의 진행 · 결과 · 보고서 화면.
+// 자료 입력은 한 화면이다: 실행이 아직 없을 때(runId 없음)부터 문서를 추출해 초안이 생긴 뒤(승인 전)까지 같은 InputPage를 그리고,
+// 초안의 검수 항목은 그 화면의 한 칸으로 들어간다. '검수 시작하기'가 기준 승인과 검수 접수까지 한다.
+// input(선택): 자료 입력 한 화면에 필요한 것. ReviewPage가 넘긴다.
+//   page InputPage 속성 · layout 머리글(검수 이름·저장할 프로젝트)과 준비 창 · file 고른 포스터 · typed 직접 입력한 요구사항
+//   addTyped(text, { runId, criterionIds }) 직접 입력을 분석해 이 실행의 기준에 더한다(성공하면 true)
+//   fresh 방금 이 화면에서 만든 실행 · autoStart 직접 입력만으로 시작해, 기준이 준비되면 바로 접수 · setProject(id) 이 실행의 프로젝트로 맞춤
+export default function FrameworkReviewPage({ runId, initialFile, projectName, openRun, onInput, onNew, referenceLogos,
+  logoDetector = 'runpod', health, reviewStarting = false, input = null }) {
   const { user } = useAuth();
   const path = '/runs/' + encodeURIComponent(runId);
   const [run, setRun] = useState(null);
   const [overview, setOverview] = useState(null);
   const [loadState, setLoadState] = useState('checking');
+  const [shownRunId, setShownRunId] = useState(runId);
   const initialStart = useRef(reviewStarting);
-  const [file, setFile] = useState(initialFile);
+  const autoStarted = useRef(false);
+  // 승인 뒤 포스터 등록·수정본 재검수에서 이 화면이 직접 받은 포스터. 승인 전 초안에서는 자료 입력의 포스터(input.file)를 쓴다.
+  const [pickedFile, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
   const [humanReviews, setHumanReviews] = useState({});
@@ -114,14 +128,19 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const uploaded = useRef(null);
   const amendmentForm = useRef(null);
   const humanReviewForm = useRef(null);
+  // 자료 입력 화면은 실행이 바뀌어도 같은 화면으로 남는다(문서를 추출했거나 다른 문서로 바꿨을 때). 앞 실행의 내용과 선택은 그리기 전에 버린다.
+  if (shownRunId !== runId) {
+    setShownRunId(runId);
+    setRun(null); setOverview(null); setLoadState('checking');
+    setExcluded([]); setAmendment(null); setActiveId(null); setError('');
+  }
   const latest = overview?.latest_version;
   const status = run?.execution_status;
   const sourceDraft = status === 'waiting_criteria' && !run.baseline;
-  const savedCriteria = latest?.version.criteria || run?.criteria?.criteria || [];
-  const selectedPdfIds = sourceDraft && initialCriterionIds ? new Set(initialCriterionIds) : null;
-  const criteria = selectedPdfIds ? savedCriteria.filter(item => selectedPdfIds.has(item.criterion_id)) : savedCriteria;
-  const selectionUnavailable = selectedPdfIds && overview && criteria.length !== selectedPdfIds.size;
-  const needsVersion = !latest || (selectedPdfIds && savedCriteria.length !== criteria.length) || excluded.length > 0 || amendment;
+  // 승인 전 초안은 자료 입력 한 화면으로 그린다(포스터·직접 입력·문서 첨부와 검수 항목이 한곳에 있다).
+  const draftInput = sourceDraft && Boolean(input);
+  const file = draftInput ? input.file : pickedFile || (status === 'waiting_asset' && !run?.baseline && input?.file) || null;
+  const criteria = latest?.version.criteria || run?.criteria?.criteria || [];
   const rejections = run?.criteria?.extraction?.rejected_candidates || [];
   const imagePages = unreadImagePages(run?.criteria?.warnings);
   const unreadPages = unreadTextPages(run?.criteria?.warnings);
@@ -189,6 +208,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     }
     document.getElementById(step === 'running' ? 'review-process-title' : 'page-title')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
+    // 자료 입력 화면에서 검수 항목이 나타나는 것은 단계가 바뀌는 것이 아니다(step이 그대로라 입력하던 칸의 초점을 뺏지 않는다).
   }, [step, reportTarget, revisionReady]);
   useEffect(() => {
     if (!file) { setPreview(null); return; }
@@ -204,8 +224,9 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     img.src = imageUrl;
     return () => { img.onload = null; img.onerror = null; };
   }, [imageUrl]);
-  useEffect(() => { setHumanReviews({}); setEditingPoster(null); }, [runId]);
+  useEffect(() => { setHumanReviews({}); setEditingPoster(null); keys.current = new Map(); autoStarted.current = false; }, [runId]);
   useEffect(() => {
+    if (!runId) return undefined;   // 아직 실행이 없다(자료 입력 중)
     const controller = new AbortController();
     let timer;
     let hasSnapshot = false;
@@ -234,6 +255,17 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     read();
     return () => { controller.abort(); clearTimeout(timer); };
   }, [path, reload]);
+
+  // 초안을 열면 저장할 프로젝트 칸을 이 실행의 프로젝트로 맞춘다(직접 입력을 더할 때 같은 프로젝트에 저장된다).
+  const draftProject = draftInput ? run.context.project_id : null;
+  const setDraftProject = input?.setProject;
+  useEffect(() => { if (draftProject) setDraftProject?.(draftProject); }, [draftProject, setDraftProject]);
+  // 직접 입력만으로 시작한 경우: 기준이 준비되면 묻지 않고 승인·접수까지 이어 간다. 값이 빈 기준이 있으면 startDraft가 멈추고 그 항목을 보여 준다.
+  useEffect(() => {
+    if (!input?.autoStart || autoStarted.current || loadState !== 'ready' || !draftInput || !overview || !file) return;
+    autoStarted.current = true;
+    perform(signal => startDraft(signal), 'start');
+  });
 
   // 관계 조회(이전 기준과 달라진 항목 · 수정본 검수 이력)는 부가 안내다. 실패해도 검수 흐름을 막지 않는다.
   const criteriaRun = Boolean(run) && !run.baseline && ['waiting_criteria', 'waiting_asset'].includes(status);
@@ -283,8 +315,6 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   }
   const working = key => (busy && pending === key) || undefined;
   // 비활성 버튼에 마우스를 올리면 누를 수 없는 이유를 알려 준다.
-  const exclusionBlock = criteria.length && excluded.length === criteria.length ? '적어도 기준 한 개는 남겨 주세요.'
-    : excluded.length && !reason.trim() ? '제외 사유를 먼저 적어 주세요.' : undefined;
   const posterBlock = !file ? '먼저 검수할 포스터 파일을 선택해 주세요.' : undefined;
   // 미리보기 칸에서 고르거나 끌어다 놓은 포스터. 한 장의 JPG·PNG·WEBP만 받고, 크기 제한은 등록할 때 서버가 확인한다.
   const posterTypes = ['image/png', 'image/jpeg', 'image/webp'];
@@ -294,43 +324,39 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     if (!posterTypes.includes(files[0].type)) { setPosterError('JPG · PNG · WEBP 이미지만 등록할 수 있어요.'); return; }
     setPosterError(''); setFile(files[0]);
   }
-  async function saveVersion(signal, base = latest, unresolvedIds = []) {
-    if (selectionUnavailable) return;
-    if (amendment && !amendmentForm.current.reportValidity()) return;
-    const unresolvedReason = '담당자가 확인 필요 항목을 제외하고 검수를 시작했습니다.';
-    const selectionReason = '자료 입력에서 검수 대상으로 선택하지 않았습니다.';
-    const omittedPdfCriteria = selectedPdfIds
-      ? (base?.version.criteria || savedCriteria).filter(item => !selectedPdfIds.has(item.criterion_id)) : [];
+  // 기준 버전을 새로 저장한다. drop: 목록에서 체크를 푼 기준 · unresolved: 값이 정해지지 않아 빼고 시작하는 기준 · amend: 기준 보완 한 건.
+  // 체크를 푼 기준은 검수를 시작할 때 한꺼번에 저장한다. 미리 저장하면 다시 체크할 수 없다(저장한 제외는 되돌리지 못한다).
+  async function saveDraftVersion(signal, base, { drop = [], unresolved = [], amend = null } = {}) {
+    const exclude = (id, reason, reference) => ({ action: 'exclude', criterion_id: id, reason, source: { reference, quote: reason } });
     const body = { parent_version_id: base?.version.criteria_version_id || null,
       expected_base_sha256: base?.sha256 || overview.source_draft_sha256, purpose: 'human_review',
-      edits: [...omittedPdfCriteria.map(c => ({
-        action: 'exclude', criterion_id: c.criterion_id, reason: selectionReason,
-        source: { reference: 'PDF 검수 항목 선택', quote: selectionReason },
-      })), ...criteria.filter(c => excluded.includes(c.criterion_id)).map(c => ({
-        action: 'exclude', criterion_id: c.criterion_id, reason: reason.trim(),
-        source: { reference: '담당자 기준 검토', quote: reason.trim() },
-      })), ...unresolvedIds.filter(id => !excluded.includes(id)).map(id => ({
-        action: 'exclude', criterion_id: id, reason: unresolvedReason,
-        source: { reference: '담당자 검수 시작 선택', quote: unresolvedReason },
-      })), ...(amendment ? [amendment] : [])] };
+      edits: [...drop.map(id => exclude(id, NOT_SELECTED, '문서 검수 항목 선택')),
+        ...unresolved.filter(id => !drop.includes(id)).map(id => exclude(id, UNRESOLVED_SKIPPED, '담당자 검수 시작 선택')),
+        ...(amend ? [amend] : [])] };
     const version = await command(path + '/criteria-versions', body, requestKey(JSON.stringify(body)), signal);
-    setOverview({ ...overview, latest_version: version }); setExcluded([]); setReason(''); setAmendment(null);
+    setOverview(current => ({ ...current, latest_version: version }));
     return version;
   }
-  async function approveVersion(signal, version = latest) {
+  // 기준 보완 한 건을 저장한다. 목록의 체크 상태는 건드리지 않는다.
+  async function saveAmendment(signal) {
+    if (!amendment || !amendmentForm.current.reportValidity()) return;
+    await saveDraftVersion(signal, latest, { amend: amendment });
+    setAmendment(null);
+  }
+  async function approveVersion(signal, version) {
     const body = { criteria_version_id: version.version.criteria_version_id, expected_sha256: version.sha256,
       purpose: 'human_review', reviewed_all_criteria: true, reason: '표시된 기준 전체와 원문을 확인하고 승인했습니다.' };
     await command(path + '/criteria-approvals', body, requestKey(JSON.stringify(body)), signal);
-    setRun(await frameworkJson(path, { signal }));
   }
   async function registerPoster(signal, version = latest, navigate = true) {
     if (!file) return;
     await requirePosterReview({ signal });
-    if (uploaded.current?.file !== file) {
+    // 같은 파일을 같은 프로젝트에 이미 올렸으면 다시 올리지 않는다(자료 입력 화면은 문서를 바꿔도 그대로 남으므로 프로젝트도 함께 본다).
+    if (uploaded.current?.file !== file || uploaded.current.project !== run.context.project_id) {
       const form = new FormData(); form.append('image', file);
       const image = await frameworkJson('/projects/' + encodeURIComponent(run.context.project_id) + '/images',
         { method: 'POST', body: form, signal });
-      uploaded.current = { file, id: image.id };
+      uploaded.current = { file, id: image.id, project: run.context.project_id };
     }
     const revision = status === 'waiting_revision';
     const baseline = revision ? run.baseline : { criteria_version_id: version.version.criteria_version_id, criteria_sha256: version.sha256 };
@@ -360,23 +386,51 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
       } catch { /* 브라우저 저장소를 쓸 수 없으면 안내만 생략한다 */ }
     }
   }
-  async function approveAndStart(signal, excludeUnresolved = false) {
-    if (selectionUnavailable) return;
-    await requirePosterReview({ signal });
-    let version = needsVersion ? await saveVersion(signal) : latest;
-    if (excludeUnresolved && version && Object.keys(version.approval_blockers).length) {
-      version = await saveVersion(signal, version, Object.keys(version.approval_blockers));
-    }
-    if (!version || Object.keys(version.approval_blockers).length) return;
-    await approveVersion(signal, version);
+  // 자료 입력 한 화면의 '검수 시작하기': (직접 입력 분석 →) 기준 버전 저장 → 승인 → 포스터 등록 → 검수 접수.
+  // skipUnresolved: 값이 정해지지 않은 '확인 필요' 항목을 이번 검수에서 빼고 진행한다.
+  async function startDraft(signal, skipUnresolved = false) {
     if (!file) return;
-    const child = await registerPoster(signal, version, false);
+    await requirePosterReview({ signal });
+    if (amendment && !amendmentForm.current.reportValidity()) return;
+    let version = latest;
+    let drop = excluded;
+    if (input.typed) {
+      // 직접 입력을 분석해 기준에 더한다. 문서에서 나온 기준 가운데 체크를 푼 것은 이 요청에서 함께 빠진다.
+      const fromDocument = criteria.filter(item => item.source.kind !== 'direct_input').map(item => item.criterion_id);
+      const kept = fromDocument.filter(id => !excluded.includes(id));
+      const added = await input.addTyped(input.typed, { runId, criterionIds: kept.length === fromDocument.length ? null : kept });
+      if (!added || signal.aborted) return;
+      const fresh = await frameworkJson(path + '/criteria-review', { signal });
+      setOverview(fresh);
+      version = fresh.latest_version;
+      drop = excluded.filter(id => version.version.criteria.some(item => item.criterion_id === id));
+      setExcluded(drop);
+    }
+    if (!version || drop.length || amendment) {
+      version = await saveDraftVersion(signal, version, { drop, amend: amendment });
+      setExcluded([]); setAmendment(null);
+    }
+    let unresolved = Object.keys(version.approval_blockers);
+    if (unresolved.length && skipUnresolved) {
+      version = await saveDraftVersion(signal, version, { unresolved });
+      unresolved = Object.keys(version.approval_blockers);
+    }
+    // 값이 정해지지 않은 기준이 남으면 승인하지 않고 멈춘다. 화면이 그 항목을 짚어 준다.
+    if (unresolved.length) { showCriterion(unresolved[0], version.version.criteria); return; }
+    await approveVersion(signal, version);
     try {
-      await command('/runs/' + encodeURIComponent(child.context.run_id) + '/approvals', {
-        context: child.context, actor_id: child.context.actor_id, decision: 'approve_criteria', reason: '',
-      }, null, signal);
-    } finally {
-      if (!signal.aborted) openRun(child.context.run_id, true);
+      const child = await registerPoster(signal, version, false);
+      try {
+        await command('/runs/' + encodeURIComponent(child.context.run_id) + '/approvals', {
+          context: child.context, actor_id: child.context.actor_id, decision: 'approve_criteria', reason: '',
+        }, null, signal);
+      } finally {
+        if (!signal.aborted) openRun(child.context.run_id, true);
+      }
+    } catch (failure) {
+      // 기준은 이미 승인됐다. 포스터 등록에서 멈췄으면 서버 상태(승인됨 · 포스터 대기)를 다시 읽어 그 화면에서 이어 가게 한다.
+      if (!signal.aborted) setReload(count => count + 1);
+      throw failure;
     }
   }
   async function decide(decision, signal) {
@@ -396,11 +450,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     if (running.has(snapshot.execution_status)) setReload(n => n + 1);
   }
 
-  const reviewingDraft = sourceDraft && Boolean(overview);
   const registeringPoster = status === 'waiting_asset';
   const pickingPoster = registeringPoster && !imageUrl;
   const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
-  const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
+  const hasCriteriaActions = registeringPoster || readyToStart;
   const imageActions = imageUrl && <div className="rv-result-image-actions" role="group" aria-label="검수 이미지 작업">
     {canEditPoster && <>
       <button type="button" className="rv-button primary" disabled={busy || image.unavailable || !canEditText}
@@ -421,8 +474,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   // 목록의 순번(01부터). 확인 필요 단추와 목록이 같은 번호를 쓴다.
   const criterionNumber = id => String(criteria.findIndex(item => item.criterion_id === id) + 1).padStart(2, '0');
   // 다른 쪽에 있는 항목을 고르면 그 쪽으로 넘긴 뒤 보여 준다.
-  function showCriterion(id) {
-    const index = criteria.findIndex(item => item.criterion_id === id);
+  function showCriterion(id, list = criteria) {
+    const index = list.findIndex(item => item.criterion_id === id);
     if (index < 0) return;
     criteriaPages.setPage(Math.floor(index / CRITERIA_PER_PAGE));
     setActiveId(id);
@@ -439,6 +492,108 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
     setReload(value => value + 1);
   }
 
+  // 검수 항목 목록과 고른 항목의 상세. 자료 입력 한 화면(승인 전 초안)과 승인 뒤 기준 확인 화면이 함께 쓴다.
+  function renderCriteriaPanel() {
+    return <>
+          <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
+            {criteriaRun && changeImpact?.run_id === runId && <ChangeImpactNotice impact={changeImpact} />}
+            {imagePages.length > 0 && <section className="rv-relation-notice" role="status" aria-label="읽지 않은 이미지 안내">
+              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
+                <strong>{imagePages.join(', ')}쪽의 이미지 안 내용은 읽지 않았어요.</strong>
+                <p>글자로 된 부분만 기준으로 만들었습니다. 이미지에 요구사항이 있으면 원문을 보고 기준을 보완해 주세요.</p></div></div>
+            </section>}
+            {(unreadPages.length > 0 || incompletePages.length > 0) && <section className="rv-relation-notice" role="status" aria-label="문서 분석 범위 안내">
+              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
+                <strong>원문과 기준을 대조해 주세요.</strong>
+                {unreadPages.length > 0 && <p>{unreadPages.join(', ')}쪽은 텍스트를 읽지 못했어요.</p>}
+                {incompletePages.length > 0 && <p>{incompletePages.join(', ')}쪽은 일부 분석 응답을 받지 못했어요.</p>}
+              </div></div>
+            </section>}
+            {rejections.length > 0 && <ExtractionRejections items={rejections} />}
+            <div className="rv-criteria-toolbar"><span>{sourceDraft ? '뺄 항목은 체크를 풀어 주세요. 값은 기준 보완으로 고칩니다.' : '원문 기준 · 읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
+            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteriaPages.shown.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
+              <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
+                checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
+              <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
+                disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
+                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{c.source.kind === 'direct_input' ? '직접 입력' : !c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
+              </button>
+            </li>)}</ul>
+            <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
+            {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
+              <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
+              <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
+              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>{selected.source.kind === 'direct_input'
+                ? '담당자 직접 입력 원문' : `요구사항 원문 · ${selected.source.page}쪽`}</summary><p>{selected.source.quote}</p>
+                {selected.value_source && (selected.source.kind !== 'direct_input' || selected.value_source.reference !== '담당자 직접 입력')
+                  && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
+              {sourceDraft && (amendment ? <>
+                <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveAmendment, 'save'); }}>
+                  <CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} />
+                  <div className="rv-criteria-amend-actions">
+                    <button type="submit" className="rv-button primary" disabled={busy} aria-busy={working('save')}>보완 내용 저장</button>
+                    <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
+                  </div>
+                </form>
+              </> : <button type="button" className="rv-button secondary rv-framework-amend" disabled={busy || excluded.includes(selected.criterion_id)} onClick={() => {
+                const c = selected;
+                const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
+                setAmendment({ action: 'amend', criterion_id: c.criterion_id, reason: '',
+                  source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
+                  resolution: { kind, operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
+                    expected: c.expected, unit: c.unit || null, required: c.required,
+                    target: c.details?.target === 'unspecified' ? '' : c.details?.target || '', field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' } });
+              }}>기준 보완</button>)}
+            </div>}
+            {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
+            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
+    </>;
+  }
+
+  // ── 자료 입력 한 화면 ──
+  // 실행이 아직 없을 때(문서를 첨부하기 전·추출하는 중), 방금 만든 초안을 불러오는 중, 승인 전 초안을 모두 같은 자리의 InputPage로 그린다.
+  // 그래야 문서 추출이 끝나 검수 항목이 나타날 때 입력하던 칸의 초점과 내용, 머리글의 프로젝트 칸이 그대로 남는다.
+  const loadingDraft = Boolean(runId) && loadState === 'checking' && Boolean(input?.fresh);
+  const draft = Boolean(runId) && loadState === 'ready' && draftInput;
+  if (input && (!runId || loadingDraft || draft)) {
+    const unresolvedIds = draft && latest ? Object.keys(latest.approval_blockers) : [];
+    // 저장된 기준에 값이 빈 항목이 남아 있고 화면에서 아직 손대지 않았으면, 보완하거나 빼야 시작할 수 있다.
+    const unresolvedLeft = unresolvedIds.length > 0 && !excluded.length && !amendment;
+    const included = draft ? criteria.length - excluded.length : 0;
+    // 저장해 둔 초안을 주소로 다시 연 경우: 이 화면이 보안 여부·검수 유형·문서 이름을 기억하지 못한다. 문구 검수로 열고 문서는 바꾸지 못하게 한다.
+    const reopened = draft && !input.fresh;
+    const typedOnly = draft && run.criteria?.extraction?.input_kind === 'free_text';
+    const pageState = reopened ? { ...input.page.state, securityMode: input.page.state.securityMode || 'secure',
+      reviewMode: input.page.state.reviewMode || 'text' } : input.page.state;
+    const starting = busy && ['start', 'start-skip'].includes(pending);
+    // 직접 입력만으로 시작한 경우: 분석이 끝나 초안을 불러오고, 곧이어 승인으로 넘어가기까지 준비 창을 계속 띄워 둔다(사이에 꺼졌다 켜지지 않게).
+    const continuing = Boolean(input.autoStart) && !autoStarted.current && (loadingDraft || (draft && Boolean(overview) && Boolean(file)));
+    const review = loadingDraft ? { runId, loading: true, included: 0, busy: false, block: '검수 기준을 불러오고 있습니다.', start() {} }
+      : !draft ? null
+      : { runId, projectId: run.context.project_id, included, busy,
+        documentName: reopened && !typedOnly ? '저장된 요구사항 문서' : undefined,
+        documentLock: reopened ? '저장해 둔 초안에서는 문서를 바꿀 수 없어요. 문서를 바꾸려면 새 검수를 시작해 주세요.' : undefined,
+        panel: overview ? renderCriteriaPanel() : null, loading: !overview,
+        block: unresolvedLeft ? '값이 정해지지 않은 항목이 남아 있어요. 기준 보완으로 채우거나 이번 검수에서 빼 주세요.'
+          : criteria.length > 0 && !included && !input.typed ? '적어도 검수 항목 한 개는 남겨 주세요.' : null,
+        extras: unresolvedLeft && <div className="rv-criteria-blockers" role="status">
+          <span className="rv-criteria-blocker-chips">{unresolvedIds.map(id => <button type="button" key={id} aria-label={criterionNumber(id) + '번 항목 확인하기'}
+            title={criterionTitle(criteria.find(item => item.criterion_id === id))} onClick={() => showCriterion(id)}>{criterionNumber(id)}</button>)}</span>
+          <button type="button" className="rv-button secondary" disabled={busy || !file || unresolvedIds.length >= criteria.length}
+            onClick={() => perform(signal => startDraft(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {unresolvedIds.length}개 제외하고 바로 검수</button>
+          {unresolvedIds.length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}
+        </div>,
+        error: actionError,
+        start: () => perform(signal => startDraft(signal), 'start') };
+    return <ReviewLayout {...input.layout} {...(reopened ? { showWorkspaceBar: true, steps: undefined } : null)}
+      state={pageState} busy={busy || loadingDraft || input.layout.busy} mainClassName="rv-framework-workspace"
+      startMessage={input.layout.startMessage || (starting ? actionStatus[pending] : continuing ? actionStatus.start : null)}
+      projectActions={<p className="rv-step-status" role="status">{starting ? actionStatus[pending] : ''}</p>}>
+      {Boolean(draft && run.synthetic) && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
+      <InputPage {...input.page} state={pageState} review={review} />
+    </ReviewLayout>;
+  }
+
   if (loadState !== 'ready') {
     return <ReviewLayout state={{ step: 'running', projectName: '', criteria: [] }} busy={false}
       mainClassName="rv-framework-workspace" showWorkspaceBar={false}
@@ -449,8 +604,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
 
   return <ReviewLayout state={{ step, projectName: projectName || '포스터 검수', criteria }}
     busy={busy || processing}
-    startMessage={busy && (pending === 'decide-start' || (file && ['start', 'start-skip'].includes(pending)))
-      ? actionStatus[pending] : null}
+    startMessage={busy && pending === 'decide-start' ? actionStatus[pending] : null}
     mainClassName="rv-framework-workspace"
     versionLabel={latest ? `기준 v${latest.version.version_no}` : run?.baseline ? '승인 기준' : '기준 검토'}
     projectActions={<>
@@ -497,6 +651,8 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             {canRevise ? '보고서·담당자 승인' : '보고서 보기'}<Icon name="arrow" />
           </button>
         </>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
+        // 여기는 승인한 기준을 다시 보는 화면이다(승인 전 초안은 자료 입력 한 화면에서 다룬다).
+        {...(sourceDraft ? null : { kicker: '검수 기준', title: '승인한 검수 기준', lead: '이 검수에 쓰는 기준과 원문 출처입니다. 승인한 기준은 고칠 수 없어요.' })}
         canvas={<>
           {/* 기준이 승인되면 이 칸이 포스터를 받는 자리가 된다(아래쪽 별도 파일 칸은 두지 않는다). */}
           {pickingPoster && <input type="file" ref={posterInput} accept="image/png,image/jpeg,image/webp" className="sr-only"
@@ -528,70 +684,16 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           <div className="rv-criteria-action-context">
             {onInput && <button type="button" className="rv-button secondary" disabled={!canReturnToInput}
               onClick={onInput}>자료 입력으로 돌아가기</button>}
-            {reviewingDraft && excluded.length > 0 && <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}
             {registeringPoster && <p>{file ? '넣은 포스터를 확인한 뒤 승인 기준에 등록해 주세요.' : '기준이 승인됐어요. 왼쪽 칸에 검수할 포스터를 넣어 주세요.'}</p>}
             {readyToStart && <p>승인된 기준과 등록한 포스터를 확인한 뒤 검수를 시작할 수 있어요.</p>}
             {hasCriteriaActions && actionError}
           </div>
-          {reviewingDraft && (
-            <div className="rv-criteria-action-buttons">{needsVersion && <button className="rv-button secondary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(saveVersion, 'save')} aria-busy={working('save')} title={exclusionBlock}>검토한 기준 버전 저장</button>}
-            {!selectionUnavailable && !needsVersion && (Object.keys(latest.approval_blockers).length ? <div className="rv-criteria-blockers" role="status"><p>확인 필요 항목은 보완하거나 이번 검수에서 제외할 수 있습니다.</p><span className="rv-criteria-blocker-chips">{Object.keys(latest.approval_blockers).map(id => <button type="button" key={id} aria-label={criterionNumber(id) + '번 항목 확인하기'} title={criterionTitle(criteria.find(item => item.criterion_id === id))} onClick={() => showCriterion(id)}>{criterionNumber(id)}</button>)}</span><button type="button" className="rv-button primary" disabled={busy || Object.keys(latest.approval_blockers).length >= criteria.length} onClick={() => perform(signal => approveAndStart(signal, true), 'start-skip')} aria-busy={working('start-skip')}>확인 필요 항목 {Object.keys(latest.approval_blockers).length}개 제외하고 {file ? '바로 검수' : '기준 승인'}</button>{Object.keys(latest.approval_blockers).length >= criteria.length && <p>최소 한 개의 검수 가능한 기준이 필요합니다.</p>}</div> : <button className="rv-button secondary" disabled={busy} onClick={() => perform(approveVersion, 'approve')} aria-busy={working('approve')}>이 버전의 전체 기준 승인</button>)}
-            {(needsVersion || !Object.keys(latest.approval_blockers).length) && <button className="rv-button primary" disabled={busy || selectionUnavailable || excluded.length === criteria.length || (!!excluded.length && !reason.trim())} onClick={() => perform(approveAndStart, 'start')} aria-busy={working('start')} title={exclusionBlock}>{file ? '기준 승인하고 검수 시작' : '기준 확인하고 승인'}</button>}
-            </div>
-          )}
           {registeringPoster && <button className="rv-button primary" disabled={busy || !file || (!run.baseline && !latest)}
             onClick={() => perform(registerPoster, 'register')} aria-busy={working('register')} title={posterBlock}>승인 기준에 포스터 등록</button>}
           {readyToStart && <button className="rv-button primary" disabled={busy}
             onClick={() => perform(signal => decide('approve_criteria', signal), 'decide-start')} aria-busy={working('decide-start')}>이 포스터와 기준을 확인하고 검수 시작</button>}
         </section>}>
-          <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
-            {criteriaRun && changeImpact?.run_id === runId && <ChangeImpactNotice impact={changeImpact} />}
-            {selectionUnavailable && <ErrorMessage message="선택한 항목 중 저장한 기준 버전에서 이미 제외된 항목이 있어요. 자료 입력으로 돌아가 선택을 다시 확인해 주세요." />}
-            {imagePages.length > 0 && <section className="rv-relation-notice" role="status" aria-label="읽지 않은 이미지 안내">
-              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
-                <strong>{imagePages.join(', ')}쪽의 이미지 안 내용은 읽지 않았어요.</strong>
-                <p>글자로 된 부분만 기준으로 만들었습니다. 이미지에 요구사항이 있으면 원문을 보고 기준을 보완해 주세요.</p></div></div>
-            </section>}
-            {(unreadPages.length > 0 || incompletePages.length > 0) && <section className="rv-relation-notice" role="status" aria-label="문서 분석 범위 안내">
-              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
-                <strong>원문과 기준을 대조해 주세요.</strong>
-                {unreadPages.length > 0 && <p>{unreadPages.join(', ')}쪽은 텍스트를 읽지 못했어요.</p>}
-                {incompletePages.length > 0 && <p>{incompletePages.join(', ')}쪽은 일부 분석 응답을 받지 못했어요.</p>}
-              </div></div>
-            </section>}
-            {rejections.length > 0 && <ExtractionRejections items={rejections} />}
-            <div className="rv-criteria-toolbar"><span>원문 기준 · {sourceDraft ? '보완·제외 후 전체 승인' : '읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
-            <ul className="rv-criteria-list" aria-label="검수 항목 목록">{criteriaPages.shown.map((c, index) => <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${selected?.criterion_id === c.criterion_id ? ' is-active' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
-              <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
-                checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
-              <button type="button" className="rv-criteria-select" aria-current={selected?.criterion_id === c.criterion_id ? 'true' : undefined} aria-controls="rv-active-criterion"
-                disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => setActiveId(c.criterion_id)}>
-                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} /><span className="rv-criteria-item-type">{c.source.kind === 'direct_input' ? '직접 입력' : !c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'}</span><span className="rv-criteria-item-arrow">↗</span>
-              </button>
-            </li>)}</ul>
-            <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
-            {selected && <div className="rv-criteria-detail" id="rv-active-criterion">
-              <div className="rv-criteria-detail-heading"><div><span className="rv-eyebrow">SELECTED CRITERION</span><h3>{selected.text}</h3></div></div>
-              <p className="rv-framework-expected">{selected.expected || '기대값 미정'} {selected.unit || ''}</p>
-              <div className="rv-criteria-source"><Icon name="file" /><details open><summary>{selected.source.kind === 'direct_input'
-                ? '담당자 직접 입력 원문' : `요구사항 원문 · ${selected.source.page}쪽`}</summary><p>{selected.source.quote}</p>
-                {selected.value_source && (selected.source.kind !== 'direct_input' || selected.value_source.reference !== '담당자 직접 입력')
-                  && <p>보완 회신: {selected.value_source.quote} · 출처: {selected.value_source.reference}</p>}</details></div>
-              {sourceDraft && (amendment ? <>
-                <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveVersion, 'save'); }}><CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} /></form>
-                <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
-              </> : <button type="button" className="rv-button secondary rv-framework-amend" disabled={busy || excluded.includes(selected.criterion_id)} onClick={() => {
-                const c = selected;
-                const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
-                setAmendment({ action: 'amend', criterion_id: c.criterion_id, reason: '',
-                  source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
-                  resolution: { kind, operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
-                    expected: c.expected, unit: c.unit || null, required: c.required,
-                    target: c.details?.target === 'unspecified' ? '' : c.details?.target || '', field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' } });
-              }}>기준 보완</button>)}
-            </div>}
-            {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
-            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
+          {renderCriteriaPanel()}
       </CriteriaWorkspace>}
       <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
       {/* 기준 확인·포스터 등록 단계에서는 이 칸에 '새 검수'와 실행 번호만 남아 보이지 않는다. */}

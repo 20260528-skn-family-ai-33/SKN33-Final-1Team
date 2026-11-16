@@ -1,4 +1,4 @@
-// 관계 조회 안내 두 가지: 기준 확인 화면의 '이전 기준과 달라진 항목', 검수 결과 화면의 '수정본 검수 이력'.
+// 관계 조회 안내 두 가지: 자료 입력 화면 검수 항목 칸의 '이전 기준과 달라진 항목', 검수 결과 화면의 '수정본 검수 이력'.
 // API는 모두 브라우저 라우트로 흉내 낸다(실제 PostgreSQL·Neo4j 응답 검증이 아니다).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,6 +43,19 @@ async function open(t, routes) {
     return body === undefined ? route.fulfill({ status: 404, json: { detail: 'unexpected test route' } }) : route.fulfill({ json: body });
   });
   return { page, errors, requested };
+}
+
+// 저장해 둔 초안을 열면 자료 입력 한 화면에 검수 항목이 나온다. 포스터를 넣으면 '검수 시작하기'를 누를 수 있어야 한다.
+async function expectStartable(page) {
+  const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
+  assert.ok(await start.isDisabled(), 'needs a poster first');
+  const png = Buffer.from(await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
+    return canvas.toDataURL().split(',')[1];
+  }), 'base64');
+  await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
+  await page.waitForFunction(() => [...document.querySelectorAll('button')].some(button => button.textContent.trim() === '검수 시작하기' && !button.disabled));
+  assert.equal(await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).count(), 0);
 }
 
 const criterion = (id, text, expected, field, label) => ({
@@ -90,8 +103,8 @@ test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으�
   // 이미지가 섞인 쪽은 글자층만 읽었다고 알린다
   await page.getByRole('status', { name: '읽지 않은 이미지 안내' })
     .getByText('2쪽의 이미지 안 내용은 읽지 않았어요.', { exact: true }).waitFor();
-  // 안내는 기준 검토를 막지 않는다
-  assert.ok(await page.getByRole('button', { name: '기준 확인하고 승인', exact: true }).isEnabled());
+  // 안내는 검수 시작을 막지 않는다
+  await expectStartable(page);
   assert.equal(requested.filter(path => path.endsWith('/revision-history')).length, 0);
   if (shots) await page.screenshot({ path: shots + '/change-impact.png' });
   assert.deepEqual(errors, []);
@@ -154,7 +167,7 @@ test('원문 검증에서 제외된 후보는 안내 한 상자로 접어 두고
   assert.equal(await first.locator('.rv-rejection-preview').isVisible(), false);
   // 제외된 원문은 기준 목록에 섞이지 않고, 기준 검토를 막지 않는다
   assert.equal(await checklist.getByText('후원 기관은 가나다순으로 적는다.').count(), 0);
-  assert.ok(await page.getByRole('button', { name: '기준 확인하고 승인', exact: true }).isEnabled());
+  await expectStartable(page);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   if (shots) await page.screenshot({ path: shots + '/rejections-quote.png' });
   assert.deepEqual(errors, []);
