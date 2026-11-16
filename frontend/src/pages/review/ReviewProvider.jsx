@@ -17,6 +17,10 @@ const bundledSample = {
   requirements: '전시 제목에 ‘빛의 기록’을 표시합니다.\n하단에 지정한 주최 로고를 사용합니다.\n전시 기간을 ‘11.20–11.28’로 표시합니다.',
 };
 
+// 문서 첨부 카드의 안내(documentNotice) 가운데 추출을 마친 요약({ summary, warnings })만 남기고, 글자로 적은 일시 안내는 지운다.
+// 검수 시작(직접 입력 분석·접수)은 첨부한 문서를 건드리지 않으므로, 시작하거나 그 시작을 멈출 때 문서의 추출 요약은 그대로 둔다.
+const keepSummary = notice => (notice && typeof notice === 'object' ? notice : '');
+
 // 업로드 제한과 실제 파일 서명을 확인하고 원본 이미지 크기를 반환한다.
 async function validateImage(file, limits = {}) {
   const maxBytes = limits.upload_bytes || 20 * 1024 * 1024;
@@ -159,15 +163,17 @@ export function ReviewProvider({ children }) {
   const cancelDocument = useCallback((options = {}) => {
     // 입력 반영만 중단한 경우 서버에 접수된 실행을 다시 열 수 있도록 ID를 남긴다.
     const resumeId = options?.preserveResume === false ? '' : documentResumeId || documentProgress?.runId || '';
+    // 문서 추출이 아니라 검수 시작(직접 입력 분석·접수)을 멈추는 경우: 첨부한 문서의 추출 요약은 남긴다.
+    const starting = documentBusy && !documentExtracting;
     documentRequest.current?.abort();
     documentRequest.current = null;
     setDocumentBusy(false);
     setDocumentExtracting(false);
     setDocumentProgress(null);
-    setDocumentNotice('');
+    setDocumentNotice(starting ? keepSummary : '');
     setDocumentResumeId(resumeId);
     setDocumentError('');
-  }, [documentProgress, documentResumeId]);
+  }, [documentBusy, documentExtracting, documentProgress, documentResumeId]);
 
   async function cancelQueuedDocument() {
     const controller = documentRequest.current;
@@ -183,7 +189,8 @@ export function ReviewProvider({ children }) {
         else { delete attempt.runId; delete attempt.extractionKey; }
       }
       cancelDocument({ preserveResume: false });
-      setDocumentNotice('대기 작업을 취소했습니다. 원본과 기록은 보존됩니다.');
+      // 검수 시작만 취소해 첨부 문서의 추출 요약이 남아 있으면, 그 자리를 취소 안내로 덮지 않는다(문서 추출이 취소된 것처럼 보인다).
+      setDocumentNotice(current => keepSummary(current) || '대기 작업을 취소했습니다. 원본과 기록은 보존됩니다.');
     } catch (err) {
       if (!controller.signal.aborted) setDocumentError(err.message);
     } finally { documentCancellation.current = false; setDocumentCancelBusy(false); }
@@ -513,8 +520,9 @@ export function ReviewProvider({ children }) {
     if (!projectId) { setError('요구사항을 저장할 프로젝트를 선택해 주세요.'); return; }
     const controller = new AbortController();
     documentRequest.current = controller;
-    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(''); setDocumentResumeId(''); setError('');
-    setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now(), source: '직접 입력한 요구사항' });
+    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(keepSummary); setDocumentResumeId(''); setError('');
+    // 이 진행 상황은 준비 창에만 보인다. 문서 첨부 카드는 문서 자신의 추출 상태만 그린다(InputPage의 documentCard).
+    setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now() });
     const deadline = watchDocumentDeadline(controller);
     const onProgress = update => {
       if (!controller.signal.aborted && documentRequest.current === controller) {

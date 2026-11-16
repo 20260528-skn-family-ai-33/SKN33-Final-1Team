@@ -27,6 +27,11 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
   const submitting = documentBusy && !documentExtracting;
   const busy = sampleBusy || fileBusy || submitting;
   const locked = busy || documentBusy;
+  // 문서 첨부 카드는 문서 자신의 추출 상태만 보인다. 검수 시작(직접 입력 분석·접수)의 진행은 준비 창이 맡는다(ReviewPage의 startMessage).
+  // 시작하는 동안 카드는 추출을 마친 모습 그대로 잠가 둔다. 그 진행을 카드에 그리면 문서를 한 번 더 추출하는 것처럼 보인다.
+  // 다시 열 실행이 지금 첨부한 문서의 실행이면 '원문과 기준 확인' 버튼과 같은 곳이라 링크를 따로 두지 않는다(시작을 취소해도 카드가 그대로다).
+  const documentCard = submitting ? { documentBusy: false, documentProgress: null, documentError: '', documentResumeId: '' }
+    : { documentBusy, documentProgress, documentError, documentResumeId: documentResumeId === doc?.id ? '' : documentResumeId };
   // 보안 자료 여부 → 검수 유형 순서로 고른다. 검수 유형에 따라 받는 자료가 다르다: 자막은 요구사항, 로고는 원본 로고, 둘 다는 모두.
   const security = state.securityMode;
   const mode = state.reviewMode;
@@ -119,15 +124,16 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
             {doc && <ExtractedRequirements rows={doc.rows} disabled={locked}
               onChange={rows => inputChange('documentRun', { ...doc, rows })} />}
           </RequirementInput>}
-          {checksText && <DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, clearDocument }}
-            disabled={previewMode || sampleBusy || fileBusy || !projectStatus?.ready} documentName={doc?.filename}
+          {checksText && <DocumentInput {...documentCard} {...{ documentNotice, documentInput, clearDocument }}
+            disabled={previewMode || sampleBusy || fileBusy || submitting || !projectStatus?.ready} documentName={doc?.filename}
             disabledReason={previewMode ? '데이터 없이 둘러보는 화면에서는 문서를 첨부할 수 없어요.'
               : sampleBusy ? '예시 자료를 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.'
-              : fileBusy ? '포스터 파일을 확인하는 중이에요. 잠시 뒤 다시 눌러 주세요.' : projectBlockReason(projectStatus)}
+              : fileBusy ? '포스터 파일을 확인하는 중이에요. 잠시 뒤 다시 눌러 주세요.'
+              : submitting ? '검수를 준비하는 중이에요. 끝난 뒤 다시 눌러 주세요.' : projectBlockReason(projectStatus)}
             selectDocument={files => selectDocument(files, projectId)}
             cancelDocument={canCancelQueued ? cancelQueuedDocument : cancelDocument} cancelBusy={documentCancelBusy}
             cancelLabel={canCancelQueued ? '대기 작업 취소' : '입력 반영 취소'}>
-            {doc && !documentBusy && <button type="button" className="rv-button secondary rv-compact rv-document-source"
+            {doc && !documentExtracting && <button type="button" className="rv-button secondary rv-compact rv-document-source"
               disabled={busy} onClick={openDocumentRun}>{/\.docx$/i.test(doc.filename || '') ? 'DOCX 본문과 기준 확인' : 'PDF 원문과 기준 확인'}<Icon name="arrow" /></button>}
             {!previewMode && !projectStatus?.ready && !projectStatus?.busy && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
           </DocumentInput>}

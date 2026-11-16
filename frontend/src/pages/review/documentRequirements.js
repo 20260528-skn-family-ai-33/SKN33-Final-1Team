@@ -42,7 +42,8 @@ export function mergeDocumentRequirements(current, document, filename) {
   return { requirements, sources, addedCount: added.length };
 }
 
-// 직접 입력과 문서 항목을 함께 검수하면 전체를 한 묶음의 글로 다시 분석한다(서버가 기준에 '추가'를 받지 않아, 문서 기준에 직접 입력만 덧붙일 수 없다).
+// 문서 항목의 문구를 고친 채 검수하면 직접 입력과 고른 문서 항목 전체를 한 묶음의 글로 다시 분석한다.
+// (문구를 고치지 않았으면 직접 입력만 분석해 문서 기준에 더한다: frameworkDocument.js의 addDirectRequirements. 첨부한 문서는 다시 추출하지 않는다.)
 // 그때 문서 항목을 한 줄로 적는다. 고치지 않은 항목은 문서에서 읽은 허용 범위·검사 방법(document_condition.inspection)을 뒤에 붙여,
 // 다시 만든 기준에서 그 내용이 빠지지 않게 한다. 사람이 문구를 고친 항목은 고친 문구만 보낸다(이전 설명이 고친 내용과 어긋날 수 있다).
 export function documentRowLine(row) {

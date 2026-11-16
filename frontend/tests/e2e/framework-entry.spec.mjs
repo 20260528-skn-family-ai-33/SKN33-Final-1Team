@@ -38,6 +38,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const selectsSubset = subset || adding;
     let extractionRequests = 0;
     let additionRequests = 0;
+    // 직접 입력 분석을 '대기'로 붙잡아 두고, 그동안 문서 첨부 카드가 어떻게 보이는지 확인한 뒤 풀어 준다.
+    let additionReady = false;
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
     const posterApproval = Promise.withResolvers();
     // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
@@ -99,9 +101,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.ok(request.headers()['idempotency-key']);
         return route.fulfill({ status: 202, json: { context: { run_id: 'input-job' }, execution_status: 'queued' } });
       } else if (path.endsWith('/runs/input-job') && adding) {
-        latest = { version: { ...baseline, version_no: 1, criteria: [...selectedPdfCriteria, added], exclusions: [],
+        if (additionReady) latest = { version: { ...baseline, version_no: 1, criteria: [...selectedPdfCriteria, added], exclusions: [],
           addition_run_ids: ['input-job'] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
-        body = { execution_status: 'waiting_criteria' };
+        body = { execution_status: additionReady ? 'waiting_criteria' : 'queued' };
       }
       else if (path.endsWith('/criteria-versions')) {
         const input = request.postDataJSON();
@@ -228,6 +230,20 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
           await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/review-start-overlay.png' });
         }
       } finally { textAdmission.resolve(); }
+    }
+    if (adding) {
+      // 직접 입력을 분석하는 동안 진행은 준비 창에만 보인다. 문서 첨부 카드는 추출을 마친 모습 그대로여서
+      // 문서를 한 번 더 추출하는 것처럼 보이지 않는다(서버도 직접 입력만 분석한다).
+      try {
+        await overlay.getByText('입력한 요구사항의 분석 차례를 기다리고 있습니다.', { exact: true }).waitFor();
+        const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
+        assert.equal(await documentCard.getByRole('progressbar').count(), 0);
+        assert.equal(await documentCard.locator('.rv-document-art').count(), 0);
+        assert.equal(await documentCard.getAttribute('aria-busy'), null);
+        assert.equal(await documentCard.locator('.rv-upload-name').textContent(), 'brief.pdf');
+        assert.equal(await documentCard.locator('.rv-document-summary').textContent(), '추출 완료 · 1페이지 · 조건 2개');
+        assert.equal(extractionRequests, 1);
+      } finally { additionReady = true; }
     }
     if (mode === 'not_ready') {
       await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
