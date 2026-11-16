@@ -194,18 +194,17 @@ export function LogoResultLinks({ jobs }) {
 // 결과 화면에 바로 보이는 영상 로고 정밀 대조 결과. 후보를 고르는 화면을 거치지 않고, 서버가 후보 찾기 직후
 // 자동으로 고른 후보(auto_selection)로 대조한 결과를 보여 준다. 검수하려던 로고가 아니면 '로고 후보 다시 선택'으로
 // 위치 확인 화면(/video/logo?view=confirm)을 열어 후보를 고친 뒤 다시 대조한다. 결과가 바뀌면 이 목록도 다시 읽는다.
-// 화면 테마(Optimus): 상자 없이 위쪽 잉크 선 · 모노 글자 머리글 · 얇은 큰 제목 · 알약 단추 · 가는 선 카드.
-export function LogoCompareResults({ jobs, error, notice }) {
+// 구간 타임라인 패널 아래에 붙는다(VideoResults의 Timeline children). onSeek(ms)를 주면 대표 시각 단추로 그 시점에 간다.
+export function LogoCompareResults({ jobs, error, notice, onSeek }) {
   if (!jobs?.length && !error && !notice) return null;
   return <section className="rv-video-logo-result" aria-labelledby="video-logo-result-title">
     <header className="rv-video-logo-result-head">
-      <span className="rv-eyebrow">LOGO PRECISION CHECK</span>
-      <h2 id="video-logo-result-title">영상 로고 정밀 대조</h2>
-      <p>원본 로고마다 순위가 높은 후보를 자동으로 골라 원본과 비교했어요. 차이 근거가 있으면 보류, 없으면 통과입니다. 최종 판정은 담당자가 합니다.</p>
+      <h3 id="video-logo-result-title">로고 정밀 대조</h3>
+      <p>원본 로고마다 자동으로 고른 후보를 대조했어요. 차이 근거가 있으면 보류, 없으면 통과입니다. 최종 판정은 담당자가 합니다.</p>
     </header>
     {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
     <ErrorMessage message={error} />
-    {(jobs || []).map(job => <LogoCompareJob key={job.id} job={job} />)}
+    {(jobs || []).map(job => <LogoCompareJob key={job.id} job={job} onSeek={onSeek} />)}
   </section>;
 }
 
@@ -232,7 +231,7 @@ export async function startAutoCompare(base, { video, signal } = {}) {
   }
 }
 
-function LogoCompareJob({ job }) {
+function LogoCompareJob({ job, onSeek }) {
   const base = `/api/video-logos/${encodeURIComponent(job.id)}`;
   const ready = job.status === 'candidates_ready';
   // 후보 찾기가 끝나면 정밀 대조 상태·결과를 직접 읽는다(목록 조회에는 결과·실패 사유가 없다). 대조 중이면 2초마다 다시 읽고,
@@ -282,41 +281,39 @@ function LogoCompareJob({ job }) {
 
   return <div className="rv-video-logo-job">
     <div className="rv-video-logo-job-head">
-      <div className="rv-video-logo-job-title"><span>작업</span><strong title={job.title}>{job.title}</strong>
+      <div className="rv-video-logo-job-title"><strong title={job.title}>{job.title}</strong>
         {bundles.length > 0 && <span className="rv-video-logo-tally">{['match', 'diff', 'unknown'].filter(tone => tally[tone])
-          .map(tone => `${OUTCOME[tone].label} ${tally[tone]}`).join(' · ')}</span>}</div>
+          .map(tone => <span key={tone} className={`is-${tone}`}>{OUTCOME[tone].label} {tally[tone]}</span>)}</span>}</div>
       <div className="rv-video-logo-result-actions">
         {bundles.length > 0 && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}`}>초별 근거 보기</Link>}
-        {canReselect && <Link className="rv-button primary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}&view=confirm`}>로고 후보 다시 선택</Link>}
+        {canReselect && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}&view=confirm`}>로고 후보 다시 선택</Link>}
       </div></div>
     {state}
-    {bundles.length > 0 && <ul className="rv-video-logo-bundles">{bundles.map(bundle => {
+    {bundles.length > 0 && <ul className="rv-video-logo-rows">{bundles.map(bundle => {
       const evidence = bundle.evidence || {};
       const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
       const differences = groupDifferences(bundle.per_sec);
       const name = bundle.reference || `원본 로고 ${bundle.logo + 1}`;
       const several = bundles.filter(item => item.logo === bundle.logo).length > 1;
-      return <li key={`${bundle.logo}-${bundle.crop}`} className={`rv-video-logo-bundle is-${outcome.tone}`}>
+      const rep = evidence.representative;
+      const facts = [`비교 ${evidence.n_secs || 0}초`, bundle.skipped?.length ? `건너뜀 ${bundle.skipped.length}초` : null,
+        differences.length ? `차이 ${differences.map(group => `${group.kind} ${group.secs}초`).join(', ')}`
+          : outcome.tone === 'match' ? '차이 없음' : null].filter(Boolean).join(' · ');
+      return <li key={`${bundle.logo}-${bundle.crop}`} className={`rv-video-logo-row is-${outcome.tone}`}>
         <div className="rv-video-logo-pair">
-          <figure><span className="rv-video-logo-thumb"><img src={`${base}/refs/${bundle.logo}.png`} alt={`${name} 원본`} /></span>
-            <figcaption>원본 로고</figcaption></figure>
-          <span className="rv-video-logo-vs" aria-hidden="true">↔</span>
-          <figure>{evidence.representative
-            ? <span className="rv-video-logo-thumb"><img src={`${base}/compare/rep/${bundle.logo}/${bundle.crop}.jpg`}
-              alt={`${secondText(evidence.representative.sec)} 영상 속 ${name}`} /></span>
-            : <span className="rv-video-logo-thumb is-empty">비교할 프레임 없음</span>}
-            <figcaption>{evidence.representative ? `영상 ${secondText(evidence.representative.sec)}` : '영상'}</figcaption></figure>
+          <span className="rv-video-logo-thumb" title="원본 로고"><img src={`${base}/refs/${bundle.logo}.png`} alt={`${name} 원본`} /></span>
+          <span className="rv-video-logo-vs" aria-hidden="true">→</span>
+          {rep ? <span className="rv-video-logo-thumb" title={`영상 ${secondText(rep.sec)}`}><img src={`${base}/compare/rep/${bundle.logo}/${bundle.crop}.jpg`}
+            alt={`${secondText(rep.sec)} 영상 속 ${name}`} /></span>
+            : <span className="rv-video-logo-thumb is-empty">프레임 없음</span>}
         </div>
-        <div className="rv-video-logo-bundle-body">
-          <div className="rv-video-logo-bundle-title"><strong title={name}>{name}{several ? ` · 묶음 ${bundle.crop + 1}` : ''}</strong>
-            <span className={`rv-result-status ${OUTCOME_STATUS[outcome.tone]}`}><span aria-hidden="true" />{outcome.label}</span></div>
-          <dl className="rv-video-logo-facts">
-            <div><dt>비교</dt><dd>{evidence.n_secs || 0}초</dd></div>
-            <div><dt>건너뜀</dt><dd>{bundle.skipped?.length || 0}초</dd></div>
-            <div><dt>차이</dt><dd>{differences.length ? differences.map(group => `${group.kind} ${group.secs}초`).join(' · ')
-              : outcome.tone === 'match' ? '없음' : '—'}</dd></div>
-          </dl>
-        </div>
+        <div className="rv-video-logo-row-text"><strong title={name}>{name}{several ? ` · 묶음 ${bundle.crop + 1}` : ''}</strong>
+          <span>{facts}</span></div>
+        {rep && (onSeek
+          ? <button type="button" className="rv-video-logo-seek" onClick={() => onSeek(rep.sec * 1000)}
+            aria-label={`${secondText(rep.sec)} 시점으로 이동`}><Icon name="arrow" />{secondText(rep.sec)}</button>
+          : <span className="rv-video-logo-seek">{secondText(rep.sec)}</span>)}
+        <span className={`rv-result-status ${OUTCOME_STATUS[outcome.tone]}`}><span aria-hidden="true" />{outcome.label}</span>
       </li>;
     })}</ul>}
     {warnings.map(warning => <p key={warning} className="rv-video-inline-warning"><Icon name="warning" />{warning}</p>)}

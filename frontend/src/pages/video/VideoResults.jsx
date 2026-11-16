@@ -89,25 +89,54 @@ function PlayerPane({ job, player, currentTime, onTime, target, onSeekTarget }) 
 
 // 구간 타임라인: 검사 시점은 점, 미검사 구간은 빗금, 선택 항목의 근거는 강조, 재생 위치는 세로선으로 표시한다.
 // 키보드로는 검수 목록의 '구간' 탭에서 같은 구간을 고른다.
-function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScrub, onShortcut }) {
+// children: 타임라인 패널 아래에 같은 패널로 묶어 보일 내용(영상 로고 정밀 대조 결과).
+function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScrub, onShortcut, children }) {
   const duration = job.coverage?.duration_ms || job.media?.duration_ms || 0;
   const time = Math.min(currentTime, duration);
   const pct = ms => `${Math.min(100, Math.max(0, ms / (duration || 1) * 100))}%`;
   const evidenceSegments = new Set(evidence.map(item => item.segment_id).filter(Boolean));
   const tracks = Object.fromEntries((job.tracks || []).map(track => [track.id, track]));
   const note = coverageNote(job.coverage);
+  const textSegments = (job.segments || EMPTY).filter(segment => segment.track_ids.length).length;
+  const current = (job.segments || EMPTY).find(segment => segment.id === view.segmentId);
   return <section className="rv-panel rv-video-timeline" aria-labelledby="video-timeline-title">
-    <div className="rv-video-timeline-heading"><h2 id="video-timeline-title">구간 타임라인</h2>
-      <span className="rv-video-time">{duration ? `${formatTime(time)} / ${formatTime(duration)}` : '시각 정보 없음'}</span></div>
+    {/* 머리: 왼쪽은 모노 머리글·제목·요약 수치, 오른쪽은 지금 시각과 보는 구간 */}
+    <div className="rv-video-timeline-heading">
+      <div className="rv-video-timeline-title"><span className="rv-video-timeline-eyebrow">TIMELINE</span>
+        <h2 id="video-timeline-title">구간 타임라인</h2>
+        <dl className="rv-video-timeline-stats">
+          <div><dt>구간</dt><dd>{(job.segments || EMPTY).length}</dd></div>
+          <div><dt>자막 구간</dt><dd>{textSegments}</dd></div>
+          <div><dt>근거 시점</dt><dd>{shortcuts.length}</dd></div>
+          {(job.coverage?.uninspected || EMPTY).length > 0 && <div><dt>미검사</dt><dd>{job.coverage.uninspected.length}</dd></div>}
+        </dl></div>
+      {duration ? <div className="rv-video-timeline-now">
+        <span className="rv-video-timeline-clock"><strong>{formatTime(time)}</strong><span>/ {formatTime(duration)}</span></span>
+        <span className="rv-video-timeline-current">{current ? `보는 구간 ${formatTime(current.start_ms)}–${formatTime(current.end_ms)}` : '구간을 고르지 않음'}</span></div>
+        : <span className="rv-video-time">시각 정보 없음</span>}</div>
     <div className="rv-video-timeline-body">
-      <input type="range" min={0} max={duration} step="any" value={time} disabled={!duration}
-        aria-label="영상 타임라인" aria-valuetext={formatTime(time)} onChange={event => onScrub(event.target.valueAsNumber)} />
+      {/* 진행 막대: 레일에 자막 구간(옅은 띠)·검사하지 않은 구간(빗금)·재생한 만큼(잉크 채움)을 겹쳐 그리고 근거 시점은 금색 점으로 찍는다.
+          그 위에 투명한 range 입력을 얹어 끌거나 눌러 시점을 옮긴다. 손잡이 위 말풍선이 지금 시각이다. */}
+      <div className={`rv-video-scrubber${duration ? '' : ' is-disabled'}`} style={{ '--at': pct(time) }}>
+        <div className="rv-video-scrubber-rail" aria-hidden="true">
+          {(job.segments || EMPTY).filter(segment => segment.track_ids.length).map(segment =>
+            <span key={segment.id} className={`rv-video-scrubber-band${evidenceSegments.has(segment.id) ? ' is-evidence' : ''}${view.segmentId === segment.id ? ' is-current' : ''}`}
+              style={{ left: pct(segment.start_ms), width: pct(segment.end_ms - segment.start_ms) }} />)}
+          {(job.coverage?.uninspected || EMPTY).map(([start, end]) => <span key={`${start}-${end}`} className="rv-video-scrubber-gap" style={{ left: pct(start), width: pct(end - start) }} />)}
+          <i className="rv-video-scrubber-fill" />
+        </div>
+        {evidence.filter(item => Number.isFinite(item.time_ms)).map((item, i) => <span key={i} className="rv-video-scrubber-tick" style={{ left: pct(item.time_ms) }} aria-hidden="true" />)}
+        <input type="range" min={0} max={duration} step="any" value={time} disabled={!duration}
+          aria-label="영상 타임라인" aria-valuetext={formatTime(time)} onChange={event => onScrub(event.target.valueAsNumber)} />
+        {duration > 0 && <span className="rv-video-scrubber-bubble" aria-hidden="true">{formatTime(time)}</span>}
+      </div>
       <div className="rv-video-timeline-scale" aria-hidden="true">{[0, .25, .5, .75, 1].map(tick => <span key={tick}>{formatTime(duration * tick)}</span>)}</div>
       {shortcuts.length > 0 && <div className="rv-video-timeline-shortcuts"><span>근거 시점</span>
-        {shortcuts.map(({ item, target }) => <button type="button" key={item.key} className="rv-button secondary rv-compact"
-          aria-pressed={view.key === evidenceKey(target)} onClick={() => onShortcut(item, target)}>{formatTime(target.time_ms)} {itemTitle(item)}</button>)}</div>}
+        {shortcuts.map(({ item, target }) => <button type="button" key={item.key} className="rv-video-timeline-chip"
+          aria-pressed={view.key === evidenceKey(target)} onClick={() => onShortcut(item, target)}>
+          <time>{formatTime(target.time_ms)}</time><span>{itemTitle(item)}</span></button>)}</div>}
       <details className="rv-video-coverage">
-        <summary>검사 시점과 구간 보기</summary>
+        <summary><span>검사 시점과 구간 보기</span><i aria-hidden="true" /></summary>
         {note && <p>{note}</p>}
         <ul className="rv-video-legend" aria-label="타임라인 범례"><li className="is-text">자막 구간</li><li className="is-evidence">선택 항목 근거</li><li className="is-current">보는 구간</li><li className="is-playhead">재생 위치</li></ul>
       <div className="rv-video-timeline-track">
@@ -126,6 +155,7 @@ function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScr
       <p>점은 검사한 시점, 빗금은 검사하지 않은 구간입니다.</p>
       </details>
     </div>
+    {children}
   </section>;
 }
 
@@ -143,6 +173,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
   const [selection, setSelection] = useState(items[0]?.key ?? null);
   const [evidenceKeyOpen, setEvidenceKeyOpen] = useState(null);   // 판정 근거 창을 연 항목
   const rail = useRef(null);
+  const usedSegments = useMemo(() => new Set(items.flatMap(item => itemEvidence(item).map(entry => entry.segment_id)).filter(Boolean)), [items]);
   const segmentAt = time => segments.find(segment => time >= segment.start_ms && time < segment.end_ms) || segments.at(-1);
   const segmentView = segment => segment ? { segmentId: segment.id, focus: null, key: '', time: segment.start_ms,
     frameId: segment.rep_frame_id || segment.frame_ids?.[0] || frames.find(frame => frame.time_ms >= segment.start_ms && frame.time_ms < segment.end_ms)?.frame_id || null,
@@ -256,8 +287,6 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
     <div className="rv-result-notice rv-video-result-notice">
       <p>자동 검수를 완료했어요. 판정은 검사한 표본 시각을 기준으로 합니다.</p>
     </div>
-    {/* 영상 로고 검수는 후보 선택 없이 정밀 대조 결과를 바로 보여 주고, 필요할 때만 후보를 다시 고르게 한다. */}
-    <LogoCompareResults jobs={logo?.jobs} error={logo?.error} notice={logoWarning} />
     {/* 서버 처리 안내(job.warnings: 장면 경계 도구 미설치·OCR 실패 프레임 등)는 진행·결과·보고서 어디에도 띄우지 않는다. */}
 
     <div className="rv-video-workbench">
@@ -270,7 +299,11 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             empty={<><Icon name="image" /><strong className="rv-video-empty-title">표시할 표본 프레임이 없어요.</strong><p>다른 시점을 고르거나 원본 영상을 확인해 주세요.</p></>} />
         </div>
         <Timeline job={job} view={view} evidence={evidence} currentTime={currentTime} shortcuts={shortcuts}
-          onSelect={showSegment} onScrub={scrub} onShortcut={openItem} />
+          onSelect={showSegment} onScrub={scrub} onShortcut={openItem}>
+          {/* 영상 로고 정밀 대조는 구간 타임라인과 한 패널로 묶는다. 결과의 시각을 누르면 타임라인이 그 시점으로 간다.
+              후보 선택 없이 자동 대조 결과를 바로 보여 주고, 필요할 때만 후보를 다시 고르게 한다. */}
+          <LogoCompareResults jobs={logo?.jobs} error={logo?.error} notice={logoWarning} onSeek={scrub} />
+        </Timeline>
         <details className="rv-panel rv-video-original"><summary>원본 영상 재생</summary>
           <PlayerPane job={job} player={player} currentTime={currentTime} onTime={setCurrentTime} target={view.time} onSeekTarget={() => seek(view.time)} />
         </details>
@@ -280,6 +313,11 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
         <header className="rv-video-rail-heading"><div><h2 id="rv-video-rail-title">검수 요구사항</h2>
           <p>항목을 누르면 판정 근거가 창으로 열립니다.</p></div><span>{items.length}개 항목</span></header>
         <div className="rv-video-rail-body" ref={rail}>
+          {/* 목록 종류는 목록 위에 둔다(테마: 둥근 알약 묶음, 고른 것은 잉크색). */}
+          <div className="rv-video-tabs" role="group" aria-label="목록 종류">
+            {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
+              <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
+          </div>
           {tab === 'checks' && <>
             <div className="rv-result-filters" role="group" aria-label="검수 결과 상태 필터">
               {['all', 'pass', 'review', 'fail'].map(status => <button type="button" key={status} className={filter === status ? 'is-active' : ''}
@@ -305,8 +343,9 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
               return <li key={track.id} className={open ? 'is-open' : undefined}>
                 <button type="button" className={`rv-result-item-button${open ? ' is-selected' : ''}`}
                   aria-expanded={open} aria-controls={open ? 'rv-video-aux-detail' : undefined} onClick={() => selectTrack(track)}>
-                  <span className="rv-video-time">{formatTime(track.start_ms)}–{formatTime(track.end_ms)}</span>
+                  <span className="rv-video-row-time">{formatTime(track.start_ms)}<i>–{formatTime(track.end_ms)}</i></span>
                   <span className="rv-result-item-title">{track.text}</span>
+                  <span className={`rv-video-row-meta${track.requires_review ? ' is-warn' : ''}`}>{track.requires_review ? '확인 필요' : roleLabels[track.role] || '자막'}</span>
                 </button>
                 {open && selectedTrack && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
                   <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} /></div>}
@@ -319,18 +358,16 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
               return <li key={segment.id} className={open ? 'is-open' : undefined}>
                 <button type="button" className={`rv-result-item-button${open ? ' is-selected' : ''}`}
                   aria-expanded={open} aria-controls={open ? 'rv-video-aux-detail' : undefined} onClick={() => selectSegment(segment)}>
-                  <span className="rv-video-time">{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}</span>
-                  <span className="rv-result-item-title">{segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ') || '자막 없음'}</span>
+                  <span className="rv-video-row-time">{formatTime(segment.start_ms)}<i>–{formatTime(segment.end_ms)}</i></span>
+                  {segment.track_ids.length ? <span className="rv-result-item-title">{segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ')}</span>
+                    : <span className="rv-result-item-title is-empty">자막 없음</span>}
+                  <span className={`rv-video-row-meta${usedSegments.has(segment.id) ? ' is-evidence' : ''}`}>{Math.round((segment.end_ms - segment.start_ms) / 1000)}초</span>
                 </button>
                 {open && selectedSegment && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
                   <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={openItem} /></div>}
               </li>;
             })}</ul> : <p className="rv-video-rail-note">기록된 구간이 없습니다.</p>}
           </>}
-          <div className="rv-video-tabs" role="group" aria-label="목록 종류">
-            {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
-              <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
-          </div>
         </div>
       </aside>
     </div>
