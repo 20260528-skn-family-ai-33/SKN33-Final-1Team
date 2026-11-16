@@ -461,21 +461,28 @@
 /* ---------- 정밀 대조 결과(Optimus 테마, 2026-11-17) ----------
    머리: 큰 얇은 제목 · 한 줄 설명 · 결과 개수 알약. 카드: 흰 바탕 · 가는 선 · 위쪽 결과 색 띠,
    원본 ↔ 영상 로고를 같은 크기 틀에 나란히 두고, 초별 결과 띠와 접는 초별 표를 아래에 둔다. */
-html .vl-compare { display: grid; gap: 18px; }
-html .vl-compare-heading { align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid var(--op-ink, #171717); }
+html .vl-compare { display: grid; gap: 16px; }
+html .vl-compare-heading { align-items: flex-end; padding-bottom: 18px; border-bottom: 1px solid var(--op-line, #e3e3df); }
 html .vl-compare-heading h1 { margin: 0 0 6px; font-size: clamp(26px, 2.2vw, 34px); font-weight: 500; letter-spacing: -.045em; line-height: 1.2; }
 html .vl-compare-heading p { margin: 0; color: var(--op-muted, #6e6e6b); font-size: 14px; line-height: 1.6; }
-html .vl-compare-tally { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-html .vl-compare .vl-result-pill { min-height: 0; padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+html .vl-compare-tally { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+html .vl-compare-total { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px;
+  background: var(--op-card, #fff); color: var(--op-muted, #6e6e6b); font-size: 12px; font-variant-numeric: tabular-nums; }
+html .vl-compare .vl-result-pill { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 11px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; }
+html .vl-compare .vl-result-pill.match { border-color: #d5e8da; }
+html .vl-compare .vl-result-pill.diff { border-color: #efd5ce; }
+html .vl-compare .vl-result-pill.unknown { border-color: #ecdfba; }
 
-html .vl-page .vl-evidence-card.vl-cmp-card { overflow: hidden; border: 1px solid var(--op-line, #e3e3df); border-top: 3px solid #c8a24a; border-radius: 8px;
-  background: var(--op-card, #fff); box-shadow: 0 1px 2px #1717170a; }
+html .vl-page .vl-evidence-card.vl-cmp-card { overflow: hidden; border: 1px solid var(--op-line, #e3e3df); border-top: 3px solid #c8a24a; border-radius: 9px;
+  background: var(--op-card, #fff); box-shadow: 0 2px 7px #17171708; transition: box-shadow .18s ease, transform .18s ease; }
+html .vl-page .vl-cmp-card:hover { box-shadow: 0 9px 24px #17171710; transform: translateY(-1px); }
 html .vl-page .vl-cmp-card.is-match { border-top-color: #177d45; }
 html .vl-page .vl-cmp-card.is-diff { border-top-color: #a34f3e; }
 html .vl-cmp-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; padding: 20px 24px 16px; }
 html .vl-cmp-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; }
 html .vl-cmp-title h2 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -.035em; }
-html .vl-cmp-title .vl-result-pill { padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+html .vl-cmp-title .vl-result-pill { gap: 7px; padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+html .vl-cmp-title .vl-bundle-outcome::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 html .vl-cmp-tag { padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; color: var(--op-muted, #6e6e6b); font-size: 12px; }
 html .vl-cmp-facts { display: flex; flex-wrap: wrap; gap: 0; margin: 0; }
 html .vl-cmp-facts > div { display: grid; gap: 2px; padding: 0 18px; border-left: 1px solid var(--op-line, #e3e3df); }
@@ -483,16 +490,19 @@ html .vl-cmp-facts > div:first-child { padding-left: 0; border-left: 0; }
 html .vl-cmp-facts dt { color: var(--op-muted, #8a8a84); font: 11px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .06em; }
 html .vl-cmp-facts dd { margin: 0; color: var(--op-ink, #171717); font-size: 18px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 
-html .vl-cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 16px; padding: 4px 24px 20px; }
+html .vl-cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; padding: 4px 24px 20px; }
 html .vl-cmp-pair figure { display: grid; gap: 8px; min-width: 0; margin: 0; }
-html .vl-cmp-frame { display: grid; place-items: center; height: clamp(160px, 16vw, 220px); padding: 18px; overflow: hidden; border: 1px solid var(--op-line, #e3e3df);
-  border-radius: 6px; background-color: var(--op-surface, #f3f3f1);
+html .vl-cmp-frame { display: grid; place-items: center; height: clamp(175px, 16vw, 228px); padding: 20px; overflow: hidden; border: 1px solid var(--op-line, #e3e3df);
+  border-radius: 7px; background-color: var(--op-surface, #f3f3f1); box-shadow: inset 0 1px 0 #ffffff80; transition: border-color .18s ease, background-color .18s ease;
   background-image: linear-gradient(#17171708 1px, transparent 1px), linear-gradient(90deg, #17171708 1px, transparent 1px); background-size: 16px 16px; }
+html .vl-cmp-pair figure:hover .vl-cmp-frame { border-color: #c9c9c2; background-color: #f0f0ed; }
 html .vl-cmp-frame img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; border: 0; background: none; }
 html .vl-cmp-frame.is-empty { color: var(--op-muted, #6e6e6b); font-size: 13px; }
 html .vl-cmp-pair figcaption { color: var(--op-muted, #6e6e6b); font: 12px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
 html .vl-cmp-arrow { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--op-line, #e3e3df); border-radius: 50%; background: var(--op-card, #fff);
   color: var(--op-ink, #171717); font-size: 16px; }
+html .vl-cmp-card.is-match .vl-cmp-arrow { border-color: #d5e8da; background: #f0f7f2; color: #177d45; }
+html .vl-cmp-card.is-diff .vl-cmp-arrow { border-color: #efd5ce; background: #fbf1ee; color: #a34f3e; }
 
 html .vl-cmp-diffs { margin: 0 24px 18px; padding: 14px 16px; border-radius: 6px; background: #faf3f0; }
 html .vl-cmp-diffs .vl-diff-group h3 { font-size: 14px; }
@@ -509,7 +519,8 @@ html .vl-cmp-strip .vl-sec-timeline span.diff { background: #a34f3e; }
 html .vl-cmp-strip .vl-sec-timeline span.unknown { background: #c8a24a; }
 
 html .vl-cmp-card .vl-details { border-top: 1px solid var(--op-line, #e3e3df); }
-html .vl-cmp-card .vl-details summary { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; list-style: none; font-size: 14px; font-weight: 500; }
+html .vl-cmp-card .vl-details summary { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; list-style: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color .16s ease; }
+html .vl-cmp-card .vl-details summary:hover { background: var(--op-surface, #f3f3f1); }
 html .vl-cmp-card .vl-details summary::-webkit-details-marker { display: none; }
 html .vl-cmp-card .vl-details summary em { margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--op-surface, #f3f3f1); color: var(--op-ink, #171717);
   font: 12px/1.5 var(--font-signal, ui-monospace, monospace); font-style: normal; }
@@ -519,6 +530,37 @@ html .vl-cmp-card .vl-details summary > i { width: 24px; height: 24px; border: 1
 html .vl-cmp-card .vl-details[open] summary > i { transform: rotate(45deg); }
 html .vl-cmp-card .vl-details summary:hover > i { border-color: var(--op-ink, #171717); }
 html .vl-cmp-card .vl-evidence-table th, html .vl-cmp-card .vl-evidence-table td { padding: 10px 24px; font-size: 13px; }
-html .vl-cmp-card .vl-evidence-table th { font-size: 11px; letter-spacing: .06em; }
+html .vl-cmp-card .vl-evidence-table th { background: var(--op-surface, #f3f3f1); color: var(--op-muted, #6e6e6b); font-size: 11px; letter-spacing: .06em; }
+html .vl-cmp-card .vl-evidence-table tbody tr:hover td { background: #fafaf8; }
 html .vl-cmp-card .vl-evidence-table .vl-result-pill { padding: 2px 10px; border-radius: 999px; font-size: 12px; }
 html .vl-cmp-card .vl-details summary > span { color: var(--op-ink, #171717); font-size: 14px; font-weight: 500; }
+
+/* ---------- 정밀 대조 카드 다듬기(2026-11-17 2차) ----------
+   머리에 결과 색 바탕을 은은하게 깔고, 수치는 한 덩어리 칩 묶음으로. 이미지 이름표는 틀 안쪽 위 모서리에 붙이고,
+   가운데 화살표는 '비교' 표시로, 초별 결과 띠 아래에는 시작·끝 시각을 둔다. */
+html .vl-cmp-head { padding: 18px 24px; border-bottom: 1px solid var(--op-line, #e3e3df); background: linear-gradient(180deg, #fbf6e9, var(--op-card, #fff)); }
+html .vl-cmp-card.is-match .vl-cmp-head { background: linear-gradient(180deg, #f1f7f3, var(--op-card, #fff)); }
+html .vl-cmp-card.is-diff .vl-cmp-head { background: linear-gradient(180deg, #fbf1ee, var(--op-card, #fff)); }
+html .vl-cmp-title h2 { font-size: 24px; }
+html .vl-cmp-facts { gap: 0; padding: 6px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); }
+html .vl-cmp-facts > div, html .vl-cmp-facts > div:first-child { min-width: 64px; padding: 4px 14px; border-left: 1px solid var(--op-line, #e3e3df); text-align: center; }
+html .vl-cmp-facts > div:first-child { border-left: 0; }
+html .vl-cmp-facts dt { font-size: 11px; }
+html .vl-cmp-facts dd { font-size: 20px; }
+
+html .vl-cmp-pair { padding: 22px 24px 20px; }
+html .vl-cmp-pair figure { position: relative; }
+html .vl-cmp-pair figcaption { position: absolute; top: 10px; left: 10px; z-index: 1; padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px;
+  background: var(--op-card, #fff); color: var(--op-ink, #171717); font-size: 11px; box-shadow: 0 1px 3px #1717170f; }
+html .vl-cmp-frame { padding: 34px 22px 22px; }
+html .vl-cmp-arrow { position: relative; width: 44px; height: 44px; font-size: 18px; box-shadow: 0 2px 8px #17171712; }
+html .vl-cmp-arrow::after { content: '비교'; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); color: var(--op-muted, #8a8a84);
+  font: 10px/1 var(--font-signal, ui-monospace, monospace); letter-spacing: .08em; white-space: nowrap; }
+
+html .vl-cmp-strip { grid-template-columns: auto minmax(0, 1fr); row-gap: 6px; padding: 2px 24px 20px; }
+html .vl-cmp-strip .vl-sec-timeline { height: 12px; }
+html .vl-cmp-strip-axis { grid-column: 2; display: flex; justify-content: space-between; color: var(--op-muted, #8a8a84);
+  font: 11px/1.2 var(--font-signal, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+
+html .vl-cmp-diffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; border: 1px solid #efd5ce; }
+html .vl-cmp-diffs .vl-diff-group h3 { color: #8f4132; }

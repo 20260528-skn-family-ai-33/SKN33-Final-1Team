@@ -430,8 +430,10 @@ function CompareResults({ base, video, refs, onConfirm, onStatus }) {
     <div className="vl-stage-heading vl-compare-heading">
       <div><h1>로고 정밀 대조</h1>
         <p>{auto ? '' : '직접 확인한 위치로 다시 대조했어요. '}차이 근거가 있으면 보류, 없으면 통과예요. 최종 판정은 담당자가 합니다.</p>
-        {bundles.length > 0 && <div className="vl-compare-tally">{['match', 'diff', 'unknown'].filter(tone => tally[tone])
-          .map(tone => <span key={tone} className={'vl-result-pill ' + tone}>{OUTCOME[tone].label} {tally[tone]}</span>)}</div>}</div>
+        {bundles.length > 0 && <div className="vl-compare-tally" aria-label="정밀 대조 결과 요약">
+          <span className="vl-compare-total">결과 {bundles.length}건</span>
+          {['match', 'diff', 'unknown'].filter(tone => tally[tone])
+            .map(tone => <span key={tone} className={'vl-result-pill ' + tone}>{OUTCOME[tone].label} {tally[tone]}</span>)}</div>}</div>
       <button type="button" className="vl-button secondary" onClick={onConfirm}>위치 직접 확인</button>
     </div>
     {running && <section className="vl-panel vl-progress-card">
@@ -457,9 +459,10 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
   const evidence = bundle.evidence || {};
   const representative = evidence.representative;
   const refName = refInfo?.name || bundle.reference || ('원본 로고 ' + (bundle.logo + 1));
-  const [open, setOpen] = useState(false);
   const rows = [...(bundle.per_sec || []).map(item => ({ ...item, skipped: false })),
     ...(bundle.skipped || []).map(item => ({ ...item, skipped: true }))].sort((a, b) => a.sec - b.sec);
+  const [expanded, setExpanded] = useState(null);
+  const detailsOpen = expanded ?? (rows.length > 0 && rows.length <= 4);
   // 묶음 결과는 보류(차이 있음)·통과(차이 없음)로 보이고, 보류면 차이만 종류별로 모아 보여 준다.
   const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
   const differences = groupDifferences(bundle.per_sec);
@@ -496,9 +499,10 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
         {rows.map(row => <span key={row.sec} title={row.skipped ? timeText(row.sec) + ' · ' + (SKIP[row.reason] || '건너뜀') : timeText(row.sec) + ' · ' + (OUTCOME[row.outcome]?.label || row.outcome)}
           className={row.skipped ? 'skipped' : (OUTCOME[row.outcome]?.tone || 'unknown')} />)}
       </div>
+      <div className="vl-cmp-strip-axis" aria-hidden="true"><span>{timeText(rows[0].sec)}</span>{rows.length > 1 && <span>{timeText(rows[rows.length - 1].sec)}</span>}</div>
     </div>}
-    {rows.length > 0 && <details className="vl-details" open={open}>
-      <summary onClick={event => { event.preventDefault(); setOpen(value => !value); }}>
+    {rows.length > 0 && <details className="vl-details" open={detailsOpen} aria-label={refName + ' 초별 대조 근거'}>
+      <summary aria-expanded={detailsOpen} onClick={event => { event.preventDefault(); setExpanded(!detailsOpen); }}>
         <span>초별 근거 <em>{rows.length}</em></span><i aria-hidden="true" />
       </summary>
       <div className="vl-table-wrap"><table className="vl-evidence-table">
