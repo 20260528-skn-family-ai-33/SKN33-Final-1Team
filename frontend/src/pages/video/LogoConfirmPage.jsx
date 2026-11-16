@@ -421,12 +421,18 @@ function CompareResults({ base, video, refs, onConfirm, onStatus }) {
   const bundles = result.bundles || [];
   const running = RUNNING.has(result.compare_status);
   const auto = result.origin !== 'manual';
-  return <div className="vl-main-stack">
-    <div className="vl-stage-heading">
-      <div><span className="vl-kicker">정밀 대조 결과</span><h1>원본 로고와 비교한 근거를 확인하세요</h1>
-        <p>{auto ? '원본 로고마다 순위가 높은 후보를 자동으로 골라 대조했어요. 검수하려던 로고가 아니면 위치를 직접 확인한 뒤 다시 대조하세요.'
-          : '직접 확인한 위치로 다시 대조했어요.'} 차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 합니다.</p></div>
-      <button type="button" className="vl-button secondary" onClick={onConfirm}>검수하려던 로고가 아니에요 · 위치 직접 확인</button>
+  const tally = bundles.reduce((counts, bundle) => {
+    const tone = OUTCOME[bundleOutcome(bundle.evidence?.outcomes)].tone;
+    return { ...counts, [tone]: (counts[tone] || 0) + 1 };
+  }, {});
+  // 테마(Optimus) 정밀 대조 화면: 짧은 제목·결과 개수 → 로고마다 카드(원본 ↔ 영상, 초별 결과 띠, 접는 초별 표).
+  return <div className="vl-main-stack vl-compare">
+    <div className="vl-stage-heading vl-compare-heading">
+      <div><h1>로고 정밀 대조</h1>
+        <p>{auto ? '' : '직접 확인한 위치로 다시 대조했어요. '}차이 근거가 있으면 보류, 없으면 통과예요. 최종 판정은 담당자가 합니다.</p>
+        {bundles.length > 0 && <div className="vl-compare-tally">{['match', 'diff', 'unknown'].filter(tone => tally[tone])
+          .map(tone => <span key={tone} className={'vl-result-pill ' + tone}>{OUTCOME[tone].label} {tally[tone]}</span>)}</div>}</div>
+      <button type="button" className="vl-button secondary" onClick={onConfirm}>위치 직접 확인</button>
     </div>
     {running && <section className="vl-panel vl-progress-card">
       <div className="vl-progress-title"><strong>정밀 대조 중</strong><span>{result.compare_progress || 0}%</span></div>
@@ -443,11 +449,11 @@ function CompareResults({ base, video, refs, onConfirm, onStatus }) {
       <strong>대조 결과가 없습니다.</strong><p>영상에서 원본 로고 후보를 찾지 못했거나 모든 원본 로고를 ‘영상에 없음’으로 정했습니다. 위치를 직접 지정해 다시 대조할 수 있어요.</p>
     </section>}
     {bundles.map(bundle => <EvidenceBundle key={bundle.logo + '-' + bundle.crop} base={base} bundle={bundle}
-      refInfo={refs[bundle.logo]} auto={auto} />)}
+      refInfo={refs[bundle.logo]} several={bundles.filter(item => item.logo === bundle.logo).length > 1} />)}
   </div>;
 }
 
-function EvidenceBundle({ base, bundle, refInfo, auto }) {
+function EvidenceBundle({ base, bundle, refInfo, several }) {
   const evidence = bundle.evidence || {};
   const representative = evidence.representative;
   const refName = refInfo?.name || bundle.reference || ('원본 로고 ' + (bundle.logo + 1));
@@ -457,40 +463,43 @@ function EvidenceBundle({ base, bundle, refInfo, auto }) {
   // 묶음 결과는 보류(차이 있음)·통과(차이 없음)로 보이고, 보류면 차이만 종류별로 모아 보여 준다.
   const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
   const differences = groupDifferences(bundle.per_sec);
-  return <article className="vl-evidence-card">
-    <header className="vl-evidence-head">
-      <div><span className="vl-kicker">{bundle.source !== 'candidate' ? '직접 지정' : auto ? '자동 선택 후보' : '후보 묶음'}</span>
-        <h2>{refName} · 대조 묶음 {bundle.crop + 1} <span className={'vl-result-pill vl-bundle-outcome ' + outcome.tone}>{outcome.label}</span></h2>
-        <p>{evidence.n_secs || 0}초 비교 · {bundle.skipped?.length || 0}초 건너뜀</p></div>
-      <button type="button" className="vl-text-button" onClick={() => setOpen(value => !value)}>{open ? '상세 접기' : '초별 근거 펼치기'}</button>
+  return <article className={'vl-evidence-card vl-cmp-card is-' + outcome.tone}>
+    <header className="vl-cmp-head">
+      <div className="vl-cmp-title"><h2>{refName}{several ? ' · 묶음 ' + (bundle.crop + 1) : ''}</h2>
+        <span className={'vl-result-pill vl-bundle-outcome ' + outcome.tone}>{outcome.label}</span>
+        {bundle.source !== 'candidate' && <span className="vl-cmp-tag">직접 지정</span>}</div>
+      <dl className="vl-cmp-facts">
+        <div><dt>비교</dt><dd>{evidence.n_secs || 0}초</dd></div>
+        <div><dt>건너뜀</dt><dd>{bundle.skipped?.length || 0}초</dd></div>
+        {Object.entries(evidence.outcomes || {}).map(([key, count]) => <div key={key}><dt>{OUTCOME[key]?.label || key}</dt><dd>{count}초</dd></div>)}
+      </dl>
     </header>
-    <div className="vl-evidence-images">
-      <figure><img src={base + '/' + (refInfo?.img || ('refs/' + bundle.logo + '.png'))} alt={refName + ' 원본'} /><figcaption>원본 로고</figcaption></figure>
-      {representative ? <figure><img src={base + '/compare/rep/' + bundle.logo + '/' + bundle.crop + '.jpg'} alt={representative.sec + '초 비교 crop'} />
-        <figcaption>{timeText(representative.sec)} 대표 crop</figcaption></figure> :
-        <div className="vl-evidence-no-image">비교 가능한 프레임이 없습니다.</div>}
-      <div className="vl-evidence-summary">
-        <div className="vl-result-counts">
-          {Object.entries(evidence.outcomes || {}).map(([key, count]) => <span className={'vl-result-pill ' + (OUTCOME[key]?.tone || '')} key={key}>
-            {OUTCOME[key]?.label || key} {count}초</span>)}
-        </div>
-        {differences.length > 0 ? <div className="vl-diff-groups" aria-label="종류별 차이">
-          {differences.map(group => <section className="vl-diff-group" key={group.kind}>
-            <h3>{group.kind} <span>{group.secs}초</span></h3>
-            <ul className="vl-finding-list">{group.items.map(([label, count]) => <li key={label}><span>{label}</span><strong>{count}초</strong></li>)}</ul>
-          </section>)}
-        </div> : <p className="vl-muted-copy">{outcome.tone === 'match'
-          ? '차이 근거가 없어 통과로 표시했어요. ‘정답’ 확정이 아니라 비교한 항목 기준의 결과입니다.'
-          : '로고가 작거나 글자를 읽지 못해 비교하지 못했어요. 원본 영상을 확인해 주세요.'}</p>}
+    <div className="vl-cmp-pair">
+      <figure><div className="vl-cmp-frame"><img src={base + '/' + (refInfo?.img || ('refs/' + bundle.logo + '.png'))} alt={refName + ' 원본'} /></div>
+        <figcaption>원본 로고</figcaption></figure>
+      <span className="vl-cmp-arrow" aria-hidden="true">→</span>
+      <figure>{representative ? <div className="vl-cmp-frame"><img src={base + '/compare/rep/' + bundle.logo + '/' + bundle.crop + '.jpg'}
+        alt={timeText(representative.sec) + ' 영상 속 ' + refName} /></div>
+        : <div className="vl-cmp-frame is-empty">비교할 프레임 없음</div>}
+        <figcaption>{representative ? '영상 ' + timeText(representative.sec) : '영상'}</figcaption></figure>
+    </div>
+    {differences.length > 0 && <div className="vl-diff-groups vl-cmp-diffs" aria-label="종류별 차이">
+      {differences.map(group => <section className="vl-diff-group" key={group.kind}>
+        <h3>{group.kind} <span>{group.secs}초</span></h3>
+        <ul className="vl-finding-list">{group.items.map(([label, count]) => <li key={label}><span>{label}</span><strong>{count}초</strong></li>)}</ul>
+      </section>)}
+    </div>}
+    {outcome.tone === 'unknown' && !differences.length && <p className="vl-cmp-note">로고가 작거나 가려져 비교하지 못했어요. 원본 영상을 확인해 주세요.</p>}
+    {rows.length > 0 && <div className="vl-cmp-strip">
+      <span>초별 결과</span>
+      <div className="vl-sec-timeline" aria-label="초별 대조 상태">
+        {rows.map(row => <span key={row.sec} title={row.skipped ? timeText(row.sec) + ' · ' + (SKIP[row.reason] || '건너뜀') : timeText(row.sec) + ' · ' + (OUTCOME[row.outcome]?.label || row.outcome)}
+          className={row.skipped ? 'skipped' : (OUTCOME[row.outcome]?.tone || 'unknown')} />)}
       </div>
-    </div>
-    <div className="vl-sec-timeline" aria-label="초별 대조 상태">
-      {rows.map(row => <span key={row.sec} title={row.skipped ? timeText(row.sec) + ' · ' + (SKIP[row.reason] || '건너뜀') : timeText(row.sec) + ' · ' + (OUTCOME[row.outcome]?.label || row.outcome)}
-        className={row.skipped ? 'skipped' : (OUTCOME[row.outcome]?.tone || 'unknown')} />)}
-    </div>
-    <details className="vl-details" open={open}>
+    </div>}
+    {rows.length > 0 && <details className="vl-details" open={open}>
       <summary onClick={event => { event.preventDefault(); setOpen(value => !value); }}>
-        초별 검사 자료 <span>{rows.length}개 항목</span>
+        <span>초별 근거 <em>{rows.length}</em></span><i aria-hidden="true" />
       </summary>
       <div className="vl-table-wrap"><table className="vl-evidence-table">
         <thead><tr><th>시점</th><th>결과</th><th>차이 종류</th><th>차이 내용</th></tr></thead>
@@ -503,7 +512,7 @@ function EvidenceBundle({ base, bundle, refInfo, auto }) {
             : row.outcome === 'match' ? '차이 없음' : '비교할 수 없음'}</td>
         </tr>)}</tbody>
       </table></div>
-    </details>
+    </details>}
   </article>;
 }
 
@@ -697,9 +706,10 @@ export default function LogoConfirmPage() {
   function removeManual(indexToRemove) {
     setManuals(previous => previous.filter((_, index) => index !== indexToRemove));
   }
+  // 기본 화면(view 없음)은 정밀 대조 결과다. 위치 직접 확인만 view=confirm으로 연다.
   function changeView(nextView) {
     const query = new URLSearchParams(params);
-    if (nextView === 'compare') query.set('view', 'compare');
+    if (nextView === 'confirm') query.set('view', 'confirm');
     else query.delete('view');
     setParams(query);
   }
@@ -755,12 +765,12 @@ export default function LogoConfirmPage() {
       <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 영상과 원본 로고를 첨부하면 후보를 찾고 정밀 대조까지 자동으로 진행합니다. 결과를 보고 검수하려던 로고가 아니면 위치를 직접 확인해 다시 대조할 수 있습니다.</p>
       <Link className="vl-button primary" to="/video">자료 입력 열기</Link>
     </section> : <div className="vl-content">
-      <div className="vl-jobbar">
-        <div><span className="vl-kicker">작업</span><strong>{meta?.id === job ? meta.title : '작업 정보를 불러오는 중'}</strong></div>
-        {meta?.id === job && <span className={'vl-status ' + (meta.status === 'failed' ? 'failed' : meta.status === 'candidates_ready' ? 'ready' : 'working')}>
-          {meta.status === 'failed' ? '실패' : meta.status === 'candidates_ready' ? '후보 준비 완료' : (meta.stage_detail || '후보 찾는 중')}
-        </span>}
-      </div>
+      {/* 작업 이름은 위쪽 프로젝트 줄에 이미 있으므로, 후보 찾기가 끝나기 전(진행·실패)에만 상태 줄을 보인다. */}
+      {meta?.id === job && meta.status !== 'candidates_ready' && <div className="vl-jobbar">
+        <div><span className="vl-kicker">작업</span><strong>{meta.title}</strong></div>
+        <span className={'vl-status ' + (meta.status === 'failed' ? 'failed' : 'working')}>
+          {meta.status === 'failed' ? '실패' : (meta.stage_detail || '후보 찾는 중')}</span>
+      </div>}
 
       {meta?.id === job && RUNNING.has(meta.status) && <section className="vl-panel vl-progress-card">
         <div className="vl-progress-title"><strong>영상 후보를 찾고 있습니다</strong><span>{meta.progress || 0}%</span></div>
@@ -771,8 +781,6 @@ export default function LogoConfirmPage() {
         <ErrorMessage message={meta.error || '후보 찾기에 실패했습니다.'} />
         <p className="vl-help">작업이 실패했습니다. {linkedReview ? '영상 검수 화면에서' : '자료 입력에서'} 다시 접수할 수 있습니다.</p>
       </section>}
-      {openaiDetector && meta.status === 'candidates_ready' && <p className="vl-help">
-        일반 자료라 위치 후보는 OpenAI가 프레임마다 찾은 결과를 확신도 순으로 보여 줍니다. 정밀 대조는 RunPod에서 합니다.</p>}
       {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
       {ready && <>

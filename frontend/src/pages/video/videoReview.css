@@ -137,7 +137,6 @@
 .rv-video .rv-video-logo-job + .rv-video-logo-job { padding-top: 10px; border-top: 1px dashed var(--result-line, #e3e3df); }
 .rv-video .rv-video-logo-job-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
 .rv-video .rv-video-logo-job-title { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
-.rv-video .rv-video-logo-job-title > strong { overflow: hidden; max-width: 280px; color: #6e6e6b; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .rv-video .rv-video-logo-tally { display: inline-flex; gap: 6px; }
 .rv-video .rv-video-logo-tally > span { padding: 1px 8px; border-radius: 999px; background: #f2f2ef; color: #3b3b38; font-size: 11px; font-variant-numeric: tabular-nums; }
 .rv-video .rv-video-logo-tally > .is-match { background: #e6f0e9; color: #177d45; }
@@ -374,14 +373,9 @@ html .rv-video .rv-video-timeline-heading { display: flex; align-items: flex-end
 html .rv-video .rv-video-timeline-title { display: grid; gap: 4px; min-width: 0; }
 html .rv-video .rv-video-timeline-eyebrow { color: var(--op-muted, #8a8a84); font: 10px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .14em; }
 html .rv-video .rv-video-timeline-heading h2 { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: -.035em; line-height: 1.25; }
-html .rv-video .rv-video-timeline-stats { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 0; }
-html .rv-video .rv-video-timeline-stats > div { display: inline-flex; align-items: baseline; gap: 5px; }
-html .rv-video .rv-video-timeline-stats dt { color: var(--op-muted, #8a8a84); font-size: 11px; }
-html .rv-video .rv-video-timeline-stats dd { margin: 0; color: var(--op-ink, #171717); font: 11px/1 var(--font-signal, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
 html .rv-video .rv-video-timeline-now { display: grid; justify-items: end; gap: 6px; }
 html .rv-video .rv-video-timeline-clock strong { font-size: 28px; font-weight: 400; letter-spacing: -.04em; }
 html .rv-video .rv-video-timeline-clock span { font-size: 12px; }
-html .rv-video .rv-video-timeline-current { padding: 2px 10px; border-radius: 999px; background: var(--op-surface, #f3f3f1); color: var(--op-muted, #6e6e6b);
   font: 10px/1.6 var(--font-signal, ui-monospace, monospace); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 html .rv-video .rv-video-timeline-body { margin-top: 6px; }
 html .rv-video .rv-video-timeline .rv-video-scrubber { margin-top: 22px; }
@@ -411,3 +405,34 @@ html .rv-video .rv-video-coverage > p { margin: 8px 0 0; font-size: 11px; line-h
 
 html .rv-video .rv-video-timeline .rv-video-logo-result { margin-top: 16px; padding-top: 16px; }
 html .rv-video .rv-video-timeline .rv-video-logo-result-head h3 { font-size: 14px; font-weight: 500; }
+
+/* ---------- 구간 타임라인 패널 글자·로고 썸네일 크기 키우기(2026-11-17 요청: 작아서 잘 안 보임) ----------
+   위 규칙들보다 뒤에 두고 html 접두로 우선한다. 모노 글자는 최소 12px, 본문 13~15px, 로고 썸네일 120×72. */
+html .rv-video .rv-video-timeline-eyebrow { font-size: 12px; }
+html .rv-video .rv-video-timeline-heading h2 { font-size: 20px; }
+html .rv-video .rv-video-timeline-clock strong { font-size: 30px; }
+html .rv-video .rv-video-timeline-clock span { font-size: 14px; }
+html .rv-video .rv-video-timeline-scale { font-size: 12px; }
+html .rv-video .rv-video-scrubber-bubble { font-size: 12px; padding: 3px 8px; }
+html .rv-video .rv-video-timeline-shortcuts > span { font-size: 12px; }
+html .rv-video .rv-video-timeline-chip { padding: 5px 14px 5px 5px; font-size: 14px; }
+html .rv-video .rv-video-timeline-chip time { padding: 3px 9px; font-size: 12px; }
+html .rv-video .rv-video-timeline .rv-video-coverage, html .rv-video .rv-video-coverage > summary { font-size: 14px; }
+html .rv-video .rv-video-coverage .rv-video-legend { font-size: 12px; }
+html .rv-video .rv-video-coverage > p { font-size: 13px; }
+
+html .rv-video .rv-video-timeline .rv-video-logo-result-head h3 { font-size: 16px; }
+html .rv-video .rv-video-logo-result-head p { font-size: 13px; }
+html .rv-video .rv-video-logo-tally > span { padding: 2px 10px; font-size: 13px; }
+html .rv-video .rv-video-logo-rows { gap: 8px; }
+html .rv-video .rv-video-logo-row { gap: 18px; padding: 12px 16px 12px 12px; }
+html .rv-video .rv-video-logo-pair { gap: 10px; }
+html .rv-video .rv-video-logo-thumb { width: 120px; height: 72px; padding: 8px; border-radius: 8px; }
+html .rv-video .rv-video-logo-thumb.is-empty { font-size: 12px; }
+html .rv-video .rv-video-logo-vs { font-size: 16px; }
+html .rv-video .rv-video-logo-row-text { gap: 4px; }
+html .rv-video .rv-video-logo-row-text > strong { font-size: 16px; }
+html .rv-video .rv-video-logo-row-text > span { font-size: 13px; }
+html .rv-video .rv-video-logo-seek { padding: 5px 12px; font-size: 13px; }
+html .rv-video .rv-video-logo-seek svg { width: 13px; height: 13px; }
+html .rv-video .rv-video-logo-row .rv-result-status { font-size: 13px; }

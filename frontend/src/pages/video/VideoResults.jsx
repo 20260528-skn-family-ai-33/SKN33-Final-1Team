@@ -97,22 +97,14 @@ function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScr
   const evidenceSegments = new Set(evidence.map(item => item.segment_id).filter(Boolean));
   const tracks = Object.fromEntries((job.tracks || []).map(track => [track.id, track]));
   const note = coverageNote(job.coverage);
-  const textSegments = (job.segments || EMPTY).filter(segment => segment.track_ids.length).length;
-  const current = (job.segments || EMPTY).find(segment => segment.id === view.segmentId);
   return <section className="rv-panel rv-video-timeline" aria-labelledby="video-timeline-title">
-    {/* 머리: 왼쪽은 모노 머리글·제목·요약 수치, 오른쪽은 지금 시각과 보는 구간 */}
+    {/* 머리: 왼쪽은 모노 머리글·제목, 오른쪽은 지금 시각 */}
     <div className="rv-video-timeline-heading">
       <div className="rv-video-timeline-title"><span className="rv-video-timeline-eyebrow">TIMELINE</span>
         <h2 id="video-timeline-title">구간 타임라인</h2>
-        <dl className="rv-video-timeline-stats">
-          <div><dt>구간</dt><dd>{(job.segments || EMPTY).length}</dd></div>
-          <div><dt>자막 구간</dt><dd>{textSegments}</dd></div>
-          <div><dt>근거 시점</dt><dd>{shortcuts.length}</dd></div>
-          {(job.coverage?.uninspected || EMPTY).length > 0 && <div><dt>미검사</dt><dd>{job.coverage.uninspected.length}</dd></div>}
-        </dl></div>
+        </div>
       {duration ? <div className="rv-video-timeline-now">
-        <span className="rv-video-timeline-clock"><strong>{formatTime(time)}</strong><span>/ {formatTime(duration)}</span></span>
-        <span className="rv-video-timeline-current">{current ? `보는 구간 ${formatTime(current.start_ms)}–${formatTime(current.end_ms)}` : '구간을 고르지 않음'}</span></div>
+        <span className="rv-video-timeline-clock"><strong>{formatTime(time)}</strong><span>/ {formatTime(duration)}</span></span></div>
         : <span className="rv-video-time">시각 정보 없음</span>}</div>
     <div className="rv-video-timeline-body">
       {/* 진행 막대: 레일에 자막 구간(옅은 띠)·검사하지 않은 구간(빗금)·재생한 만큼(잉크 채움)을 겹쳐 그리고 근거 시점은 금색 점으로 찍는다.

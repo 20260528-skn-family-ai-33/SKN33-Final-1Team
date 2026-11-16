@@ -41,7 +41,7 @@ export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, 
   const identity = showName || projectTools || projectAside;
   return <div className={`rv-projectbar${identity ? '' : ' rv-projectbar--steps-only'}`}>
     {identity && <div className="rv-project-identity">
-      {showName && <div className="rv-project-field"><span className="rv-project-field-label">검수 이름</span>{projectEditor
+      {showName && <div className="rv-project-field"><span className="rv-project-field-badge">프로젝트 명</span>{projectEditor
         ? <ProjectNameField editor={projectEditor} value={name || ''} locked={locked} />
         : <strong title={name || undefined}>{name || '이름 없는 검수'}</strong>}</div>}
       {projectTools}

@@ -281,11 +281,11 @@ function LogoCompareJob({ job, onSeek }) {
 
   return <div className="rv-video-logo-job">
     <div className="rv-video-logo-job-head">
-      <div className="rv-video-logo-job-title"><strong title={job.title}>{job.title}</strong>
+      <div className="rv-video-logo-job-title">
         {bundles.length > 0 && <span className="rv-video-logo-tally">{['match', 'diff', 'unknown'].filter(tone => tally[tone])
           .map(tone => <span key={tone} className={`is-${tone}`}>{OUTCOME[tone].label} {tally[tone]}</span>)}</span>}</div>
       <div className="rv-video-logo-result-actions">
-        {bundles.length > 0 && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}`}>초별 근거 보기</Link>}
+        {bundles.length > 0 && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}`}>정밀 대조 근거 상세 보기</Link>}
         {canReselect && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}&view=confirm`}>로고 후보 다시 선택</Link>}
       </div></div>
     {state}
