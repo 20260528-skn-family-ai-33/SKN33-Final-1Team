@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { autoCompareBody, bundleOutcome, groupDifferences, OUTCOME } from './logoFlow.js';
+import { autoCompareBody, bundleOutcome, OUTCOME } from './logoFlow.js';
 import { formatTime } from './videoFormat.js';
 
 // 동영상 검수 화면에 붙는 영상 로고 검수(/api/video-logos) 조각: 원본 로고 입력, 접수, 작업 상태.
@@ -311,13 +311,9 @@ function LogoCompareJob({ job, onSeek }) {
     {bundles.length > 0 && <ul className="rv-video-logo-rows">{bundles.map(bundle => {
       const evidence = bundle.evidence || {};
       const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
-      const differences = groupDifferences(bundle.per_sec);
       const name = bundle.reference || `원본 로고 ${bundle.logo + 1}`;
       const several = bundles.filter(item => item.logo === bundle.logo).length > 1;
       const rep = evidence.representative;
-      const facts = [`비교 ${evidence.n_secs || 0}초`, bundle.skipped?.length ? `건너뜀 ${bundle.skipped.length}초` : null,
-        differences.length ? `차이 ${differences.map(group => `${group.kind} ${group.secs}초`).join(', ')}`
-          : outcome.tone === 'match' ? '차이 없음' : null].filter(Boolean).join(' · ');
       return <li key={`${bundle.logo}-${bundle.crop}`} className={`rv-video-logo-row is-${outcome.tone}`}>
         <div className="rv-video-logo-pair">
           <span className="rv-video-logo-thumb" title="원본 로고"><img src={`${base}/refs/${bundle.logo}.png`} alt={`${name} 원본`} /></span>
@@ -327,7 +323,7 @@ function LogoCompareJob({ job, onSeek }) {
             : <span className="rv-video-logo-thumb is-empty">프레임 없음</span>}
         </div>
         <div className="rv-video-logo-row-text"><strong title={name}>{name}{several ? ` · 구간 ${bundle.crop + 1}` : ''}</strong>
-          <span>{facts}</span></div>
+</div>
         {rep && (onSeek
           ? <button type="button" className="rv-video-logo-seek" onClick={() => onSeek(rep.sec * 1000)}
             aria-label={`${secondText(rep.sec)} 시점으로 이동`}><Icon name="arrow" />{secondText(rep.sec)}</button>

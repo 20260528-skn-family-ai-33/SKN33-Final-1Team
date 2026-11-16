@@ -766,3 +766,15 @@ html .vl-cmp-frame img { width: 100%; height: 100%; max-width: none; max-height:
 /* 확대한 로고가 틀을 넘치지 않게: 틀 안쪽 여백(위 52 · 좌우 28 · 아래 24)에 이미지를 절대 위치로 맞추고 비율을 지켜 채운다. */
 html .vl-cmp-frame { position: relative; }
 html .vl-cmp-frame img { position: absolute; top: 52px; left: 28px; width: calc(100% - 56px); height: calc(100% - 76px); }
+
+/* 정밀 대조 카드 '초별 결과' 이름표와 시작·끝 시각 키우기(2026-11-17): 11px → 14px·13px. */
+html .vl-page .vl-cmp-strip > span { font-size: 14px; letter-spacing: .02em; }
+html .vl-page .vl-cmp-strip-axis { font-size: 13px; }
+
+/* 후보 카드 '원본과 일치도 n%': 큰 숫자 + 얇은 막대(2026-11-17). 예전 '순위 점수 0.990' 표기를 바꿨다. */
+html .vl-page .vl-candidate-score { display: grid; grid-template-columns: 1fr auto; align-items: baseline; row-gap: 8px; }
+html .vl-page .vl-candidate-score span { font-size: 14px; }
+html .vl-page .vl-candidate-score strong { font: 500 20px/1 var(--font-ui, inherit); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+html .vl-candidate-meter { grid-column: 1 / -1; display: block; height: 4px; overflow: hidden; border-radius: 999px; background: var(--op-line, #e3e3df); }
+html .vl-candidate-meter b { display: block; height: 100%; border-radius: inherit; background: var(--op-ink, #171717); }
+html .vl-page .vl-candidate:not(.selected) .vl-candidate-meter b { background: #8a8a84; }

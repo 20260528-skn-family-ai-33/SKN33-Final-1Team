@@ -5,7 +5,7 @@ import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { autoDrafts, autoSelection, bundleOutcome, findingText, groupDifferences, handoff, intervalText, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
+import { autoDrafts, autoSelection, bundleOutcome, findingText, groupDifferences, handoff, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
   videoLogoSteps } from './logoFlow.js';
 import { startAutoCompare } from './LogoFlowParts.jsx';
 import './logoConfirm.css';
@@ -21,6 +21,11 @@ function uniqueFindings(texts, place = '영상') {
     seen.set(text, seen.has(text) ? seen.get(text) + '\n' + raw : raw);
   }
   return [...seen];
+}
+
+// 후보 순위 점수를 화면용 일치도(0~100%)로: 0.99 → 99
+function matchPercent(rank) {
+  return Math.max(0, Math.min(100, Math.round(Number(rank || 0) * 100)));
 }
 
 function timeText(sec) {
@@ -40,10 +45,9 @@ function clockSpan(secs) {
   return ranges.map(clockInterval).join(', ') || '시간 정보 없음';
 }
 
+// 예전 이름. 시점 표시는 모두 분:초로 맞춘다(2026-11-17): [103, 104] → 01:43~01:44
 function spanText(secs) {
-  const ranges = toIntervals(secs || []);
-  if (ranges.length > 3) return ranges.slice(0, 3).map(intervalText).join(', ') + ' 외 ' + (ranges.length - 3) + '구간';
-  return ranges.map(intervalText).join(', ') || '시간 정보 없음';
+  return clockSpan(secs);
 }
 
 function frameUrl(video, sec) {
@@ -117,7 +121,10 @@ function CandidateCard({ video, refIndex, groupIndex, rank, selected, onToggle }
       <CropPreview video={video} sec={sec} box={box} compact />
     </button>
     <div className="vl-candidate-info">
-      <div className="vl-candidate-score"><span>순위 점수</span><strong>{Number(group.rank[refIndex]).toFixed(3)}</strong></div>
+      {/* 순위 점수(0~1, OCR 가산점이 붙으면 1을 조금 넘는다)를 '일치도 n%'와 얇은 막대로 보인다. 원래 값은 마우스를 올리면 보인다. */}
+      <div className="vl-candidate-score" title={'순위 점수 ' + Number(group.rank[refIndex]).toFixed(3)}>
+        <span>원본과 일치도</span><strong>{matchPercent(group.rank[refIndex])}%</strong>
+        <i className="vl-candidate-meter" aria-hidden="true"><b style={{ width: matchPercent(group.rank[refIndex]) + '%' }} /></i></div>
       <p>{spanText(group.secs)}</p>
       <p className="vl-candidate-frames">{group.secs.length}개 프레임</p>
       {ocr && ocr[0] && <div className="vl-ocr-chip">
@@ -229,7 +236,7 @@ function GroupLinks({ video, refIndex, confirmed, checked, onToggle }) {
         return <label key={groupIndex} className={'vl-linked-item' + (checked.has(groupIndex) ? ' selected' : '')}>
           <input type="checkbox" checked={checked.has(groupIndex)} onChange={() => onToggle(groupIndex)} />
           <CropPreview video={video} sec={sec} box={box} compact fit={[120, 64]} />
-          <span className="vl-linked-copy"><strong>{spanText(group.secs)}</strong><small>점수 {Number(group.rank[refIndex]).toFixed(3)} · {group.secs.length}프레임</small></span>
+          <span className="vl-linked-copy"><strong>{spanText(group.secs)}</strong><small>일치도 {matchPercent(group.rank[refIndex])}% · {group.secs.length}개 프레임</small></span>
         </label>;
       })}</div>}
     {candidates.length > 8 && <button type="button" className="vl-text-button" onClick={() => setExpanded(value => !value)}>
@@ -308,8 +315,8 @@ function ManualEditor({ video, initialSec, onCancel, onDone }) {
           {box && <button type="button" className="vl-text-button" onClick={() => setBox(null)}>영역 다시 그리기</button>}
         </div>
         <div className="vl-range-fields">
-          <label>구간 시작(초)<input type="number" min="0" max={last} value={from} onChange={event => setFrom(Math.max(0, Math.min(last, Number(event.target.value) || 0)))} /></label>
-          <label>구간 끝(초)<input type="number" min="0" max={last} value={to} onChange={event => setTo(Math.max(0, Math.min(last, Number(event.target.value) || 0)))} /></label>
+          <label>구간 시작(초) · {timeText(from)}<input type="number" min="0" max={last} value={from} onChange={event => setFrom(Math.max(0, Math.min(last, Number(event.target.value) || 0)))} /></label>
+          <label>구간 끝(초) · {timeText(to)}<input type="number" min="0" max={last} value={to} onChange={event => setTo(Math.max(0, Math.min(last, Number(event.target.value) || 0)))} /></label>
         </div>
         {from > to && <p className="vl-inline-error">끝 시점은 시작 시점보다 뒤여야 합니다.</p>}
         <div className="vl-manual-actions">
@@ -363,7 +370,7 @@ function ExposureSummary({ video, payload }) {
     <div className="vl-timeline" role="img" aria-label="선택한 로고 구간 타임라인">
       {slots.map(({ start, end, isMissing, isSelected }) => <span key={start}
         className={(isMissing ? 'missing ' : '') + (isSelected ? 'selected' : '')}
-        title={start === end ? start + '초' : start + '~' + end + '초'} />)}
+        title={start === end ? timeText(start) : timeText(start) + '~' + timeText(end)} />)}
     </div>
     <div className="vl-timeline-axis"><span>00:00</span><span>{timeText(video.seconds - 1)}</span></div>
     <p>{payload.intervals.length ? payload.intervals.map(clockInterval).join(' · ') : '노출 구간을 지정하지 않았습니다.'}</p>
