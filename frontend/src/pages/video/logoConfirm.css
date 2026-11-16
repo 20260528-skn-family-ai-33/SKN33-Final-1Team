@@ -778,3 +778,16 @@ html .vl-page .vl-candidate-score strong { font: 500 20px/1 var(--font-ui, inher
 html .vl-candidate-meter { grid-column: 1 / -1; display: block; height: 4px; overflow: hidden; border-radius: 999px; background: var(--op-line, #e3e3df); }
 html .vl-candidate-meter b { display: block; height: 100%; border-radius: inherit; background: var(--op-ink, #171717); }
 html .vl-page .vl-candidate:not(.selected) .vl-candidate-meter b { background: #8a8a84; }
+
+/* 정밀 대조 카드 '프레임별 결과'(2026-11-17): 프레임마다 결과 색 막대 아래에 그 프레임 시각을 적는다(예전 양끝 시각 줄 대신). */
+html .vl-cmp-strip { align-items: start; }
+html .vl-cmp-strip > span { padding-top: 0; line-height: 12px; }
+html .vl-page .vl-cmp-strip .vl-frame-strip { display: flex; gap: 4px; height: auto; padding: 0; overflow: visible; }
+html .vl-page .vl-frame-cell { display: grid; flex: 1 1 0; gap: 6px; min-width: 2px; height: auto; border-radius: 0; background: none !important; }
+html .vl-page .vl-frame-cell > i { display: block; height: 12px; border-radius: 999px; background: var(--op-line, #e3e3df); }
+html .vl-page .vl-frame-cell.match > i { background: #177d45; }
+html .vl-page .vl-frame-cell.diff > i { background: #a34f3e; }
+html .vl-page .vl-frame-cell.unknown > i { background: #c8a24a; }
+html .vl-page .vl-frame-cell.skipped > i { background: repeating-linear-gradient(135deg, #d2d2cb 0 2px, #f7f7f4 2px 4px); }
+html .vl-page .vl-frame-cell > time { overflow: hidden; color: var(--op-muted, #6e6e6b); font: 13px/1.2 var(--font-signal, ui-monospace, monospace); text-align: center;
+  white-space: nowrap; font-variant-numeric: tabular-nums; }

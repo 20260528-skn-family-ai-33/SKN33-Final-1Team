@@ -445,7 +445,7 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
 
 // 정밀 대조 진행 표시. 동영상 검수 진행 화면(VideoProgress)과 같은 짜임: 왼쪽 어두운 무대(원본 로고를 훑는 스캔 선),
 // 오른쪽 머리글·큰 제목·진행률·단계 목록. 진행률은 서버 compare_progress 그대로 쓴다.
-const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '초별 정밀 대조'], ['organize', '결과 정리']];
+const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '프레임별 정밀 대조'], ['organize', '결과 정리']];
 function CompareProgress({ status, progress, base, refs }) {
   const value = Math.min(100, Math.max(0, Math.round(progress || 0)));
   const active = status === 'running' ? (value >= 95 ? 2 : 1) : 0;
@@ -454,7 +454,7 @@ function CompareProgress({ status, progress, base, refs }) {
     <div className="vl-compare-stage" aria-hidden="true">
       <div className="vl-compare-stage-logos">{(refs || []).slice(0, 3).map((ref, index) =>
         <span key={index} className="vl-compare-stage-logo"><img src={base + '/' + (ref.img || ('refs/' + index + '.png'))} alt="" /><i /></span>)}</div>
-      <span className="vl-compare-stage-caption">{status === 'running' ? '초별 영역을 원본과 비교하는 중' : '대조 준비 중'}</span>
+      <span className="vl-compare-stage-caption">{status === 'running' ? '프레임별 영역을 원본과 비교하는 중' : '대조 준비 중'}</span>
     </div>
     <div className="vl-compare-progress-body">
       <span className="vl-compare-progress-eyebrow">LOGO PRECISION CHECK IN PROGRESS</span>
@@ -566,16 +566,22 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
     </div>}
     {outcome.tone === 'unknown' && !differences.length && <p className="vl-cmp-note">로고가 작거나 가려져 비교하지 못했어요. 원본 영상을 확인해 주세요.</p>}
     {rows.length > 0 && <div className="vl-cmp-strip">
-      <span>초별 결과</span>
-      <div className="vl-sec-timeline" aria-label="초별 대조 상태">
-        {rows.map(row => <span key={row.sec} title={row.skipped ? timeText(row.sec) + ' · ' + (SKIP[row.reason] || '건너뜀') : timeText(row.sec) + ' · ' + (OUTCOME[row.outcome]?.label || row.outcome)}
-          className={row.skipped ? 'skipped' : (OUTCOME[row.outcome]?.tone || 'unknown')} />)}
+      <span>프레임별 결과</span>
+      {/* 프레임(1초)마다 결과 색 막대와 그 프레임의 시각을 아래에 적는다. 프레임이 많으면(16개 초과) 글자가 겹치지 않게
+          일정 간격마다만 적고, 나머지 시각은 막대에 마우스를 올리면 보인다. */}
+      <div className="vl-sec-timeline vl-frame-strip" aria-label="프레임별 대조 상태">
+        {rows.map((row, index) => {
+          const every = Math.ceil(rows.length / 16);
+          const labeled = index % every === 0 || index === rows.length - 1;
+          return <span key={row.sec} className={'vl-frame-cell ' + (row.skipped ? 'skipped' : (OUTCOME[row.outcome]?.tone || 'unknown'))}
+            title={row.skipped ? timeText(row.sec) + ' · ' + (SKIP[row.reason] || '건너뜀') : timeText(row.sec) + ' · ' + (OUTCOME[row.outcome]?.label || row.outcome)}>
+            <i /><time>{labeled ? timeText(row.sec) : ''}</time></span>;
+        })}
       </div>
-      <div className="vl-cmp-strip-axis" aria-hidden="true"><span>{timeText(rows[0].sec)}</span>{rows.length > 1 && <span>{timeText(rows[rows.length - 1].sec)}</span>}</div>
     </div>}
-    {rows.length > 0 && <details className="vl-details" open={detailsOpen} aria-label={refName + ' 초별 대조 근거'}>
+    {rows.length > 0 && <details className="vl-details" open={detailsOpen} aria-label={refName + ' 프레임별 대조 근거'}>
       <summary aria-expanded={detailsOpen} onClick={event => { event.preventDefault(); setExpanded(!detailsOpen); }}>
-        <span>초별 근거 <em>{rows.length}</em></span><i aria-hidden="true" />
+        <span>프레임별 근거 <em>{rows.length}</em></span><i aria-hidden="true" />
       </summary>
       <div className="vl-table-wrap"><table className="vl-evidence-table">
         <thead><tr><th>시점</th><th>결과</th><th>차이 종류</th><th>차이 내용</th></tr></thead>
