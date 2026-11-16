@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { scanFocus } from './progressScan.js';
+import { formatClock } from './elapsedClock.js';
 import '../../styles/review-progress.css';
 
 const statusText = { completed: '완료', active: '진행 중', waiting: '차례 대기', failed: '멈춤', pending: '대기' };
@@ -76,7 +77,7 @@ export default function ReviewProgress({ title, message, detail, percent, starte
   const suppliedStart = typeof startedAt === 'number' ? startedAt : Date.parse(startedAt);
   const start = Number.isFinite(suppliedStart) ? Math.min(openedAt.current, suppliedStart) : openedAt.current;
   const seconds = Math.max(0, Math.floor((now - start) / 1000));
-  const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const elapsed = formatClock(seconds);
   const value = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : poster ? 0 : null;
   const completed = steps.filter(step => step.status === 'completed').length;
   const shownFacts = poster || !steps.length ? facts : [...facts, ['처리 단계', `${completed} / ${steps.length} 완료`]];

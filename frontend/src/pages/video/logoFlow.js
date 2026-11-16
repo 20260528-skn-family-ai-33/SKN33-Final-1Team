@@ -66,6 +66,31 @@ export function autoDrafts(selection, groups) {
   return drafts;
 }
 
+// 서버 auto_selection(backend/app/video/logos/routes.py)과 같은 규칙: 원본 로고마다 순위 1위 묶음과, 그 점수의
+// LINK_RATIO 이상인 다른 묶음을 점수 순으로 최대 TOP_N개 고른다. 후보가 없으면 decision='none'이다.
+// 자동 정밀 대조가 없는 서버가 만든 작업(정밀 대조 기록 없음)을 화면이 같은 규칙으로 대조할 때 쓴다.
+export function autoSelection(groups, refCount) {
+  return Array.from({ length: refCount }, (_, logo) => {
+    const order = groups.map((_, i) => i).sort((a, b) => groups[b].rank[logo] - groups[a].rank[logo]);
+    if (!order.length) return { logo, decision: 'none', groups: [] };
+    const top = groups[order[0]].rank[logo];
+    const floor = top > 0 ? LINK_RATIO * top : Infinity;
+    const chosen = [order[0], ...order.slice(1).filter(i => groups[i].rank[logo] >= floor)].slice(0, TOP_N);
+    return { logo, decision: 'done', groups: chosen };
+  });
+}
+
+// 자동으로 고른 묶음을 POST /compare 본문으로 바꾼다(위치 확인 화면이 보내는 값과 같은 모양).
+export function autoCompareBody(video, selection = autoSelection(video.groups, video.refs.length)) {
+  return selection.filter(pick => video.refs[pick.logo]).map(pick => {
+    const answer = handoff({ video: video.key, ref: pick.logo, refName: video.refs[pick.logo].name,
+      decision: pick.decision === 'done' && pick.groups.length ? 'done' : 'none', groups: video.groups, checked: new Set(pick.groups), manuals: [] });
+    // 서버 auto_answers처럼 반올림 뒤 넓이가 없는 영역은 빼고, 남는 영역이 없으면 '대조하지 않음'으로 보낸다.
+    const crops = answer.crops.filter(crop => crop.bbox[0] < crop.bbox[2] && crop.bbox[1] < crop.bbox[3]);
+    return { ...answer, crops, decision: crops.length ? answer.decision : 'none' };
+  });
+}
+
 // 원본 로고 기준 순위 상위 n개 그룹 번호
 export function topGroups(groups, ref, n = TOP_N) {
   return groups.map((g, i) => i).sort((a, b) => groups[b].rank[ref] - groups[a].rank[ref]).slice(0, n);

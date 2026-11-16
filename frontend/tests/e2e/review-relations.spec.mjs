@@ -64,7 +64,7 @@ const criterion = (id, text, expected, field, label) => ({
   details: { target: 'poster_text', field, presentation: { label, value: expected } },
 });
 
-test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으로 한 검수를 알려 준다', { timeout: 60000 }, async t => {
+test('기준 확인 화면에는 이전 기준과의 차이와 이미지 미판독 안내를 두지 않는다', { timeout: 60000 }, async t => {
   const context = { run_id: 'criteria-fixture', project_id: 'project-fixture', actor_id: 'user-fixture',
     document_version_id: 'doc-v2', criteria_version_id: 'draft' };
   const criteria = [criterion('c001', '행사일: 11월 20일', '11월 20일', 'event_date', '행사일'),
@@ -91,26 +91,19 @@ test('새 문서의 기준이 달라지면 달라진 항목과 이전 기준으�
     },
   });
   await page.goto(base + '/review/new?framework=' + context.run_id);
-  const notice = page.getByRole('region', { name: '이전 기준과 달라진 항목' });
-  await notice.getByText('행사 장소가 변경됐어요.', { exact: true }).waitFor();
-  await notice.getByText('이전 기준을 사용한 포스터 검수 3건 중 2건이 승인됐어요.', { exact: true }).waitFor();
-  assert.match(await notice.locator('.rv-relation-changes li').innerText(), /변경\s*행사 장소\s*시청 광장\s*→\s*시민공원/);
-  const runs = notice.locator('.rv-relation-runs');
-  assert.equal(await runs.locator('li').first().isVisible(), false);
-  await runs.getByText('영향받는 검수 3건 보기', { exact: true }).click();
-  assert.deepEqual(await runs.locator('.rv-relation-status').allInnerTexts(), ['최종 승인', '예외 승인', '승인 대기']);
-  assert.equal(await runs.getByRole('link').first().getAttribute('href'), '?framework=poster-1');
-  // 이미지가 섞인 쪽은 글자층만 읽었다고 알린다
-  await page.getByRole('status', { name: '읽지 않은 이미지 안내' })
-    .getByText('2쪽의 이미지 안 내용은 읽지 않았어요.', { exact: true }).waitFor();
-  // 안내는 검수 시작을 막지 않는다
+  // 기준 확인 화면에는 이전 기준과의 차이 · 이미지 미판독 안내를 두지 않고, 차이 조회도 부르지 않는다.
+  await page.getByRole('list', { name: '검수 항목 목록' }).waitFor();
+  assert.equal(await page.getByRole('region', { name: '이전 기준과 달라진 항목' }).count(), 0);
+  assert.equal(await page.getByRole('status', { name: '읽지 않은 이미지 안내' }).count(), 0);
+  assert.equal(requested.filter(path => path.endsWith('/criteria-change-impact')).length, 0);
+  // 검수 시작은 막히지 않는다
   await expectStartable(page);
   assert.equal(requested.filter(path => path.endsWith('/revision-history')).length, 0);
   if (shots) await page.screenshot({ path: shots + '/change-impact.png' });
   assert.deepEqual(errors, []);
 });
 
-test('원문 검증에서 제외된 후보는 안내 한 상자로 접어 두고, 펴면 사유별로 묶어 보여 준다', { timeout: 60000 }, async t => {
+test('원문 검증에서 제외된 후보는 기준 확인 화면에 안내하지 않고 기준 목록에도 넣지 않는다', { timeout: 60000 }, async t => {
   const context = { run_id: 'criteria-rejected', project_id: 'project-fixture', actor_id: 'user-fixture',
     document_version_id: 'doc-v2', criteria_version_id: 'draft' };
   const criteria = [criterion('c001', '행사일: 11월 20일', '11월 20일', 'event_date', '행사일'),
@@ -130,41 +123,11 @@ test('원문 검증에서 제외된 후보는 안내 한 상자로 접어 두고
       approved_criteria_version_id: null, synthetic: false, execution_status: 'waiting_criteria' },
   });
   await page.goto(base + '/review/new?framework=' + context.run_id);
-  const notice = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
-  await notice.getByText('원문 검증에서 후보 15개를 제외했어요.', { exact: true }).waitFor();
-  // 접힌 상태에서는 안내 한 상자뿐이라 기준 목록을 밀어내지 않는다
-  const list = notice.locator('.rv-rejection-list');
-  assert.equal(await list.getAttribute('open'), null);
-  assert.equal(await notice.locator('.rv-rejection-reason').first().isVisible(), false);
-  assert.ok((await notice.boundingBox()).height < 140, 'collapsed notice stays compact');
   const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+  await checklist.waitFor();
+  assert.equal(await page.getByRole('region', { name: '원문 검증에서 제외된 후보' }).count(), 0);
+  assert.equal(await page.getByText(/원문 검증에서 후보 \d+개를 제외했어요/).count(), 0);
   assert.equal(await checklist.getByRole('checkbox').count(), 2);
-  assert.ok(await checklist.getByRole('checkbox').first().evaluate(element => element.getBoundingClientRect().top < innerHeight));
-  if (shots) await page.screenshot({ path: shots + '/rejections-collapsed.png' });
-
-  // 펴면 사유마다 한 묶음, 같은 원문은 한 줄
-  await notice.getByText('제외한 후보 사유별로 보기', { exact: true }).click();
-  assert.deepEqual((await notice.locator('.rv-rejection-reason').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), [
-    '허용 조건이나 예외의 원문 근거가 일치하지 않습니다. 9개',
-    '표시 문구가 원문과 일치하지 않습니다. 1개',
-    '항목의 형식이나 비교 조건이 유효하지 않습니다. 5개']);
-  // 사유 코드는 화면에 적지 않고 마우스를 올렸을 때만 보인다
-  assert.equal(await notice.getByText(/A02_/).count(), 0);
-  assert.deepEqual(await notice.locator('.rv-rejection-reason').evaluateAll(nodes => nodes.map(node => node.title)),
-    ['A02_QUALIFIER_UNGROUNDED', 'A02_PRESENTATION_UNGROUNDED', 'A02_RESPONSE_INVALID']);
-  const groups = list.locator('> ul > li');
-  assert.deepEqual(await groups.nth(0).locator('.rv-rejection-candidates').allInnerTexts(), ['후보 1–7', '후보 8–9']);
-  assert.deepEqual((await groups.nth(2).locator('.rv-rejection-source').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')),
-    ['2쪽 후원 기관은 가나다순으로 적는다. 후보 22–25', '원문 없음 확인 가능한 원문이 없습니다. 후보 26']);
-  if (shots) await page.screenshot({ path: shots + '/rejections-open.png' });
-  // 긴 원문은 한 줄로 줄여 두고, 누르면 전문이 펴진다
-  const first = groups.nth(0).locator('details.rv-rejection-source').first();
-  assert.ok(await first.locator('.rv-rejection-preview').evaluate(element => element.scrollWidth > element.clientWidth), 'long quote is clipped to one line');
-  assert.ok((await first.boundingBox()).height < 40);
-  assert.equal(await first.locator('> p').isVisible(), false);
-  await first.locator('summary').click();
-  assert.equal(await first.locator('> p').innerText(), logoRule);
-  assert.equal(await first.locator('.rv-rejection-preview').isVisible(), false);
   // 제외된 원문은 기준 목록에 섞이지 않고, 기준 검토를 막지 않는다
   assert.equal(await checklist.getByText('후원 기관은 가나다순으로 적는다.').count(), 0);
   await expectStartable(page);

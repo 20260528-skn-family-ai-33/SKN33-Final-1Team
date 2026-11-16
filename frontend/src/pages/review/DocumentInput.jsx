@@ -5,6 +5,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { DocumentArt } from '../../components/PickerArt.jsx';
 import { loadDocumentProjects, createDocumentProject } from './frameworkClient.js';
 import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
+import { formatClock } from './elapsedClock.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
@@ -19,22 +20,33 @@ function splitWarning(text) {
 
 // 분석하는 동안 문서를 읽는 3D 그림(components/PickerArt.jsx의 DocumentArt)과 단계 진행률을 보여 준다.
 // 분석 상태는 이 카드에서 자동으로 확인하므로 새 탭으로 여는 링크는 두지 않는다.
-export function DocumentAnalysisProgress({ documentProgress, totalSeconds, stageSeconds, lastChecked, cancelLabel }) {
+// '18초', '2분 05초'처럼 읽는 그대로 적는다.
+export function formatElapsed(value) {
+  const seconds = Math.max(0, Math.floor(value || 0));
+  return seconds < 60 ? `${seconds}초` : `${Math.floor(seconds / 60)}분 ${String(seconds % 60).padStart(2, '0')}초`;
+}
+
+// 상태는 1.5초마다 확인한다. 30초 넘게 응답이 없을 때만 기다리는 중이라고 알린다.
+const STALE_CHECK_SECONDS = 30;
+
+// 경과 시간은 처음 접수부터 센 값 하나만, 포스터 검수 진행 화면과 같은 '경과 시간 0:44' 모양으로 보인다.
+// 단계별 시간과 '마지막 상태 확인'은 평소에 보이지 않는다.
+export function DocumentAnalysisProgress({ documentProgress, totalSeconds, lastCheckedSeconds = null, cancelLabel }) {
   const longRunning = totalSeconds >= 5 * 60 && ['queued', 'extracting', 'formatting'].includes(documentProgress?.stage);
-  const formatDuration = value => String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
+  const stale = lastCheckedSeconds !== null && lastCheckedSeconds >= STALE_CHECK_SECONDS;
   return <div className="rv-document-inline" role="status">
     <span className="rv-document-art" aria-hidden="true"><DocumentArt stage={documentProgress.stage} /></span>
     <p>{documentProgress.message}</p>
     <progress max={100} value={documentProgress.percent} aria-label="문서 분석 단계" />
-    {documentProgress.startedAt && <small role="timer" aria-label="문서 분석 경과 시간">
-      총 경과 {formatDuration(totalSeconds)} · 현재 단계 {formatDuration(stageSeconds)}
-    </small>}
-    {lastChecked && <small className="rv-document-last-checked">마지막 상태 확인: {lastChecked}</small>}
+    {documentProgress.startedAt && <dl className="rv-document-elapsed"><div><dt>경과 시간</dt>
+      <dd role="timer" aria-live="off" aria-label="문서 분석 경과 시간"><time dateTime={`PT${totalSeconds}S`}>{formatClock(totalSeconds)}</time></dd>
+    </div></dl>}
+    {stale && <small className="rv-document-last-checked">서버 응답을 {formatElapsed(lastCheckedSeconds)}째 기다리고 있어요.</small>}
     {longRunning && <p className="rv-document-long-running">
-      분석이 계속 진행 중입니다. 완료 시각은 문서 분량과 서버 대기 순서에 따라 달라 예측하기 어렵습니다.
+      5분 넘게 분석하고 있어요. 문서 분량과 서버 대기 순서에 따라 더 걸릴 수 있어요.
       {cancelLabel === '대기 작업 취소'
-        ? ' 이 버튼은 아직 대기 중인 서버 작업의 취소를 요청합니다.'
-        : ' 입력 반영 취소는 화면 연결을 멈춥니다. 접수된 서버 분석은 계속될 수 있습니다.'}
+        ? ' 취소하면 아직 시작하지 않은 서버 작업을 멈춥니다.'
+        : ' 입력 반영 취소는 화면 연결만 멈추고, 서버 분석은 계속될 수 있어요.'}
     </p>}
   </div>;
 }
@@ -229,8 +241,6 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const seconds = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
   const totalSeconds = requestStartedAt ? Math.max(0, Math.floor((now - requestStartedAt) / 1000)) : seconds;
   const statusAge = lastCheckedAt ? Math.max(0, Math.floor((now - lastCheckedAt) / 1000)) : null;
-  const lastChecked = statusAge === null ? '' : statusAge < 3 ? '방금' : statusAge < 60 ? `${statusAge}초 전`
-    : `${Math.floor(statusAge / 60)}분 전`;
   const off = documentBusy || disabled;
   // 꺼진 '파일 선택'·'추출 예시 보기'에 마우스를 올리면 누를 수 없는 이유를 보인다.
   const offReason = !off ? undefined : documentBusy ? '문서를 분석하는 중이에요. 끝난 뒤 다시 첨부할 수 있어요.' : disabledReason || undefined;
@@ -292,8 +302,8 @@ export default function DocumentInput({ documentBusy, documentProgress, document
           {canClear && <button type="button" className="rv-button secondary rv-compact rv-upload-clear" aria-label="첨부 지우기" onClick={clearDocument}>지우기</button>}
         </div>
       </div>
-      {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, lastChecked, cancelLabel }}
-        stageSeconds={seconds} />}
+      {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, cancelLabel }}
+        lastCheckedSeconds={statusAge} />}
       {notice?.summary ? <p className="rv-document-summary"><Icon name="check" />{notice.summary}</p>
         : <div className="rv-form-row rv-form-hint">
           <span>{notice?.status || 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>

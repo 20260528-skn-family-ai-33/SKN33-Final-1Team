@@ -48,6 +48,8 @@
 .rv-video .rv-video-steps li { font-size: 11px; gap: 5px; }
 .rv-video .rv-video-steps li > span:first-child { width: 22px; height: 22px; font-family: var(--font-signal); }
 .rv-video .rv-video-steps li.is-active { font-weight: 700; }
+/* 09·10 로고 단계의 진행률(서버 값). 단계 이름 오른쪽 끝에 둔다. */
+.rv-video .rv-video-steps li small { margin-left: auto; padding-left: 8px; color: #6e6e6b; font: 400 11px/1 var(--font-signal); font-variant-numeric: tabular-nums; }
 .rv-video .rv-video-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: min(820px, 100%); margin: 16px 0 0; text-align: left; }
 .rv-video .rv-video-facts > div { padding: 8px 10px; border-radius: 9px; background: #f3f3f1; }
 .rv-video .rv-video-facts dt { color: var(--rv-muted); font-size: 11px; }
@@ -124,15 +126,31 @@
 /* ---------- 03 결과 확인 ---------- */
 .rv-video .rv-video-result-notice { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-.rv-video .rv-video-logo-inline { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 0; max-width: 60%; }
-.rv-video .rv-video-logo-inline .rv-video-inline-warning { max-width: 560px; padding: 6px 10px; }
-.rv-video .rv-video-logo-inline .rv-video-inline-warning { margin: 0; }
-.rv-video .rv-video-logo-inline-help { max-width: 560px; margin: 0; color: #6e6e6b; font-size: 10px; line-height: 1.5; text-align: right; }
-.rv-video .rv-video-logo-inline-item { display: flex; align-items: center; gap: 12px; padding: 5px 5px 5px 12px; border: 1px solid #e3e3df; border-radius: 12px; background: #fff; font-size: 11px; }
-.rv-video .rv-video-logo-inline-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
-.rv-video .rv-video-logo-inline-title .icon { width: 15px; height: 15px; color: #6e6e6b; }
-.rv-video .rv-video-logo-inline-progress { color: #6e6e6b; font-variant-numeric: tabular-nums; }
-.rv-video .rv-video-logo-inline .rv-video-logo-actions .rv-button { min-height: 30px; padding: 5px 11px; }
+/* 결과 화면의 영상 로고 정밀 대조 결과. 후보 선택 없이 자동 대조 결과를 바로 보이고, 필요하면 후보를 다시 고른다. */
+.rv-video .rv-video-logo-result { padding: 16px 18px; }
+.rv-video .rv-video-logo-result-head h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.rv-video .rv-video-logo-result-head p { margin: 4px 0 0; color: #6e6e6b; font-size: 12px; line-height: 1.5; }
+.rv-video .rv-video-logo-result > .rv-video-inline-warning, .rv-video .rv-video-logo-job .rv-video-inline-warning { margin: 10px 0 0; }
+.rv-video .rv-video-logo-job { margin-top: 14px; padding-top: 12px; border-top: 1px solid #e3e3df; }
+.rv-video .rv-video-logo-job-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; }
+.rv-video .rv-video-logo-job-head > strong { min-width: 0; font-size: 13px; }
+.rv-video .rv-video-logo-result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-video .rv-video-logo-result-actions .rv-button { text-decoration: none; }
+.rv-video .rv-video-logo-result-note { margin: 10px 0 0; color: #6e6e6b; font-size: 12px; font-variant-numeric: tabular-nums; }
+.rv-video .rv-video-logo-job .error-box { margin: 10px 0 0; }
+.rv-video .rv-video-logo-bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.rv-video .rv-video-logo-bundle { display: grid; grid-template-columns: 76px 76px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px; border: 1px solid #e3e3df; border-radius: 10px; background: #fff; }
+.rv-video .rv-video-logo-bundle figure { margin: 0; text-align: center; }
+.rv-video .rv-video-logo-bundle img, .rv-video .rv-video-logo-bundle-empty { display: block; width: 76px; height: 56px; border-radius: 6px; background: #f3f3f1; object-fit: contain; }
+.rv-video .rv-video-logo-bundle figcaption { margin-top: 3px; color: #6e6e6b; font-size: 10px; font-variant-numeric: tabular-nums; }
+.rv-video .rv-video-logo-bundle-empty { display: grid; place-items: center; align-self: start; color: #6e6e6b; font-size: 10px; text-align: center; }
+.rv-video .rv-video-logo-bundle-text { min-width: 0; }
+.rv-video .rv-video-logo-bundle-text > strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.rv-video .rv-video-logo-bundle-text p { margin: 4px 0 0; color: #6e6e6b; font-size: 11px; line-height: 1.45; }
+.rv-video .rv-video-logo-outcome { display: inline-flex; margin-top: 5px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.rv-video .rv-video-logo-outcome.is-match { background: #e8f5ef; color: #246e56; }
+.rv-video .rv-video-logo-outcome.is-diff { background: #fceeee; color: #a43b3b; }
+.rv-video .rv-video-logo-outcome.is-unknown { background: #fff5df; color: #886015; }
 
 .rv-video-workbench { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 18px; }
 /* 열을 minmax(0, 1fr)로 묶는다. auto 열이면 근거를 확대한 이미지 너비만큼 칸이 커지고 '화면에 맞춤'으로 돌아와도
@@ -157,7 +175,9 @@
 .rv-video .rv-video-verdict-index { color: var(--result-muted); font: 10px var(--font-signal); }
 .rv-video .rv-video-verdict-detail { padding: 9px 11px 12px; border-left: 2px solid #806a28; background: #fbfbf9; }
 .rv-video .rv-video-verdict-detail .rv-result-verdict { margin-bottom: 9px; }
-.rv-video .rv-video-rail .rv-result-items { max-height: 280px; padding: 0; margin: 9px 0; overflow-y: auto; }
+.rv-video .rv-video-rail .rv-result-items { max-height: min(560px, 62vh); padding: 0; margin: 9px 0; overflow-y: auto; }
+/* 자막 트랙·구간 상세는 고른 항목 바로 아래에 펼친다. */
+.rv-video .rv-video-rail .rv-result-items > li.is-open > .rv-video-verdict-detail { margin: 0 0 8px; }
 .rv-video .rv-video-rail-note { margin: 12px 0; color: var(--result-muted); font-size: 12px; }
 .rv-video .rv-video-tabs { display: flex; gap: 3px; margin-top: 10px; padding: 4px; border-radius: 9px; background: #efefeb; }
 .rv-video .rv-video-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border: 0; border-radius: 6px; background: transparent; color: #5f5f5a; font-size: 11px; }

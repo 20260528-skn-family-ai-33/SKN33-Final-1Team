@@ -406,6 +406,10 @@
   text-align: left;
 }
 .rv-document-inline .rv-document-last-checked { font-variant-numeric: tabular-nums; }
+/* 경과 시간: 포스터 검수 진행 화면의 사실 칸(review-progress.css .rv-progress-facts)처럼 작은 라벨 위에 숫자를 둔다 */
+.rv-document-elapsed { margin: 2px 0 0; text-align: center; }
+.rv-document-elapsed dt { color: var(--rv-muted); font-size: 10px; letter-spacing: 0.06em; }
+.rv-document-elapsed dd { margin: 2px 0 0; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .rv-document-inline > .text-btn { margin: 0; }
 .rv-extracted { margin-top: 12px; padding: 10px 12px; border: 1px solid #dbe6df; border-radius: 9px; background: #f2f7f3; }
 .rv-extracted strong { font-size: 12px; }

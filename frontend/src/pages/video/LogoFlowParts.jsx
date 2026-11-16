@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
+import { autoCompareBody, bundleOutcome, groupDifferences, OUTCOME } from './logoFlow.js';
+import { formatTime } from './videoFormat.js';
 
 // 동영상 검수 화면에 붙는 영상 로고 검수(/api/video-logos) 조각: 원본 로고 입력, 접수, 작업 상태.
 export const MAX_LOGOS = 12;
@@ -82,23 +84,34 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
           <button type="button" className="rv-button secondary rv-compact" disabled={disabled || !selectedCount} onClick={removePicked}>선택한 로고 삭제</button></div>
       </>}
     </div>
-    <p className="rv-form-hint">{referenceOnly ? '포스터를 등록하면 원본 로고의 위치 후보를 찾습니다. 위치를 확정하면 원본과 정밀 대조합니다.'
-      : '같은 영상에서 로고 위치 후보를 찾습니다. 위치를 확정하면 원본과 정밀 대조합니다.'}</p>
     <ErrorMessage message={error || (status && !status.ready ? status.detail || '영상 로고 검수 서버가 준비되지 않았습니다.' : '')} />
   </section>;
 }
 
 // 동영상 검수 접수 직후, 같은 영상과 원본 로고로 영상 로고 작업을 만든다. 로고만 검수하면 reviewId 없이 만든다.
 // detector: 위치 후보를 찾는 곳. 'openai'(일반 자료) 또는 'runpod'(보안 자료·기본). 정밀 대조는 둘 다 RunPod다.
+// 동영상 검수와 함께 접수하면(reviewId) 영상을 다시 올리지 않고, 서버가 그 검수에 저장한 영상을 쓴다.
+// 연결된 영상을 쓸 수 없는 서버(예전 배포·연결 설정 없음)가 거절하면 그때만 영상을 함께 올린다.
 export async function submitLogoJob({ video, logos, title, reviewId, detector = 'runpod', signal }) {
-  const form = new FormData();
-  form.append('video', video);
-  logos.forEach(item => form.append('logos', item.file));
-  form.append('logo_texts', JSON.stringify(logos.map(item => item.text.trim())));
-  form.append('title', title);
-  if (reviewId) form.append('review_id', reviewId);
-  form.append('detector', detector === 'openai' ? 'openai' : 'runpod');
-  return fetchJson('/api/video-logos', { method: 'POST', body: form, signal });
+  const send = withVideo => {
+    const form = new FormData();
+    if (withVideo) form.append('video', video);
+    logos.forEach(item => form.append('logos', item.file));
+    form.append('logo_texts', JSON.stringify(logos.map(item => item.text.trim())));
+    form.append('title', title);
+    if (reviewId) form.append('review_id', reviewId);
+    form.append('detector', detector === 'openai' ? 'openai' : 'runpod');
+    return fetchJson('/api/video-logos', { method: 'POST', body: form, signal });
+  };
+  if (!reviewId) return send(true);
+  try {
+    return await send(false);
+  } catch (failure) {
+    // 새 서버는 LINKED_VIDEO_UNAVAILABLE, 영상 칸이 필수인 예전 서버는 입력 검증 오류(Field required)로 거절한다.
+    const needsVideo = failure?.status === 422 && (failure.code === 'LINKED_VIDEO_UNAVAILABLE' || /Field required/i.test(failure.message || ''));
+    if (!needsVideo || signal?.aborted) throw failure;
+    return send(true);
+  }
 }
 
 // 동영상 검수와 함께 올린 로고 작업을 읽는다. 후보 찾기·정밀 대조가 도는 동안 다시 읽는다.
@@ -127,67 +140,155 @@ export function useLogoJobs(reviewId) {
   return state.reviewId === reviewId ? state : { reviewId, jobs: null, error: '' };
 }
 
-// 로고 작업은 판정이 아니라 처리 상태라서 충족·위반 색을 쓰지 않는다: 처리 중 · 사람 차례 · 끝남 · 오류.
-// 후보를 찾으면 서버가 정밀 대조까지 자동으로 이어서 하므로, 사람 차례는 정밀 대조가 끝난 뒤(결과 확인)다.
-const logoState = job => (job.status === 'failed' ? 'is-error' : job.status === 'candidates_ready' ? 'is-done' : 'is-running');
-const compareState = job => (job.compare_status === 'failed' ? 'is-error' : job.compare_status === 'completed' ? 'is-done' : 'is-running');
+// 진행 화면의 처리 단계(01~08) 뒤에 잇는 로고 단계: 09 후보 찾기, 10 정밀 대조.
+// 로고 작업은 동영상 검수와 함께 돌지만 같은 목록에서 상태를 보이게 한다. 진행률은 서버 값 그대로 쓴다.
+const percent = value => `${Math.min(100, Math.max(0, Math.round(value || 0)))}%`;
 
-function LogoChips({ job }) {
+function mergedStep(states, details) {
+  if (!states.length) return { status: 'pending' };
+  if (states.every(state => state === 'completed')) return { status: 'completed' };
+  const active = states.findIndex(state => state === 'active');
+  if (active >= 0) return { status: 'active', detail: details[active] };
+  return { status: states.includes('failed') ? 'failed' : 'pending' };
+}
+
+export function logoProgressSteps(jobs) {
+  if (!jobs?.length) return [];
+  const candidates = mergedStep(
+    jobs.map(job => (job.status === 'candidates_ready' ? 'completed' : job.status === 'failed' ? 'failed' : RUNNING.has(job.status) ? 'active' : 'pending')),
+    jobs.map(job => (job.status === 'queued' ? '대기' : percent(job.progress))));
+  const compared = jobs.filter(job => job.compare_status);
+  const compare = mergedStep(
+    compared.map(job => (job.compare_status === 'completed' ? 'completed' : job.compare_status === 'failed' ? 'failed' : 'active')),
+    compared.map(job => (job.compare_status === 'queued' ? '대기' : percent(job.compare_progress))));
+  // 후보 찾기가 끝나지 않은 작업이 남아 있으면 정밀 대조 전체를 완료로 보이지 않는다.
+  if (compare.status === 'completed' && compared.length < jobs.length) compare.status = 'pending';
+  return [
+    { key: 'logo_candidates', label: '로고 후보 찾기', ...candidates,
+      title: jobs.map(job => job.stage_detail).find(Boolean) || '영상에서 1초마다 로고 후보를 찾습니다.' },
+    { key: 'logo_compare', label: '로고 정밀 대조', ...compare,
+      title: '순위가 높은 후보로 원본 로고와 자동 대조합니다. 최종 판정은 담당자가 합니다.' },
+  ];
+}
+
+// 처리 단계 목록 아래에 두는 로고 작업 오류·경고. 단계 목록에 넣기 어려운 문장만 남긴다.
+export function LogoProgressNotes({ jobs, error }) {
   return <>
-    <span className={`rv-video-logo-state ${logoState(job)}`}><span aria-hidden="true" />{logoStatusLabels[job.status] || job.status}</span>
-    {job.compare_status && <span className={`rv-video-logo-state ${compareState(job)}`} title={job.compare_status === 'completed' ? '차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 합니다.' : undefined}>
-      <span aria-hidden="true" />{compareStatusLabels[job.compare_status]}{RUNNING.has(job.compare_status) ? ` ${job.compare_progress || 0}%` : ''}</span>}
+    <ErrorMessage message={error} />
+    {(jobs || []).map(job => <React.Fragment key={job.id}>
+      <ErrorMessage message={job.error} />
+      {job.warnings?.map(warning => <p key={warning} className="rv-video-inline-warning"><Icon name="warning" />{warning}</p>)}
+    </React.Fragment>)}
   </>;
 }
 
-function LogoActions({ job }) {
-  if (job.status !== 'candidates_ready') return null;
-  return <div className="rv-video-logo-actions">
-    <Link className={`rv-button ${job.compare_status === 'completed' ? 'primary' : 'secondary'}`} to={`/video/logo?job=${job.id}`}>
-      {job.compare_status === 'completed' ? '로고 검수 결과 확인' : '로고 검수 보기'}</Link>
-  </div>;
+// 후보 찾기가 끝난 작업의 로고 검수 화면 바로가기. 진행 화면의 버튼 줄에 그대로 넣는다.
+export function LogoResultLinks({ jobs }) {
+  return (jobs || []).filter(job => job.status === 'candidates_ready').map(job => <Link key={job.id}
+    className={`rv-button ${job.compare_status === 'completed' ? 'primary' : 'secondary'}`} to={`/video/logo?job=${job.id}`}>
+    {job.compare_status === 'completed' ? '로고 검수 결과 확인' : '로고 검수 보기'}</Link>);
 }
 
-// 진행 화면 아래에 두는 로고 작업 카드. 후보 찾기 진행률은 서버 값 그대로 보여 준다.
-export function LogoFlowCard({ jobs, error }) {
-  if (!jobs?.length && !error) return null;
-  return <section className="rv-panel rv-video-logo-card" aria-labelledby="video-logo-title">
-    <div className="rv-panel-heading"><div><h2 id="video-logo-title">영상 로고 검수</h2>
-      <p>후보를 찾으면 순위가 높은 후보로 정밀 대조까지 자동으로 진행합니다. 결과를 보고 검수하려던 로고가 아니면 위치를 직접 확인해 다시 대조하세요. 최종 판정은 담당자가 합니다.</p></div></div>
-    <div className="rv-video-logo-body">
-      <ErrorMessage message={error} />
-      <ul className="rv-video-logo-jobs">{(jobs || []).map(job => <li key={job.id}>
-        <div className="rv-video-logo-head"><strong>{job.title}</strong><LogoChips job={job} /></div>
-        {RUNNING.has(job.status) && <>
-          <div className="rv-video-logo-track" role="progressbar" aria-label="로고 후보 찾기 진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={job.progress || 0}>
-            <div style={{ width: `${Math.min(100, job.progress || 0)}%` }} /></div>
-          <p className="rv-video-logo-detail">{job.stage_detail || '영상에서 1초마다 로고 후보를 찾고 있어요.'} · {job.progress || 0}%</p></>}
-        {job.error && <ErrorMessage message={job.error} />}
-        {job.warnings?.map(warning => <p key={warning} className="rv-video-inline-warning"><Icon name="warning" />{warning}</p>)}
-        <LogoActions job={job} />
-      </li>)}</ul>
-    </div>
+// 결과 화면에 바로 보이는 영상 로고 정밀 대조 결과. 후보를 고르는 화면을 거치지 않고, 서버가 후보 찾기 직후
+// 자동으로 고른 후보(auto_selection)로 대조한 결과를 보여 준다. 검수하려던 로고가 아니면 '로고 후보 다시 선택'으로
+// 위치 확인 화면(/video/logo?view=confirm)을 열어 후보를 고친 뒤 다시 대조한다. 결과가 바뀌면 이 목록도 다시 읽는다.
+export function LogoCompareResults({ jobs, error, notice }) {
+  if (!jobs?.length && !error && !notice) return null;
+  return <section className="rv-panel rv-video-logo-result" aria-labelledby="video-logo-result-title">
+    <header className="rv-video-logo-result-head"><h2 id="video-logo-result-title">영상 로고 정밀 대조</h2>
+      <p>원본 로고마다 순위가 높은 후보를 자동으로 골라 대조했어요. 차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 합니다.</p></header>
+    {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
+    <ErrorMessage message={error} />
+    {(jobs || []).map(job => <LogoCompareJob key={job.id} job={job} />)}
   </section>;
 }
 
-// 결과 화면 머리글에 두는 한 줄 요약. 다음에 할 일(로고 검수 결과 확인)은 버튼으로, 실패 사유·빠진 구간 경고는 그 아래에 남긴다.
-export function LogoFlowInline({ jobs, error, notice }) {
-  if (!jobs?.length && !error && !notice) return null;
-  return <div className="rv-video-logo-inline" role="group" aria-label="영상 로고 검수">
-    {jobs?.length > 0 && <p className="rv-video-logo-inline-help">
-      후보 찾기 → 정밀 대조까지 자동으로 진행합니다. 결과를 보고 필요하면 위치를 직접 확인해 다시 대조하세요. 최종 판정은 담당자가 합니다.
-    </p>}
-    {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
-    {error && <p className="rv-video-inline-warning"><Icon name="warning" />{error}</p>}
-    {(jobs || []).map(job => <React.Fragment key={job.id}>
-      <div className="rv-video-logo-inline-item" title={[job.title, job.stage_detail].filter(Boolean).join(' · ') || undefined}>
-        <span className="rv-video-logo-inline-title"><Icon name="image" />영상 로고 검수</span>
-        <LogoChips job={job} />
-        {RUNNING.has(job.status) && <span className="rv-video-logo-inline-progress">{job.progress || 0}%</span>}
-        <LogoActions job={job} />
-      </div>
-      {job.error && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{job.error}</p>}
-      {job.warnings?.map(warning => <p key={warning} className="rv-video-inline-warning"><Icon name="warning" />{warning}</p>)}
-    </React.Fragment>)}
+const secondText = sec => formatTime(sec * 1000);
+
+// 정밀 대조 기록이 없는 작업(후보 찾기 뒤 자동 대조를 하지 않는 서버가 만든 작업)을 서버 auto_selection과 같은
+// 규칙으로 고른 후보로 대조한다. 이미 대조 중이면(409) 그대로 둔다. video가 없으면 후보 자료(data.json)를 읽는다.
+export async function startAutoCompare(base, { video, signal } = {}) {
+  const data = video || await fetchJson(base + '/video/data.json', { signal });
+  try {
+    await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(autoCompareBody(data)), signal });
+  } catch (failure) {
+    if (failure?.status !== 409) throw failure;
+  }
+}
+
+function LogoCompareJob({ job }) {
+  const base = `/api/video-logos/${encodeURIComponent(job.id)}`;
+  const ready = job.status === 'candidates_ready';
+  // 후보 찾기가 끝나면 정밀 대조 상태·결과를 직접 읽는다(목록 조회에는 결과·실패 사유가 없다). 대조 중이면 2초마다 다시 읽고,
+  // 대조 기록이 아예 없으면 한 번만 자동 대조를 요청한다.
+  const [result, setResult] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const requested = useRef(false);
+  useEffect(() => {
+    setResult(null); setLoadError('');
+    if (!ready) return undefined;
+    const controller = new AbortController(); let timer;
+    async function poll() {
+      try {
+        const value = await fetchJson(base + '/compare', { signal: controller.signal });
+        if (controller.signal.aborted) return;
+        setResult(value); setLoadError('');
+        if (!value.compare_status && !requested.current) {
+          requested.current = true;
+          await startAutoCompare(base, { signal: controller.signal });
+          if (!controller.signal.aborted) timer = setTimeout(poll, 500);
+        } else if (RUNNING.has(value.compare_status)) timer = setTimeout(poll, 2000);
+      } catch (failure) {
+        if (!controller.signal.aborted) setLoadError(failure.message);
+      }
+    }
+    poll();
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [base, ready, job.compare_status]);
+
+  const status = result ? result.compare_status : job.compare_status;
+  const bundles = result?.bundles || EMPTY_BUNDLES;
+  const canReselect = ready && !RUNNING.has(status) && !!result;
+  let state = null;
+  if (job.status === 'failed') state = <ErrorMessage message={job.error || '로고 후보 찾기에 실패했습니다.'} />;
+  else if (RUNNING.has(job.status)) state = <p className="rv-video-logo-result-note" role="status">로고 후보를 찾고 있어요 · {percent(job.progress)}</p>;
+  else if (loadError) state = <ErrorMessage message={loadError} />;
+  else if (!result) state = <p className="rv-video-logo-result-note" role="status">정밀 대조 결과를 불러오고 있어요.</p>;
+  else if (!status) state = <p className="rv-video-logo-result-note" role="status">자동으로 고른 후보로 정밀 대조를 시작하고 있어요.</p>;
+  else if (RUNNING.has(status)) state = <p className="rv-video-logo-result-note" role="status">
+    정밀 대조 중 · {status === 'queued' ? '대기' : percent(result.compare_progress)}</p>;
+  else if (status === 'failed') state = <ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} />;
+  else if (!bundles.length) state = <p className="rv-video-logo-result-note">영상에서 원본 로고 후보를 찾지 못해 대조한 묶음이 없어요. 후보를 직접 골라 다시 대조할 수 있어요.</p>;
+  const warnings = [...(job.warnings || []), ...(result?.warnings || [])];
+
+  return <div className="rv-video-logo-job">
+    <div className="rv-video-logo-job-head"><strong>{job.title}</strong>
+      <div className="rv-video-logo-result-actions">
+        {bundles.length > 0 && <Link className="rv-button secondary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}`}>초별 근거 보기</Link>}
+        {canReselect && <Link className="rv-button primary rv-compact" to={`/video/logo?job=${encodeURIComponent(job.id)}&view=confirm`}>로고 후보 다시 선택</Link>}
+      </div></div>
+    {state}
+    {bundles.length > 0 && <ul className="rv-video-logo-bundles">{bundles.map(bundle => {
+      const evidence = bundle.evidence || {};
+      const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
+      const differences = groupDifferences(bundle.per_sec);
+      const name = bundle.reference || `원본 로고 ${bundle.logo + 1}`;
+      const several = bundles.filter(item => item.logo === bundle.logo).length > 1;
+      return <li key={`${bundle.logo}-${bundle.crop}`} className="rv-video-logo-bundle">
+        <figure><img src={`${base}/refs/${bundle.logo}.png`} alt={`${name} 원본`} /><figcaption>원본</figcaption></figure>
+        {evidence.representative ? <figure><img src={`${base}/compare/rep/${bundle.logo}/${bundle.crop}.jpg`}
+          alt={`${secondText(evidence.representative.sec)} 영상 속 ${name}`} /><figcaption>{secondText(evidence.representative.sec)} 영상</figcaption></figure>
+          : <div className="rv-video-logo-bundle-empty">비교할 프레임 없음</div>}
+        <div className="rv-video-logo-bundle-text">
+          <strong title={name}>{name}{several ? ` · 묶음 ${bundle.crop + 1}` : ''}</strong>
+          <span className={`rv-video-logo-outcome is-${outcome.tone}`}>{outcome.label}</span>
+          <p>{evidence.n_secs || 0}초 비교{bundle.skipped?.length ? ` · ${bundle.skipped.length}초 건너뜀` : ''}</p>
+          {differences.length > 0 && <p className="rv-video-logo-diffs">{differences.map(group => `${group.kind} ${group.secs}초`).join(' · ')}</p>}
+        </div>
+      </li>;
+    })}</ul>}
+    {warnings.map(warning => <p key={warning} className="rv-video-inline-warning"><Icon name="warning" />{warning}</p>)}
   </div>;
 }
+const EMPTY_BUNDLES = [];

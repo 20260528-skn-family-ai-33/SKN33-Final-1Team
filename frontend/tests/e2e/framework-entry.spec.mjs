@@ -220,13 +220,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       }
     }
     if (checkRejectedCandidates) {
-      const rejected = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
-      await rejected.getByText('원문 검증에서 후보 1개를 제외했어요.', { exact: true }).waitFor();
-      await rejected.getByText('제외한 후보 사유별로 보기', { exact: true }).click();
-      await rejected.getByText('기대값이 원문과 일치하지 않습니다.', { exact: true }).waitFor();
-      assert.equal(await rejected.locator('.rv-rejection-candidates').innerText(), '후보 2');
-      await rejected.locator('details.rv-rejection-source > summary').click();
-      assert.equal(await rejected.locator('details.rv-rejection-source > p').innerText(), rejectedCandidate.source.quote);
+      // 기준 확인 화면에는 원문 검증에서 제외된 후보 안내를 두지 않는다. 제외된 후보는 기준 목록에도 넣지 않는다.
+      await checklist.waitFor();
+      assert.equal(await page.getByRole('region', { name: '원문 검증에서 제외된 후보' }).count(), 0);
       assert.equal(await checklist.getByRole('checkbox').count(), 1);
       assert.equal(await checklist.getByText(rejectedCandidate.source.quote).count(), 0);
       assert.equal(approved, false);
@@ -346,7 +342,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
           ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시', '검수에 포함: 장소를 아카이브 홀로 표기']);
         const details = page.locator('#rv-active-criterion');
-        await details.getByText('담당자 직접 입력 원문', { exact: true }).waitFor();
+        await details.getByText('직접 입력 원문', { exact: true }).waitFor();
         await details.getByText(directInput, { exact: true }).waitFor();
         assert.deepEqual(errors, []);
         await page.close();

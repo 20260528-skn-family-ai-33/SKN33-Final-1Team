@@ -184,8 +184,9 @@ test(`PDF에서 만든 검수 항목·미확정 항목을 같은 화면에서 �
   await page.waitForFunction(() => { const list = document.querySelector('.rv-criteria-list'); return list && !list.dataset.before; });
   await expectDraft();
   if (pendingOnly) {
-    await page.getByText('요구사항 원문 · 1쪽', { exact: true }).waitFor();
-    await page.locator('.rv-criteria-source').getByText(pending[0].source, { exact: true }).waitFor();
+    // 고른 항목의 상세는 그 항목 바로 아래에 펼친다(원문 N쪽 · 원문 인용).
+    await page.getByText('원문 1쪽', { exact: true }).waitFor();
+    await page.locator('.rv-criteria-quote').getByText(pending[0].source, { exact: true }).waitFor();
     const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
     await page.getByRole('button', { name: '기준 보완', exact: true }).click();
     const save = page.getByRole('button', { name: '보완 내용 저장', exact: true });
@@ -215,7 +216,8 @@ test(`PDF에서 만든 검수 항목·미확정 항목을 같은 화면에서 �
       assert.equal(approved, false);
       await save.click();
     }
-    await page.getByText('보완 회신: ' + reply + ' · 출처: 개발용 담당자 회신', { exact: true }).waitFor();
+    // 펼친 상세에서는 '보완 회신' 이름표 옆에 회신 내용과 출처를 적는다.
+    await page.getByText(reply + ' · 출처: 개발용 담당자 회신', { exact: true }).waitFor();
     assert.equal(saves.length, mode === 'pending_existing' ? 2 : 1);
     assert.ok(saves[0].key);
     if (mode === 'pending_existing') assert.deepEqual(saves[0], saves[1]);

@@ -15,6 +15,7 @@ from io import BytesIO
 from ipaddress import ip_address
 import json
 import math
+import os
 from pathlib import Path
 import shutil
 import threading
@@ -22,6 +23,7 @@ from typing import Callable
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from PIL import Image
 
@@ -35,6 +37,17 @@ MAX_VIDEO_BYTES = 1024 * 1024 * 1024
 MAX_LOGO_BYTES = 8 * 1024 * 1024
 MAX_LOGOS = 12
 VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}
+# 동영상 검수가 판별한 컨테이너(frames.sniff_container) → 로고 작업 영상 파일의 확장자.
+LINKED_SUFFIXES = {"mov": ".mp4", "matroska": ".webm", "avi": ".avi"}
+
+
+def _link_or_copy(source: Path, target: Path) -> None:
+    """동영상 검수에 저장된 영상을 로고 작업 폴더로 가져온다. 같은 파일 시스템이면 하드 링크로 바이트를 다시 쓰지 않고,
+    링크를 만들 수 없으면 복사한다. 원본은 읽기만 하므로 동영상 검수 기록은 바뀌지 않는다."""
+    try:
+        os.link(source, target)
+    except OSError:
+        shutil.copyfile(source, target)
 
 
 def readiness() -> tuple[bool, str]:
@@ -312,15 +325,18 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
 
     if not readonly:
         @router.post("", status_code=202)
-        async def submit(request: Request, background: BackgroundTasks, video: UploadFile = File(...), logos: list[UploadFile] = File(...),
+        async def submit(request: Request, background: BackgroundTasks, video: UploadFile | None = File(None), logos: list[UploadFile] = File(...),
                          logo_texts: str = Form("[]"), title: str = Form("영상 로고 검수", min_length=1, max_length=120),
                          review_id: str | None = Form(None), detector: str = Form("runpod")):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분, 예: "울산광역시남구|ULSAN METROPOLITAN NAMGU"). 비우면 문자 비교를 하지 않는다.
             review_id: 같은 영상으로 함께 접수한 동영상 검수 작업(로고만 검수하면 없음).
+            video: review_id가 있으면 생략할 수 있다. 그때는 동영상 검수에 이미 저장된 영상(original.bin)을 쓴다.
+              화면이 같은 영상을 두 번 올리지 않게 하려는 것이다. 연결된 영상을 쓸 수 없으면 LINKED_VIDEO_UNAVAILABLE로 거절한다.
             detector: 위치 후보를 찾는 곳. runpod(보안 자료·기본) 또는 openai(일반 자료). 정밀 대조는 둘 다 RunPod다."""
             if detector not in ("runpod", "openai"):
                 raise HTTPException(422, "detector는 runpod 또는 openai입니다.")
             worker_slot = None
+            review_dir = None
             if review_id is not None:
                 try:
                     if str(UUID(review_id)) != review_id:
@@ -328,11 +344,19 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 except ValueError:
                     raise HTTPException(422, "review_id가 올바르지 않습니다.") from None
                 if linked_reviews is not None:
-                    review = linked_reviews / request.state.video_owner / review_id / "result.json"
-                    if not review.is_file():
+                    review_dir = (linked_reviews / request.state.video_owner if isolate_users else linked_reviews) / review_id
+                    if not (review_dir / "result.json").is_file():
                         raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
                     if worker_pool:
-                        worker_slot = _read_json(review).get("worker_slot")
+                        worker_slot = _read_json(review_dir / "result.json").get("worker_slot")
+            linked_video = None
+            if video is None:
+                if review_id is None:
+                    raise HTTPException(422, "동영상 파일이 필요합니다.")
+                linked_video = review_dir / "original.bin" if review_dir is not None else None
+                if linked_video is None or not linked_video.is_file():
+                    raise HTTPException(422, {"code": "LINKED_VIDEO_UNAVAILABLE",
+                                              "message": "연결된 동영상 검수의 영상을 쓸 수 없습니다. 영상을 함께 올려 주세요."})
             if not 1 <= len(logos) <= MAX_LOGOS:
                 raise HTTPException(422, f"원본 로고는 1~{MAX_LOGOS}장입니다.")
             try:
@@ -341,18 +365,26 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 raise HTTPException(422, "logo_texts는 JSON 배열이어야 합니다.") from None
             if not isinstance(texts, list) or len(texts) not in (0, len(logos)) or not all(isinstance(t, str) and len(t) <= 300 for t in texts):
                 raise HTTPException(422, "logo_texts는 원본 로고 수와 같은 길이의 문자열 배열이어야 합니다.")
-            suffix = Path(video.filename or "").suffix.lower()
-            if suffix not in VIDEO_SUFFIXES:
-                raise HTTPException(422, "지원하는 영상 형식이 아닙니다.")
+            if linked_video is not None:
+                # 동영상 검수가 확인한 컨테이너로 확장자를 정한다(업로드 파일 이름이 없다).
+                container = (_read_json(review_dir / "result.json").get("media") or {}).get("container")
+                suffix = LINKED_SUFFIXES.get(container, ".mp4")
+            else:
+                suffix = Path(video.filename or "").suffix.lower()
+                if suffix not in VIDEO_SUFFIXES:
+                    raise HTTPException(422, "지원하는 영상 형식이 아닙니다.")
             job_id = str(uuid4()); target = owner_root(request) / job_id; (target / "refs").mkdir(parents=True)
             try:  # 검증에 걸리면 반쯤 만든 작업 폴더를 남기지 않는다
-                size = 0
-                with open(target / f"video{suffix}", "wb") as fh:
-                    while chunk := await video.read(1024 * 1024):
-                        size += len(chunk)
-                        if size > MAX_VIDEO_BYTES:
-                            raise HTTPException(413, "영상이 너무 큽니다.")
-                        fh.write(chunk)
+                if linked_video is not None:
+                    await run_in_threadpool(_link_or_copy, linked_video, target / f"video{suffix}")
+                else:
+                    size = 0
+                    with open(target / f"video{suffix}", "wb") as fh:
+                        while chunk := await video.read(1024 * 1024):
+                            size += len(chunk)
+                            if size > MAX_VIDEO_BYTES:
+                                raise HTTPException(413, "영상이 너무 큽니다.")
+                            fh.write(chunk)
                 items = []
                 for i, logo in enumerate(logos):
                     raw = await logo.read(MAX_LOGO_BYTES + 1)

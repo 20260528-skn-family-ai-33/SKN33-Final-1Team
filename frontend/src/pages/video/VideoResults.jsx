@@ -1,9 +1,9 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VideoEvidenceDialog from './VideoEvidenceDialog.jsx';
 import VideoWorkflowActions from './VideoWorkflowActions.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
-import { LogoFlowInline } from './LogoFlowParts.jsx';
+import { LogoCompareResults } from './LogoFlowParts.jsx';
 import { coverageNote, filterItems, formatTime, judgmentItems, roleLabels, statusLabels } from './videoFormat.js';
 
 const EMPTY = [];
@@ -167,6 +167,11 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
     return first ? evidenceView(first) : segmentView(segments.find(segment => segment.track_ids.length) || segments[0]);
   });
   const [currentTime, setCurrentTime] = useState(view.time ?? 0);
+  // 자막 트랙·구간을 고르면 펼친 상세가 목록 안에서 보이도록 그 항목까지 스크롤한다.
+  useEffect(() => {
+    if (tab === 'checks' || selection == null) return;
+    rail.current?.querySelector('.rv-result-items > li.is-open')?.scrollIntoView({ block: 'nearest' });
+  }, [tab, selection]);
 
   const visibleItems = filterItems(items, filter);
   const selectedItem = tab === 'checks' ? items.find(item => item.key === selection) : null;
@@ -259,8 +264,9 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{job.project_name || '숏폼 검수'} 검수 결과</h1>
     <div className="rv-result-notice rv-video-result-notice">
       <p>자동 검수를 완료했어요. 판정은 검사한 표본 시각을 기준으로 합니다.</p>
-      <LogoFlowInline jobs={logo?.jobs} error={logo?.error} notice={logoWarning} />
     </div>
+    {/* 영상 로고 검수는 후보 선택 없이 정밀 대조 결과를 바로 보여 주고, 필요할 때만 후보를 다시 고르게 한다. */}
+    <LogoCompareResults jobs={logo?.jobs} error={logo?.error} notice={logoWarning} />
     {/* 서버 처리 안내(job.warnings: 장면 경계 도구 미설치·OCR 실패 프레임 등)는 진행·결과·보고서 어디에도 띄우지 않는다. */}
 
     <div className="rv-video-workbench">
@@ -301,26 +307,35 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             })}
             {!visibleItems.length && <p className="rv-video-rail-note" role="status">{items.length ? '이 분류에 해당하는 요구사항이 없어요.' : '기록된 항목별 판정이 없어요.'}</p>}
           </>}
+          {/* 자막 트랙·구간은 고른 항목 바로 아래에 상세를 펼친다(목록 맨 아래에 따로 두면 고른 줄과 떨어져 보인다). */}
           {tab === 'tracks' && <>
-            {tracks.length ? <ul className="rv-result-items">{tracks.map(track => <li key={track.id}>
-              <button type="button" className={`rv-result-item-button${track.id === selection ? ' is-selected' : ''}`}
-                aria-pressed={track.id === selection} aria-controls="rv-video-aux-detail" onClick={() => selectTrack(track)}>
-                <span className="rv-video-time">{formatTime(track.start_ms)}–{formatTime(track.end_ms)}</span>
-                <span className="rv-result-item-title">{track.text}</span>
-              </button></li>)}</ul> : <p className="rv-video-rail-note">읽은 자막 트랙이 없습니다.</p>}
+            {tracks.length ? <ul className="rv-result-items">{tracks.map(track => {
+              const open = track.id === selection;
+              return <li key={track.id} className={open ? 'is-open' : undefined}>
+                <button type="button" className={`rv-result-item-button${open ? ' is-selected' : ''}`}
+                  aria-expanded={open} aria-controls={open ? 'rv-video-aux-detail' : undefined} onClick={() => selectTrack(track)}>
+                  <span className="rv-video-time">{formatTime(track.start_ms)}–{formatTime(track.end_ms)}</span>
+                  <span className="rv-result-item-title">{track.text}</span>
+                </button>
+                {open && selectedTrack && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
+                  <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} /></div>}
+              </li>;
+            })}</ul> : <p className="rv-video-rail-note">읽은 자막 트랙이 없습니다.</p>}
           </>}
           {tab === 'segments' && <>
-            {segments.length ? <ul className="rv-result-items">{segments.map(segment => <li key={segment.id}>
-              <button type="button" className={`rv-result-item-button${segment.id === selection ? ' is-selected' : ''}`}
-                aria-pressed={segment.id === selection} aria-controls="rv-video-aux-detail" onClick={() => selectSegment(segment)}>
-                <span className="rv-video-time">{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}</span>
-                <span className="rv-result-item-title">{segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ') || '자막 없음'}</span>
-              </button></li>)}</ul> : <p className="rv-video-rail-note">기록된 구간이 없습니다.</p>}
+            {segments.length ? <ul className="rv-result-items">{segments.map(segment => {
+              const open = segment.id === selection;
+              return <li key={segment.id} className={open ? 'is-open' : undefined}>
+                <button type="button" className={`rv-result-item-button${open ? ' is-selected' : ''}`}
+                  aria-expanded={open} aria-controls={open ? 'rv-video-aux-detail' : undefined} onClick={() => selectSegment(segment)}>
+                  <span className="rv-video-time">{formatTime(segment.start_ms)}–{formatTime(segment.end_ms)}</span>
+                  <span className="rv-result-item-title">{segment.track_ids.map(id => tracks.find(track => track.id === id)?.text).filter(Boolean).join(' · ') || '자막 없음'}</span>
+                </button>
+                {open && selectedSegment && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
+                  <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={openItem} /></div>}
+              </li>;
+            })}</ul> : <p className="rv-video-rail-note">기록된 구간이 없습니다.</p>}
           </>}
-          {tab !== 'checks' && <div className="rv-video-verdict-detail" id="rv-video-aux-detail">
-            {selectedTrack && <TrackDetail track={selectedTrack} frames={frames} activeKey={view.key} onShow={show} />}
-            {selectedSegment && <SegmentDetail segment={selectedSegment} tracks={tracks} frames={frames} items={items} onSelectItem={openItem} />}
-          </div>}
           <div className="rv-video-tabs" role="group" aria-label="목록 종류">
             {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
               <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}

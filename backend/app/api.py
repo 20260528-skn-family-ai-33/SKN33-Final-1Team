@@ -770,6 +770,8 @@ def create_app(
     application.include_router(video_logo_router(
         root=PROJECT_ROOT / ".runtime" / "video-logos", inference_lock=inference_lock, readonly=readonly,
         authenticate=auth_router.session_user if auth_router else None,
+        # 함께 접수한 동영상 검수의 저장 영상을 로고 작업이 다시 쓴다(화면이 같은 영상을 두 번 올리지 않는다).
+        linked_reviews=video_storage,
     ))
 
     # 포스터 로고 확정·정밀 대조: 영상 로고와 같은 모델·워커·추론 잠금을 쓴다(포스터 검수 판정과는 별도 축).

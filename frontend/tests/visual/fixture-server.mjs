@@ -560,15 +560,18 @@ function createVideoFixture(clip) {
   async function submitLogo(request) { // logos.routes.submit
     const form = await streamMultipart(request, name => (name === 'video' ? { bytes: 1024 ** 3, message: '영상이 너무 큽니다.' } : { bytes: 8 * 1048576, message: '원본 로고 이미지가 너무 큽니다.' }));
     const reviewId = form.field('review_id') ?? null, files = form.files('logos'), video = form.file('video'), title = form.field('title') ?? '영상 로고 검수';
-    if (!video || !within(title, 1, 120)) throw fail('INVALID_REQUEST', 422, '영상과 제목(1~120자)을 확인해 주세요.');
+    if (!within(title, 1, 120)) throw fail('INVALID_REQUEST', 422, '제목(1~120자)을 확인해 주세요.');
     if (reviewId !== null && !isUuid(reviewId)) throw fail('INVALID_REQUEST', 422, 'review_id가 올바르지 않습니다.');
+    // logos.routes.submit: review_id가 있으면 영상을 생략하고 그 동영상 검수에 저장된 영상을 쓴다.
+    if (!video && reviewId === null) throw fail('INVALID_REQUEST', 422, '동영상 파일이 필요합니다.');
+    if (!video && !jobs.has(reviewId)) throw fail('LINKED_VIDEO_UNAVAILABLE', 422, '연결된 동영상 검수의 영상을 쓸 수 없습니다. 영상을 함께 올려 주세요.');
     if (files.length < 1 || files.length > 12) throw fail('INVALID_REQUEST', 422, '원본 로고는 1~12장입니다.');
     let texts;
     try { texts = JSON.parse(form.field('logo_texts') ?? '[]'); } catch { throw fail('INVALID_REQUEST', 422, 'logo_texts는 JSON 배열이어야 합니다.'); }
     if (!Array.isArray(texts) || ![0, files.length].includes(texts.length) || !texts.every(item => typeof item === 'string' && Array.from(item).length <= 300)) {
       throw fail('INVALID_REQUEST', 422, 'logo_texts는 원본 로고 수와 같은 길이의 문자열 배열이어야 합니다.');
     }
-    if (!LOGO_VIDEO_SUFFIXES.has(extname(video.filename).toLowerCase())) throw fail('INVALID_REQUEST', 422, '지원하는 영상 형식이 아닙니다.');
+    if (video && !LOGO_VIDEO_SUFFIXES.has(extname(video.filename).toLowerCase())) throw fail('INVALID_REQUEST', 422, '지원하는 영상 형식이 아닙니다.');
     if (files.some(file => !isImage(file.head))) throw fail('INVALID_REQUEST', 422, '원본 로고가 이미지가 아닙니다.');
     const createdMs = Date.now(), entry = { id: randomUUID(), title, review_id: reviewId, createdMs, created_at: iso(createdMs), failAt: title.includes('실패') ? 2500 : null,
       logos: files.map((file, index) => ({ name: basename(file.filename || `logo_${index}`, extname(file.filename || `logo_${index}`)), file: `${index}.png`, text: texts[index] ?? '' })) };

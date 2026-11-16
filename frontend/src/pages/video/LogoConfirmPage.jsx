@@ -5,8 +5,9 @@ import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { autoDrafts, bundleOutcome, groupDifferences, handoff, intervalText, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
+import { autoDrafts, autoSelection, bundleOutcome, groupDifferences, handoff, intervalText, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
   videoLogoSteps } from './logoFlow.js';
+import { startAutoCompare } from './LogoFlowParts.jsx';
 import './logoConfirm.css';
 
 const RUNNING = new Set(['queued', 'running']);
@@ -387,10 +388,12 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   </div>;
 }
 
-function CompareResults({ base, refs, onConfirm, onStatus }) {
+function CompareResults({ base, video, refs, onConfirm, onStatus }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+  // 정밀 대조 기록이 없는 작업(자동 대조를 하지 않는 서버가 만든 작업)은 서버와 같은 규칙으로 고른 후보로 한 번 대조한다.
+  const requested = useRef(false);
   useEffect(() => {
     const controller = new AbortController();
     let timer;
@@ -399,14 +402,18 @@ function CompareResults({ base, refs, onConfirm, onStatus }) {
       try {
         const value = await fetchJson(base + '/compare', { signal: controller.signal });
         setResult(value); setError(''); onStatus(value.compare_status);
-        if (RUNNING.has(value.compare_status)) timer = setTimeout(poll, 2000);
+        if (!value.compare_status && !requested.current) {
+          requested.current = true;
+          await startAutoCompare(base, { video, signal: controller.signal });
+          if (!controller.signal.aborted) timer = setTimeout(poll, 500);
+        } else if (RUNNING.has(value.compare_status)) timer = setTimeout(poll, 2000);
       } catch (failure) {
         if (failure.name !== 'AbortError') setError(failure.message);
       }
     }
     poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [base, onStatus, retry]);
+  }, [base, video, onStatus, retry]);
 
   if (error) return <section className="vl-panel"><ErrorMessage message={error} />
     <button type="button" className="vl-button secondary" onClick={() => setRetry(value => value + 1)}>다시 불러오기</button></section>;
@@ -427,10 +434,9 @@ function CompareResults({ base, refs, onConfirm, onStatus }) {
       <p>고른 묶음의 초별 영역을 원본 로고와 비교하고 있습니다.</p>
     </section>}
     {result.compare_status === 'failed' && <section className="vl-panel"><ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} /></section>}
-    {!result.compare_status && <section className="vl-panel vl-empty">
-      <strong>아직 정밀 대조를 실행하지 않았습니다.</strong>
-      <p>위치를 직접 확인해 원본 로고별 구간을 저장한 뒤 정밀 대조를 실행하세요.</p>
-      <button type="button" className="vl-button primary" onClick={onConfirm}>위치 직접 확인</button>
+    {!result.compare_status && <section className="vl-panel vl-progress-card" role="status">
+      <div className="vl-progress-title"><strong>정밀 대조를 시작하고 있습니다</strong></div>
+      <p>원본 로고마다 순위가 높은 후보를 자동으로 골라 정밀 대조합니다.</p>
     </section>}
     {(result.warnings || []).map(warning => <div className="vl-warning" key={warning}>⚠ {warning}</div>)}
     {result.compare_status === 'completed' && !bundles.length && <section className="vl-panel vl-empty">
@@ -580,9 +586,10 @@ export default function LogoConfirmPage() {
   }, [job, base, meta?.id, meta?.status]);
 
   // 이 브라우저에 저장한 선택이 없으면 서버가 자동 정밀 대조에 쓴 묶음(auto_selection)을 확정 화면의 선택으로 채운다.
+  // 자동 대조를 하지 않는 서버가 만든 작업은 auto_selection이 없으므로, 화면이 같은 규칙으로 고른 묶음을 쓴다.
   useEffect(() => {
-    if (!video || meta?.id !== job || !meta.auto_selection || Object.keys(answers).length || Object.keys(drafts).length) return;
-    const seeded = autoDrafts(meta.auto_selection, video.groups);
+    if (!video || meta?.id !== job || Object.keys(answers).length || Object.keys(drafts).length) return;
+    const seeded = autoDrafts(meta.auto_selection || autoSelection(video.groups, video.refs.length), video.groups);
     const nextAnswers = {}, nextDrafts = {};
     for (const [key, draft] of Object.entries(seeded)) {
       const indexNo = Number(key);
@@ -705,7 +712,9 @@ export default function LogoConfirmPage() {
       await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
       if (controller.signal.aborted) return;
       setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued' } : previous);
-      changeView('compare');
+      // 동영상 검수에 연결된 작업은 검수 결과 화면으로 돌아가 다시 대조한 결과를 거기서 바로 본다.
+      if (meta?.review_id) go('/video?id=' + encodeURIComponent(meta.review_id));
+      else changeView('compare');
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
     } finally {
@@ -816,7 +825,7 @@ export default function LogoConfirmPage() {
               </div>
             </section>}
           </section>
-        </div> : <CompareResults base={base} refs={video.refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
+        </div> : <CompareResults base={base} video={video} refs={video.refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
       </>}
     </div>}
   </main>
