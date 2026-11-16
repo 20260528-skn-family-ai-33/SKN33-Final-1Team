@@ -36,7 +36,7 @@ export const CODES = {
     'missing_requirement_evidence', 'context_incomplete', 'observation_status_unknown', 'observation_not_checked'],
   limitation_ko: {
     'Code validation only; visual accuracy and source authority are not independently verified.': '코드 검증만 했습니다. 이미지 인식 정확도와 기준 출처는 따로 검증하지 않았습니다.',
-    'Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed.': '승인된 기준만 근거로 썼고 PostgreSQL·Neo4j 관계 조회는 하지 않았습니다.',
+    'Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed.': '승인된 기준만 근거로 썼고 기준 관계 조회는 하지 않았습니다.',
     'Approved version reused; a fresh poster-input confirmation is required.': '승인된 기준 버전을 다시 썼습니다. 새 포스터 입력은 다시 확인해야 합니다.',
   },
   action_rules: {

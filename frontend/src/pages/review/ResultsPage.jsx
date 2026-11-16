@@ -51,7 +51,7 @@ function RetryNote({ retry }) {
 // evidence(선택): 항목을 누르면 열 판정 근거 창을 그리는 함수. 주면 항목을 누를 때마다 창이 열리고 목록 안 상세는 그리지 않는다.
 // 없으면 예전처럼 목록 안에서 펼치고 접는다.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
+  busy = false, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
   evidence }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
@@ -143,14 +143,6 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     setQuery('');
     setFilter('all');
     chooseResult(selectVisibleResult(results, selected?.criterion_id));
-  }
-  function exportJson() {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' }));
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `baro-review-${review.id}.json`;
-    anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const details = selected && <aside id="rv-result-inspector" className={`rv-result-inspector rv-panel is-${selected.status}`}
@@ -249,9 +241,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     </div>
     <footer className="rv-result-footer">
       <div className="rv-result-secondary-actions">
-        {edit && <button type="button" className="text-btn" disabled={busy} onClick={edit}>기준 다시 확인하기</button>}
-        <button type="button" className="text-btn" onClick={exportJson}>결과 JSON 저장</button>
-      </div>
+        {edit && <button type="button" className="text-btn" disabled={busy} onClick={edit}>기준 다시 확인하기</button>}      </div>
       <div>{revise && <button type="button" className="rv-button secondary" disabled={busy} onClick={revise}>수정본 재검수</button>}
         <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>

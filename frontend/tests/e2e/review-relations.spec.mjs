@@ -305,11 +305,13 @@ test('검수 항목을 누르면 포스터의 읽은 위치와 근거 관계도�
   assert.match(await detail.innerText(), /판정[\s\S]*불충족 · 필수 조건[\s\S]*기준 ‘시민공원’ ↔ 읽은 값 ‘시청광장’[\s\S]*값이 기준과 다름/);
   if (shots) await page.screenshot({ path: shots + '/evidence-dialog-fail.png' });
   await graph.getByRole('button', { name: /요구사항 원문/ }).click();
-  assert.match(await detail.innerText(), /요구사항 문서 1쪽[\s\S]*행사 장소: 시민공원[\s\S]*그래프 노드\s*source/);
+  assert.match(await detail.innerText(), /요구사항 문서 1쪽[\s\S]*행사 장소: 시민공원/);
+  // 어느 저장소(Neo4j 등)에서 읽었는지는 화면에 적지 않는다.
+  assert.doesNotMatch(await detail.innerText(), /그래프 노드|Neo4j|PostgreSQL/);
   await main.getByRole('button', { name: '전체 관계', exact: true }).click();
   assert.equal(await graph.getAttribute('class'), 'rv-evg is-all');
   assert.equal(await main.getByRole('button', { name: /조회 정보/ }).count(), 0);
-  await main.getByText('기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.', { exact: true }).waitFor();
+  await main.getByText('기준·원문·읽은 값·판정을 이 검수의 기록에서 읽어 연결했습니다.', { exact: true }).waitFor();
   // 버전별 판정에서 이전 검수본을 고르면 그 포스터와 읽은 위치를 보여 준다
   const trail = poster.getByRole('group', { name: '버전별 판정' });
   assert.deepEqual((await trail.getByRole('button').allInnerTexts()).map(text => text.replace(/\s+/g, ' ')), ['원본 불충족', '1차 수정본 불충족 지금']);

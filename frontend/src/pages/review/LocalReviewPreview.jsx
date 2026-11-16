@@ -126,7 +126,7 @@ export default function LocalReviewPreview({ uiOnly = false }) {
         facts={[['검수 기준', `${criterionData.length}개`], ['포스터 크기', '1200×1600']]} title="검수 진행 화면 미리보기"
         helpText="예시 화면입니다. 상단의 다음 화면 또는 결과 확인을 눌러 바로 넘어가세요." />
     </>}
-    {state.step === 'results' && <ResultsPage review={result} exportData={exampleRun} filter={filter} setFilter={setFilter}
+    {state.step === 'results' && <ResultsPage review={result} filter={filter} setFilter={setFilter}
       activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
       edit={() => setState(current => ({ ...current, step: 'criteria', snapshot: null }))} newReview={reset} />}
   </ReviewLayout>;

@@ -470,7 +470,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
         onRetry={error ? retryRunStatus : undefined} />
       : run?.error?.code === 'USER_CANCELLED' ? <section className="rv-panel"><h1 id="page-title" tabIndex={-1}>대기 작업 취소됨</h1><p>이 작업은 더 이상 실행되지 않습니다.</p><Link className="rv-button secondary" to="/review/tasks">내 작업으로</Link></section>
       : showingReport ? <FrameworkReport run={run} projectName={projectName} image={image} standalone />
-      : hasResults && !showCriteria ? <ResultsPage review={resultView} exportData={run} busy={busy} finalApproved={finalApproved} exceptionApproved={exceptionApproved}
+      : hasResults && !showCriteria ? <ResultsPage review={resultView} busy={busy} finalApproved={finalApproved} exceptionApproved={exceptionApproved}
         filter={filter} setFilter={setFilter} activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
         edit={criteria.length ? () => setShowCriteria(true) : undefined} newReview={onNew}
         revise={canRevise ? () => setReportTarget('approval') : undefined}

@@ -79,7 +79,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
       setProjectId(current => items.some(item => item.id === current) ? current : items.length === 1 ? items[0].id : '');
     }).catch(failure => {
       if (!controller.signal.aborted) setError(failure.status === 401
-        ? '검수 서버에 같은 PostgreSQL 계정으로 로그인해야 합니다.' : failure.message);
+        ? '검수 서버에 같은 계정으로 로그인해야 합니다.' : failure.message);
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [reload, setProjectId]);
