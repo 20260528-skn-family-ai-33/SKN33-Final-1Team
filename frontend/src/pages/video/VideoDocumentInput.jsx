@@ -72,7 +72,7 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
       setProgress({ startedAt, stage: 'completed', percent: 100, message: '요구사항 추출을 완료했습니다.' });
       setWarnings(result.warnings || []);
       if (result.warnings?.length) setInspectId(result.framework.run_id);
-      setNotice(`${file.name} · ${sources.length}개 추출${result.pending?.length ? ` · 미확정 ${result.pending.length}개` : ''}`);
+      setNotice(`추출 완료 · ${/\.docx$/i.test(file.name) ? 'Word 문서' : `${result.page_count}페이지`} · 조건 ${sources.length}개`);
     } catch (failure) {
       if (active.current === controller && (!signal.aborted || deadline.expired)) {
         setProgress(null);
@@ -89,12 +89,10 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
     }
   }
 
-  return <DocumentInput kind="video" documentBusy={busy} documentProgress={progress} documentNotice={notice} documentError={error}
+  return <DocumentInput kind="video" documentBusy={busy} documentProgress={progress} documentNotice={notice && { summary: notice, warnings }} documentError={error}
     documentResumeId={inspectId}
     documentInput={input} selectDocument={select} cancelDocument={cancel} documentName={pendingName || documentName}
     clearDocument={disabled ? undefined : clearDocument} disabled={disabled || !projectReady || !projectId}>
     {!projectId && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
-    {warnings.length > 0 && <ul className="rv-form-hint" aria-label="문서 분석 확인 사항">{warnings.map((warning, index) =>
-      <li key={index}>{warning}</li>)}</ul>}
   </DocumentInput>;
 }

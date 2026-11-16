@@ -107,7 +107,9 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
       assert.equal(approval.reviewed_all_criteria, true);
       approved = true; body = {};
     }
-    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2, warnings: recorded?.warnings || [],
+    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2,
+      // 서버는 미확정 항목이 있으면 경고 첫 줄에 그 개수를 적는다(backend requirements_presentation.py).
+      warnings: pendingOnly ? ['미확정 1개는 조건 목록에 넣지 않았어요. 문서에 값이 아직 정해지지 않은 항목이에요.'] : recorded?.warnings || [],
       framework: { run_id: 'run-fixture', document_version_id: 'document-fixture' } };
     // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
     else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
@@ -144,8 +146,9 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   }
   const expectedTexts = [...new Set(items.map(item => item.text))];
   const extracted = page.getByLabel(/문서 요구사항 \d+번 문구/);
-  const notice = page.getByText(new RegExp(`추출을 완료했어요.*${expectedTexts.length}개 추출${pendingOnly ? '.*미확정 1개' : ''}`));
+  const notice = page.getByText(`추출 완료 · 2페이지 · 조건 ${expectedTexts.length}개`, { exact: true });
   await notice.waitFor();
+  if (pendingOnly) await page.getByText(/미확정 1개는 조건 목록에 넣지 않았어요/).waitFor();
   assert.equal(await page.locator('#requirements').inputValue(), current);
   assert.deepEqual(await extracted.evaluateAll(fields => fields.map(field => field.value)), expectedTexts);
   if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
@@ -284,7 +287,6 @@ async function verifyDocx(t, mode) {
   assert.equal(await upload.getAttribute('multiple'), null);
   assert.equal(await card.getByRole('link', { name: 'PDF 여러 개 올리기' }).count(), 0);
   await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MiB', { exact: true }).waitFor();
-  await card.getByText(/별도로 보관한 Word 원본에서 확인해 주세요/).waitFor();
   if (mode === 'video-drop') {
     const dataTransfer = await page.evaluateHandle(bytes => {
       const data = new DataTransfer();
@@ -301,7 +303,9 @@ async function verifyDocx(t, mode) {
     await card.getByRole('button', { name: '파일 선택', exact: true }).click();
     await (await choose).setFiles({ name: '계약서.docx', mimeType: DOCX, buffer: docx });
   }
-  await page.getByText(video ? '계약서.docx · 2개 추출' : /추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
+  await page.getByText('추출 완료 · Word 문서 · 조건 2개', { exact: true }).waitFor();
+  // DOCX는 추출을 마친 뒤 '확인할 점'에 본문만 읽었다는 안내가 붙는다.
+  await card.getByText(/Word 본문 글자만 읽었어요/).waitFor();
   assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
   if (video) {
     // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 1번의 체크를 풀어 2번만 보낸다.

@@ -157,4 +157,4 @@ def test_pages_whose_images_were_not_read_are_named_in_the_input_notice():
     assert not any('이미지' in warning for warning in projected(draft)['warnings'])
     draft=draft.model_copy(update={'warnings':draft.warnings+('page_2_embedded_images_not_read','page_5_embedded_images_not_read')})
     assert [w for w in projected(draft)['warnings'] if '이미지' in w]==[
-        '2, 5쪽의 이미지 안 내용은 읽지 않았습니다. 이미지에 요구사항이 있으면 직접 추가해 주세요.']
+        '2, 5쪽 이미지 속 글자는 읽지 않았어요. 이미지에 요구사항이 있으면 직접 추가해 주세요.']

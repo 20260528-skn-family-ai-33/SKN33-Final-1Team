@@ -172,6 +172,18 @@ html .rv-form-upload { padding: 13px 14px; border: 1px dashed color-mix(in srgb,
 html .rv-workspace .rv-document-card.is-dragging { outline-color: var(--op-ink); }
 html .rv-workspace .rv-document-card.is-dragging .rv-form-upload { background: var(--op-surface); }
 html .rv-upload-name { font-size: 13px; }
+/* 문서 첨부: 파일 이름 옆에 바꾸기·지우기, 그 아래 추출 요약 한 줄, 서버 경고는 '확인할 점' 목록으로 나눈다. */
+html .rv-upload-actions { display: flex; flex-shrink: 0; align-items: center; gap: 4px; }
+html .rv-workspace .rv-upload-actions .rv-upload-clear { border-color: transparent; background: none; color: var(--op-muted); }
+html .rv-workspace .rv-upload-actions .rv-upload-clear:hover { color: var(--op-ink); }
+html .rv-document-summary { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; color: var(--op-muted); font-size: 12px; }
+html .rv-document-summary .icon { flex-shrink: 0; width: 14px; height: 14px; color: #177d45; }
+html .rv-document-warnings { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--op-line); }
+html .rv-document-warnings > p { margin: 0 0 4px; color: var(--op-muted); font-size: 11px; font-weight: 500; }
+html .rv-document-warnings ul { margin: 0; padding: 0; list-style: none; }
+html .rv-document-warnings li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 8px; padding: 5px 0; font-size: 13px; line-height: 1.55; }
+html .rv-document-warnings li .icon { width: 14px; height: 14px; margin-top: 3px; color: #806a28; }
+html .rv-document-warnings small { display: block; margin-top: 1px; color: var(--op-muted); font-size: 12px; }
 html .rv-workspace .rv-compact { min-height: 32px; padding: 5px 14px; border-radius: 999px; font-size: 12px; }
 html .rv-document-inline .rv-document-long-running { border-color: var(--op-line); border-radius: 6px; background: var(--op-card); }
 /* 문서 분석 진행: 회전 표시 대신 문서를 읽는 3D 그림(DocumentArt)을 둔다 */
@@ -189,7 +201,7 @@ html .rv-extracted input[type='checkbox'] { margin: 0; accent-color: var(--op-in
 html .rv-workspace .rv-extracted textarea { height: 34px; min-height: 0; padding: 7px 10px; border-color: transparent; border-radius: 6px; background: none; font-size: 13px; line-height: 1.45; resize: none; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 html .rv-workspace .rv-extracted textarea:hover:enabled { border-color: var(--op-line); background: var(--op-card); }
 html .rv-workspace .rv-extracted textarea:focus { border-color: var(--op-ink); background: var(--op-card); text-overflow: clip; }
-html .rv-workspace .rv-extracted li.is-off textarea:not(:focus) { color: var(--op-muted); text-decoration: line-through; }
+html .rv-workspace .rv-extracted li.is-off textarea:not(:focus) { color: var(--op-muted); }
 html .rv-workspace .rv-extracted li > .rv-button { min-height: 28px; padding: 3px 10px; border-color: transparent; background: none; color: var(--op-muted); }
 html .rv-workspace .rv-extracted li > .rv-button:hover:enabled { border-color: var(--op-line); background: var(--op-card); color: var(--op-ink); }
 /* 쪽 넘기기(components/Pager.jsx): 긴 목록은 펼치지 않고 몇 개씩 넘겨 본다 */
@@ -234,7 +246,7 @@ html .rv-workspace .rv-criteria-item-text:has(> .rv-criteria-item-name) { white-
 html .rv-workspace .rv-criteria-item-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html .rv-workspace .rv-criteria-item-name > b { margin-right: 6px; color: var(--op-muted); font-size: 12px; font-weight: 500; }
 html .rv-workspace .rv-criteria-item-rule { display: block; margin-top: 2px; overflow: hidden; color: var(--op-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-html .rv-workspace .rv-criteria-item.is-excluded .rv-criteria-item-name { color: var(--op-muted); text-decoration: line-through; }
+html .rv-workspace .rv-criteria-item.is-excluded .rv-criteria-item-name { color: var(--op-muted); }
 html .rv-workspace .rv-criteria-inspector > .op-pager { margin: 10px 6px 4px; }
 html .rv-workspace .rv-criteria-detail { padding: 24px 0 22px; border-top: 0; background: none; }
 html .rv-workspace .rv-criteria-detail-heading .rv-eyebrow { font-size: 10px; }

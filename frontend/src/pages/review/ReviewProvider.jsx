@@ -233,8 +233,9 @@ export function ReviewProvider({ children }) {
         originalCount: rows.length, rows, filename: file.name, projectId, modelRoute } });
       setDocumentProgress(null);
       setDocumentResumeId('');
-      const unresolved = result.pending?.length ? ` · 미확정 ${result.pending.length}개` : '';
-      setDocumentNotice(`추출을 완료했어요. ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · ${rows.length}개 추출${unresolved}${result.warnings?.length ? ` · ${result.warnings.join(' ')}` : ''}`);
+      // 요약 한 줄과 확인할 점(서버 경고)을 나눠 넘긴다. 미확정 개수는 서버 경고에 들어 있다.
+      setDocumentNotice({ summary: `추출 완료 · ${isDocx ? 'Word 문서' : `${result.page_count}페이지`} · 조건 ${rows.length}개`,
+        warnings: result.warnings || [] });
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentNotice('');

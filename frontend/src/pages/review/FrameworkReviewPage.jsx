@@ -494,11 +494,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           <div className="rv-criteria-action-context">
             {onInput && <button type="button" className="rv-button secondary" disabled={!canReturnToInput}
               onClick={onInput}>자료 입력으로 돌아가기</button>}
-            {referenceLogos?.length > 0 && (registeringPoster || reviewingDraft) && <p>
-              첨부한 원본 로고 {referenceLogos.length}개는 포스터를 등록할 때 로고 위치 후보 찾기에 함께 접수합니다.</p>}
-            {reviewingDraft && (excluded.length > 0
-              ? <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>
-              : <p>{criteria.length}개 기준의 원문과 기대값을 확인해 주세요. 검수 시작을 누르면 기준 승인과 포스터 등록이 함께 진행됩니다.</p>)}
+            {reviewingDraft && excluded.length > 0 && <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}
             {registeringPoster && <>
               <p>기준이 승인됐어요. 검수할 포스터를 등록해 주세요.</p>
               <label>검수 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
@@ -569,7 +565,9 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
       </CriteriaWorkspace>}
       <PosterLogoCard jobs={logoJobs.jobs} error={logoJobs.error} notice={logoNotice} />
-      {!processing && (!hasResults || showingReport) && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">
+      {/* 기준 확인·포스터 등록 단계에서는 이 칸에 '새 검수'와 실행 번호만 남아 보이지 않는다. */}
+      {!processing && (!hasResults || showingReport) && !(hasCriteriaActions && !revisionReady && status !== 'waiting_review' && !run?.report)
+        && <section className="rv-panel rv-framework-actions" aria-labelledby="poster-report-approval">
       <h2 id="poster-report-approval" tabIndex={-1}>{canRevise ? '담당자 승인과 수정본 재검수' : '검수 진행 기록'}</h2>
       {revisionReady && <>
         <p>수정 요청이 승인됐어요. 수정한 포스터를 등록하면 기존 승인 기준으로 재검수를 접수합니다.</p>

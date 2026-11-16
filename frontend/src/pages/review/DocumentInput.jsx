@@ -8,6 +8,15 @@ import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
+const DOCX_TEXT_ONLY = 'Word 본문 글자만 읽었어요. 이미지와 배치는 Word 원본에서 확인해 주세요.';
+
+// 서버 경고는 '무슨 일인지. 무엇을 하면 되는지.' 두 문장이다(backend requirements_presentation.py). 첫 문장을 앞에, 나머지를 작게 보인다.
+function splitWarning(text) {
+  const value = String(text);
+  const at = value.search(/[.!?]\s/);
+  return at < 0 ? [value, ''] : [value.slice(0, at + 1), value.slice(at + 2)];
+}
+
 // 분석하는 동안 문서를 읽는 3D 그림(components/PickerArt.jsx의 DocumentArt)과 단계 진행률을 보여 준다.
 // 분석 상태는 이 카드에서 자동으로 확인하므로 새 탭으로 여는 링크는 두지 않는다.
 export function DocumentAnalysisProgress({ documentProgress, totalSeconds, stageSeconds, lastChecked, cancelLabel }) {
@@ -217,6 +226,10 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const dropActive = dragging && !off;
   const filename = documentProgress?.source || documentName;
   const uploadHint = off ? 'PDF·DOCX 1개 첨부' : 'PDF·DOCX 1개를 끌어 놓거나 파일을 선택하세요.';
+  // documentNotice: 상태 안내 글자이거나, 추출을 마친 뒤의 { summary, warnings }다.
+  const notice = !documentBusy && documentNotice ? (typeof documentNotice === 'string' ? { status: documentNotice } : documentNotice) : null;
+  const warnings = notice?.summary ? [...(notice.warnings || []), ...(/\.docx$/i.test(filename || '') ? [DOCX_TEXT_ONLY] : [])] : [];
+  const canClear = !documentBusy && Boolean(documentName && clearDocument);
 
   function handleDragEnter(event) {
     if (!event.dataTransfer.types.includes('Files')) return;
@@ -261,20 +274,29 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         <input ref={documentInput} type="file" className="sr-only" aria-label="요구사항 문서 선택" disabled={off}
           accept={`application/pdf,.pdf,.docx,${DOCX_MEDIA_TYPE}`}
           onChange={event => { if (event.target.files.length) selectDocument([...event.target.files]); }} />
-        <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
-          <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
-        </button>
+        <div className="rv-upload-actions">
+          <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
+            <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
+          </button>
+          {canClear && <button type="button" className="rv-button secondary rv-compact rv-upload-clear" aria-label="첨부 지우기" onClick={clearDocument}>지우기</button>}
+        </div>
       </div>
       {documentBusy && documentProgress && <DocumentAnalysisProgress {...{ documentProgress, totalSeconds, lastChecked, cancelLabel }}
         stageSeconds={seconds} />}
-      <div className="rv-form-row rv-form-hint">
-        <span>{!documentBusy && documentNotice ? documentNotice : 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
-        {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
-          : documentName && clearDocument ? <button type="button" className="rv-button secondary rv-compact" onClick={clearDocument}>첨부 지우기</button>
-            : <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}
-      </div>
+      {notice?.summary ? <p className="rv-document-summary"><Icon name="check" />{notice.summary}</p>
+        : <div className="rv-form-row rv-form-hint">
+          <span>{notice?.status || 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
+          {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
+            : !canClear && <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}
+        </div>}
+      {warnings.length > 0 && <div className="rv-document-warnings">
+        <p id="rv-document-warnings-title">확인할 점 {warnings.length}</p>
+        <ul aria-labelledby="rv-document-warnings-title">{warnings.map((text, index) => {
+          const [title, hint] = splitWarning(text);
+          return <li key={index}><Icon name="warning" /><span>{title}{hint && <small>{hint}</small>}</span></li>;
+        })}</ul>
+      </div>}
     </div>
-    {!documentBusy && <p className="rv-form-hint">DOCX는 본문 글자만 읽습니다. 이미지와 배치는 별도로 보관한 Word 원본에서 확인해 주세요.</p>}
     {!documentBusy && documentResumeId && kind === 'poster' && <Link className="text-btn" to={'/review/new?framework=' + encodeURIComponent(documentResumeId)}>저장된 문서 분석 보기</Link>}
     <ErrorMessage message={documentError} />
     {children}
