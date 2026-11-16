@@ -5,7 +5,7 @@ import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { autoDrafts, autoSelection, bundleOutcome, groupDifferences, handoff, intervalText, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
+import { autoDrafts, autoSelection, bundleOutcome, findingText, groupDifferences, handoff, intervalText, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
   videoLogoSteps } from './logoFlow.js';
 import { startAutoCompare } from './LogoFlowParts.jsx';
 import './logoConfirm.css';
@@ -16,6 +16,18 @@ const SKIP = { frame_missing: '프레임 없음', crop_too_small: '영역이 너
 function timeText(sec) {
   const value = Math.max(0, Number(sec) || 0);
   return String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
+}
+
+// 검수 범위의 구간을 분:초로 보인다: [103, 104] → 01:43~01:44, [7, 7] → 00:07
+function clockInterval([a, b]) {
+  return a === b ? timeText(a) : timeText(a) + '~' + timeText(b);
+}
+
+// 초 목록을 분:초 구간으로: [103, 104] → 01:43~01:44 ('선택한 구간' 카드에서 쓴다)
+function clockSpan(secs) {
+  const ranges = toIntervals(secs || []);
+  if (ranges.length > 3) return ranges.slice(0, 3).map(clockInterval).join(', ') + ' 외 ' + (ranges.length - 3) + '구간';
+  return ranges.map(clockInterval).join(', ') || '시간 정보 없음';
 }
 
 function spanText(secs) {
@@ -309,13 +321,13 @@ function SelectionSummary({ video, refIndex, checked, confirmed, manuals, onRemo
       const kind = confirmed.includes(groupIndex) ? '선택 후보' : '연결 후보';
       return <article className="vl-selected-item" key={'group-' + groupIndex}>
         <CropPreview video={video} sec={sec} box={box} compact fit={[120, 64]} />
-        <div><span className="vl-mini-label">{kind}</span><strong>{spanText(group.secs)}</strong></div>
+        <div><span className="vl-mini-label">{kind}</span><strong>{clockSpan(group.secs)}</strong></div>
         <button type="button" aria-label="후보에서 제거" onClick={() => onRemoveGroup(groupIndex)}>×</button>
       </article>;
     })}
     {manuals.map((manual, index) => <article className="vl-selected-item" key={'manual-' + index}>
       <CropPreview video={video} sec={manual.sec} box={manual.box} compact fit={[120, 64]} />
-      <div><span className="vl-mini-label manual">직접 지정</span><strong>{spanText(manual.secs)}</strong><small>{manual.secs.length}초 · 고정 영역</small></div>
+      <div><span className="vl-mini-label manual">직접 지정</span><strong>{clockSpan(manual.secs)}</strong><small>{manual.secs.length}초 · 고정 영역</small></div>
       <button type="button" aria-label="직접 지정 영역 제거" onClick={() => onRemoveManual(index)}>×</button>
     </article>)}
   </div>;
@@ -344,7 +356,7 @@ function ExposureSummary({ video, payload }) {
         title={start === end ? start + '초' : start + '~' + end + '초'} />)}
     </div>
     <div className="vl-timeline-axis"><span>00:00</span><span>{timeText(video.seconds - 1)}</span></div>
-    <p>{payload.intervals.length ? payload.intervals.map(intervalText).join(' · ') : '노출 구간을 지정하지 않았습니다.'}</p>
+    <p>{payload.intervals.length ? payload.intervals.map(clockInterval).join(' · ') : '노출 구간을 지정하지 않았습니다.'}</p>
   </section>;
 }
 
@@ -509,8 +521,8 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
     </div>
     {differences.length > 0 && <div className="vl-diff-groups vl-cmp-diffs" aria-label="종류별 차이">
       {differences.map(group => <section className="vl-diff-group" key={group.kind}>
-        <h3>{group.kind} <span>{group.secs}초</span></h3>
-        <ul className="vl-finding-list">{group.items.map(([label, count]) => <li key={label}><span>{label}</span><strong>{count}초</strong></li>)}</ul>
+        <h3>{group.kind}</h3>
+        <ul className="vl-finding-list">{group.items.map(([label]) => <li key={label} title={label}><span>{findingText(label)}</span></li>)}</ul>
       </section>)}
     </div>}
     {outcome.tone === 'unknown' && !differences.length && <p className="vl-cmp-note">로고가 작거나 가려져 비교하지 못했어요. 원본 영상을 확인해 주세요.</p>}
@@ -533,7 +545,8 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
           <td>{row.skipped ? <span className="vl-result-pill unknown">{SKIP[row.reason] || '건너뜀'}</span> :
             <span className={'vl-result-pill ' + (OUTCOME[row.outcome]?.tone || '')}>{OUTCOME[row.outcome]?.label || row.outcome}</span>}</td>
           <td>{row.skipped || row.outcome !== 'diff' ? '—' : (row.kinds || []).join(' · ') || '기타'}</td>
-          <td>{row.skipped ? '비교하지 않음' : row.outcome === 'diff' ? (row.findings || []).join(' · ') || '차이 근거 있음'
+          <td>{row.skipped ? '비교하지 않음' : row.outcome === 'diff' ? (row.findings?.length
+            ? <ul className="vl-cell-findings">{row.findings.map(text => <li key={text} title={text}>{findingText(text)}</li>)}</ul> : '차이 근거 있음')
             : row.outcome === 'match' ? '차이 없음' : '비교할 수 없음'}</td>
         </tr>)}</tbody>
       </table></div>

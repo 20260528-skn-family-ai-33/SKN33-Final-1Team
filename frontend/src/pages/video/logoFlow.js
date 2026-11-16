@@ -34,6 +34,26 @@ export function diffKind(text = '') {
   return '기타';
 }
 
+// 서버 차이 문장(backend/app/video/logos/compare.py)을 담당자가 읽기 쉬운 문장으로 바꾼다(화면 표시용).
+// 서버 문장은 그대로 기록·집계에 쓰고, 화면에서만 다듬는다. 비율·일치도·색상 각도 같은 수치는 보이지 않는다(원문은 title로 남긴다).
+// 모르는 모양은 원문을 그대로 보인다. place: 대조한 쪽 이름('영상' | '포스터'). 포스터 서버 문장은 '영상'을 '포스터'로 바꿔 보낸다.
+export function findingText(text = '', place = '영상') {
+  let m;
+  if ((m = /^원본 문구 '(.+)' 없음\(같은 크기 원본 OCR 기준\)$/.exec(text))) return `원본의 문구 '${m[1]}'가 ${place} 속 로고에서 읽히지 않아요.`;
+  if ((m = /^원본에 없는 문구 '(.+)'\(같은 크기 원본 OCR 기준\)$/.exec(text))) return `원본에 없는 문구 '${m[1]}'가 ${place} 속 로고에 보여요.`;
+  if ((m = /^원본에 없는 문구 '(.+)'$/.exec(text))) return `원본에 없는 문구 '${m[1]}'가 보여요.`;
+  if ((m = /^(주|보조) 문구 '(.+)' 없음$/.exec(text))) return `${m[1]} 문구 '${m[2]}'가 보이지 않아요.`;
+  if (/^원본에 없는 요소/.test(text)) return '원본에 없는 요소가 로고 안에 보여요.';
+  if ((m = /^(.+) 위치가 원본과 다름$/.exec(text))) return `${m[1]}의 위치가 원본과 달라요.`;
+  if ((m = /^(.+) 모양이 원본과 다름\(F1 [\d.]+\)$/.exec(text))) return `${m[1]}의 모양이 원본과 달라요.`;
+  if (/^심볼:문구 크기 비율 다름/.test(text)) return '심볼과 문구의 크기 비율이 원본과 달라요.';
+  if ((m = /^로고 외곽 비율이 원본과 다름\(가로\/세로 원본 ([\d.]+), (?:영상|포스터) ([\d.]+)\)$/.exec(text)))
+    return `로고의 가로·세로 비율이 달라요. ${place} 속 로고가 원본보다 ${Number(m[2]) < Number(m[1]) ? '세로로 길쭉해요' : '가로로 넓어요'}.`;
+  if (/^색이 원본과 다름/.test(text)) return '색이 원본과 달라요.';
+  if ((m = /^(.+) 없음$/.exec(text))) return `${m[1]}이(가) 보이지 않아요.`;
+  return text;
+}
+
 // 초별 결과(per_sec)에서 차이만 종류별로 모은다: [{ kind, secs(이 종류가 나온 초 수), items: [[문장, 초 수], ...] }]
 export function groupDifferences(perSec = []) {
   const kinds = new Map();

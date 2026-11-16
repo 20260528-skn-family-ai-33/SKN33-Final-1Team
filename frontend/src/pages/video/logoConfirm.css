@@ -693,3 +693,29 @@ html .vl-page .vl-candidate-top .vl-candidate-check { position: static; display:
   border: 1.5px solid #b9b9b2; border-radius: 50%; background: var(--op-card, #fff); color: #fff; font-size: 11px; line-height: 1; }
 html .vl-page .vl-candidate.selected .vl-candidate-top .vl-candidate-check { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); }
 html .vl-page .vl-candidate-image:hover .vl-candidate-check { border-color: var(--op-ink, #171717); }
+
+/* 후보 카드 순위(#1) 다시 또렷하게(2026-11-17): 글자만 두면 회색 바탕에 묻혀서, 작은 알약(13px)으로 둔다.
+   고른 카드는 잉크색 알약, 나머지는 흰 알약 + 가는 테두리. 위치는 그대로 로고 위쪽 줄이라 로고를 가리지 않는다. */
+html .vl-page .vl-candidate-top .vl-rank { padding: 2px 9px; border: 1px solid var(--op-line, #d6d6cf); border-radius: 999px; background: var(--op-card, #fff);
+  color: var(--op-ink, #171717); font: 600 13px/1.4 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-rank { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); color: #fff; }
+
+/* '검수 범위 · 선택한 구간' 패널 글자 키우기(2026-11-17): 머리글 13px, 양끝 시각 13px, 구간 목록 16px, 초 수 배지 14px. */
+html .vl-page .vl-exposure .vl-kicker { font-size: 13px; }
+html .vl-page .vl-exposure .vl-section-heading h2 { font-size: 20px; }
+html .vl-page .vl-exposure .vl-soft-tag { padding: 4px 12px; font-size: 14px; }
+html .vl-page .vl-exposure .vl-timeline-axis { margin-top: 6px; font-size: 13px; }
+html .vl-page .vl-exposure p { margin-top: 10px; color: var(--op-ink, #171717); font: 500 16px/1.5 var(--font-signal, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+
+
+/* 초별 근거 표의 '차이 내용': 서버 문장을 다듬어 한 줄에 하나씩 보인다(원문은 마우스를 올리면 보인다). */
+html .vl-cell-findings { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+html .vl-cell-findings li { position: relative; padding-left: 12px; line-height: 1.55; }
+html .vl-cell-findings li::before { content: ''; position: absolute; top: .7em; left: 0; width: 5px; height: 5px; border-radius: 50%; background: #a34f3e; }
+
+/* 정밀 대조 카드 이름표·비교 표시 키우기(2026-11-17): '원본 로고'·'영상 01:25' 이름표 14px, 가운데 비교 원 52px + '비교' 13px. */
+html .vl-cmp-pair figcaption { top: 12px; left: 12px; padding: 5px 14px; font-size: 14px; font-weight: 500; }
+html .vl-cmp-frame { padding-top: 48px; }
+html .vl-cmp-arrow { width: 52px; height: 52px; font-size: 22px; }
+html .vl-cmp-arrow::after { top: calc(100% + 8px); font-size: 13px; font-weight: 500; letter-spacing: .04em; }
+html .vl-cmp-diffs .vl-finding-list li { font-size: 14px; line-height: 1.6; }
