@@ -564,3 +564,82 @@ html .vl-cmp-strip-axis { grid-column: 2; display: flex; justify-content: space-
 
 html .vl-cmp-diffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; border: 1px solid #efd5ce; }
 html .vl-cmp-diffs .vl-diff-group h3 { color: #8f4132; }
+
+
+/* ---------- 로고 위치 직접 확인(Optimus 테마, 2026-11-17) ----------
+   흰 카드·가는 선·알약 단추로 통일하고, 영상 프레임 위 단추줄(이전·다음 후보), 잉크색 진행 막대, 키 안내를 둔다. */
+html .vl-layout.is-single { grid-template-columns: minmax(0, 1fr); }
+html .vl-page .vl-current-ref { display: flex; align-items: center; gap: 18px; padding: 16px 20px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); }
+html .vl-page .vl-current-ref img { width: 132px; height: 72px; padding: 6px; border: 1px solid var(--op-line, #e3e3df); border-radius: 8px; background: #fff; }
+html .vl-current-label { display: block; color: var(--op-muted, #8a8a84); font: 11px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .08em; }
+html .vl-page .vl-current-ref h1 { margin: 2px 0 0; font-size: 26px; font-weight: 500; letter-spacing: -.04em; }
+
+html .vl-confirm-heading { align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--op-line, #e3e3df); }
+html .vl-confirm-heading h2 { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -.035em; }
+html .vl-stage-actions { display: flex; gap: 8px; }
+html .vl-page .vl-stage-actions .vl-button { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; }
+
+html .vl-page :is(.vl-panel, .vl-viewer-card) { padding: 18px 20px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); box-shadow: 0 1px 2px #1717170a; }
+html .vl-section-heading { margin-bottom: 14px; }
+html .vl-section-heading h2 { margin: 0; font-size: 16px; font-weight: 500; letter-spacing: -.03em; }
+html .vl-page .vl-soft-tag, html .vl-page .vl-count { padding: 3px 10px; border-radius: 999px; background: var(--op-surface, #f3f3f1); color: var(--op-muted, #6e6e6b); font-size: 12px; font-weight: 400; }
+html .vl-page .vl-count { min-width: 26px; background: var(--op-ink, #171717); color: var(--op-card, #fff); text-align: center; }
+
+html .vl-player { outline: none; }
+html .vl-player:focus-visible { box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-player-jump { display: flex; gap: 6px; }
+html .vl-player-jump button { min-height: 32px; padding: 0 14px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
+  font-size: 13px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+html .vl-player-jump button:hover:enabled { border-color: var(--op-ink, #171717); }
+html .vl-player-jump button:disabled { color: #b5b5ae; cursor: default; }
+html .vl-page .vl-frame { border-radius: 8px; }
+html .vl-page .vl-frame-time { padding: 4px 10px; font-size: 12px; }
+html .vl-page .vl-box { border-color: #c8a24a; background: #c8a24a14; }
+html .vl-page .vl-box > span { padding: 2px 8px; border-radius: 0 0 6px 0; background: #c8a24a; color: #fff; font-size: 11px; font-weight: 500; }
+html .vl-page .vl-box.selected { border: 2px solid #fff; background: #ffffff1f; box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-page .vl-box.selected > span { background: var(--op-ink, #171717); color: #fff; }
+
+html .vl-page .vl-player-controls { grid-template-columns: auto auto minmax(80px, 1fr) auto auto; gap: 10px; margin-top: 14px; }
+html .vl-page .vl-play { min-width: 84px; min-height: 38px; padding: 0 18px; font-size: 13px; }
+html .vl-step { min-height: 34px; padding: 0 12px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
+  font: 12px/1 var(--font-signal, ui-monospace, monospace); cursor: pointer; }
+html .vl-step:hover:enabled { border-color: var(--op-ink, #171717); }
+html .vl-step:disabled { color: #b5b5ae; cursor: default; }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range] { --at: 0%; height: 8px; margin: 0; padding: 0; border: 0; border-radius: 999px; cursor: pointer; -webkit-appearance: none; appearance: none;
+  background: linear-gradient(90deg, var(--op-ink, #171717) var(--at), #ecebe6 var(--at)); }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range]::-webkit-slider-thumb { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: var(--op-ink, #171717);
+  box-shadow: 0 0 0 1px #17171733, 0 2px 6px #17171740; -webkit-appearance: none; appearance: none; }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 3px solid #fff; border-radius: 50%; background: var(--op-ink, #171717); }
+html .vl-page .vl-player-controls strong { color: var(--op-ink, #171717); font: 500 15px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-player-controls strong span { font-size: 12px; font-weight: 400; }
+html .vl-page .vl-player-options { align-items: center; gap: 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--op-line, #e3e3df); }
+html .vl-page .vl-player-options label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; }
+html .vl-page .vl-player-options select { min-height: 32px; padding: 0 10px; border-radius: 999px; font-size: 12px; }
+html .vl-keys { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--op-muted, #8a8a84); font-size: 11px; }
+html .vl-keys kbd { padding: 1px 6px; border: 1px solid var(--op-line, #e3e3df); border-bottom-width: 2px; border-radius: 4px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
+  font: 10px/1.5 var(--font-signal, ui-monospace, monospace); }
+html .vl-keys kbd + kbd { margin-left: -1px; }
+
+html .vl-page .vl-candidate-grid { gap: 12px; }
+html .vl-page .vl-candidate { border-radius: 8px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+html .vl-page .vl-candidate:hover { transform: translateY(-1px); box-shadow: 0 6px 16px #17171712; }
+html .vl-page .vl-candidate.selected { box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-page .vl-candidate-check { padding: 3px 10px; font-size: 11px; }
+html .vl-page .vl-rank { padding: 2px 9px; font: 11px/1.5 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate-info { gap: 4px; padding: 10px 12px 12px; }
+html .vl-page .vl-candidate-score span, html .vl-page .vl-candidate-info p { font-size: 12px; }
+html .vl-page .vl-candidate-score strong { font: 500 14px/1 var(--font-signal, ui-monospace, monospace); }
+
+html .vl-page .vl-selected-item { border-radius: 8px; }
+html .vl-page .vl-selected-item strong { font-size: 14px; }
+html .vl-page .vl-selected-item small, html .vl-page .vl-mini-label { font-size: 12px; }
+html .vl-page .vl-selection-empty { padding: 18px; border: 1px dashed var(--op-line, #e3e3df); border-radius: 8px; font-size: 13px; text-align: center; }
+html .vl-page .vl-wide { min-height: 42px; border-radius: 999px; font-size: 13px; }
+html .vl-page .vl-linked-copy strong { font-size: 13px; }
+html .vl-page .vl-linked-copy small, html .vl-page .vl-empty-inline, html .vl-page .vl-help { font-size: 13px; }
+
+html .vl-page .vl-savebar { padding: 12px 14px 12px 20px; border-radius: 999px; }
+html .vl-page .vl-savebar strong { font-size: 14px; font-weight: 500; }
+html .vl-page .vl-save-actions .vl-button { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; }
+html .vl-page .vl-exposure p, html .vl-page .vl-timeline-axis { font-size: 12px; }
+html .vl-page .vl-player-options label { white-space: nowrap; }

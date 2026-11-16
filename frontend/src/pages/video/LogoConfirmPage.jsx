@@ -116,6 +116,24 @@ function CandidatePlayer({ video, refIndex, sec, setSec, checked, onToggle }) {
       label: '#' + (order + 1) + ' 후보' + (checked.has(groupIndex) ? ' · 선택됨' : ''),
     }];
   });
+  // 지금 보이는 후보 묶음에 상자가 있는 시점(초). '이전·다음 후보' 단추와 Shift+←/→가 이 시점으로 건너뛴다.
+  const candidateSecs = useMemo(() => [...new Set(visible.flatMap(groupIndex =>
+    Object.keys(video.groups[groupIndex].box[refIndex] || {}).map(Number)))].sort((a, b) => a - b), [visible, video.groups, refIndex]);
+  const prevSec = [...candidateSecs].reverse().find(value => value < sec);
+  const nextSec = candidateSecs.find(value => value > sec);
+  const step = delta => { setPlaying(false); setSec(value => Math.max(0, Math.min(last, value + delta))); };
+  function keyDown(event) {
+    if (event.target.closest('select, input, button')) return;
+    if (event.key === ' ') { event.preventDefault(); setPlaying(value => !value); }
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      const forward = event.key === 'ArrowRight';
+      if (event.shiftKey) {
+        const target = forward ? nextSec : prevSec;
+        if (target != null) { setPlaying(false); setSec(target); }
+      } else step(forward ? 1 : -1);
+    }
+  }
   useEffect(() => {
     if (!playing) return undefined;
     const timer = setInterval(() => {
@@ -130,30 +148,36 @@ function CandidatePlayer({ video, refIndex, sec, setSec, checked, onToggle }) {
     return () => clearInterval(timer);
   }, [playing, speed, last, setSec]);
 
-  return <section className="vl-viewer-card">
-    <div className="vl-section-heading">
-      <div><span className="vl-kicker">후보 위치</span><h2>영상에서 후보를 확인하세요</h2></div>
-      <span className="vl-soft-tag">1초 간격 프레임</span>
+  // 프레임을 누르거나 Tab으로 들어오면 ←/→(1초)·Shift+←/→(후보 시점)·Space(재생)로 움직인다.
+  return <section className="vl-viewer-card vl-player" tabIndex={0} onKeyDown={keyDown} aria-label="후보 위치 영상. 왼쪽·오른쪽 화살표로 1초, Shift와 함께 누르면 후보 시점으로 이동합니다.">
+    <div className="vl-section-heading vl-player-head">
+      <h2>영상 프레임</h2>
+      <div className="vl-player-jump">
+        <button type="button" disabled={prevSec == null} onClick={() => { setPlaying(false); setSec(prevSec); }}>← 이전 후보</button>
+        <button type="button" disabled={nextSec == null} onClick={() => { setPlaying(false); setSec(nextSec); }}>다음 후보 →</button>
+      </div>
     </div>
     <FrameViewer video={video} sec={sec} overlays={overlays} onSelect={onToggle} />
     <div className="vl-player-controls">
       <button type="button" className="vl-play" onClick={() => setPlaying(value => !value)}>{playing ? '일시정지' : '재생'}</button>
-      <input aria-label="영상 시점" type="range" min="0" max={last} value={Math.min(sec, last)}
+      <button type="button" className="vl-step" aria-label="1초 앞으로" onClick={() => step(-1)} disabled={sec <= 0}>−1초</button>
+      <input aria-label="영상 시점" type="range" min="0" max={last} value={Math.min(sec, last)} style={{ '--at': (last ? Math.min(sec, last) / last * 100 : 0) + '%' }}
         onChange={event => setSec(Number(event.target.value))} />
+      <button type="button" className="vl-step" aria-label="1초 뒤로" onClick={() => step(1)} disabled={sec >= last}>+1초</button>
       <strong>{timeText(sec)} <span>/ {timeText(last)}</span></strong>
     </div>
     <div className="vl-player-options">
-      <label>오버레이 후보
+      <label>표시 후보
         <select value={limit} onChange={event => setLimit(Number(event.target.value))}>
           {[3, 10, 20, 50].map(value => <option key={value} value={value}>상위 {value}개</option>)}
         </select>
       </label>
-      <label>재생 속도
+      <label>속도
         <select value={speed} onChange={event => setSpeed(Number(event.target.value))}>
           {[1, 2, 4, 8].map(value => <option key={value} value={value}>{value}배</option>)}
         </select>
       </label>
-      <span>{overlays.length ? '박스를 눌러 후보를 선택하거나 해제하세요.' : '이 시점에는 표시할 후보가 없습니다.'}</span>
+      <span className="vl-keys" aria-hidden="true"><kbd>←</kbd><kbd>→</kbd> 1초 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 후보 <kbd>Space</kbd> 재생</span>
     </div>
   </section>;
 }
@@ -168,10 +192,10 @@ function GroupLinks({ video, refIndex, confirmed, checked, onToggle }) {
   const shown = expanded ? candidates : candidates.slice(0, 8);
   return <section className="vl-panel">
     <div className="vl-section-heading">
-      <div><span className="vl-kicker">추가 구간</span><h2>같은 로고의 다른 묶음</h2></div>
-      <span className="vl-soft-tag">확정 점수 {Math.round(LINK_RATIO * 100)}% 이상</span>
+      <h2>같은 로고의 다른 묶음</h2>
+      <span className="vl-soft-tag">점수 {Math.round(LINK_RATIO * 100)}%+</span>
     </div>
-    {!candidates.length ? <p className="vl-empty-inline">연결해 볼 다른 후보가 없습니다.</p> :
+    {!candidates.length ? <p className="vl-empty-inline">다른 묶음이 없어요.</p> :
       <div className="vl-linked-list">{shown.map(groupIndex => {
         const group = video.groups[groupIndex];
         const [sec, box] = group.rep[refIndex];
@@ -231,10 +255,10 @@ function ManualEditor({ video, initialSec, onCancel, onDone }) {
 
   return <section className="vl-panel vl-manual">
     <div className="vl-section-heading">
-      <div><span className="vl-kicker">직접 지정</span><h2>영상에서 로고 영역을 표시하세요</h2></div>
+      <h2>로고 영역 직접 지정</h2>
       <button type="button" className="vl-text-button" onClick={onCancel}>후보 화면으로</button>
     </div>
-    <p className="vl-help">프레임 위에서 드래그해 로고를 감싸고, 같은 영역에 로고가 보이는 시간 구간을 지정하세요. 고정된 박스가 구간 전체에 적용됩니다.</p>
+    <p className="vl-help">프레임에서 로고를 드래그해 감싸고, 로고가 보이는 구간을 정하세요.</p>
     <div className="vl-manual-workspace">
       <div>
         <div ref={canvas} className="vl-manual-canvas" style={{ aspectRatio: W + ' / ' + H }}
@@ -272,7 +296,7 @@ function ManualEditor({ video, initialSec, onCancel, onDone }) {
 
 function SelectionSummary({ video, refIndex, checked, confirmed, manuals, onRemoveGroup, onRemoveManual }) {
   const groups = [...checked];
-  if (!groups.length && !manuals.length) return <div className="vl-selection-empty">선택한 후보가 없습니다. 후보 카드를 선택하거나 영상에서 직접 지정하세요.</div>;
+  if (!groups.length && !manuals.length) return <div className="vl-selection-empty">선택한 후보가 없어요.</div>;
   return <div className="vl-selection-list">
     {groups.map(groupIndex => {
       const group = video.groups[groupIndex];
@@ -327,11 +351,10 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   const extraCount = Math.max(0, ranked.length - 3);
   const rest = ranked.slice(3, 3 + visibleExtra);
   return <div className="vl-main-stack">
-    <div className="vl-stage-heading">
-      <div><span className="vl-kicker">위치 직접 확인</span><h1>이 원본 로고가 나오는 구간을 고르세요</h1>
-        <p>순위는 후보를 찾는 데 씁니다. 같은 로고인지 최종 확인은 담당자가 진행합니다.</p></div>
+    <div className="vl-stage-heading vl-confirm-heading">
+      <h2>로고가 나오는 구간 고르기</h2>
       <div className="vl-stage-actions">
-        <button type="button" className="vl-button subtle" onClick={onManual}>후보에 없음 · 직접 지정</button>
+        <button type="button" className="vl-button subtle" onClick={onManual}>직접 지정</button>
         <button type="button" className="vl-button secondary" onClick={onNone}>영상에 없음</button>
       </div>
     </div>
@@ -340,16 +363,15 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
       <div className="vl-review-left">
         <CandidatePlayer video={video} refIndex={refIndex} sec={sec} setSec={setSec} checked={checked} onToggle={onToggle} />
         <section className="vl-panel">
-          <div className="vl-section-heading"><div><span className="vl-kicker">상위 후보</span><h2>비교할 묶음을 선택하세요</h2></div>
-            <span className="vl-soft-tag">여러 묶음 선택 가능</span></div>
-          <p className="vl-candidate-help">자동 정밀 대조에 쓴 후보가 먼저 선택돼 있어요. 검수하려던 로고가 맞는 묶음만 남기거나 다른 묶음을 골라 확정하세요.</p>
+          <div className="vl-section-heading"><h2>후보 묶음</h2>
+            <span className="vl-soft-tag">여러 개 선택 가능</span></div>
           <div className="vl-candidate-grid">
             {top.map((groupIndex, index) => <CandidateCard key={groupIndex} video={video} refIndex={refIndex} groupIndex={groupIndex}
               rank={index + 1} selected={checked.has(groupIndex)} onToggle={() => {
                 setSec(video.groups[groupIndex].rep[refIndex][0]); onToggle(groupIndex);
               }} />)}
           </div>
-          {!top.length && <p className="vl-empty-inline">순위에 표시할 후보가 없습니다. 영상에서 직접 지정할 수 있습니다.</p>}
+          {!top.length && <p className="vl-empty-inline">후보가 없어요. ‘직접 지정’으로 영역을 표시하세요.</p>}
           {extraCount > 0 && <button type="button" className="vl-text-button" onClick={() => setVisibleExtra(value =>
             value >= extraCount ? 0 : Math.min(extraCount, value + 15))}>
             {visibleExtra >= extraCount ? '상위 3개만 보기' : visibleExtra === 0
@@ -369,15 +391,14 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
 
       <aside className="vl-review-right">
         <section className="vl-panel vl-selection-panel">
-          <div className="vl-section-heading"><div><span className="vl-kicker">확정할 후보</span><h2>선택 내용</h2></div>
+          <div className="vl-section-heading"><h2>선택한 구간</h2>
             <span className="vl-count">{checked.size + manuals.length}</span></div>
           <SelectionSummary video={video} refIndex={refIndex} checked={checked} confirmed={confirmed} manuals={manuals}
             onRemoveGroup={onRemoveGroup} onRemoveManual={onRemoveManual} />
           {decision === 'none' && <div className="vl-none-state">이 원본 로고는 영상에 없는 것으로 표시했습니다.</div>}
           {checked.size > 0 && decision !== 'done' && <button type="button" className="vl-button primary vl-wide"
             onClick={onConfirm}>선택한 {checked.size}개 묶음 확정</button>}
-          {decision === 'done' && <p className="vl-save-hint">선택 내용을 저장한 뒤 정밀 대조를 실행할 수 있습니다.</p>}
-          {decision === 'done' && <button type="button" className="vl-button subtle vl-wide" onClick={onManual}>수동 영역 추가</button>}
+          {decision === 'done' && <button type="button" className="vl-button subtle vl-wide" onClick={onManual}>영역 직접 추가</button>}
           {decision === 'done' && <button type="button" className="vl-button secondary vl-wide" onClick={() => onNone()}>해당 없음으로 변경</button>}
         </section>
         {decision === 'done' && <GroupLinks video={video} refIndex={refIndex} confirmed={confirmed} checked={checked} onToggle={groupIndex => {
@@ -793,8 +814,9 @@ export default function LogoConfirmPage() {
           <span>누락된 시점은 후보 찾기와 정밀 대조에서 제외됩니다: {spanText(missing)}</span>
         </div>}
 
-        {view === 'confirm' ? <div className="vl-layout">
-          <aside className="vl-logo-sidebar">
+        {view === 'confirm' ? <div className={'vl-layout' + (refNames.length > 1 ? '' : ' is-single')}>
+          {/* 원본 로고가 하나면 고를 것이 없으므로 왼쪽 목록을 그리지 않는다. */}
+          {refNames.length > 1 && <aside className="vl-logo-sidebar">
             <div className="vl-sidebar-title"><span className="vl-kicker">기준 로고</span><strong>{refNames.length}개</strong></div>
             <div className="vl-logo-list">
               {refNames.map((name, i) => <button type="button" key={i} className={'vl-logo-row' + (i === refIndex ? ' active' : '')}
@@ -806,14 +828,13 @@ export default function LogoConfirmPage() {
                 <i>{answerMatchesSelection(i) ? '✓' : (i + 1)}</i>
               </button>)}
             </div>
-            <p className="vl-sidebar-note">각 기준 로고에 해당하는 구간을 확인하고 저장하세요.</p>
-          </aside>
+          </aside>}
 
           <section className="vl-workspace">
             {refInfo && <div className="vl-current-ref">
               <img src={base + '/' + refInfo.img} alt={refInfo.name + ' 원본'} />
-              <div><span className="vl-kicker">현재 확인 중 · {refIndex + 1} / {refNames.length}</span><h1>{refInfo.name}</h1>
-                <p>순위는 탐색 보조 자료입니다. 화면에서 로고 영역과 시간 구간을 직접 확인하세요.</p></div>
+              <div>{refNames.length > 1 && <span className="vl-kicker">{refIndex + 1} / {refNames.length}</span>}
+                <span className="vl-current-label">원본 로고</span><h1>{refInfo.name}</h1></div>
             </div>}
 
             {mode === 'manual' ? <ManualEditor video={video} initialSec={sec} onCancel={() => setMode('candidates')} onDone={markManual} /> :
@@ -824,8 +845,7 @@ export default function LogoConfirmPage() {
 
             {payload && <ExposureSummary video={video} payload={payload} />}
             {decision && <section className="vl-savebar">
-              <div><strong>{decision === 'none' ? '영상에 해당 로고가 없는 것으로 표시했습니다.' : '선택한 위치를 확인해 주세요.'}</strong>
-                <span>{decision === 'none' ? '이 기록은 브라우저에 저장됩니다.' : '정밀 대조에는 이 브라우저에 저장한 묶음과 영역이 전달됩니다.'}</span></div>
+              <div><strong>{decision === 'none' ? '영상에 없는 로고로 표시했어요.' : isSaved ? '저장했어요. 위쪽 단추로 다시 정밀 대조하세요.' : '선택한 구간을 저장하세요.'}</strong></div>
               <div className="vl-save-actions">
                 <button type="button" className="vl-button subtle" onClick={resetSelection}>다시 선택</button>
                 <button type="button" className="vl-button primary" onClick={saveAnswer} disabled={isSaved}>
