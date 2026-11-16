@@ -135,8 +135,9 @@ export function LoginPage() {
     <SiteHeader />
     <main className="auth-main" aria-labelledby="login-intro-title">
       <section className="auth-intro" aria-labelledby="login-intro-title">
-        {/* 예시 장면(태블릿)은 마우스를 따라 기울지 않고 기운 자세 그대로 고정한다. 뒤의 점 그림은 계속 움직인다(구 ↔ 포스터 검수 장면). */}
-        <PixelField monochrome scene="poster" />
+        {/* 예시 장면(태블릿)은 마우스를 따라 기울지 않고 기운 자세 그대로 고정한다. 뒤의 점 그림은 계속 움직인다.
+            로그인·회원가입 모두 소개 화면처럼 구 → 포스터 검수 → 영상 검수 장면을 차례로 돈다(포스터에서 멈추지 않는다). */}
+        <PixelField monochrome />
         <span className="pill">기준부터 결과까지, 크리에이티브체커</span>
         <h1 id="login-intro-title">검수의 시작을,<br /><em>한곳에서.</em></h1>
         <p>로그인하고 이미지와 요구사항을 준비하세요.<br />확정한 기준으로 검수하고 근거를 확인할 수 있어요.</p>
