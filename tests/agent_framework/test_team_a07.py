@@ -129,7 +129,7 @@ def test_known_limitations_and_warnings_are_translated_and_unknown_ones_kept():
         "Approved-criteria context only; no PostgreSQL/Neo4j relationship lookup was executed.", "팀 경고 원문")})})
     notes = report(request).summary.split("\n안내:\n", 1)[1]
     assert "코드 검증만 했습니다. 이미지 인식 정확도와 기준 출처는 따로 검증하지 않았습니다." in notes
-    assert "승인된 기준만 근거로 썼고 PostgreSQL·Neo4j 관계 조회는 하지 않았습니다." in notes
+    assert "승인된 기준만 근거로 썼고 기준 관계 조회는 하지 않았습니다." in notes
     assert "팀 경고 원문" in notes and "Code validation only" not in notes
 
 
