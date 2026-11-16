@@ -155,7 +155,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
       form.append('video', file);
       form.append('criteria', criteriaJson);
       form.append('project_name', title);
-      // 보안 여부: 일반 자료는 자막 판독을 OpenAI로, 보안 자료는 RunPod로 처리한다.
+      // 보안 여부: 자막은 모두 Qwen3-VL(RunPod)이 먼저 읽는다. 일반 자료만 Qwen3-VL이 못 읽은 프레임을 OpenAI가 보조로 읽는다.
       if (modelRoute !== 'default') form.append('model_route', modelRoute);
       let headers;
       if (projectWorkflow) {

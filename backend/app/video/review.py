@@ -143,8 +143,16 @@ def subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int
 
 
 # 보안 여부에 따른 모델 경로(backend/agent_framework/model_route.py, 2026-11-12 사용자 결정).
-# 일반 자료(openai)는 문서 분석·자막 판독을 OpenAI API로, 보안 자료(runpod)는 기존 Qwen/RunPod만 쓴다.
+# 일반 자료(openai)는 문서 분석을 OpenAI API로, 보안 자료(runpod)는 기존 Qwen/RunPod만 쓴다.
+# 자막 판독은 보안 여부와 관계없이 설정한 엔진(기본 Qwen3-VL/RunPod)이 먼저 읽고, 일반 자료만 OpenAI를 보조로 쓴다
+# (2026-11-16 사용자 결정: 19편 평가에서 처음 보는 영상의 재현율·정밀도가 Qwen3-VL이 더 높았다).
 VIDEO_ROUTES = ("default", "openai", "runpod")
+
+
+def general_subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
+    """일반 자료의 자막 판독. Qwen3-VL 엔진이면 Qwen3-VL이 먼저 읽고 OpenAI를 보조로 쓴다. Paddle 엔진이면 기본 판독과 같다."""
+    return vlm.read_frames(frames, directory, progress, route="openai") if subtitle_engine() == "qwen3-vl" \
+        else subtitle_frames(frames, directory, progress)
 
 
 def route_form(value: str) -> str:
@@ -153,11 +161,6 @@ def route_form(value: str) -> str:
     if value not in VIDEO_ROUTES:
         raise HTTPException(422, "model_route는 default, openai, runpod 중 하나여야 합니다.")
     return value
-
-
-def openai_subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
-    """일반 자료의 자막 판독: 같은 프롬프트·형식으로 OpenAI 비전 모델이 프레임을 읽는다."""
-    return vlm.read_frames(frames, directory, progress, route="openai")
 
 
 # ---------------------------------------------------------------------------
@@ -398,7 +401,8 @@ class Pipeline:
             "height": f["height"], "status": f["ocr_status"], "same_as": f["same_as"], "unread_boxes": f["unread_boxes"],
             "lines": [{"line_id": f"{f['frame_id']}:{r['id']}", "text": r["text"], "bbox_xyxy": r["bbox_xyxy"],
                        "confidence": r["confidence"],
-                       **({"vlm_role": r.get("role"), "region": r.get("region")} if use_vlm else {})}
+                       **({"vlm_role": r.get("role"), "region": r.get("region"), "bbox_source": r.get("bbox_source")}
+                          if use_vlm else {})}
                       for r in f["records"]]} for f in frames])
         if succeeded < MIN_OCR_SUCCESS:
             raise ValueError(f"OCR success ratio {succeeded:.2f}")
@@ -410,7 +414,10 @@ class Pipeline:
                        "device": payload.get("device") or "vllm", "load_seconds": None,
                        "wall_seconds": payload.get("wall_seconds"),
                        "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
-                       "ocr_success_ratio": round(succeeded, 4)}
+                       "ocr_success_ratio": round(succeeded, 4),
+                       "fallback_frames": payload.get("fallback_frames", 0)}   # 일반 자료에서 OpenAI가 보조로 읽은 프레임 수
+            if payload.get("fallback_frames"):
+                self.warnings.append(f"자막 판독 모델(Qwen3-VL)이 읽지 못한 프레임 {payload['fallback_frames']}장은 OpenAI로 보조 판독했습니다.")
         else:
             runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": payload.get("device") or "cpu", "load_seconds": payload.get("load_seconds"),
                        "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
@@ -655,9 +662,10 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             reserved.pop(result["id"])
 
     def run(target: Path, demuxer: str, slot: str) -> None:
-        # 일반 자료(openai)는 자막 판독을 OpenAI로, 보안 자료·기존 작업은 설정된 엔진(Qwen3-VL/RunPod)으로 읽는다.
+        # 자막 판독은 보안 여부와 관계없이 설정된 엔진(Qwen3-VL/RunPod)이 먼저 읽는다.
+        # 일반 자료(openai)만 Qwen3-VL이 내려가 있거나 읽지 못한 프레임을 OpenAI로 보조 판독한다(subtitle_vlm.read_frames).
         route = _read_json(target / "result.json").get("model_route") or "default"
-        pipeline = Pipeline(target, openai_subtitle_frames if route == "openai" and ocr is None else recognize, update, do_logo)
+        pipeline = Pipeline(target, general_subtitle_frames if route == "openai" and ocr is None else recognize, update, do_logo)
         pipeline.stage = "extracting"
         try:
             with worker_pool.acquire(slot, target.name) if worker_pool else inference_lock:

@@ -107,8 +107,10 @@ export async function submitLogoJob({ video, logos, title, reviewId, detector = 
   try {
     return await send(false);
   } catch (failure) {
-    // 새 서버는 LINKED_VIDEO_UNAVAILABLE, 영상 칸이 필수인 예전 서버는 입력 검증 오류(Field required)로 거절한다.
-    const needsVideo = failure?.status === 422 && (failure.code === 'LINKED_VIDEO_UNAVAILABLE' || /Field required/i.test(failure.message || ''));
+    // 새 서버는 LINKED_VIDEO_UNAVAILABLE로 거절한다. 영상 칸이 필수인 예전 서버는 입력 검증 오류로 거절하는데,
+    // FastAPI 그대로면 'Field required', 인증 앱(backend/app/main.py)으로 감싼 AWS 영상 서비스는 INVALID_AUTH_REQUEST다.
+    const needsVideo = failure?.status === 422 && (['LINKED_VIDEO_UNAVAILABLE', 'INVALID_AUTH_REQUEST'].includes(failure.code)
+      || /Field required/i.test(failure.message || ''));
     if (!needsVideo || signal?.aborted) throw failure;
     return send(true);
   }

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VideoEvidenceDialog from './VideoEvidenceDialog.jsx';
-import VideoWorkflowActions from './VideoWorkflowActions.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { LogoCompareResults } from './LogoFlowParts.jsx';
@@ -59,18 +58,6 @@ function SegmentDetail({ segment, tracks, frames, items, onSelectItem }) {
       {users.length ? <ul className="rv-video-plain-list">{users.map(item => <li key={item.key}><button type="button" className="rv-video-text-button" onClick={() => onSelectItem(item)}>{item.result.criterion}</button></li>)}</ul>
         : <p className="rv-result-muted">이 구간을 근거로 쓴 기준이 없습니다.</p>}</section>
   </>;
-}
-
-// 표본 범위·자막 분류 방식·OCR 처리 정보. 판정의 한계를 함께 보여 준다.
-function RuntimeDetails({ job }) {
-  const runtime = job.runtime;
-  return <details className="rv-result-runtime"><summary>검사 범위와 처리 내역</summary>
-    <p>{coverageNote(job.coverage)}. &lsquo;충족&rsquo;은 검사한 시점에서 충족이라는 뜻입니다.</p>
-    <p>{job.classifier === 'logreg' ? '학습한 자막 줄 분류 모델' : '자막 줄 분류 모델이 아직 없어 OCR 신뢰도 0.5 하한 규칙'}으로 자막 후보를 골랐습니다. 제외한 줄도 사유와 함께 남겨 두었습니다.</p>
-    {runtime && <p>{joinLabels(runtime.engine && `OCR ${runtime.engine}`, runtime.device, runtime.seconds_per_frame && `장당 ${runtime.seconds_per_frame}초`,
-      Number.isFinite(runtime.ocr_success_ratio) && `읽기 성공 ${Math.round(runtime.ocr_success_ratio * 100)}%`)}</p>}
-    <p>기준 판정은 영상당 1회 · 기준 v{job.criteria_version}</p>
-  </details>;
 }
 
 // 영상 재생 칸. 재생 위치는 타임라인 재생선과 맞춘다.
@@ -144,7 +131,8 @@ function Timeline({ job, view, evidence, currentTime, shortcuts, onSelect, onScr
 
 // 왼쪽 영상과 타임라인을 오른쪽의 판정 목록에 연결한다. 검수 항목을 누르면 판정 근거가 창(VideoEvidenceDialog)으로 열리고,
 // 자막 트랙·구간은 목록 아래에 상세를 보여 준다.
-export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onRevise, onOpenRun, onDecision, onReport }) {
+// 결과 화면 오른쪽에는 담당자 승인(최종 승인·수정 요청)과 '검사 범위와 처리 내역'을 두지 않는다(2026-11-16 요청).
+export default function VideoResults({ job, logo, logoWarning, onNewReview, onReuse, onReport }) {
   const player = useRef(null);
   const items = useMemo(() => judgmentItems(job), [job]);
   const tracks = job.tracks || EMPTY;
@@ -340,8 +328,6 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
             {[['checks', '검수 항목', items.length], ['tracks', '자막 트랙', tracks.length], ['segments', '구간', segments.length]].map(([key, label, count]) =>
               <button type="button" key={key} className={tab === key ? 'is-active' : ''} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}<span>{count}</span></button>)}
           </div>
-          {job.workflow && <VideoWorkflowActions {...{ job, onDecision, onRevise, onOpenRun }} />}
-          <RuntimeDetails job={job} />
         </div>
       </aside>
     </div>

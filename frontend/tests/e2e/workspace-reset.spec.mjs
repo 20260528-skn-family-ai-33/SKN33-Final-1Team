@@ -227,7 +227,7 @@ test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을
   assert.equal(new URL(page.url()).search, '');
 });
 
-test('영상 결과에서 수정 사유와 부모 실행을 유지한다', { timeout: 30000 }, async t => {
+test('영상 결과에는 담당자 승인과 처리 내역을 두지 않는다', { timeout: 30000 }, async t => {
   const path = '/api/video-reviews/checked';
   const frame = { frame_id: 't001000', time_ms: 1000, width: 640, height: 360, lines: [] };
   const job = { id: 'checked', status: 'completed', project_name: '시연', criteria_version: 1, criteria: [],
@@ -267,19 +267,11 @@ test('영상 결과에서 수정 사유와 부모 실행을 유지한다', { tim
     return true;
   } });
   await page.goto(base + '/video?id=checked');
-  await page.getByLabel('수정 요청 사유', { exact: true }).fill('자막 위치 수정');
-  await page.getByRole('button', { name: '수정 요청 승인', exact: true }).click();
-  await page.getByText('영상·기준·승인 이력', { exact: true }).click();
-  await page.getByText(/자막 위치 수정 · 2026-11-11/).waitFor();
-  await page.getByRole('button', { name: '수정본 등록', exact: true }).click();
-  // 보안 여부 기록이 없는 검수라 수정본을 올릴 때 보안 여부를 다시 묻는다. 유형은 문구 검수로 이어진다.
-  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
-  await page.getByRole('heading', { name: videoInput, exact: true }).waitFor();
-  await page.getByText(/수정본을 등록/).waitFor();
-  await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles({
-    name: 'revised.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video'),
-  });
-  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-  await page.waitForURL('**/video?id=child');
+  // 결과 화면 오른쪽에는 담당자 승인(최종 승인·수정 요청·수정본 등록·승인 이력)과 '검사 범위와 처리 내역'을 두지 않는다.
+  await page.getByRole('heading', { name: '검수 요구사항', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('수정 요청 사유', { exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '최종 승인', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '수정 요청 승인', exact: true }).count(), 0);
+  assert.equal(await page.getByText('영상·기준·승인 이력', { exact: true }).count(), 0);
+  assert.equal(await page.getByText('검사 범위와 처리 내역', { exact: true }).count(), 0);
 });
