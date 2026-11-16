@@ -7,7 +7,7 @@ import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { DocumentProjectPicker, projectBlockReason } from '../review/DocumentInput.jsx';
 import ReviewTypePicker, { SecurityPicker } from '../review/ReviewTypePicker.jsx';
-import { useLogoJobs } from './LogoFlowParts.jsx';
+import { logoJobsPending, useAutoCompare, useLogoJobs } from './LogoFlowParts.jsx';
 import { videoLogoSteps } from './logoFlow.js';
 import VideoInput from './VideoInput.jsx';
 import VideoProgress from './VideoProgress.jsx';
@@ -88,10 +88,14 @@ export default function VideoReviewPage() {
   const { status, refresh } = useVideoStatus();
   const { job: loaded, error, missing, setJob } = useVideoJob(id, refresh);
   const logo = useLogoJobs(id);
+  useAutoCompare(logo.jobs);
   // id가 바뀐 직후 이전 작업이 한 번 그려지지 않도록 현재 id의 작업만 쓴다.
   const job = loaded?.id === id ? loaded : null;
   const legacy = job && job.status === 'completed' && !job.coverage;
-  const completed = job?.status === 'completed' && !legacy;
+  // 함께 올린 로고 작업이 후보 찾기·정밀 대조를 끝내기 전에는 결과 화면으로 넘기지 않는다(2026-11-17).
+  // 로고 목록을 아직 못 읽었으면 기다리고, 목록 조회가 실패하면 동영상 결과만으로 넘어간다.
+  const logoPending = !!id && !logo.error && (logo.jobs == null || logoJobsPending(logo.jobs));
+  const completed = job?.status === 'completed' && !legacy && !logoPending;
   const step = !id ? 'input' : completed ? params.get('view') === 'report' ? 'report' : 'results' : 'running';
   const inputLocked = step === 'input' && (uploading || documentBusy);
   const placeholder = step === 'running' && !job && !error;
@@ -184,7 +188,7 @@ export default function VideoReviewPage() {
         <span className="rv-eyebrow">PREVIOUS FORMAT</span><h1 id="page-title" tabIndex={-1}>이 결과는 새 화면으로 보여 줄 수 없어요.</h1>
         <ErrorMessage message="계획 문서 반영 전에 만든 결과라 새 화면으로 보여 줄 수 없습니다. 같은 영상을 다시 검수해 주세요." />
         <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={backToInput}>새 동영상으로 다시 검수<Icon name="arrow" /></button></div>
-        </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo}
+        </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo} logoWaiting={job?.status === 'completed' && logoPending}
           onRestart={() => job?.workflow && job.status === 'failed' ? reuse(true) : backToInput()} />)}
       {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning}
         onNewReview={startOver} onReuse={() => reuse()} onRevise={() => reuse(true)} onOpenRun={openJob} onDecision={setJob} onReport={openReport} />}

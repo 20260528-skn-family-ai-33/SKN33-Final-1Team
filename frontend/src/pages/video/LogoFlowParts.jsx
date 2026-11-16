@@ -118,6 +118,26 @@ export async function submitLogoJob({ video, logos, title, reviewId, detector = 
 
 // 동영상 검수와 함께 올린 로고 작업을 읽는다. 후보 찾기·정밀 대조가 도는 동안 다시 읽는다.
 // 화면 단계가 바뀌어도 조회가 다시 시작되지 않도록 페이지에서 한 번만 쓴다.
+// 로고 작업이 아직 끝나지 않았는가: 후보 찾기 중, 정밀 대조 중, 또는 후보는 찾았는데 정밀 대조를 아직 시작하지 않음.
+// 후보 찾기에 실패한 작업은 더 기다릴 것이 없으므로 끝난 것으로 본다.
+export function logoJobsPending(jobs) {
+  return (jobs || []).some(job => RUNNING.has(job.status) || RUNNING.has(job.compare_status)
+    || (job.status === 'candidates_ready' && !job.compare_status));
+}
+
+// 후보 찾기가 끝났는데 정밀 대조 기록이 없는 작업(자동 대조를 하지 않는 서버)은 진행 화면에서 바로 자동 대조를 요청한다.
+// 결과 화면으로 넘어가기 전에 정밀 대조까지 끝내기 위해서다. 작업마다 한 번만 요청하고, 이미 대조 중(409)이면 그대로 둔다.
+export function useAutoCompare(jobs) {
+  const requested = useRef(new Set());
+  useEffect(() => {
+    for (const job of jobs || []) {
+      if (job.status !== 'candidates_ready' || job.compare_status || requested.current.has(job.id)) continue;
+      requested.current.add(job.id);
+      startAutoCompare(`/api/video-logos/${encodeURIComponent(job.id)}`).catch(() => {});
+    }
+  }, [jobs]);
+}
+
 export function useLogoJobs(reviewId) {
   const [state, setState] = useState({ reviewId: null, jobs: null, error: '' });
   useEffect(() => {
@@ -129,7 +149,7 @@ export function useLogoJobs(reviewId) {
         if (controller.signal.aborted) return;
         const items = list.items || [];
         setState({ reviewId, jobs: items, error: '' });
-        if (items.some(j => RUNNING.has(j.status) || RUNNING.has(j.compare_status))) timer = setTimeout(poll, 2000);
+        if (logoJobsPending(items)) timer = setTimeout(poll, 2000);
       } catch (failure) {
         if (controller.signal.aborted) return;
         setState(previous => ({ reviewId, jobs: previous.reviewId === reviewId ? previous.jobs : null, error: failure.message }));
@@ -200,7 +220,6 @@ export function LogoCompareResults({ jobs, error, notice, onSeek }) {
   return <section className="rv-video-logo-result" aria-labelledby="video-logo-result-title">
     <header className="rv-video-logo-result-head">
       <h3 id="video-logo-result-title">로고 정밀 대조</h3>
-      <p>원본 로고마다 자동으로 고른 후보를 대조했어요. 차이 근거가 있으면 보류, 없으면 통과입니다. 최종 판정은 담당자가 합니다.</p>
     </header>
     {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
     <ErrorMessage message={error} />

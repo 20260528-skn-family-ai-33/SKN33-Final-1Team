@@ -13,6 +13,16 @@ import './logoConfirm.css';
 const RUNNING = new Set(['queued', 'running']);
 const SKIP = { frame_missing: '프레임 없음', crop_too_small: '영역이 너무 작음' };
 
+// 서버 차이 문장을 다듬은 문장으로 바꾸고, 다듬은 문장이 같으면(수치만 다른 같은 차이) 하나만 남긴다: [[화면 문장, 원문들], ...]
+function uniqueFindings(texts, place = '영상') {
+  const seen = new Map();
+  for (const raw of texts || []) {
+    const text = findingText(raw, place);
+    seen.set(text, seen.has(text) ? seen.get(text) + '\n' + raw : raw);
+  }
+  return [...seen];
+}
+
 function timeText(sec) {
   const value = Math.max(0, Number(sec) || 0);
   return String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
@@ -426,6 +436,34 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   </div>;
 }
 
+// 정밀 대조 진행 표시. 동영상 검수 진행 화면(VideoProgress)과 같은 짜임: 왼쪽 어두운 무대(원본 로고를 훑는 스캔 선),
+// 오른쪽 머리글·큰 제목·진행률·단계 목록. 진행률은 서버 compare_progress 그대로 쓴다.
+const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '초별 정밀 대조'], ['organize', '결과 정리']];
+function CompareProgress({ status, progress, base, refs }) {
+  const value = Math.min(100, Math.max(0, Math.round(progress || 0)));
+  const active = status === 'running' ? (value >= 95 ? 2 : 1) : 0;
+  const title = status === 'running' ? '원본 로고와 영상 속 로고를 정밀 대조하고 있어요.' : '정밀 대조 차례를 기다리고 있어요.';
+  return <section className="vl-compare-progress" aria-labelledby="compare-progress-title">
+    <div className="vl-compare-stage" aria-hidden="true">
+      <div className="vl-compare-stage-logos">{(refs || []).slice(0, 3).map((ref, index) =>
+        <span key={index} className="vl-compare-stage-logo"><img src={base + '/' + (ref.img || ('refs/' + index + '.png'))} alt="" /><i /></span>)}</div>
+      <span className="vl-compare-stage-caption">{status === 'running' ? '초별 영역을 원본과 비교하는 중' : '대조 준비 중'}</span>
+    </div>
+    <div className="vl-compare-progress-body">
+      <span className="vl-compare-progress-eyebrow">LOGO PRECISION CHECK IN PROGRESS</span>
+      <h2 id="compare-progress-title">{title}</h2>
+      <span className="visually-hidden" role="status">{COMPARE_STEPS[active][1]} 단계 진행 중</span>
+      <div className="vl-compare-progress-value"><span>정밀 대조 진행률</span><strong>{status === 'running' ? value + '%' : '대기'}</strong></div>
+      <div className="vl-compare-progress-track" role="progressbar" aria-label="정밀 대조 진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
+        <i style={{ width: (status === 'running' ? Math.max(4, value) : 4) + '%' }} /></div>
+      <ol className="vl-compare-progress-steps">{COMPARE_STEPS.map(([key, label], index) =>
+        <li key={key} className={index < active ? 'is-completed' : index === active ? 'is-active' : 'is-pending'} aria-current={index === active ? 'step' : undefined}>
+          <span aria-hidden="true">{index < active ? '✓' : String(index + 1).padStart(2, '0')}</span>{label}</li>)}</ol>
+      <p className="vl-compare-progress-help">끝나면 이 화면에 결과가 바로 나타나요. 페이지를 닫아도 서버에서 계속 대조합니다.</p>
+    </div>
+  </section>;
+}
+
 function CompareResults({ base, video, refs, onConfirm, onStatus }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -474,21 +512,14 @@ function CompareResults({ base, video, refs, onConfirm, onStatus }) {
             .map(tone => <span key={tone} className={'vl-result-pill ' + tone}>{OUTCOME[tone].label} {tally[tone]}</span>)}</div>}</div>
       <button type="button" className="vl-button secondary" onClick={onConfirm}>위치 직접 확인</button>
     </div>
-    {running && <section className="vl-panel vl-progress-card">
-      <div className="vl-progress-title"><strong>정밀 대조 중</strong><span>{result.compare_progress || 0}%</span></div>
-      <div className="vl-progress-track"><span style={{ width: Math.min(100, result.compare_progress || 0) + '%' }} /></div>
-      <p>고른 구간의 초별 영역을 원본 로고와 비교하고 있습니다.</p>
-    </section>}
+    {running && <CompareProgress status={result.compare_status} progress={result.compare_progress} base={base} refs={refs} />}
     {result.compare_status === 'failed' && <section className="vl-panel"><ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} /></section>}
-    {!result.compare_status && <section className="vl-panel vl-progress-card" role="status">
-      <div className="vl-progress-title"><strong>정밀 대조를 시작하고 있습니다</strong></div>
-      <p>원본 로고마다 순위가 높은 후보를 자동으로 골라 정밀 대조합니다.</p>
-    </section>}
+    {!result.compare_status && <CompareProgress status="starting" progress={0} base={base} refs={refs} />}
     {(result.warnings || []).map(warning => <div className="vl-warning" key={warning}>⚠ {warning}</div>)}
     {result.compare_status === 'completed' && !bundles.length && <section className="vl-panel vl-empty">
       <strong>대조 결과가 없습니다.</strong><p>영상에서 원본 로고 후보를 찾지 못했거나 모든 원본 로고를 ‘영상에 없음’으로 정했습니다. 위치를 직접 지정해 다시 대조할 수 있어요.</p>
     </section>}
-    {bundles.map(bundle => <EvidenceBundle key={bundle.logo + '-' + bundle.crop} base={base} bundle={bundle}
+    {!running && result.compare_status && bundles.map(bundle => <EvidenceBundle key={bundle.logo + '-' + bundle.crop} base={base} bundle={bundle}
       refInfo={refs[bundle.logo]} several={bundles.filter(item => item.logo === bundle.logo).length > 1} />)}
   </div>;
 }
@@ -522,7 +553,8 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
     {differences.length > 0 && <div className="vl-diff-groups vl-cmp-diffs" aria-label="종류별 차이">
       {differences.map(group => <section className="vl-diff-group" key={group.kind}>
         <h3>{group.kind}</h3>
-        <ul className="vl-finding-list">{group.items.map(([label]) => <li key={label} title={label}><span>{findingText(label)}</span></li>)}</ul>
+        <ul className="vl-finding-list">{uniqueFindings(group.items.map(([label]) => label)).map(([text, raw]) =>
+          <li key={text} title={raw}><span>{text}</span></li>)}</ul>
       </section>)}
     </div>}
     {outcome.tone === 'unknown' && !differences.length && <p className="vl-cmp-note">로고가 작거나 가려져 비교하지 못했어요. 원본 영상을 확인해 주세요.</p>}
@@ -546,7 +578,7 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
             <span className={'vl-result-pill ' + (OUTCOME[row.outcome]?.tone || '')}>{OUTCOME[row.outcome]?.label || row.outcome}</span>}</td>
           <td>{row.skipped || row.outcome !== 'diff' ? '—' : (row.kinds || []).join(' · ') || '기타'}</td>
           <td>{row.skipped ? '비교하지 않음' : row.outcome === 'diff' ? (row.findings?.length
-            ? <ul className="vl-cell-findings">{row.findings.map(text => <li key={text} title={text}>{findingText(text)}</li>)}</ul> : '차이 근거 있음')
+            ? <ul className="vl-cell-findings">{uniqueFindings(row.findings).map(([text, raw]) => <li key={text} title={raw}>{text}</li>)}</ul> : '차이 근거 있음')
             : row.outcome === 'match' ? '차이 없음' : '비교할 수 없음'}</td>
         </tr>)}</tbody>
       </table></div>
@@ -760,9 +792,8 @@ export default function LogoConfirmPage() {
       await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
       if (controller.signal.aborted) return;
       setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued' } : previous);
-      // 동영상 검수에 연결된 작업은 검수 결과 화면으로 돌아가 다시 대조한 결과를 거기서 바로 본다.
-      if (meta?.review_id) go('/video?id=' + encodeURIComponent(meta.review_id));
-      else changeView('compare');
+      // 재검수는 결과 확인 화면으로 돌아가지 않고 이 화면의 정밀 대조로 넘어가 진행 상황과 결과를 바로 본다(2026-11-17).
+      changeView('compare');
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
     } finally {
@@ -788,13 +819,7 @@ export default function LogoConfirmPage() {
     <SiteHeader current="/video" />
     <WorkspaceProjectBar name={meta?.id === job ? meta.title : '동영상 로고 검수'} version={stepVersion} step={step} steps={steps} locked={busy}
       canNavigate={key => key === 'input' || key === 'review' || (ready && (key === 'confirm' || key === 'compare'))}
-      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }}>
-      {ready && view === 'confirm' && <button type="button" className="rv-button primary" onClick={runCompare}
-        disabled={!compareCount || busy || comparing}>
-        {comparing ? '정밀 대조 중' : busy ? '요청 중…' : compareCount
-          ? '확인한 ' + compareCount + '개 로고로 다시 정밀 대조' : '정밀 대조할 위치 없음'}
-      </button>}
-    </WorkspaceProjectBar>
+      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }} />
     <main id="review-content" className="vl-page" tabIndex={-1}>
     {!job ? <section className="vl-empty-state">
       <div className="vl-empty-mark">01</div>
@@ -857,18 +882,24 @@ export default function LogoConfirmPage() {
                 onRemoveGroup={removeGroup} onRemoveManual={removeManual} decision={decision} />}
 
             {payload && <ExposureSummary video={video} payload={payload} />}
-            {decision && <section className="vl-savebar">
-              <div><strong>{decision === 'none' ? '영상에 없는 로고로 표시했어요.' : isSaved ? '저장했어요. 위쪽 단추로 다시 정밀 대조하세요.' : '선택한 구간을 저장하세요.'}</strong></div>
+            {/* 아래 저장 줄: 저장 단추들과, 맨 오른쪽에 저장한 위치로 정밀 대조를 다시 돌리는 '정밀 대조 재검수' 단추를 둔다. */}
+            <section className="vl-savebar">
+              <div><strong>{!decision ? '로고가 나오는 구간을 고르거나 영상에 없음으로 표시하세요.' : decision === 'none' ? '영상에 없는 로고로 표시했어요.'
+                : isSaved ? '저장했어요. 정밀 대조 재검수를 눌러 다시 대조하세요.' : '선택한 구간을 저장하세요.'}</strong></div>
               <div className="vl-save-actions">
-                <button type="button" className="vl-button subtle" onClick={resetSelection}>다시 선택</button>
-                <button type="button" className="vl-button primary" onClick={saveAnswer} disabled={isSaved}>
+                {decision && <button type="button" className="vl-button subtle" onClick={resetSelection}>다시 선택</button>}
+                {decision && <button type="button" className="vl-button primary" onClick={saveAnswer} disabled={isSaved}>
                   {isSaved ? '저장됨' : '이 원본 로고 확정 저장'}
-                </button>
-                {refIndex + 1 < refNames.length && <button type="button" className="vl-button secondary" onClick={() => { saveAnswer(); setRefIndex(value => value + 1); }}>
+                </button>}
+                {decision && refIndex + 1 < refNames.length && <button type="button" className="vl-button secondary" onClick={() => { saveAnswer(); setRefIndex(value => value + 1); }}>
                   저장하고 다음 로고
                 </button>}
+                <button type="button" className="vl-button primary vl-recompare" onClick={runCompare} disabled={!compareCount || busy || comparing}
+                  title={compareCount ? '저장한 ' + compareCount + '개 로고 위치로 정밀 대조를 다시 합니다.' : '저장한 위치가 없어요.'}>
+                  {comparing ? '정밀 대조 중' : busy ? '요청 중…' : '정밀 대조 재검수'}
+                </button>
               </div>
-            </section>}
+            </section>
           </section>
         </div> : <CompareResults base={base} video={video} refs={video.refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
       </>}

@@ -76,8 +76,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const durationSeconds = limits?.duration_seconds;
   const durationLimit = durationSeconds && (durationSeconds % 60 === 0 ? `${durationSeconds / 60}분` : `${durationSeconds}초`);
   const formats = limits?.formats?.length ? limits.formats.map(format => format.toUpperCase()).join(' · ') : 'MP4 · MOV · WEBM · AVI';
-  const limitText = [uploadLimit && `최대 ${uploadLimit}`, durationLimit && `${durationLimit} 이하`,
-    limits?.short_side_min && `짧은 변 ${limits.short_side_min}px 이상`].filter(Boolean).join(' · ');
+  // 안내에는 용량·길이만 보인다(해상도 하한 '짧은 변 …px 이상'은 2026-11-17 요청으로 뺐다. 실제로 작은 영상이면 아래 경고는 그대로 뜬다).
+  const limitText = [uploadLimit && `최대 ${uploadLimit}`, durationLimit && `${durationLimit} 이하`].filter(Boolean).join(' · ');
 
   // 파일을 고르거나 지우면 초점을 다음에 누를 버튼으로 옮겨 키보드 사용자가 위치를 잃지 않게 한다.
   useEffect(() => {

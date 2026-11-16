@@ -719,3 +719,50 @@ html .vl-cmp-frame { padding-top: 48px; }
 html .vl-cmp-arrow { width: 52px; height: 52px; font-size: 22px; }
 html .vl-cmp-arrow::after { top: calc(100% + 8px); font-size: 13px; font-weight: 500; letter-spacing: .04em; }
 html .vl-cmp-diffs .vl-finding-list li { font-size: 14px; line-height: 1.6; }
+
+/* 저장 줄 맨 오른쪽의 '정밀 대조 재검수' 단추(2026-11-17): 저장 단추와 가는 세로선으로 나누고 잉크색으로 가장 또렷하게 둔다. */
+html .vl-page .vl-save-actions { align-items: center; }
+html .vl-page .vl-save-actions .vl-recompare { position: relative; margin-left: 14px; background: var(--op-ink, #171717); color: #fff; }
+html .vl-page .vl-save-actions .vl-recompare::before { content: ''; position: absolute; left: -11px; top: 8px; bottom: 8px; width: 1px; background: var(--op-line, #e3e3df); }
+html .vl-page .vl-save-actions .vl-recompare:disabled { background: #b5b5ae; cursor: default; }
+
+/* ---------- 정밀 대조 진행 표시(2026-11-17) ----------
+   동영상 검수 진행 화면과 같은 짜임: 왼쪽 어두운 점 모눈 무대(원본 로고를 위아래로 훑는 스캔 선), 오른쪽 모노 머리글·큰 제목·
+   큰 진행률·얇은 막대·단계 목록. */
+html .vl-compare-progress { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 40px; align-items: start; padding: 8px 0 24px; }
+html .vl-compare-stage { position: relative; display: grid; align-content: center; gap: 18px; min-height: 360px; padding: 36px 28px 20px; overflow: hidden;
+  border: 1px solid #2a2622; background-color: #1b1714;
+  background-image: radial-gradient(#ffffff1f 1px, transparent 1px), radial-gradient(ellipse at center, #2b2622 0%, #1b1714 70%); background-size: 18px 18px, 100% 100%; }
+html .vl-compare-stage-logos { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; }
+html .vl-compare-stage-logo { position: relative; display: grid; place-items: center; width: min(320px, 80%); aspect-ratio: 16 / 7; padding: 18px; overflow: hidden;
+  border-radius: 12px; background: #fff; box-shadow: 0 18px 40px #00000066, 0 0 0 1px #ffffff1a; }
+html .vl-compare-stage-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+html .vl-compare-stage-logo i { position: absolute; left: 0; right: 0; top: 0; height: 36%; background: linear-gradient(180deg, transparent, #c8a24a40 70%, #c8a24a); opacity: .9;
+  animation: vl-compare-scan 1.8s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
+html .vl-compare-stage-logo i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #e0b85a; box-shadow: 0 0 12px #e0b85a; }
+@keyframes vl-compare-scan { from { transform: translateY(-40%); } to { transform: translateY(210%); } }
+@media (prefers-reduced-motion: reduce) { html .vl-compare-stage-logo i { animation: none; transform: translateY(80%); } }
+html .vl-compare-stage-caption { justify-self: center; padding-top: 14px; border-top: 1px solid #ffffff1f; color: #f3efe6; font: 13px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .04em; }
+html .vl-compare-progress-body { display: grid; gap: 14px; }
+html .vl-compare-progress-eyebrow { color: var(--op-muted, #6e6e6b); font: 12px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .12em; }
+html .vl-compare-progress-body h2 { margin: 0; font-size: clamp(30px, 3vw, 44px); font-weight: 400; letter-spacing: -.05em; line-height: 1.2; }
+html .vl-compare-progress-value { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 18px; color: var(--op-muted, #6e6e6b); font-size: 14px; }
+html .vl-compare-progress-value strong { color: var(--op-ink, #171717); font-size: clamp(48px, 5vw, 76px); font-weight: 400; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+html .vl-compare-progress-track { height: 2px; background: var(--op-line, #e3e3df); }
+html .vl-compare-progress-track i { display: block; height: 100%; background: var(--op-ink, #171717); transition: width .8s cubic-bezier(.2, .7, .2, 1); }
+html .vl-compare-progress-steps { display: grid; margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--op-line, #e3e3df); }
+html .vl-compare-progress-steps li { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--op-line, #e3e3df); color: var(--op-muted, #6e6e6b); font-size: 15px; }
+html .vl-compare-progress-steps li > span { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--op-line, #e3e3df); border-radius: 50%;
+  font: 11px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-compare-progress-steps li.is-active { color: var(--op-ink, #171717); font-weight: 500; }
+html .vl-compare-progress-steps li.is-active > span { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); color: #fff; }
+html .vl-compare-progress-steps li.is-completed > span { border-color: #cfe3d5; background: #e6f0e9; color: #177d45; }
+html .vl-compare-progress-help { margin: 4px 0 0; color: var(--op-muted, #6e6e6b); font-size: 14px; line-height: 1.6; }
+@media (max-width: 960px) { html .vl-compare-progress { grid-template-columns: 1fr; } }
+
+/* (5) 로고 이미지를 중심으로: 정밀 대조 카드의 영상 쪽 작은 조각도 틀을 채우도록 키워 보인다(원본·영상 같은 크기로 견준다). */
+html .vl-cmp-frame { height: clamp(200px, 18vw, 260px); padding: 52px 28px 24px; }
+html .vl-cmp-frame img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: contain; }
+/* 확대한 로고가 틀을 넘치지 않게: 틀 안쪽 여백(위 52 · 좌우 28 · 아래 24)에 이미지를 절대 위치로 맞추고 비율을 지켜 채운다. */
+html .vl-cmp-frame { position: relative; }
+html .vl-cmp-frame img { position: absolute; top: 52px; left: 28px; width: calc(100% - 56px); height: calc(100% - 76px); }

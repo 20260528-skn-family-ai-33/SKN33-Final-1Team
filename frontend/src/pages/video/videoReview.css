@@ -436,3 +436,51 @@ html .rv-video .rv-video-logo-row-text > span { font-size: 13px; }
 html .rv-video .rv-video-logo-seek { padding: 5px 12px; font-size: 13px; }
 html .rv-video .rv-video-logo-seek svg { width: 13px; height: 13px; }
 html .rv-video .rv-video-logo-row .rv-result-status { font-size: 13px; }
+
+/* (5) 결과 화면 로고 정밀 대조 행: 로고 썸네일을 키우고(176×104) 작은 영상 조각도 틀을 채우게 확대한다. */
+html .rv-video .rv-video-logo-row { grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 22px; padding: 14px 18px 14px 14px; }
+html .rv-video .rv-video-logo-pair { gap: 14px; }
+html .rv-video .rv-video-logo-thumb { width: 176px; height: 104px; padding: 10px; border-radius: 10px; box-shadow: 0 1px 4px #1717170f; }
+html .rv-video .rv-video-logo-thumb img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: contain; }
+html .rv-video .rv-video-logo-vs { font-size: 20px; }
+
+/* ---------- 동영상 검수 화면 글자 크기 점검(2026-11-17, 포스터 검수 화면 기준에 맞춤) ----------
+   실제 화면에서 13px 미만으로 재어진 글자를 올린다: 본문·단추 13~15px, 모노 이름표·숫자 12~13px. 동영상 화면(.rv-video) 안에서만 적용한다. */
+html .rv-video.rv-video .rv-video-result-notice p { font-size: 14px; }
+html .rv-video.rv-video .image-stage-toolbar :is(.image-stage-note, .image-stage-evidence-toggle, .image-stage-focus, select, option) { font-size: 13px; }
+html .rv-video.rv-video .rv-video-timeline-eyebrow, html .rv-video.rv-video .rv-video-timeline-scale, html .rv-video.rv-video .rv-video-scrubber-bubble { font-size: 13px; }
+html .rv-video.rv-video .rv-video-timeline-chip time { font-size: 13px; }
+html .rv-video.rv-video .rv-video-coverage .rv-video-legend { font-size: 13px; }
+html .rv-video.rv-video .rv-video-timeline .rv-button.rv-compact { font-size: 13px; }
+html .rv-video.rv-video .rv-video-original > summary { font-size: 14px; }
+html .rv-video.rv-video .rv-video-original .rv-button { font-size: 13px; }
+html .rv-video.rv-video :is(.rv-video-timecode, .rv-video-timecode strong, .rv-video-media-meta) { font-size: 13px; }
+html .rv-video.rv-video .rv-video-tabs button { font-size: 13px; }
+html .rv-video.rv-video .rv-video-tabs button > span { font-size: 12px; }
+html .rv-video.rv-video .rv-video-row-time, html .rv-video.rv-video .rv-video-row-time i { font-size: 13px; }
+html .rv-video.rv-video .rv-video-row-meta { font-size: 13px; }
+html .rv-video.rv-video .rv-video-rail .rv-video-chip { font-size: 12px; }
+html .rv-video.rv-video .rv-video-rail .rv-video-verdict-detail .rv-result-verdict > span:last-child { font-size: 12px; }
+html .rv-video.rv-video .rv-video-rail .rv-result-detail-section h3 { font-size: 12px; }
+html .rv-video.rv-video .rv-video-rail .rv-result-detail-section h3 > span { font-size: 12px; }
+html .rv-video.rv-video .rv-video-time, html .rv-video.rv-video .rv-video-rail .rv-video-evidence-button .rv-video-time { font-size: 13px; }
+html .rv-video.rv-video .rv-video-evidence-text { font-size: 14px; }
+html .rv-video.rv-video .rv-video-evidence-go { font-size: 12px; }
+html .rv-video.rv-video .rv-video-text-button, html .rv-video.rv-video .rv-video-note { font-size: 13px; }
+/* 진행 화면 */
+html .rv-video.rv-video .rv-video-progress-card .rv-eyebrow { font-size: 12px; }
+html .rv-video.rv-video .rv-video-progress-card .rv-progress-caption { font-size: 13px; }
+html .rv-video.rv-video .rv-video-steps li { font-size: 15px; }
+html .rv-video.rv-video .rv-video-steps li small { font-size: 12px; }
+html .rv-video.rv-video .rv-video-steps li > span:first-child { font-size: 11px; }
+html .rv-video.rv-video .rv-video-facts dt { font-size: 13px; }
+html .rv-video.rv-video .rv-video-facts dd { font-size: 16px; }
+html .rv-video.rv-video .rv-video-scanner-scale { font-size: 13px; }
+html .rv-video.rv-video .rv-progress-help, html .rv-video.rv-video .rv-progress-message { font-size: 14px; }
+html .rv-video.rv-video .rv-video-logo-detail, html .rv-video.rv-video .rv-video-logo-state { font-size: 13px; }
+html .rv-video.rv-video .rv-video-logo-actions .rv-button { font-size: 13px; }
+/* 자료 입력 화면 */
+html .rv-video.rv-video .rv-input-empty > span:last-child { font-size: 13px; line-height: 1.6; }
+html .rv-video.rv-video .rv-reference-logo-row > span { font-size: 13px; }
+html .rv-video.rv-video .rv-input-empty .rv-button, html .rv-video.rv-video .rv-input-fileactions .rv-button { font-size: 14px; }
+html .rv-video.rv-video :is(.rv-requirement-input, .rv-form-stack) .rv-form-hint, html .rv-video.rv-video .rv-form-stack .rv-button.rv-compact { font-size: 13px; }

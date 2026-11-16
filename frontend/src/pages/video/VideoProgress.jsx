@@ -72,7 +72,8 @@ function failureDetail(job) {
 }
 
 // 동영상 검수 진행 화면: 포스터 진행 카드와 같은 구성에 필름 돋보기를 얹는다.
-export default function VideoProgress({ job, error, missing, onRestart, logo }) {
+// logoWaiting: 동영상 처리는 끝났지만 로고 후보 찾기·정밀 대조가 남아 결과 화면으로 넘기지 않고 기다리는 중.
+export default function VideoProgress({ job, error, missing, onRestart, logo, logoWaiting = false }) {
   if (!job && missing) {
     // 없는 기록은 진행 중으로 보이지 않게 따로 알린다(조회는 이미 멈춘 상태).
     return <section className="rv-progress-page rv-video-progress" aria-labelledby="page-title">
@@ -92,9 +93,10 @@ export default function VideoProgress({ job, error, missing, onRestart, logo }) 
   const steps = [...progressSteps(job), ...logoProgressSteps(logo?.jobs)];
   const failed = job?.status === 'failed';
   const value = job ? Math.min(100, Math.max(0, Math.round(job.progress || 0))) : null;
-  const title = !job ? '검수 기록을 불러오고 있어요.' : failed ? stageLabels.failed : stageLabels[job.stage] || '처리하고 있어요.';
+  const title = !job ? '검수 기록을 불러오고 있어요.' : failed ? stageLabels.failed : logoWaiting ? '로고 정밀 대조를 마무리하고 있어요.'
+    : stageLabels[job.stage] || '처리하고 있어요.';
   const media = job?.media;
-  const detail = !job ? '' : failed ? failureDetail(job) : stageDetail(job);
+  const detail = !job ? '' : failed ? failureDetail(job) : logoWaiting ? '자막 검수는 끝났어요. 로고 대조까지 끝나면 결과 화면으로 넘어갑니다.' : stageDetail(job);
   const runtime = job?.runtime;
   const criteriaCount = job?.criteria?.length;
   const activeKey = job && !failed ? stageOrder[stageIndex(job.stage)] : null;

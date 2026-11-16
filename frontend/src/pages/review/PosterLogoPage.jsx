@@ -219,7 +219,8 @@ function LocationEvidence({ base, item, refInfo }) {
         {differences.length > 0 ? <div className="vl-diff-groups" aria-label="종류별 차이">
           {differences.map(group => <section className="vl-diff-group" key={group.kind}>
             <h3>{group.kind}</h3>
-            <ul className="vl-finding-list">{group.items.map(([text]) => <li key={text} title={text}><span>{findingText(text, '포스터')}</span></li>)}</ul>
+            <ul className="vl-finding-list">{[...new Set(group.items.map(([text]) => findingText(text, '포스터')))].map(text =>
+              <li key={text}><span>{text}</span></li>)}</ul>
           </section>)}
         </div> : <p className="vl-muted-copy">{outcome.tone === 'match'
           ? '차이 근거가 없어 통과로 표시했어요. 일치 확정이 아니라 비교한 항목 기준의 결과입니다.'
