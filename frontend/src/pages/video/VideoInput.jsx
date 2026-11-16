@@ -237,6 +237,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
             {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} projectBlock={projectBlock} documentName={draft.documentName}
+              dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
             {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
         </aside>

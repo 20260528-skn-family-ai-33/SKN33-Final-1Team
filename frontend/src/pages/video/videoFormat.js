@@ -140,6 +140,16 @@ export const reviewerLabels = { auto: '자동', manager: '담당자' };
 export const roleLabels = { subtitle: '자막', background: '배경', other: '기타' };
 export const mismatchLabels = { variants: '프레임마다 다르게 읽힘', spacing: '띄어쓰기 다름', case: '대소문자 다름', one_character: '한 글자 다름' };
 
+// 글자 위치 없이 화면 구역(위·가운데·아래 3등분, 왼쪽·오른쪽 절반, 전체)으로 저장된 상자인가.
+// 2026-11-16 이전 자막 판독(backend/app/video/subtitle_vlm.region_box)은 이 구역 사각형만 남겼다. 상자는 판독할 때 저장되므로
+// 그 뒤 서버를 바꿔도 이미 끝난 검수의 상자는 그대로다. 화면은 이 경우 '구역 표시'라고 알린다.
+export function isRegionBox(box, width, height) {
+  if (!Array.isArray(box) || box.length !== 4 || !(width > 0) || !(height > 0)) return false;
+  const regions = [[0, 0, width, height / 3], [0, height / 3, width, height * 2 / 3], [0, height * 2 / 3, width, height],
+    [0, 0, width / 2, height], [width / 2, 0, width, height], [0, 0, width, height]];
+  return regions.some(region => region.every((value, index) => Math.abs(value - box[index]) < 1.5));
+}
+
 // 서버 기준 형식(포스터와 같이 정의되지 않은 필드는 거부)에 맞게 화면용 필드(selected 등)를 뺀다.
 export function criteriaPayload(criteria) {
   return criteria.map(({ id, text, type, source }) => ({ id, text, type, source }));

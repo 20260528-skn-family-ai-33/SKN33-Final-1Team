@@ -126,31 +126,47 @@
 /* ---------- 03 결과 확인 ---------- */
 .rv-video .rv-video-result-notice { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-/* 결과 화면의 영상 로고 정밀 대조 결과. 후보 선택 없이 자동 대조 결과를 바로 보이고, 필요하면 후보를 다시 고른다. */
-.rv-video .rv-video-logo-result { padding: 16px 18px; }
-.rv-video .rv-video-logo-result-head h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
-.rv-video .rv-video-logo-result-head p { margin: 4px 0 0; color: #6e6e6b; font-size: 12px; line-height: 1.5; }
-.rv-video .rv-video-logo-result > .rv-video-inline-warning, .rv-video .rv-video-logo-job .rv-video-inline-warning { margin: 10px 0 0; }
-.rv-video .rv-video-logo-job { margin-top: 14px; padding-top: 12px; border-top: 1px solid #e3e3df; }
-.rv-video .rv-video-logo-job-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; }
-.rv-video .rv-video-logo-job-head > strong { min-width: 0; font-size: 13px; }
+/* 결과 화면의 영상 로고 정밀 대조(Optimus 테마): 상자 없이 위쪽 잉크 선 · 모노 머리글 · 얇은 큰 제목 · 가는 선 카드 · 알약 단추.
+   원본 로고와 영상 속 로고를 나란히 두고, 결과는 화면의 판정 알약(통과=충족 색 · 보류=위반 색 · 비교 정보 부족=확인 필요 색)으로 보인다. */
+.rv-video .rv-video-logo-result { display: grid; gap: 0; padding: 24px 0 4px; border-top: 1px solid var(--op-ink, #171717); background: none; }
+.rv-video .rv-video-logo-result-head { display: grid; gap: 6px; max-width: 760px; }
+.rv-video .rv-video-logo-result-head h2 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.04em; line-height: 1.2; }
+.rv-video .rv-video-logo-result-head p { margin: 0; color: var(--op-muted, #6e6e6b); font-size: 13px; line-height: 1.6; }
+.rv-video .rv-video-logo-result > .rv-video-inline-warning, .rv-video .rv-video-logo-job .rv-video-inline-warning { margin: 12px 0 0; }
+.rv-video .rv-video-logo-job { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--op-line, #e3e3df); }
+.rv-video .rv-video-logo-job-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 16px; }
+.rv-video .rv-video-logo-job-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+.rv-video .rv-video-logo-job-title > span:first-child, .rv-video .rv-video-logo-tally { color: var(--op-muted, #6e6e6b); font: 10px/1.6 var(--font-signal); letter-spacing: 0.08em; }
+.rv-video .rv-video-logo-job-title > strong { overflow: hidden; font-size: 15px; font-weight: 500; letter-spacing: -0.02em; text-overflow: ellipsis; white-space: nowrap; }
+.rv-video .rv-video-logo-tally { font-size: 11px; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
 .rv-video .rv-video-logo-result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .rv-video .rv-video-logo-result-actions .rv-button { text-decoration: none; }
-.rv-video .rv-video-logo-result-note { margin: 10px 0 0; color: #6e6e6b; font-size: 12px; font-variant-numeric: tabular-nums; }
-.rv-video .rv-video-logo-job .error-box { margin: 10px 0 0; }
-.rv-video .rv-video-logo-bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
-.rv-video .rv-video-logo-bundle { display: grid; grid-template-columns: 76px 76px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px; border: 1px solid #e3e3df; border-radius: 10px; background: #fff; }
-.rv-video .rv-video-logo-bundle figure { margin: 0; text-align: center; }
-.rv-video .rv-video-logo-bundle img, .rv-video .rv-video-logo-bundle-empty { display: block; width: 76px; height: 56px; border-radius: 6px; background: #f3f3f1; object-fit: contain; }
-.rv-video .rv-video-logo-bundle figcaption { margin-top: 3px; color: #6e6e6b; font-size: 10px; font-variant-numeric: tabular-nums; }
-.rv-video .rv-video-logo-bundle-empty { display: grid; place-items: center; align-self: start; color: #6e6e6b; font-size: 10px; text-align: center; }
-.rv-video .rv-video-logo-bundle-text { min-width: 0; }
-.rv-video .rv-video-logo-bundle-text > strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.rv-video .rv-video-logo-bundle-text p { margin: 4px 0 0; color: #6e6e6b; font-size: 11px; line-height: 1.45; }
-.rv-video .rv-video-logo-outcome { display: inline-flex; margin-top: 5px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-.rv-video .rv-video-logo-outcome.is-match { background: #e8f5ef; color: #246e56; }
-.rv-video .rv-video-logo-outcome.is-diff { background: #fceeee; color: #a43b3b; }
-.rv-video .rv-video-logo-outcome.is-unknown { background: #fff5df; color: #886015; }
+.rv-video .rv-video-logo-result-note { margin: 12px 0 0; color: var(--op-muted, #6e6e6b); font-size: 13px; }
+.rv-video .rv-video-logo-job .error-box { margin: 12px 0 0; }
+.rv-video .rv-video-logo-progress { display: grid; gap: 8px; margin-top: 14px; max-width: 520px; }
+.rv-video .rv-video-logo-progress > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--op-muted, #6e6e6b); font: 11px/1.5 var(--font-signal); letter-spacing: 0.04em; }
+.rv-video .rv-video-logo-progress strong { color: var(--op-ink, #171717); font: 500 20px/1 var(--font-ui, inherit); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.rv-video .rv-video-logo-track { height: 2px; overflow: hidden; background: var(--op-line, #e3e3df); }
+.rv-video .rv-video-logo-track > i { display: block; height: 100%; background: var(--op-ink, #171717); transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.rv-video .rv-video-logo-bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+.rv-video .rv-video-logo-bundle { display: grid; gap: 14px; padding: 14px; border: 1px solid var(--op-line, #e3e3df); border-top: 2px solid #c8a24a; border-radius: 6px; background: var(--op-card, #fff); }
+.rv-video .rv-video-logo-bundle.is-match { border-top-color: #177d45; }
+.rv-video .rv-video-logo-bundle.is-diff { border-top-color: #a34f3e; }
+.rv-video .rv-video-logo-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; }
+.rv-video .rv-video-logo-pair figure { display: grid; gap: 6px; min-width: 0; margin: 0; }
+.rv-video .rv-video-logo-thumb { display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 10px; overflow: hidden; border: 1px solid var(--op-line, #e3e3df); border-radius: 4px;
+  background-color: var(--op-surface, #f3f3f1); background-image: var(--op-grid, none); background-size: 14px 14px; }
+.rv-video .rv-video-logo-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.rv-video .rv-video-logo-thumb.is-empty { color: var(--op-muted, #6e6e6b); font-size: 12px; text-align: center; }
+.rv-video .rv-video-logo-pair figcaption { color: var(--op-muted, #6e6e6b); font: 10px/1.4 var(--font-signal); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.rv-video .rv-video-logo-vs { color: var(--op-muted, #6e6e6b); font: 14px/1 var(--font-signal); }
+.rv-video .rv-video-logo-bundle-body { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--op-line, #e3e3df); }
+.rv-video .rv-video-logo-bundle-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.rv-video .rv-video-logo-bundle-title > strong { overflow: hidden; font-size: 16px; font-weight: 500; letter-spacing: -0.02em; text-overflow: ellipsis; white-space: nowrap; }
+.rv-video .rv-video-logo-facts { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 0 18px; margin: 0; }
+.rv-video .rv-video-logo-facts > div { min-width: 0; }
+.rv-video .rv-video-logo-facts dt { color: var(--op-muted, #6e6e6b); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
+.rv-video .rv-video-logo-facts dd { margin: 2px 0 0; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 
 .rv-video-workbench { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; gap: 18px; }
 /* 열을 minmax(0, 1fr)로 묶는다. auto 열이면 근거를 확대한 이미지 너비만큼 칸이 커지고 '화면에 맞춤'으로 돌아와도

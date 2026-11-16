@@ -3,7 +3,7 @@ import VideoEvidenceDialog from './VideoEvidenceDialog.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { LogoCompareResults } from './LogoFlowParts.jsx';
-import { coverageNote, filterItems, formatTime, judgmentItems, roleLabels, statusLabels } from './videoFormat.js';
+import { coverageNote, filterItems, formatTime, isRegionBox, judgmentItems, roleLabels, statusLabels } from './videoFormat.js';
 
 const EMPTY = [];
 const NO_VIEW = { segmentId: null, frameId: null, focus: null, key: '', time: null };
@@ -244,8 +244,11 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
     setEvidenceKeyOpen(null);
     rail.current?.querySelector('.rv-video-verdict-trigger.is-selected')?.focus();
   }
+  // 예전 판독(글자 위치 없음)이라 화면 구역 사각형으로 저장된 상자가 있으면 그렇다고 알린다. 새로 검수하면 글자 위치로 표시된다.
+  const regionOnly = Boolean(frame) && frameLines.some(line => isRegionBox(line.bbox_xyxy, frame.width, frame.height));
   const subtitle = frame ? joinLabels(formatTime(frame.time_ms), samplingLabels[frame.sampling] || '표본', `글자 줄 남김 ${kept} · 제외 ${frameLines.length - kept}`,
-    frame.ocr_status === 'failed' && 'OCR 실패', selectedItem && !evidence.length && '이 항목에는 위치 근거가 없어요')
+    frame.ocr_status === 'failed' && 'OCR 실패', regionOnly && '글자 좌표 없는 판독(서버 판독 코드 갱신 전) · 화면 구역으로 표시',
+    selectedItem && !evidence.length && '이 항목에는 위치 근거가 없어요')
     : '타임라인에서 시점을 고르거나 항목의 근거를 선택하세요.';
 
   return <section className="rv-results rv-video-results" aria-labelledby="page-title">

@@ -207,6 +207,8 @@ def model_box(value, width: int, height: int, sent: tuple[int, int] | None = Non
 
     약속한 좌표는 0~1000 상대 좌표다. 값이 1000을 넘으면 보낸 이미지(sent)의 픽셀 좌표로 본다(이전 Qwen-VL 계열의
     습관). 둘 다 아니거나, 넓이가 거의 없거나, 화면 거의 전체를 덮으면 글자 위치로 믿지 않는다(구역 사각형으로 대체)."""
+    if isinstance(value, (list, tuple)) and len(value) == 1 and isinstance(value[0], (list, tuple)):
+        value = value[0]   # [[x1, y1, x2, y2]]처럼 한 겹 더 감싼 응답
     if not isinstance(value, (list, tuple)) or len(value) != 4 or width <= 0 or height <= 0:
         return None
     try:
