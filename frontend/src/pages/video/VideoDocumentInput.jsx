@@ -4,7 +4,8 @@ import { mergeDocumentRequirements } from '../review/documentRequirements.js';
 import { extractDocumentWithProgress, requirementDocument, watchDocumentDeadline } from '../review/frameworkDocument.js';
 
 // modelRoute: 보안 여부(일반 자료 openai, 보안 자료 runpod). A02 문서 분석에 실어 보낸다.
-export default function VideoDocumentInput({ projectId, projectReady, documentName, disabled, busy, setBusy, onDocument,
+// projectBlock: 저장할 프로젝트가 준비되지 않은 이유(꺼진 '파일 선택'에 마우스를 올리면 보인다).
+export default function VideoDocumentInput({ projectId, projectReady, projectBlock, documentName, disabled, busy, setBusy, onDocument,
   modelRoute = 'default' }) {
   const [progress, setProgress] = useState(null);
   const [notice, setNotice] = useState('');
@@ -92,7 +93,9 @@ export default function VideoDocumentInput({ projectId, projectReady, documentNa
   return <DocumentInput kind="video" documentBusy={busy} documentProgress={progress} documentNotice={notice && { summary: notice, warnings }} documentError={error}
     documentResumeId={inspectId}
     documentInput={input} selectDocument={select} cancelDocument={cancel} documentName={pendingName || documentName}
-    clearDocument={disabled ? undefined : clearDocument} disabled={disabled || !projectReady || !projectId}>
+    clearDocument={disabled ? undefined : clearDocument} disabled={disabled || !projectReady || !projectId}
+    disabledReason={disabled ? '동영상을 접수하는 중이에요. 잠시 뒤 다시 눌러 주세요.'
+      : projectBlock || (!projectId ? '먼저 위쪽 「저장할 프로젝트」에서 프로젝트를 고르거나 만들어 주세요.' : undefined)}>
     {!projectId && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
   </DocumentInput>;
 }

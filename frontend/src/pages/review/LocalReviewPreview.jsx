@@ -97,6 +97,8 @@ export default function LocalReviewPreview({ uiOnly = false }) {
   const viewState = { ...state, review: state.step === 'running' ? { status: 'running' } : state.step === 'results' ? { status: 'completed' } : null };
 
   return <ReviewLayout state={viewState} busy={false} health={{ status: 'preview' }} navigate={navigate} previewMode
+    // 실제 화면처럼 보안 여부·유형을 고르는 동안에는 검수 이름·프로젝트 줄을 숨긴다.
+    showWorkspaceBar={!(state.step === 'input' && (!state.securityMode || !state.reviewMode))}
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => dispatch({ type: 'input', field: 'projectName', value }) } : undefined}
     projectActions={state.step === 'input' && <button type="button" className="rv-button secondary" onClick={() => setState(seed(initialState))}>예시 자료 불러오기</button>}>
     <aside className="rv-preview-toolbar" aria-label="로컬 화면 미리보기">

@@ -175,10 +175,12 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     </div>
   </aside>;
 
+  const approvalLabel = exceptionApproved ? '담당자 예외 승인' : finalApproved ? '담당자 승인 완료' : '';
   return <section className="rv-results" aria-labelledby="page-title">
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{review.project_name || '포스터 검수'}</h1>
-    <p className="rv-result-notice" role="status">{review.status_label || '자동 검수 완료'} · {exceptionApproved
-      ? <strong>담당자 예외 승인</strong> : finalApproved ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}</p>
+    {/* 평소(자동 검수 완료·승인 전)에는 안내 줄을 두지 않는다. 처리 오류·미리보기 표시나 담당자 승인 기록처럼 알려야 할 때만 보인다. */}
+    {(review.status_label || approvalLabel) && <p className="rv-result-notice" role="status">
+      {review.status_label}{review.status_label && approvalLabel && ' · '}{approvalLabel && <strong>{approvalLabel}</strong>}</p>}
     {header}
 
     <div className="rv-result-workbench">

@@ -308,8 +308,8 @@ test('저장된 검수 결과에서 서비스 메인 왕복 시 새 입력으로
   await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
   await page.getByRole('button', { name: '포스터', exact: true }).click();
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  assert.equal(await page.locator('#project-name').inputValue(), '');
   await chooseReviewType(page);
+  assert.equal(await page.locator('#project-name').inputValue(), '');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('list', { name: '검수 항목 목록', exact: true }).count(), 0);
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);

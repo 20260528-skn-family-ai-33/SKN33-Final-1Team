@@ -33,8 +33,8 @@ async function fixture(t, options = {}) {
     await route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new');
-  // 저장할 프로젝트가 하나뿐이면 저절로 고르고, 고른 프로젝트 이름을 프로젝트 버튼에 보여 준다.
-  await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
+  // 첫 화면(보안 여부)을 기다린다. 검수 이름·프로젝트 줄은 유형까지 고른 뒤에 보이므로 프로젝트 확인은 chooseReview에서 한다.
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   const authReads = calls.filter(call => call.path.endsWith('/auth/me')).length;
   t.after(() => { assert.deepEqual(errors, []); assert.deepEqual(unexpected, []); });
   return { page, base, calls, authReads };
@@ -49,13 +49,17 @@ async function chooseReview(page, title = '문구 검수 자료 입력') {
   await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
   await page.getByRole('button', { name: '문구 검수', exact: true }).click();
   await page.getByRole('heading', { name: title, exact: true }).waitFor();
+  // 저장할 프로젝트가 하나뿐이면 저절로 고르고, 고른 프로젝트 이름을 프로젝트 버튼에 보여 준다.
+  await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
 }
 
-// 새 입력은 보안 여부를 묻는 첫 화면부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다.
+// 새 입력은 보안 여부를 묻는 첫 화면부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다
+// (검수 이름·프로젝트 줄은 보안 여부·유형을 고르는 동안 숨는다).
 async function checkBlank(page) {
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  assert.equal(await page.locator('#project-name').inputValue(), '');
+  assert.equal(await page.locator('#project-name').count(), 0);
   await chooseReview(page);
+  assert.equal(await page.locator('#project-name').inputValue(), '');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByLabel('검수 이미지 선택', { exact: true }).evaluate(input => input.files.length), 0);
   assert.equal(await page.getByRole('progressbar').count(), 0);

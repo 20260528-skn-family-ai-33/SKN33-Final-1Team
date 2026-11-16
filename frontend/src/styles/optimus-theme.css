@@ -39,12 +39,14 @@ html .rv-project-identity { align-items: center; align-content: center; gap: 12p
 html .rv-project-identity > :is(.rv-project-field, .rv-project-picker) { padding-right: 26px; }
 html .rv-project-identity > * + :is(.rv-project-field, .rv-project-picker) { padding-left: 26px; border-left: 1px solid var(--op-line); }
 html .rv-project-field-label { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
-html .rv-project-identity .rv-project-field > strong { font-size: 16px; font-weight: 500; letter-spacing: -0.03em; line-height: 32px; }
-html .rv-workspace .rv-project-name-field { height: 32px; padding: 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; }
+/* 검수 이름은 화면의 제목 역할을 하므로 크게 쓴다(자료 입력의 큰 제목은 없앴다). */
+html .rv-project-identity .rv-project-field > strong { max-width: 36ch; font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 44px; }
+html .rv-workspace .rv-project-name-field { height: 44px; padding: 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; }
 html .rv-workspace .rv-project-name-field:hover { border-bottom-color: var(--op-line); }
 html .rv-workspace .rv-project-name-field:focus-within { border-bottom-color: var(--op-ink); box-shadow: none; }
-html .rv-workspace .rv-projectbar .rv-project-name-field input[type] { font-size: 16px; font-weight: 500; letter-spacing: -0.03em; }
-html .rv-workspace .rv-project-name-field button { border-radius: 50%; }
+html .rv-workspace .rv-projectbar .rv-project-name-field input[type] { min-width: 16ch; max-width: min(36ch, 48vw); font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 1.3; }
+html .rv-workspace .rv-project-name-field button { width: 34px; height: 34px; border-radius: 50%; }
+html .rv-workspace .rv-project-name-field .icon { width: 18px; height: 18px; }
 html .rv-workspace .rv-project-chip { height: 32px; padding: 0 2px 0 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; font-size: 15px; }
 html .rv-workspace .rv-project-chip:hover:enabled { border-bottom-color: var(--op-line); }
 html .rv-workspace .rv-project-chip.is-required { border: 0; border-bottom: 1px solid var(--op-ink); }
@@ -56,6 +58,8 @@ html .rv-project-required { border-radius: 999px; }
 html .rv-project-none { height: 32px; padding: 0; border: 0; border-radius: 0; }
 html .rv-project-picker-panel { border-color: var(--op-line); border-radius: 8px; box-shadow: 0 18px 50px rgb(0 0 0 / 12%); }
 html .rv-project-actions { align-items: stretch; flex-wrap: nowrap; gap: 24px; }
+/* 검수 이름 칸이 없는 줄(결과 확인): 단계 표시만 원래 자리(오른쪽)에 둔다. */
+html .rv-projectbar--steps-only { justify-content: flex-end; }
 html .rv-workspace .rv-project-actions > .rv-button { align-self: center; min-height: 36px; padding: 7px 16px; border-radius: 999px; font-weight: 500; }
 html .rv-step-nav { align-items: stretch; gap: clamp(16px, 2.2vw, 34px); padding: 0; border-radius: 0; background: none; }
 html .rv-step-nav > button { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; margin-bottom: -1px; padding: 0 1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--op-muted); font-size: 13px; }
@@ -70,7 +74,6 @@ html .rv-main { padding-bottom: 72px; }
 html :is(.rv-workspace-intro, .rv-input-heading) { margin-block: 12px 32px; }
 html :is(.rv-workspace-intro, .rv-input-heading, .page-heading) h1 { font-size: clamp(36px, 3.5vw, 56px); font-weight: 500; letter-spacing: -0.055em; line-height: 1.15; }
 html :is(.rv-eyebrow, .eyebrow, .summary-overline) { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.08em; }
-html .rv-workspace :is(.rv-input-page, .rv-video-input) > h1.sr-only { position: static; width: auto; height: auto; margin: 0 0 14px; padding: 0; overflow: visible; clip: auto; clip-path: none; font-size: clamp(34px, 3vw, 48px); font-weight: 500; letter-spacing: -0.05em; line-height: 1.2; white-space: normal; }
 
 /* 카드와 판: 가는 선, 6px 모서리, 그림자 없음 */
 html :is(.rv-panel, .rv-workspace .form-card, .rv-progress-card, .summary-card, .auth-card, .vl-card, .vl-panel, .rv-result-card, .rv-report-card) { border: 1px solid var(--op-line); border-radius: 6px; background: var(--op-card); box-shadow: none; }
@@ -99,8 +102,6 @@ html .rv-workspace .rv-input-document .document-input { border: 1px solid var(--
 /* 자료 입력 · 기준 확인
    제목 아래 잉크색 가는 선 한 줄을 긋고 그 밑을 두 칸으로 나눈다. 왼쪽은 포스터(올리기 전에는 점선 테두리의 놓는 자리),
    오른쪽은 카드 대신 번호가 붙은 구획을 가는 선으로 나눠 쌓는다. 다음 행동은 맨 아래 선 위에 둔다. */
-html .rv-workspace :is(.rv-input-page, .rv-video-input) > .op-eyebrow { grid-column: 1; margin-bottom: 16px; }
-html .rv-workspace .rv-input-page > h1.sr-only { grid-column: 1; }
 html .rv-workspace .rv-input-mode { gap: 10px; margin: 0 0 26px; }
 html .rv-workspace .rv-input-mode :is(strong, .rv-input-security) { height: 28px; padding: 0 13px; border-radius: 999px; font-weight: 500; }
 /* 제목이 이미 검수 유형을 말하므로 같은 말의 칩은 화면에서만 감춘다(읽기 도구와 문서 구조에는 그대로 있다) */
@@ -157,6 +158,18 @@ html .rv-workspace .rv-input-form .image-stage-extra > :is(.rv-input-filebar, .r
 html .rv-workspace .rv-input-filemeta strong { font-size: 13px; }
 html .rv-workspace .rv-input-filemeta span { color: var(--op-stage-muted); font: 11px/1.5 var(--font-signal); }
 html .rv-workspace .rv-input-fileactions > .rv-button { color: var(--op-bg); }
+/* 기준 확인 화면: 기준이 승인되면 검은 미리보기 칸이 포스터를 받는 자리가 된다(파일 선택·끌어다 놓기). */
+html .rv-workspace .rv-poster-drop .image-stage-empty > .rv-button { margin-top: 6px; }
+html .rv-workspace .rv-poster-drop .image-stage-empty > small { font: 11px/1.7 var(--font-signal); }
+html .rv-workspace .rv-poster-drop { position: relative; }
+html .rv-workspace .rv-poster-drop .rv-poster-drop-error { margin: 0; color: #e6cd86; font-size: 13px; }
+/* 넣은 포스터 이름·바꾸기·지우기: 칸 오른쪽 위에 떠 있는 작은 줄 */
+html .rv-workspace .rv-poster-drop-file { position: absolute; z-index: 2; top: 16px; right: 16px; display: grid; justify-items: end; gap: 6px; max-width: calc(100% - 32px); }
+html .rv-workspace .rv-poster-drop-filebar { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; padding: 5px 5px 5px 14px; border: 1px solid var(--op-stage-line); border-radius: 999px; background: rgb(18 17 15 / 78%); backdrop-filter: blur(6px); color: var(--op-bg); }
+html .rv-workspace .rv-poster-drop-filebar strong { min-width: 0; overflow: hidden; font-size: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+html .rv-workspace .rv-poster-drop-filebar .rv-button { flex: none; min-height: 30px; padding: 5px 12px; border-color: var(--op-stage-line); border-radius: 999px; background: none; color: var(--op-bg); font-size: 12px; }
+html .rv-workspace .rv-poster-drop-filebar .rv-button:hover:enabled { background: rgb(255 255 255 / 10%); }
+html .rv-workspace .rv-poster-drop-file > .rv-poster-drop-error { padding: 6px 12px; border-radius: 8px; background: rgb(18 17 15 / 78%); }
 /* 오른쪽 구획: 번호 · 제목 · 내용 */
 html .rv-form-stack { counter-reset: rv-block; border: 0; border-radius: 0; background: none; }
 html .rv-workspace .rv-form-block { counter-increment: rv-block; position: relative; padding: 24px 0 26px 46px; }
@@ -316,10 +329,12 @@ html .vl-page h1 { font-weight: 500; letter-spacing: -0.05em; }
    타일의 이름은 aria-label이 정하므로 번호와 화살표 장식은 읽히는 이름을 바꾸지 않는다. */
 html .rv-workspace .rv-input-page { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 24px; }
 html .rv-workspace .rv-input-page > * { grid-column: 1 / -1; min-width: 0; }
-html .rv-workspace .rv-input-page > .rv-preview-entry { z-index: 1; grid-area: 1 / 2; align-self: start; margin: 4px 0 0; color: var(--op-muted); font: 11px/1.5 var(--font-signal); }
+/* 개발 서버의 '데이터 없이 화면 둘러보기'는 저장할 프로젝트 칸 오른쪽, 프로젝트 글자 줄 높이에 맞춘다. */
+html .rv-project-identity > .rv-preview-entry { align-self: flex-end; margin: 0 0 14px; color: var(--op-muted); font: 11px/1.5 var(--font-signal); text-align: left; white-space: nowrap; }
 html .rv-workspace .rv-input-page > .rv-type-picker { grid-row: 1; }
 /* 자료 종류 고르기(검수 첫 화면)는 검수 이름 줄이 없어 머리글에 붙는다. 다음 화면과 비슷한 높이에서 시작하게 위를 띄운다. */
-html .rv-workspace .rv-input-page.rv-media-choice { padding-top: clamp(40px, 8vh, 92px); }
+/* 보안 여부·검수 유형 고르기도 검수 이름·프로젝트 줄을 두지 않으므로 같은 높이에서 시작한다. */
+html .rv-workspace .rv-input-page:is(.rv-media-choice, .rv-choice-screen) { padding-top: clamp(40px, 8vh, 92px); }
 html .rv-workspace .rv-type-picker { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; justify-items: start; gap: 0; min-height: 0; padding: 6px 0 0; border-radius: 0; background: none; color: var(--op-ink); }
 /* 소개 화면 첫 장면의 점 구체를 제목 오른쪽 뒤에 둔다(장식) */
 html .rv-type-picker > .op-pixel-field { position: absolute; z-index: -1; top: -78px; right: -30px; width: 500px; height: 500px; pointer-events: none; -webkit-mask-image: radial-gradient(closest-side, #000 58%, transparent); mask-image: radial-gradient(closest-side, #000 58%, transparent); }

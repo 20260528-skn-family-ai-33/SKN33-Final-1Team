@@ -88,8 +88,8 @@ test('UI 전용 모드는 기존 검수 URL에서도 인증·Qwen·상태 조회
   await page.getByRole('button', { name: '크리에이티브체커 홈', exact: true }).click();
   // 홈으로 가면 첫 화면(보안 여부)부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다.
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  assert.equal(await page.locator('#project-name').inputValue(), '');
   await chooseReview(page, '종합 검수');
+  assert.equal(await page.locator('#project-name').inputValue(), '');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('progressbar').count(), 0);
   assert.deepEqual(requests, []);

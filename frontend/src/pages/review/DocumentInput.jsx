@@ -50,6 +50,15 @@ function projectDate(value) {
 // ref.createFromName(name): 검수 이름 칸에서 Enter를 누르면 그 이름의 프로젝트를 만들고 선택한다(같은 이름이 있으면 그것을 고른다).
 // onPick(project): 사람이 목록에서 고르거나 패널에서 새로 만들어 고른 프로젝트. 화면은 이 이름을 검수 이름에 반영한다
 // (목록을 불러올 때 하나뿐이라 저절로 고른 경우는 알리지 않는다).
+// 저장할 프로젝트가 준비되지 않아 문서를 첨부할 수 없는 이유. 꺼진 '파일 선택'에 마우스를 올리면 보인다.
+// status: DocumentProjectPicker의 onStatus 값({ ready, busy, failed }).
+export function projectBlockReason(status) {
+  if (status?.ready) return '';
+  if (status?.busy) return '저장할 프로젝트를 확인하는 중이에요. 잠시 뒤 다시 눌러 주세요.';
+  if (status?.failed) return '저장할 프로젝트 목록을 불러오지 못해 문서를 첨부할 수 없어요. 프로젝트 칸을 열어 새로고침해 주세요.';
+  return '먼저 위쪽 「저장할 프로젝트」에서 프로젝트를 고르거나 만들어 주세요.';
+}
+
 export function DocumentProjectPicker({ projectId, setProjectId, projectName, disabled, onStatus, onPick, ref }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +95,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 
   useEffect(() => () => creation.current?.abort(), []);
   useEffect(() => {
-    onStatus({ ready: connected && !loading && !creating && !!projectId, busy: loading || creating });
+    onStatus({ ready: connected && !loading && !creating && !!projectId, busy: loading || creating, failed: !connected && !loading });
   }, [connected, projectId, loading, creating, onStatus]);
 
   // 패널을 열면 검색칸에 초점을 두고, 바깥 누르기·Esc로 닫는다.
@@ -203,7 +212,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 }
 
 export default function DocumentInput({ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput,
-  selectDocument, cancelDocument, cancelLabel = '입력 반영 취소', cancelBusy, documentName, clearDocument, disabled, kind = 'poster', children }) {
+  selectDocument, cancelDocument, cancelLabel = '입력 반영 취소', cancelBusy, documentName, clearDocument, disabled, disabledReason, kind = 'poster', children }) {
   const [now, setNow] = useState(Date.now);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
@@ -223,6 +232,8 @@ export default function DocumentInput({ documentBusy, documentProgress, document
   const lastChecked = statusAge === null ? '' : statusAge < 3 ? '방금' : statusAge < 60 ? `${statusAge}초 전`
     : `${Math.floor(statusAge / 60)}분 전`;
   const off = documentBusy || disabled;
+  // 꺼진 '파일 선택'·'추출 예시 보기'에 마우스를 올리면 누를 수 없는 이유를 보인다.
+  const offReason = !off ? undefined : documentBusy ? '문서를 분석하는 중이에요. 끝난 뒤 다시 첨부할 수 있어요.' : disabledReason || undefined;
   const dropActive = dragging && !off;
   const filename = documentProgress?.source || documentName;
   const uploadHint = off ? 'PDF·DOCX 1개 첨부' : 'PDF·DOCX 1개를 끌어 놓거나 파일을 선택하세요.';
@@ -275,7 +286,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
           accept={`application/pdf,.pdf,.docx,${DOCX_MEDIA_TYPE}`}
           onChange={event => { if (event.target.files.length) selectDocument([...event.target.files]); }} />
         <div className="rv-upload-actions">
-          <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => documentInput.current?.click()}>
+          <button type="button" className="rv-button secondary rv-compact" disabled={off} title={offReason} onClick={() => documentInput.current?.click()}>
             <Icon name="file" />{filename ? '바꾸기' : '파일 선택'}
           </button>
           {canClear && <button type="button" className="rv-button secondary rv-compact rv-upload-clear" aria-label="첨부 지우기" onClick={clearDocument}>지우기</button>}
@@ -287,7 +298,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         : <div className="rv-form-row rv-form-hint">
           <span>{notice?.status || 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
           {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
-            : !canClear && <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={loadExample}>추출 예시 보기</button>}
+            : !canClear && <button type="button" className="rv-button secondary rv-compact" disabled={off} title={offReason} onClick={loadExample}>추출 예시 보기</button>}
         </div>}
       {warnings.length > 0 && <div className="rv-document-warnings">
         <p id="rv-document-warnings-title">확인할 점 {warnings.length}</p>

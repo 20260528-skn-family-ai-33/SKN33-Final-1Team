@@ -5,7 +5,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
 import RequirementInput, { ExtractedRequirements } from '../review/RequirementInput.jsx';
-import { reviewModeLabels, securityModeLabels } from '../review/ReviewTypePicker.jsx';
+import { reviewModeLabels } from '../review/ReviewTypePicker.jsx';
 import { logoDetectorFor, modelRouteFor, parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
 import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB } from './videoFormat.js';
@@ -35,7 +35,7 @@ function useLocalPreview(file) {
 
 // 영상·확정 기준을 한 화면에서 받아 접수한다(기준은 이 시점에 고정).
 export default function VideoInput({ status, draft, setDraft, file, setFile, logos, setLogos, onSubmitted, busy, sampleBusy, setBusy,
-  documentBusy, setDocumentBusy, projectId, projectReady }) {
+  documentBusy, setDocumentBusy, projectId, projectReady, projectBlock }) {
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState(false);
   const input = useRef(null);
@@ -188,18 +188,11 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const fileMeta = file && [`${(file.size / MiB).toFixed(1)} MiB`, duration && formatTime(duration * 1000),
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
+  // 큰 제목과 자료 구분·유형 줄은 두지 않고 위쪽 검수 이름 칸을 크게 보인다(포스터와 같은 모양). 제목은 화면 읽기·초점 이동용이다.
   return <section className="rv-video-input" aria-labelledby="page-title">
-    <p className="op-eyebrow"><span aria-hidden="true" />INPUT / 자료 입력</p>
     <h1 id="page-title" className="sr-only" tabIndex={-1}>숏폼 동영상 {reviewModeLabels[mode]} 자료 입력</h1>
     {/* 입력란에서 Enter를 눌러도 접수되지 않도록 폼 제출을 막고, 접수는 버튼으로만 한다. */}
     <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={event => event.preventDefault()}>
-      {security && <div className="rv-input-mode">
-        <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
-          {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
-        <strong>{reviewModeLabels[mode]}</strong>
-        {/* 문서 추출 중에 유형을 바꾸면 문서 첨부 칸이 사라지며 추출이 취소되므로, 추출이 끝날 때까지 잠근다(포스터와 같은 규칙). */}
-        <button type="button" disabled={busy || documentBusy} onClick={() => setDraft(previous => ({ ...previous, reviewMode: null }))}>유형 바꾸기</button>
-      </div>}
       <div className="rv-editor-grid">
         <div className="rv-video-input-column">
           <input id="video-file" ref={input} className="visually-hidden" type="file" accept={ACCEPT} aria-label="검수 동영상 선택" tabIndex={-1}
@@ -243,7 +236,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
               {(draft.documentName || draft.documentRows.length > 0) &&
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
-            {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} documentName={draft.documentName}
+            {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} projectBlock={projectBlock} documentName={draft.documentName}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
             {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
         </aside>

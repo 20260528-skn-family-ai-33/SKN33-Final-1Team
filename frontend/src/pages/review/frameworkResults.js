@@ -7,7 +7,8 @@ export function frameworkResults(run, image, projectName) {
     id: run.context.run_id,
     project_name: projectName || '포스터 검수',
     criteria_version_label: '승인된 검수 기준',
-    status_label: run.error ? '검수 처리 오류 · 저장된 결과' : '자동 검수 완료',
+    // 결과 화면 위 안내 줄: 정상 완료는 따로 적지 않고 처리 오류만 알린다.
+    status_label: run.error ? '검수 처리 오류 · 저장된 결과' : '',
     image,
     criteria: criteria.map(item => ({ id: item.criterion_id, document_condition: {
       level: item.required ? '필수 조건' : '참고 조건',

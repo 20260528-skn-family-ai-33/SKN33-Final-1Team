@@ -5,7 +5,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
-import { DocumentProjectPicker } from '../review/DocumentInput.jsx';
+import { DocumentProjectPicker, projectBlockReason } from '../review/DocumentInput.jsx';
 import ReviewTypePicker, { SecurityPicker } from '../review/ReviewTypePicker.jsx';
 import { useLogoJobs } from './LogoFlowParts.jsx';
 import { videoLogoSteps } from './logoFlow.js';
@@ -147,7 +147,8 @@ export default function VideoReviewPage() {
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <SiteHeader current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
-    <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
+    {/* 보안 여부·유형을 고르는 동안에는 검수 이름·프로젝트 줄을 숨긴다(포스터와 같은 규칙). */}
+    {!picker && <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
       step={step} steps={picker ? null : logoOnly ? videoLogoSteps : steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
       projectEditor={step === 'input' ? { id: 'video-project-name', maxLength: 120, disabled: inputLocked,
         onChange: value => setDraft(previous => ({ ...previous, projectName: value })),
@@ -162,20 +163,21 @@ export default function VideoReviewPage() {
           // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
           onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}>
       {step === 'report' && <button type="button" className="rv-button secondary" onClick={openResults}>결과 확인으로 돌아가기</button>}
-    </WorkspaceProjectBar>
+    </WorkspaceProjectBar>}
     <main id="review-content" className="rv-main" tabIndex={-1}>
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
       {submissionWarning && step === 'running' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
-      {picker === 'security' && <section className="rv-input-page" aria-labelledby="page-title">
+      {picker === 'security' && <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
         <SecurityPicker media="video" disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))}
           onBack={() => navigate(mediaChoicePath, { state: mediaChoiceState })} /></section>}
-      {picker === 'type' && <section className="rv-input-page" aria-labelledby="page-title">
+      {picker === 'type' && <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
         <ReviewTypePicker media="video" disabled={inputLocked} security={draft.securityMode}
           onSelect={value => setDraft(previous => ({ ...previous, reviewMode: value }))}
           onBack={() => setDraft(previous => ({ ...previous, securityMode: null }))} /></section>}
       {step === 'input' && !picker && <VideoInput status={status} draft={draft} setDraft={setDraft}
         busy={uploading} setBusy={setUploading}
-        projectId={projectId} projectReady={projectStatus.ready && !projectStatus.busy} documentBusy={documentBusy} setDocumentBusy={setDocumentBusy}
+        projectId={projectId} projectReady={projectStatus.ready && !projectStatus.busy} projectBlock={projectBlockReason(projectStatus)}
+        documentBusy={documentBusy} setDocumentBusy={setDocumentBusy}
         file={file} setFile={setFile} logos={logos} setLogos={setLogos}
         onSubmitted={(value, warning) => { setLogoSubmissionWarning(warning ? { id: value, message: warning } : null); openJob(value); refresh(); }} />}
       {step === 'running' && (legacy ? <section className="rv-progress-page" aria-labelledby="page-title"><div className="rv-progress-card rv-video-progress-card is-failed">

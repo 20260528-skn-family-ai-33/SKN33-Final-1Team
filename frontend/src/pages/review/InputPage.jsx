@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router';
-import DocumentInput from './DocumentInput.jsx';
+import DocumentInput, { projectBlockReason } from './DocumentInput.jsx';
 import RequirementInput, { ExtractedRequirements } from './RequirementInput.jsx';
-import ReviewTypePicker, { reviewModeLabels, SecurityPicker, securityModeLabels } from './ReviewTypePicker.jsx';
+import ReviewTypePicker, { reviewModeLabels, SecurityPicker } from './ReviewTypePicker.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
@@ -66,31 +65,20 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
     window.scrollTo({ top: 0 });
   }, [screen]);
 
-  const previewEntry = import.meta.env.DEV && !previewMode
-    && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>;
-
-  if (!security) return <section className="rv-input-page" aria-labelledby="page-title">
-    {previewEntry}
+  // '데이터 없이 화면 둘러보기'는 위쪽 검수 이름 칸 오른쪽에 둔다(ReviewPage → ReviewLayout nameAside).
+  if (!security) return <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
     <SecurityPicker disabled={locked} onSelect={value => inputChange('securityMode', value)} onBack={onChooseMedia} />
   </section>;
 
-  if (!mode) return <section className="rv-input-page" aria-labelledby="page-title">
-    {previewEntry}
+  if (!mode) return <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
     <ReviewTypePicker disabled={locked} security={security} onSelect={value => inputChange('reviewMode', value)}
       onBack={() => inputChange('securityMode', null)} />
   </section>;
 
+  // 큰 제목과 자료 구분·유형 줄은 두지 않고 위쪽 검수 이름 칸을 크게 보인다. 제목은 화면 읽기·초점 이동용으로만 남긴다.
   return <section className="rv-input-page" aria-labelledby="page-title">
-    <p className="op-eyebrow"><span aria-hidden="true" />INPUT / 자료 입력</p>
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{reviewModeLabels[mode]} 자료 입력</h1>
-    {previewEntry}
     <form className={`rv-input-form rv-input-form--${mode}`} onSubmit={prepare}>
-      <div className="rv-input-mode">
-        <span className={`rv-input-security${security === 'secure' ? ' is-secure' : ''}`}>
-          {security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>
-        <strong>{reviewModeLabels[mode]}</strong>
-        <button type="button" disabled={locked} onClick={() => inputChange('reviewMode', null)}>유형 바꾸기</button>
-      </div>
       <div className="rv-editor-grid">
         <div className="rv-input-canvas-column">
           <input type="file" ref={fileInput} accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" className="sr-only"
@@ -133,6 +121,9 @@ export default function InputPage({ state, projectId, projectStatus, prepare, op
           </RequirementInput>}
           {checksText && <DocumentInput {...{ documentBusy, documentProgress, documentNotice, documentError, documentResumeId, documentInput, clearDocument }}
             disabled={previewMode || sampleBusy || fileBusy || !projectStatus?.ready} documentName={doc?.filename}
+            disabledReason={previewMode ? '데이터 없이 둘러보는 화면에서는 문서를 첨부할 수 없어요.'
+              : sampleBusy ? '예시 자료를 불러오는 중이에요. 잠시 뒤 다시 눌러 주세요.'
+              : fileBusy ? '포스터 파일을 확인하는 중이에요. 잠시 뒤 다시 눌러 주세요.' : projectBlockReason(projectStatus)}
             selectDocument={files => selectDocument(files, projectId)}
             cancelDocument={canCancelQueued ? cancelQueuedDocument : cancelDocument} cancelBusy={documentCancelBusy}
             cancelLabel={canCancelQueued ? '대기 작업 취소' : '입력 반영 취소'}>

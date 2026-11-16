@@ -93,6 +93,10 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const [filter, setFilter] = useState('all');
   const [activeEvidence, setActiveEvidence] = useState(null);
   const [preview, setPreview] = useState(null);
+  // 기준 승인 뒤 검은 미리보기 칸에 포스터를 넣는다(파일 선택·끌어다 놓기).
+  const posterInput = useRef(null);
+  const [posterDragging, setPosterDragging] = useState(false);
+  const [posterError, setPosterError] = useState('');
   const [imageSize, setImageSize] = useState(null);
   const [editingPoster, setEditingPoster] = useState(null);
   const [changeImpact, setChangeImpact] = useState(null);
@@ -282,6 +286,14 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
   const exclusionBlock = criteria.length && excluded.length === criteria.length ? '적어도 기준 한 개는 남겨 주세요.'
     : excluded.length && !reason.trim() ? '제외 사유를 먼저 적어 주세요.' : undefined;
   const posterBlock = !file ? '먼저 검수할 포스터 파일을 선택해 주세요.' : undefined;
+  // 미리보기 칸에서 고르거나 끌어다 놓은 포스터. 한 장의 JPG·PNG·WEBP만 받고, 크기 제한은 등록할 때 서버가 확인한다.
+  const posterTypes = ['image/png', 'image/jpeg', 'image/webp'];
+  function pickPoster(files) {
+    if (posterInput.current) posterInput.current.value = '';
+    if (files.length !== 1) { setPosterError('포스터는 한 번에 1장만 넣어 주세요.'); return; }
+    if (!posterTypes.includes(files[0].type)) { setPosterError('JPG · PNG · WEBP 이미지만 등록할 수 있어요.'); return; }
+    setPosterError(''); setFile(files[0]);
+  }
   async function saveVersion(signal, base = latest, unresolvedIds = []) {
     if (selectionUnavailable) return;
     if (amendment && !amendmentForm.current.reportValidity()) return;
@@ -386,6 +398,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
 
   const reviewingDraft = sourceDraft && Boolean(overview);
   const registeringPoster = status === 'waiting_asset';
+  const pickingPoster = registeringPoster && !imageUrl;
   const readyToStart = status === 'waiting_criteria' && Boolean(run?.baseline);
   const hasCriteriaActions = reviewingDraft || registeringPoster || readyToStart;
   const imageActions = imageUrl && <div className="rv-result-image-actions" role="group" aria-label="검수 이미지 작업">
@@ -485,9 +498,30 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
           </button>
         </>} /> : <CriteriaWorkspace versionText={sourceDraft ? '승인 전 검토' : '검수 기준'} locked={!sourceDraft}
         canvas={<>
+          {/* 기준이 승인되면 이 칸이 포스터를 받는 자리가 된다(아래쪽 별도 파일 칸은 두지 않는다). */}
+          {pickingPoster && <input type="file" ref={posterInput} accept="image/png,image/jpeg,image/webp" className="sr-only"
+            aria-label="검수 포스터" disabled={busy} onChange={event => { if (event.target.files.length) pickPoster([...event.target.files]); }} />}
+          <div className={pickingPoster ? `rv-input-drop-target rv-poster-drop${posterDragging ? ' is-dragging' : ''}` : undefined}
+            onDragOver={pickingPoster ? event => { event.preventDefault(); if (!busy) setPosterDragging(true); } : undefined}
+            onDragLeave={pickingPoster ? event => { if (!event.currentTarget.contains(event.relatedTarget)) setPosterDragging(false); } : undefined}
+            onDrop={pickingPoster ? event => { event.preventDefault(); setPosterDragging(false); if (!busy) pickPoster([...event.dataTransfer.files]); } : undefined}>
           <ImageStage src={imageUrl || (preview?.file === file ? preview.url : null)}
             alt="현재 버전의 검수 포스터" heading={false} showControls={false} bare
-            empty={<><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
+            empty={pickingPoster
+              ? <><Icon name="image" /><h3>여기에 검수할 포스터를 놓아 주세요.</h3><p>파일을 끌어다 놓거나 버튼으로 선택하세요.</p>
+                <button type="button" className="rv-button primary" disabled={busy} onClick={() => posterInput.current?.click()}><Icon name="upload" />파일 선택</button>
+                <small>JPG · PNG · WEBP</small>
+                {posterError && <p className="rv-poster-drop-error" role="alert">{posterError}</p>}</>
+              : <><Icon name="image" /><h3>검수할 포스터를 준비하세요.</h3><p>검수 기준을 확인하고 승인한 뒤<br />포스터를 등록할 수 있습니다.</p></>} />
+          {/* 넣은 포스터의 이름과 바꾸기·지우기는 칸 오른쪽 위에 띄운다(칸이 화면 높이만큼 커서 아래에 두면 스크롤해야 보인다). */}
+          {pickingPoster && file && <div className="rv-poster-drop-file">
+            <div className="rv-poster-drop-filebar"><strong title={file.name}>{file.name}</strong>
+              <button type="button" className="rv-button secondary rv-compact" disabled={busy} onClick={() => posterInput.current?.click()}>파일 바꾸기</button>
+              <button type="button" className="rv-button secondary rv-compact" disabled={busy} onClick={() => { setFile(null); setPosterError(''); }}>첨부 지우기</button>
+            </div>
+            {posterError && <p className="rv-poster-drop-error" role="alert">{posterError}</p>}
+          </div>}
+          </div>
             <div className="rv-criteria-context"><Icon name="info" /><div><strong>{sourceDraft ? '원문과 기준을 확인한 뒤 승인해 주세요.' : '승인된 기준과 원문 출처를 보존합니다.'}</strong><p>보완·제외는 사유와 함께 새 버전에 기록되며, 자동 판정과 최종 승인은 구분됩니다.</p></div></div>
         </>}
         actions={(hasCriteriaActions || onInput) && <section aria-label="검수 다음 단계" className="rv-actionbar rv-criteria-actionbar">
@@ -495,12 +529,7 @@ export default function FrameworkReviewPage({ runId, initialFile, initialCriteri
             {onInput && <button type="button" className="rv-button secondary" disabled={!canReturnToInput}
               onClick={onInput}>자료 입력으로 돌아가기</button>}
             {reviewingDraft && excluded.length > 0 && <label>제외 사유 <input value={reason} disabled={busy} onChange={e => setReason(e.target.value)} /></label>}
-            {registeringPoster && <>
-              <p>기준이 승인됐어요. 검수할 포스터를 등록해 주세요.</p>
-              <label>검수 포스터 <input type="file" accept="image/png,image/jpeg,image/webp"
-                disabled={busy} onChange={e => setFile(e.target.files[0] || null)} /></label>
-              {file && <p>{file.name}</p>}
-            </>}
+            {registeringPoster && <p>{file ? '넣은 포스터를 확인한 뒤 승인 기준에 등록해 주세요.' : '기준이 승인됐어요. 왼쪽 칸에 검수할 포스터를 넣어 주세요.'}</p>}
             {readyToStart && <p>승인된 기준과 등록한 포스터를 확인한 뒤 검수를 시작할 수 있어요.</p>}
             {hasCriteriaActions && actionError}
           </div>

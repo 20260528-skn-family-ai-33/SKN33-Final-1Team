@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import FrameworkReviewPage from './FrameworkReviewPage.jsx';
@@ -67,9 +67,11 @@ export default function ReviewPage() {
   const startMessage = submitting
     ? documentProgress?.message || '로고 검수를 접수하고 있어요.'
     : null;
-  // 보안 여부·유형을 고르기 전에는 단계 표시를 숨기고, 로고 검수는 로고 대조 단계를 보여 준다.
-  const steps = input && (!state.securityMode || !state.reviewMode) ? null : input && state.reviewMode === 'logo' ? logoSteps : undefined;
+  // 보안 여부·유형을 고르는 동안에는 검수 이름·프로젝트 줄과 단계 표시를 숨기고, 로고 검수는 로고 대조 단계를 보여 준다.
+  const choosing = input && (!state.securityMode || !state.reviewMode);
+  const steps = choosing ? null : input && state.reviewMode === 'logo' ? logoSteps : undefined;
   return <ReviewLayout state={state} navigate={navigate} busy={busy || sampleBusy || fileBusy || documentBusy} steps={steps}
+    showWorkspaceBar={!choosing}
     startMessage={startMessage}
     startActions={submitting && state.reviewMode !== 'logo' && <>
       <ErrorMessage message={documentError} />
@@ -78,6 +80,9 @@ export default function ReviewPage() {
     </>}
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value),
       onEnter: state.reviewMode === 'logo' ? undefined : name => projectPicker.current?.createFromName(name) } : undefined}
+    // 개발 서버에서만 보이는 미리보기 입구. 자료 입력 단계에서 저장할 프로젝트 칸 오른쪽에 둔다.
+    projectAside={import.meta.env.DEV && input
+      && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>}
     projectTools={input && (state.reviewMode === 'logo'
       // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
       ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
