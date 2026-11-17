@@ -119,10 +119,18 @@ class Workflow:
         if not isinstance(code, str) or re.fullmatch(r'[A-Za-z][A-Za-z0-9_]{0,95}', code) is None:
             code = 'ADAPTER_FAILED'
         unknown = isinstance(exc, AdapterFailure) and exc.outcome_unknown is True
-        return FrameworkError(code=code,
+        values=dict(code=code,
             message='The role did not produce an accepted result. Inspect the adapter in your development environment.',
             retryable=isinstance(exc, AdapterFailure) and exc.retryable is True,
             outcome_unknown=unknown)
+        if isinstance(exc, AdapterFailure):
+            # Only the explicitly typed, bounded diagnostic channel is persisted.
+            # Never copy exception messages, provider payloads or arbitrary attrs.
+            diagnostics={'extraction_rejections':getattr(exc,'extraction_rejections',()),
+                'response_sha256':getattr(exc,'response_sha256',None)}
+            try:return FrameworkError.model_validate(values|diagnostics)
+            except (ValueError,TypeError):pass
+        return FrameworkError(**values)
 
     def _run_stage(self, record: _Run, role: str, field_name: str, request_factory,
                    **final_updates: Any) -> None:

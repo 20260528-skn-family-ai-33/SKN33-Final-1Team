@@ -299,14 +299,21 @@ class PostgresCriteriaReview:
         kept = (len(current) if admission.criterion_ids is None else
             sum(item.source.kind == 'direct_input' or item.criterion_id in admission.criterion_ids for item in current))
         omitted = len(current) - kept
+        if kept + len(extracted.criteria) == 0:
+            _error('CRITERIA_ADDITION_SELECTION_INVALID', 422)
         if kept + len(extracted.criteria) > 128 or omitted + len(extracted.criteria) > 128:
             _error('CRITERIA_ADDITION_LIMIT_EXCEEDED', 422)
         if extracted.extraction.rejected_candidates or any('model_output_incomplete' in warning for warning in extracted.warnings):
-            _error('CRITERIA_ADDITION_INCOMPLETE', 422)
+            from .ports import AdapterFailure
+            raise AdapterFailure('CRITERIA_ADDITION_INCOMPLETE',
+                'Some additional requirements could not be validated.',
+                extraction_rejections=extracted.extraction.rejected_candidates,
+                response_sha256=extracted.extraction.response_sha256)
         version = revise_criteria(snapshot.criteria, parent, request, version_id=version_id,
             created_by=row['actor_id'], created_at=now, addition=(admission, extracted))
         audit = payload(admission) | {'analysis_run_id': extracted.context.run_id,
-            'analysis_document_sha256': extracted.extraction.document_sha256, 'analysis_draft_sha256': digest(extracted)}
+            'analysis_document_sha256': extracted.extraction.document_sha256, 'analysis_draft_sha256': digest(extracted),
+            'analysis_outcome': extracted.extraction.outcome}
         return self._insert_version(c, row, doc, version, admission.request_key, audit)
 
     @staticmethod

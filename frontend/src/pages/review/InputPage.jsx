@@ -5,6 +5,7 @@ import ReviewTypePicker, { reviewModeLabels, SecurityPicker } from './ReviewType
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import ExtractionFailure from './ExtractionFailure.jsx';
 import { LogoInputs } from '../video/LogoFlowParts.jsx';
 import { parseRequirements } from './workflow.js';
 import '../../styles/review-editor-v2.css';
@@ -18,7 +19,7 @@ import '../../styles/review-type-picker.css';
 //   runId·projectId 이 초안의 실행과 프로젝트 · documentName 이 화면이 문서 이름을 기억하지 못할 때 쓸 이름
 //   documentLock 문서를 바꾸거나 지울 수 없는 이유(저장해 둔 초안을 다시 연 경우)
 export default function InputPage({ state, projectId, projectStatus, prepare, inputChange, sampleBusy, fileBusy,
-  fileInput, selectFile, preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
+  fileInput, selectFile, preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, extractionFailure,
   documentBusy, documentExtracting = false, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
   clearDocument, documentCancelBusy, cancelQueuedDocument, previewMode = false, onChooseMedia, review = null }) {
   const doc = state.documentRun;
@@ -167,7 +168,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, in
           {checksLogo && <LogoInputs logos={state.referenceLogos} onChange={logos => inputChange('referenceLogos', logos)} disabled={busy} referenceOnly />}
         </aside>
       </div>
-      <div className="rv-input-error"><ErrorMessage message={error} />{review?.error}</div>
+      <div className="rv-input-error"><ErrorMessage message={error} /><ExtractionFailure failure={extractionFailure} runId={extractionFailure?.runId} />{review?.error}</div>
       {checksText && health && !health.ready && <div className="rv-input-error" role="status">
         <p>검수 구성을 확인해 주세요. 기준 검토는 할 수 있지만 검수 실행에는 서버 연결이 필요합니다.</p>
         <button type="button" className="text-btn" disabled={busy || healthBusy} onClick={checkHealth}>검수 구성 다시 확인</button>

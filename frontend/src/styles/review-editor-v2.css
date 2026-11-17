@@ -425,3 +425,13 @@
   .rv-workspace .rv-input-form .image-stage-viewport { height: 330px; }
   .rv-workspace .rv-form-block textarea { font-size: 16px; }
 }
+
+/* 저장된 A02 실패 항목: 긴 원문도 입력 화면 폭 안에서 확인한다. */
+.rv-workspace .rv-extraction-failure { margin: 14px 0; padding: 16px; border: 1px solid #dfc9b4; border-radius: 10px; background: #fffaf5; }
+.rv-workspace .rv-extraction-failure > p { font-size: 13px; line-height: 1.7; }
+.rv-workspace .rv-extraction-failure ol { display: grid; gap: 14px; margin: 12px 0; padding: 0; list-style: none; }
+.rv-workspace .rv-extraction-failure li { min-width: 0; padding-top: 10px; border-top: 1px solid #e6ddd2; font-size: 13px; line-height: 1.7; }
+.rv-workspace .rv-extraction-failure details { margin: 6px 0; }
+.rv-workspace .rv-extraction-failure summary { cursor: pointer; font-weight: 500; }
+.rv-workspace .rv-extraction-failure blockquote { margin: 6px 0; padding: 8px 12px; border-left: 3px solid #d8c6b4; background: #fff; white-space: pre-wrap; }
+.rv-workspace .rv-extraction-failure small, .rv-workspace .rv-extraction-failure-fields { color: #6a5623; }

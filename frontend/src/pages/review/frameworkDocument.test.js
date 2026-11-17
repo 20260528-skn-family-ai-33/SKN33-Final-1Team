@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash } from 'node:crypto';
-import { extractDocumentWithProgress, extractTextWithProgress, requirementDocument, DOCX_MEDIA_TYPE,
+import { extractDocumentWithProgress, extractTextWithProgress, addDirectRequirements, requirementDocument, DOCX_MEDIA_TYPE,
   DOCUMENT_WAIT_TIMEOUT_MS, watchDocumentDeadline } from './frameworkDocument.js';
 import { loadDocumentProjects, requirePosterReview } from './frameworkClient.js';
 import { mergeDocumentRequirements } from './documentRequirements.js';
@@ -32,6 +32,47 @@ const result = { framework: { run_id: 'run-1', document_version_id: 'doc-1' }, p
   { text: '필수 고지: 무료 관람', type: 'information', label: '필수 고지', requirement: '무료 관람', inspection: '', level: '필수', page: 1, source: '무료 관람' },
   { text: '문구와 이미지가 잘리지 않아야 합니다.', type: 'visual', label: '잘림', requirement: '문구와 이미지가 잘리지 않아야 합니다.', inspection: '', level: '필수', page: 2, source: '문구와 이미지가 잘리지 않아야 합니다.' },
 ] };
+
+function setupAddition(t, run) {
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', async (url, options = {}) => {
+    calls.push({ url, options });
+    if (url === prefix + '/csrf') return Response.json({ csrf_token: 'token' });
+    if (url === prefix + '/runs/pdf/criteria-review') return Response.json({ latest_version: null, source_draft_sha256: 'a'.repeat(64) });
+    if (url === prefix + '/runs/pdf/criteria-additions') return Response.json({ context: { run_id: 'addition' } }, { status: 202 });
+    if (url === prefix + '/runs/addition') return Response.json(run);
+    throw new Error('unexpected addition request: ' + url);
+  });
+  return calls;
+}
+
+test('추가 조건 없는 입력은 빈 요구사항 조회 없이 성공 결과를 돌려준다', async t => {
+  const calls = setupAddition(t, { execution_status: 'waiting_criteria', criteria: { criteria: [], extraction: { outcome: 'no_new_requirements' } } });
+  const options = { attempts: new Map() };
+  assert.deepEqual(await addDirectRequirements('pdf', ['date', 'title'], '검수해줘', options), { runId: 'addition', outcome: 'no_new_requirements' });
+  const post = calls.find(call => call.url.endsWith('/criteria-additions'));
+  assert.deepEqual(JSON.parse(post.options.body), { parent_version_id: null, expected_base_sha256: 'a'.repeat(64), criterion_ids: ['date', 'title'], text: '검수해줘' });
+  await addDirectRequirements('pdf', ['date', 'title'], '검수해줘', options);
+  assert.equal(calls.filter(call => call.url.endsWith('/criteria-additions')).length, 1);
+});
+
+test('추가 분석 실패는 항목과 원인을 보존하고 동일 요청을 자동 재접수하지 않는다', async t => {
+  const rejection = { candidate_index: 1, code: 'A02_UNRESOLVED_VALUE_INVENTED', fields: ['presentation'],
+    source: { page: 1, block_id: 'input-text', quote: '행사 날짜는 미정입니다.' } };
+  const calls = setupAddition(t, { execution_status: 'failed', error: { code: rejection.code, message: 'private provider response',
+    extraction_rejections: [rejection], response_sha256: 'c'.repeat(64) } });
+  const options = { attempts: new Map() };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await assert.rejects(addDirectRequirements('pdf', null, '행사 날짜는 미정입니다.', options), error => {
+      assert.equal(error.runId, 'addition');
+      assert.deepEqual(error.extraction_rejections, [rejection]);
+      assert.equal(error.response_sha256, 'c'.repeat(64));
+      assert.doesNotMatch(error.message, /private/);
+      return true;
+    });
+  }
+  assert.equal(calls.filter(call => call.url.endsWith('/criteria-additions')).length, 1);
+});
 
 function setup(t, { statuses = ['queued', 'extracting', 'waiting_criteria'], errorCode = 'QWEN_OUTCOME_UNKNOWN', upload, admit, requirements = result } = {}) {
   const calls = [];

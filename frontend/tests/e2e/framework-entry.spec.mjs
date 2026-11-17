@@ -35,7 +35,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     const subset = mode === 'pdf_subset';
-    const adding = mode === 'pdf_addition';
+    const noNew = mode === 'pdf_no_addition';
+    const failedAddition = mode === 'pdf_addition_failed';
+    const adding = mode === 'pdf_addition' || noNew || failedAddition;
     const selectsSubset = subset || adding;
     let extractionRequests = 0;
     let additionRequests = 0;
@@ -57,12 +59,14 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const subtitle = { ...criterion, criterion_id: 'subtitle', text: '보조 제목은 전시', expected: '전시' };
     const venue = { ...criterion, criterion_id: 'venue', text: '장소는 전시장', expected: '전시장' };
     const selectedPdfCriteria = [criterion, subtitle];
-    const directInput = '장소를 아카이브 홀로 표기합니다.';
+    const directInput = noNew ? '검수해줘' : failedAddition ? '행사 날짜는 미정입니다.' : '장소를 아카이브 홀로 표기합니다.';
     const added = { ...criterion, criterion_id: 'input-job-c001', text: '장소를 아카이브 홀로 표기', expected: '아카이브 홀',
       human_added: true, source: { kind: 'direct_input', page: 1, quote: directInput },
       value_source: { reference: '담당자 직접 입력', quote: '아카이브 홀' } };
     const rejectedCandidate = { candidate_index: 2, code: 'A02_EXPECTED_UNGROUNDED',
       source: { page: 2, quote: '행사 장소는 전시장 A입니다.' } };
+    const failedCandidate = { candidate_index: 1, code: 'A02_UNRESOLVED_VALUE_INVENTED', fields: ['presentation', 'operator'],
+      source: { page: 1, block_id: 'input-text', quote: directInput } };
     const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
     let png;
     page.on('pageerror', error => errors.push(error.message));
@@ -102,9 +106,13 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.ok(request.headers()['idempotency-key']);
         return route.fulfill({ status: 202, json: { context: { run_id: 'input-job' }, execution_status: 'queued' } });
       } else if (path.endsWith('/runs/input-job') && adding) {
-        if (additionReady) latest = { version: { ...baseline, version_no: 1, criteria: [...selectedPdfCriteria, added], exclusions: [],
+        if (failedAddition && additionReady) return route.fulfill({ json: { context: { ...context, run_id: 'input-job' }, execution_status: 'failed',
+          error: { code: failedCandidate.code, message: 'private provider model response', extraction_rejections: [failedCandidate], response_sha256: 'c'.repeat(64) } } });
+        if (additionReady) latest = { version: { ...baseline, version_no: 1, criteria: noNew ? selectedPdfCriteria : [...selectedPdfCriteria, added],
+          exclusions: [{ criterion_id: 'venue' }, { criterion_id: 'pending' }],
           addition_run_ids: ['input-job'] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
-        body = { execution_status: additionReady ? 'waiting_criteria' : 'queued' };
+        body = { execution_status: additionReady ? 'waiting_criteria' : 'queued',
+          criteria: { criteria: noNew ? [] : [added], extraction: { outcome: noNew ? 'no_new_requirements' : 'requirements' } } };
       }
       else if (path.endsWith('/criteria-versions')) {
         const input = request.postDataJSON();
@@ -127,7 +135,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true);
-        if (mode === 'direct') await criteriaApproval.promise;
+        if (mode === 'direct' || noNew) await criteriaApproval.promise;
         approved = true; body = {};
       } else if (path.endsWith('/images')) {
         assert.ok(approved, 'image registration follows criteria approval'); uploads++; body = { id: 'image' };
@@ -284,6 +292,36 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.equal(extractionRequests, 1);
       } finally { additionReady = true; }
     }
+    if (failedAddition) {
+      // 분석 직후와 실패 실행을 다시 연 화면에서 같은 항목·원인·원문을 확인할 수 있다.
+      await overlay.waitFor({ state: 'hidden' });
+      const failure = page.getByRole('region', { name: '분석하지 못한 항목과 원인', exact: true });
+      await failure.getByText('항목 1', { exact: true }).waitFor();
+      await failure.getByText(/미확정 항목에 값·표시 문구 또는 자동 비교 방식/).waitFor();
+      await failure.getByText('확인할 내용: 화면 표시 문구 · 판정 방식', { exact: true }).waitFor();
+      await failure.getByText(directInput, { exact: true }).waitFor();
+      assert.equal(await page.locator('#requirements').inputValue(), directInput);
+      assert.equal(approved, false); assert.equal(uploads, 0);
+      assert.equal(latest, null, 'failed additions must not replace PDF conditions');
+      await failure.getByRole('link', { name: '이 분석의 실패 기록 보기', exact: true }).click();
+      await page.waitForURL('**/review/new?framework=input-job');
+      await failure.getByText(directInput, { exact: true }).waitFor();
+      await page.reload();
+      await failure.getByText('직접 입력 원문', { exact: true }).waitFor();
+      await failure.getByText('확인할 내용: 화면 표시 문구 · 판정 방식', { exact: true }).waitFor();
+      assert.equal(await page.getByText('private provider model response', { exact: false }).count(), 0);
+      assert.equal(additionRequests, 1);
+      assert.deepEqual(errors, []);
+      await page.close();
+      continue;
+    }
+    if (noNew) {
+      try {
+        await overlay.getByText('추가할 조건이 없어 기존 문서 기준으로 진행합니다.', { exact: true }).waitFor();
+        assert.deepEqual(latest.version.criteria.map(item => item.criterion_id), ['title', 'subtitle']);
+        assert.equal(await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).count(), 0);
+      } finally { criteriaApproval.resolve(); }
+    }
     if (mode === 'not_ready') {
       await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
       assert.equal(textInputs.length, 0);
@@ -338,6 +376,15 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.equal(additionRequests, 1);
         // 접수한 뒤 그 초안을 다시 열면 승인된 기준에 직접 입력으로 더한 항목과 그 원문이 남아 있다.
         await page.goto(base + '/review/new?framework=draft');
+        if (noNew) {
+          await checklist.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄', exact: true }).waitFor();
+          assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+            ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시']);
+          assert.equal(await checklist.getByText('검수해줘', { exact: true }).count(), 0);
+          assert.deepEqual(errors, []);
+          await page.close();
+          continue;
+        }
         await checklist.getByRole('button').filter({ hasText: '직접 입력' }).click();
         assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
           ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시', '검수에 포함: 장소를 아카이브 홀로 표기']);
@@ -446,3 +493,9 @@ test('검수 항목에서 체크를 푼 기준은 검수를 시작할 때 제외
 
 test('문서 기준에 직접 입력만 더해 접수하고, 다시 열면 그 원문이 남아 있다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf_addition']));
+
+test('검수해줘는 추가 기준을 만들지 않고 선택한 PDF 기준으로 검수한다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf_no_addition']));
+
+test('입력 분석 실패 항목과 원인을 즉시 확인하고 실패 기록에서도 다시 읽는다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf_addition_failed']));

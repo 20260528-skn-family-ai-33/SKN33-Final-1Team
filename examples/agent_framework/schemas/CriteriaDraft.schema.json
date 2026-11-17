@@ -295,6 +295,29 @@
             }
           ],
           "default": null
+        },
+        "fields": {
+          "default": [],
+          "items": {
+            "enum": [
+              "source",
+              "target",
+              "field",
+              "kind",
+              "operator",
+              "expected",
+              "normalized_expected",
+              "unit",
+              "required",
+              "unresolved",
+              "qualifiers",
+              "presentation"
+            ],
+            "type": "string"
+          },
+          "maxItems": 12,
+          "title": "Fields",
+          "type": "array"
         }
       },
       "required": [
@@ -406,6 +429,15 @@
           "maxItems": 128,
           "title": "Rejected Candidates",
           "type": "array"
+        },
+        "outcome": {
+          "default": "requirements",
+          "enum": [
+            "requirements",
+            "no_new_requirements"
+          ],
+          "title": "Outcome",
+          "type": "string"
         }
       },
       "required": [
@@ -667,7 +699,6 @@
       "items": {
         "$ref": "#/$defs/Criterion"
       },
-      "minItems": 1,
       "title": "Criteria",
       "type": "array"
     },

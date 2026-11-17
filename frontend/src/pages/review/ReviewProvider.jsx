@@ -67,6 +67,7 @@ export function ReviewProvider({ children }) {
   const [projectId, setProjectId] = useState('');
   const [inputRunId, setInputRunId] = useState(null);
   const [error, setError] = useState('');
+  const [extractionFailure, setExtractionFailure] = useState(null);
   const [pollError, setPollError] = useState('');
   const [pollRetry, setPollRetry] = useState(0);
   const [preview, setPreview] = useState('');
@@ -127,7 +128,7 @@ export function ReviewProvider({ children }) {
         if (controller.signal.aborted || epoch !== generation.current) return;
         setDimensions({ width: review.image.width, height: review.image.height });
         dispatch({ type: 'restore', review, file });
-        setError('');
+        setError(''); setExtractionFailure(null);
       } catch (err) {
         if (!controller.signal.aborted) setError(`저장된 검수를 불러오지 못했습니다. ${err.message}`);
       } finally {
@@ -174,7 +175,7 @@ export function ReviewProvider({ children }) {
     setDocumentProgress(null);
     setDocumentNotice(starting ? keepSummary : '');
     setDocumentResumeId(resumeId);
-    setDocumentError('');
+    setDocumentError(''); setExtractionFailure(null);
   }, [documentBusy, documentExtracting, documentProgress, documentResumeId]);
 
   async function cancelQueuedDocument() {
@@ -253,6 +254,7 @@ export function ReviewProvider({ children }) {
         setDocumentNotice('');
         setDocumentProgress(null);
         setDocumentResumeId(err.runId || deadline.runId);
+        setExtractionFailure(deadline.expired ? null : err);
         setDocumentError(deadline.expired ? '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.' : err.message);
       }
     } finally {
@@ -271,7 +273,7 @@ export function ReviewProvider({ children }) {
     fileValidation.current += 1;
     setSampleBusy(true);
     setFileBusy(false);
-    setError('');
+    setError(''); setExtractionFailure(null);
     try {
       const [image, logo] = await Promise.all([
         fetch(samplePoster, { signal: controller.signal }),
@@ -359,7 +361,7 @@ export function ReviewProvider({ children }) {
   function inputChange(field, value) {
     clearSavedReview();
     invalidateSample();
-    setError('');
+    setError(''); setExtractionFailure(null);
     dispatch({ type: 'input', field, value });
   }
 
@@ -377,7 +379,7 @@ export function ReviewProvider({ children }) {
     restoreTyped();
     clearSavedReview();
     invalidateSample();
-    setError('');
+    setError(''); setExtractionFailure(null);
     leaveDraft();
   }
 
@@ -385,7 +387,7 @@ export function ReviewProvider({ children }) {
   async function selectFile(files) {
     invalidateSample();
     const request = ++fileValidation.current;
-    setError('');
+    setError(''); setExtractionFailure(null);
     setOversizeImage(null);
     if (fileInput.current) fileInput.current.value = '';
     if (files.length !== 1) { setFileBusy(false); setError('이미지는 한 번에 1개만 선택해 주세요.'); return; }
@@ -409,7 +411,7 @@ export function ReviewProvider({ children }) {
   async function useInspectionCopy() {
     if (!oversizeImage) return;
     const request = ++fileValidation.current;
-    setError('');
+    setError(''); setExtractionFailure(null);
     setFileBusy(true);
     try {
       const copy = await makeInspectionCopy(oversizeImage.file, health?.limits);
@@ -441,7 +443,7 @@ export function ReviewProvider({ children }) {
   function prepare(event) {
     event?.preventDefault();
     if (sampleBusy || fileBusy || documentBusy) return;
-    setError('');
+    setError(''); setExtractionFailure(null);
     if (!state.file) { setError('검수할 이미지를 먼저 선택해 주세요.'); return; }
     const mode = state.reviewMode;
     if ((mode === 'logo' || mode === 'both') && !state.referenceLogos?.length) { setError('대조할 원본 로고를 1개 이상 첨부해 주세요.'); return; }
@@ -456,7 +458,7 @@ export function ReviewProvider({ children }) {
     if (documentRequest.current) return;
     const controller = new AbortController();
     documentRequest.current = controller;
-    setDocumentBusy(true); setError('');
+    setDocumentBusy(true); setError(''); setExtractionFailure(null);
     try {
       const job = await submitPosterLogoJob({ poster: state.file, logos: state.referenceLogos,
         title: `${(state.projectName || '').trim() || '포스터'} 로고 검수`, detector: logoDetectorFor(state.securityMode),
@@ -473,7 +475,7 @@ export function ReviewProvider({ children }) {
 
   // 직접 입력한 요구사항을 분석해 검수 기준으로 만든다. 진행은 준비 창에 보인다.
   // addition({ runId, criterionIds })이 있으면 그 실행(초안)의 기준에 더하고, 없으면 입력만으로 새 초안을 만든다.
-  // 끝나면 초안의 실행 번호를 돌려준다(취소하거나 실패하면 null).
+  // 끝나면 초안의 실행 번호·추가 분석 결과를 돌려준다(취소하거나 실패하면 null).
   async function analyseTyped(text, addition = null) {
     if (documentRequest.current) return null;
     if (text.length > 6000 || text.split(/\r?\n/).filter(line => line.trim()).length > 100) {
@@ -483,7 +485,7 @@ export function ReviewProvider({ children }) {
     if (!projectId) { setError('요구사항을 저장할 프로젝트를 선택해 주세요.'); return null; }
     const controller = new AbortController();
     documentRequest.current = controller;
-    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(keepSummary); setDocumentResumeId(''); setError('');
+    setDocumentBusy(true); setDocumentError(''); setDocumentNotice(keepSummary); setDocumentResumeId(''); setError(''); setExtractionFailure(null);
     // 이 진행 상황은 준비 창에만 보인다. 문서 첨부 카드는 문서 자신의 추출 상태만 그린다(InputPage의 documentCard).
     setDocumentProgress({ percent: 0, stage: 'preparing', message: '검수 준비 상태를 확인하고 있습니다.', startedAt: Date.now() });
     const deadline = watchDocumentDeadline(controller);
@@ -498,8 +500,9 @@ export function ReviewProvider({ children }) {
       const options = { attempts: documentAttempts.current, signal: controller.signal, onProgress,
         onAccepted: id => { deadline.runId = id; setDocumentResumeId(addition?.runId || id); } };
       let runId = addition?.runId;
+      let outcome = 'requirements';
       if (addition) {
-        await addDirectRequirements(runId, addition.criterionIds, text, options);
+        ({ outcome } = await addDirectRequirements(runId, addition.criterionIds, text, options));
       } else {
         const result = await extractTextWithProgress(text, { ...options, projectId, modelRoute: modelRouteFor(state.securityMode) });
         runId = result.framework.run_id;
@@ -510,11 +513,12 @@ export function ReviewProvider({ children }) {
       // 분석한 글은 검수 항목이 됐다. 입력란을 비우고, 그 초안을 버릴 때 되살릴 수 있게 기억해 둔다.
       typedDone.current.push(text);
       dispatch({ type: 'input', field: 'requirements', value: '' });
-      return runId;
+      return { runId, outcome };
     } catch (err) {
       if (documentRequest.current === controller && (!controller.signal.aborted || deadline.expired)) {
         setDocumentProgress(null);
         setDocumentResumeId(addition?.runId || err.runId || deadline.runId);
+        setExtractionFailure(deadline.expired ? null : err);
         setError(deadline.expired ? '화면 대기 시간이 끝났습니다. 접수된 분석은 기존 실행에서 확인할 수 있어요.' : err.message);
       }
       return null;
@@ -527,21 +531,22 @@ export function ReviewProvider({ children }) {
   // 직접 입력만으로 시작: 초안을 만든 뒤 그 화면에서 곧바로 기준 승인과 검수 접수까지 이어 간다(autoStart).
   // 값이 정해지지 않은 기준이 있으면 그 화면이 멈춰서 보여 준다.
   async function startTextReview(text, { autoStart = true } = {}) {
-    const runId = await analyseTyped(text);
-    if (!runId) return;
+    const result = await analyseTyped(text);
+    if (!result) return;
+    const { runId } = result;
     setInputRunId(runId);
     setSearchParams({ framework: runId }, { state: { reviewStarting: true, autoStart } });
   }
 
-  // 초안 화면의 '검수 시작하기'가 부른다. 직접 입력을 그 초안의 기준에 더하고, 성공하면 true를 돌려준다.
+  // 초안 화면의 '검수 시작하기'가 부른다. 새 조건이 없는 경우도 정상 결과로 구분한다.
   async function addTyped(text, addition) {
-    return Boolean(await analyseTyped(text, addition));
+    return analyseTyped(text, addition);
   }
 
   // 선택한 항목을 현재 샘플 서버에서 사용하는 고정 기준으로 확정한다.
   function confirm() {
     if (!canConfirm(state)) { setError('내용이 있는 검수 항목을 1개 이상 선택해 주세요.'); return; }
-    setError('');
+    setError(''); setExtractionFailure(null);
     dispatch({ type: 'confirm' });
   }
 
@@ -549,7 +554,7 @@ export function ReviewProvider({ children }) {
   function unlock() {
     clearSavedReview();
     generation.current += 1;
-    setError('');
+    setError(''); setExtractionFailure(null);
     setPollError('');
     dispatch({ type: 'unlock' });
   }
@@ -568,13 +573,13 @@ export function ReviewProvider({ children }) {
     if (state.criteria.length >= 100) { setError('검수 항목은 최대 100개까지 추가할 수 있습니다.'); return; }
     dispatch({ type: 'add', id: `custom-${crypto.randomUUID()}`, text: newCriterion, category: newCategory });
     setNewCriterion('');
-    setError('');
+    setError(''); setExtractionFailure(null);
   }
 
   // 기존 상태 전이 규칙을 통해 이동 가능한 검수 단계로 전환한다.
   function navigate(step) {
     if (sampleBusy || fileBusy || documentBusy) return;
-    setError('');
+    setError(''); setExtractionFailure(null);
     dispatch({ type: 'navigate', step });
   }
 
@@ -591,7 +596,7 @@ export function ReviewProvider({ children }) {
     typedDone.current = [];
     dispatch({ type: 'reset' });
     setFileBusy(false);
-    setError('');
+    setError(''); setExtractionFailure(null);
     setPollError('');
     setDimensions(null);
     setOversizeImage(null);
@@ -611,7 +616,7 @@ export function ReviewProvider({ children }) {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentExtracting, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
-    state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
+    state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, extractionFailure, pollError, preview,
     dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, sample, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,

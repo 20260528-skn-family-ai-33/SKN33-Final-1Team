@@ -81,6 +81,8 @@ def _input_policy(role: str, request: BaseModel) -> None:
 def _output_policy(role: str, request: BaseModel, result: BaseModel) -> None:
     ensure_context(request.context, result)
     if role == "A02":
+        if not result.criteria and not request.allow_no_additional_requirements:
+            raise ValueError('A02_NO_VALID_REQUIREMENTS')
         validate_draft(request.context, request.document, result)
     else:
         {"A04_A05": validate_inspection,

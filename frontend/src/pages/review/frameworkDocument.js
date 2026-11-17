@@ -1,4 +1,5 @@
 import { frameworkJson, frameworkResponse } from './frameworkClient.js';
+import { extractionFailureOf } from './extractionRejections.js';
 
 export const waitForDocumentPoll = (ms, signal) => new Promise((resolve, reject) => {
   signal?.throwIfAborted();
@@ -137,13 +138,14 @@ async function waitForExtraction(attempt, { source, signal, onProgress, pollInte
   while (true) {
     signal?.throwIfAborted();
     const run = await frameworkJson(runPath, { signal });
-    if (['waiting_criteria', 'waiting_asset'].includes(run.execution_status)) return;
+    if (['waiting_criteria', 'waiting_asset'].includes(run.execution_status)) return run;
     if (!['queued', 'extracting'].includes(run.execution_status)) {
       const code = run.error?.code || run.execution_status;
       const error = new Error(additionFailures[code] || `${source} 분석을 완료하지 못했습니다. 실행 기록을 확인해 주세요. (${code})`);
       error.code = code;
       error.retryable = run.execution_status === 'failed' && run.error?.retryable === true;
       error.runId = attempt.runId;
+      Object.assign(error, extractionFailureOf(run));
       if (run.error?.code === 'USER_CANCELLED') {
         error.message = '대기 작업이 취소되었습니다. 원본과 기록은 보존됩니다.';
         // Only a later explicit upload starts a new extraction; never retry here.
@@ -187,7 +189,8 @@ export async function addDirectRequirements(runId, criterionIds, text, { attempt
       attempt.runId = queued.context.run_id;
     }
     onAccepted?.(attempt.runId);
-    await waitForExtraction(attempt, { source: '입력문', signal, onProgress });
+    const run = await waitForExtraction(attempt, { source: '입력문', signal, onProgress });
+    return { runId: attempt.runId, outcome: run.criteria?.extraction?.outcome || 'requirements' };
   } catch (error) {
     if (error.retryable || ['CRITERIA_VERSION_CONFLICT', 'USER_CANCELLED'].includes(error.code)) attempts.delete(key);
     if (additionFailures[error.code]) error.message = additionFailures[error.code];

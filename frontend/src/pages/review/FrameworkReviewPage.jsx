@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
+import ExtractionFailure from './ExtractionFailure.jsx';
+import { extractionFailureOf, extractionFailureMessage } from './extractionRejections.js';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { usePaged } from '../../components/Pager.jsx';
@@ -64,7 +66,7 @@ const UNRESOLVED_SKIPPED = '담당자가 확인 필요 항목을 제외하고 �
 // 초안의 검수 항목은 그 화면의 한 칸으로 들어간다. '검수 시작하기'가 기준 승인과 검수 접수까지 한다.
 // input(선택): 자료 입력 한 화면에 필요한 것. ReviewPage가 넘긴다.
 //   page InputPage 속성 · layout 머리글(검수 이름·저장할 프로젝트)과 준비 창 · file 고른 포스터 · typed 직접 입력한 요구사항
-//   addTyped(text, { runId, criterionIds }) 직접 입력을 분석해 이 실행의 기준에 더한다(성공하면 true)
+//   addTyped(text, { runId, criterionIds }) 직접 입력을 분석하고 결과 종류를 반환한다(실패하면 null)
 //   fresh 방금 이 화면에서 만든 실행 · autoStart 직접 입력만으로 시작해, 기준이 준비되면 바로 접수 · setProject(id) 이 실행의 프로젝트로 맞춤
 export default function FrameworkReviewPage({ runId, initialFile, projectName, openRun, onInput, onNew, referenceLogos,
   logoDetector = 'runpod', health, reviewStarting = false, input = null }) {
@@ -81,6 +83,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
   const [error, setError] = useState('');
+  const [additionNotice, setAdditionNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(null);
   const [reload, setReload] = useState(0);
@@ -115,7 +118,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   if (shownRunId !== runId) {
     setShownRunId(runId);
     setRun(null); setOverview(null); setLoadState('checking');
-    setExcluded([]); setAmendment(null); setActiveId(null); setError('');
+    setExcluded([]); setAmendment(null); setActiveId(null); setError(''); setAdditionNotice('');
   }
   const latest = overview?.latest_version;
   const status = run?.execution_status;
@@ -349,6 +352,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   // skipUnresolved: 값이 정해지지 않은 '확인 필요' 항목을 이번 검수에서 빼고 진행한다.
   async function startDraft(signal, skipUnresolved = false) {
     if (!file) return;
+    setAdditionNotice('');
     await requirePosterReview({ signal });
     if (amendment && !amendmentForm.current.reportValidity()) return;
     let version = latest;
@@ -359,10 +363,11 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       const kept = fromDocument.filter(id => !excluded.includes(id));
       const added = await input.addTyped(input.typed, { runId, criterionIds: kept.length === fromDocument.length ? null : kept });
       if (!added || signal.aborted) return;
+      setAdditionNotice(added.outcome === 'no_new_requirements' ? '추가할 조건이 없어 기존 문서 기준으로 진행합니다.' : '');
       const fresh = await frameworkJson(path + '/criteria-review', { signal });
       setOverview(fresh);
       version = fresh.latest_version;
-      drop = excluded.filter(id => version.version.criteria.some(item => item.criterion_id === id));
+      drop = version ? excluded.filter(id => version.version.criteria.some(item => item.criterion_id === id)) : excluded;
       setExcluded(drop);
     }
     if (!version || drop.length || amendment) {
@@ -527,9 +532,10 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         start: () => perform(signal => startDraft(signal), 'start') };
     return <ReviewLayout {...input.layout} {...(reopened ? { showWorkspaceBar: true, steps: undefined } : null)}
       state={pageState} busy={busy || loadingDraft || input.layout.busy} mainClassName="rv-framework-workspace"
-      startMessage={input.layout.startMessage || (starting ? actionStatus[pending] : continuing ? actionStatus.start : null)}
+      startMessage={input.layout.startMessage || (starting ? additionNotice || actionStatus[pending] : continuing ? actionStatus.start : null)}
       projectActions={<p className="rv-step-status" role="status">{starting ? actionStatus[pending] : ''}</p>}>
       {Boolean(draft && run.synthetic) && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
+      {additionNotice && !starting && <p className="rv-framework-notice" role="status">{additionNotice}</p>}
       <InputPage {...input.page} state={pageState} review={review} />
     </ReviewLayout>;
   }
@@ -564,7 +570,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     }}>
       {run?.synthetic && <p className="rv-framework-notice">합성 검증 데이터 · 실제 모델의 검수 결과가 아닙니다.</p>}
       {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
-        : run?.error && <ErrorMessage message={run.error.code + ' · ' + run.error.message} />}
+        : run?.error && <><ErrorMessage message={extractionFailureMessage(run)} />
+          <ExtractionFailure failure={extractionFailureOf(run)} /></>}
       {processing ? <ReviewProgress {...progress} image={image} error={error}
         facts={run?.baseline ? [['해상도', image.width ? `${image.width}×${image.height}` : image.unavailable ? '확인 불가' : '확인 중'],
           ['검수 기준', criteria.length ? `${criteria.length}개` : '확인 중'],

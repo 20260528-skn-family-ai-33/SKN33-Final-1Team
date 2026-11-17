@@ -6,7 +6,7 @@ export const REJECTION_REASONS = {
   A02_EXPECTED_UNGROUNDED: '기대값이 원문과 일치하지 않습니다.',
   A02_SOURCE_MISMATCH: '선택한 원문 범위를 확인할 수 없습니다.',
   A02_UNIT_UNGROUNDED: '단위가 원문과 일치하지 않습니다.',
-  A02_UNRESOLVED_VALUE_INVENTED: '미확정 항목에 원문으로 확인할 수 없는 값이 있습니다.',
+  A02_UNRESOLVED_VALUE_INVENTED: '미확정 항목에 값·표시 문구 또는 자동 비교 방식이 함께 지정됐습니다.',
   A02_QUALIFIER_UNGROUNDED: '허용 조건이나 예외의 원문 근거가 일치하지 않습니다.',
   A02_NORMALIZATION_UNSUPPORTED: '이 항목에는 변환된 값 형식을 사용할 수 없습니다.',
   A02_NORMALIZED_VALUE_UNGROUNDED: '변환된 값이 원문과 일치하지 않습니다.',
@@ -18,6 +18,45 @@ export const REJECTION_REASONS = {
   A02_RESPONSE_INVALID: '항목의 형식이나 비교 조건이 유효하지 않습니다.',
 };
 const UNKNOWN_REASON = '원문 검증에 실패했습니다.';
+
+const REJECTION_FIELDS = {
+  expected: '비교할 값', unit: '단위', normalized_expected: '날짜 정규화 값',
+  operator: '판정 방식', presentation: '화면 표시 문구', source: '원문 범위',
+  qualifiers: '허용 조건·예외', target: '검사 대상', kind: '항목 종류', field: '검수 항목',
+};
+
+// 서버가 저장한 진단만 표시한다. 모델 원응답이나 공급자 오류 메시지는 화면에 옮기지 않는다.
+export function extractionFailureOf(run) {
+  const error = run?.error;
+  const detail = error?.extraction_rejections?.length ? error
+    : [...(Array.isArray(run?.step_records) ? run.step_records : [])].reverse().find(step => step.error?.extraction_rejections?.length)?.error;
+  return detail ? { extraction_rejections: detail.extraction_rejections, response_sha256: detail.response_sha256 } : {};
+}
+
+export function extractionFailureMessage(run) {
+  const code = run?.error?.code;
+  if (!code) return '';
+  if (extractionFailureOf(run).extraction_rejections?.length) {
+    return `요구사항 분석을 완료하지 못했습니다. 실패한 항목과 원인을 확인해 주세요. (${code})`;
+  }
+  if (code.startsWith('A02_')) {
+    return `요구사항 분석을 완료하지 못했습니다. 이 실행에는 항목별 상세 원인이 저장되어 있지 않습니다. (${code})`;
+  }
+  return code + ' · ' + (run.error.message || '실행을 완료하지 못했습니다.');
+}
+
+export function extractionFailureItems(error) {
+  const items = Array.isArray(error?.extraction_rejections) ? error.extraction_rejections : [];
+  return items.filter(item => item && typeof item === 'object').slice(0, 128).map(item => ({
+    candidate: Number.isInteger(item.candidate_index) ? `항목 ${item.candidate_index}` : '항목',
+    code: item.code || 'UNKNOWN',
+    reason: REJECTION_REASONS[item.code] || UNKNOWN_REASON,
+    fields: [...new Set((Array.isArray(item.fields) ? item.fields : []).map(field => REJECTION_FIELDS[field]).filter(Boolean))],
+    quote: typeof item.source?.quote === 'string' ? item.source.quote : '',
+    source: item.source?.block_id === 'input-text' ? '직접 입력 원문'
+      : Number.isInteger(item.source?.page) ? `원문 ${item.source.page}쪽` : '원문',
+  }));
+}
 
 // 후보 번호를 이어진 구간으로 줄인다. [5,6,7,9] → '후보 5–7, 9'. 구간이 많으면 개수만 적는다.
 export function candidateLabel(numbers) {

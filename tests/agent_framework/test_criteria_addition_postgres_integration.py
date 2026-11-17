@@ -160,3 +160,132 @@ def test_concurrent_replays_share_one_analysis_job(review):
     assert (outcome, claim.run_id) == ('completed', first.context.run_id)
     assert queue.claim_next() is None
     assert len(r.client.get(r.route + '/criteria-versions').json()) == 1
+
+
+def no_new_requirements(agents):
+    from tests.agent_framework.test_a02_addition_boundary import no_addition_result
+
+    def extract(request):
+        assert request.allow_no_additional_requirements
+        document = agents.extractor.read_document(request)
+        return no_addition_result(request, document.content.decode('utf-8'))
+    agents.extractor.extract = extract
+
+
+@pytest.mark.parametrize('keep_all', (False, True))
+def test_request_only_input_saves_existing_pdf_criteria_and_audit_without_approval(review, keep_all):
+    from sqlalchemy import select
+    from backend.agent_framework.criteria_review import versions
+    from backend.agent_framework.postgres import approvals, runs, steps
+
+    r = review
+    request = addition_request(r, '요구사항에 맞는지 검수해줘')
+    if keep_all:
+        request['criterion_ids'] = None
+    key = uuid4()
+    queued = post(r, '/criteria-additions', request, key)
+    assert queued.status_code == 202, queued.text
+    outcome, claim, queue = worker(r, change=no_new_requirements)
+    assert outcome == 'completed', r.client.get('/api/framework/v1/runs/' + claim.run_id).text
+    analysis = r.client.get('/api/framework/v1/runs/' + claim.run_id).json()
+    assert analysis['criteria']['criteria'] == []
+    assert analysis['criteria']['extraction']['outcome'] == 'no_new_requirements'
+    assert analysis['criteria']['extraction']['sources'][0]['text'] == request['text']
+    saved = r.client.get(r.route + '/criteria-review').json()['latest_version']
+    assert saved['version']['criteria'] == (r.draft['criteria'] if keep_all else r.draft['criteria'][:1])
+    assert saved['version']['addition_run_ids'] == [claim.run_id]
+    assert not any(change['action'] == 'add' for change in saved['version']['changes'])
+    assert r.client.get(r.route).json()['criteria'] == r.draft
+    assert r.client.get(r.route).json()['execution_status'] == 'waiting_criteria'
+    assert post(r, '/criteria-additions', request, key).json() == analysis
+    assert queue.claim_next() is None
+    assert len(r.client.get(r.route + '/criteria-versions').json()) == 1
+    with unit_of_work(r.db.engine) as c:
+        stored = c.execute(select(versions).where(versions.c.source_run_id == r.rid)).mappings().one()
+        assert stored['request_json']['analysis_outcome'] == 'no_new_requirements'
+        assert stored['request_json']['analysis_run_id'] == claim.run_id
+        step = c.execute(select(steps).where(steps.c.run_id == claim.run_id)).mappings().one()
+        assert step['output_json'] == analysis['criteria']
+        assert step['output_sha256'] == digest(analysis['criteria'])
+        assert not c.execute(select(approvals).where(approvals.c.run_id.in_((r.rid, claim.run_id)))).all()
+
+
+def test_request_only_input_does_not_overwrite_newer_pdf_version(review):
+    r = review
+    queued = post(r, '/criteria-additions', addition_request(r, '검수해줘'))
+    assert queued.status_code == 202
+    latest = create(r)
+    outcome, claim, _queue = worker(r, change=no_new_requirements)
+    assert outcome == 'failed'
+    analysis = r.client.get('/api/framework/v1/runs/' + claim.run_id).json()
+    assert analysis['error']['code'] == 'CRITERIA_VERSION_CONFLICT'
+    assert r.client.get(r.route + '/criteria-versions').json() == [latest]
+
+
+def test_request_only_input_cannot_exclude_every_existing_condition(review):
+    r = review
+    request = addition_request(r, '검수해줘') | {'criterion_ids': []}
+    queued = post(r, '/criteria-additions', request)
+    # Selection must contain at least one original condition, or be null to
+    # keep them all. The request contract rejects an empty selection before
+    # any extraction is queued, including request-only additional input.
+    assert queued.status_code == 422, queued.text
+    assert r.client.get(r.route + '/criteria-review').json()['latest_version'] is None
+    assert r.client.get(r.route).json()['criteria'] == r.draft
+
+
+@pytest.mark.parametrize('partial', (False, True))
+def test_failed_addition_persists_item_diagnostics_in_run_step_and_job(review, partial):
+    from sqlalchemy import select
+    from backend.agent_framework.postgres import runs, jobs, steps
+    from backend.agent_framework.ports import AdapterFailure
+    from tests.agent_framework.test_a02_addition_boundary import rejection
+
+    r = review
+    request = addition_request(r, '제목에 여름을 표기한다.\n공연 시간은 추후 확정한다.')
+    queued = post(r, '/criteria-additions', request)
+    assert queued.status_code == 202, queued.text
+    captured = []
+
+    def faulty(agents):
+        # The mock line fixture only understands its original sample phrases.
+        # Supply one valid, source-grounded response so this case reaches the
+        # partial-result rejection rather than failing in that fixture first.
+        def provider(sources):
+            source, = sources
+            quote = '제목에 여름을 표기한다.'
+            return json.dumps({'candidates': [{'text': quote, 'quote': quote,
+                'block_id': source.block_id, 'page': 1, 'kind': 'text',
+                'operator': 'contains', 'expected': '여름', 'unit': None,
+                'required': True, 'unresolved': False}]}).encode()
+        agents.extractor.provider = provider
+        original = agents.extractor.extract
+
+        def extract(request):
+            detail = rejection(request.document.document_version_id)
+            captured.append(detail.model_dump(mode='json'))
+            if not partial:
+                raise AdapterFailure('A02_UNRESOLVED_VALUE_INVENTED', 'private provider response',
+                    extraction_rejections=(detail,), response_sha256='f'*64)
+            result = original(request)
+            return result.model_copy(update={'extraction':result.extraction.model_copy(update={
+                'rejected_candidates':(detail,), 'response_sha256':'f'*64})})
+        agents.extractor.extract = extract
+
+    outcome, claim, _queue = worker(r, change=faulty)
+    assert outcome == 'failed'
+    analysis = r.client.get('/api/framework/v1/runs/' + claim.run_id).json()
+    error = analysis['error']
+    assert error['code'] == ('CRITERIA_ADDITION_INCOMPLETE' if partial else 'A02_UNRESOLVED_VALUE_INVENTED')
+    assert error['extraction_rejections'] == captured
+    assert error['response_sha256'] == 'f'*64
+    assert analysis['step_records'][-1]['error'] == error
+    assert 'private provider' not in json.dumps(analysis)
+    assert r.client.get(r.route + '/criteria-review').json()['latest_version'] is None
+    with unit_of_work(r.db.engine) as c:
+        saved = c.execute(select(runs.c.snapshot_json).where(runs.c.run_id == claim.run_id)).scalar_one()
+        assert saved['error'] == error
+        step = c.execute(select(steps).where(steps.c.run_id == claim.run_id)).mappings().one()
+        assert step['record_json']['error'] == error and step['output_json'] is None
+        job = c.execute(select(jobs).where(jobs.c.run_id == claim.run_id)).mappings().one()
+        assert job['state'] == 'failed' and job['error_json'] == error

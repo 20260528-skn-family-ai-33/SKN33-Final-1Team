@@ -19,7 +19,7 @@ export default function ReviewPage() {
     projectId, setProjectId, inputRunId, clearDocument,
     documentCancelBusy, cancelQueuedDocument,
     documentBusy, documentExtracting, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
-    state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, pollError, preview,
+    state, dispatch, health, healthBusy, sampleBusy, fileBusy, error, extractionFailure, pollError, preview,
     dimensions, oversizeImage, copySource, useInspectionCopy, dragging, setDragging, newCriterion, setNewCriterion, newCategory, setNewCategory,
     filter, activeEvidence, setActiveEvidence, fileInput, busy, locked, selected, selectedInfo, versionText,
     checkHealth, inputChange, selectFile, removeFile, prepare, confirm, unlock, run,
@@ -85,7 +85,7 @@ export default function ReviewPage() {
           onPick={project => { if (project.name !== state.projectName) inputChange('projectName', project.name.slice(0, 60)); }} />,
     };
     const page = { state, projectId, projectStatus, prepare, inputChange, sampleBusy, fileBusy, fileInput, selectFile,
-      preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error,
+      preview, dimensions, oversizeImage, copySource, useInspectionCopy, removeFile, dragging, setDragging, health, healthBusy, checkHealth, error, extractionFailure,
       documentBusy, documentExtracting, documentProgress, documentNotice, documentError, documentResumeId, documentInput, selectDocument, cancelDocument,
       clearDocument, documentCancelBusy, cancelQueuedDocument,
       onChooseMedia: () => go(mediaChoicePath, { replace: true, state: mediaChoiceState }) };
