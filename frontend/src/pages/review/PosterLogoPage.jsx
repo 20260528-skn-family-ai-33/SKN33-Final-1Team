@@ -11,8 +11,10 @@ import LogoJobProgress from '../video/LogoJobProgress.jsx';
 import '../video/logoConfirm.css';
 import './posterLogo.css';
 
-// 포스터 로고 위치 확정(1) → 정밀 대조 근거(2). 영상 로고 확정 화면과 같은 흐름이며, 포스터는 한 장이라 시간 구간이 없다.
+// 포스터 로고 정밀 대조 결과(기본 화면) · 위치 직접 확인 · 직접 지정. 영상 로고 확정 화면과 같은 흐름이며, 포스터는 한 장이라 시간 구간이 없다.
 // 순위는 후보를 찾는 데만 쓰고, 같은 로고인지와 최종 일치 여부는 사람이 판단한다.
+// 화면 짜임(2026-11-17): 동영상 로고 화면과 같은 카드·표현을 쓰고, 포스터 한 장이라는 점을 살려
+// 왼쪽 잉크 무대(포스터 + 후보 상자·결과 번호)와 오른쪽 종이 면(후보 카드·결과 카드)으로 나눈다.
 const RUNNING = new Set(['queued', 'running']);
 const EMPTY_SELECTION = { decision: null, checked: [], manuals: [] };
 
@@ -28,29 +30,33 @@ function posterFit(size, vh = 74) {
   return { aspectRatio: size[0] + ' / ' + size[1], width: 'min(100%, calc(' + vh + 'vh * ' + ratio.toFixed(4) + '))' };
 }
 
-function boxText(box) {
-  return Math.round(box[2] - box[0]) + '×' + Math.round(box[3] - box[1]) + 'px';
+// 후보 순위 점수를 화면용 일치도(0~100%)로: 0.912 → 91 (동영상 로고 화면과 같은 표시)
+function matchPercent(rank) {
+  return Math.max(0, Math.min(100, Math.round(Number(rank || 0) * 100)));
 }
 
+// 로고 조각 미리보기. 칸 너비에 맞춰 줄어들어 조각 전체가 항상 보인다(예전에는 고정 배율이라 좁은 칸에서 오른쪽이 잘렸다).
 function CropPreview({ poster, box, compact = false }) {
   if (!poster || !box) return <div className="vl-crop vl-crop-empty">미리보기 없음</div>;
   const W = poster.size[0], H = poster.size[1];
   const x1 = Math.max(0, Math.min(W - 1, box[0])), y1 = Math.max(0, Math.min(H - 1, box[1]));
   const x2 = Math.max(x1 + 1, Math.min(W, box[2])), y2 = Math.max(y1 + 1, Math.min(H, box[3]));
   const width = x2 - x1, height = y2 - y1;
-  const scale = Math.min((compact ? 248 : 350) / width, (compact ? 112 : 166) / height);
-  return <div className={'vl-crop' + (compact ? ' compact' : '')} aria-label={'로고 영역 ' + boxText(box)}>
-    <span style={{ width: width * scale, height: height * scale, backgroundImage: 'url("' + poster.url + '")',
-      backgroundSize: (W * scale) + 'px ' + (H * scale) + 'px', backgroundPosition: (-x1 * scale) + 'px ' + (-y1 * scale) + 'px' }} />
+  return <div className={'vl-crop pl-crop' + (compact ? ' compact' : '')} role="img" aria-label="로고 영역 미리보기">
+    <span style={{ aspectRatio: width + ' / ' + height, width: 'min(100%, calc(var(--pl-crop-h) * ' + (width / height).toFixed(4) + '))',
+      backgroundImage: 'url("' + poster.url + '")', backgroundSize: (W / width * 100) + '% ' + (H / height * 100) + '%',
+      backgroundPosition: (W > width ? x1 / (W - width) * 100 : 0) + '% ' + (H > height ? y1 / (H - height) * 100 : 0) + '%' }} />
   </div>;
 }
 
+// 포스터 위 후보 상자. 이름표는 동영상 화면처럼 상자 바깥 위(맨 위 상자는 아래)에 두고, 번호만 적어 붙어 있는 로고끼리 겹치지 않게 한다.
 function PosterViewer({ poster, overlays, onSelect }) {
-  return <div className="vl-frame pl-poster" style={posterFit(poster.size)}>
+  return <div className="vl-frame pl-poster" style={posterFit(poster.size, 68)}>
     <img src={poster.url} alt="검수 포스터" />
-    {overlays.map(item => <button type="button" key={item.id} className={'vl-box' + (item.selected ? ' selected' : '')}
-      style={boxStyle(item.box, poster.size)} aria-label={item.label} title={item.label} aria-pressed={item.selected}
-      onClick={() => onSelect && onSelect(item.id)}><span>{item.label}</span></button>)}
+    {overlays.map(item => <button type="button" key={item.id}
+      className={'vl-box' + (item.selected ? ' selected' : '') + (item.box[1] / (poster.size[1] || 1) < 0.06 ? ' label-below' : '')}
+      style={boxStyle(item.box, poster.size)} aria-label={item.label + (item.selected ? ' (선택됨)' : '')} title={item.label} aria-pressed={!!item.selected}
+      onClick={() => onSelect && onSelect(item.id)}><span>{item.selected && <i aria-hidden="true">✓</i>}{item.short}</span></button>)}
   </div>;
 }
 
@@ -58,15 +64,18 @@ function CandidateCard({ poster, refIndex, candidateIndex, rank, selected, onTog
   const candidate = poster.candidates[candidateIndex];
   const box = candidate.rep[refIndex];
   const ocr = poster.refs[refIndex].ocr[String(candidateIndex)];
+  const percent = matchPercent(candidate.rank[refIndex]);
   return <article className={'vl-candidate' + (selected ? ' selected' : '')}>
-    <button type="button" className="vl-candidate-image" onClick={onToggle} aria-pressed={selected}>
+    <button type="button" className="vl-candidate-image" onClick={onToggle} aria-pressed={selected} aria-label={'#' + rank + ' 후보 ' + (selected ? '선택 해제' : '선택')}>
+      <span className="vl-candidate-top"><span className="vl-rank">#{rank}</span>
+        <span className="vl-candidate-check" aria-hidden="true">{selected ? '✓' : ''}</span></span>
       <CropPreview poster={poster} box={box} compact />
-      <span className="vl-rank">#{rank}</span>
-      <span className="vl-candidate-check">{selected ? '선택됨' : '선택'}</span>
     </button>
     <div className="vl-candidate-info">
-      <div className="vl-candidate-score"><span>순위 점수</span><strong>{Number(candidate.rank[refIndex]).toFixed(3)}</strong></div>
-      <p className="pl-candidate-meta"><span>유사도 {Number(candidate.score[refIndex]).toFixed(3)}</span><span>탐지 {Number(candidate.owl).toFixed(2)}</span><span>{boxText(box)}</span></p>
+      {/* 순위 점수·유사도·탐지 점수·픽셀 크기 대신 '일치도 n%' 하나만 보인다. 원래 값은 마우스를 올리면 보인다. */}
+      <div className="vl-candidate-score" title={'순위 점수 ' + Number(candidate.rank[refIndex]).toFixed(3)}>
+        <span>원본과 일치도</span><strong>{percent}%</strong>
+        <i className="vl-candidate-meter" aria-hidden="true"><b style={{ width: percent + '%' }} /></i></div>
       {ocr && ocr[0] && <div className="vl-ocr-chip"><span>{ocr[1] ? '문구 유사' : 'OCR'}</span>{ocr[0]}</div>}
     </div>
   </article>;
@@ -95,48 +104,50 @@ function ManualEditor({ poster, onCancel, onDone }) {
     const next = span(start.current, point(event)); start.current = null; setDraft(null);
     if (next[2] - next[0] >= 8 && next[3] - next[1] >= 8) setBox(next);
   }
-  return <section className="vl-panel vl-manual">
-    <div className="vl-section-heading">
-      <div><span className="vl-kicker">직접 지정</span><h2>포스터에서 로고 영역을 표시하세요</h2></div>
-      <button type="button" className="vl-text-button" onClick={onCancel}>후보 화면으로</button>
+  return <div className="vl-main-stack">
+    <div className="vl-stage-heading vl-confirm-heading">
+      <h2>포스터에서 로고 영역 표시하기</h2>
+      <div className="vl-stage-actions"><button type="button" className="vl-button secondary" onClick={onCancel}>후보 화면으로</button></div>
     </div>
-    <p className="vl-help">포스터 위에서 드래그해 로고를 감싸세요. 표시한 영역은 넓히지 않고 그대로 원본과 대조합니다.</p>
-    <div className="vl-manual-workspace">
-      <div ref={canvas} className="vl-manual-canvas pl-manual-canvas" style={posterFit(poster.size)}
-        onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
-        <img src={poster.url} alt="검수 포스터" draggable="false" />
-        {box && <span className="vl-draw-box" style={boxStyle(box, poster.size)} />}
-        {draft && <span className="vl-draw-box drawing" style={boxStyle(draft, poster.size)} />}
+    <div className="pl-confirm-grid">
+      <section className="pl-stage" aria-label="로고 영역을 표시할 포스터">
+        <div ref={canvas} className="vl-manual-canvas pl-manual-canvas" style={posterFit(poster.size, 68)}
+          onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
+          <img src={poster.url} alt="검수 포스터" draggable="false" />
+          {box && <span className="vl-draw-box" style={boxStyle(box, poster.size)} />}
+          {draft && <span className="vl-draw-box drawing" style={boxStyle(draft, poster.size)} />}
+        </div>
+        <div className="pl-stage-scale"><span>직접 지정</span><span>포스터 위에서 드래그해 로고를 감싸세요</span><span>{box ? '영역 1곳' : '영역 없음'}</span></div>
+      </section>
+      <div className="pl-confirm-side">
+        <section className="vl-panel pl-manual-panel">
+          <div className="vl-section-heading"><h2>표시한 영역</h2></div>
+          {box ? <CropPreview poster={poster} box={box} /> : <div className="vl-selection-empty">아직 표시한 영역이 없어요.</div>}
+          <p className="vl-help">표시한 영역은 넓히지 않고 그대로 원본과 대조합니다.</p>
+          <div className="vl-manual-actions">
+            {box && <button type="button" className="vl-button subtle" onClick={() => setBox(null)}>다시 그리기</button>}
+            <button type="button" className="vl-button secondary" onClick={onCancel}>취소</button>
+            <button type="button" className="vl-button primary" disabled={!box} onClick={() => onDone(box)}>영역 확정</button>
+          </div>
+        </section>
       </div>
-      <aside className="vl-manual-side">
-        <div className="vl-manual-box">
-          <strong>선택 영역</strong>
-          {box ? <CropPreview poster={poster} box={box} /> : <p>포스터 위를 드래그하세요.</p>}
-          {box && <button type="button" className="vl-text-button" onClick={() => setBox(null)}>영역 다시 그리기</button>}
-        </div>
-        <div className="vl-manual-actions">
-          <button type="button" className="vl-button secondary" onClick={onCancel}>취소</button>
-          <button type="button" className="vl-button primary" disabled={!box} onClick={() => onDone(box)}>영역 확정</button>
-        </div>
-      </aside>
     </div>
-  </section>;
+  </div>;
 }
 
 function SelectionSummary({ poster, refIndex, checked, manuals, onRemoveCandidate, onRemoveManual }) {
-  if (!checked.size && !manuals.length) return <div className="vl-selection-empty">선택한 위치가 없습니다. 후보를 선택하거나 포스터에서 직접 지정하세요.</div>;
+  if (!checked.size && !manuals.length) return <div className="vl-selection-empty">선택한 위치가 없어요.</div>;
   const ranked = rankedCandidates(poster.candidates, refIndex);
   return <div className="vl-selection-list">
     {[...checked].map(index => <article className="vl-selected-item" key={'candidate-' + index}>
       <CropPreview poster={poster} box={poster.candidates[index].rep[refIndex]} compact />
       <div><span className="vl-mini-label">후보 #{ranked.indexOf(index) + 1}</span>
-        <strong>점수 {Number(poster.candidates[index].rank[refIndex]).toFixed(3)}</strong>
-        <small>{boxText(poster.candidates[index].rep[refIndex])}</small></div>
+        <small>일치도 {matchPercent(poster.candidates[index].rank[refIndex])}%</small></div>
       <button type="button" aria-label="선택에서 제거" onClick={() => onRemoveCandidate(index)}>×</button>
     </article>)}
     {manuals.map((box, index) => <article className="vl-selected-item" key={'manual-' + index}>
       <CropPreview poster={poster} box={box} compact />
-      <div><span className="vl-mini-label manual">직접 지정</span><strong>{boxText(box)}</strong><small>표시한 영역 그대로</small></div>
+      <div><span className="vl-mini-label manual">직접 지정</span><small>표시한 영역 그대로</small></div>
       <button type="button" aria-label="직접 지정 영역 제거" onClick={() => onRemoveManual(index)}>×</button>
     </article>)}
   </div>;
@@ -151,91 +162,118 @@ function CandidateWorkspace({ poster, refIndex, checked, manuals, decision, onTo
   const rest = ranked.slice(TOP_N, TOP_N + extra);
   const extraCount = Math.max(0, ranked.length - TOP_N);
   const overlays = ranked.slice(0, limit).map((index, order) => ({ id: index, box: poster.candidates[index].rep[refIndex],
-    selected: checked.has(index), label: '#' + (order + 1) + ' 후보' + (checked.has(index) ? ' · 선택됨' : '') }))
-    .concat(manuals.map((box, i) => ({ id: 'manual-' + i, box, selected: true, label: '직접 지정 ' + (i + 1) })));
+    selected: checked.has(index), label: '#' + (order + 1) + ' 후보', short: '#' + (order + 1) }))
+    .concat(manuals.map((box, i) => ({ id: 'manual-' + i, box, selected: true, label: '직접 지정 ' + (i + 1), short: '직접 ' + (i + 1) })));
   return <div className="vl-main-stack">
-    <div className="vl-stage-heading">
-      <div><span className="vl-kicker">01 / 위치 확인</span><h1>이 원본 로고가 있는 위치를 고르세요</h1>
-        <p>순위는 후보를 찾는 데만 씁니다. 같은 로고인지는 화면에서 직접 확인해 주세요. 같은 로고가 여러 곳에 있으면 모두 고를 수 있습니다.</p></div>
+    <div className="vl-stage-heading vl-confirm-heading">
+      <h2>로고가 있는 위치 고르기</h2>
       <div className="vl-stage-actions">
-        <button type="button" className="vl-button subtle" onClick={onManual}>후보에 없음 · 직접 지정</button>
+        <button type="button" className="vl-button subtle" onClick={onManual}>직접 지정</button>
         <button type="button" className="vl-button secondary" onClick={onNone}>포스터에 없음</button>
       </div>
     </div>
-    <div className="vl-review-grid">
-      <div className="vl-review-left">
-        <section className="vl-viewer-card vl-panel">
-          <div className="vl-section-heading">
-            <div><span className="vl-kicker">후보 위치</span><h2>포스터에서 후보를 확인하세요</h2></div>
-            <label className="vl-soft-tag pl-filter">표시 후보 <select value={limit} onChange={event => setLimit(Number(event.target.value))}>
-              {[3, 10, 30, 1000].map(value => <option key={value} value={value}>{value >= 1000 ? '전체' : '상위 ' + value + '개'}</option>)}
-            </select></label>
-          </div>
-          <PosterViewer poster={poster} overlays={overlays} onSelect={id => typeof id === 'number' && onToggle(id)} />
-          <p className="vl-help">{ranked.length ? '박스를 눌러 후보를 선택하거나 해제하세요.' : '찾은 후보가 없습니다. 포스터에서 직접 지정할 수 있습니다.'}</p>
-        </section>
+    <div className="pl-confirm-grid">
+      {/* 왼쪽: 잉크 무대 위 포스터. 화면을 내려도 따라와서 후보 카드와 포스터를 한눈에 본다. */}
+      <section className="pl-stage" aria-label="후보 위치가 표시된 포스터">
+        <PosterViewer poster={poster} overlays={overlays} onSelect={id => typeof id === 'number' && onToggle(id)} />
+        <div className="pl-stage-scale">
+          <span>후보 {ranked.length}곳</span>
+          <span>{ranked.length ? '상자를 눌러 선택하거나 해제하세요' : '찾은 후보가 없어요. 직접 지정할 수 있어요'}</span>
+          <label>표시 <select value={limit} onChange={event => setLimit(Number(event.target.value))}>
+            {[3, 10, 30, 1000].map(value => <option key={value} value={value}>{value >= 1000 ? '전체' : '상위 ' + value + '개'}</option>)}
+          </select></label>
+        </div>
+      </section>
+      <div className="pl-confirm-side">
         <section className="vl-panel">
-          <div className="vl-section-heading"><div><span className="vl-kicker">상위 후보</span><h2>원본 로고와 같은 위치를 선택하세요</h2></div>
-            <span className="vl-soft-tag">여러 위치 선택 가능</span></div>
+          <div className="vl-section-heading"><h2>후보 위치</h2><span className="vl-soft-tag">여러 개 선택 가능</span></div>
           <div className="vl-candidate-grid">{top.map((index, order) => <CandidateCard key={index} poster={poster} refIndex={refIndex}
             candidateIndex={index} rank={order + 1} selected={checked.has(index)} onToggle={() => onToggle(index)} />)}</div>
-          {!top.length && <p className="vl-empty-inline">순위에 표시할 후보가 없습니다.</p>}
+          {!top.length && <p className="vl-empty-inline">후보가 없어요. ‘직접 지정’으로 영역을 표시하세요.</p>}
           {extraCount > 0 && <button type="button" className="vl-text-button" onClick={() => setExtra(value => value >= extraCount ? 0 : Math.min(extraCount, value + 15))}>
             {extra >= extraCount ? '상위 ' + TOP_N + '개만 보기' : extra === 0 ? '다른 후보도 보기 (' + extraCount + '개)' : '후보 더 보기 · ' + extra + ' / ' + extraCount}
           </button>}
           {rest.length > 0 && <div className="vl-candidate-grid vl-candidate-grid-extra">{rest.map(index => <CandidateCard key={index} poster={poster}
             refIndex={refIndex} candidateIndex={index} rank={ranked.indexOf(index) + 1} selected={checked.has(index)} onToggle={() => onToggle(index)} />)}</div>}
+          <p className="vl-help">순위는 후보를 찾는 데만 써요. 같은 로고인지는 직접 확인해 주세요.</p>
         </section>
-      </div>
-      <aside className="vl-review-right">
         <section className="vl-panel vl-selection-panel">
-          <div className="vl-section-heading"><div><span className="vl-kicker">확정할 위치</span><h2>선택 내용</h2></div>
-            <span className="vl-count">{checked.size + manuals.length}</span></div>
+          <div className="vl-section-heading"><h2>선택한 위치</h2><span className="vl-count">{checked.size + manuals.length}</span></div>
           <SelectionSummary poster={poster} refIndex={refIndex} checked={checked} manuals={manuals}
             onRemoveCandidate={onToggle} onRemoveManual={onRemoveManual} />
           {decision === 'none' && <div className="vl-none-state">이 원본 로고는 포스터에 없는 것으로 표시했습니다.</div>}
-          {decision !== 'none' && <button type="button" className="vl-button subtle vl-wide" onClick={onManual}>직접 지정 영역 추가</button>}
+          {decision !== 'none' && <button type="button" className="vl-button subtle vl-wide" onClick={onManual}>영역 직접 추가</button>}
         </section>
-      </aside>
+      </div>
     </div>
   </div>;
 }
 
-function LocationEvidence({ base, item, refInfo }) {
+// 정밀 대조 진행. 동영상 로고의 진행 화면과 같은 짜임(왼쪽 잉크 무대 · 오른쪽 큰 제목과 진행률 · 단계)이다.
+const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '위치별 정밀 대조'], ['organize', '결과 정리']];
+function CompareProgress({ status, progress, base, refs, auto }) {
+  const value = Math.min(100, Math.max(0, Math.round(progress || 0)));
+  const active = status === 'running' ? (value >= 95 ? 2 : 1) : 0;
+  const title = status === 'running' ? '원본 로고와 포스터 속 로고를 정밀 대조하고 있어요.' : '정밀 대조 차례를 기다리고 있어요.';
+  return <section className="vl-compare-progress" aria-labelledby="compare-progress-title">
+    <div className="vl-compare-stage" aria-hidden="true">
+      <div className="vl-compare-stage-logos">{(refs || []).slice(0, 3).map((ref, index) =>
+        <span key={index} className="vl-compare-stage-logo"><img src={base + '/' + (ref.img || ('refs/' + index + '.png'))} alt="" /><i /></span>)}</div>
+      <span className="vl-compare-stage-caption">{status === 'running' ? '포스터 속 영역을 원본과 비교하는 중' : '대조 준비 중'}</span>
+    </div>
+    <div className="vl-compare-progress-body">
+      <span className="vl-compare-progress-eyebrow">LOGO PRECISION CHECK IN PROGRESS</span>
+      <h2 id="compare-progress-title">{title}</h2>
+      <span className="visually-hidden" role="status">{COMPARE_STEPS[active][1]} 단계 진행 중</span>
+      <div className="vl-compare-progress-value"><span>정밀 대조 진행률</span><strong>{status === 'running' ? value + '%' : '대기'}</strong></div>
+      <div className="vl-compare-progress-track" role="progressbar" aria-label="정밀 대조 진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
+        <i style={{ width: (status === 'running' ? Math.max(4, value) : 4) + '%' }} /></div>
+      <ol className="vl-compare-progress-steps">{COMPARE_STEPS.map(([key, label], index) =>
+        <li key={key} className={index < active ? 'is-completed' : index === active ? 'is-active' : 'is-pending'} aria-current={index === active ? 'step' : undefined}>
+          <span aria-hidden="true">{index < active ? '✓' : String(index + 1).padStart(2, '0')}</span>{label}</li>)}</ol>
+      <p className="vl-compare-progress-help">{auto ? '순위가 높은 후보를 원본과 비교해요. 검수하려던 로고가 아니면 위치 직접 확인에서 고칠 수 있어요.'
+        : '확정한 위치를 원본 로고와 비교하고 있어요.'} 페이지를 닫아도 서버에서 계속 대조합니다.</p>
+    </div>
+  </section>;
+}
+
+// 결과 카드: 동영상 로고의 결과 카드(vl-cmp-card)와 같은 모양. 번호는 왼쪽 포스터의 표시와 짝을 이룬다.
+function LocationEvidence({ base, item, number, refInfo, several, active, onActive }) {
   const refName = refInfo?.name || item.reference || ('원본 로고 ' + (item.logo + 1));
-  // 차이 근거가 있으면 보류, 없으면 통과. 보류면 차이만 종류별로 모아 보여 준다(포스터는 한 장이라 초 수가 없다).
   const outcome = OUTCOME[item.outcome] || OUTCOME.unknown;
   const differences = groupDifferences([{ sec: 0, outcome: item.outcome, findings: item.findings }]);
-  return <article className="vl-evidence-card">
-    <header className="vl-evidence-head">
-      <div><span className="vl-kicker">{item.source === 'candidate' ? '후보 위치' : '직접 지정'}</span>
-        <h2>{refName} · 위치 {item.crop + 1}</h2>
-        <p>영역 {item.size[0]}×{item.size[1]}px · 선명도 {item.sharp}{item.rank != null ? ' · 순위 점수 ' + Number(item.rank).toFixed(3) : ''}</p></div>
-      <span className={'vl-result-pill ' + outcome.tone}>{outcome.label}</span>
+  return <article id={'pl-result-' + number} className={'vl-evidence-card vl-cmp-card pl-cmp-card is-' + outcome.tone + (active ? ' is-active' : '')}
+    onMouseEnter={() => onActive(number)} onMouseLeave={() => onActive(null)} onFocus={() => onActive(number)} onBlur={() => onActive(null)}>
+    <header className="vl-cmp-head">
+      <div className="vl-cmp-title"><span className="pl-result-no" aria-hidden="true">{String(number).padStart(2, '0')}</span>
+        <h2>{refName}{several ? ' · 위치 ' + (item.crop + 1) : ''}</h2>
+        <span className={'vl-result-pill vl-bundle-outcome ' + outcome.tone}>{outcome.label}</span>
+        {item.source !== 'candidate' && <span className="vl-cmp-tag">직접 지정</span>}</div>
     </header>
-    <div className="vl-evidence-images">
-      <figure><img src={base + '/' + (refInfo?.img || ('refs/' + item.logo + '.png'))} alt={refName + ' 원본'} /><figcaption>원본 로고</figcaption></figure>
-      <figure><img src={base + '/compare/crop/' + item.logo + '/' + item.crop + '.jpg'} alt={refName + ' 포스터 영역'} /><figcaption>포스터에서 대조한 영역</figcaption></figure>
-      <div className="vl-evidence-summary">
-        {differences.length > 0 ? <div className="vl-diff-groups" aria-label="종류별 차이">
-          {differences.map(group => <section className="vl-diff-group" key={group.kind}>
-            <h3>{group.kind}</h3>
-            <ul className="vl-finding-list">{[...new Set(group.items.map(([text]) => findingText(text, '포스터')))].map(text =>
-              <li key={text}><span>{text}</span></li>)}</ul>
-          </section>)}
-        </div> : <p className="vl-muted-copy">{outcome.tone === 'match'
-          ? '차이 근거가 없어 통과로 표시했어요. 일치 확정이 아니라 비교한 항목 기준의 결과입니다.'
-          : '로고가 작거나 글자를 읽지 못해 비교하지 못했어요. 원본과 직접 비교해 주세요.'}</p>}
-        {item.small && <p className="pl-small-note">짧은 변이 60px 미만인 작은 영역입니다. 정상 로고도 차이 근거가 나오기 쉬우니 원본과 직접 비교해 주세요.</p>}
-      </div>
+    <div className="vl-cmp-pair">
+      <figure><div className="vl-cmp-frame"><img src={base + '/' + (refInfo?.img || ('refs/' + item.logo + '.png'))} alt={refName + ' 원본'} /></div>
+        <figcaption>원본 로고</figcaption></figure>
+      <span className="vl-cmp-arrow" aria-hidden="true">→</span>
+      <figure><div className="vl-cmp-frame"><img src={base + '/compare/crop/' + item.logo + '/' + item.crop + '.jpg'} alt={'포스터 속 ' + refName} /></div>
+        <figcaption>포스터</figcaption></figure>
     </div>
+    {differences.length > 0 && <div className="vl-diff-groups vl-cmp-diffs" aria-label="종류별 차이">
+      {differences.map(group => <section className="vl-diff-group" key={group.kind}>
+        <h3>{group.kind}</h3>
+        <ul className="vl-finding-list">{[...new Set(group.items.map(([text]) => findingText(text, '포스터')))].map(text =>
+          <li key={text}><span>{text}</span></li>)}</ul>
+      </section>)}
+    </div>}
+    {outcome.tone === 'unknown' && !differences.length && <p className="vl-cmp-note">로고가 작거나 글자를 읽지 못해 비교하지 못했어요. 원본과 직접 비교해 주세요.</p>}
+    {item.small && <p className="vl-cmp-note">작은 영역이라 정상 로고도 차이 근거가 나오기 쉬워요. 원본과 직접 비교해 주세요.</p>}
   </article>;
 }
 
-function CompareResults({ base, refs, onConfirm, onStatus }) {
+function CompareResults({ base, poster, refs, onConfirm, onStatus }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+  const [active, setActive] = useState(null);
   useEffect(() => {
     const controller = new AbortController(); let timer;
     setResult(null); setError('');
@@ -259,35 +297,58 @@ function CompareResults({ base, refs, onConfirm, onStatus }) {
   const absent = result.absent || [];
   const running = RUNNING.has(result.compare_status);
   const auto = result.origin !== 'manual';
-  // 동영상 로고 정밀 대조 화면과 같은 머리: 짧은 제목 · 안내 · 결과 개수, 오른쪽에 '위치 직접 확인'.
+  const tally = locations.reduce((counts, item) => {
+    const tone = (OUTCOME[item.outcome] || OUTCOME.unknown).tone;
+    return { ...counts, [tone]: (counts[tone] || 0) + 1 };
+  }, {});
+  const boxOf = item => item.box || (item.candidate != null ? poster.candidates[item.candidate]?.rep[item.logo] : null);
+  const jump = number => document.getElementById('pl-result-' + number)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   return <div className="vl-main-stack vl-compare">
     <div className="vl-stage-heading vl-compare-heading">
       <div><h1>로고 정밀 대조</h1>
         <p>{auto ? '' : '직접 확인한 위치로 다시 대조했어요. '}차이 근거가 있으면 보류, 없으면 통과예요. 최종 판정은 담당자가 합니다.</p>
         {locations.length > 0 && <div className="vl-compare-tally" aria-label="정밀 대조 결과 요약">
-          <span className="vl-compare-total">결과 {locations.length}건</span></div>}</div>
+          <span className="vl-compare-total">결과 {locations.length}건</span>
+          {['match', 'diff', 'unknown'].filter(tone => tally[tone])
+            .map(tone => <span key={tone} className={'vl-result-pill ' + tone}>{OUTCOME[tone].label} {tally[tone]}</span>)}</div>}</div>
       <button type="button" className="vl-button secondary" onClick={onConfirm}>위치 직접 확인</button>
     </div>
-    {running && <section className="vl-panel vl-progress-card">
-      <div className="vl-progress-title"><strong>{auto ? '자동으로 고른 후보로 정밀 대조 중' : '정밀 대조 중'}</strong><span>{result.compare_progress || 0}%</span></div>
-      <div className="vl-progress-track"><span style={{ width: Math.min(100, result.compare_progress || 0) + '%' }} /></div>
-      <p>{auto ? '순위가 높은 후보를 원본 로고와 비교하고 있습니다. 검수하려던 로고가 아니면 위치 직접 확인에서 고칠 수 있어요.' : '확정한 위치를 원본 로고와 비교하고 있습니다.'}</p>
-    </section>}
+    {running && <CompareProgress status={result.compare_status} progress={result.compare_progress} base={base} refs={refs} auto={auto} />}
     {result.compare_status === 'failed' && <section className="vl-panel"><ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} /></section>}
-    {!result.compare_status && <section className="vl-panel vl-progress-card">
-      <div className="vl-progress-title"><strong>자동으로 고른 후보로 정밀 대조 시작</strong><span>대기</span></div>
-      <div className="vl-progress-track"><span style={{ width: '8%' }} /></div>
-      <p>후보 찾기가 끝나 정밀 대조를 준비하고 있습니다.</p>
-    </section>}
+    {!result.compare_status && <CompareProgress status="starting" progress={0} base={base} refs={refs} auto={auto} />}
     {(result.warnings || []).map(warning => <div className="vl-warning" key={warning}>⚠ {warning}</div>)}
-    {absent.length > 0 && <section className="vl-panel">
-      <div className="vl-section-heading"><div><span className="vl-kicker">사람 확인</span><h2>포스터에 없음으로 표시한 원본 로고</h2></div></div>
-      <ul className="pl-absent-list">{absent.map(item => <li key={item.logo}>
-        <img src={base + '/' + (refs[item.logo]?.img || ('refs/' + item.logo + '.png'))} alt="" />{refs[item.logo]?.name || item.reference}</li>)}</ul>
-    </section>}
     {result.compare_status === 'completed' && !locations.length && !absent.length && <section className="vl-panel vl-empty">
-      <strong>대조 결과가 없습니다.</strong><p>대조할 수 있는 위치가 없었습니다.</p></section>}
-    {locations.map(item => <LocationEvidence key={item.logo + '-' + item.crop} base={base} item={item} refInfo={refs[item.logo]} />)}
+      <strong>대조 결과가 없습니다.</strong><p>포스터에서 원본 로고 후보를 찾지 못했어요. 위치를 직접 지정해 다시 대조할 수 있어요.</p></section>}
+    {!running && result.compare_status && (locations.length > 0 || absent.length > 0) && <div className="pl-result-grid">
+      {/* 왼쪽: 포스터 위에 대조한 위치를 결과 색 번호로 표시한다. 번호를 누르면 오른쪽 카드로 간다. */}
+      <section className="pl-stage pl-result-stage" aria-label="포스터 위 대조 위치">
+        <div className="vl-frame pl-poster" style={posterFit(poster.size, 68)}>
+          <img src={poster.url} alt="검수 포스터" />
+          {locations.map((item, index) => {
+            const box = boxOf(item); if (!box) return null;
+            const outcome = OUTCOME[item.outcome] || OUTCOME.unknown;
+            const name = refs[item.logo]?.name || item.reference;
+            return <button type="button" key={item.logo + '-' + item.crop}
+              className={'pl-mark is-' + outcome.tone + (active === index + 1 ? ' is-active' : '') + (box[1] / (poster.size[1] || 1) < 0.06 ? ' label-below' : '')}
+              style={boxStyle(box, poster.size)} aria-label={name + ' · ' + outcome.label + ' · 결과 카드로 이동'} title={name + ' · ' + outcome.label}
+              onClick={() => jump(index + 1)} onMouseEnter={() => setActive(index + 1)} onMouseLeave={() => setActive(null)}
+              onFocus={() => setActive(index + 1)} onBlur={() => setActive(null)}><span>{String(index + 1).padStart(2, '0')}</span></button>;
+          })}
+        </div>
+        <div className="pl-stage-scale"><span>대조 위치 {locations.length}곳</span><span>번호를 누르면 해당 결과로 이동해요</span>
+          <span className="pl-stage-legend"><i className="match" />통과<i className="diff" />보류</span></div>
+      </section>
+      <div className="pl-result-list">
+        {locations.map((item, index) => <LocationEvidence key={item.logo + '-' + item.crop} base={base} item={item} number={index + 1}
+          refInfo={refs[item.logo]} several={locations.filter(other => other.logo === item.logo).length > 1}
+          active={active === index + 1} onActive={setActive} />)}
+        {absent.length > 0 && <section className="vl-panel pl-absent">
+          <div className="vl-section-heading"><h2>포스터에 없음으로 표시한 원본 로고</h2><span className="vl-count">{absent.length}</span></div>
+          <ul className="pl-absent-list">{absent.map(item => <li key={item.logo}>
+            <img src={base + '/' + (refs[item.logo]?.img || ('refs/' + item.logo + '.png'))} alt="" />{refs[item.logo]?.name || item.reference}</li>)}</ul>
+        </section>}
+      </div>
+    </div>}
   </div>;
 }
 
@@ -468,7 +529,7 @@ export default function PosterLogoPage() {
     <WorkspaceProjectBar name={meta?.id === job ? meta.title : '로고 검수'} version={stepVersion} step={step} steps={steps} locked={busy}
       canNavigate={key => key === 'input' || key === 'review' || (ready && (key === 'confirm' || key === 'compare'))}
       navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }} />
-    <main id="review-content" className="vl-page" tabIndex={-1}>
+    <main id="review-content" className="vl-page pl-page" tabIndex={-1}>
       {!job ? <section className="vl-empty-state">
         <div className="vl-empty-mark">01</div>
         <span className="vl-kicker">자료 입력에서 시작</span>
@@ -476,13 +537,7 @@ export default function PosterLogoPage() {
         <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 포스터와 원본 로고를 첨부하면 포스터에서 로고 후보를 찾습니다.</p>
         <Link className="vl-button primary" to="/review/new">자료 입력 열기</Link>
       </section> : <div className="vl-content">
-        {/* 후보 찾기 중·실패는 동영상 로고 검수와 같은 진행 카드(LogoJobProgress)로 보인다. 작업 이름은 위쪽 프로젝트 줄에 있어
-            작업 줄은 후보를 찾은 뒤(포스터 이름·크기와 후보 수)에만 둔다(2026-11-17). */}
-        {meta?.id === job && meta.status === 'candidates_ready' && <div className="vl-jobbar">
-          <div><span className="vl-kicker">작업</span><strong>{meta.title}</strong>
-            {meta.poster && <small> · {meta.poster.name} ({meta.poster.size[0]}×{meta.poster.size[1]})</small>}</div>
-          <span className="vl-status ready">{'후보 ' + (meta.candidate_count ?? 0) + '개 준비'}</span>
-        </div>}
+        {/* 작업 이름은 위쪽 프로젝트 줄에 이미 있어서, 같은 이름을 크게 한 번 더 적던 작업 줄(파일 이름·픽셀 크기·후보 수)은 뺐다. */}
         {meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed') && <LogoJobProgress media="poster" base={base} meta={meta}
           linkedReview={linkedRun} onRestart={() => go(back)} />}
         {meta?.id === job && meta.status === 'failed' && linkedRun && <p className="vl-help">
@@ -508,18 +563,21 @@ export default function PosterLogoPage() {
             <section className="vl-workspace">
               {refInfo && <div className="vl-current-ref">
                 <img src={base + '/' + refInfo.img} alt={refInfo.name + ' 원본'} />
-                <div><span className="vl-kicker">현재 확인 중 · {refIndex + 1} / {refs.length}</span><h1>{refInfo.name}</h1>
-                  <p>{refInfo.bonus_basis === 'openai' ? 'OpenAI가 포스터에서 찾은 위치를 확신도 순으로 보여 줍니다(일반 자료). 정밀 대조는 RunPod에서 합니다.'
+                <div><span className="vl-current-label">{refIndex + 1} / {refs.length}</span>
+                  <span className="vl-kicker">원본 로고</span><h1>{refInfo.name}</h1>
+                  <p>{refInfo.bonus_basis === 'openai' ? '확신도가 높은 위치부터 보여 줍니다.'
                     : refInfo.bonus_basis === 'input' ? '기준 문구: ' + refInfo.bonus_text
-                    : refInfo.bonus_basis === 'ocr' ? '기준 문구가 없어 원본 로고 OCR(' + refInfo.bonus_text + ')로 후보 가산점을 계산했습니다.'
-                      : '기준 문구가 없고 원본 로고에서 글자를 읽지 못해 이미지 유사도로만 순위를 매겼습니다.'}</p></div>
+                    : refInfo.bonus_basis === 'ocr' ? '기준 문구가 없어 원본 로고에서 읽은 글자(' + refInfo.bonus_text + ')를 함께 봤어요.'
+                      : '기준 문구가 없어 모양만으로 순위를 매겼어요.'}</p></div>
               </div>}
               {mode === 'manual' ? <ManualEditor poster={poster} onCancel={() => setMode('candidates')} onDone={addManual} />
                 : <CandidateWorkspace poster={poster} refIndex={refIndex} checked={checked} manuals={selection.manuals}
                   decision={decision} onToggle={toggle} onManual={() => setMode('manual')} onNone={markNone} onRemoveManual={removeManual} />}
-              {decision && <section className="vl-savebar">
-                <div><strong>{decision === 'none' ? '포스터에 이 원본 로고가 없는 것으로 표시했습니다.' : '선택한 위치 ' + (selection.checked.length + selection.manuals.length) + '곳을 확인해 주세요.'}</strong>
-                  <span>{decision === 'none' ? '정밀 대조 결과에 사람 확인 기록으로 남습니다.' : '정밀 대조에는 이 브라우저에 저장한 위치가 전달됩니다.'}</span></div>
+              {decision && mode !== 'manual' && <section className="vl-savebar">
+                <div><strong>{decision === 'none' ? '포스터에 이 원본 로고가 없는 것으로 표시했습니다.'
+                  : saved ? '선택한 위치 ' + (selection.checked.length + selection.manuals.length) + '곳을 저장했어요.'
+                    : '선택한 위치 ' + (selection.checked.length + selection.manuals.length) + '곳을 저장해 주세요.'}</strong>
+                  <span>{decision === 'none' ? '정밀 대조 결과에 사람 확인 기록으로 남습니다.' : '정밀 대조 재검수는 저장한 위치로 다시 대조합니다.'}</span></div>
                 <div className="vl-save-actions">
                   <button type="button" className="vl-button subtle" onClick={resetSelection}>다시 선택</button>
                   <button type="button" className="vl-button primary" onClick={saveAnswer} disabled={saved}>{saved ? '저장됨' : '이 원본 로고 확정 저장'}</button>
@@ -536,7 +594,7 @@ export default function PosterLogoPage() {
                 </div>
               </section>}
             </section>
-          </div> : <CompareResults base={base} refs={refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
+          </div> : <CompareResults base={base} poster={poster} refs={refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
         </>}
       </div>}
     </main>

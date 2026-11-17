@@ -9,9 +9,9 @@ import './videoReview.css';
 // 왼쪽 잉크 무대에 띠를 눕히고 돋보기가 진행률만큼 따라가며, 돋보기에는 찾고 있는 원본 로고를 담는다.
 // 오른쪽 종이 면에는 제목·큰 진행률·단계·작업 정보를 선으로 나눠 쌓는다.
 // 동영상 로고(media='video')는 띠가 1초 프레임이고 단계가 01 후보 찾기 · 02 정밀 대조다.
-// 포스터 로고(media='poster', PosterLogoPage)도 같은 화면을 쓴다. 띠는 포스터를 나눠 보는 탐지 타일이고,
-// 포스터는 사람이 위치를 확정한 뒤 정밀 대조하므로 단계가 01 후보 찾기 · 02 위치 확정 · 03 정밀 대조다.
-// 띠 칸은 실제 프레임·타일 그림이 아니라 진행 정도만 알리는 장식이라 낭독기에서 숨긴다.
+// 포스터 로고(media='poster', PosterLogoPage)도 오른쪽 구성은 같고, 무대만 필름 띠 대신 포스터 한 장을 눕혀 탐지 타일을 차례로 밝힌다(PosterScanner).
+// 포스터도 후보를 찾으면 순위 높은 후보로 정밀 대조까지 자동으로 하므로 단계는 동영상과 같이 01 후보 찾기 · 02 정밀 대조다.
+// 띠 칸·타일은 진행 정도만 알리는 장식이라 낭독기에서 숨긴다.
 const FILM_CELLS = 12;
 const stepStatusText = { completed: '완료', active: '진행 중', failed: '멈춤', pending: '대기' };
 const percent = value => `${Math.min(100, Math.max(0, Math.round(value || 0)))}%`;
@@ -28,10 +28,10 @@ const TEXT = {
   poster: {
     stageTitles: { queued: '로고 검수 순서를 기다리고 있어요.' },
     searching: '포스터에서 로고 후보를 찾고 있어요.',
-    captions: { waiting: '순서 대기', preparing: '포스터 준비', searching: '타일별 후보 찾는 중', failed: '처리 멈춤' },
+    captions: { waiting: '순서 대기', preparing: '포스터 준비', searching: '포스터를 나눠 후보 찾는 중', failed: '처리 멈춤' },
     detail: openai => openai ? 'OpenAI로 포스터에서 위치를 찾고 있습니다.' : 'RunPod에서 포스터를 타일로 나눠 후보를 찾고 있습니다.',
-    help: '후보를 찾으면 위치 확정 화면으로 넘어갑니다. 페이지를 닫아도 서버에서 검수를 계속합니다.',
-    compare: 'RunPod · 위치 확정 뒤',
+    help: '후보를 찾으면 순위가 높은 후보로 정밀 대조까지 이어서 합니다. 페이지를 닫아도 서버에서 검수를 계속합니다.',
+    compare: 'RunPod · 자동',
     back: linked => linked ? '포스터 검수로 돌아가기' : '자료 입력에서 다시 접수',
   },
 };
@@ -74,14 +74,41 @@ function LogoScanner({ base, logos, phase, value, caption, tiles }) {
   </div>;
 }
 
-// 포스터 로고의 단계: 후보 찾기 → 위치 확정(사람) → 정밀 대조. 후보 찾기 중·실패 화면이라 뒤의 두 단계는 대기다.
+// 포스터용 무대(2026-11-17): 포스터 한 장을 눕혀 두고 탐지 타일을 차례로 밝힌다. 돋보기는 지금 보는 타일 위에 있다.
+function PosterScanner({ base, logos, phase, value, caption, tiles, size }) {
+  const total = tiles?.total || 12;
+  const ratio = size ? size[0] / size[1] : 0.72;
+  const cols = Math.max(2, Math.round(Math.sqrt(total * ratio)));
+  const rows = Math.ceil(total / cols);
+  const done = tiles ? tiles.done : Math.floor(value / 100 * total);
+  const current = phase === 'searching' ? Math.min(total - 1, done) : -1;
+  const ref = logos.length ? Math.max(0, current) % logos.length : null;
+  const col = current >= 0 ? current % cols : (cols - 1) / 2, row = current >= 0 ? Math.floor(current / cols) : (rows - 1) / 2;
+  return <div className={`rv-video-scanner rv-logo-scanner pl-scanner is-${phase}`} aria-hidden="true">
+    <div className="pl-scan-sheet" style={{ aspectRatio: size ? size[0] + ' / ' + size[1] : '3 / 4', '--cols': cols, '--rows': rows }}>
+      <img src={`${base}/poster.jpg`} alt="" onError={event => { event.currentTarget.style.visibility = 'hidden'; }} />
+      <div className="pl-scan-tiles">{Array.from({ length: cols * rows }, (_, index) => <span key={index}
+        className={`pl-scan-tile${index < current ? ' is-read' : ''}${index === current ? ' is-current' : ''}`} />)}</div>
+      <div className="rv-video-lens" style={{ left: `${(col + 0.5) / cols * 100}%`, top: `${(row + 0.5) / rows * 100}%` }}>
+        <span className="rv-video-lens-glass">
+          {ref != null && <img className="rv-logo-lens-ref" src={`${base}/refs/${ref}.png`} alt="" />}
+          <span className="rv-video-lens-scan" />
+          {phase === 'failed' && <Icon name="warning" />}
+        </span>
+        <span className="rv-video-lens-handle" />
+      </div>
+    </div>
+    <div className="rv-video-scanner-scale"><span>원본 로고 {logos.length}개</span><span>{caption}</span><span>{tiles ? `${tiles.done} / ${tiles.total}` : `${value}%`}</span></div>
+  </div>;
+}
+
+// 포스터 로고의 단계: 후보 찾기 → 정밀 대조(자동). 위치 직접 확인은 결과를 본 뒤 필요할 때만 여는 화면이라 단계에 넣지 않는다.
 function posterSteps(meta) {
   const candidates = meta.status === 'failed' ? 'failed' : meta.status === 'candidates_ready' ? 'completed' : 'active';
   return [
     { key: 'logo_candidates', label: '로고 후보 찾기', status: candidates, detail: candidates === 'active' ? (meta.status === 'queued' ? '대기' : percent(meta.progress)) : undefined,
       title: meta.stage_detail || '포스터 전체와 나눈 타일에서 로고 후보를 찾습니다.' },
-    { key: 'logo_confirm', label: '위치 확정', status: 'pending', title: '찾은 후보 가운데 검수할 로고 위치를 담당자가 확정합니다.' },
-    { key: 'logo_compare', label: '로고 정밀 대조', status: 'pending', title: '확정한 위치를 원본 로고와 대조합니다. 최종 판정은 담당자가 합니다.' },
+    { key: 'logo_compare', label: '로고 정밀 대조', status: 'pending', title: '순위가 높은 후보를 원본 로고와 대조합니다. 최종 판정은 담당자가 합니다.' },
   ];
 }
 
@@ -102,13 +129,15 @@ export default function LogoJobProgress({ base, meta, linkedReview, onRestart, m
   const facts = [
     ['원본 로고', `${logos.length}개`],
     ['위치 찾기', openai ? 'OpenAI' : 'RunPod'],
-    media === 'poster' && size ? ['포스터', `${size[0]}×${size[1]}`] : ['정밀 대조', text.compare],
+    ['정밀 대조', text.compare],
     ['접수', receivedAt(meta.created_at)],
   ];
   return <div className="rv-video rv-logo-progress">
     <section className="rv-progress-page rv-video-progress" aria-labelledby="logo-progress-title">
       <div className={`rv-progress-card rv-video-progress-card is-${phase}`}>
-        <LogoScanner base={base} logos={logos} phase={phase} value={value} caption={text.captions[phase]} tiles={tiles} />
+        {media === 'poster'
+          ? <PosterScanner base={base} logos={logos} phase={phase} value={value} caption={text.captions[phase]} tiles={tiles} size={size} />
+          : <LogoScanner base={base} logos={logos} phase={phase} value={value} caption={text.captions[phase]} tiles={tiles} />}
         <span className="rv-eyebrow">{failed ? 'REVIEW STOPPED' : 'LOGO REVIEW IN PROGRESS'}</span>
         <h1 id="logo-progress-title" tabIndex={-1}>{title}</h1>
         <span className="sr-only" role="status">{failed ? '로고 후보 찾기 단계에서 멈췄습니다.' : '로고 후보 찾기 단계 진행 중'}</span>
