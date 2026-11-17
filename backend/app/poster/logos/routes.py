@@ -1,7 +1,8 @@
 """포스터 로고 위치 확정·정밀 대조 API (/api/poster-logos).
 
-흐름: 포스터 + 원본 로고 업로드 → 1부 후보(poster/logos/candidates) → 사용자가 확정 화면에서 원본 로고마다 위치 확정
-      (후보 선택 · 직접 지정 · 포스터에 없음) → 2부 정밀 대조(영상 2부 규칙) → 위치별 근거(판정 없음, 최종 판단은 사람).
+흐름: 포스터 + 원본 로고 업로드 → 1부 후보(poster/logos/candidates) → 서버가 원본 로고마다 순위 높은 후보를 자동으로 골라
+      (auto_selection, 영상 로고와 같은 규칙) 바로 2부 정밀 대조(영상 2부 규칙) → 위치별 근거(판정 없음, 최종 판단은 사람).
+      검수하려던 로고가 아니면 사용자가 확정 화면에서 위치를 다시 고르고(후보 선택 · 직접 지정 · 포스터에 없음) 다시 대조한다(2026-11-17).
 
 영상 로고 API(/api/video-logos)와 접속 경계·저장 방식·RunPod 워커를 함께 쓴다:
   - localhost 접속만 받고, 로그인 기능이 켜져 있으면 세션을 확인한다. isolate_users면 사용자별 폴더로 나눈다
@@ -46,6 +47,24 @@ MAX_LOCATIONS = 40       # 한 번의 정밀 대조에 보낼 위치(후보 + �
 DISPLAY_LONG = 2000      # 확정 화면에 보내는 포스터 긴 변(좌표는 원본 기준이라 화면 크기와 무관하다)
 LIST_FIELDS = ("id", "title", "status", "stage", "progress", "stage_detail", "error", "warnings", "compare_status",
                "compare_progress", "compare_error", "run_id", "detector", "candidate_count", "created_at")
+AUTO_LINK_RATIO = 0.92   # 영상 로고(video/logos/routes.py)·화면(logoFlow.js LINK_RATIO)과 같다: 1위 점수의 92% 이상이면 같은 로고의 다른 후보로 본다
+AUTO_MAX = 3             # 원본 로고마다 자동으로 대조할 후보 수 상한(화면의 상위 후보 TOP_N과 같다)
+
+
+def auto_selection(candidates: list[dict], refs: int) -> list[dict]:
+    """사람이 위치를 확인하기 전에 정밀 대조할 후보. 원본 로고마다 순위 1위 후보와 그 점수의 92% 이상인 다른 후보를
+    점수 순으로 최대 3개까지 고른다. 후보가 없으면 decision='none'(대조하지 않음)이다. 영상 로고 auto_selection과 같은 규칙이다."""
+    picks = []
+    for li in range(refs):
+        order = sorted(range(len(candidates)), key=lambda i: candidates[i]["rank"][li], reverse=True)
+        if not order:
+            picks.append({"logo": li, "decision": "none", "candidates": []})
+            continue
+        top = candidates[order[0]]["rank"][li]
+        floor = AUTO_LINK_RATIO * top if top > 0 else math.inf
+        chosen = [order[0]] + [i for i in order[1:] if candidates[i]["rank"][li] >= floor]
+        picks.append({"logo": li, "decision": "done", "candidates": chosen[:AUTO_MAX]})
+    return picks
 
 
 def _flatten(image: Image.Image) -> Image.Image:
@@ -183,12 +202,21 @@ def poster_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: 
                 r["img"] = f"refs/{i}.png"
             data.update(title=meta["title"], image="poster.jpg")
             _write_json(target / "data.json", data)
-            update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None,
-                   candidate_count=len(data["candidates"]))
+            picks = auto_selection(data["candidates"], len(meta["logos"]))
+            # 영상 로고와 같이 사람이 위치를 확인하는 단계 없이 정밀 대조까지 이어서 한다. 후보 준비와 대조 대기를 한 번에 적어
+            # 화면이 그 사이에 '대조하지 않음'을 보지 않게 한다. 자동으로 고른 후보(auto_selection)는 확정 화면이 미리 선택해 둔다.
+            with lock:
+                (target / "compare.json").unlink(missing_ok=True)
+                update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None,
+                       candidate_count=len(data["candidates"]), auto_selection=picks,
+                       compare_status="queued", compare_progress=0, compare_error=None)
         except Exception as exc:
             update(target, status="failed", error=f"후보 찾기에 실패했습니다: {failure_text(exc)}")
+            return
+        done = [{"logo": p["logo"], "crops": [{"source": "candidate", "candidate": ci} for ci in p["candidates"]]} for p in picks if p["decision"] == "done"]
+        run_compare(target, done, [p["logo"] for p in picks if p["decision"] == "none"], origin="auto")
 
-    def run_compare(target: Path, answers: list[dict], absent: list[int]) -> None:
+    def run_compare(target: Path, answers: list[dict], absent: list[int], origin: str = "manual") -> None:
         from backend.app.poster.logos import client as R
         from backend.app.poster.logos import compare as P
         meta, data = _read_json(target / "result.json"), _read_json(target / "data.json")
@@ -229,8 +257,9 @@ def poster_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: 
             small = sum(1 for item in out if item["small"])
             warnings = ([f"영역이 너무 작아({P.MIN_CROP_PX}px 미만) 대조하지 못한 위치 {len(skipped)}개"] if skipped else []) + \
                 ([f"짧은 변 {P.SMALL_CROP_PX}px 미만 위치 {small}개는 정상 로고도 차이 근거가 나오기 쉬워 원본과 직접 비교해 주세요."] if small else [])
+            # origin: 'auto'(후보 찾기 직후 서버가 고른 후보) 또는 'manual'(사람이 확정한 위치). 화면이 결과 안내를 달리 적는다.
             _write_json(target / "compare.json", {
-                "locations": out, "skipped": skipped, "warnings": warnings, "created_at": _now(),
+                "locations": out, "skipped": skipped, "warnings": warnings, "created_at": _now(), "origin": origin,
                 "absent": [{"logo": li, "reference": meta["logos"][li]["name"]} for li in absent]})
             update(target, compare_status="completed", compare_progress=100)
         except Exception as exc:

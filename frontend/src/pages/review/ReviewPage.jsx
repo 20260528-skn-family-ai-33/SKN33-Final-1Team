@@ -6,7 +6,7 @@ import FrameworkReviewPage from './FrameworkReviewPage.jsx';
 import { DocumentProjectPicker } from './DocumentInput.jsx';
 import { useReviewContext } from './ReviewProvider.jsx';
 import ReviewLayout, { logoSteps } from '../../layouts/ReviewLayout.jsx';
-import { MediaPicker } from './ReviewTypePicker.jsx';
+import { MediaPicker, SelectionTrail } from './ReviewTypePicker.jsx';
 import { mediaChoicePath, mediaChoiceState, wantsMediaChoice } from '../../workspace/mediaChoice.js';
 import { logoDetectorFor } from './workflow.js';
 import CriteriaPage from './CriteriaPage.jsx';
@@ -73,8 +73,12 @@ export default function ReviewPage() {
       // 초안이 생긴 뒤에는 그 실행의 프로젝트에 묶인다(Enter로 프로젝트를 새로 만들거나 다른 프로젝트로 바꾸지 않는다).
       projectEditor: { id: 'project-name', maxLength: 60, onChange: value => inputChange('projectName', value),
         onEnter: state.reviewMode === 'logo' || runId ? undefined : name => projectPicker.current?.createFromName(name) },
-      // 개발 서버에서만 보이는 미리보기 입구. 저장할 프로젝트 칸 오른쪽에 둔다.
-      projectAside: import.meta.env.DEV && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>,
+      // 저장할 프로젝트 칸 오른쪽: 이 화면에서 고른 자료 종류(포스터 › 보안 여부 › 검수 유형, 동영상과 같음)와
+      // 개발 서버에서만 보이는 미리보기 입구.
+      projectAside: <>
+        {!choosing && fresh && <SelectionTrail media="poster" security={state.securityMode} mode={state.reviewMode} />}
+        {import.meta.env.DEV && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>}
+      </>,
       projectTools: state.reviewMode === 'logo'
         // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
         ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>

@@ -75,7 +75,8 @@ export default function CriteriaPanel({ criteria, excluded, onToggle, selected, 
         {open && <div className="rv-criteria-inline-detail" id="rv-active-criterion">
           <dl className="rv-criteria-facts">
             {rule && <><dt>판단 기준</dt><dd>{rule}</dd></>}
-            <dt>{c.source.kind === 'direct_input' ? '직접 입력 원문' : `원문 ${c.source.page}쪽`}</dt>
+            {/* source.label: 쪽 번호가 없는 원문(동영상 검수의 DOCX 본문·영상 전용 분석)은 부르는 쪽이 이름표를 넘긴다. */}
+            <dt>{c.source.label || (c.source.kind === 'direct_input' ? '직접 입력 원문' : `원문 ${c.source.page}쪽`)}</dt>
             <dd className="rv-criteria-quote"><ClampedQuote text={quote} open={quoteOpen} onToggle={onQuote} /></dd>
             {c.value_source && (c.source.kind !== 'direct_input' || c.value_source.reference !== '담당자 직접 입력')
               && <><dt>보완 회신</dt><dd>{c.value_source.quote} · 출처: {c.value_source.reference}</dd></>}

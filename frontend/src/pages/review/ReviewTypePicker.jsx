@@ -12,6 +12,22 @@ export const securityModeLabels = { secure: '보안 자료', general: '일반 �
 // 검수를 시작할 때 맨 먼저 고르는 자료 종류. 포스터는 포스터 검수 화면에서, 동영상은 동영상 검수 화면에서 이어 간다.
 export const mediaLabels = { poster: '포스터', video: '동영상' };
 
+// 프로젝트 줄의 '자료 종류': 자료 입력 전에 고른 자료 종류 → 보안 여부 → 검수 유형을 고른 순서대로 한 줄에 남긴다
+// (2026-11-17, 동영상에서 만들어 포스터에도 씀). 순서가 뜻을 가지므로 순서 목록으로 두고, 보안 자료는 자물쇠,
+// 마지막 검수 유형은 채운 알약으로 보인다(optimus-theme.css .rv-project-trail).
+export function SelectionTrail({ media, security, mode }) {
+  const secure = security === 'secure';
+  const items = [
+    { key: 'media', label: mediaLabels[media] },
+    { key: 'security', label: securityModeLabels[security], className: secure ? 'is-secure' : undefined, icon: secure ? 'lock' : null },
+    { key: 'mode', label: reviewModeLabels[mode], className: 'is-mode' },
+  ];
+  return <div className="rv-project-field"><span className="rv-project-field-badge">자료 종류</span>
+    <ol className="rv-project-trail" aria-label="고른 자료 종류">
+      {items.map(item => <li key={item.key} className={item.className}>{item.icon && <Icon name={item.icon} />}{item.label}</li>)}
+    </ol></div>;
+}
+
 const TYPE_TILES = [
   { value: 'text', key: '1', label: '문구 검수' },
   { value: 'logo', key: '2', label: '로고 검수' },

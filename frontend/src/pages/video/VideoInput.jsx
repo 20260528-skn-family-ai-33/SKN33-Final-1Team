@@ -4,7 +4,8 @@ import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
-import RequirementInput, { ExtractedRequirements } from '../review/RequirementInput.jsx';
+import RequirementInput from '../review/RequirementInput.jsx';
+import VideoCriteriaBox from './VideoCriteriaBox.jsx';
 import { reviewModeLabels } from '../review/ReviewTypePicker.jsx';
 import { logoDetectorFor, modelRouteFor, parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
@@ -238,8 +239,9 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
         <aside className="rv-form-stack" aria-label="검수 요구사항과 첨부 자료">
             {checksText && <RequirementInput id="video-requirements" value={draft.requirements} onChange={value => update('requirements', value)} disabled={busy}
               placeholder={'예: 영상에 ‘빛의 기록’ 제목을 표시해 주세요.\n전시 기간 ‘11.20–11.28’을 자막으로 표시해 주세요.'}>
+              {/* 문서에서 추출한 기준은 포스터 자료 입력과 같은 '검수 항목' 상자로 보인다(직접 입력란 아래, 문서 첨부 위). */}
               {(draft.documentName || draft.documentRows.length > 0) &&
-                <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
+                <VideoCriteriaBox rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
             {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} projectBlock={projectBlock} documentName={draft.documentName}
               dedicated={dedicatedDocument}

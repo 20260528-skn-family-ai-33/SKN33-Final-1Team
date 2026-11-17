@@ -4,6 +4,10 @@ import { fetchJson, fetchResponse } from '../../api/client.js';
 // 영상 로고 1부와 같은 규칙이다. 포스터는 한 장이라 시간 구간·연결 후보가 없고, 위치는 포스터 원본 픽셀 좌표다.
 export const POSTER_LOGO_API = '/api/poster-logos';
 export const TOP_N = 3;
+// 포스터 로고 검수 단계(2026-11-17, 동영상 로고와 같다): 후보 찾기가 끝나면 서버가 순위 높은 후보로 정밀 대조까지 바로 한다
+// (backend/app/poster/logos/routes.py auto_selection). 위치 직접 확인은 대조 결과를 본 뒤 검수하려던 로고가 아닐 때만 고르는 단계라
+// 기본 단계에 넣지 않는다.
+export const posterLogoSteps = { input: '자료 입력', candidates: '후보 찾기', compare: '정밀 대조' };
 const SVG_SIDE = 1024;
 
 // 원본 로고 기준 순위 상위 n개 후보 번호

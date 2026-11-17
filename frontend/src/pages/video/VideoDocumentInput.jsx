@@ -76,7 +76,8 @@ export default function VideoDocumentInput({ projectId, projectReady, projectBlo
           onProgress: update => { if (!signal.aborted) setProgress(deadline.update(update)); } });
         if (signal.aborted) return;
         const rows = result.items.filter(item => item.include).map(item => ({
-          id: item.draft_id, text: item.text, type: item.type, source: item.source.quote, selected: false,
+          // 포스터처럼 추출한 항목은 처음부터 모두 검수에 포함한다(뺄 항목만 검수 항목 상자에서 체크를 푼다).
+          id: item.draft_id, text: item.text, type: item.type, source: item.source.quote, selected: true,
         }));
         onDocument(file.name, rows);
         setExcluded([

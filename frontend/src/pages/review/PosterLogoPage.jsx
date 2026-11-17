@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
-import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
+import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
-import { POSTER_LOGO_API, posterLogoAnswer, rankedCandidates, TOP_N } from './posterLogoFlow.js';
-import { findingText, groupDifferences, OUTCOME } from '../video/logoFlow.js';
+import { POSTER_LOGO_API, posterLogoAnswer, posterLogoSteps, rankedCandidates, TOP_N } from './posterLogoFlow.js';
+import { findingText, groupDifferences, LINK_RATIO, OUTCOME } from '../video/logoFlow.js';
+import LogoJobProgress from '../video/LogoJobProgress.jsx';
 import '../video/logoConfirm.css';
 import './posterLogo.css';
 
@@ -231,7 +232,7 @@ function LocationEvidence({ base, item, refInfo }) {
   </article>;
 }
 
-function CompareResults({ base, refs, onBack, onStatus }) {
+function CompareResults({ base, refs, onConfirm, onStatus }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
@@ -256,21 +257,27 @@ function CompareResults({ base, refs, onBack, onStatus }) {
   if (!result) return <section className="vl-panel" role="status">정밀 대조 근거를 불러오고 있습니다.</section>;
   const locations = result.locations || [];
   const absent = result.absent || [];
-  return <div className="vl-main-stack">
-    <div className="vl-stage-heading">
-      <div><span className="vl-kicker">02 / 근거 확인</span><h1>위치별 비교 근거를 확인하세요</h1>
-        <p>차이 근거가 있으면 보류, 없으면 통과로 표시합니다. 최종 판정은 담당자가 두 이미지를 보고 합니다.</p></div>
-      <button type="button" className="vl-button secondary" onClick={onBack}>위치 확정으로 돌아가기</button>
+  const running = RUNNING.has(result.compare_status);
+  const auto = result.origin !== 'manual';
+  // 동영상 로고 정밀 대조 화면과 같은 머리: 짧은 제목 · 안내 · 결과 개수, 오른쪽에 '위치 직접 확인'.
+  return <div className="vl-main-stack vl-compare">
+    <div className="vl-stage-heading vl-compare-heading">
+      <div><h1>로고 정밀 대조</h1>
+        <p>{auto ? '' : '직접 확인한 위치로 다시 대조했어요. '}차이 근거가 있으면 보류, 없으면 통과예요. 최종 판정은 담당자가 합니다.</p>
+        {locations.length > 0 && <div className="vl-compare-tally" aria-label="정밀 대조 결과 요약">
+          <span className="vl-compare-total">결과 {locations.length}건</span></div>}</div>
+      <button type="button" className="vl-button secondary" onClick={onConfirm}>위치 직접 확인</button>
     </div>
-    {RUNNING.has(result.compare_status) && <section className="vl-panel vl-progress-card">
-      <div className="vl-progress-title"><strong>정밀 대조 중</strong><span>{result.compare_progress || 0}%</span></div>
+    {running && <section className="vl-panel vl-progress-card">
+      <div className="vl-progress-title"><strong>{auto ? '자동으로 고른 후보로 정밀 대조 중' : '정밀 대조 중'}</strong><span>{result.compare_progress || 0}%</span></div>
       <div className="vl-progress-track"><span style={{ width: Math.min(100, result.compare_progress || 0) + '%' }} /></div>
-      <p>확정한 위치를 원본 로고와 비교하고 있습니다.</p>
+      <p>{auto ? '순위가 높은 후보를 원본 로고와 비교하고 있습니다. 검수하려던 로고가 아니면 위치 직접 확인에서 고칠 수 있어요.' : '확정한 위치를 원본 로고와 비교하고 있습니다.'}</p>
     </section>}
     {result.compare_status === 'failed' && <section className="vl-panel"><ErrorMessage message={result.compare_error || '정밀 대조가 완료되지 않았습니다.'} /></section>}
-    {!result.compare_status && <section className="vl-panel vl-empty">
-      <strong>아직 정밀 대조를 실행하지 않았습니다.</strong><p>원본 로고마다 위치를 확정해 저장한 뒤 정밀 대조를 실행하세요.</p>
-      <button type="button" className="vl-button primary" onClick={onBack}>위치 확인으로 이동</button>
+    {!result.compare_status && <section className="vl-panel vl-progress-card">
+      <div className="vl-progress-title"><strong>자동으로 고른 후보로 정밀 대조 시작</strong><span>대기</span></div>
+      <div className="vl-progress-track"><span style={{ width: '8%' }} /></div>
+      <p>후보 찾기가 끝나 정밀 대조를 준비하고 있습니다.</p>
     </section>}
     {(result.warnings || []).map(warning => <div className="vl-warning" key={warning}>⚠ {warning}</div>)}
     {absent.length > 0 && <section className="vl-panel">
@@ -288,7 +295,8 @@ export default function PosterLogoPage() {
   const go = useNavigate();
   const [params, setParams] = useSearchParams();
   const job = params.get('job');
-  const view = params.get('view') === 'compare' ? 'compare' : 'confirm';
+  // 동영상 로고와 같이 기본 화면은 자동 대조 결과(compare)이고, 위치 직접 확인(confirm)은 검수하려던 로고가 아닐 때만 연다(2026-11-17).
+  const view = params.get('view') === 'confirm' ? 'confirm' : 'compare';
   const base = POSTER_LOGO_API + '/' + encodeURIComponent(job || '');
   const storageKey = 'poster-logo-review:v1:' + (job || 'new');
   const [meta, setMeta] = useState(null);
@@ -366,6 +374,32 @@ export default function PosterLogoPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, refIndex]);
 
+  // 이 브라우저에 저장한 선택이 없으면 서버가 자동 정밀 대조에 쓴 후보(auto_selection)를 확정 화면의 선택으로 채운다.
+  // 자동 대조를 하지 않는 서버가 만든 작업은 auto_selection이 없으므로, 화면이 같은 규칙(상위 후보·LINK_RATIO)으로 채운다.
+  useEffect(() => {
+    if (!poster || meta?.id !== job || Object.keys(answers).length || Object.keys(drafts).length) return;
+    const picks = meta.auto_selection || refs.map((_, logo) => {
+      const order = rankedCandidates(poster.candidates, logo);
+      if (!order.length) return { logo, decision: 'none', candidates: [] };
+      const top = poster.candidates[order[0]].rank[logo];
+      const floor = top > 0 ? LINK_RATIO * top : Infinity;
+      return { logo, decision: 'done', candidates: [order[0], ...order.slice(1).filter(i => poster.candidates[i].rank[logo] >= floor)].slice(0, TOP_N) };
+    });
+    const nextAnswers = {}, nextDrafts = {};
+    for (const pick of picks) {
+      if (!refs[pick.logo]) continue;
+      const value = { decision: pick.decision === 'none' ? 'none' : null, checked: pick.candidates || [], manuals: [], auto: true };
+      const answer = answerFor(pick.logo, value);
+      if (!answer) continue;
+      nextDrafts[pick.logo] = value;
+      nextAnswers[pick.logo] = { ...answer, selection: value };
+    }
+    setAnswers(nextAnswers); setDrafts(nextDrafts);
+    // 로고를 바꿀 때 선택을 읽는 효과는 같은 커밋에서 아직 빈 drafts를 보므로, 지금 보는 로고의 선택은 여기서 바로 채운다.
+    setSelection(nextDrafts[refIndex] || EMPTY_SELECTION);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poster, meta?.id, meta?.auto_selection, job]);
+
   function keep(nextAnswers, nextDrafts) {
     setAnswers(nextAnswers); setDrafts(nextDrafts);
     try { localStorage.setItem(storageKey, JSON.stringify({ answers: nextAnswers, drafts: nextDrafts })); }
@@ -396,7 +430,7 @@ export default function PosterLogoPage() {
   function resetSelection() { setSelection(EMPTY_SELECTION); keep(answers, { ...drafts, [refIndex]: EMPTY_SELECTION }); }
   function changeView(next) {
     const query = new URLSearchParams(params);
-    if (next === 'compare') query.set('view', 'compare'); else query.delete('view');
+    if (next === 'confirm') query.set('view', 'confirm'); else query.delete('view');
     setParams(query);
   }
   async function runCompare() {
@@ -419,7 +453,9 @@ export default function PosterLogoPage() {
   // 종합 검수는 포스터 검수 실행에 연결된 작업이라 첫 단계가 그 실행으로, 로고만 검수는 자료 입력으로 돌아간다.
   const linkedRun = meta?.run_id;
   const back = linkedRun ? '/review/new?framework=' + encodeURIComponent(linkedRun) : '/review/new';
-  const steps = linkedRun ? { review: '포스터 검수', candidates: logoSteps.candidates, confirm: logoSteps.confirm, compare: logoSteps.compare } : logoSteps;
+  // 동영상 로고와 같은 단계: 자료 입력 → 후보 찾기 → 정밀 대조. 위치 직접 확인은 그 화면을 열었을 때만 단계로 보인다.
+  const baseSteps = linkedRun ? { review: '포스터 검수', candidates: posterLogoSteps.candidates, compare: posterLogoSteps.compare } : posterLogoSteps;
+  const steps = ready && view === 'confirm' ? { ...baseSteps, confirm: '위치 직접 확인' } : baseSteps;
   const step = !job ? 'input' : ready ? view : 'candidates';
   const stepVersion = !ready ? '로고 검수' : view === 'compare'
     ? (meta.compare_status === 'completed' ? '대조 완료' : comparing ? '대조 중' : '저장 후 실행')
@@ -431,11 +467,7 @@ export default function PosterLogoPage() {
     <SiteHeader current="/review/new" />
     <WorkspaceProjectBar name={meta?.id === job ? meta.title : '로고 검수'} version={stepVersion} step={step} steps={steps} locked={busy}
       canNavigate={key => key === 'input' || key === 'review' || (ready && (key === 'confirm' || key === 'compare'))}
-      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }}>
-      {ready && <button type="button" className="rv-button primary" onClick={runCompare} disabled={!savedIndexes.length || busy || comparing}>
-        {comparing ? '정밀 대조 중' : busy ? '요청 중…' : savedIndexes.length ? '저장한 ' + savedIndexes.length + '개 로고 정밀 대조' : '저장한 로고 없음'}
-      </button>}
-    </WorkspaceProjectBar>
+      navigate={key => { if (key === 'input' || key === 'review') go(back); else if (key === 'confirm' || key === 'compare') changeView(key); }} />
     <main id="review-content" className="vl-page" tabIndex={-1}>
       {!job ? <section className="vl-empty-state">
         <div className="vl-empty-mark">01</div>
@@ -444,23 +476,17 @@ export default function PosterLogoPage() {
         <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 포스터와 원본 로고를 첨부하면 포스터에서 로고 후보를 찾습니다.</p>
         <Link className="vl-button primary" to="/review/new">자료 입력 열기</Link>
       </section> : <div className="vl-content">
-        <div className="vl-jobbar">
-          <div><span className="vl-kicker">작업</span><strong>{meta?.id === job ? meta.title : '작업 정보를 불러오는 중'}</strong>
-            {meta?.poster && <small> · {meta.poster.name} ({meta.poster.size[0]}×{meta.poster.size[1]})</small>}</div>
-          {meta?.id === job && <span className={'vl-status ' + (meta.status === 'failed' ? 'failed' : meta.status === 'candidates_ready' ? 'ready' : 'working')}>
-            {meta.status === 'failed' ? '실패' : meta.status === 'candidates_ready' ? '후보 ' + (meta.candidate_count ?? 0) + '개 준비' : (meta.stage_detail || '후보 찾는 중')}
-          </span>}
-        </div>
-        {meta?.id === job && RUNNING.has(meta.status) && <section className="vl-panel vl-progress-card">
-          <div className="vl-progress-title"><strong>포스터에서 로고 후보를 찾고 있습니다</strong><span>{meta.progress || 0}%</span></div>
-          <div className="vl-progress-track"><span style={{ width: Math.min(100, meta.progress || 0) + '%' }} /></div>
-          <p>{meta.stage_detail || 'RunPod에서 후보를 찾고 있습니다.'}</p>
-        </section>}
-        {meta?.id === job && meta.status === 'failed' && <section className="vl-panel">
-          <ErrorMessage message={meta.error || '후보 찾기에 실패했습니다.'} />
-          <p className="vl-help">{linkedRun ? '포스터 검수는 그대로 진행됩니다. 로고 워커 연결을 확인한 뒤 포스터를 다시 등록하면 새로 접수합니다.'
-            : '로고 워커 연결을 확인한 뒤 자료 입력에서 다시 접수해 주세요.'}</p>
-        </section>}
+        {/* 후보 찾기 중·실패는 동영상 로고 검수와 같은 진행 카드(LogoJobProgress)로 보인다. 작업 이름은 위쪽 프로젝트 줄에 있어
+            작업 줄은 후보를 찾은 뒤(포스터 이름·크기와 후보 수)에만 둔다(2026-11-17). */}
+        {meta?.id === job && meta.status === 'candidates_ready' && <div className="vl-jobbar">
+          <div><span className="vl-kicker">작업</span><strong>{meta.title}</strong>
+            {meta.poster && <small> · {meta.poster.name} ({meta.poster.size[0]}×{meta.poster.size[1]})</small>}</div>
+          <span className="vl-status ready">{'후보 ' + (meta.candidate_count ?? 0) + '개 준비'}</span>
+        </div>}
+        {meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed') && <LogoJobProgress media="poster" base={base} meta={meta}
+          linkedReview={linkedRun} onRestart={() => go(back)} />}
+        {meta?.id === job && meta.status === 'failed' && linkedRun && <p className="vl-help">
+          포스터 검수는 그대로 진행됩니다. 로고 워커 연결을 확인한 뒤 포스터를 다시 등록하면 새로 접수합니다.</p>}
         {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
         {ready && <>
@@ -471,7 +497,8 @@ export default function PosterLogoPage() {
                 className={'vl-logo-row' + (index === refIndex ? ' active' : '')} onClick={() => changeReference(index)}
                 aria-current={index === refIndex ? 'step' : undefined}>
                 <img src={base + '/' + item.img} alt="" />
-                <span><strong>{item.name}</strong><small>{isSaved(index) ? (answers[index].decision === 'none' ? '포스터에 없음 · 저장됨' : '위치 확정 · 저장됨')
+                <span><strong>{item.name}</strong><small>{isSaved(index)
+                  ? (answers[index].decision === 'none' ? '포스터에 없음' : '위치 확정') + (answers[index].selection?.auto ? ' · 자동 선택' : ' · 저장됨')
                   : selectionOf(index).decision || selectionOf(index).checked.length || selectionOf(index).manuals.length ? '저장 필요' : '확인 필요'}</small></span>
                 <i>{isSaved(index) ? '✓' : index + 1}</i>
               </button>)}</div>
@@ -501,10 +528,15 @@ export default function PosterLogoPage() {
                     const nextAnswers = answer ? { ...answers, [refIndex]: { ...answer, selection } } : answers;
                     keep(nextAnswers, { ...drafts, [refIndex]: selection }); setRefIndex(value => value + 1);
                   }}>저장하고 다음 로고</button>}
+                  {/* 동영상 로고와 같이 저장한 위치로 정밀 대조를 다시 돌리는 단추를 저장 줄 맨 오른쪽에 둔다. */}
+                  <button type="button" className="vl-button primary vl-recompare" onClick={runCompare} disabled={!savedIndexes.length || busy || comparing}
+                    title={savedIndexes.length ? '저장한 ' + savedIndexes.length + '개 로고 위치로 정밀 대조를 다시 합니다.' : '저장한 위치가 없어요.'}>
+                    {comparing ? '정밀 대조 중' : busy ? '요청 중…' : '정밀 대조 재검수'}
+                  </button>
                 </div>
               </section>}
             </section>
-          </div> : <CompareResults base={base} refs={refs} onBack={() => changeView('confirm')} onStatus={onCompareStatus} />}
+          </div> : <CompareResults base={base} refs={refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
         </>}
       </div>}
     </main>
