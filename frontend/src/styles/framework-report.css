@@ -35,7 +35,14 @@
 @media print {
   body * { visibility: hidden !important; }
   .rv-report-print, .rv-report-print * { visibility: visible !important; }
-  .rv-report-print { position: absolute; top: 0; left: 0; width: 100%; max-width: none; }
+  /* 보이지 않게만 하면 보고서 밖 내용(머리글·단계 표시·로고 카드 등)이 자리를 그대로 차지해 뒤에 빈 쪽이 생긴다(2026-11-17 피드백).
+     보고서와 그 바깥 틀만 남기고 나머지는 자리에서 빼며, 바깥 틀의 여백·최소 높이도 없앤다. */
+  html, body { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; }
+  body :not(:has(.rv-report-print)):not(.rv-report-print):not(.rv-report-print *) { display: none !important; }
+  body :has(.rv-report-print) { display: block !important; position: static !important; width: auto !important; max-width: none !important;
+    height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important;
+    border: 0 !important; background: none !important; box-shadow: none !important; overflow: visible !important; transform: none !important; }
+  .rv-report-print { position: static; width: 100%; max-width: none; }
   .rv-report-actions { display: none; }
   .rv-report-shell { border: 0; padding: 0; background: transparent; }
   .rv-report-paper { width: 100%; border: 0; padding: 0; box-shadow: none; }

@@ -87,6 +87,12 @@ test('보고서는 승인 구역 없이 확인 필요 항목에만 담당자 코
   await page.emulateMedia({ media: 'print' });
   assert.equal(await report.locator('.rv-report-comment').isVisible(), false);
   assert.equal((await report.locator('.rv-report-comment-print').innerText()).replace(/\s+/g, ' '), '담당자 코멘트 ' + note);
+  // 인쇄에는 보고서만 남는다. 보고서 밖 내용이 길어도 그 자리만큼 빈 쪽이 생기지 않는다(2026-11-17 피드백: 1쪽 보고서가 3쪽으로 인쇄됨)
+  await page.evaluate(() => { const block = document.createElement('section'); block.id = 'print-filler'; block.style.height = '3000px';
+    block.textContent = '보고서 밖 내용'; document.querySelector('.rv-report-print').parentElement.append(block); });
+  const pdf = (await page.pdf({ format: 'A4' })).toString('latin1');
+  assert.equal((pdf.match(/\/Type\s*\/Page[^s]/g) || []).length, 1, 'one-page report prints on one page');
+  await page.evaluate(() => document.getElementById('print-filler').remove());
   await page.emulateMedia({ media: 'screen' });
   assert.equal(await report.locator('.rv-report-comment-print').isVisible(), false);
 
