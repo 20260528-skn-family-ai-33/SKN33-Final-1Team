@@ -36,7 +36,13 @@ def _criteria(context, criteria):
             raise ValueError("SOURCE_HASH_MISMATCH")
         details = criterion.details
         if details is not None:
-            for reference in details.qualifiers+((details.expected_source,) if details.expected_source is not None else ()):
+            # A02 verifies an allowance against the block it names, which may be another
+            # line of the same document; it must keep this criterion's document and kind.
+            for reference in details.qualifiers:
+                if (reference.document_version_id!=source.document_version_id or reference.kind!=source.kind
+                        or not reference.quote.strip() or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+                    raise ValueError('DETAILS_SOURCE_MISMATCH')
+            for reference in ((details.expected_source,) if details.expected_source is not None else ()):
                 if (reference.document_version_id!=source.document_version_id or reference.kind!=source.kind or reference.page!=source.page
                         or reference.block_id!=source.block_id or reference.quote not in source.quote
                         or not reference.quote.strip() or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):

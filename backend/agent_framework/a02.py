@@ -379,8 +379,15 @@ def validate_trace(document,draft):
             raise ValueError('EXTRACTION_COMPILATION_DETAILS_MISSING')
         details=criterion.details
         if details is not None:
-            references=details.qualifiers+((details.expected_source,) if details.expected_source is not None else ())
-            for reference in references:
+            # An allowance may be cited from another line of the same document, but it must
+            # still be a verbatim excerpt of the block it names.
+            for reference in details.qualifiers:
+                home=sources.get(reference.block_id)
+                if (home is None or reference.document_version_id!=document.document_version_id
+                        or reference.page!=home.page or not reference.quote.strip() or reference.quote not in home.text
+                        or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+                    raise ValueError('EXTRACTION_DETAILS_SOURCE_MISMATCH')
+            for reference in ((details.expected_source,) if details.expected_source is not None else ()):
                 if (reference.document_version_id!=document.document_version_id
                         or reference.page!=criterion.source.page or reference.block_id!=criterion.source.block_id
                         or not reference.quote.strip() or reference.quote not in criterion.source.quote

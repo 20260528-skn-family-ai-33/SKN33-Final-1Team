@@ -386,9 +386,16 @@ def _materialize_requirement(item,index,version,source,original,*,presentation):
         invalid('A02_RESPONSE_INVALID')
     qualifiers=[]
     for chosen in item.qualifiers:
-        parent,text=selected_range(chosen,index)
-        if parent.block_id!=source.block_id or parent.page!=source.page or text not in quote:invalid('A02_QUALIFIER_UNGROUNDED')
-        qualifiers.append(reference(version,source,text))
+        # An allowance may be written outside the requirement's own lines, e.g. one
+        # common wording rule below several requirements. Keep the requirement and
+        # cite the allowance where it is actually written; a range that cannot be
+        # located drops only that allowance, never the requirement.
+        try:parent,text=selected_range(chosen,index)
+        except AdapterFailure:
+            warnings.append('model_qualifier_unlocatable_dropped');continue
+        if parent.block_id!=source.block_id or parent.page!=source.page or text not in quote:
+            warnings.append('qualifier_cited_outside_requirement_source')
+        qualifiers.append(reference(version,parent,text))
     if quote!=original:
         extra=quote[len(original):].lstrip('\r\n')
         if extra and not any(extra in q.quote for q in qualifiers):qualifiers.append(reference(version,source,extra))
