@@ -69,7 +69,7 @@ try {
   async function review(expected) {
     await page.waitForFunction(() => document.querySelector('img[alt="현재 버전의 검수 포스터"]')?.naturalWidth === 32);
     await button('이 포스터와 기준을 확인하고 검수 시작').click();
-    await button('보고서·담당자 승인').click();
+    await button('보고서 보기').click();
     await page.getByText('기계 판정 · ' + expected, { exact: true }).waitFor();
     const id = new URL(page.url()).searchParams.get('framework');
     const run = await (await page.request.get(base + '/api/framework/v1/runs/' + id)).json();
@@ -81,27 +81,11 @@ try {
   await image('검수 포스터', 'red');
   await button('승인 기준에 포스터 등록').click();
   await review('불충족');
-  await page.getByLabel('수정 요청 사유').fill('전시명을 기준에 맞춰 수정해 주세요.');
-  await button('수정 요청 승인').click();
-  await page.getByLabel('수정 포스터', { exact: true }).waitFor();
-  await page.reload();
-  await button('보고서·담당자 승인').click();
-  await image('수정 포스터', 'lime');
-  await button('수정본 재검수 접수').click();
-  await review('충족');
-  assert.equal(results[1].context.parent_run_id, results[0].context.run_id);
-  assert.notEqual(results[1].context.asset_version_id, results[0].context.asset_version_id);
-  assert.deepEqual(results[1].baseline, results[0].baseline);
-  await button('최종 승인').click();
-  const approved = page.locator('.rv-result-summary').getByText('담당자 승인 완료', { exact: true });
-  await approved.waitFor();
-  await page.reload();
-  await approved.waitFor();
-  await button('보고서 보기').click();
+  // 2026-11-17: 보고서 아래 담당자 승인·수정 요청·수정본 재검수 접수 화면을 없앴다(확인 필요 항목에는 코멘트 칸만 둔다).
   await page.getByRole('heading', { name: '검수 보고서', level: 1 }).waitFor();
-  assert.equal(await button('최종 승인').count(), 0);
+  for (const name of ['최종 승인', '수정 요청 승인', '수정본 재검수 접수']) assert.equal(await button(name).count(), 0, name);
   assert.deepEqual(errors, []); assert.deepEqual(legacy, []);
-  console.log('PDF approved, first poster failed, revision passed and final approval survived reload.');
+  console.log('PDF approved, poster failed and the report has no approval controls.');
 } catch (error) {
   if (page && !page.isClosed()) console.error((await page.locator('body').innerText()).slice(-1800));
   throw error;

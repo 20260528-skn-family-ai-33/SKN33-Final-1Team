@@ -96,7 +96,7 @@ def test_browser_approves_reviews_revises_and_finalizes(runtime, tmp_path):
                 str(listener.getsockname()[1]), os.getenv('FRAMEWORK_BROWSER_CHANNEL', 'chrome'),
                 base64.b64encode(pdf('Poster title: SPRING.\nOpening hours: pending confirmation.')).decode()],
                 cwd='frontend', check=True, timeout=110)
-            assert model.calls == ['poster_semantic_requirements', 'PosterInspection', 'PosterInspection']
+            assert model.calls == ['poster_semantic_requirements', 'PosterInspection']
         finally:
             worker.terminate()
             try: worker.wait(timeout=15)

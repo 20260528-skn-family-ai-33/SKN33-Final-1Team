@@ -96,3 +96,17 @@
 .rv-report-raw summary { cursor: pointer; }
 .rv-report-raw p { margin-top: 8px; }
 @media print { .rv-report-raw { display: none; } }
+/* 확인 필요 항목의 담당자 코멘트(2026-11-17). 위치 보기·상태 칩 바로 아래 오른쪽 칸에 한 칸만 둔다.
+   이 브라우저에만 저장하고(reportComments.js), 인쇄·PDF에서는 입력 칸 대신 '담당자 코멘트' 글로 나온다. */
+.rv-report-comment-hint { margin: -2px 0 6px; font-size: 11px; color: #8a8b85; }
+.rv-report-result.has-comment .rv-report-result-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 250px); gap: 0 16px; align-items: start; }
+/* 칸의 색·테두리는 앱의 다른 입력 칸과 같은 테마(optimus-theme.css)를 따른다. */
+.rv-poster-report .rv-report-result .rv-report-comment { display: block; width: 100%; min-height: 48px; margin-top: 6px; padding: 6px 9px;
+  font-size: 12px; line-height: 1.5; resize: vertical; }
+.rv-poster-report .rv-report-result .rv-report-comment::placeholder { color: #a39060; }
+.rv-report-comment-print { display: none; }
+@media print {
+  .rv-report-result.has-comment .rv-report-result-body { display: block; }
+  .rv-report-comment, .rv-report-comment-hint { display: none !important; }
+  .rv-report-comment-print { display: block; border-left: 3px solid #e6dac3; padding-left: 8px; }
+}

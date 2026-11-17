@@ -68,7 +68,7 @@ function humanNode(run, item) {
   const waiting = (run.human_decision || 'unreviewed') === 'unreviewed';
   return { edge: '확인 요청', dashed: true, node: { title: waiting ? '결정 대기' : '확인 기록 없음', sub: '담당자가 직접 확인할 항목', dashed: true,
     record: RECORD.approval, facts: [['상태', waiting ? '담당자 확인을 기다리고 있습니다.' : '이 항목의 담당자 확인 기록이 없습니다.'],
-      ['안내', '확인 필요 항목은 보고서·담당자 승인 단계에서 직접 확인해 기록합니다.']] } };
+      ['안내', '확인 필요 항목은 담당자가 직접 확인하고 보고서에 코멘트를 남깁니다.']] } };
 }
 
 export function evidenceGraph(run, criterionId, { image = null, history = null, runs = {}, retrieval = null } = {}) {

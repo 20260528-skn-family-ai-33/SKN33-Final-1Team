@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ImageStage from '../../components/ImageStage.jsx';
 import { buildReportContext, posterMarks } from './reportBrief.js';
+import { REPORT_COMMENT_MAX, readReportComments, writeReportComments } from './reportComments.js';
 import '../../styles/framework-report.css';
 
 // 포스터 4단계 보고서. 디자인은 목업(회색 바탕 위 종이, 점 달린 상태 칩, 개수 상자, 안내 상자)을 따르고,
@@ -41,6 +42,18 @@ export default function FrameworkReport({ run, projectName, image = null, standa
   const context = useMemo(() => buildReportContext(run, { projectName }), [run, projectName]);
   const marks = useMemo(() => Object.fromEntries(posterMarks(run, context.items).marks.map(mark => [mark.criterion_id, mark])), [run, context]);
   const [viewing, setViewing] = useState(null);
+  // 확인 필요 항목의 담당자 코멘트. 실행별로 이 브라우저에 저장한다(reportComments.js).
+  const runId = run.context?.run_id;
+  const [comments, setComments] = useState(() => readReportComments(runId));
+  const [commentSaved, setCommentSaved] = useState(true);
+  const [commentRun, setCommentRun] = useState(runId);
+  if (commentRun !== runId) { setCommentRun(runId); setComments(readReportComments(runId)); setCommentSaved(true); }
+  const updateComment = (id, text) => {
+    const next = { ...comments, [id]: text };
+    setComments(next);
+    setCommentSaved(writeReportComments(runId, next));
+  };
+  const hasReviewItems = context.items.some(item => item.verdict.code === 'review');
   const changeReasons = (run.approvals || []).filter(approval => approval.decision === 'approve_changes' && approval.reason).map(approval => approval.reason);
   const status = run.human_decision === 'final_approved' ? '담당자 최종 승인' : context.synthetic ? '합성 데이터 · 자동 검수 초안' : '자동 검수 초안';
   const { counts } = context;
@@ -74,19 +87,34 @@ export default function FrameworkReport({ run, projectName, image = null, standa
 
       <section aria-labelledby="rv-report-details">
         <h2 id="rv-report-details">요구사항별 결과</h2>
-        {context.items.length ? context.items.map((item, index) => <div className="rv-report-result" key={item.criterion_id}>
-          <div className="rv-report-result-heading"><h3>{pad(index + 1)}. {item.label}{item.required ? '' : ' · 권장'}</h3>
+        {hasReviewItems && <p className="rv-report-comment-hint">
+          {commentSaved ? '확인 필요 항목의 담당자 코멘트는 이 브라우저에 저장되고, 인쇄·PDF에 함께 나옵니다.'
+            : '이 브라우저에 저장할 수 없어요. 새로고침하면 코멘트가 사라집니다.'}</p>}
+        {context.items.length ? context.items.map((item, index) => {
+          const number = pad(index + 1);
+          const commentable = item.verdict.code === 'review';
+          const comment = comments[item.criterion_id] || '';
+          return <div className={`rv-report-result${commentable ? ' has-comment' : ''}`} key={item.criterion_id}>
+          <div className="rv-report-result-heading"><h3>{number}. {item.label}{item.required ? '' : ' · 권장'}</h3>
             <div className="rv-report-result-side">
               {marks[item.criterion_id] ? <button type="button" className="rv-report-locate" aria-haspopup="dialog"
-                aria-label={`${pad(index + 1)}. ${item.label} 위치 보기`} onClick={() => setViewing(item.criterion_id)}>위치 보기</button>
+                aria-label={`${number}. ${item.label} 위치 보기`} onClick={() => setViewing(item.criterion_id)}>위치 보기</button>
                 : item.verdict.code !== 'pass' && <span className="rv-report-locate-none">위치 정보 없음</span>}
               <StatusChip verdict={item.verdict} />
             </div></div>
-          <p>기준 {item.expected ? `‘${item.expected}’` : '미정'}{item.source ? ` · ${item.source}` : ''}</p>
-          <p><b>관측</b> {item.observed ? `‘${item.observed}’` : item.observation}{item.verdict.code !== 'pass' && item.location ? ` · ${item.location}` : ''}</p>
-          {item.reason && <p className="rv-report-muted">{item.reason}</p>}
-          {item.human && <p className="rv-report-human"><b>담당자 확인 · {item.human.verdict.label}</b> {item.human.note}</p>}
-        </div>) : <p className="rv-report-muted">기록된 검사 결과가 없습니다.</p>}
+          <div className="rv-report-result-body"><div>
+            <p>기준 {item.expected ? `‘${item.expected}’` : '미정'}{item.source ? ` · ${item.source}` : ''}</p>
+            <p><b>관측</b> {item.observed ? `‘${item.observed}’` : item.observation}{item.verdict.code !== 'pass' && item.location ? ` · ${item.location}` : ''}</p>
+            {item.reason && <p className="rv-report-muted">{item.reason}</p>}
+            {item.human && <p className="rv-report-human"><b>담당자 확인 · {item.human.verdict.label}</b> {item.human.note}</p>}
+            {commentable && comment.trim() && <p className="rv-report-comment-print"><b>담당자 코멘트</b> {comment.trim()}</p>}
+          </div>
+          {/* 위치 보기·확인 필요 칩 바로 아래(오른쪽 칸)에 코멘트 한 칸만 둔다. 인쇄에서는 칸 대신 위의 글로 나온다. */}
+          {commentable && <textarea className="rv-report-comment" rows={2} maxLength={REPORT_COMMENT_MAX}
+            placeholder="담당자 코멘트" aria-label={`${number}. ${item.label} 담당자 코멘트`}
+            value={comment} onChange={event => updateComment(item.criterion_id, event.target.value)} />}
+          </div>
+        </div>; }) : <p className="rv-report-muted">기록된 검사 결과가 없습니다.</p>}
       </section>
 
       {context.actions.length > 0 && <section aria-labelledby="rv-report-todo">

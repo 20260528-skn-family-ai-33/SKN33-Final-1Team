@@ -391,7 +391,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       assert.ok(columns.every(column => column.height > 200 && Math.abs(column.top - columns[0].top) < 2));
       assert.ok(columns[0].right <= columns[1].left, 'poster and requirements must form two columns');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
       await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
@@ -425,7 +425,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       assert.equal(await criteriaOnlyPage.count(), 0);
       assert.equal(await page.getByRole('button', { name: '기준 보완', exact: true }).count(), 0, 'approved criteria stay read-only');
       await page.reload();
-      await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
       await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
     }
