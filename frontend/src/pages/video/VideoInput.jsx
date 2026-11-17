@@ -62,6 +62,11 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const checksText = mode !== 'logo';
   const checksLogo = mode !== 'text';
   const modelRoute = modelRouteFor(security);
+  // 영상 전용 문서 분석을 이 보안 경로로 쓸 수 있을 때만 체크박스를 보인다. 보안 자료(runpod)는 OpenAI 대체가 없어
+  // 서버에 Qwen 주소가 없으면 꺼진다. routes가 없는 이전 서버는 configured만 본다(2026-11-17).
+  const documentRoutes = status?.requirements?.routes;
+  const dedicatedDocument = Boolean(status?.requirements?.enabled && status?.requirements?.async_jobs
+    && (documentRoutes && typeof documentRoutes === 'object' ? documentRoutes[modelRoute] === true : status?.requirements?.configured));
   const projectWorkflow = status?.project_reviews === true;
   // 로고만 검수는 동영상 검수 작업 없이 로고 작업만 만들어 프로젝트에 저장하지 않는다.
   const needsProject = checksText && projectWorkflow && !projectReady;
@@ -237,7 +242,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
                 <ExtractedRequirements rows={draft.documentRows} onChange={rows => update('documentRows', rows)} disabled={busy || documentBusy} />}
             </RequirementInput>}
             {checksText && <VideoDocumentInput projectId={projectId} projectReady={projectReady} projectBlock={projectBlock} documentName={draft.documentName}
-              dedicated={status?.requirements?.enabled && status?.requirements?.configured && status?.requirements?.async_jobs}
+              dedicated={dedicatedDocument}
               disabled={busy} busy={documentBusy} setBusy={setDocumentBusy} onDocument={applyDocument} modelRoute={modelRoute} />}
             {checksLogo && <LogoInputs logos={logos} onChange={value => { setError(''); setLogos(value); }} status={logoStatus} disabled={busy} />}
         </aside>

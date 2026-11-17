@@ -39,30 +39,46 @@ html .rv-project-identity { align-items: center; align-content: center; gap: 12p
 html .rv-project-identity > :is(.rv-project-field, .rv-project-picker) { padding-right: 26px; }
 html .rv-project-identity > * + :is(.rv-project-field, .rv-project-picker) { padding-left: 26px; border-left: 1px solid var(--op-line); }
 html .rv-project-field-label { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
-/* 검수 이름은 화면의 제목 역할을 하므로 크게 쓴다(자료 입력의 큰 제목은 없앴다). */
-/* 프로젝트 이름 앞의 '프로젝트 명'(2026-11-17 다듬기): 튀는 회색 상자 대신 작은 모노 이름표 + 가는 세로선으로 이름과 한 덩어리로 보인다. */
-html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) { display: flex; align-items: center; gap: 14px; }
-html .rv-project-field-badge { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; padding-right: 14px; border-right: 1px solid var(--op-line);
-  color: var(--op-muted); font: 500 12px/1.4 var(--font-ui, inherit); letter-spacing: 0.02em; white-space: nowrap; }
-html .rv-project-field-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--op-ink); }
-html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) > strong { font-size: clamp(20px, 1.6vw, 24px); line-height: 36px; }
-html .rv-workspace .rv-projectbar .rv-project-field:has(> .rv-project-field-badge) .rv-project-name-field input[type] { font-size: clamp(20px, 1.6vw, 24px); }
+/* 프로젝트 줄 이름표(2026-11-17 리디자인): 소개 화면 머리글(.op-eyebrow)처럼 '짧은 선 + 모노 글자' 뒤 가는 세로선, 그다음 값.
+   값은 위계를 둔다 — 검수 이름은 제목처럼 크게, 저장할 프로젝트는 알약 단추, 자료 종류는 고른 순서를 가는 선으로 잇는 알약 줄. */
+html .rv-project-identity :is(.rv-project-field, .rv-project-picker):has(> .rv-project-field-badge) { display: flex; align-items: center; gap: 12px; }
+html .rv-project-field-badge { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; padding-right: 12px; border-right: 1px solid var(--op-line);
+  color: var(--op-muted); font: 11px/16px var(--font-signal); letter-spacing: 0.04em; white-space: nowrap; }
+html .rv-project-field-badge::before { content: ''; width: 14px; height: 1px; background: currentColor; }
+html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) > strong { font-size: 18px; line-height: 36px; }
+html .rv-workspace .rv-projectbar .rv-project-field:has(> .rv-project-field-badge) .rv-project-name-field input[type] { font-size: 18px; }
 html .rv-project-identity .rv-project-field > strong { max-width: 36ch; font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 44px; }
-html .rv-workspace .rv-project-name-field { height: 44px; padding: 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; }
-html .rv-workspace .rv-project-name-field:hover { border-bottom-color: var(--op-line); }
-html .rv-workspace .rv-project-name-field:focus-within { border-bottom-color: var(--op-ink); box-shadow: none; }
-html .rv-workspace .rv-projectbar .rv-project-name-field input[type] { min-width: 16ch; max-width: min(36ch, 48vw); font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 1.3; }
-html .rv-workspace .rv-project-name-field button { width: 34px; height: 34px; border-radius: 50%; }
-html .rv-workspace .rv-project-name-field .icon { width: 18px; height: 18px; }
-html .rv-workspace .rv-project-chip { height: 32px; padding: 0 2px 0 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; font-size: 15px; }
-html .rv-workspace .rv-project-chip:hover:enabled { border-bottom-color: var(--op-line); }
-html .rv-workspace .rv-project-chip.is-required { border: 0; border-bottom: 1px solid var(--op-ink); }
-html .rv-workspace .rv-project-chip.is-selected { background: none; }
-html .rv-workspace .rv-project-chip.is-error { border-bottom-color: #a34f3e; }
-html .rv-workspace .rv-project-chip[aria-expanded='true'] { border-bottom-color: var(--op-ink); box-shadow: none; }
+/* 검수 이름 칸: 평소엔 글자만, 고칠 수 있다는 표시로 마우스를 올리면 점선 밑줄, 입력 중엔 잉크 실선. */
+html .rv-workspace .rv-project-name-field { gap: 4px; height: 36px; padding: 0; border: 0; border-bottom: 1px dashed transparent; border-radius: 0; background: none; transition: border-color .15s; }
+html .rv-workspace .rv-project-name-field:hover { border-bottom-color: color-mix(in srgb, var(--op-muted) 55%, transparent); }
+html .rv-workspace .rv-project-name-field:focus-within { border-bottom: 1px solid var(--op-ink); box-shadow: none; }
+html .rv-workspace .rv-projectbar .rv-project-name-field input[type] { min-width: 6ch; max-width: min(24ch, 32vw); font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.3; }
+html .rv-workspace .rv-project-name-field button { width: 28px; height: 28px; border-radius: 50%; color: var(--op-muted); transition: background .15s, color .15s; }
+html .rv-workspace .rv-project-name-field button:hover:enabled { background: var(--op-surface); color: var(--op-ink); }
+html .rv-workspace .rv-project-name-field .icon { width: 14px; height: 14px; }
+/* 저장할 프로젝트: 알약 단추. 고른 프로젝트는 연한 초록 원 안의 체크, 고르기 전(필수)은 잉크 점선 테두리. */
+html .rv-workspace .rv-project-chip { gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); font-size: 14.5px; transition: border-color .15s, background .15s; }
+html .rv-workspace .rv-project-chip:hover:enabled { border-color: color-mix(in srgb, var(--op-ink) 35%, var(--op-line)); background: var(--op-card); }
+html .rv-workspace .rv-project-chip.is-selected { padding-left: 5px; background: var(--op-card); }
+html .rv-project-chip.is-selected > .icon:first-child { box-sizing: content-box; width: 12px; height: 12px; padding: 5px; border-radius: 50%; background: #e4f1e8; color: #177d45; }
+html .rv-workspace .rv-project-chip.is-required { border: 1px dashed var(--op-ink); }
+html .rv-workspace .rv-project-chip.is-error { border-color: #a34f3e; color: #a34f3e; }
+html .rv-workspace .rv-project-chip[aria-expanded='true'] { border-color: var(--op-ink); box-shadow: none; }
 html .rv-project-chip-text { font-weight: 500; letter-spacing: -0.02em; }
+html .rv-project-chevron { width: 12px !important; height: 12px !important; }
+/* 동영상 자료 입력의 '자료 종류': 고른 순서(자료 종류 → 보안 여부 → 검수 유형)를 가는 선으로 이은 알약으로 남긴다.
+   보안 자료는 붉은 기운의 알약과 자물쇠, 마지막(검수 유형)은 잉크로 채워 지금 하는 검수를 드러낸다. */
+html .rv-project-trail { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; white-space: nowrap; }
+html .rv-project-trail > li { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 12px; border: 1px solid var(--op-line); border-radius: 999px;
+  background: var(--op-card); color: var(--op-ink); font-size: 13px; font-weight: 500; letter-spacing: -0.01em; }
+html .rv-project-trail > li + li { position: relative; margin-left: 18px; }
+html .rv-project-trail > li + li::before { content: ''; position: absolute; top: 50%; left: -19px; width: 18px; height: 1px; background: var(--op-line); }
+html .rv-project-trail > li.is-secure { border-color: #e6c9c1; background: #f9ece9; color: #a34f3e; }
+html .rv-project-trail > li.is-mode { border-color: var(--op-ink); background: var(--op-ink); color: var(--op-card); }
+html .rv-project-trail .icon { width: 13px; height: 13px; }
 html .rv-project-required { border-radius: 999px; }
-html .rv-project-none { height: 32px; padding: 0; border: 0; border-radius: 0; }
+/* 로고만 검수: 저장할 프로젝트 자리에 점선 알약으로 '프로젝트 없이 진행'을 알린다. */
+html .rv-project-none { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px dashed var(--op-line); border-radius: 999px; color: var(--op-muted); font-size: 13px; }
 html .rv-project-picker-panel { border-color: var(--op-line); border-radius: 8px; box-shadow: 0 18px 50px rgb(0 0 0 / 12%); }
 html .rv-project-actions { align-items: stretch; flex-wrap: nowrap; gap: 24px; }
 /* 검수 이름 칸이 없는 줄(결과 확인): 단계 표시만 원래 자리(오른쪽)에 둔다. */
@@ -191,6 +207,71 @@ html .rv-workspace .rv-form-hint { margin-top: 8px; color: var(--op-muted); font
 html .rv-form-upload { padding: 13px 14px; border: 1px dashed color-mix(in srgb, var(--op-ink) 26%, var(--op-bg)); border-radius: 6px; background: none; }
 html .rv-workspace .rv-document-card.is-dragging { outline-color: var(--op-ink); }
 html .rv-workspace .rv-document-card.is-dragging .rv-form-upload { background: var(--op-surface); }
+/* 원본 로고 첨부. 기본(종합 검수의 좁은 칸)은 아이콘·제목·받는 형식·단추를 한 줄로 둔다. */
+html .rv-workspace .rv-reference-logo-drop { transition: background-color .2s, border-color .2s, outline-color .2s; }
+html .rv-workspace .rv-reference-logo-drop.is-dragging { border-color: var(--op-ink); background: var(--op-surface); outline: 0; }
+html .rv-reference-logo-empty { display: flex; align-items: center; gap: 12px; }
+html .rv-reference-logo-empty > p { display: grid; flex: 1; gap: 2px; min-width: 0; margin: 0; }
+html .rv-reference-logo-empty strong { color: var(--op-ink); font-size: 13.5px; font-weight: 500; letter-spacing: -0.02em; }
+html .rv-reference-logo-empty-hint { display: none; }
+html .rv-reference-logo-empty-spec { color: var(--op-muted); font: 11px/1.6 var(--font-signal); letter-spacing: 0.02em; }
+html .rv-reference-logo-empty-spec > span + span::before { content: '· '; }
+html .rv-reference-logo-empty-icon { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border: 1px solid var(--op-line); border-radius: 50%; background: var(--op-card); color: var(--op-muted); }
+html .rv-reference-logo-empty-icon .icon { width: 16px; height: 16px; }
+html .rv-workspace .rv-reference-logo-empty .rv-button { gap: 6px; }
+html .rv-workspace .rv-reference-logo-empty .rv-button .icon { width: 14px; height: 14px; }
+/* 로고만 검수(넓은 화면): 오른쪽 아래 남는 자리 무늬 대신 로고 칸이 왼쪽 무대 아래 끝까지 내려온다.
+   (아래 '종이 면' 규칙과 같은 무게라 클래스를 겹쳐 그 규칙보다 앞선다.) */
+@media (min-width: 901px) {
+  html .rv-workspace .rv-input-form.rv-input-form--logo .rv-editor-grid { --op-rest: none; }
+  html .rv-workspace .rv-input-form.rv-input-form--logo .rv-editor-grid > aside { display: flex; flex-direction: column; grid-row: 1 / span 2; align-self: stretch; }
+  html .rv-workspace .rv-input-form--logo .rv-reference-logos { display: flex; flex: 1; flex-direction: column; padding-bottom: 0; }
+  html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop { flex: 1; }
+}
+/* 로고만 검수의 로고 칸 = 종이 무대. 왼쪽 잉크 무대와 같은 짜임(22px 점 격자 · 88px 눈금 · 가운데 조명 · 안쪽 점선 틀)을 흰 종이에 잉크로 옮긴다. */
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop {
+  --paper-dot: color-mix(in srgb, var(--op-ink) 17%, transparent);
+  --paper-rule: color-mix(in srgb, var(--op-ink) 4.5%, transparent);
+  --paper-canvas: radial-gradient(ellipse 58% 50% at 50% 46%, var(--op-card) 30%, transparent 78%) no-repeat,
+    radial-gradient(circle, var(--paper-dot) 0.9px, transparent 1.4px) 50% 50% / 22px 22px,
+    linear-gradient(var(--paper-rule) 1px, transparent 1px) 50% 50% / 88px 88px,
+    linear-gradient(90deg, var(--paper-rule) 1px, transparent 1px) 50% 50% / 88px 88px;
+  padding: 30px; border: 1px solid var(--op-line); border-radius: 6px; background: var(--paper-canvas), var(--op-card);
+  outline: 1px dashed color-mix(in srgb, var(--op-ink) 24%, transparent); outline-offset: -18px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop:hover:has(.rv-reference-logo-empty) { outline-color: color-mix(in srgb, var(--op-ink) 55%, transparent); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop.is-dragging { border-color: var(--op-ink); background: var(--paper-canvas), var(--op-surface); outline: 1px solid var(--op-ink); outline-offset: -18px; }
+/* 빈 상태: 떠 있는 카드(왼쪽 무대 아이콘을 잉크 선으로) → 큰 제목 → 안내 → 검은 단추 → 받는 형식(신호 글꼴) */
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty { flex-direction: column; gap: 0; text-align: center; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty > p { display: contents; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty strong { font-size: clamp(22px, 1.9vw, 28px); letter-spacing: -0.055em; line-height: 1.3; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-hint { display: block; margin-top: 10px; color: var(--op-muted); font-size: 14px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty .rv-button { order: 1; min-height: 46px; margin-top: 24px; padding: 12px 24px; border-color: var(--op-ink); background: var(--op-ink); color: var(--op-card); font-size: 14px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty .rv-button:hover:enabled { background: #292927; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty .rv-button .icon { width: 16px; height: 16px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-spec { order: 2; margin-top: 16px; font-size: 11px; line-height: 1.7; letter-spacing: 0.04em; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-spec > span { display: block; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-spec > span + span::before { content: none; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon { position: relative; width: 64px; height: 82px; margin-bottom: 30px; border: 1px solid var(--op-ink); border-radius: 3px; background: var(--op-card); color: var(--op-ink);
+  transform: perspective(760px) rotateX(54deg) rotateZ(-34deg); transform-style: preserve-3d; animation: op-float 5.5s ease-in-out infinite; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon::before, html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon::after { content: ''; position: absolute; inset: -1px;
+  border: 1px solid color-mix(in srgb, var(--op-ink) 48%, transparent); border-radius: 3px; background: color-mix(in srgb, var(--op-ink) 3%, var(--op-card)); transform: translateZ(-18px); transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon::after { border-color: color-mix(in srgb, var(--op-ink) 24%, transparent); transform: translateZ(-36px); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop:is(:hover, .is-dragging) .rv-reference-logo-empty-icon::before { transform: translateZ(-34px); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-drop:is(:hover, .is-dragging) .rv-reference-logo-empty-icon::after { transform: translateZ(-68px); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon .icon { width: 26px; height: 26px; }
+/* 로고를 올린 뒤: 로고마다 흰 카드(썸네일 · 파일 이름 · 밑줄 입력란)로 위에서부터 쌓고, 선택·삭제 줄은 칸 맨 아래에 둔다. */
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list { gap: 8px; margin: 14px 0; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list > li { padding: 10px 12px; border: 1px solid var(--op-line); border-radius: 6px; background: var(--op-card); transition: border-color .15s; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list > li:has(input[type=checkbox]:checked) { border-color: var(--op-ink); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list label { font-size: 13px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list img { box-sizing: border-box; width: 52px; height: 36px; padding: 4px; border: 1px solid var(--op-line); border-radius: 4px; background: var(--op-bg); }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list input.rv-reference-logo-text[type] { min-height: 0; margin-top: 8px; padding: 5px 0; border: 0; border-bottom: 1px dashed var(--op-line); border-radius: 0; background: none; font-size: 12px; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list input.rv-reference-logo-text[type]:focus { border-bottom: 1px solid var(--op-ink); outline: 0; box-shadow: none; }
+html .rv-workspace .rv-input-form--logo .rv-reference-logo-list + .rv-reference-logo-row { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--op-line); }
+@media (prefers-reduced-motion: reduce) {
+  html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon { animation: none; }
+  html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon::before, html .rv-workspace .rv-input-form--logo .rv-reference-logo-empty-icon::after { transition: none; }
+}
 html .rv-upload-name { font-size: 13px; }
 /* 문서 첨부: 파일 이름 옆에 바꾸기·지우기, 그 아래 추출 요약 한 줄, 서버 경고는 '확인할 점' 목록으로 나눈다. */
 html .rv-upload-actions { display: flex; flex-shrink: 0; align-items: center; gap: 4px; }
@@ -833,6 +914,14 @@ html .rv-video-scanner-scale > span:nth-child(2) { color: var(--op-bg); font-siz
 }
 /* 기록을 찾지 못한 안내 */
 html .rv-video .rv-video-progress-card.is-missing { max-width: 720px; }
+/* 로고 검수 진행(LogoJobProgress.jsx): 위 무대·필름·돋보기를 그대로 쓰고, 돋보기에는 찾고 있는 원본 로고를 담는다.
+   지나간 칸은 조금 밝히고 지금 칸은 테를 둘러, 자막 줄 대신 진행 정도만 보인다. */
+html .rv-logo-progress { padding-top: 18px; }
+html .rv-logo-scanner .rv-video-film-cell.is-read { background: #3a3a37; }
+html .rv-logo-scanner .rv-video-film-cell.is-current { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%); }
+html .rv-logo-scanner.is-searching .rv-video-lens-scan { opacity: 1; animation: rv-video-scan 1.7s ease-in-out infinite alternate; }
+html .rv-logo-lens-ref { position: absolute; inset: 20%; width: 60%; height: 60%; object-fit: contain; }
+html .rv-logo-scanner.is-failed .rv-logo-lens-ref { opacity: 0.35; filter: grayscale(1); }
 html .rv-video .rv-video-progress-card.is-missing .rv-progress-symbol { justify-self: start; border-radius: 50%; background: var(--op-surface); }
 
 /* ── 로고 확정(동영상 · 포스터) ─────────────────────────────────────────────

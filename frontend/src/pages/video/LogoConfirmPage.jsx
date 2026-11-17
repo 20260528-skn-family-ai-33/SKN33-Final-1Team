@@ -8,6 +8,7 @@ import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { autoDrafts, autoSelection, bundleOutcome, findingText, groupDifferences, handoff, LINK_RATIO, linkCandidates, OUTCOME, toIntervals, topGroups,
   videoLogoSteps } from './logoFlow.js';
 import { startAutoCompare } from './LogoFlowParts.jsx';
+import LogoJobProgress from './LogoJobProgress.jsx';
 import './logoConfirm.css';
 
 const RUNNING = new Set(['queued', 'running']);
@@ -815,11 +816,10 @@ export default function LogoConfirmPage() {
   }
 
   // 포스터 로고 화면과 같은 로고 단계 표시. 종합 검수(동영상 검수에 연결된 작업)는 첫 단계가 그 검수로,
-  // 로고만 검수는 자료 입력으로 돌아간다. 일반 자료(detector=openai)는 위치 후보를 OpenAI로 찾았다고 알린다.
+  // 로고만 검수는 자료 입력으로 돌아간다. 일반 자료(detector=openai)는 위치 후보를 OpenAI로 찾았다고 알린다(LogoJobProgress).
   const linkedReview = meta?.review_id;
   const back = linkedReview ? '/video?id=' + linkedReview : '/video';
   const missing = video?.missing || [];
-  const openaiDetector = meta?.id === job && meta?.detector === 'openai';
   const baseSteps = linkedReview ? { review: '동영상 검수', candidates: videoLogoSteps.candidates, compare: videoLogoSteps.compare } : videoLogoSteps;
   const steps = ready && view === 'confirm' ? { ...baseSteps, confirm: '위치 직접 확인' } : baseSteps;
   const step = !job ? 'input' : ready ? view : 'candidates';
@@ -841,22 +841,10 @@ export default function LogoConfirmPage() {
       <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 영상과 원본 로고를 첨부하면 후보를 찾고 정밀 대조까지 자동으로 진행합니다. 결과를 보고 검수하려던 로고가 아니면 위치를 직접 확인해 다시 대조할 수 있습니다.</p>
       <Link className="vl-button primary" to="/video">자료 입력 열기</Link>
     </section> : <div className="vl-content">
-      {/* 작업 이름은 위쪽 프로젝트 줄에 이미 있으므로, 후보 찾기가 끝나기 전(진행·실패)에만 상태 줄을 보인다. */}
-      {meta?.id === job && meta.status !== 'candidates_ready' && <div className="vl-jobbar">
-        <div><span className="vl-kicker">작업</span><strong>{meta.title}</strong></div>
-        <span className={'vl-status ' + (meta.status === 'failed' ? 'failed' : 'working')}>
-          {meta.status === 'failed' ? '실패' : (meta.stage_detail || '후보 찾는 중')}</span>
-      </div>}
-
-      {meta?.id === job && RUNNING.has(meta.status) && <section className="vl-panel vl-progress-card">
-        <div className="vl-progress-title"><strong>영상 후보를 찾고 있습니다</strong><span>{meta.progress || 0}%</span></div>
-        <div className="vl-progress-track"><span style={{ width: Math.min(100, meta.progress || 0) + '%' }} /></div>
-        <p>{meta.stage_detail || (openaiDetector ? 'OpenAI로 프레임별 위치를 찾고 있습니다.' : 'RunPod에서 프레임별 후보를 찾고 있습니다.')}</p>
-      </section>}
-      {meta?.id === job && meta.status === 'failed' && <section className="vl-panel">
-        <ErrorMessage message={meta.error || '후보 찾기에 실패했습니다.'} />
-        <p className="vl-help">작업이 실패했습니다. {linkedReview ? '영상 검수 화면에서' : '자료 입력에서'} 다시 접수할 수 있습니다.</p>
-      </section>}
+      {/* 후보 찾기 중·실패는 종합 검수 진행 화면과 같은 카드로 보인다(필름 무대·큰 진행률·01 후보 찾기·02 정밀 대조).
+          작업 이름은 위쪽 프로젝트 줄에 이미 있어 따로 적지 않는다. */}
+      {meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed') && <LogoJobProgress base={base} meta={meta}
+        linkedReview={linkedReview} onRestart={() => go(back)} />}
       {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
       {ready && <>

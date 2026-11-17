@@ -77,7 +77,7 @@ export default function ReviewPage() {
       projectAside: import.meta.env.DEV && <p className="rv-preview-entry"><Link to="/review/preview">데이터 없이 화면 둘러보기 ↗</Link></p>,
       projectTools: state.reviewMode === 'logo'
         // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
-        ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
+        ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>
           <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
         : <DocumentProjectPicker ref={projectPicker} {...{ projectId, setProjectId }} projectName={state.projectName}
           disabled={sampleBusy || fileBusy || documentBusy || Boolean(runId)} onStatus={setProjectStatus}

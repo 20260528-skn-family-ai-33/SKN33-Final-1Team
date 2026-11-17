@@ -3,6 +3,7 @@
 실험 영상 13개에서 고정한 설정을 그대로 옮겼다(검증 영상 결과로 바꾸지 않는다).
   ① 1초 간격 프레임
   ② OWLv2 후보 상자: 프롬프트 6개, 전체 화면 + 타일 10개, 점수 0.05 이상 60개, NMS 0.5
+     (2026-11-17 보완, 실험 설정 밖: 타일 안쪽 경계에 닿은 타일 상자는 로고가 잘린 상자라 NMS 전에 버린다. _cut_by_tile)
   ③ 점수 0.1 이상·화면 40% 이하만 남기고, 같은 초 안의 겹치는 상자를 하나로 묶는다(겹침·포함 + 비슷한 모양)
   ④ 시간 묶음: 3초 이내 간격, 위치·크기·모양이 이어지면 같은 묶음(화면 전환으로는 끊지 않는다)
   ⑤ 원본 로고마다 묶음 점수 = 초별 최고 SigLIP2 유사도의 상위 3개 평균(짧은 변 48px 미만 상자는 원본을 작게 줄인 사본과 비교)
@@ -27,6 +28,7 @@ GAP = 3
 OCR_TOP, OCR_BONUS, OCR_MATCH = 40, 0.10, 0.8
 DISPLAY_LONG = 1280  # 확정 화면에 보내는 프레임 긴 변
 OWL_BATCH = 2  # 타일을 한 번에 넣는 수. 960px 입력은 장당 어텐션만 ~1GB라 10장을 한 번에 넣으면 16GB GPU에서 OOM
+TILE_EDGE_PX, TILE_EDGE_RATIO = 4, 0.01  # 타일 안쪽 경계에서 max(4px, 타일 변의 1%) 안에 닿은 상자는 잘린 상자로 본다
 
 
 # ---------------------------------------------------------------------------
@@ -100,8 +102,24 @@ def _tiles(w, h):
     return out
 
 
+def _cut_by_tile(boxes, tile, w: int, h: int):
+    """타일에서 찾은 상자(프레임 좌표, N×4) 중 프레임 안쪽에 있는 타일 경계에 닿은 것을 True로 표시한다.
+    타일 경계를 넘는 로고는 그 타일에서 경계까지만 잡혀 잘린 상자가 된다. 타일은 확대해 보므로 점수가 전체 화면 상자보다
+    높게 나와 NMS에서 온전한 상자를 밀어내고 남았다(2026-11-17, 화면 가운데 로고의 오른쪽이 60% 선에서 잘린 사례).
+    타일끼리 겹치고 전체 화면도 따로 보므로, 잘린 상자를 버려도 온전한 상자가 다른 쪽에서 남는다. 프레임 가장자리와 같은 경계는 보지 않는다."""
+    import torch
+    x1, y1, x2, y2 = tile
+    ex = max(TILE_EDGE_PX, TILE_EDGE_RATIO * (x2 - x1)); ey = max(TILE_EDGE_PX, TILE_EDGE_RATIO * (y2 - y1))
+    cut = torch.zeros(len(boxes), dtype=torch.bool)
+    if x1 > 0: cut |= boxes[:, 0] <= x1 + ex
+    if y1 > 0: cut |= boxes[:, 1] <= y1 + ey
+    if x2 < w: cut |= boxes[:, 2] >= x2 - ex
+    if y2 < h: cut |= boxes[:, 3] >= y2 - ey
+    return cut
+
+
 def detect(image: Image.Image) -> list[dict]:
-    """전체 화면 + 타일 10개에서 찾은 상자를 NMS로 합쳐 점수 순 상위 60개를 돌려준다."""
+    """전체 화면 + 타일 10개에서 찾은 상자를 NMS로 합쳐 점수 순 상위 60개를 돌려준다. 타일 경계에서 잘린 상자는 뺀다(_cut_by_tile)."""
     import torch
     from torchvision.ops import nms
     w, h = image.size
@@ -109,7 +127,8 @@ def detect(image: Image.Image) -> list[dict]:
     tl = _tiles(w, h)
     found = [r for i in range(0, len(tl), OWL_BATCH) for r in _text_detect([image.crop(t) for t in tl[i:i + OWL_BATCH]])]
     for (bt, st), t in zip(found, tl):
-        boxes.append(bt + torch.tensor([t[0], t[1], t[0], t[1]])); scores.append(st)
+        bt = bt + torch.tensor([t[0], t[1], t[0], t[1]]); whole = ~_cut_by_tile(bt, t, w, h)
+        boxes.append(bt[whole]); scores.append(st[whole])
     B, S = torch.cat(boxes), torch.cat(scores)
     if not len(S):
         return []

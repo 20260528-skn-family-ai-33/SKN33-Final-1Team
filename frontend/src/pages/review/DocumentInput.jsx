@@ -177,7 +177,9 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
   const shown = [...projects].sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
     .filter(project => project.name.toLowerCase().includes(words));
   return <div className="rv-project-picker" ref={root}>
-    <span className="rv-project-field-label">저장할 프로젝트</span>
+    <span className="rv-project-field-badge">저장할 프로젝트</span>
+    {/* 이름표가 단추 왼쪽에 붙어 있어, 고르기 창은 이 묶음을 기준으로 단추 바로 아래에 연다. */}
+    <div className="rv-project-picker-anchor">
     <button ref={trigger} type="button" className={`rv-project-chip is-${state}`} aria-haspopup="dialog" aria-expanded={open}
       title={selected?.name} disabled={disabled || loading} onClick={() => setOpen(value => !value)}>
       {state === 'loading' ? <><Icon name="refresh" className="icon rv-project-spin" />
@@ -220,6 +222,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
       </>}
       <ErrorMessage message={error} />
     </div>}
+    </div>
   </div>;
 }
 

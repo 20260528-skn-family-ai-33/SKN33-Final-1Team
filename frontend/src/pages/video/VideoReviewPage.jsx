@@ -6,7 +6,7 @@ import { Icon } from '../../components/Icon.jsx';
 import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
 import { DocumentProjectPicker, projectBlockReason } from '../review/DocumentInput.jsx';
-import ReviewTypePicker, { SecurityPicker } from '../review/ReviewTypePicker.jsx';
+import ReviewTypePicker, { mediaLabels, reviewModeLabels, SecurityPicker, securityModeLabels } from '../review/ReviewTypePicker.jsx';
 import { logoJobsPending, useAutoCompare, useLogoJobs } from './LogoFlowParts.jsx';
 import { videoLogoSteps } from './logoFlow.js';
 import VideoInput from './VideoInput.jsx';
@@ -70,6 +70,21 @@ const steps = { input: '자료 입력', running: '검수 진행', results: '결�
 // securityMode('secure'|'general')·reviewMode('text'|'logo'|'both')는 포스터 검수와 같은 키오스크 선택(ReviewTypePicker.jsx).
 const blankDraft = () => ({ securityMode: null, reviewMode: null, projectName: '', requirements: '', documentRows: [], documentName: '' });
 const securityFromRoute = route => route === 'openai' ? 'general' : route === 'runpod' ? 'secure' : null;
+
+// 자료 입력 전에 고른 자료 종류 → 보안 여부 → 검수 유형을 고른 순서대로 한 줄에 남긴다(2026-11-17).
+// 순서가 뜻을 가지므로 순서 목록으로 두고, 보안 자료는 자물쇠, 마지막 검수 유형은 채운 알약으로 보인다(optimus-theme.css).
+function SelectionTrail({ security, mode }) {
+  const secure = security === 'secure';
+  const items = [
+    { key: 'media', label: mediaLabels.video },
+    { key: 'security', label: securityModeLabels[security], className: secure ? 'is-secure' : undefined, icon: secure ? 'lock' : null },
+    { key: 'mode', label: reviewModeLabels[mode], className: 'is-mode' },
+  ];
+  return <div className="rv-project-field"><span className="rv-project-field-badge">자료 종류</span>
+    <ol className="rv-project-trail" aria-label="고른 자료 종류">
+      {items.map(item => <li key={item.key} className={item.className}>{item.icon && <Icon name={item.icon} />}{item.label}</li>)}
+    </ol></div>;
+}
 
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 화면. 포스터 검수와 같은 자료 입력 → 검수 진행 → 결과 확인 흐름을 따른다.
 export default function VideoReviewPage() {
@@ -160,12 +175,13 @@ export default function VideoReviewPage() {
         onEnter: logoOnly ? undefined : name => projectPicker.current?.createFromName(name) } : undefined}
       projectTools={step !== 'input' ? undefined : logoOnly
         // 로고만 검수는 동영상 검수 작업 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
-        ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
+        ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>
           <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
         : <DocumentProjectPicker ref={projectPicker} projectId={projectId} setProjectId={setProjectId}
           projectName={draft.projectName} disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus}
           // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
-          onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}>
+          onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}
+      projectAside={step === 'input' && <SelectionTrail security={draft.securityMode} mode={draft.reviewMode} />}>
       {step === 'report' && <button type="button" className="rv-button secondary" onClick={openResults}>결과 확인으로 돌아가기</button>}
     </WorkspaceProjectBar>}
     <main id="review-content" className="rv-main" tabIndex={-1}>

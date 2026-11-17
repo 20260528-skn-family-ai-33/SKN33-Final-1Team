@@ -87,6 +87,8 @@
 .rv-workspace .rv-project-name-field .icon { width: 15px; height: 15px; }
 
 .rv-project-picker { position: relative; display: grid; gap: 3px; flex: none; }
+/* 고르기 창(.rv-project-picker-panel)의 기준. 이름표가 아니라 단추 바로 아래에 열린다. */
+.rv-project-picker-anchor { position: relative; display: inline-flex; min-width: 0; }
 .rv-workspace .rv-project-chip {
   display: inline-flex;
   align-items: center;

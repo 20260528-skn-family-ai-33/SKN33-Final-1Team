@@ -157,15 +157,29 @@ def config() -> Settings:
 
 
 def readiness() -> dict:
-    """설정 여부만 본다(모델 서버 호출 없음). 화면이 버튼을 켤지 정하는 용도."""
+    """설정 여부만 본다(모델 서버 호출 없음). 화면이 버튼을 켤지 정하는 용도.
+
+    routes는 보안 여부 경로별로 extract()가 실제로 쓸 수 있는지다. runpod(보안 자료)는 OpenAI 대체를 쓰지 않으므로
+    Qwen 주소가 없으면 꺼진다. configured는 이전 화면 호환용 default 경로 값이다(2026-11-17: 영상 API에
+    CC_QWEN_BASE_URL 없이 OpenAI 키만 있으면 configured=true로 체크박스가 켜져 보안 자료가 QWEN_NOT_CONFIGURED로 실패)."""
+    from backend.agent_framework.model_route import openai_settings
     try:
-        settings = config()
+        settings, problem = config(), ""
     except DocumentError as error:
-        fallback = fallback_settings()
-        if fallback is not None:
-            return {"configured": True, "model": fallback.model, "detail": "Qwen 대신 OpenAI 대체 모델로 문서를 읽습니다."}
-        return {"configured": False, "model": None, "detail": str(error)}
-    return {"configured": True, "model": settings.model, "detail": "문서 읽기 모델이 설정되어 있습니다."}
+        settings, problem = None, str(error)
+    fallback = fallback_settings()
+    try:
+        openai_settings()
+        openai = True
+    except AdapterFailure:
+        openai = False
+    routes = {"default": settings is not None or fallback is not None, "openai": openai, "runpod": settings is not None}
+    if settings is not None:
+        return {"configured": True, "model": settings.model, "detail": "문서 읽기 모델이 설정되어 있습니다.", "routes": routes}
+    if fallback is not None:
+        return {"configured": True, "model": fallback.model, "detail": "Qwen 대신 OpenAI 대체 모델로 문서를 읽습니다.",
+                "routes": routes}
+    return {"configured": False, "model": None, "detail": problem, "routes": routes}
 
 
 # ---------------------------------------------------------------- 문서 → 원문 블록

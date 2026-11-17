@@ -64,11 +64,19 @@ export function LogoInputs({ logos, onChange, status, disabled, referenceOnly = 
       onDragOver={event => { if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); if (!off) setDragging(true); } }}
       onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }}
       onDrop={event => { event.preventDefault(); setDragging(false); add(event.dataTransfer.files); }}>
-      <div className="rv-form-row rv-reference-logo-row"><span>여러 로고를 끌어다 놓을 수 있어요.</span>
-        <input ref={input} type="file" hidden accept={referenceOnly ? '.jpg,.jpeg,.png,.webp,.svg' : 'image/*'} multiple disabled={off}
-          onChange={event => { add(event.target.files); event.target.value = ''; }} />
-        <button type="button" className="rv-button secondary rv-compact" disabled={off || logos.length >= MAX_LOGOS} onClick={() => input.current?.click()}>로고 선택</button>
-      </div>
+      <input ref={input} type="file" hidden accept={referenceOnly ? '.jpg,.jpeg,.png,.webp,.svg' : 'image/*'} multiple disabled={off}
+        onChange={event => { add(event.target.files); event.target.value = ''; }} />
+      {/* 비어 있을 때는 아이콘·안내·받는 형식·선택 단추를 한 묶음으로 둔다. 좁은 칸(종합 검수)에서는 한 줄로,
+          로고만 검수하는 큰 칸에서는 왼쪽 무대처럼 떠 있는 카드·큰 제목·단추·형식 순으로 세로로 모인다(optimus-theme.css). */}
+      {logos.length === 0 ? <div className="rv-reference-logo-empty">
+        <span className="rv-reference-logo-empty-icon" aria-hidden="true"><Icon name="image" /></span>
+        <p><strong>{dragging ? '놓으면 바로 추가돼요.' : '원본 로고를 놓아 주세요.'}</strong>
+          <span className="rv-reference-logo-empty-hint">끌어다 놓거나 버튼으로 선택하세요.</span>
+          <span className="rv-reference-logo-empty-spec"><span>{referenceOnly ? 'JPG · PNG · WEBP · SVG' : '이미지 파일'}</span> <span>여러 장 · 최대 {MAX_LOGOS}장</span></span></p>
+        <button type="button" className="rv-button secondary rv-compact" disabled={off} onClick={() => input.current?.click()}><Icon name="upload" />로고 선택</button>
+      </div> : <div className="rv-form-row rv-reference-logo-row"><span>여러 로고를 끌어다 놓을 수 있어요. ({logos.length}/{MAX_LOGOS})</span>
+        <button type="button" className="rv-button secondary rv-compact" disabled={off || logos.length >= MAX_LOGOS} onClick={() => input.current?.click()}>로고 추가</button>
+      </div>}
       {logos.length > 0 && <>
         <ul className="rv-reference-logo-list">{logos.map((item, index) => <li key={`${item.file.name}-${index}`}>
           <label>
