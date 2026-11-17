@@ -28,7 +28,7 @@ from backend.agent_framework.durable_worker import PostgresQueue,execute_claim
 from backend.agent_framework.invocation import invoke_role
 from backend.app.persistence.database import PersistenceError
 from backend.app.persistence.transaction import unit_of_work
-from backend.app.services.business import Business
+from backend.app.services.business import Business,table
 from backend.app.services.files import Files
 from backend.app.storage.local import LocalStorage
 from examples.agent_framework.poster_testdata import generate,fields
@@ -209,6 +209,11 @@ def test_the_uploaded_original_is_measured_and_pinned_to_the_run_input(pipeline)
     original=fixed['original']
     assert (original['format'],original['width'],original['height'])==('PNG',img['width'],img['height'])
     assert original['color_mode'] in ('RGB','RGBA') and original['file_id']!=fixed['asset']['file_id']
+    # The byte count is the verified original's, the same as its stored file record.
+    files=table('stored_files')
+    with unit_of_work(r.db.engine) as c:
+        stored=c.execute(select(files.c.byte_size,files.c.sha256).where(files.c.file_id==UUID(original['file_id']))).one()
+    assert (original['byte_size'],original['sha256'])==(stored.byte_size,stored.sha256)
     assert create_review(r,img,key)==first  # A replay keeps the measurement pinned at first admission.
     assert approve(r,first,'approve_criteria').status_code==200
     result,outcome,_=run_worker(r)

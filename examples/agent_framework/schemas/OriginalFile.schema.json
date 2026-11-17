@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "What the server measured from the uploaded original poster file; never an inspector's answer.\n\nAssetRef describes the normalized display image a model sees. File requirements are\nabout the file that was delivered: its format, its pixel size as displayed (EXIF\norientation applied) and the decoder's colour mode name such as RGB or CMYK.",
+  "description": "What the server measured from the uploaded original poster file; never an inspector's answer.\n\nAssetRef describes the normalized display image a model sees. File requirements are\nabout the file that was delivered: its format, its pixel size as displayed (EXIF\norientation applied), the decoder's colour mode name such as RGB or CMYK, its\nverified byte count and the pixel density the file records.",
   "properties": {
     "contract_version": {
       "const": "3.0.0",
@@ -45,6 +45,43 @@
       "pattern": "^[A-Za-z0-9;]+$",
       "title": "Color Mode",
       "type": "string"
+    },
+    "byte_size": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Byte Size"
+    },
+    "dpi": {
+      "anyOf": [
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dpi"
     }
   },
   "required": [

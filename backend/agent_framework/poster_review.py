@@ -5,6 +5,7 @@ No source approval or final decision is copied to a new poster run.
 """
 import importlib
 import inspect
+import math
 from io import BytesIO
 from uuid import UUID,uuid5,NAMESPACE_URL
 from datetime import datetime,timezone
@@ -99,8 +100,21 @@ class _KnownFile:
     def lookup_asset(self,context,reference):return self.metadata
 
 
+def recorded_dpi(value):
+    """The pixel density a decoder reports for a file, rounded to hundredths, or None.
+
+    PNG stores dots per metre, so 300 dpi reads back as 299.9994. A JPEG whose JFIF
+    header has no unit reports nothing, and nothing is assumed for it.
+    """
+    if not isinstance(value,tuple) or len(value)!=2:return None
+    try:dpi=tuple(round(float(axis),2) for axis in value)
+    except (TypeError,ValueError):return None
+    return dpi if all(math.isfinite(axis) and axis>0 for axis in dpi) else None
+
+
 def measure_original(storage,context,reference,metadata):
-    """Read the uploaded file itself: its format, pixel size as displayed and colour mode.
+    """Read the uploaded file itself: its format, pixel size as displayed, colour mode,
+    verified byte count and recorded pixel density.
 
     File requirements are about this file, not the normalized display image a model sees.
     The bytes are checked against the stored size and hash before decoding. None means the
@@ -109,11 +123,11 @@ def measure_original(storage,context,reference,metadata):
     from PIL import Image
     try:
         poster=VerifiedFileAccess(_KnownFile(metadata),LegacyStorageReader(storage)).read_asset(context,reference)
-        with Image.open(BytesIO(poster.content)) as image:mode=image.mode
+        with Image.open(BytesIO(poster.content)) as image:mode,dpi=image.mode,recorded_dpi(image.info.get('dpi'))
         width,height=poster.encoded_width,poster.encoded_height
         if poster.exif_orientation in (5,6,7,8):width,height=height,width
         return OriginalFile(file_id=reference.file_id,sha256=reference.sha256,format=_ORIGINAL_FORMATS[reference.media_type],
-            width=width,height=height,color_mode=mode)
+            width=width,height=height,color_mode=mode,byte_size=len(poster.content),dpi=dpi)
     # This measurement only adds to a review; whatever goes wrong here must not stop the review itself.
     except Exception:return None
 

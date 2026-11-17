@@ -55,17 +55,21 @@ A02가 구조화한 기준(`details`가 있는 포스터 문구 기준)에서 �
 
 ## 원본 파일로 판정하는 파일 규격 (2026-11-16)
 
-`ValidateRequest.original`(`OriginalFile`)은 서버가 포스터 검수를 접수할 때 업로드 원본 파일을 읽어 잰 값이다. 형식(PNG·JPEG·WEBP), 화면에 보이는 방향의 가로·세로 픽셀, 색상 모드를 담는다. 모델에 보내는 표시용 PNG(`asset`)의 값이 아니며 모델 관측도 아니다. 값이 있으면 `file_metadata` 기준 가운데 아래 항목을 A06이 직접 비교하고, 그 항목에 대한 A04/A05 관측은 판정에 쓰지 않는다.
+`ValidateRequest.original`(`OriginalFile`)은 서버가 포스터 검수를 접수할 때 업로드 원본 파일을 읽어 잰 값이다. 형식(PNG·JPEG·WEBP), 화면에 보이는 방향의 가로·세로 픽셀, 색상 모드, 검증한 바이트 수(`byte_size`), 파일에 기록된 해상도(`dpi`, 가로·세로)를 담는다. 모델에 보내는 표시용 PNG(`asset`)의 값이 아니며 모델 관측도 아니다. 값이 있으면 `file_metadata` 기준 가운데 아래 항목을 A06이 직접 비교하고, 그 항목에 대한 A04/A05 관측은 판정에 쓰지 않는다.
 
 | 항목 | 비교 |
 |---|---|
 | `pixel_width`·`pixel_height` | 숫자 기준(`equals`·`gte`·`lte`)이고 단위가 픽셀(`픽셀`·`px`)이거나 없을 때 |
 | `file_format` | 기대값이 형식 이름·확장자만 나열할 때. 형식만 나열한 원문 줄(`JPEG (.jpg 또는 .jpeg)`)은 받아들이는 형식 전체로 읽는다. 올릴 수 없는 형식(PDF 등)을 요구하면 판정하지 않는다 |
+| `mime_type` | `file_format`과 같은 규칙. `image/jpeg`·`image/png`·`image/webp`는 해당 형식으로 읽고, 결과는 MIME 표기로 보인다. 그 밖의 MIME은 판정하지 않는다 (2026-11-17) |
 | `color_mode` | `RGB`·`CMYK`. RGBA는 RGB로 보고, 팔레트 이미지는 판정하지 않는다 |
+| `file_size_bytes` | 숫자 기준이고 단위가 `B`·`bytes`·`바이트`·`KB`·`MB`·`GB`(한글 단위 포함)·`KiB`·`MiB`·`GiB`일 때. `KB`·`MB`·`GB`는 1000·1024 두 해석의 결론이 같을 때만 판정하고, 결과에는 바이트 단위로 두 해석을 함께 보인다. 단위가 없으면 판정하지 않는다 (2026-11-17) |
+| `resolution_dpi` | 숫자 기준이고 단위가 `dpi`·`ppi`이거나 없을 때. 파일에 해상도가 기록되어 있고 가로·세로 값이 같을 때만 비교한다. PNG는 미터당 점으로 저장되므로 소수 둘째 자리에서 반올림한다. 단위 없는 JFIF 머리글처럼 기록이 없으면 판정하지 않는다 (2026-11-17) |
 
 - 결과의 `observed`·`observed_unit`·`comparison_*`에는 측정값을 적고 `image`는 비운다. 다르면 `value_mismatch`와 `fail`, 코드가 읽지 못하는 허용 문장이 있으면 `qualifier_interpretation_required`와 `review`다.
-- 측정값이 없는 실행(이 변경 전에 접수했거나 원본을 읽지 못한 실행), 픽셀이 아닌 단위·해상도·파일 크기 같은 항목, `poster_visual`·`delivery` 기준은 이전처럼 `typed_attribute_review_required`와 `review`다.
-- HTTP 경로와 요청·응답 형식은 바뀌지 않는다. 측정값은 포스터 검수 실행의 고정 입력(`input_json.original`)에 저장하고, 값이 없으면 키를 만들지 않아 이전 실행의 입력 해시가 그대로다.
+- `resolution_dpi`는 파일에 기록된 값을 비교한다. 픽셀 수와 인쇄 크기로 계산한 실제 인쇄 해상도가 아니며, 기록값이 요구보다 낮으면 픽셀 수가 충분해도 `fail`이다.
+- 측정값이 없는 실행(이 변경 전에 접수했거나 원본을 읽지 못한 실행), 픽셀이 아닌 단위, 파일명(`file_name`, 업로드 때 원래 이름을 저장하지 않음)·압축(`compression`) 같은 항목, `poster_visual`·`delivery` 기준은 이전처럼 `typed_attribute_review_required`와 `review`다. 2026-11-16에 접수해 바이트 수·해상도가 없는 측정값은 파일 크기·해상도 기준만 `review`로 남는다.
+- HTTP 경로와 요청·응답 형식은 바뀌지 않는다. 측정값은 포스터 검수 실행의 고정 입력(`input_json.original`)에 저장하고, 값이 없으면 키를 만들지 않아 이전 실행의 입력 해시가 그대로다. `byte_size`·`dpi`도 값이 없으면 키를 만들지 않아 그 전에 저장한 측정값의 모양이 그대로다.
 
 ## 팀 전환
 

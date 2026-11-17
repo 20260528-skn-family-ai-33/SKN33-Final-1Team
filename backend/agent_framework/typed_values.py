@@ -68,7 +68,19 @@ _UNREAD_TIME_WORDS = re.compile(r"밤|저녁|낮|아침|새벽|정오|자정|noo
 _TIME_FILLER = re.compile(r"부터|까지|에서|(?<![A-Za-z])to(?![A-Za-z])|[\s~∼〜–—\-,·/()（）]+", re.I)
 
 PIXEL_UNITS = frozenset({"px", "픽셀", "pixel", "pixels"})
+# Print density is written either way in requirements; both name dots per inch of the file.
+DPI_UNITS = frozenset({"dpi", "ppi"})
+# KB, MB and GB are read both as powers of 1000 and of 1024; a size is settled only when both readings agree.
+_BYTE_FACTORS = {"b": (1,), "byte": (1,), "bytes": (1,), "바이트": (1,),
+                 "kb": (1000, 1024), "킬로바이트": (1000, 1024), "kib": (1024,),
+                 "mb": (1000 ** 2, 1024 ** 2), "메가바이트": (1000 ** 2, 1024 ** 2), "mib": (1024 ** 2,),
+                 "gb": (1000 ** 3, 1024 ** 3), "기가바이트": (1000 ** 3, 1024 ** 3), "gib": (1024 ** 3,)}
+_COMPARE = {"equals": lambda seen, wanted: seen == wanted, "gte": lambda seen, wanted: seen >= wanted,
+            "lte": lambda seen, wanted: seen <= wanted}
 _UPLOAD_FORMATS = frozenset({"PNG", "JPEG", "WEBP"})
+_MIME_TYPES = {"PNG": "image/png", "JPEG": "image/jpeg", "WEBP": "image/webp"}
+# image/jpeg names the same format as JPEG; any other media type is left unread.
+_MIME_PREFIX = re.compile(r"(?<![A-Za-z])image\s*/\s*(?=[A-Za-z])", re.I)
 _FORMAT_NAMES = {"jpeg": "JPEG", "jpg": "JPEG", "png": "PNG", "webp": "WEBP", "pdf": "PDF", "tiff": "TIFF",
                  "tif": "TIFF", "gif": "GIF", "bmp": "BMP", "psd": "PSD", "ai": "AI", "eps": "EPS", "svg": "SVG",
                  "heic": "HEIC", "avif": "AVIF"}
@@ -356,8 +368,24 @@ class FileCheck:
 
 def _formats(text):
     """The file formats a value or source line lists, or None if it says anything else."""
+    text = _MIME_PREFIX.sub("", text)
     names = {_FORMAT_NAMES[name.lower()] for name in _FORMAT_TOKEN.findall(text)}
     return names if names and not _FORMAT_FILLER.sub("", _FORMAT_TOKEN.sub("", text)) else None
+
+
+def _plain(value: Decimal) -> str:
+    """A decimal without exponent or trailing zeros: 300.00 is shown as 300."""
+    return format(value.normalize(), "f")
+
+
+def _measured_number(criterion, number):
+    """The criterion's numeric value when code can compare it, else None."""
+    if criterion.kind != "number" or criterion.operator not in _COMPARE:
+        return None
+    try:
+        return number(criterion.expected, criterion.unit)[0]
+    except (ValueError, InvalidOperation):
+        return None
 
 
 def file_check(criterion, original, qualifiers, number, notation_only) -> FileCheck | None:
@@ -383,9 +411,32 @@ def file_check(criterion, original, qualifiers, number, notation_only) -> FileCh
         matched = {"equals": measured == wanted, "gte": measured >= wanted, "lte": measured <= wanted}[criterion.operator]
         return FileCheck(MATCH if matched else MISMATCH, format(wanted, "f"), format(measured, "f"), unit,
                          notation_only(allowance))
+    if details.field == "resolution_dpi":
+        unit = criterion.unit
+        # A file with no recorded density, or different densities per axis, is not read.
+        if (original.dpi is None or original.dpi[0] != original.dpi[1]
+                or unit is not None and unit.strip().casefold() not in DPI_UNITS):
+            return None
+        wanted = _measured_number(criterion, number)
+        if wanted is None:
+            return None
+        measured = Decimal(str(original.dpi[0]))
+        return FileCheck(MATCH if _COMPARE[criterion.operator](measured, wanted) else MISMATCH, _plain(wanted),
+                         _plain(measured), unit, notation_only(allowance))
+    if details.field == "file_size_bytes":
+        factors = _BYTE_FACTORS.get((criterion.unit or "").strip().casefold())
+        wanted = None if factors is None or original.byte_size is None else _measured_number(criterion, number)
+        if wanted is None:
+            return None
+        outcomes = {_COMPARE[criterion.operator](Decimal(original.byte_size), wanted * factor) for factor in factors}
+        if len(outcomes) != 1:
+            return None
+        # Shown in bytes: both readings of KB, MB or GB are listed, since the source does not say which it means.
+        return FileCheck(MATCH if outcomes.pop() else MISMATCH, " / ".join(_plain(wanted * factor) for factor in factors),
+                         str(original.byte_size), "B", notation_only(allowance))
     if criterion.kind != "text" or criterion.operator not in ("equals", "contains"):
         return None
-    if details.field == "file_format":
+    if details.field in ("file_format", "mime_type"):
         wanted = _formats(criterion.expected)
         if wanted is None:
             return None
@@ -395,8 +446,10 @@ def file_check(criterion, original, qualifiers, number, notation_only) -> FileCh
             wanted |= names or set()
         if not wanted <= _UPLOAD_FORMATS:
             return None
-        return FileCheck(MATCH if original.format in wanted else MISMATCH, " / ".join(sorted(wanted)), original.format,
-                         None, None not in listed)
+        # A media type requirement is shown in media type spelling; the comparison is the same.
+        shown = _MIME_TYPES if details.field == "mime_type" else {name: name for name in _UPLOAD_FORMATS}
+        return FileCheck(MATCH if original.format in wanted else MISMATCH, " / ".join(sorted(shown[n] for n in wanted)),
+                         shown[original.format], None, None not in listed)
     if details.field == "color_mode":
         stated = _COLOR_MODE.fullmatch(criterion.expected)
         family = _COLOR_FAMILIES.get(original.color_mode)

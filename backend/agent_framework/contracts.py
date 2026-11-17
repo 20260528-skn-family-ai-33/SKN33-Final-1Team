@@ -279,7 +279,8 @@ class OriginalFile(Contract):
 
     AssetRef describes the normalized display image a model sees. File requirements are
     about the file that was delivered: its format, its pixel size as displayed (EXIF
-    orientation applied) and the decoder's colour mode name such as RGB or CMYK.
+    orientation applied), the decoder's colour mode name such as RGB or CMYK, its
+    verified byte count and the pixel density the file records.
     """
     file_id: Identifier
     sha256: Hash
@@ -287,6 +288,17 @@ class OriginalFile(Contract):
     width: int = Field(gt=0)
     height: int = Field(gt=0)
     color_mode: str = Field(min_length=1, max_length=16, pattern=r"^[A-Za-z0-9;]+$")
+    # Absent in facts measured before these were recorded; such runs keep their stored JSON and hash.
+    byte_size: int | None = Field(default=None, ge=0)
+    # Horizontal and vertical density written in the file (JFIF, PNG pHYs or EXIF); None when it records none.
+    dpi: tuple[Annotated[float, Field(gt=0)], Annotated[float, Field(gt=0)]] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_original(self, handler):
+        data = handler(self)
+        for name in ('byte_size', 'dpi'):
+            if getattr(self, name) is None:data.pop(name, None)
+        return data
 
 
 class ValidateRequest(RoleRequest):

@@ -195,7 +195,7 @@ def number(raw, unit):
     return Decimal(raw), unit
 
 
-JPEG = SimpleNamespace(format='JPEG', width=3000, height=2000, color_mode='RGB')
+JPEG = SimpleNamespace(format='JPEG', width=3000, height=2000, color_mode='RGB', byte_size=None, dpi=None)
 
 
 def checked(field, expected, *, kind='text', operator='equals', unit=None, qualifiers=(), original=JPEG):
@@ -205,7 +205,7 @@ def checked(field, expected, *, kind='text', operator='equals', unit=None, quali
 
 
 def image(mode, format='PNG'):
-    return SimpleNamespace(format=format, width=10, height=10, color_mode=mode)
+    return SimpleNamespace(format=format, width=10, height=10, color_mode=mode, byte_size=None, dpi=None)
 
 
 @pytest.mark.parametrize('arguments,result', [
