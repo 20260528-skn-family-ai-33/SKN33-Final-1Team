@@ -276,7 +276,7 @@ def rotated_jpeg():
     (encoded('RGB', (40, 30), 'WEBP'), 'image/webp', (40, 30), ('WEBP', 40, 30, 'RGB')),
     # 크기는 화면에 보이는 방향으로 잰다
     (rotated_jpeg(), 'image/jpeg', (40, 30), ('JPEG', 30, 40, 'RGB')),
-])
+], ids=('jpeg-rgb', 'jpeg-cmyk', 'jpeg-gray', 'png-rgba', 'png-palette', 'webp-rgb', 'jpeg-exif-rotated'))
 def test_the_uploaded_original_is_measured_from_its_verified_bytes(content, media_type, size, facts):
     from backend.agent_framework.poster_review import measure_original
     context, reference, metadata = stored(content, media_type, *size)
