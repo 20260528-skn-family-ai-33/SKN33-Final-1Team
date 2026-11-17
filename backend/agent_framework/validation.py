@@ -6,7 +6,8 @@ import re
 from .contracts import (Context, CriteriaDraft, DocumentRef, EvidenceBundle,
                         InspectRequest, InspectionResult, ReportDraft, ReportRequest,
                         ValidateRequest, ValidatedItem, ValidatedResult)
-from .qualifier_rules import format_free, may_reject, needs_person, qualifier_text
+from .qualifier_rules import format_free, may_reject, needs_person, notation_only, qualifier_text
+from .typed_values import DATE_ROLES, MATCH, MISMATCH, UNKNOWN, compare_typed, file_check, typed_kind
 
 
 def ensure_context(expected: Context, result) -> None:
@@ -262,6 +263,11 @@ class ReferenceValidator:
     Visual accuracy, source authority and semantic criterion classification still
     belong to upstream adapters and human criteria approval. No unit conversion,
     automatic exceptions, semantic matching or group policies are applied here.
+
+    Two kinds of value are compared by what they denote instead of how they are
+    spelled (typed_values.py): dates, weekdays, years and clock times read from the
+    inspector's text, and file properties taken from the uploaded original that the
+    server measured. Whatever code cannot read with certainty stays review.
     """
 
     def validate(self, request: ValidateRequest) -> ValidatedResult:
@@ -273,12 +279,18 @@ class ReferenceValidator:
         for criterion in request.criteria:
             issues = []
             qualifier = qualifier_text(criterion)
-            if criterion.details is not None:
-                if criterion.details.target!='poster_text':issues.append('typed_attribute_review_required')
+            details = criterion.details
+            # A file property is settled from the uploaded original itself, not from what a model says it saw.
+            measured = None if details is None else file_check(
+                criterion, request.original,
+                tuple(q.quote for q in details.qualifiers) or ((qualifier,) if qualifier else ()), _number, notation_only)
+            typed = typed_kind(criterion)
+            if details is not None:
+                if details.target!='poster_text' and measured is None:issues.append('typed_attribute_review_required')
                 if needs_person(qualifier):
                     issues.append('qualifier_interpretation_required')
-                if criterion.details.normalized_expected is not None:issues.append('normalized_value_review_required')
-                if criterion.details.field in {'start_date','end_date','event_date','event_period'}:
+                # One criterion holding a whole period is not split here; start and end dates are compared below.
+                if details.field=='event_period':
                     issues.append('date_comparison_review_required')
             observation = observations.get(criterion.criterion_id)
             verdict = "review"
@@ -294,7 +306,9 @@ class ReferenceValidator:
                 issues.append("missing_requirement_evidence")
             if request.evidence.status != "complete":
                 issues.append("context_incomplete")
-            if observation is None:
+            if measured is not None:
+                pass  # The inspector's reading of a file property is not weighed, present or not.
+            elif observation is None:
                 issues.append("missing_observation")
             else:
                 if not any(evidence[eid].kind == "current_requirement" for eid in observation.evidence_ids):
@@ -311,7 +325,17 @@ class ReferenceValidator:
                     issues.append("model_review")
 
             if not issues:
-                if observation.observation_status == "absent":
+                if measured is not None:
+                    comparison_expected, comparison_observed = measured.expected, measured.observed
+                    comparison_unit = measured.unit
+                    if measured.outcome == MATCH:
+                        verdict = "pass"
+                    elif not measured.rejects:
+                        issues.append("qualifier_interpretation_required")
+                    else:
+                        verdict = "fail"
+                        issues.append("value_mismatch")
+                elif observation.observation_status == "absent":
                     if criterion.kind == "number":
                         issues.append("missing_observation")
                     elif (observation.verdict != "fail"
@@ -329,6 +353,7 @@ class ReferenceValidator:
                     else:
                         issues.append("verdict_conflict")
                 else:
+                    typed_mismatch = False
                     if criterion.kind == "number":
                         try:
                             expected, expected_unit = _number(criterion.expected, criterion.unit)
@@ -350,8 +375,16 @@ class ReferenceValidator:
                         comparison_expected, comparison_observed = criterion.expected, observation.observed
                         wanted, seen = format_free(criterion.expected, qualifier), format_free(observation.observed, qualifier)
                         matched = wanted == seen if criterion.operator == "equals" else wanted in seen
+                        if typed is not None:
+                            outcome = compare_typed(criterion, observation.observed)
+                            if outcome != UNKNOWN:
+                                matched, typed_mismatch = outcome == MATCH, outcome == MISMATCH
+                            elif details.field in DATE_ROLES:
+                                # Spelling never settles a date: 10.25 is also part of 2027.10.25.
+                                issues.append("date_comparison_review_required")
                     if not issues:
-                        if not matched and qualifier and not may_reject(qualifier):
+                        if not matched and qualifier and not (
+                                may_reject(qualifier) or typed_mismatch and notation_only(qualifier)):
                             issues.append("qualifier_interpretation_required")
                         elif not matched:
                             verdict = "fail"
@@ -361,15 +394,25 @@ class ReferenceValidator:
                         else:
                             verdict = "pass"
 
+            if measured is not None:
+                # What is shown as observed is the measured file, with the criterion's own sources cited.
+                seen_value, seen_unit, seen_status, seen_image = measured.observed, measured.unit, "observed", None
+                cited = tuple(e.evidence_id for e in evidence.values()
+                              if e.kind == "current_requirement" and criterion.criterion_id in e.criterion_ids)
+            elif observation is not None:
+                seen_value, seen_unit, seen_status = observation.observed, observation.observed_unit, observation.observation_status
+                seen_image, cited = observation.image, observation.evidence_ids
+            else:
+                seen_value = seen_unit = seen_image = None
+                seen_status, cited = "not_checked", ()
             items.append(ValidatedItem(
                 criterion_id=criterion.criterion_id, criterion_text=criterion.text, kind=criterion.kind,
                 operator=criterion.operator, required=criterion.required, expected=criterion.expected,
-                expected_unit=criterion.unit, observed=observation.observed if observation else None,
-                observed_unit=observation.observed_unit if observation else None,
-                observation_status=observation.observation_status if observation else "not_checked",
+                expected_unit=criterion.unit, observed=seen_value, observed_unit=seen_unit,
+                observation_status=seen_status,
                 comparison_expected=comparison_expected, comparison_observed=comparison_observed,
-                comparison_unit=comparison_unit, image=observation.image if observation else None,
-                evidence_ids=observation.evidence_ids if observation else (), verdict=verdict, issues=tuple(issues),
+                comparison_unit=comparison_unit, image=seen_image,
+                evidence_ids=cited, verdict=verdict, issues=tuple(issues),
             ))
         return ValidatedResult(context=request.context, verdict=aggregate(request.criteria, items),
                                items=tuple(items),

@@ -34,7 +34,8 @@ def stage_request(snapshot,fixed,role):
     request=InspectRequest(context=context,criteria=snapshot.criteria.criteria,asset=fixed['asset'],
                            evidence=snapshot.evidence,synthetic=snapshot.synthetic)
     if role=='A04_A05':return request
-    return ValidateRequest(**payload(request),inspection=snapshot.inspection)
+    # 파일 규격 기준은 접수 때 실행 입력에 고정한 원본 파일 측정값으로 A06이 직접 비교한다(없으면 사람 확인).
+    return ValidateRequest(**payload(request),inspection=snapshot.inspection,original=fixed.get('original'))
 
 
 @dataclass(frozen=True)

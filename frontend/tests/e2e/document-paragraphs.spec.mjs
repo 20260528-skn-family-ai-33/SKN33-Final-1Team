@@ -176,7 +176,8 @@ test(`PDF에서 만든 검수 항목·미확정 항목을 같은 화면에서 �
       criteria.slice(0, 6).map(item => '검수에 포함: ' + item.text));
   }
   await expectDraft();
-  if (pendingOnly) await checklist.getByText('기대값 미정', { exact: true }).waitFor();
+  // 값이 정해지지 않은 항목은 줄 끝에 '기대값 미정'과 필수 여부를 함께 적는다.
+  if (pendingOnly) await checklist.getByText('기대값 미정 · 필수', { exact: true }).waitFor();
   if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
   // 같은 문서를 다시 첨부하면 저장된 원문과 분석을 다시 쓴다(올리기·접수를 되풀이하지 않는다).
   await checklist.evaluate(list => { list.dataset.before = 'yes'; });

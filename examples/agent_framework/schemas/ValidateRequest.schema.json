@@ -684,6 +684,66 @@
       "title": "Observation",
       "type": "object"
     },
+    "OriginalFile": {
+      "additionalProperties": false,
+      "description": "What the server measured from the uploaded original poster file; never an inspector's answer.\n\nAssetRef describes the normalized display image a model sees. File requirements are\nabout the file that was delivered: its format, its pixel size as displayed (EXIF\norientation applied) and the decoder's colour mode name such as RGB or CMYK.",
+      "properties": {
+        "contract_version": {
+          "const": "3.0.0",
+          "default": "3.0.0",
+          "title": "Contract Version",
+          "type": "string"
+        },
+        "file_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "File Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "PNG",
+            "JPEG",
+            "WEBP"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "color_mode": {
+          "maxLength": 16,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9;]+$",
+          "title": "Color Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id",
+        "sha256",
+        "format",
+        "width",
+        "height",
+        "color_mode"
+      ],
+      "title": "OriginalFile",
+      "type": "object"
+    },
     "RequirementDetails": {
       "additionalProperties": false,
       "description": "Source-grounded compilation metadata, not semantic approval.",
@@ -905,6 +965,17 @@
     },
     "inspection": {
       "$ref": "#/$defs/InspectionResult"
+    },
+    "original": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OriginalFile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

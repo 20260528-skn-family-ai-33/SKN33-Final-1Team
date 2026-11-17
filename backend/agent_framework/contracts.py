@@ -274,12 +274,35 @@ class InspectionResult(Contract):
     synthetic: bool = False
 
 
+class OriginalFile(Contract):
+    """What the server measured from the uploaded original poster file; never an inspector's answer.
+
+    AssetRef describes the normalized display image a model sees. File requirements are
+    about the file that was delivered: its format, its pixel size as displayed (EXIF
+    orientation applied) and the decoder's colour mode name such as RGB or CMYK.
+    """
+    file_id: Identifier
+    sha256: Hash
+    format: Literal["PNG", "JPEG", "WEBP"]
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    color_mode: str = Field(min_length=1, max_length=16, pattern=r"^[A-Za-z0-9;]+$")
+
+
 class ValidateRequest(RoleRequest):
     context: Context
     criteria: tuple[Criterion, ...] = Field(min_length=1)
     asset: AssetRef
     evidence: EvidenceBundle
     inspection: InspectionResult
+    # Absent for a run admitted without these facts; file requirements then stay with a person.
+    original: OriginalFile | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_request(self,handler):
+        data=handler(self)
+        if self.original is None:data.pop('original',None)
+        return data
 
 
 class ValidatedItem(Contract):
@@ -471,6 +494,6 @@ class RunSnapshot(Contract):
 
 
 CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion,CriteriaValueSource, ExtractRequest, CriteriaDraft,PDFTextSource,ExtractionTrace,
-                  EvidenceBundle, InspectRequest, InspectionResult,
+                  EvidenceBundle, InspectRequest, InspectionResult, OriginalFile,
                   ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, HumanReview, Approval,
                   FrameworkError, StepRecord, StepTimeline, RunSnapshot,ApprovedBaseline)

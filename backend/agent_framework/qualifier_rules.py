@@ -27,6 +27,10 @@ _ITEM_BREAK = re.compile(r"[·,/]|(?<=\S)[와과]\s|\s및\s|\s(?:또는|혹은)\
 _KEEPS_VALUE = re.compile(r"(?:표기한다|표기해야\s*한다|유지한다|유지해야\s*한다|바꾸지\s*않는다|변경하지\s*않는다"
                           r"|누락하지\s*않는다|생략하지\s*않는다|남긴다|동일해야\s*한다)$")
 _MAY_ALLOW_MORE = re.compile(r"또는|혹은|거나|도\s*되|달라도|로도|자유|가능|인정|무방|수\s*있|괜찮")
+# How a date, weekday or time is written, which a typed comparison reads through anyway:
+# separators, a leading zero, or the weekday named in another spelling.
+_NOTATION_ITEM = re.compile(r"(?:.*\s)?구분자|(?:앞자리\s*)?0(?:\s*표기)?|[월화수목금토일]요일"
+                            r"|(?:mon|tues?|wed|thu(?:rs?)?|fri|sat|sun)(?:day|sday|nesday|urday)?\.?", re.I)
 
 
 def qualifier_text(criterion) -> str:
@@ -47,8 +51,11 @@ def _keeps_value(sentence: str) -> bool:
     return bool(_KEEPS_VALUE.search(sentence)) and not _MAY_ALLOW_MORE.search(sentence)
 
 
-def _allowances(qualifier: str) -> tuple[set[str], bool]:
-    """The format differences the source positively allows, and whether it may allow anything else."""
+def _allowances(qualifier: str, *, notation: bool = False) -> tuple[set[str], bool]:
+    """The format differences the source positively allows, and whether it may allow anything else.
+
+    With notation, an allowance of date or time notation is not counted as anything else.
+    """
     allowed, other = set(), False
     for sentence in _SENTENCE_BREAK.split(_LABEL.sub(" ", qualifier)):
         sentence = sentence.strip()
@@ -66,7 +73,7 @@ def _allowances(qualifier: str) -> tuple[set[str], bool]:
             words = re.sub(r"\s*차이$", "", item.strip()).split()
             if words and words[-1].removesuffix("의") in _FORMAT_WORDS:
                 allowed.add(words[-1].removesuffix("의"))
-            elif words:
+            elif words and not (notation and _NOTATION_ITEM.fullmatch(" ".join(words).removesuffix("의"))):
                 other = True
     return allowed, other
 
@@ -90,3 +97,9 @@ def may_reject(qualifier: str) -> bool:
     allowed, other = _allowances(qualifier)
     # A line break can split a word, which a line-break-only comparison cannot tell from a wrong value.
     return bool(allowed) and not other and ("공백" in allowed or "줄바꿈" not in allowed)
+
+
+def notation_only(qualifier: str) -> bool:
+    """A value compared by what it denotes, such as a date, differs for certain only when the
+    source allows nothing beyond how it is written."""
+    return not _allowances(qualifier, notation=True)[1]

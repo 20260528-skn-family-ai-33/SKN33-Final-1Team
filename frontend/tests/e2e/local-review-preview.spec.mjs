@@ -46,10 +46,31 @@ test('로컬 미리보기는 로그인·파일·입력 없이 이동하며 업�
   await logoCard.getByRole('checkbox', { name: '주최 로고.svg', exact: true }).check();
   await logoCard.getByRole('button', { name: '선택한 로고 삭제', exact: true }).click();
   assert.equal(await logo.count(), 0);
+  // 실제 화면처럼 자료 입력은 한 화면이다. 검수 항목 상자가 직접 입력란과 문서 첨부 사이에 있고, 기준만 확인하는 단계는 없다.
+  const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+  assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => [row.getAttribute('aria-label'), row.checked])),
+    [['검수에 포함: 행사명: 봄의 기록', true], ['검수에 포함: 개막일: 2026.05.01', true], ['검수에 포함: 주최 로고가 표시되어야 합니다.', true]]);
+  const order = await page.evaluate(() => ['#requirements', '.rv-criteria-box', '.rv-document-card']
+    .map(selector => Math.round(document.querySelector(selector).getBoundingClientRect().top)));
+  assert.ok(order[0] < order[1] && order[1] < order[2], 'input, criteria, document from top to bottom: ' + order);
+  // 실제 화면과 같은 목록이다: 고른 항목의 상세가 그 항목 아래에 펼쳐지고, 펼친 항목을 다시 누르면 접힌다.
+  const rows = checklist.getByRole('button', { expanded: true });
+  assert.equal(await rows.count(), 1);
+  assert.match(await checklist.locator('li.is-open').innerText(), /행사명[\s\S]*원문 1쪽[\s\S]*화면 미리보기용 예시: 행사명: 봄의 기록/);
+  const dateRow = checklist.locator('li', { hasText: '2026.05.01' }).locator('button.rv-criteria-select');
+  await dateRow.click();
+  assert.match(await checklist.locator('li.is-open').innerText(), /화면 미리보기용 예시: 개막일: 2026.05.01/);
+  assert.equal(await checklist.locator('.rv-criteria-inline-detail').count(), 1);
+  assert.equal(await checklist.getByRole('button', { name: '기준 보완' }).isDisabled(), true);
+  await dateRow.click();
+  assert.equal(await checklist.locator('.rv-criteria-inline-detail').count(), 0);
+  await checklist.getByRole('checkbox', { name: '검수에 포함: 개막일: 2026.05.01' }).uncheck();
+  await page.getByText('2개 포함', { exact: true }).waitFor();
+  assert.equal(await toolbar.getByRole('button', { name: '기준 확인', exact: true }).count(), 0);
+  // '검수 시작하기'는 곧바로 진행 화면으로 간다.
   await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-  await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
-  await toolbar.getByRole('button', { name: '검수 진행', exact: true }).click();
   await page.getByRole('heading', { name: '검수 진행 화면 미리보기' }).waitFor();
+  assert.equal(await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).count(), 0);
   await page.getByRole('progressbar').waitFor();
   const magnifiedPoster = page.locator('.rv-poster-scan-zoom img');
   await magnifiedPoster.waitFor();
@@ -79,8 +100,7 @@ test('UI 전용 모드는 기존 검수 URL에서도 인증·Qwen·상태 조회
   await page.goto(base + '/review/new?framework=old-failed-run');
   await page.getByText('UI 전용 · 서버 연결 없음', { exact: true }).waitFor();
   const toolbar = page.getByRole('complementary', { name: '로컬 화면 미리보기' });
-  await toolbar.getByRole('button', { name: '다음 화면으로 →', exact: true }).click();
-  await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
+  // 자료 입력 다음은 곧바로 검수 진행이다(기준만 확인하는 화면이 없다).
   await toolbar.getByRole('button', { name: '다음 화면으로 →', exact: true }).click();
   await page.getByRole('heading', { name: '검수 진행 화면 미리보기' }).waitFor();
   await toolbar.getByRole('button', { name: '다음 화면으로 →', exact: true }).click();

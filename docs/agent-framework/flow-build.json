@@ -40,7 +40,7 @@
       "built_at": "2026-11-02T08:29:35.886251+00:00"
     }
   },
-  "source_files": 81,
-  "source_html_sha256": "f0db7377e902a20b28bd0d0b29543da8ebfe4659add31e05f82e4b2298c46d07",
+  "source_files": 82,
+  "source_html_sha256": "fd83d4f1d74b085537570e6cc3ce1c3c5d575bf2336e190228b0e9d46a8cf338",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

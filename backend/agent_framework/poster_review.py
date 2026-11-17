@@ -5,6 +5,7 @@ No source approval or final decision is copied to a new poster run.
 """
 import importlib
 import inspect
+from io import BytesIO
 from uuid import UUID,uuid5,NAMESPACE_URL
 from datetime import datetime,timezone
 
@@ -15,7 +16,7 @@ from backend.app.security.errors import AuthError
 from backend.app.services.business import table
 from backend.app.storage.local import LocalStorage,StorageError,key
 from .contracts import (Contract,Hash,AssetRef,Context,DocumentRef,ApprovedBaseline,CriteriaDraft,
-    RunSnapshot,StepRecord,ReportDraft)
+    OriginalFile,RunSnapshot,StepRecord,ReportDraft)
 from .criteria_review import PostgresCriteriaReview
 from .adapters.project_files import LegacyStorageReader
 from .files import StoredFileMetadata,VerifiedFileAccess
@@ -57,6 +58,64 @@ def poster_metadata(c,pid,version_id):
         storage_key=file['storage_key'],media_type=reference.media_type,byte_size=file['byte_size'],sha256=reference.sha256,
         width=reference.width,height=reference.height,coordinate_space='display')
     return reference,metadata
+
+
+_ORIGINAL_FORMATS={'image/png':'PNG','image/jpeg':'JPEG','image/webp':'WEBP'}
+
+
+def original_metadata(c,pid,version_id):
+    """The uploaded original of a poster version, described for a verified read; None if its record is not whole."""
+    images=table('asset_versions');files=table('stored_files')
+    image=c.execute(select(images).where(images.c.project_id==pid,images.c.asset_version_id==version_id)).mappings().one_or_none()
+    if image is None:return None
+    file=c.execute(select(files).where(files.c.project_id==pid,files.c.file_id==image['original_file_id'])).mappings().one_or_none()
+    if (file is None or file['state']!='stored' or file['storage_backend']!='local' or file['file_role']!='original_image'
+            or file['parent_file_id'] is not None or file['sha256']!=image['original_sha256']
+            or file['detected_mime'] not in _ORIGINAL_FORMATS or file['storage_key']!=key(pid,file['file_id'])):
+        return None
+    try:
+        # Original dimensions are stored as encoded pixels, before EXIF orientation.
+        reference=AssetRef(file_id=str(file['file_id']),asset_version_id=str(version_id),sha256=file['sha256'],
+            media_type=file['detected_mime'],width=image['original_width'],height=image['original_height'])
+        metadata=StoredFileMetadata(file_id=reference.file_id,project_id=str(pid),version_id=str(version_id),kind='poster',
+            storage_key=file['storage_key'],media_type=reference.media_type,byte_size=file['byte_size'],sha256=reference.sha256,
+            width=reference.width,height=reference.height,coordinate_space='encoded')
+    except ValueError:return None
+    return reference,metadata
+
+
+def same_original(c,pid,version_id,measured):
+    """Whether measured facts still belong to the original file bound to this poster version."""
+    images=table('asset_versions')
+    image=c.execute(select(images.c.original_file_id,images.c.original_sha256).where(
+        images.c.project_id==pid,images.c.asset_version_id==version_id)).mappings().one_or_none()
+    return (image is not None and str(image['original_file_id'])==measured.file_id
+        and image['original_sha256']==measured.sha256)
+
+
+class _KnownFile:
+    """Catalog for one file whose record was already read inside an authorized transaction."""
+    def __init__(self,metadata):self.metadata=metadata
+    def lookup_asset(self,context,reference):return self.metadata
+
+
+def measure_original(storage,context,reference,metadata):
+    """Read the uploaded file itself: its format, pixel size as displayed and colour mode.
+
+    File requirements are about this file, not the normalized display image a model sees.
+    The bytes are checked against the stored size and hash before decoding. None means the
+    facts could not be established: those requirements stay with a person and the review runs.
+    """
+    from PIL import Image
+    try:
+        poster=VerifiedFileAccess(_KnownFile(metadata),LegacyStorageReader(storage)).read_asset(context,reference)
+        with Image.open(BytesIO(poster.content)) as image:mode=image.mode
+        width,height=poster.encoded_width,poster.encoded_height
+        if poster.exif_orientation in (5,6,7,8):width,height=height,width
+        return OriginalFile(file_id=reference.file_id,sha256=reference.sha256,format=_ORIGINAL_FORMATS[reference.media_type],
+            width=width,height=height,color_mode=mode)
+    # This measurement only adds to a review; whatever goes wrong here must not stop the review itself.
+    except Exception:return None
 
 
 class _PosterCatalog:
@@ -101,6 +160,12 @@ def validate_pinned_review(store,c,row):
         raise AuthError('POSTER_BASELINE_MISMATCH',409)
     expected,_=poster_metadata(c,row['project_id'],UUID(asset.asset_version_id))
     if expected!=asset:raise AuthError('POSTER_ASSET_MISMATCH',409)
+    if fixed.get('original') is not None:
+        # Facts measured at admission are used only while they describe this version's original file.
+        try:measured=OriginalFile.model_validate(fixed['original'])
+        except ValueError:raise AuthError('POSTER_ASSET_MISMATCH',409) from None
+        if not same_original(c,row['project_id'],UUID(asset.asset_version_id),measured):
+            raise AuthError('POSTER_ASSET_MISMATCH',409)
     if snapshot.evidence is not None:
         expected_evidence=freeze_approved_context(snapshot.context,version.criteria,synthetic=snapshot.evidence.synthetic)
         if snapshot.evidence.context_id.startswith('rag-'):
@@ -132,25 +197,30 @@ class PostgresPosterReviews:
                 or request.expected_criteria_sha256!=approved.criteria.sha256):raise AuthError('CRITERIA_VERSION_CONFLICT',409)
 
     def _verify_files(self,subject,source_id,request):
+        """Check the stored PDF and poster bytes; return what the uploaded original measures, or None."""
         self.criteria._verify_file(subject,source_id)
         approved=self.criteria.approved(subject,source_id);self._check_request(approved,request)
         with unit_of_work(self.store.engine) as c:
             context=approved.criteria.version.context
             self.store._access(c,subject,context)
             reference,_=poster_metadata(c,UUID(context.project_id),request.asset_version_id)
+            original=original_metadata(c,UUID(context.project_id),request.asset_version_id)
         context=context.model_copy(update={'asset_version_id':reference.asset_version_id})
         read_registered_poster(self.store,self.storage,context,reference,subject)
+        return measure_original(self.storage,context,*original) if original is not None else None
 
     def create(self,subject,source_run_id,request_key,request,*,parent_run_id=None):
         request=PosterReviewRequest.model_validate(request.model_dump(mode='python'))
         self.preflight(subject,parent_run_id or source_run_id)
-        self._verify_files(subject,source_run_id,request)
+        original=self._verify_files(subject,source_run_id,request)
         with unit_of_work(self.store.engine) as c:
             source,source_snapshot=self.criteria._open(c,subject,source_run_id,write=True)
             approved=self.criteria._approved(c,source_run_id);self._check_request(approved,request)
             self.criteria._source(c,source,source_snapshot,require_current_runtime=False)
             baseline=self._pin(approved);version=approved.criteria.version
             asset,_=poster_metadata(c,source['project_id'],request.asset_version_id)
+            if original is not None and not same_original(c,source['project_id'],request.asset_version_id,original):
+                original=None
             document=DocumentRef.model_validate(source['input_json']['document'])
             run_id=str(uuid5(NAMESPACE_URL,'creative-checker-poster:'+(parent_run_id or source_run_id)+':'+str(request_key)))
             context=Context(project_id=str(source['project_id']),actor_id=str(subject.user_id),run_id=run_id,
@@ -163,6 +233,8 @@ class PostgresPosterReviews:
             if model_route is not None:fixed['model_route']=model_route
             old=c.execute(select(runs).where(runs.c.run_id==run_id)).mappings().one_or_none()
             if old is not None:
+                # 원본 파일 측정값은 포스터 버전에 따라 정해지므로, 같은 요청의 재전송은 처음 고정한 값을 그대로 쓴다.
+                if old['input_json'].get('original') is not None:fixed['original']=old['input_json']['original']
                 if (old['input_sha256']!=digest(fixed) or old['configuration_sha256']!=self.store.config_hash
                         or old['runtime_sha256']!=self.store.runtime_hash):raise AuthError('FRAMEWORK_IDEMPOTENCY_CONFLICT',409)
                 validate_pinned_review(self.store,c,old)
@@ -188,7 +260,7 @@ class PostgresPosterReviews:
                     execution_status='waiting_criteria',criteria=draft,baseline=baseline,stages=('A01','A02_approved_version_reused'),
                     step_records=(StepRecord(ordinal=1,role='A02',status='reused',recorded_at=datetime.now(timezone.utc),
                         source_run_id=source_run_id,synthetic=approved.synthetic),))
-            self.store._create(c,snapshot,document,asset,model_route=model_route)
+            self.store._create(c,snapshot,document,asset,model_route=model_route,original=original)
             self.store.event(c,source_run_id,'poster.review_created',poster_run_id=run_id,criteria_sha256=baseline.criteria_sha256)
             return snapshot
 

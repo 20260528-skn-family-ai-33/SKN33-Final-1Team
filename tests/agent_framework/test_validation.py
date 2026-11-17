@@ -153,8 +153,12 @@ def test_only_format_only_source_sentences_can_confirm_a_mismatch(sentence,rejec
     assert may_reject(sentence) is rejects
 
 
-@pytest.mark.parametrize('normalized', [None, '2026-10-25'])
-def test_partial_date_cannot_pass_a_different_year_by_substring_match(normalized):
+# 기준에 연도가 없으면 같은 날인지 정하지 못해 사람이 보고, 원문과 대조해 둔 변환값이 있으면 다른 해는 불충족이다.
+@pytest.mark.parametrize('normalized,verdict,issue', [
+    (None, 'review', 'date_comparison_review_required'),
+    ('2026-10-25', 'fail', 'value_mismatch'),
+])
+def test_partial_date_cannot_pass_a_different_year_by_substring_match(normalized, verdict, issue):
     from backend.agent_framework.contracts import RequirementDetails
     req = request()
     quote = '기간: 2026.10.23 ~ 10.25'
@@ -174,8 +178,8 @@ def test_partial_date_cannot_pass_a_different_year_by_substring_match(normalized
     )})
     req = req.model_copy(update={'criteria': (criterion,), 'evidence': bundle, 'inspection': inspection})
     result = ReferenceValidator().validate(req)
-    assert result.verdict == 'review'
-    assert 'date_comparison_review_required' in result.items[0].issues
+    assert result.verdict == verdict
+    assert result.items[0].issues == (issue,)
     forged = result.model_copy(update={'verdict': 'pass', 'items': (
         result.items[0].model_copy(update={'verdict': 'pass', 'issues': ()}),
     )})

@@ -1,11 +1,11 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { Pager, usePaged } from '../../components/Pager.jsx';
+import { usePaged } from '../../components/Pager.jsx';
 import ResultsPage from './ResultsPage.jsx';
 import { frameworkResults } from './frameworkResults.js';
 import { criterionLine } from './criterionLabel.js';
@@ -14,6 +14,7 @@ import FrameworkRunStatus from './FrameworkRunStatus.jsx';
 import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
+import CriteriaPanel from './CriteriaPanel.jsx';
 import HumanReview, { reviewableItems } from './HumanReview.jsx';
 import FrameworkReport from './FrameworkReport.jsx';
 import PosterTextEditor from './PosterTextEditor.jsx';
@@ -47,43 +48,6 @@ const actionStatus = {
 };
 // 검수 항목 목록은 CRITERIA_PER_PAGE개씩 쪽으로 넘겨 본다.
 const CRITERIA_PER_PAGE = 6;
-// 목록 한 줄: 이름(행사명·시작일 요일…)과 기준값만 보인다. 기준 문장·원문은 항목을 펼쳤을 때 보인다.
-// 이름을 모르는 기준은 문장만 한 줄로 보인다. 한 원문 문장에서 나온 여러 기준은 값으로 구분된다.
-function CriterionText({ criterion }) {
-  const line = criterionLine(criterion);
-  return <span className="rv-criteria-item-text">{line.label ? <>
-    <span className="rv-criteria-item-label">{line.label}</span>
-    <span className="rv-criteria-item-value">{line.expected || ''}</span>
-  </> : <span className="rv-criteria-item-value">{criterion.text}</span>}</span>;
-}
-// PDF 줄바꿈을 한 문단으로 잇는다(원문 글자는 바꾸지 않는다).
-const oneLine = text => String(text || '').replace(/\s+/g, ' ').trim();
-// 원문은 두 줄까지만 보이고, 실제로 잘릴 때만 '원문 전체 보기'를 단다(화면 폭에 따라 잘리는 길이가 달라서 글자 수로 정하지 않는다).
-function ClampedQuote({ text, open, onToggle }) {
-  const ref = useRef(null);
-  const [overflowing, setOverflowing] = useState(false);
-  useLayoutEffect(() => {
-    const element = ref.current;
-    if (!element) return undefined;
-    const measure = () => setOverflowing(open || element.scrollHeight > element.clientHeight + 1);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [text, open]);
-  return <>
-    <span ref={ref} className={open ? undefined : 'is-clamped'}>{text}</span>
-    {overflowing && <button type="button" className="rv-criteria-quote-toggle" aria-expanded={open} onClick={onToggle}>
-      {open ? '접기' : '원문 전체 보기'}<Icon name="chevron" className={`icon${open ? ' is-open' : ''}`} /></button>}
-  </>;
-}
-// 판단 기준: 원문에서 뽑은 허용·판단 조건. 없으면 이름·기준값과 다른 기준 문장을 쓴다.
-function judgmentRule(criterion) {
-  const qualifiers = [...new Set((criterion.details?.qualifiers || []).map(item => oneLine(item.quote)).filter(Boolean))];
-  if (qualifiers.length) return qualifiers.join(' ');
-  const line = criterionLine(criterion);
-  return line.label ? oneLine(line.rule) : '';
-}
 // 기준 번호(c001 같은 내부 번호) 대신 화면에 적을 이름
 function criterionTitle(criterion) {
   if (!criterion) return '검수 항목';
@@ -517,64 +481,41 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     setReload(value => value + 1);
   }
 
-  // 검수 항목 목록과 고른 항목의 상세. 자료 입력 한 화면(승인 전 초안)과 승인 뒤 기준 확인 화면이 함께 쓴다.
+  // 검수 항목 목록과 고른 항목의 상세(CriteriaPanel). 자료 입력 한 화면(승인 전 초안)과 승인 뒤 기준 확인 화면이 함께 쓴다.
   function renderCriteriaPanel() {
-    return <>
-          <div className="rv-panel-heading"><div><span className="rv-eyebrow">REVIEW CRITERIA</span><h2>검수 항목 <span>{criteria.length}</span></h2></div><span className="rv-criteria-selection-count">{criteria.length - excluded.length}개 포함</span></div>
-            {/* 기준 확인 화면에는 이전 기준과의 차이 · 이미지 미판독 · 원문 검증 제외 후보 안내를 두지 않는다. */}
-            {(unreadPages.length > 0 || incompletePages.length > 0) && <section className="rv-relation-notice" role="status" aria-label="문서 분석 범위 안내">
-              <div className="rv-relation-notice-head"><Icon name="warning" /><div>
-                <strong>원문과 기준을 대조해 주세요.</strong>
-                {unreadPages.length > 0 && <p>{unreadPages.join(', ')}쪽은 텍스트를 읽지 못했어요.</p>}
-                {incompletePages.length > 0 && <p>{incompletePages.join(', ')}쪽은 일부 분석 응답을 받지 못했어요.</p>}
-              </div></div>
-            </section>}
-            <div className="rv-criteria-toolbar"><span>{sourceDraft ? '뺄 항목은 체크를 풀어 주세요. 값은 기준 보완으로 고칩니다.' : '원문 기준 · 읽기 전용'}</span><span>제외 {excluded.length}개</span></div>
-            <ul className="rv-criteria-list rv-criteria-list--inline" aria-label="검수 항목 목록">{criteriaPages.shown.map((c, index) => {
-              const active = selected?.criterion_id === c.criterion_id;
-              const open = active && detailOpen;
-              const rule = open ? judgmentRule(c) : '';
-              const quote = open ? oneLine(c.source.quote) : '';
-              return <li id={'rv-criterion-' + c.criterion_id} key={c.criterion_id} className={`rv-criteria-item${active ? ' is-active' : ''}${open ? ' is-open' : ''}${excluded.includes(c.criterion_id) ? ' is-excluded' : ''}${latest?.approval_blockers?.[c.criterion_id] ? ' is-blocked' : ''}`}>
-              <label className="rv-criteria-check"><input type="checkbox" aria-label={`검수에 포함: ${c.text}`} disabled={!sourceDraft || busy || amendment?.criterion_id === c.criterion_id}
-                checked={!excluded.includes(c.criterion_id)} onChange={e => setExcluded(ids => e.target.checked ? ids.filter(id => id !== c.criterion_id) : [...ids, c.criterion_id])} /></label>
-              <button type="button" className="rv-criteria-select" aria-expanded={open} aria-controls={open ? 'rv-active-criterion' : undefined}
-                disabled={busy || (!!amendment && amendment.criterion_id !== c.criterion_id)} onClick={() => toggleCriterion(c.criterion_id)}>
-                <span className="rv-criteria-item-index">{String(criteriaPages.start + index + 1).padStart(2, '0')}</span><CriterionText criterion={c} />
-                <span className="rv-criteria-item-type">{c.source.kind === 'direct_input' ? '직접 입력' : !c.expected.trim() ? '기대값 미정' : c.kind === 'visual' ? '시각' : '정보'} · {c.required ? '필수' : '참고'}</span>
-                <Icon name="chevron" className={`icon rv-criteria-item-arrow${open ? ' is-open' : ''}`} />
-              </button>
-              {/* 고른 항목의 상세는 그 항목 바로 아래에 펼친다. 이름표 칸은 목록의 이름 칸과 같은 폭으로 맞춘다. */}
-              {open && <div className="rv-criteria-inline-detail" id="rv-active-criterion">
-                <dl className="rv-criteria-facts">
-                  {rule && <><dt>판단 기준</dt><dd>{rule}</dd></>}
-                  <dt>{c.source.kind === 'direct_input' ? '직접 입력 원문' : `원문 ${c.source.page}쪽`}</dt>
-                  <dd className="rv-criteria-quote"><ClampedQuote text={quote} open={quoteOpen} onToggle={() => setQuoteOpen(value => !value)} /></dd>
-                  {c.value_source && (c.source.kind !== 'direct_input' || c.value_source.reference !== '담당자 직접 입력')
-                    && <><dt>보완 회신</dt><dd>{c.value_source.quote} · 출처: {c.value_source.reference}</dd></>}
-                </dl>
-                {sourceDraft && <div className="rv-criteria-inline-actions">{amendment ? <>
-                  <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveAmendment, 'save'); }}>
-                    <CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} />
-                    <div className="rv-criteria-amend-actions">
-                      <button type="submit" className="rv-button primary" disabled={busy} aria-busy={working('save')}>보완 내용 저장</button>
-                      <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
-                    </div>
-                  </form>
-                </> : <button type="button" className="rv-button secondary rv-compact rv-framework-amend" disabled={busy || excluded.includes(c.criterion_id)} onClick={() => {
-                    const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
-                    setAmendment({ action: 'amend', criterion_id: c.criterion_id, reason: '',
-                      source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
-                      resolution: { kind, operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
-                        expected: c.expected, unit: c.unit || null, required: c.required,
-                        target: c.details?.target === 'unspecified' ? '' : c.details?.target || '', field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' } });
-                }}><Icon name="pencil" />기준 보완</button>}</div>}
-              </div>}
-            </li>; })}</ul>
-            <Pager page={criteriaPages.page} pages={criteriaPages.pages} onChange={turnCriteriaPage} label="검수 항목 쪽" disabled={busy} />
-            {!criteria.length && <p className="rv-criteria-empty">검수 기준을 불러오고 있습니다.</p>}
-            {latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary><ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력' : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>}
-    </>;
+    return <CriteriaPanel criteria={criteria} excluded={excluded} selected={selected}
+      detailOpen={detailOpen} onOpen={toggleCriterion} quoteOpen={quoteOpen} onQuote={() => setQuoteOpen(value => !value)}
+      onToggle={(id, included) => setExcluded(ids => included ? ids.filter(other => other !== id) : [...ids, id])}
+      paged={criteriaPages} onPage={turnCriteriaPage} editable={sourceDraft} busy={busy}
+      amendingId={amendment?.criterion_id} blocked={latest?.approval_blockers}
+      // 기준 확인 화면에는 이전 기준과의 차이 · 이미지 미판독 · 원문 검증 제외 후보 안내를 두지 않는다.
+      notices={(unreadPages.length > 0 || incompletePages.length > 0) && <section className="rv-relation-notice" role="status" aria-label="문서 분석 범위 안내">
+        <div className="rv-relation-notice-head"><Icon name="warning" /><div>
+          <strong>원문과 기준을 대조해 주세요.</strong>
+          {unreadPages.length > 0 && <p>{unreadPages.join(', ')}쪽은 텍스트를 읽지 못했어요.</p>}
+          {incompletePages.length > 0 && <p>{incompletePages.join(', ')}쪽은 일부 분석 응답을 받지 못했어요.</p>}
+        </div></div>
+      </section>}
+      detailActions={sourceDraft && selected && (amendment
+        ? <form ref={amendmentForm} onSubmit={e => { e.preventDefault(); perform(saveAmendment, 'save'); }}>
+          <CriteriaAmendment value={amendment} onChange={setAmendment} disabled={busy} />
+          <div className="rv-criteria-amend-actions">
+            <button type="submit" className="rv-button primary" disabled={busy} aria-busy={working('save')}>보완 내용 저장</button>
+            <button type="button" className="rv-button secondary" disabled={busy} onClick={() => setAmendment(null)}>보완 취소</button>
+          </div>
+        </form>
+        : <button type="button" className="rv-button secondary rv-compact rv-framework-amend" disabled={busy || excluded.includes(selected.criterion_id)} onClick={() => {
+          const c = selected;
+          const kind = c.kind === 'unsupported' ? (c.details?.target === 'poster_visual' ? 'visual' : 'text') : c.kind;
+          setAmendment({ action: 'amend', criterion_id: c.criterion_id, reason: '',
+            source: { reference: c.value_source?.reference || '', quote: c.value_source?.quote || '' },
+            resolution: { kind, operator: c.operator === 'manual' ? (kind === 'number' ? 'equals' : kind === 'visual' ? 'present' : 'contains') : c.operator,
+              expected: c.expected, unit: c.unit || null, required: c.required,
+              target: c.details?.target === 'unspecified' ? '' : c.details?.target || '', field: c.details?.field === 'unspecified' ? '' : c.details?.field || '' } });
+        }}><Icon name="pencil" />기준 보완</button>)}
+      footer={latest?.version.exclusions.length > 0 && <details className="rv-criteria-add"><summary>제외한 기준 {latest.version.exclusions.length}개</summary>
+        <ul>{latest.version.exclusions.map(c => <li key={c.criterion_id}>{c.criterion_id.startsWith('input-') ? '직접 입력'
+          : criterionTitle((run?.criteria?.criteria || []).find(item => item.criterion_id === c.criterion_id))} · {c.reason}</li>)}</ul></details>} />;
   }
 
   // ── 자료 입력 한 화면 ──

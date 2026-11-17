@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import ReviewLayout from '../../layouts/ReviewLayout.jsx';
 import InputPage from './InputPage.jsx';
-import CriteriaPage from './CriteriaPage.jsx';
+import CriteriaPanel from './CriteriaPanel.jsx';
 import ResultsPage from './ResultsPage.jsx';
 import ReviewProgress from './ReviewProgress.jsx';
+import { Icon } from '../../components/Icon.jsx';
+import { usePaged } from '../../components/Pager.jsx';
 import { initialState, parseRequirements, workflowReducer } from './workflow.js';
 import { frameworkResults } from './frameworkResults.js';
 import { frameworkProgress } from './frameworkProgress.js';
@@ -12,8 +14,10 @@ import { labels } from './reviewConstants.js';
 import '../../styles/review-preview.css';
 
 // This module is lazy-loaded only by Vite DEV. It never submits a real review.
-const steps = Object.entries(labels);
-const brief = '행사명: 봄의 기록\n개막일: 2026.05.01\n주최 로고가 표시되어야 합니다.';
+// 실제 화면처럼 자료 입력은 한 화면이다: 포스터 · 직접 입력란 · 검수 항목 · 문서 첨부가 함께 있고, 기준만 따로 확인하는 화면은 없다.
+const steps = Object.entries(labels).filter(([step]) => step !== 'criteria');
+// 직접 입력란의 예시. 검수 항목 상자의 예시 기준(문서에서 만든 것)과 겹치지 않는 한 줄로 둔다.
+const brief = '관람료는 무료로 표기합니다.';
 const poster = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
 <rect width="1200" height="1600" fill="#174e4a"/><circle cx="950" cy="1000" r="490" fill="#e5ba79"/>
 <rect x="140" y="720" width="640" height="700" fill="#ece8db" transform="rotate(-12 460 1070)"/>
@@ -38,6 +42,9 @@ const exampleRun = {
     image: { asset_version_id: 'local-preview-poster', bbox } })) },
   step_records: [{ role: 'A04_A05', status: 'completed' }, { role: 'A06', status: 'completed' }, { role: 'A07', status: 'running' }],
 };
+// 자료 입력 화면의 검수 항목 상자에 보일 예시 기준(문서를 추출한 뒤의 모습).
+const exampleCriteria = exampleRun.criteria.criteria;
+const PREVIEW_ONLY = '데이터 없이 둘러보는 화면에서는 문서를 첨부할 수 없어요.';
 
 // 진행 화면 미리보기에서 돋보기 위치를 단계별로 바꿔 볼 수 있게 서버 상태 예시를 둔다.
 const done = role => ({ role, status: 'completed' }), running = role => ({ role, status: 'running' });
@@ -59,17 +66,19 @@ export default function LocalReviewPreview({ uiOnly = false }) {
   const [state, setState] = useState(initialState);
   const [preview, setPreview] = useState('');
   const [dragging, setDragging] = useState(false);
-  const [newCriterion, setNewCriterion] = useState('');
-  const [newCategory, setNewCategory] = useState('information');
   const [filter, setFilter] = useState('all');
   const [activeEvidence, setActiveEvidence] = useState(null);
   const [progressStage, setProgressStage] = useState('A07');
+  // 검수 항목 상자: 체크를 푼 기준, 고른 기준, 그 상세와 원문을 펼쳤는가(실제 화면처럼 눌러 볼 수 있지만 저장하지 않는다).
+  const [excluded, setExcluded] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(true);
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const paged = usePaged(exampleCriteria, 6);
   const fileInput = useRef(null);
-  const nextId = useRef(0);
   const result = useMemo(() => ({ ...frameworkResults(exampleRun, { url: posterUrl, width: 1200, height: 1600 }, '예시 포스터'),
     status_label: '화면 미리보기 · 예시 판정' }), []);
   const dispatch = action => setState(current => workflowReducer(current, action));
-  const selected = state.criteria.filter(item => item.selected);
   const index = steps.findIndex(([step]) => step === state.step);
   useEffect(() => {
     if (!state.file) { setPreview(''); return; }
@@ -87,18 +96,23 @@ export default function LocalReviewPreview({ uiOnly = false }) {
       return { ...next, step, snapshot, version: snapshot?.version || next.version };
     });
   }
-  function confirm() {
-    setState(current => {
-      const next = seed(current), version = next.version + 1;
-      return { ...next, version, snapshot: { version, criteria: next.criteria.filter(item => item.selected), projectName: next.projectName } };
-    });
+  function reset() {
+    setState(initialState); setFilter('all'); setActiveEvidence(null);
+    setExcluded([]); setActiveId(null); setDetailOpen(true); setQuoteOpen(false);
   }
-  function reset() { setState(initialState); setFilter('all'); setActiveEvidence(null); }
+  const activeCriterion = exampleCriteria.find(item => item.criterion_id === activeId) || exampleCriteria[0];
+  // 실제 화면과 같다: 항목을 누르면 그 아래에 상세를 펼치고, 펼친 항목을 다시 누르면 접는다.
+  function openCriterion(id) {
+    if (activeCriterion?.criterion_id === id && detailOpen) { setDetailOpen(false); return; }
+    setActiveId(id); setDetailOpen(true); setQuoteOpen(false);
+  }
   const viewState = { ...state, review: state.step === 'running' ? { status: 'running' } : state.step === 'results' ? { status: 'completed' } : null };
+  const included = exampleCriteria.length - excluded.length;
 
   return <ReviewLayout state={viewState} busy={false} health={{ status: 'preview' }} navigate={navigate} previewMode
     // 실제 화면처럼 보안 여부·유형을 고르는 동안에는 검수 이름·프로젝트 줄을 숨긴다.
     showWorkspaceBar={!(state.step === 'input' && (!state.securityMode || !state.reviewMode))}
+    mainClassName="rv-framework-workspace"
     projectEditor={state.step === 'input' ? { id: 'project-name', maxLength: 60, onChange: value => dispatch({ type: 'input', field: 'projectName', value }) } : undefined}
     projectActions={state.step === 'input' && <button type="button" className="rv-button secondary" onClick={() => setState(seed(initialState))}>예시 자료 불러오기</button>}>
     <aside className="rv-preview-toolbar" aria-label="로컬 화면 미리보기">
@@ -107,18 +121,22 @@ export default function LocalReviewPreview({ uiOnly = false }) {
         aria-pressed={state.step === step} onClick={() => navigate(step)}>{label}</button>)}</div>
       <div className="rv-preview-shortcuts"><button type="button" className="rv-button primary" onClick={() => navigate(steps[(index + 1) % steps.length][0])}>{index === steps.length - 1 ? '처음 화면으로' : '다음 화면으로'} →</button>{!uiOnly && <Link to="/review/new">실제 검수로 돌아가기</Link>}</div>
     </aside>
-    {state.step === 'input' && <InputPage state={state} previewMode prepare={event => { event?.preventDefault(); navigate('criteria'); }}
+    {/* 자료 입력 한 화면. 문서를 추출한 뒤의 모습으로, 예시 기준을 검수 항목 상자에 넣어 보여 준다. '검수 시작하기'는 바로 진행 화면으로 간다. */}
+    {state.step === 'input' && <InputPage state={state} previewMode prepare={event => { event?.preventDefault(); navigate('running'); }}
       inputChange={(field, value) => dispatch({ type: 'input', field, value })}
       fileInput={fileInput}
       selectFile={files => files[0] && dispatch({ type: 'input', field: 'file', value: files[0] })}
       removeFile={() => dispatch({ type: 'input', field: 'file', value: null })}
-      preview={preview} dragging={dragging} setDragging={setDragging} versionText="화면 미리보기" />}
-    {state.step === 'criteria' && <CriteriaPage state={state} locked={!!state.snapshot} selected={selected}
-      selectedInfo={selected.filter(item => item.type === 'information').length} versionText="화면 미리보기"
-      unlock={() => dispatch({ type: 'unlock' })} dispatch={dispatch} preview={preview}
-      newCriterion={newCriterion} setNewCriterion={setNewCriterion} newCategory={newCategory} setNewCategory={setNewCategory}
-      addCriterion={event => { event.preventDefault(); dispatch({ type: 'add', id: `preview-${++nextId.current}`, text: newCriterion, category: newCategory }); setNewCriterion(''); }}
-      navigate={navigate} confirm={confirm} run={() => navigate('running')} />}
+      preview={preview} dragging={dragging} setDragging={setDragging}
+      review={{ runId: exampleRun.context.run_id, included, busy: false, documentName: '예시_요구사항.pdf', documentLock: PREVIEW_ONLY,
+        block: included ? null : '적어도 검수 항목 한 개는 남겨 주세요.',
+        panel: <CriteriaPanel criteria={exampleCriteria} excluded={excluded} editable paged={paged} onPage={paged.setPage}
+          selected={activeCriterion} detailOpen={detailOpen} onOpen={openCriterion}
+          quoteOpen={quoteOpen} onQuote={() => setQuoteOpen(value => !value)}
+          onToggle={(id, on) => setExcluded(ids => on ? ids.filter(other => other !== id) : [...ids, id])}
+          detailActions={<button type="button" className="rv-button secondary rv-compact rv-framework-amend" disabled
+            title="둘러보는 화면에서는 기준을 고쳐 저장하지 않아요."><Icon name="pencil" />기준 보완</button>} />,
+        start: () => navigate('running') }} />}
     {state.step === 'running' && <>
       <div className="rv-preview-scan-stages"><span>진행 단계 예시</span>
         <div className="rv-preview-controls" role="group" aria-label="진행 단계 예시">{progressStages.map(([key, label]) => <button type="button" key={key}
@@ -130,6 +148,6 @@ export default function LocalReviewPreview({ uiOnly = false }) {
     </>}
     {state.step === 'results' && <ResultsPage review={result} filter={filter} setFilter={setFilter}
       activeEvidence={activeEvidence} setActiveEvidence={setActiveEvidence}
-      edit={() => setState(current => ({ ...current, step: 'criteria', snapshot: null }))} newReview={reset} />}
+      edit={() => navigate('input')} newReview={reset} />}
   </ReviewLayout>;
 }
