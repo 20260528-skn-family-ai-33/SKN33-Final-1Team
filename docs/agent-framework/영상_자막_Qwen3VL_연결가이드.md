@@ -59,7 +59,7 @@ VIDEO_SUBTITLE_VLM_CONCURRENCY=8
 
 ## 계약서 → 영상 기준 초안 (영상 A02, 2026-11-12 삭제 → 2026-11-16 복원)
 
-2026-11-12 사용자 결정으로 삭제했던 영상 전용 문서 분석(`backend/app/video/requirements.py`, `POST /api/video-reviews/requirements/extract`·`/requirements/extractions`)을 2026-11-16에 복원했다(커밋 `bb836c9` 직전 파일·API 3개·테스트·체크박스만 골라 되살림). 영상 문서를 포스터 A02 프롬프트로 분석하면 영상 요구사항이 0개로 나와 `A02_NO_VALID_REQUIREMENTS`가 나는 것으로 추정했기 때문이다(실제 PDF·서버 로그로는 아직 확인하지 않음). 화면의 영상 전용 분석 체크박스는 기본으로 켜져 있다(2026-11-16 변경, 예전 기본값은 꺼짐). 담당자가 체크를 풀거나 서버가 제공하지 않으면 포스터와 같은 A02를 쓴다. 서버 설정 항목은 같은 Qwen3.5-4B를 쓰는 포스터 A02에도 해당한다.
+2026-11-12 사용자 결정으로 삭제했던 영상 전용 문서 분석(`backend/app/video/requirements.py`, `POST /api/video-reviews/requirements/extract`·`/requirements/extractions`)을 2026-11-16에 복원했다(커밋 `bb836c9` 직전 파일·API 3개·테스트·체크박스만 골라 되살림). 영상 문서를 포스터 A02 프롬프트로 분석하면 영상 요구사항이 0개로 나와 `A02_NO_VALID_REQUIREMENTS`가 나는 것으로 추정했기 때문이다(실제 PDF·서버 로그로는 아직 확인하지 않음). 화면의 영상 전용 분석 체크박스는 2026-11-18에 뺐다. 서버가 제공하면 항상 영상 전용 분석을 쓰고, 제공하지 않으면 포스터와 같은 A02를 쓴다. 서버 설정 항목은 같은 Qwen3.5-4B를 쓰는 포스터 A02에도 해당한다.
 
 경로: `POST /api/video-reviews/requirements/extract` (multipart `document`, 로그인·CSRF 필요, 동시에 1건)
 

@@ -6,7 +6,7 @@ import { extractVideoDocument } from './videoDocumentAnalysis.js';
 
 // modelRoute: 보안 여부(일반 자료 openai, 보안 자료 runpod). 동영상 전용 분석과 A02 분석 모두에 실어 보낸다.
 // projectBlock: 저장할 프로젝트가 준비되지 않은 이유(꺼진 '파일 선택'에 마우스를 올리면 보인다).
-// dedicated: 서버가 영상 전용 문서 분석(/api/video-reviews/requirements)을 제공하면 true. 켜면 체크박스로 고를 수 있다.
+// dedicated: 서버가 영상 전용 문서 분석(/api/video-reviews/requirements)을 제공하면 true. 이때는 항상 영상 전용 분석을 쓴다.
 export default function VideoDocumentInput({ projectId, projectReady, projectBlock, documentName, disabled, busy, setBusy, onDocument, dedicated = false,
   modelRoute = 'default' }) {
   const [progress, setProgress] = useState(null);
@@ -15,10 +15,9 @@ export default function VideoDocumentInput({ projectId, projectReady, projectBlo
   const [warnings, setWarnings] = useState([]);
   const [inspectId, setInspectId] = useState('');
   const [excluded, setExcluded] = useState([]);
-  // 영상 요구사항은 포스터 A02 프롬프트로 읽으면 0개로 끝날 수 있어, 서버가 제공하면 영상 전용 분석을 기본으로 쓴다(2026-11-16).
-  // 서버가 제공하지 않으면(dedicated=false) 체크박스가 없고 포스터와 같은 A02 문서 분석을 쓴다.
-  const [useDedicated, setUseDedicated] = useState(true);
-  const dedicatedEnabled = dedicated && useDedicated;
+  // 영상 요구사항은 포스터 A02 프롬프트로 읽으면 0개로 끝날 수 있어, 서버가 제공하면 영상 전용 분석을 쓴다(2026-11-16).
+  // 고르는 체크박스는 2026-11-18에 뺐다. 서버가 제공하지 않으면(dedicated=false) 포스터와 같은 A02 문서 분석을 쓴다.
+  const dedicatedEnabled = dedicated;
   const [pendingName, setPendingName] = useState('');
   const input = useRef(null);
   const active = useRef(null);
@@ -126,8 +125,6 @@ export default function VideoDocumentInput({ projectId, projectReady, projectBlo
     disabledReason={disabled ? '동영상을 접수하는 중이에요. 잠시 뒤 다시 눌러 주세요.'
       : projectBlock || (!projectId ? '먼저 위쪽 「저장할 프로젝트」에서 프로젝트를 고르거나 만들어 주세요.' : undefined)}>
     {!projectId && <p className="rv-form-hint">상단에서 저장할 프로젝트를 선택하거나 만들어 주세요.</p>}
-    {dedicated && <label className="rv-form-hint"><input type="checkbox" checked={useDedicated} disabled={busy || disabled}
-      onChange={event => setUseDedicated(event.target.checked)} /> 영상 전용 분석으로 기준과 제외 항목 분류 (문서 원본은 별도 보관)</label>}
     {excluded.length > 0 && <details><summary>기준에서 제외된 항목 {excluded.length}개</summary>
       <ul>{excluded.map(item => <li key={item.id}><p>{item.reason}</p>
         {item.source && <blockquote>{item.source.quote}</blockquote>}</li>)}</ul>

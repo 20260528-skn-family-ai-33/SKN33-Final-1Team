@@ -63,7 +63,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   const checksText = mode !== 'logo';
   const checksLogo = mode !== 'text';
   const modelRoute = modelRouteFor(security);
-  // 영상 전용 문서 분석을 이 보안 경로로 쓸 수 있을 때만 체크박스를 보인다. 보안 자료(runpod)는 OpenAI 대체가 없어
+  // 영상 전용 문서 분석을 이 보안 경로로 쓸 수 있을 때만 쓴다(아니면 A02). 보안 자료(runpod)는 OpenAI 대체가 없어
   // 서버에 Qwen 주소가 없으면 꺼진다. routes가 없는 이전 서버는 configured만 본다(2026-11-17).
   const documentRoutes = status?.requirements?.routes;
   const dedicatedDocument = Boolean(status?.requirements?.enabled && status?.requirements?.async_jobs

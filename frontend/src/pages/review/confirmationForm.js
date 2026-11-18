@@ -12,28 +12,32 @@ export const DECISION_OPTIONS = [
 
 // context: buildReportContext(run) 결과. comments: 확인 필요 항목의 담당자 코멘트({criterion_id: text}).
 // decision: run.human_decision. 번호는 보고서 화면의 항목 번호(01, 02 …)와 같다.
-export function buildConfirmationForm(context, { comments = {}, decision = null } = {}) {
+// subject·optionalLabel: 동영상 보고서(2026-11-18)는 '동영상'·'기타'를 넘긴다. 항목의 basis가 있으면 '기준 …' 대신 쓴다
+// (동영상 기준은 문장 하나라 따로 적을 기대값이 없다).
+export function buildConfirmationForm(context, { comments = {}, decision = null, subject = '포스터', optionalLabel = '권장' } = {}) {
   const numbered = (context?.items || []).map((item, index) => ({ item, number: pad(index + 1) }));
   const required = numbered.filter(({ item }) => item.required);
+  const basis = (item, fallback) => item.basis !== undefined ? item.basis : item.expected ? `기준 ${quoted(item.expected)}` : fallback;
   const fixes = required.filter(({ item }) => item.verdict.code === 'fail').map(({ item, number }) => ({
     number, label: item.label,
     observed: item.observed ? quoted(item.observed) : item.observation,
-    request: [item.expected ? `기준 ${quoted(item.expected)}` : '기준 미정', item.reason].filter(Boolean).join(' · '),
+    request: [basis(item, '기준 미정'), item.reason].filter(Boolean).join(' · '),
   }));
   const checks = required.filter(({ item }) => item.verdict.code === 'review').map(({ item, number }) => ({
     number, label: item.label,
-    content: [item.expected ? `기준 ${quoted(item.expected)}` : null, item.reason || '원본 포스터로 확인'].filter(Boolean).join(' · '),
+    content: [basis(item, null), item.reason || `원본 ${subject}으로 확인`].filter(Boolean).join(' · '),
     human: item.human ? item.human.verdict.label : null,
     comment: (comments[item.criterion_id] || '').trim(),
   }));
   const optional = numbered.filter(({ item }) => !item.required).map(({ item, number }) => `${number} ${item.label}`);
   const { counts = {} } = context || {};
   return {
-    title: context?.project?.name ? `${context.project.name} 포스터 검수 확인서` : '포스터 검수 확인서',
+    subject, optionalLabel,
+    title: context?.project?.name ? `${context.project.name} ${subject} 검수 확인서` : `${subject} 검수 확인서`,
     status: decision === 'final_approved' ? '담당자 최종 승인' : context?.synthetic ? '합성 데이터 · 자동 검수 초안' : '자동 검수 초안',
     checkedAt: context?.checked_at || '기록 없음',
     runId: context?.run_id || null,
-    target: context?.project?.name ? `${context.project.name} 포스터` : '검수 포스터',
+    target: context?.project?.name ? `${context.project.name} ${subject}` : `검수 ${subject}`,
     targetVersion: context?.target?.version || null,
     criteriaDocument: context?.criteria?.document || null,
     criteriaVersion: context?.criteria?.version || null,

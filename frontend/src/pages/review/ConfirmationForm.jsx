@@ -19,16 +19,18 @@ const Heading = ({ mark, children }) => <h2 className="rv-confirm-heading"><b>{m
 
 export default function ConfirmationForm({ form }) {
   const { counts } = form;
+  const subject = form.subject || '포스터';
+  const optionalLabel = form.optionalLabel || '권장';
   const sub = [form.target, form.criteriaVersion && `기준안 ${form.criteriaVersion}`, form.status].filter(Boolean).join('  |  ');
   return <div className="rv-confirm-form" aria-hidden="true">
     <Page number={1} title={form.title} sub={`Creative Checker  |  ${form.status}  |  검수 시각: ${form.checkedAt}`}>
       <Heading mark="Ⅰ">검수 개요</Heading>
       <p className="rv-confirm-lead">□ 검수 대상 및 적용 기준</p>
       <p className="rv-confirm-body">○ 검수 대상: {form.target}</p>
-      {form.targetVersion && <p className="rv-confirm-note">   - 포스터 버전 {form.targetVersion}</p>}
+      {form.targetVersion && <p className="rv-confirm-note">   - {subject} 버전 {form.targetVersion}</p>}
       <p className="rv-confirm-body">○ 기준 문서: {form.criteriaDocument || '실행 기록에 문서 이름 없음'}</p>
       <p className="rv-confirm-body">○ 기준안: {form.criteriaVersion || '기록 없음'}</p>
-      <p className="rv-confirm-note">   - 필수 {counts.required}항목{counts.optional ? ` · 권장 ${counts.optional}항목(판정 제외)` : ''}</p>
+      <p className="rv-confirm-note">   - 필수 {counts.required}항목{counts.optional ? ` · ${optionalLabel} ${counts.optional}항목(판정 제외)` : ''}</p>
       {form.runId && <p className="rv-confirm-body">○ 실행 번호: {form.runId}</p>}
 
       <Heading mark="Ⅱ">검수 결과</Heading>
@@ -58,11 +60,11 @@ export default function ConfirmationForm({ form }) {
             {check.comment && <span className="rv-confirm-comment">{check.comment}</span>}</td>
         </tr>)}</tbody>
       </table> : <p className="rv-confirm-body">○ 확인 필요 필수 항목이 없습니다.</p>}
-      {form.optional.length > 0 && <p className="rv-confirm-note">※ 권장 항목(판정 제외): {form.optional.join(', ')}</p>}
+      {form.optional.length > 0 && <p className="rv-confirm-note">※ {optionalLabel} 항목(판정 제외): {form.optional.join(', ')}</p>}
 
       <Heading mark="Ⅴ">최종 결정 및 서명</Heading>
       <p className="rv-confirm-body">○ 위 대상·기준안과 항목별 결과를 검토하고 아래와 같이 결정합니다. 파일 또는 요구사항이 바뀌면 다시 검수합니다.</p>
-      <p className="rv-confirm-note">   - 적용 범위: 해당 포스터 및 기준안 {form.criteriaVersion || '(기록 없음)'}</p>
+      <p className="rv-confirm-note">   - 적용 범위: 해당 {subject} 및 기준안 {form.criteriaVersion || '(기록 없음)'}</p>
       <table className="rv-confirm-table is-sign">
         <tbody>
           <tr><th>담당자 결정</th><td>{DECISION_OPTIONS.map(option => `${box(form.decision === option.code)} ${option.label}`).join('   ')}</td></tr>
