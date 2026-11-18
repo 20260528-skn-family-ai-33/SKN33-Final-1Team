@@ -63,6 +63,29 @@ def test_ungrounded_or_multiline_presentation_is_rejected(value):
     assert draft.extraction.rejected_candidates[0].code=='A02_PRESENTATION_UNGROUNDED'
 
 
+@pytest.mark.parametrize('source_quotes,model_quote', [('‘’', "'"), ('“”', '"')])
+def test_presentation_restores_source_quotes_without_changing_the_criterion(source_quotes,model_quote):
+    left,right=source_quotes
+    text=f'공연장은 {left}수원SK아트리움 대공연장{right}으로 표기한다.'
+    value=f'공연장은 {model_quote}수원SK아트리움 대공연장{model_quote}으로 표기한다.'
+    reply={'requirements':[requirement(1,'venue','수원SK아트리움 대공연장',
+        presentation={'label':'공연장','value':value})]}
+    doc=text_document(text)
+    _,draft,_,_=extract(reply,doc=doc,presentation=True)
+    item,=draft.criteria
+    assert item.details.presentation.value==item.source.quote==text
+    assert item.expected==item.details.expected_source.quote=='수원SK아트리움 대공연장'
+    assert not draft.extraction.rejected_candidates
+    assert 'presentation_quotes_restored_from_source' in draft.warnings
+    validate_trace(doc.reference,CriteriaDraft.model_validate_json(draft.model_dump_json()))
+
+    # A quote normalization cannot restore content that differs from the source.
+    reply['requirements'][0]['presentation']['value']=value.replace('표기한다','생략한다')
+    with pytest.raises(AdapterFailure) as error:
+        extract(reply,doc=doc,presentation=True)
+    assert error.value.code=='A02_PRESENTATION_UNGROUNDED'
+
+
 def test_pending_item_is_kept_in_draft_and_notes_without_entering_the_review_text():
     doc=text_document('행사명: 우리 전시\n관람시간 - 확인 중')
     reply={'requirements':[

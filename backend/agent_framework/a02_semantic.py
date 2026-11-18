@@ -285,22 +285,29 @@ def verify_normalized_date(expected,normalized,field,quote):
     except ValueError:invalid('A02_NORMALIZED_VALUE_UNGROUNDED')
 
 
-def source_spacing_literal(expected,quote):
-    """Locate one exact spelling with identical non-whitespace characters.
+DISPLAY_QUOTES = str.maketrans({'‘': "'", '’': "'", '“': '"', '”': '"'})
 
-    Search only the model-selected excerpt. Never change letters, punctuation,
-    numbers or units, and refuse distinct source spellings of the same compact
-    value. Return original source bytes as text, not a repaired model quote.
+def source_spacing_literal(expected,quote,*,display_quotes=False):
+    """Return a unique literal excerpt from the selected source.
+
+    Compare non-whitespace characters exactly for criterion values. Display
+    text can also match straight/curly quotation marks so the server can
+    restore the source spelling. Refuse distinct source spellings.
     """
     needle=''.join(expected.split())
     if not needle:return None
     positions=[i for i,char in enumerate(quote) if not char.isspace()]
     compact=''.join(quote[i] for i in positions)
+    if display_quotes:
+        needle=needle.translate(DISPLAY_QUOTES)
+        compact=compact.translate(DISPLAY_QUOTES)
     candidates=set();offset=0
     while (found:=compact.find(needle,offset))!=-1:
         literal=quote[positions[found]:positions[found+len(needle)-1]+1]
         if len(literal)<=2000:candidates.add(literal)
-        if len(candidates)>1:invalid('A02_EXPECTED_UNGROUNDED')
+        if len(candidates)>1:
+            if display_quotes:return None
+            invalid('A02_EXPECTED_UNGROUNDED')
         offset=found+1
     return next(iter(candidates)) if candidates else None
 
@@ -350,6 +357,24 @@ def validate_presentation(presentation,quote,literal,unit,field=None):
     if field in axes and not any(axis in (presentation.label+' '+value).lower() for axis in axes[field]):
         invalid('A02_PRESENTATION_SCOPE_LOST')
 
+def restore_presentation_quotes(presentation,quote,literal,unit,field):
+    """Keep the original display text, or recover its exact source spelling."""
+    try:
+        validate_presentation(presentation,quote,literal,unit,field)
+        return presentation,False
+    except AdapterFailure as error:
+        if error.code!='A02_PRESENTATION_UNGROUNDED' or '\n' in presentation.value or '\r' in presentation.value:
+            raise
+        original=source_spacing_literal(presentation.value,quote,display_quotes=True)
+        if original is None:
+            raise
+        value=' '.join(original.split())
+        if not 1<=len(value)<=400 or ''.join(value.split())==''.join(presentation.value.split()):
+            raise
+        restored=RequirementPresentation(label=presentation.label,value=value)
+        validate_presentation(restored,quote,literal,unit,field)
+        return restored,True
+
 
 def _materialize_requirement(item,index,version,source,original,*,presentation):
     warnings=[]
@@ -369,7 +394,9 @@ def _materialize_requirement(item,index,version,source,original,*,presentation):
     if expected and literal!=expected and expected!=item.normalized_expected:
         expected=literal;warnings.append('expected_spacing_copied_from_source')
     if presentation and not missing and item.presentation is None:invalid('A02_PRESENTATION_MISSING')
-    validate_presentation(item.presentation,quote,literal,item.unit,item.field)
+    display,restored_quotes=restore_presentation_quotes(item.presentation,quote,literal,item.unit,item.field)
+    if restored_quotes:
+        warnings.append('presentation_quotes_restored_from_source')
     if item.unit is not None and (not item.unit.strip() or item.unit not in quote):invalid('A02_UNIT_UNGROUNDED')
     supported={'text':{'equals','contains','manual'},'number':{'equals','gte','lte','manual'},
         'visual':{'present','manual'},'unsupported':{'manual'}}
@@ -409,7 +436,7 @@ def _materialize_requirement(item,index,version,source,original,*,presentation):
         target,kind='unspecified','unsupported'
     details=RequirementDetails(compiler='qwen-semantic-v1',target=target,field=item.field,
         expected_source=reference(version,source,literal) if item.expected else None,
-        presentation=item.presentation,
+        presentation=display,
         normalized_expected=item.normalized_expected,qualifiers=tuple(qualifiers),origin='model_structured')
     key=(source.block_id,quote,target,item.field,expected,item.normalized_expected,item.unit,item.required,missing)
     criterion=CompiledRequirement(quote,kind,item.operator,expected,item.unit,item.required,
