@@ -18,9 +18,18 @@ export const statusLabels = { pass: '충족', fail: '위반', review: '확인 �
 export const MiB = 1024 ** 2;
 const GiB = 1024 * MiB;
 
+// 화면에 적는 용량 단위는 MB · GB로 쓴다(2026-11-18 사용자 요청, MiB · GiB 표기를 통일). 값은 1024 단위로 센 것이다.
+// 정확히 몇 GB로 떨어지면 GB로, 아니면 MB로 적는다.
 export function formatVideoUploadLimit(bytes) {
   if (!bytes) return '';
-  return bytes % GiB === 0 ? `${bytes / GiB} GiB` : `${bytes / MiB} MiB`;
+  return bytes % GiB === 0 ? `${bytes / GiB} GB` : `${bytes / MiB} MB`;
+}
+
+// 동영상 업로드 한도는 500MiB다(2026-11-18 결정). 화면은 서버가 알려 준 한도와 이 값 가운데 작은 쪽을 적고, 그 값으로 파일을 거른다.
+// 예전 설정(1GiB)으로 도는 서버가 남아 있어도 화면에는 500MiB로 보인다. 서버가 더 작은 값을 알리면 그 값을 따른다.
+export const VIDEO_UPLOAD_MAX = 500 * MiB;
+export function videoUploadLimit(serverBytes) {
+  return serverBytes ? Math.min(serverBytes, VIDEO_UPLOAD_MAX) : 0;
 }
 
 // 서버 처리 단계 순서. 진행 화면의 단계 표시와 돋보기 위치 계산에 쓴다.

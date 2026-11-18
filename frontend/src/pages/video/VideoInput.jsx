@@ -9,7 +9,7 @@ import VideoCriteriaBox from './VideoCriteriaBox.jsx';
 import { reviewModeLabels } from '../review/ReviewTypePicker.jsx';
 import { logoDetectorFor, modelRouteFor, parseRequirements } from '../review/workflow.js';
 import { LogoInputs, submitLogoJob, useLogoStatus } from './LogoFlowParts.jsx';
-import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB } from './videoFormat.js';
+import { criteriaPayload, formatTime, formatVideoUploadLimit, MiB, videoUploadLimit } from './videoFormat.js';
 import VideoDocumentInput from './VideoDocumentInput.jsx';
 
 const ACCEPT = 'video/mp4,video/quicktime,video/webm,video/x-matroska,video/x-msvideo,video/avi,.avi';
@@ -78,7 +78,8 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
     const extracted = draft.documentRows.filter(row => row.selected && row.text.trim()).map(row => ({ ...row, text: row.text.trim() }));
     return [...parseRequirements(draft.requirements), ...extracted].map((item, index) => ({ ...item, id: `criterion-${index + 1}` }));
   }, [draft.requirements, draft.documentRows]);
-  const uploadLimit = formatVideoUploadLimit(limits?.upload_bytes);
+  const uploadBytes = videoUploadLimit(limits?.upload_bytes);
+  const uploadLimit = formatVideoUploadLimit(uploadBytes);
   const durationSeconds = limits?.duration_seconds;
   const durationLimit = durationSeconds && (durationSeconds % 60 === 0 ? `${durationSeconds / 60}분` : `${durationSeconds}초`);
   const formats = limits?.formats?.length ? limits.formats.map(format => format.toUpperCase()).join(' · ') : 'MP4 · MOV · WEBM · AVI';
@@ -99,7 +100,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   if (preview.meta?.width && preview.meta?.height && limits?.short_side_min && Math.min(preview.meta.width, preview.meta.height) < limits.short_side_min) warnings.push(`짧은 변이 ${Math.min(preview.meta.width, preview.meta.height)}px라 서버 기준 ${limits.short_side_min}px보다 작습니다.`);
 
   function exceedsUploadLimit(selected) {
-    if (!uploadLimit || selected.size <= limits.upload_bytes) return false;
+    if (!uploadLimit || selected.size <= uploadBytes) return false;
     setError(`동영상은 ${uploadLimit} 이하여야 합니다.`);
     return true;
   }
@@ -191,7 +192,7 @@ export default function VideoInput({ status, draft, setDraft, file, setFile, log
   }
 
   const chooseFile = () => input.current?.click();
-  const fileMeta = file && [`${(file.size / MiB).toFixed(1)} MiB`, duration && formatTime(duration * 1000),
+  const fileMeta = file && [`${(file.size / MiB).toFixed(1)} MB`, duration && formatTime(duration * 1000),
     preview.meta?.width && preview.meta?.height && `${preview.meta.width}×${preview.meta.height}`].filter(Boolean).join(' · ');
 
   // 큰 제목과 자료 구분·유형 줄은 두지 않고 위쪽 검수 이름 칸을 크게 보인다(포스터와 같은 모양). 제목은 화면 읽기·초점 이동용이다.

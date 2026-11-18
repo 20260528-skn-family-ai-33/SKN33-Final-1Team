@@ -446,7 +446,8 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
   </div>;
 }
 
-// 정밀 대조 진행 표시. 동영상 검수 진행 화면(VideoProgress)과 같은 짜임: 왼쪽 어두운 무대(원본 로고를 훑는 스캔 선),
+// 정밀 대조 재검수의 진행 표시(2026-11-18부터 재검수에만 쓴다. 자동 진행은 LogoJobProgress 한 화면이 이어서 보여 준다).
+// 동영상 검수 진행 화면(VideoProgress)과 같은 짜임: 왼쪽 어두운 무대(원본 로고를 훑는 스캔 선),
 // 오른쪽 머리글·큰 제목·진행률·단계 목록. 진행률은 서버 compare_progress 그대로 쓴다.
 const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '프레임별 정밀 대조'], ['organize', '결과 정리']];
 function CompareProgress({ status, progress, base, refs }) {
@@ -610,6 +611,8 @@ export default function LogoConfirmPage() {
   const view = params.get('view') === 'confirm' ? 'confirm' : 'compare';
   const base = '/api/video-logos/' + encodeURIComponent(job || '');
   const storageKey = 'video-logo-review:v4:' + (job || 'new');
+  // 이 탭에서 '정밀 대조 재검수'를 누른 작업인가. 대조가 도는 동안 새로고침해도 재검수 화면을 그대로 보이려고 탭에 적어 둔다.
+  const recompareKey = 'video-logo-recompare:' + (job || 'new');
   const [meta, setMeta] = useState(null);
   const [index, setIndex] = useState([]);
   const [video, setVideo] = useState(null);
@@ -624,6 +627,7 @@ export default function LogoConfirmPage() {
   const [manuals, setManuals] = useState([]);
   const [mode, setMode] = useState('candidates');
   const [busy, setBusy] = useState(false);
+  const [recompare, setRecompare] = useState(false);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   useEffect(() => () => active.current?.abort(), []);
@@ -636,6 +640,7 @@ export default function LogoConfirmPage() {
     const controller = new AbortController();
     let timer;
     setMeta(null); setIndex([]); setVideo(null); setError(''); setRefIndex(0);
+    try { setRecompare(sessionStorage.getItem(recompareKey) === '1'); } catch { setRecompare(false); }
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       if (saved && typeof saved === 'object' && saved.answers) {
@@ -662,7 +667,7 @@ export default function LogoConfirmPage() {
     }
     poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [job, base, storageKey]);
+  }, [job, base, storageKey, recompareKey]);
 
   useEffect(() => {
     if (!job || meta?.id !== job || meta.status !== 'candidates_ready') return undefined;
@@ -718,6 +723,38 @@ export default function LogoConfirmPage() {
   const onCompareStatus = useCallback(value => {
     setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: value } : previous);
   }, [job]);
+  // 자동 진행의 진행 화면은 하나다(2026-11-18, 포스터 로고와 같다): 후보를 찾은 뒤에도 자동 정밀 대조가 끝날 때까지 같은 화면(LogoJobProgress)이 이어진다.
+  // 위치를 직접 확인하고 다시 대조하는 재검수는 정밀 대조 화면(CompareResults의 CompareProgress)이 보여 준다.
+  // 위치 직접 확인 화면을 열어 둔 동안에는 그 화면을 그대로 보인다.
+  const compareRunning = meta?.id === job && meta.status === 'candidates_ready' && comparing;
+  const autoComparing = compareRunning && !recompare && view !== 'confirm';
+  const showProgress = meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed' || autoComparing);
+
+  // 재검수가 끝나면(완료 · 실패) 재검수 표시를 지운다.
+  useEffect(() => {
+    if (!recompare || meta?.id !== job || comparing) return;
+    setRecompare(false);
+    try { sessionStorage.removeItem(recompareKey); } catch { /* 탭 저장소를 쓸 수 없으면 화면 안에서만 기억한다 */ }
+  }, [recompare, comparing, meta?.id, job, recompareKey]);
+
+  // 자동 정밀 대조가 도는 동안 작업 상태를 다시 읽어 진행 화면의 02 단계에 진행률을 보인다. 끝나면 결과 화면이 근거를 읽는다.
+  // 재검수 중에는 정밀 대조 화면이 직접 읽는다.
+  useEffect(() => {
+    if (!compareRunning || recompare) return undefined;
+    const controller = new AbortController(); let timer;
+    async function poll() {
+      try {
+        const value = await fetchJson(base, { signal: controller.signal });
+        setMeta(value); setError('');
+        if (RUNNING.has(value.compare_status)) timer = setTimeout(poll, 2000);
+      } catch (failure) {
+        if (failure.name === 'AbortError') return;
+        setError(failure.message); timer = setTimeout(poll, 4000);
+      }
+    }
+    timer = setTimeout(poll, 1000);
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [base, compareRunning, recompare]);
 
   useEffect(() => {
     if (!ready || !video) return;
@@ -807,7 +844,9 @@ export default function LogoConfirmPage() {
         .map(({ frame_size, selection, ...answer }) => answer);
       await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
       if (controller.signal.aborted) return;
-      setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued' } : previous);
+      setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued', compare_progress: 0 } : previous);
+      setRecompare(true);
+      try { sessionStorage.setItem(recompareKey, '1'); } catch { /* 탭 저장소를 쓸 수 없으면 화면 안에서만 기억한다 */ }
       // 재검수는 결과 확인 화면으로 돌아가지 않고 이 화면의 정밀 대조로 넘어가 진행 상황과 결과를 바로 본다(2026-11-17).
       changeView('compare');
     } catch (failure) {
@@ -843,13 +882,13 @@ export default function LogoConfirmPage() {
       <p>검수 유형에서 ‘로고 검수’ 또는 ‘종합 검수’를 고르고 영상과 원본 로고를 첨부하면 후보를 찾고 정밀 대조까지 자동으로 진행합니다. 결과를 보고 검수하려던 로고가 아니면 위치를 직접 확인해 다시 대조할 수 있습니다.</p>
       <Link className="vl-button primary" to="/video">자료 입력 열기</Link>
     </section> : <div className="vl-content">
-      {/* 후보 찾기 중·실패는 종합 검수 진행 화면과 같은 카드로 보인다(필름 무대·큰 진행률·01 후보 찾기·02 정밀 대조).
+      {/* 후보 찾기 · 자동 정밀 대조 중과 후보 찾기 실패는 진행 화면 하나로 보인다(프레임 카드 무대·큰 진행률·01 후보 찾기·02 정밀 대조).
           작업 이름은 위쪽 프로젝트 줄에 이미 있어 따로 적지 않는다. */}
-      {meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed') && <LogoJobProgress base={base} meta={meta}
+      {showProgress && <LogoJobProgress base={base} meta={meta}
         linkedReview={linkedReview} onRestart={() => go(back)} />}
       {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
-      {ready && <>
+      {ready && !autoComparing && <>
         {missing.length > 0 && <div className="vl-warning">
           <strong>프레임 누락 {missing.length}초</strong>
           <span>누락된 시점은 후보 찾기와 정밀 대조에서 제외됩니다: {spanText(missing)}</span>

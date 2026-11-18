@@ -734,7 +734,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             if not data:
                 raise HTTPException(400, {"code": "DOCUMENT_EMPTY", "message": "빈 파일입니다."})
             if len(data) > video_a02.MAX_BYTES:
-                raise HTTPException(413, {"code": "DOCUMENT_TOO_LARGE", "message": "문서는 10MiB 이하로 올려 주세요."})
+                raise HTTPException(413, {"code": "DOCUMENT_TOO_LARGE", "message": "문서는 10MB 이하로 올려 주세요."})
             return data, filename
 
         def prune_document_jobs() -> None:
@@ -916,7 +916,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 while chunk := await video.read(CHUNK):
                     size += len(chunk)
                     if size > policy["upload_bytes"]:
-                        raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MiB 이하로 업로드해 주세요.")
+                        raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MB 이하로 업로드해 주세요.")
                     if len(head) < 16:
                         head += chunk[:16 - len(head)]
                     digest.update(chunk)

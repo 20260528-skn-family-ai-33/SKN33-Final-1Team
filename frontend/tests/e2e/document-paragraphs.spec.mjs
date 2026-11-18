@@ -329,7 +329,7 @@ async function verifyDocx(t, mode) {
   assert.match(await upload.getAttribute('accept'), /\.docx/);
   assert.equal(await upload.getAttribute('multiple'), null);
   assert.equal(await card.getByRole('link', { name: 'PDF 여러 개 올리기' }).count(), 0);
-  await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MiB', { exact: true }).waitFor();
+  await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MB', { exact: true }).waitFor();
   if (mode === 'video-drop') {
     const dataTransfer = await page.evaluateHandle(bytes => {
       const data = new DataTransfer();

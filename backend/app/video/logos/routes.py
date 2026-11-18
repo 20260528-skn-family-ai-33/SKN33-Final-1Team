@@ -408,7 +408,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                         while chunk := await video.read(1024 * 1024):
                             size += len(chunk)
                             if size > policy["upload_bytes"]:
-                                raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MiB 이하로 업로드해 주세요.")
+                                raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MB 이하로 업로드해 주세요.")
                             fh.write(chunk)
                     await run_in_threadpool(check_video_length, target / f"video{suffix}", policy["duration_seconds"])
                 items = []

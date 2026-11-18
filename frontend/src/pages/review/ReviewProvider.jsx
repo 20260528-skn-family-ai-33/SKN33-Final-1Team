@@ -27,7 +27,7 @@ async function validateImage(file, limits = {}) {
   const maxPixels = limits.image_pixels || 10_000_000;
   const maxSide = limits.image_side || 8192;
   if (!file) throw new Error('검수할 이미지 1개를 선택해 주세요.');
-  if (file.size > maxBytes) throw new Error(`이미지는 ${Math.floor(maxBytes / 1024 / 1024)}MiB 이하로 올려 주세요.`);
+  if (file.size > maxBytes) throw new Error(`이미지는 ${Math.floor(maxBytes / 1024 / 1024)}MB 이하로 올려 주세요.`);
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   const isPng = [137, 80, 78, 71, 13, 10, 26, 10].every((byte, index) => bytes[index] === byte);
   const isJpg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
@@ -212,7 +212,7 @@ export function ReviewProvider({ children }) {
     if (files.length !== 1) { setDocumentError('요구사항 문서(PDF·DOCX)는 한 번에 1개만 선택해 주세요.'); return; }
     if (!projectId) { setDocumentError('문서를 저장할 프로젝트를 선택해 주세요.'); return; }
     const file = files[0];
-    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MiB 이하 PDF 또는 DOCX를 선택해 주세요.'); return; }
+    if (!file.size || file.size > 10 * 1024 * 1024) { setDocumentError('내용이 있는 10MB 이하 PDF 또는 DOCX를 선택해 주세요.'); return; }
     // 새 문서를 분석하기 시작한다. 앞 문서로 만든 초안은 버리고(더했던 직접 입력은 입력란에 되돌린다) 빈 입력 화면에서 진행을 보여 준다.
     cancelDocument({ preserveResume: false });
     restoreTyped();

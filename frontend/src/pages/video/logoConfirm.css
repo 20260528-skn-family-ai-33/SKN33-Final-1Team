@@ -907,3 +907,37 @@ html .vl-page .vl-manual-canvas { margin-inline: auto; }
 @media (min-width: 1101px) {
   html .vl-page .vl-manual-workspace.is-portrait { grid-template-columns: minmax(300px, var(--vl-frame-w)) minmax(0, 1fr); gap: 18px; }
 }
+
+/* ── 동영상: 후보 찾기 · 자동 정밀 대조 진행(2026-11-18). 필름 띠 대신 표본 프레임을 카드로 포개 놓는다 ──
+   포스터 한 장(pl-scan-sheet)과 같은 각도로 눕히되, 영상은 프레임이 여러 장이라 시간 순서대로 조금씩 밀어 포갠다.
+   지금 살피는 프레임은 더미에서 떠오르고(is-current) 돋보기가 그 위에 온다. 살핀 프레임은 밝게 남는다(is-read). */
+html .vl-deck-scanner .vl-deck { --card-w: 124px; --dx: 44px; --dz: 5px; --lift: 58px; --deck-scale: 1.36; position: relative;
+  width: calc(var(--card-w) + (var(--n) - 1) * var(--dx)); height: calc(var(--card-w) / var(--ratio)); margin-top: clamp(10px, 3vh, 34px);
+  transform: rotateX(56deg) rotateZ(-36deg) scale(var(--deck-scale)); transform-style: preserve-3d; animation: op-float 6s ease-in-out infinite; }
+html .vl-deck-scanner .vl-deck.is-wide { --card-w: 216px; --dx: 40px; --deck-scale: 1.24; }
+html .vl-deck-scanner .vl-deck-card { position: absolute; left: calc(var(--i) * var(--dx)); top: 0; width: var(--card-w); height: 100%; overflow: hidden;
+  border-radius: 7px; background: #0d0d0c; box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), -22px 28px 36px -16px rgb(0 0 0 / 72%);
+  transform: translateZ(calc(var(--i) * var(--dz))); transition: transform .9s cubic-bezier(.2, .7, .2, 1), background-color .7s ease, box-shadow .5s ease; }
+html .vl-deck-scanner .vl-deck-card > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 아직 살피지 않은 프레임은 어둡게 덮고, 살핀 프레임은 걷어 낸다 */
+html .vl-deck-scanner .vl-deck-card::after { content: ''; position: absolute; inset: 0; background: rgb(13 13 12 / 72%); transition: background-color .7s ease; }
+html .vl-deck-scanner .vl-deck-card.is-read { background: #3a3a37; }
+html .vl-deck-scanner .vl-deck-card.is-read::after { background: rgb(13 13 12 / 24%); }
+html .vl-deck-scanner .vl-deck-card.is-current { background: #4a4a45; transform: translateZ(calc(var(--i) * var(--dz) + var(--lift)));
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 90%), -34px 44px 54px -20px rgb(0 0 0 / 82%); }
+html .vl-deck-scanner .vl-deck-card.is-current::after { background: rgb(255 255 255 / 5%); }
+/* 프레임을 뽑는 동안에는 카드가 차례로 들썩인다 */
+html .vl-deck-scanner.is-preparing .vl-deck-card { animation: vl-deck-develop 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * 110ms); }
+@keyframes vl-deck-develop { 50% { background: #33332f; transform: translateZ(calc(var(--i) * var(--dz) + 20px)); } }
+/* 돋보기는 지금 프레임 위에 떠 있고, 프레임이 바뀌면 따라 옮겨 간다 */
+html .vl-deck-scanner .vl-deck .rv-video-lens { left: calc(var(--at) * var(--dx) + var(--card-w) / 2); top: 50%;
+  transform: translateZ(calc(var(--at) * var(--dz) + var(--lift) + 26px)) scale(.76);
+  transition: left .9s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
+html .rv-video-scanner.vl-deck-scanner:is(.is-waiting, .is-preparing) .vl-deck .rv-video-lens { animation: vl-deck-bob 2.6s ease-in-out infinite; }
+@keyframes vl-deck-bob { 50% { transform: translateZ(calc(var(--at) * var(--dz) + var(--lift) + 44px)) scale(.76); } }
+html .vl-deck-scanner.is-failed .vl-deck { animation: none; }
+html .vl-deck-scanner.is-failed .vl-deck-card { box-shadow: 0 0 0 1px #a34f3e, -22px 28px 36px -16px rgb(0 0 0 / 72%); }
+@media (max-width: 900px) { html .vl-deck-scanner .vl-deck { --deck-scale: .8; } html .vl-deck-scanner .vl-deck.is-wide { --deck-scale: .7; } }
+@media (prefers-reduced-motion: reduce) {
+  html .vl-deck-scanner .vl-deck, html .vl-deck-scanner .vl-deck-card, html .vl-deck-scanner .vl-deck .rv-video-lens { animation: none; transition: none; }
+}

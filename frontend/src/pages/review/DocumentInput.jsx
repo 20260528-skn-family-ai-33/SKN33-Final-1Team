@@ -309,7 +309,7 @@ export default function DocumentInput({ documentBusy, documentProgress, document
         lastCheckedSeconds={statusAge} />}
       {notice?.summary ? <p className="rv-document-summary"><Icon name="check" />{notice.summary}</p>
         : <div className="rv-form-row rv-form-hint">
-          <span>{notice?.status || 'PDF 텍스트층 · DOCX 본문 · 최대 10MiB'}</span>
+          <span>{notice?.status || 'PDF 텍스트층 · DOCX 본문 · 최대 10MB'}</span>
           {documentBusy ? <button type="button" className="rv-button secondary rv-compact" disabled={cancelBusy} onClick={cancelDocument}>{cancelLabel}</button>
             : !canClear && <button type="button" className="rv-button secondary rv-compact" disabled={off} title={offReason} onClick={loadExample}>추출 예시 보기</button>}
         </div>}

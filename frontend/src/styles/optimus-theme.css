@@ -991,11 +991,9 @@ html .rv-video-scanner-scale > span:nth-child(2) { color: var(--op-bg); font-siz
 }
 /* 기록을 찾지 못한 안내 */
 html .rv-video .rv-video-progress-card.is-missing { max-width: 720px; }
-/* 로고 검수 진행(LogoJobProgress.jsx): 위 무대·필름·돋보기를 그대로 쓰고, 돋보기에는 찾고 있는 원본 로고를 담는다.
-   지나간 칸은 조금 밝히고 지금 칸은 테를 둘러, 자막 줄 대신 진행 정도만 보인다. */
+/* 로고 검수 진행(LogoJobProgress.jsx): 위 무대·돋보기를 그대로 쓰고, 돋보기에는 찾고 있는 원본 로고를 담는다.
+   무대에 눕히는 것은 검수 대상마다 다르다(포스터 한 장 · 동영상의 표본 프레임 카드, logoConfirm.css). */
 html .rv-logo-progress { padding-top: 18px; }
-html .rv-logo-scanner .rv-video-film-cell.is-read { background: #3a3a37; }
-html .rv-logo-scanner .rv-video-film-cell.is-current { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 72%); }
 html .rv-logo-scanner.is-searching .rv-video-lens-scan { opacity: 1; animation: rv-video-scan 1.7s ease-in-out infinite alternate; }
 html .rv-logo-lens-ref { position: absolute; inset: 20%; width: 60%; height: 60%; object-fit: contain; }
 html .rv-logo-scanner.is-failed .rv-logo-lens-ref { opacity: 0.35; filter: grayscale(1); }

@@ -53,7 +53,7 @@ export default function VideoDocumentInput({ projectId, projectReady, projectBlo
     if (input.current) input.current.value = '';
     const [file] = files;
     if (files.length !== 1 || !file.size || file.size > 10 * 1024 * 1024) {
-      setError('내용이 있는 10MiB 이하 PDF·DOCX 문서 1개를 선택해 주세요.');
+      setError('내용이 있는 10MB 이하 PDF·DOCX 문서 1개를 선택해 주세요.');
       return;
     }
     const controller = new AbortController();

@@ -303,7 +303,7 @@ def _read(data: bytes, filename: str = "") -> tuple[str, tuple[PDFTextSource, ..
     if not data:
         _fail("DOCUMENT_EMPTY", "빈 파일입니다.", 400)
     if len(data) > MAX_BYTES:
-        _fail("DOCUMENT_TOO_LARGE", "문서는 10MiB 이하로 올려 주세요.", 413)
+        _fail("DOCUMENT_TOO_LARGE", "문서는 10MB 이하로 올려 주세요.", 413)
     if data.startswith(b"%PDF-"):
         kind, (sources, image_pages) = "pdf", _pdf_pages(data)
     elif data.startswith(b"PK\x03\x04"):

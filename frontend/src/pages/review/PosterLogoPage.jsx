@@ -209,7 +209,8 @@ function CandidateWorkspace({ poster, refIndex, checked, manuals, decision, onTo
   </div>;
 }
 
-// 정밀 대조 진행. 동영상 로고의 진행 화면과 같은 짜임(왼쪽 잉크 무대 · 오른쪽 큰 제목과 진행률 · 단계)이다.
+// 정밀 대조 재검수의 진행 화면(2026-11-18부터 재검수에만 쓴다). 위치를 직접 확인하고 다시 대조할 때 원본 로고 카드를 훑는 모습을 보인다.
+// 처음 접수한 작업의 자동 진행(후보 찾기 → 자동 정밀 대조)은 LogoJobProgress 한 화면이 이어서 보여 준다.
 const COMPARE_STEPS = [['request', '대조 요청'], ['compare', '위치별 정밀 대조'], ['organize', '결과 정리']];
 function CompareProgress({ status, progress, base, refs, auto }) {
   const value = Math.min(100, Math.max(0, Math.round(progress || 0)));
@@ -269,7 +270,8 @@ function LocationEvidence({ base, item, number, refInfo, several, active, onActi
   </article>;
 }
 
-function CompareResults({ base, poster, refs, onConfirm, onStatus }) {
+// recompare: 위치를 직접 확인하고 다시 대조하는 중인가(대조가 도는 동안에는 서버 응답에 origin이 없어 화면이 알려 준다).
+function CompareResults({ base, poster, refs, onConfirm, onStatus, recompare = false }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
@@ -296,7 +298,7 @@ function CompareResults({ base, poster, refs, onConfirm, onStatus }) {
   const locations = result.locations || [];
   const absent = result.absent || [];
   const running = RUNNING.has(result.compare_status);
-  const auto = result.origin !== 'manual';
+  const auto = !recompare && result.origin !== 'manual';
   const tally = locations.reduce((counts, item) => {
     const tone = (OUTCOME[item.outcome] || OUTCOME.unknown).tone;
     return { ...counts, [tone]: (counts[tone] || 0) + 1 };
@@ -360,6 +362,8 @@ export default function PosterLogoPage() {
   const view = params.get('view') === 'confirm' ? 'confirm' : 'compare';
   const base = POSTER_LOGO_API + '/' + encodeURIComponent(job || '');
   const storageKey = 'poster-logo-review:v1:' + (job || 'new');
+  // 이 탭에서 '정밀 대조 재검수'를 누른 작업인가. 대조가 도는 동안 새로고침해도 재검수 화면을 그대로 보이려고 탭에 적어 둔다.
+  const recompareKey = 'poster-logo-recompare:' + (job || 'new');
   const [meta, setMeta] = useState(null);
   const [poster, setPoster] = useState(null);
   const [error, setError] = useState('');
@@ -369,6 +373,7 @@ export default function PosterLogoPage() {
   const [selection, setSelection] = useState(EMPTY_SELECTION);
   const [mode, setMode] = useState('candidates');
   const [busy, setBusy] = useState(false);
+  const [recompare, setRecompare] = useState(false);
   const active = useRef(null);
   useWorkspaceReset(() => active.current?.abort());
   useEffect(() => () => active.current?.abort(), []);
@@ -377,6 +382,7 @@ export default function PosterLogoPage() {
     if (!job) return undefined;
     const controller = new AbortController(); let timer;
     setMeta(null); setPoster(null); setError(''); setRefIndex(0);
+    try { setRecompare(sessionStorage.getItem(recompareKey) === '1'); } catch { setRecompare(false); }
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       setAnswers(saved?.answers || {}); setDrafts(saved?.drafts || {});
@@ -392,7 +398,7 @@ export default function PosterLogoPage() {
     }
     poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [job, base, storageKey]);
+  }, [job, base, storageKey, recompareKey]);
 
   useEffect(() => {
     if (!job || meta?.id !== job || meta.status !== 'candidates_ready') return undefined;
@@ -407,6 +413,38 @@ export default function PosterLogoPage() {
   const refInfo = refs[refIndex];
   const ready = meta?.id === job && meta.status === 'candidates_ready' && !!poster;
   const comparing = RUNNING.has(meta?.compare_status);
+  // 자동 진행의 진행 화면은 하나다(2026-11-18): 후보를 찾은 뒤에도 자동 정밀 대조가 끝날 때까지 같은 화면(LogoJobProgress)이 이어진다.
+  // 위치를 직접 확인하고 다시 대조하는 재검수는 정밀 대조 화면(CompareResults의 CompareProgress)이 보여 준다.
+  // 위치 직접 확인 화면을 열어 둔 동안에는 그 화면을 그대로 보인다.
+  const compareRunning = meta?.id === job && meta.status === 'candidates_ready' && comparing;
+  const autoComparing = compareRunning && !recompare && view !== 'confirm';
+  const showProgress = meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed' || autoComparing);
+
+  // 재검수가 끝나면(완료 · 실패) 재검수 표시를 지운다.
+  useEffect(() => {
+    if (!recompare || meta?.id !== job || comparing) return;
+    setRecompare(false);
+    try { sessionStorage.removeItem(recompareKey); } catch { /* 탭 저장소를 쓸 수 없으면 화면 안에서만 기억한다 */ }
+  }, [recompare, comparing, meta?.id, job, recompareKey]);
+
+  // 자동 정밀 대조가 도는 동안 작업 상태를 다시 읽어 진행 화면의 02 단계에 진행률을 보인다. 끝나면 결과 화면이 근거를 읽는다.
+  // 재검수 중에는 정밀 대조 화면이 직접 읽는다.
+  useEffect(() => {
+    if (!compareRunning || recompare) return undefined;
+    const controller = new AbortController(); let timer;
+    async function poll() {
+      try {
+        const value = await fetchJson(base, { signal: controller.signal });
+        setMeta(value); setError('');
+        if (RUNNING.has(value.compare_status)) timer = setTimeout(poll, 2000);
+      } catch (failure) {
+        if (failure.name === 'AbortError') return;
+        setError(failure.message); timer = setTimeout(poll, 4000);
+      }
+    }
+    timer = setTimeout(poll, 1000);
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [base, compareRunning, recompare]);
   const checked = useMemo(() => new Set(selection.checked), [selection.checked]);
   const decision = selection.decision === 'none' ? 'none' : (selection.checked.length || selection.manuals.length) ? 'done' : null;
 
@@ -502,7 +540,9 @@ export default function PosterLogoPage() {
       await fetchJson(base + '/compare', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body), signal: controller.signal });
       if (controller.signal.aborted) return;
-      setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued' } : previous);
+      setMeta(previous => previous && previous.id === job ? { ...previous, compare_status: 'queued', compare_progress: 0 } : previous);
+      setRecompare(true);
+      try { sessionStorage.setItem(recompareKey, '1'); } catch { /* 탭 저장소를 쓸 수 없으면 화면 안에서만 기억한다 */ }
       changeView('compare');
     } catch (failure) {
       if (!controller.signal.aborted) setError(failure.message);
@@ -538,13 +578,13 @@ export default function PosterLogoPage() {
         <Link className="vl-button primary" to="/review/new">자료 입력 열기</Link>
       </section> : <div className="vl-content">
         {/* 작업 이름은 위쪽 프로젝트 줄에 이미 있어서, 같은 이름을 크게 한 번 더 적던 작업 줄(파일 이름·픽셀 크기·후보 수)은 뺐다. */}
-        {meta?.id === job && (RUNNING.has(meta.status) || meta.status === 'failed') && <LogoJobProgress media="poster" base={base} meta={meta}
+        {showProgress && <LogoJobProgress media="poster" base={base} meta={meta}
           linkedReview={linkedRun} onRestart={() => go(back)} />}
         {meta?.id === job && meta.status === 'failed' && linkedRun && <p className="vl-help">
           포스터 검수는 그대로 진행됩니다. 로고 워커 연결을 확인한 뒤 포스터를 다시 등록하면 새로 접수합니다.</p>}
         {error && <section className="vl-panel"><ErrorMessage message={error} /></section>}
 
-        {ready && <>
+        {ready && !autoComparing && <>
           {view === 'confirm' ? <div className="vl-layout">
             <aside className="vl-logo-sidebar">
               <div className="vl-sidebar-title"><span className="vl-kicker">기준 로고</span><strong>{refs.length}개</strong></div>
@@ -594,7 +634,7 @@ export default function PosterLogoPage() {
                 </div>
               </section>}
             </section>
-          </div> : <CompareResults base={base} poster={poster} refs={refs} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
+          </div> : <CompareResults base={base} poster={poster} refs={refs} recompare={recompare} onConfirm={() => changeView('confirm')} onStatus={onCompareStatus} />}
         </>}
       </div>}
     </main>

@@ -2,14 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseRequirements } from '../review/workflow.js';
 import {
-  coverageNote, criteriaPayload, diffChars, filmCells, filterItems, formatTime, formatVideoUploadLimit, frameId, frameProgress, judgmentItems, MiB, planTimes, progressSteps, scanState,
+  coverageNote, criteriaPayload, diffChars, filmCells, filterItems, formatTime, formatVideoUploadLimit, frameId, frameProgress, judgmentItems, MiB, planTimes, progressSteps, scanState, videoUploadLimit,
 } from './videoFormat.js';
 
 test('video upload labels preserve the server limit in bytes', () => {
   assert.equal(formatVideoUploadLimit(undefined), '');
-  assert.equal(formatVideoUploadLimit(100 * MiB), '100 MiB');
-  assert.equal(formatVideoUploadLimit(1024 * MiB), '1 GiB');
-  assert.equal(formatVideoUploadLimit(1500 * MiB), '1500 MiB');
+  assert.equal(formatVideoUploadLimit(100 * MiB), '100 MB');
+  assert.equal(formatVideoUploadLimit(1024 * MiB), '1 GB');
+  assert.equal(formatVideoUploadLimit(1500 * MiB), '1500 MB');
+  // 화면에 적고 파일을 거르는 한도는 500MiB를 넘지 않는다. 서버가 더 작은 값을 알리면 그 값을 쓴다.
+  assert.equal(formatVideoUploadLimit(videoUploadLimit(1024 * MiB)), '500 MB');
+  assert.equal(videoUploadLimit(100 * MiB), 100 * MiB);
+  assert.equal(videoUploadLimit(undefined), 0);
 });
 
 test('video criteria payload drops screen-only fields that the server rejects', () => {

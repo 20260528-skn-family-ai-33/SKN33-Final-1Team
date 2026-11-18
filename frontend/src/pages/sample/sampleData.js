@@ -2,7 +2,7 @@
 // 포스터 좌표는 300×400, 동영상 좌표는 320×180 기준이다(SampleArt.jsx의 그림과 같은 좌표계).
 
 export const MEDIA_LABELS = { poster: '포스터', video: '동영상' };
-export const VIDEO = { seconds: 30, width: 1920, height: 1080, name: '빛의기록_숏폼.mp4', size: '18.4 MiB' };
+export const VIDEO = { seconds: 30, width: 1920, height: 1080, name: '빛의기록_숏폼.mp4', size: '18.4 MB' };
 export const POSTER_SIZE = '1200×1600';
 
 // 동영상 초마다 보이는 화면 글자.

@@ -2,10 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import VideoEvidenceDialog from './VideoEvidenceDialog.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
+import { Pager } from '../../components/Pager.jsx';
 import { LogoCompareResults } from './LogoFlowParts.jsx';
 import { coverageNote, filterItems, formatTime, isRegionBox, judgmentItems, roleLabels, statusLabels } from './videoFormat.js';
 
 const EMPTY = [];
+// 검수 항목 목록은 ITEMS_PER_PAGE개씩 쪽으로 넘겨 본다(포스터 결과 화면의 검수 요구사항 목록과 같은 쪽 크기).
+const ITEMS_PER_PAGE = 6;
 const NO_VIEW = { segmentId: null, frameId: null, focus: null, key: '', time: null };
 const samplingLabels = { base: '1초 표본', head: '시작 0.2초 표본', tail: '끝 0.2초 표본' };
 const evidenceKey = item => (item ? `${item.frame_id}:${(item.bbox_xyxy || []).join(',')}:${item.time_ms}` : '');
@@ -186,6 +189,12 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
 
   const visibleItems = filterItems(items, filter);
   const selectedItem = tab === 'checks' ? items.find(item => item.key === selection) : null;
+  // 보이는 쪽은 언제나 고른 항목이 있는 쪽이다. 타임라인의 근거 시점, 판정 근거 창의 이전·다음, 필터로 다른 쪽의 항목을 고르면
+  // 그 쪽으로 넘어가고, 쪽을 넘기면 그 쪽의 첫 항목을 고른다(포스터 결과 화면과 같다). 항목 번호는 전체 순번 그대로다.
+  const selectedPosition = visibleItems.findIndex(item => item.key === selectedItem?.key);
+  const itemPages = Math.max(1, Math.ceil(visibleItems.length / ITEMS_PER_PAGE));
+  const itemPage = selectedPosition < 0 ? 0 : Math.floor(selectedPosition / ITEMS_PER_PAGE);
+  const shownItems = visibleItems.slice(itemPage * ITEMS_PER_PAGE, (itemPage + 1) * ITEMS_PER_PAGE);
   const selectedTrack = tab === 'tracks' ? tracks.find(track => track.id === selection) : null;
   const selectedSegment = tab === 'segments' ? segments.find(segment => segment.id === selection) : null;
   const evidence = itemEvidence(selectedItem);
@@ -316,7 +325,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
                 aria-pressed={filter === status} onClick={() => changeFilter(status)}>
                 {status === 'all' ? '전체' : statusLabels[status]}<span>{filterItems(items, status).length}</span></button>)}
             </div>
-            {visibleItems.map(item => {
+            {shownItems.map(item => {
               const active = selection === item.key;
               return <div className="rv-video-verdict" key={item.key}>
                 <button type="button" className={`rv-video-verdict-trigger${active ? ' is-selected' : ''}`} aria-pressed={active} aria-haspopup="dialog"
@@ -326,6 +335,7 @@ export default function VideoResults({ job, logo, logoWarning, onNewReview, onRe
                 </button>
               </div>;
             })}
+            <Pager page={itemPage} pages={itemPages} onChange={next => selectItem(visibleItems[next * ITEMS_PER_PAGE])} label="검수 요구사항 쪽" />
             {!visibleItems.length && <p className="rv-video-rail-note" role="status">{items.length ? '이 분류에 해당하는 요구사항이 없어요.' : '기록된 항목별 판정이 없어요.'}</p>}
           </>}
           {/* 자막 트랙·구간은 고른 항목 바로 아래에 상세를 펼친다(목록 맨 아래에 따로 두면 고른 줄과 떨어져 보인다). */}

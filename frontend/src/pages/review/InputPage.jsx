@@ -118,7 +118,7 @@ export default function InputPage({ state, projectId, projectStatus, prepare, in
               empty={<div className="rv-input-empty"><span className="rv-input-empty-icon" aria-hidden="true"><Icon name="image" /></span>
                 <h2>여기에 포스터를 놓아 주세요.</h2><p>파일을 끌어다 놓거나 버튼으로 선택하세요.</p>
                 <button type="button" className="rv-button primary" disabled={busy} onClick={chooseFile}><Icon name="upload" />파일 선택</button>
-                <span>JPG · PNG · WEBP · 최대 {uploadMiB}MiB<br />{imagePixels}만 픽셀 · 한 변 {imageSide}px 이하 · {pasteKey} 붙여넣기</span>
+                <span>JPG · PNG · WEBP · 최대 {uploadMiB}MB<br />{imagePixels}만 픽셀 · 한 변 {imageSide}px 이하 · {pasteKey} 붙여넣기</span>
               </div>}>
               {fileBusy && <p className="rv-input-file-status" role="status">파일 정보를 읽고 있어요.</p>}
               {state.file && <div className="rv-input-filebar">
