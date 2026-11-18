@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # 포스터 Qwen Pod에 OWLv2 포스터 객체 워커를 한 번만 설치한다. 다시 실행해도 이미 있는 venv·토큰·모델은 그대로 둔다.
-# 실행: 포스터 RunPod Terminal에서 이 저장소를 받은 뒤
-#   bash deploy/poster-objects/setup.sh
-# venv·모델 캐시·토큰은 Pod를 다시 켜도 남는 /workspace 아래에 둔다(컨테이너 디스크 /opt·/root는 지워질 수 있다).
+# 실행: 포스터 RunPod Terminal에서 이 저장소를 /opt/creative-checker-owl/repository로 받은 뒤
+#   bash /opt/creative-checker-owl/repository/deploy/poster-objects/setup.sh
+# 코드·venv·모델 캐시·토큰은 /opt/creative-checker-owl에 둔다. /workspace(네트워크 볼륨)는 chmod를 막아 git clone·venv가 실패한다.
+# /opt는 Pod 재설정·재생성 때 지워질 수 있으므로 그때는 clone과 이 스크립트를 다시 실행한다(모델 620MB 재다운로드).
 # Qwen(vLLM)의 /opt/creative-checker-a02 venv와 저장소는 건드리지 않는다.
 set -euo pipefail
 
-OWL_ROOT="${OWL_ROOT:-/workspace/creative-checker-owl}"
+OWL_ROOT="${OWL_ROOT:-/opt/creative-checker-owl}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VENV="$OWL_ROOT/venv"
 export HF_HOME="$OWL_ROOT/hf-cache"
