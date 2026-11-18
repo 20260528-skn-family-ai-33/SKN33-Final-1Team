@@ -56,10 +56,19 @@ function command(path, body, key, signal) {
   return frameworkJson(path, { method: 'POST', signal, body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}) } });
 }
-// 목록에서 체크를 푼 기준과, 값이 정해지지 않아 빼고 시작한 기준에 남기는 제외 사유.
+// 목록에서 체크를 푼 기준과, 서버가 승인을 거절해 빼고 시작한 기준에 남기는 제외 사유.
 // 첫 문구는 서버가 직접 입력을 더하면서 고르지 않은 문서 기준을 뺄 때 쓰는 문구와 같다(criteria_review.py).
 const NOT_SELECTED = '자료 입력에서 검수 대상으로 선택하지 않았습니다.';
 const UNRESOLVED_SKIPPED = '담당자가 확인 필요 항목을 제외하고 검수를 시작했습니다.';
+// 값이 정해지지 않았거나 사람이 확인해야 하는 기준은 승인을 막지 않는다. 그대로 검수에 들어가 결과에서 '확인 필요'로 나온다.
+// 서버가 승인을 거절하는 경우는 둘이다: 보완한 값을 쓸 수 없을 때(숫자로 읽을 수 없는 값 · 보완 출처 없음)와,
+// 값이 빈 기준이 하나라도 남아 있으면 승인하지 않던 이전 서버일 때. 거절되면 손봐야 할 항목을 짚어 준다.
+const UNUSABLE_SUPPLEMENT = ['numeric_expected_invalid', 'missing_value_source'];
+function refusedCriteria(blockers = {}) {
+  const ids = Object.keys(blockers);
+  const unusable = ids.filter(id => blockers[id].some(reason => UNUSABLE_SUPPLEMENT.includes(reason)));
+  return unusable.length ? unusable : ids;
+}
 
 // 포스터 검수의 자료 입력 화면과, 접수된 검수 한 건(실행)의 진행 · 결과 · 보고서 화면.
 // 자료 입력은 한 화면이다: 실행이 아직 없을 때(runId 없음)부터 문서를 추출해 초안이 생긴 뒤(승인 전)까지 같은 InputPage를 그리고,
@@ -82,6 +91,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const [pickedFile, setFile] = useState(initialFile);
   const [excluded, setExcluded] = useState([]);
   const [amendment, setAmendment] = useState(null);
+  // 서버가 승인을 거절한 기준 버전. 그 버전이 그대로일 때만 손봐야 할 항목을 짚어 준다(보완하거나 빼서 새 버전이 되면 다시 시작할 수 있다).
+  const [refusedVersion, setRefusedVersion] = useState(null);
   const [error, setError] = useState('');
   const [additionNotice, setAdditionNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -118,7 +129,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   if (shownRunId !== runId) {
     setShownRunId(runId);
     setRun(null); setOverview(null); setLoadState('checking');
-    setExcluded([]); setAmendment(null); setActiveId(null); setError(''); setAdditionNotice('');
+    setExcluded([]); setAmendment(null); setRefusedVersion(null); setActiveId(null); setError(''); setAdditionNotice('');
   }
   const latest = overview?.latest_version;
   const status = run?.execution_status;
@@ -231,7 +242,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const draftProject = draftInput ? run.context.project_id : null;
   const setDraftProject = input?.setProject;
   useEffect(() => { if (draftProject) setDraftProject?.(draftProject); }, [draftProject, setDraftProject]);
-  // 직접 입력만으로 시작한 경우: 기준이 준비되면 묻지 않고 승인·접수까지 이어 간다. 값이 빈 기준이 있으면 startDraft가 멈추고 그 항목을 보여 준다.
+  // 직접 입력만으로 시작한 경우: 기준이 준비되면 묻지 않고 승인·접수까지 이어 간다. 서버가 승인을 거절하면 startDraft가 멈추고 그 항목을 보여 준다.
   useEffect(() => {
     if (!input?.autoStart || autoStarted.current || loadState !== 'ready' || !draftInput || !overview || !file) return;
     autoStarted.current = true;
@@ -286,7 +297,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     if (!posterTypes.includes(files[0].type)) { setPosterError('JPG · PNG · WEBP 이미지만 등록할 수 있어요.'); return; }
     setPosterError(''); setFile(files[0]);
   }
-  // 기준 버전을 새로 저장한다. drop: 목록에서 체크를 푼 기준 · unresolved: 값이 정해지지 않아 빼고 시작하는 기준 · amend: 기준 보완 한 건.
+  // 기준 버전을 새로 저장한다. drop: 목록에서 체크를 푼 기준 · unresolved: 서버가 승인을 거절해 빼고 시작하는 기준 · amend: 기준 보완 한 건.
   // 체크를 푼 기준은 검수를 시작할 때 한꺼번에 저장한다. 미리 저장하면 다시 체크할 수 없다(저장한 제외는 되돌리지 못한다).
   async function saveDraftVersion(signal, base, { drop = [], unresolved = [], amend = null } = {}) {
     const exclude = (id, reason, reference) => ({ action: 'exclude', criterion_id: id, reason, source: { reference, quote: reason } });
@@ -349,7 +360,7 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
     }
   }
   // 자료 입력 한 화면의 '검수 시작하기': (직접 입력 분석 →) 기준 버전 저장 → 승인 → 포스터 등록 → 검수 접수.
-  // skipUnresolved: 값이 정해지지 않은 '확인 필요' 항목을 이번 검수에서 빼고 진행한다.
+  // skipUnresolved: 서버가 승인을 거절한 항목을 이번 검수에서 빼고 진행한다.
   async function startDraft(signal, skipUnresolved = false) {
     if (!file) return;
     setAdditionNotice('');
@@ -374,14 +385,19 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       version = await saveDraftVersion(signal, version, { drop, amend: amendment });
       setExcluded([]); setAmendment(null);
     }
-    let unresolved = Object.keys(version.approval_blockers);
-    if (unresolved.length && skipUnresolved) {
-      version = await saveDraftVersion(signal, version, { unresolved });
-      unresolved = Object.keys(version.approval_blockers);
+    if (skipUnresolved) {
+      const unresolved = refusedCriteria(version.approval_blockers);
+      if (unresolved.length) version = await saveDraftVersion(signal, version, { unresolved });
     }
-    // 값이 정해지지 않은 기준이 남으면 승인하지 않고 멈춘다. 화면이 그 항목을 짚어 준다.
-    if (unresolved.length) { showCriterion(unresolved[0], version.version.criteria); return; }
-    await approveVersion(signal, version);
+    // 값이 정해지지 않았거나 사람이 확인해야 하는 기준이 남아 있어도 그대로 승인한다. 그 항목은 결과에서 '확인 필요'로 나온다.
+    try { await approveVersion(signal, version); }
+    catch (failure) {
+      // 서버가 승인을 거절했다. 승인하지 않고 멈추고, 화면이 손봐야 할 항목을 짚어 준다.
+      const unresolved = refusedCriteria(version.approval_blockers);
+      if (failure.code !== 'CRITERIA_UNRESOLVED' || !unresolved.length) throw failure;
+      setRefusedVersion(version.sha256); showCriterion(unresolved[0], version.version.criteria);
+      return;
+    }
     try {
       const child = await registerPoster(signal, version, false);
       try {
@@ -501,8 +517,8 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
   const loadingDraft = Boolean(runId) && loadState === 'checking' && Boolean(input?.fresh);
   const draft = Boolean(runId) && loadState === 'ready' && draftInput;
   if (input && (!runId || loadingDraft || draft)) {
-    const unresolvedIds = draft && latest ? Object.keys(latest.approval_blockers) : [];
-    // 저장된 기준에 값이 빈 항목이 남아 있고 화면에서 아직 손대지 않았으면, 보완하거나 빼야 시작할 수 있다.
+    // 서버가 승인을 거절한 기준 버전이 그대로이고 화면에서 아직 손대지 않았으면, 짚어 준 항목을 보완하거나 빼야 시작할 수 있다.
+    const unresolvedIds = draft && latest && refusedVersion === latest.sha256 ? refusedCriteria(latest.approval_blockers) : [];
     const unresolvedLeft = unresolvedIds.length > 0 && !excluded.length && !amendment;
     const included = draft ? criteria.length - excluded.length : 0;
     // 저장해 둔 초안을 주소로 다시 연 경우: 이 화면이 보안 여부·검수 유형·문서 이름을 기억하지 못한다. 문구 검수로 열고 문서는 바꾸지 못하게 한다.

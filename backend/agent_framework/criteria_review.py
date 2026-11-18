@@ -51,6 +51,16 @@ def approval_blockers(criteria):
     return result
 
 
+# A person can settle these from the review result, so they are listed but do not hold back approval:
+# the criterion is still inspected and A06 reports it as review. What holds back approval is a supplemented
+# value that is itself unusable, because an approved version cannot be corrected afterwards.
+REVIEWABLE_BLOCKERS=frozenset({'unsupported_or_manual_criterion','missing_expected_value','missing_inspection_target'})
+
+
+def blocks_approval(blockers):
+    return any(set(issues)-REVIEWABLE_BLOCKERS for issues in blockers.values())
+
+
 def direct_input_quote(quote, text):
     """Include the exact typed line(s) around an unambiguous A02 citation."""
     start = text.find(quote)
@@ -396,7 +406,7 @@ class PostgresCriteriaReview:
                     or latest['snapshot_sha256']!=request.expected_sha256):_error('CRITERIA_VERSION_CONFLICT')
             version=self._record(latest)
             self._source(c,row,snapshot,allow_prior_runtime=bool(version.version.addition_run_ids))
-            if version.approval_blockers:_error('CRITERIA_UNRESOLVED')
+            if blocks_approval(version.approval_blockers):_error('CRITERIA_UNRESOLVED')
             synthetic=snapshot.synthetic or version.version.synthetic or request.purpose=='synthetic_test'
             evidence=freeze_approved_context(version.version.context,version.version.criteria,synthetic=synthetic)
             approval=Approval(context=snapshot.context,actor_id=str(subject.user_id),decision='approve_criteria',

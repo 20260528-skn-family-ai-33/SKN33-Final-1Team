@@ -44,6 +44,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     // 직접 입력 분석을 '대기'로 붙잡아 두고, 그동안 문서 첨부 카드가 어떻게 보이는지 확인한 뒤 풀어 준다.
     let additionReady = false;
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
+    // 값이 정해지지 않은 기준이 남은 채로 온 승인 요청을 서버가 거절한 횟수(blocker · skip 흐름의 이전 서버).
+    let refusals = 0;
     const posterApproval = Promise.withResolvers();
     // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
     // 응답이 먼저 끝나면 시작 버튼이 사라져 확인 단계가 실행 속도에 따라 실패했다.
@@ -127,14 +129,22 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
           assert.deepEqual(input.edits.map(edit => [edit.action, edit.criterion_id]), [['exclude', 'venue'], ['exclude', 'pending']]);
         }
         const skipped = mode === 'skip' && input.edits.some(edit => edit.criterion_id === 'pending');
+        // 값이 빈 기준이 남는 경우: 빼기 전의 skip 흐름과, 빼지 않고 그대로 가는 unresolved 흐름.
+        const unresolvedLeft = (mode === 'skip' && !skipped) || mode === 'unresolved';
         latest = { version: { ...baseline, version_no: skipped ? 2 : 1,
-          criteria: subset ? selectedPdfCriteria : mode === 'skip' && !skipped ? [criterion, pending] : [criterion],
+          criteria: subset ? selectedPdfCriteria : unresolvedLeft ? [criterion, pending] : [criterion],
           exclusions: subset || skipped ? input.edits : [] }, sha256: baseline.criteria_sha256,
           approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] }
-            : mode === 'skip' && !skipped ? { pending: ['missing_expected_value'] } : {} };
+            : unresolvedLeft ? { pending: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true);
+        // 값이 빈 기준이 남아 있으면 승인하지 않는 서버(이전 서버)를 blocker · skip 흐름에서 흉내 낸다.
+        // 지금 서버는 그대로 승인하고(unresolved 흐름), 그 항목은 결과에서 '확인 필요'로 나온다.
+        if ((mode === 'blocker' || mode === 'skip') && Object.keys(latest.approval_blockers).length) {
+          refusals++;
+          return route.fulfill({ status: 409, json: { error: { code: 'CRITERIA_UNRESOLVED', message: 'Criteria are not resolved.' } } });
+        }
         if (mode === 'direct' || noNew) await criteriaApproval.promise;
         approved = true; body = {};
       } else if (path.endsWith('/images')) {
@@ -152,7 +162,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
       } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
       else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria',
-        criteria: { criteria: selectsSubset ? [...selectedPdfCriteria, venue, pending] : mode === 'skip' ? [criterion, pending] : [criterion],
+        criteria: { criteria: selectsSubset ? [...selectedPdfCriteria, venue, pending] : ['skip', 'unresolved'].includes(mode) ? [criterion, pending] : [criterion],
           ...(checkRejectedCandidates ? { extraction: { rejected_candidates: [rejectedCandidate] } } : {}) } };
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
@@ -329,9 +339,11 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       assert.ok(await start.isEnabled());
     } else {
       if (mode === 'blocker' || mode === 'skip') {
-        // 값이 정해지지 않은 기준이 있으면 승인하지 않고 같은 화면에서 멈춘다. 그 항목은 목록의 번호로 짚어 준다.
+        // 서버가 승인을 거절하면 오류로 끝내지 않고 같은 화면에서 멈춘다. 손봐야 할 항목은 목록의 번호로 짚어 준다.
         const skip = page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true });
         await skip.waitFor();
+        assert.equal(refusals, 1);
+        assert.equal(await page.getByText('CRITERIA_UNRESOLVED', { exact: false }).count(), 0);
         await overlay.waitFor({ state: 'hidden' });
         await page.waitForURL('**/review/new?framework=draft');
         assert.equal(await criteriaOnlyPage.count(), 0);
@@ -371,6 +383,16 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       assert.equal(posterApprovalRequests, 1);
       assert.equal(uploads, 1);
       assert.deepEqual(textInputs, documentMode ? [] : [{ text: '행사명은 봄' }]);
+      if (mode === 'unresolved') {
+        // 값이 정해지지 않은 기준이 있어도 멈추지 않고 접수까지 갔다. 그 기준을 빼지 않고 그대로 승인했다.
+        assert.deepEqual(Object.keys(latest.approval_blockers), ['pending']);
+        assert.deepEqual(latest.version.exclusions, []);
+        assert.equal(refusals, 0);
+        assert.equal(await page.getByRole('button', { name: /제외하고 바로 검수$/ }).count(), 0);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
       if (adding) {
         assert.equal(extractionRequests, 1);
         assert.equal(additionRequests, 1);
@@ -481,9 +503,9 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
   }
 }
 
-// 여섯 가지 흐름을 차례로 끝까지 돈다(흐름 하나에 10~15초).
+// 일곱 가지 흐름을 차례로 끝까지 돈다(흐름 하나에 10~15초).
 test('직접 입력·PDF 입력을 한 화면에서 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 150000 }, t =>
-  verifyFrameworkEntry(t, ['text', 'pdf', 'direct', 'blocker', 'skip', 'not_ready']));
+  verifyFrameworkEntry(t, ['text', 'pdf', 'direct', 'unresolved', 'blocker', 'skip', 'not_ready']));
 
 test('포스터 PDF 부분 초안은 제외된 후보의 사유와 원문을 기준 목록과 분리한다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf'], { checkRejectedCandidates: true }));

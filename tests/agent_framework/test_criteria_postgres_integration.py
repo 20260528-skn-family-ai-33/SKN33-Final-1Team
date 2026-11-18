@@ -87,7 +87,7 @@ def approval_body(version,**changes):
         'reviewed_all_criteria':True}|changes
 
 
-def test_compiled_qwen_protocol_fixture_persists_details_and_cannot_approve_missing_values(a02):
+def test_compiled_qwen_protocol_fixture_persists_details_and_approves_missing_values_for_review(a02):
     import json
     from pathlib import Path
     import httpx
@@ -127,16 +127,19 @@ def test_compiled_qwen_protocol_fixture_persists_details_and_cannot_approve_miss
             headers={**csrf(client),'Idempotency-Key':str(uuid4())})
         assert response.status_code==201,response.text
         version=response.json();assert 'missing_expected_value' in version['approval_blockers'][pending[0]]
+        # A condition without a value does not hold back approval: it stays in the approved version and A06 reports it as review.
         response=client.post(route+'/criteria-approvals',json=approval_body(version),
             headers={**csrf(client),'Idempotency-Key':str(uuid4())})
-        assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_UNRESOLVED'
-        assert client.get(route+'/approvals').json()==[]
+        assert response.status_code==200,response.text
+        approved=response.json()
+        assert approved['criteria']==version and pending[0] in approved['approval']['criterion_ids']
+        assert len(client.get(route+'/approvals').json())==1
         assert client.get(route).json()['criteria']==draft
     restarted=create_postgres_app(r.settings,config,engine=r.db.engine,pdf_storage_root=r.root)
     with TestClient(restarted,base_url='http://localhost:8000') as client:
         client.cookies.update(r.client.cookies)
         assert client.get(route).json()['criteria']==draft
-        assert client.get(route+'/approvals').json()==[]
+        assert client.get(route+'/criteria-approval').json()==approved
 
 
 def counts(r):
@@ -150,7 +153,6 @@ def counts(r):
 def test_revision_approval_and_new_app_reread_keep_original_and_declared_value_sources(review):
     r=review;one=create(r)
     assert one['approval_blockers']
-    assert post(r,'/criteria-approvals',approval_body(one)).status_code==409
     two=create(r,parent=one,resolve=True)
     assert not two['approval_blockers'] and two['version']['parent_version_id']==one['version']['criteria_version_id']
     response=post(r,'/criteria-approvals',approval_body(two));assert response.status_code==200,response.text
