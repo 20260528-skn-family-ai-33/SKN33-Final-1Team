@@ -23,6 +23,7 @@ import PosterTextEditor from './PosterTextEditor.jsx';
 import { posterPlaceCandidates } from './posterMapQr.js';
 import { incompleteOutputPages, unreadTextPages } from './criteriaWarnings.js';
 import RevisionHistory from './RevisionHistory.jsx';
+import RevisionComparison from './RevisionComparison.jsx';
 import PosterEvidenceDialog from './PosterEvidenceDialog.jsx';
 import { frameworkPrefix, frameworkJson, requirePosterReview } from './frameworkClient.js';
 import { useWorkspaceReset } from '../../workspace/WorkspaceSession.jsx';
@@ -610,7 +611,14 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
         evidence={props => <PosterEvidenceDialog run={run} image={image} history={history} runs={chainRuns} retrieval={retrieval}
           onOpen={() => setEvidenceOpened(true)} {...props} />}
         // 근거 조회 경로(Neo4j/PostgreSQL·revision) 표시는 결과 화면에 두지 않는다. 조회 기록은 근거 관계도(PosterEvidenceDialog)에만 넘긴다.
-        header={history && <RevisionHistory history={history} />}
+        header={<>
+          {history && <RevisionHistory history={history} />}
+          {health?.a08_comparison_ready === true && run.baseline && run.context.parent_run_id &&
+            run.validated.items.length > 0 && ['waiting_review', 'waiting_revision', 'completed'].includes(status) &&
+            <RevisionComparison key={runId + ':' + status} path={path} runId={runId} parentId={run.context.parent_run_id}
+              titleFor={id => criterionTitle(criteria.find(criterion => criterion.criterion_id === id))}
+              verdictFor={id => run.validated.items.find(item => item.criterion_id === id)?.verdict} />}
+        </>}
         imageActions={imageActions}
         actions={<>
           <button type="button" className="rv-button primary" disabled={busy} onClick={() => setReportTarget('summary')}>

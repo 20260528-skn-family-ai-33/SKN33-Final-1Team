@@ -29,7 +29,9 @@ PROFILES = {
     "projection": frozenset({"DATABASE_URL"}) | GRAPH,
     "mcp": STORAGE | QWEN | MCP,
     "v1": DATABASE | WEB | REVIEW | {"creative_checker_openapi"},
-    "framework-api": DATABASE | WEB | REVIEW | QWEN | MCP | OPENAI_FALLBACK | {"CC_A01_ENABLED", "A02_QWEN_API_KEY"},
+    "framework-api": DATABASE | WEB | REVIEW | QWEN | MCP | OPENAI_FALLBACK | {
+        "CC_A01_ENABLED", "CC_A08_ENABLED", "A02_QWEN_API_KEY",
+    },
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
     "framework-worker": DATABASE | QWEN | GRAPH | OPENAI_FALLBACK | VISUAL_OBJECTS | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
     "framework-projection": DATABASE | GRAPH,

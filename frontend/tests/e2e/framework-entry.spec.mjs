@@ -521,3 +521,57 @@ test('검수해줘는 추가 기준을 만들지 않고 선택한 PDF 기준으�
 
 test('입력 분석 실패 항목과 원인을 즉시 확인하고 실패 기록에서도 다시 읽는다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf_addition_failed']));
+
+test('A08은 수정본 결과가 저장된 뒤 요청한 경우에만 전후 비교를 표시한다', { timeout: 30000 }, async t => {
+  const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+  t.after(() => vite.close()); await vite.listen();
+  const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
+  t.after(() => browser.close());
+  const page = await browser.newPage(); page.setDefaultTimeout(8000);
+  const requests = [];
+  let complete = false;
+  const context = { run_id: 'child', parent_run_id: 'parent', project_id: 'project', actor_id: 'user', asset_version_id: 'image' };
+  const criteria = ['행사명', '장소', '시간'].map((name, index) => ({
+    criterion_id: 'c' + index, text: name + ' 확인', expected: name, required: true,
+    kind: 'text', operator: 'contains', source: { page: 1, quote: name },
+  }));
+  const items = criteria.map((criterion, index) => ({ criterion_id: criterion.criterion_id,
+    criterion_text: criterion.text, verdict: ['pass', 'fail', 'review'][index], issues: [], observed: criterion.expected }));
+  await page.route(base + '/api/**', async route => {
+    const request = route.request(), path = new URL(request.url()).pathname;
+    let body;
+    if (path.endsWith('/auth/me')) body = { authenticated: true, user: { id: 'user', display_name: '검수 담당자' } };
+    else if (path.endsWith('/health')) body = { status: 'ok', ready: true, a08_comparison_ready: true };
+    else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
+    else if (path.endsWith('/revision-comparison')) {
+      assert.equal(request.headers()['x-csrftoken'], 'token');
+      requests.push(path);
+      if (requests.length > 1) return route.fulfill({ status: 503, json: { error: { code: 'A08_COMPARISON_UNAVAILABLE' } } });
+      body = { parent_run_id: 'parent', child_run_id: 'child', compared: true, resolved: ['c0'],
+        unresolved: ['c1'], new_violations: ['c2'], model_summary: '수정 전후 결과를 검토했습니다.' };
+    } else if (path.endsWith('/runs/child')) {
+      body = { context, baseline: { criteria_version_id: 'version' }, execution_status: complete ? 'waiting_review' : 'reviewing',
+        criteria: { criteria }, ...(complete ? { machine_verdict: 'fail', validated: { items } } : {}) };
+    } else if (path === '/api/poster-logos') body = { items: [] };
+    else return route.fulfill({ status: 404, json: { detail: 'fixture has no data' } });
+    await route.fulfill({ json: body });
+  });
+  await page.goto(base + '/review/new?framework=child');
+  await page.getByRole('progressbar').waitFor();
+  const button = page.getByRole('button', { name: '수정 전후 비교', exact: true });
+  assert.equal(await button.count(), 0);
+  complete = true;
+  await button.waitFor();
+  assert.deepEqual(requests, []);
+  await button.click();
+  const comparison = page.getByRole('region', { name: '수정 전후 비교' });
+  for (const text of ['해결 1건', '미해결 1건', '새 위반·확인 필요 1건']) {
+    await comparison.getByText(text, { exact: true }).waitFor();
+  }
+  await comparison.getByText(/시간.*확인 필요/).waitFor();
+  await button.click();
+  await comparison.getByRole('alert').waitFor();
+  await page.getByRole('button', { name: '보고서 보기', exact: true }).waitFor();
+  assert.deepEqual(requests, Array(2).fill('/api/framework/v1/runs/child/revision-comparison'));
+});

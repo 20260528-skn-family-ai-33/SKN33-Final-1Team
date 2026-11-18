@@ -27,13 +27,13 @@ approve_criteria는 조건 초안 확정이며 수정 요청 승인이 아니다
 rereview_requested는 request_rereview를 실제로 호출해 completed 결과를 받았을 때만 true다.
 과거 pass나 승인은 새 버전에 승계되지 않으며, 새 실행에서 조건을 다시 승인하고 전체 조건을 다시 검사한다.
 """ + _REQUEST_OUTPUT_GUIDANCE + _ANSWER + '{"rereview_requested": true|false, "resolved": [], "unresolved": [], "new_violations": [], "summary": "한국어 설명"}'
-COMPARE_SYSTEM = _ROLE + """부모 실행(수정 전)과 자식 실행(수정 후)의 validated_items를 조건 ID별로 비교해 설명한다.
+COMPARE_SYSTEM = _ROLE + """먼저 get_parent_run과 get_child_run으로 수정 전후 판정을 조회한다. 코드에서 집계한 비교를 설명한다.
 - resolved: 부모에서 pass가 아니었고 자식에서 pass인 조건
 - unresolved: 부모에서 pass가 아니었고 자식에서도 pass가 아닌 조건
 - new_violations: 부모에서 pass였거나 없던 조건인데 자식에서 pass가 아닌 조건
-자식 실행에 검증 결과가 아직 없으면 세 목록을 모두 비우고 대기 상태를 설명한다. 판정을 바꾸지 마라.
-세 목록에는 조건 ID 문자열만 넣는다(예: ["requirement-number"]). 비교 설명은 summary에만 쓴다.
-""" + _ANSWER + '{"resolved": [], "unresolved": [], "new_violations": [], "summary": "한국어 설명"}'
+비교할 검증 결과가 아직 없으면 대기 상태를 설명한다. 집계와 판정은 조회한 기록을 따른다.
+비교 설명을 summary에 한두 문장으로 쓴다. 조건 ID 배열은 코드가 응답에 넣는다.
+""" + _ANSWER + '{"summary": "한국어 설명"}'
 _FINAL = '최종 JSON 객체 하나만 다시 출력하라.'
 
 
@@ -118,21 +118,30 @@ class RereviewAgent:
                                synthetic=(child or parent)['synthetic'])
 
     def compare(self, parent_run_id: str, child_run_id: str) -> RereviewSummary:
-        if read_fact(self.tools, 'get_run', {'run_id': child_run_id})['parent_run_id'] != parent_run_id:
+        child = read_fact(self.tools, 'get_run', {'run_id': child_run_id})
+        if child['parent_run_id'] != parent_run_id:
             raise AdapterFailure('RUN_SCOPE_MISMATCH', 'The child run does not belong to this parent run.')
-        specs = [ToolSpec('get_parent_run', '부모 실행(수정 전)의 검증 항목과 수정 요청을 조회한다.',
+        parent = read_fact(self.tools, 'get_run', {'run_id': parent_run_id})
+        initial = compared, resolved, unresolved, new = compare_verdicts(parent, child)
+        specs = [ToolSpec('get_parent_run', '부모 실행(수정 전)의 상태와 검증 판정을 조회한다.',
                           bound(self.tools, 'get_run', {'run_id': parent_run_id})),
                  ToolSpec('get_child_run', '자식 실행(수정 후)의 상태와 검증 항목을 조회한다.',
                           bound(self.tools, 'get_run', {'run_id': child_run_id})),
                  ToolSpec('get_child_steps', '자식 실행의 역할별 단계 기록을 조회한다.',
                           bound(self.tools, 'get_steps', {'run_id': child_run_id}))]
-        task = (f'부모 실행 {json.dumps(parent_run_id)}과 자식 실행 {json.dumps(child_run_id)}의 '
-                f'검수 결과를 비교하고 JSON으로 답하라.')
-        draft, used = run_agent(self.model, system=COMPARE_SYSTEM, task=task, tools=specs, output=RereviewDraft)
+        counts = (f'해결 {len(resolved)}건, 미해결 {len(unresolved)}건, 새 위반·확인 필요 {len(new)}건.'
+                  if compared else '아직 비교할 검증 결과가 없다.')
+        task = (f'부모 실행 {json.dumps(parent_run_id)}과 자식 실행 {json.dumps(child_run_id)}을 확인하라. '
+                f'코드에서 집계한 비교는 {counts} summary 문자열만 제공하라.')
+        draft, used = run_agent(self.model, system=COMPARE_SYSTEM, task=task, tools=specs, output=RereviewDraft,
+                                format_guidance='summary 문자열만 쓴다.')
         parent = read_fact(self.tools, 'get_run', {'run_id': parent_run_id})
         child = read_fact(self.tools, 'get_run', {'run_id': child_run_id})
-        compared, resolved, unresolved, new = compare_verdicts(parent, child)
-        _consistent(draft, resolved, unresolved, new)
+        current = compared, resolved, unresolved, new = compare_verdicts(parent, child)
+        if current != initial:
+            raise AdapterFailure('RUN_COMPARISON_CHANGED', 'The recorded verdict comparison changed during the request.')
+        if draft.model_fields_set.intersection(('resolved', 'unresolved', 'new_violations')):
+            _consistent(draft, resolved, unresolved, new)
         summary = (' '.join(f'{label} {len(ids)}건.'
                             for label, ids in (('해결', resolved), ('미해결', unresolved), ('새 위반', new)))
                    if compared else f"자식 실행이 {child['execution_status']} 상태라 비교할 검증 결과가 아직 없습니다.")
