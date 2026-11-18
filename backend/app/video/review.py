@@ -79,9 +79,10 @@ def _int_env(name: str, default: int, low: int, high: int) -> int:
 
 
 def limits() -> dict:
-    """영상 검수 기본값은 3분·1GiB다. 환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 조정할 수 있다."""
+    """영상 검수 기본값은 3분·500MiB다. 환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 조정할 수 있다.
+    로고만 검수로 올리는 영상(logos/routes.py)도 이 길이·용량 한도를 같이 쓴다."""
     return {
-        "upload_bytes": _int_env("VIDEO_MAX_MB", 1024, 1, 2048) * 1024 * 1024,
+        "upload_bytes": _int_env("VIDEO_MAX_MB", 500, 1, 2048) * 1024 * 1024,
         "duration_seconds": _int_env("VIDEO_MAX_SECONDS", 180, 1, 600),
         "short_side_min": 360, "long_side_max": 3840, "fps_max": 120,
         "active_jobs": _int_env("VIDEO_MAX_ACTIVE", 3, 1, 20),

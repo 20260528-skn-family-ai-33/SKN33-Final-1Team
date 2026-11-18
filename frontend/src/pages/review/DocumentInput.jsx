@@ -6,6 +6,7 @@ import { DocumentArt } from '../../components/PickerArt.jsx';
 import { loadDocumentProjects, createDocumentProject } from './frameworkClient.js';
 import { DOCX_MEDIA_TYPE } from './frameworkDocument.js';
 import { formatClock } from './elapsedClock.js';
+import { documentSteps } from './progressScan.js';
 import posterExample from '../../assets/sample-poster-requirements.pdf?inline';
 import videoExample from '../../assets/sample-video-requirements.pdf?inline';
 
@@ -31,13 +32,24 @@ const STALE_CHECK_SECONDS = 30;
 
 // 경과 시간은 처음 접수부터 센 값 하나만, 포스터 검수 진행 화면과 같은 '경과 시간 0:44' 모양으로 보인다.
 // 단계별 시간과 '마지막 상태 확인'은 평소에 보이지 않는다.
+// 진행 표시(2026-11-17): 한 줄 막대 대신 세 단계 선(원문 저장 · 요구사항 추출 · 기준 정리, progressScan.js의 documentSteps)으로 보인다.
+// 서버는 단계만 알려 주고 단계 안의 진행률은 알려 주지 않으므로, 끝난 칸은 채우고 진행 중인 칸은 잉크 줄이 흐르게만 한다.
+// 낭독기에는 예전과 같은 진행 막대 요소(progress '문서 분석 단계', 화면에서는 숨김)로 읽힌다.
 export function DocumentAnalysisProgress({ documentProgress, totalSeconds, lastCheckedSeconds = null, cancelLabel }) {
   const longRunning = totalSeconds >= 5 * 60 && ['queued', 'extracting', 'formatting'].includes(documentProgress?.stage);
   const stale = lastCheckedSeconds !== null && lastCheckedSeconds >= STALE_CHECK_SECONDS;
+  const steps = documentSteps(documentProgress.stage);
+  const current = steps.find(step => step.status === 'active' || step.status === 'waiting');
   return <div className="rv-document-inline" role="status">
     <span className="rv-document-art" aria-hidden="true"><DocumentArt stage={documentProgress.stage} /></span>
     <p>{documentProgress.message}</p>
-    <progress max={100} value={documentProgress.percent} aria-label="문서 분석 단계" />
+    {/* 낭독기와 화면 테스트는 예전과 같은 진행 막대 요소를 읽는다. 눈에 보이는 것은 아래 세 단계 선이다. */}
+    <progress className="sr-only" max={100} value={documentProgress.percent} aria-label="문서 분석 단계"
+      aria-valuetext={current ? `${current.label} ${current.status === 'waiting' ? '대기 중' : '진행 중'}` : undefined} />
+    <div className="rv-document-track" aria-hidden="true">
+      {steps.map((step, index) => <span key={step.key} className={`rv-document-step is-${step.status}`}>
+        <i /><span><b>{String(index + 1).padStart(2, '0')}</b>{step.short}</span></span>)}
+    </div>
     {documentProgress.startedAt && <dl className="rv-document-elapsed"><div><dt>경과 시간</dt>
       <dd role="timer" aria-live="off" aria-label="문서 분석 경과 시간"><time dateTime={`PT${totalSeconds}S`}>{formatClock(totalSeconds)}</time></dd>
     </div></dl>}
@@ -57,10 +69,11 @@ function projectDate(value) {
   return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} 수정`;
 }
 
-// 저장할 프로젝트 고르기. 버튼에 고른 프로젝트 이름을 그대로 보이고, 목록·검색·새로 만들기를 한 패널에서 한다.
-// 고르면 패널이 닫히고, 바깥을 누르거나 Esc로도 닫힌다. 새 프로젝트 이름은 검수 이름으로 미리 채운다.
+// 저장할 프로젝트 고르기. 버튼에 고른 프로젝트 이름을 그대로 보이고, 패널에서는 목록과 검색으로 고르기만 한다.
+// 고르면 패널이 닫히고, 바깥을 누르거나 Esc로도 닫힌다. 패널 안의 '새 프로젝트 · 만들고 선택' 칸은 없앴다(2026-11-17).
 // ref.createFromName(name): 검수 이름 칸에서 Enter를 누르면 그 이름의 프로젝트를 만들고 선택한다(같은 이름이 있으면 그것을 고른다).
-// onPick(project): 사람이 목록에서 고르거나 패널에서 새로 만들어 고른 프로젝트. 화면은 이 이름을 검수 이름에 반영한다
+// 새 프로젝트를 만드는 길은 이것 하나다.
+// onPick(project): 사람이 목록에서 고르거나 검수 이름 칸의 Enter로 새로 만들어 고른 프로젝트. 화면은 이 이름을 검수 이름에 반영한다
 // (목록을 불러올 때 하나뿐이라 저절로 고른 경우는 알리지 않는다).
 // 저장할 프로젝트가 준비되지 않아 문서를 첨부할 수 없는 이유. 꺼진 '파일 선택'에 마우스를 올리면 보인다.
 // status: DocumentProjectPicker의 onStatus 값({ ready, busy, failed }).
@@ -71,7 +84,7 @@ export function projectBlockReason(status) {
   return '먼저 위쪽 「저장할 프로젝트」에서 프로젝트를 고르거나 만들어 주세요.';
 }
 
-export function DocumentProjectPicker({ projectId, setProjectId, projectName, disabled, onStatus, onPick, ref }) {
+export function DocumentProjectPicker({ projectId, setProjectId, disabled, onStatus, onPick, ref }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -80,13 +93,10 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
   const [connected, setConnected] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [draft, setDraft] = useState('');
   const creation = useRef(null);
   const root = useRef(null);
   const trigger = useRef(null);
   const search = useRef(null);
-  const nameAtOpen = useRef(projectName);
-  nameAtOpen.current = projectName;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -114,7 +124,6 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
   useEffect(() => {
     if (!open) return undefined;
     setQuery('');
-    setDraft(nameAtOpen.current?.trim() || '');
     search.current?.focus({ preventScroll: true });
     function outside(event) { if (!root.current?.contains(event.target)) setOpen(false); }
     function escape(event) { if (event.key === 'Escape') { setOpen(false); trigger.current?.focus(); } }
@@ -132,7 +141,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
 
   async function createProject(nameArg) {
     if (creation.current) return;
-    const name = (nameArg ?? draft).trim();
+    const name = (nameArg || '').trim();
     if (!name) { setError('새 프로젝트 이름을 입력해 주세요.'); return; }
     const controller = new AbortController();
     creation.current = controller;
@@ -191,7 +200,7 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
     </button>
     <span className="sr-only" role="status">{announce}</span>
     {open && <div className="rv-project-picker-panel" role="dialog" aria-label="저장할 프로젝트 고르기">
-      <div className="rv-project-picker-head"><strong>저장할 프로젝트</strong>
+      <div className="rv-project-picker-head"><strong>저장할 프로젝트{connected && <span className="rv-project-picker-count" aria-label={`${projects.length}개`}>{projects.length}</span>}</strong>
         <button type="button" disabled={unavailable} onClick={() => setReload(value => value + 1)}><Icon name="refresh" />새로고침</button></div>
       {connected && <>
         <label className="rv-project-search"><Icon name="search" />
@@ -206,19 +215,10 @@ export function DocumentProjectPicker({ projectId, setProjectId, projectName, di
               <span className="rv-project-list-meta">{projectDate(project.updated_at)}</span>
             </button></li>)}
           {!shown.length && <li className="rv-project-list-empty">{projects.length
-            ? `‘${query.trim()}’와 맞는 프로젝트가 없어요. 아래에서 새로 만들 수 있어요.` : '아직 프로젝트가 없어요. 아래에서 새로 만들어 주세요.'}</li>}
+            ? `‘${query.trim()}’와 맞는 프로젝트가 없어요.` : '아직 프로젝트가 없어요.'}</li>}
         </ul>
-        <div className="rv-project-create">
-          <label htmlFor="document-project-new">새 프로젝트</label>
-          <div><input id="document-project-new" type="text" maxLength={60} value={draft} placeholder="프로젝트 이름" autoComplete="off" disabled={unavailable}
-            onChange={event => setDraft(event.target.value)}
-            onKeyDown={event => {
-              if (event.key !== 'Enter' || event.nativeEvent.isComposing || event.keyCode === 229) return;
-              event.preventDefault(); createProject();
-            }} />
-            <button type="button" className="rv-button primary" disabled={unavailable || !draft.trim()} onClick={() => createProject()}>
-              {creating ? '만드는 중…' : '만들고 선택'}</button></div>
-        </div>
+        {/* 이 창에서는 고르기만 한다. 새 프로젝트는 프로젝트 명 칸의 Enter로 만든다(createFromName). */}
+        <p className="rv-project-picker-hint">새로 만들려면 <b>프로젝트 명</b> 칸에 이름을 적고 <kbd>Enter</kbd></p>
       </>}
       <ErrorMessage message={error} />
     </div>}

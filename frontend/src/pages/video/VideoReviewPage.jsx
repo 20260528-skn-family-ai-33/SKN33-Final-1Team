@@ -163,7 +163,7 @@ export default function VideoReviewPage() {
         ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>
           <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
         : <DocumentProjectPicker ref={projectPicker} projectId={projectId} setProjectId={setProjectId}
-          projectName={draft.projectName} disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus}
+          disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus}
           // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
           onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}
       projectAside={step === 'input' && <SelectionTrail media="video" security={draft.securityMode} mode={draft.reviewMode} />}>

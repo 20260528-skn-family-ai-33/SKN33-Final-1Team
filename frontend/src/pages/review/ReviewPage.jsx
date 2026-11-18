@@ -83,7 +83,7 @@ export default function ReviewPage() {
         // 로고만 검수는 요구사항 실행 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
         ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>
           <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
-        : <DocumentProjectPicker ref={projectPicker} {...{ projectId, setProjectId }} projectName={state.projectName}
+        : <DocumentProjectPicker ref={projectPicker} {...{ projectId, setProjectId }}
           disabled={sampleBusy || fileBusy || documentBusy || Boolean(runId)} onStatus={setProjectStatus}
           // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
           onPick={project => { if (project.name !== state.projectName) inputChange('projectName', project.name.slice(0, 60)); }} />,

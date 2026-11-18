@@ -20,18 +20,18 @@ const TEXT = {
     stageTitles: { queued: '로고 검수 순서를 기다리고 있어요.', frames: '영상에서 표본 프레임을 뽑고 있어요.' },
     searching: '영상에서 로고 후보를 찾고 있어요.',
     captions: { waiting: '순서 대기', preparing: '표본 프레임 준비', searching: '프레임별 후보 찾는 중', failed: '처리 멈춤' },
-    detail: openai => openai ? 'OpenAI로 프레임별 위치를 찾고 있습니다.' : 'RunPod에서 프레임별 후보를 찾고 있습니다.',
+    detail: openai => openai ? 'OpenAI로 프레임별 위치를 찾고 있습니다.' : '영상의 프레임마다 로고 후보를 찾고 있습니다.',
     help: '후보를 찾으면 정밀 대조 화면으로 넘어갑니다. 페이지를 닫아도 서버에서 검수를 계속합니다.',
-    compare: 'RunPod · 자동',
+    compare: '검수 서버 · 자동',
     back: linked => linked ? '동영상 검수로 돌아가기' : '자료 입력에서 다시 접수',
   },
   poster: {
     stageTitles: { queued: '로고 검수 순서를 기다리고 있어요.' },
     searching: '포스터에서 로고 후보를 찾고 있어요.',
     captions: { waiting: '순서 대기', preparing: '포스터 준비', searching: '포스터를 나눠 후보 찾는 중', failed: '처리 멈춤' },
-    detail: openai => openai ? 'OpenAI로 포스터에서 위치를 찾고 있습니다.' : 'RunPod에서 포스터를 타일로 나눠 후보를 찾고 있습니다.',
+    detail: openai => openai ? 'OpenAI로 포스터에서 위치를 찾고 있습니다.' : '포스터를 구역별로 나눠 로고 후보를 찾고 있습니다.',
     help: '후보를 찾으면 순위가 높은 후보로 정밀 대조까지 이어서 합니다. 페이지를 닫아도 서버에서 검수를 계속합니다.',
-    compare: 'RunPod · 자동',
+    compare: '검수 서버 · 자동',
     back: linked => linked ? '포스터 검수로 돌아가기' : '자료 입력에서 다시 접수',
   },
 };
@@ -128,7 +128,7 @@ export default function LogoJobProgress({ base, meta, linkedReview, onRestart, m
   const size = meta.poster?.size;
   const facts = [
     ['원본 로고', `${logos.length}개`],
-    ['위치 찾기', openai ? 'OpenAI' : 'RunPod'],
+    ['위치 찾기', openai ? 'OpenAI' : '검수 서버'],
     ['정밀 대조', text.compare],
     ['접수', receivedAt(meta.created_at)],
   ];

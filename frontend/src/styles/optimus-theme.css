@@ -35,51 +35,96 @@ html .cc-header .cc-header-start { border-radius: 999px; padding-inline: 16px; }
    검수 이름과 프로젝트는 상자 대신 밑줄 칸으로 왼쪽에 두고, 단계는 아래 가는 선 위에 번호 탭으로 올린다
    (소개 화면 '검수 예시'의 탭과 같은 모양). 누르는 곳과 이름은 그대로다. */
 html .rv-projectbar { align-items: stretch; gap: 32px; min-height: 78px; margin-bottom: 30px; padding-block: 0; border-bottom: 1px solid var(--op-line); }
-html .rv-project-identity { align-items: center; align-content: center; gap: 12px 0; padding-block: 14px; }
-html .rv-project-identity > :is(.rv-project-field, .rv-project-picker) { padding-right: 26px; }
-html .rv-project-identity > * + :is(.rv-project-field, .rv-project-picker) { padding-left: 26px; border-left: 1px solid var(--op-line); }
+/* 프로젝트 줄(2026-11-17 다듬기): 이름표를 값 위에 얹은 세 칸으로 둔다(샘플 체험의 줄과 같은 쌓음).
+   칸 사이는 세로선 대신 간격으로 나눠, 줄이 바뀌어도 선이 혼자 남지 않는다.
+   · 검수 이름 — 밑줄 칸. 고칠 수 있다는 표시로 점선 밑줄을 두고, 입력을 시작하면 잉크 선이 왼쪽에서 자란다.
+   · 저장할 프로젝트 — 눌리는 알약. 왼쪽 둥근 인장이 상태(고름 ✓ · 필수 · 오류)를, 오른쪽 둥근 칸이 여닫힘을 알린다.
+   · 자료 종류 — 고른 순서(자료 › 보안 여부 › 검수 유형)를 한 캡슐 안에 꺾쇠로 잇고, 마지막 칸만 잉크로 채운다. */
+html .rv-project-identity { align-items: flex-end; align-content: center; gap: 14px 38px; padding-block: 12px 15px; }
 html .rv-project-field-label { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
-/* 프로젝트 줄 이름표(2026-11-17 리디자인): 소개 화면 머리글(.op-eyebrow)처럼 '짧은 선 + 모노 글자' 뒤 가는 세로선, 그다음 값.
-   값은 위계를 둔다 — 검수 이름은 제목처럼 크게, 저장할 프로젝트는 알약 단추, 자료 종류는 고른 순서를 가는 선으로 잇는 알약 줄. */
-html .rv-project-identity :is(.rv-project-field, .rv-project-picker):has(> .rv-project-field-badge) { display: flex; align-items: center; gap: 12px; }
-html .rv-project-field-badge { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; padding-right: 12px; border-right: 1px solid var(--op-line);
-  color: var(--op-muted); font: 11px/16px var(--font-signal); letter-spacing: 0.04em; white-space: nowrap; }
-html .rv-project-field-badge::before { content: ''; width: 14px; height: 1px; background: currentColor; }
-html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) > strong { font-size: 18px; line-height: 36px; }
-html .rv-workspace .rv-projectbar .rv-project-field:has(> .rv-project-field-badge) .rv-project-name-field input[type] { font-size: 18px; }
+html .rv-project-identity :is(.rv-project-field, .rv-project-picker):has(> .rv-project-field-badge) { display: grid; gap: 6px; justify-items: start; }
+html .rv-project-field-badge { display: block; color: var(--op-muted); font: 11px/14px var(--font-signal); letter-spacing: 0.04em; white-space: nowrap; }
+html .rv-project-identity .rv-project-field:has(> .rv-project-field-badge) > strong { font-size: 20px; line-height: 36px; }
+html .rv-workspace .rv-projectbar .rv-project-field:has(> .rv-project-field-badge) .rv-project-name-field input[type] { font-size: 20px; }
 html .rv-project-identity .rv-project-field > strong { max-width: 36ch; font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.04em; line-height: 44px; }
-/* 검수 이름 칸: 평소엔 글자만, 고칠 수 있다는 표시로 마우스를 올리면 점선 밑줄, 입력 중엔 잉크 실선. */
-html .rv-workspace .rv-project-name-field { gap: 4px; height: 36px; padding: 0; border: 0; border-bottom: 1px dashed transparent; border-radius: 0; background: none; transition: border-color .15s; }
-html .rv-workspace .rv-project-name-field:hover { border-bottom-color: color-mix(in srgb, var(--op-muted) 55%, transparent); }
-html .rv-workspace .rv-project-name-field:focus-within { border-bottom: 1px solid var(--op-ink); box-shadow: none; }
+/* 검수 이름 칸 */
+html .rv-workspace .rv-project-name-field { gap: 4px; height: 36px; padding: 0; border: 0; border-radius: 0;
+  background: linear-gradient(var(--op-ink), var(--op-ink)) left bottom / 0 1px no-repeat,
+    linear-gradient(to right, color-mix(in srgb, var(--op-muted) 50%, transparent) 50%, transparent 0) left bottom / 6px 1px repeat-x;
+  transition: background-size .32s cubic-bezier(.2, .7, .2, 1); }
+html .rv-workspace .rv-project-name-field:focus-within { border: 0; box-shadow: none; background-size: 100% 1px, 6px 1px; }
+html .rv-workspace .rv-project-name-field:has(input:disabled) { background: none; }
 html .rv-workspace .rv-projectbar .rv-project-name-field input[type] { min-width: 6ch; max-width: min(24ch, 32vw); font-size: clamp(22px, 2vw, 30px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.3; }
-html .rv-workspace .rv-project-name-field button { width: 28px; height: 28px; border-radius: 50%; color: var(--op-muted); transition: background .15s, color .15s; }
-html .rv-workspace .rv-project-name-field button:hover:enabled { background: var(--op-surface); color: var(--op-ink); }
+html .rv-workspace .rv-project-name-field button { width: 28px; height: 28px; border-radius: 50%; color: var(--op-muted); transition: background .15s, color .15s, transform .15s; }
+html .rv-workspace .rv-project-name-field button:hover:enabled { background: var(--op-ink); color: var(--op-card); transform: rotate(-12deg); }
 html .rv-workspace .rv-project-name-field .icon { width: 14px; height: 14px; }
-/* 저장할 프로젝트: 알약 단추. 고른 프로젝트는 연한 초록 원 안의 체크, 고르기 전(필수)은 잉크 점선 테두리. */
-html .rv-workspace .rv-project-chip { gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); font-size: 14.5px; transition: border-color .15s, background .15s; }
-html .rv-workspace .rv-project-chip:hover:enabled { border-color: color-mix(in srgb, var(--op-ink) 35%, var(--op-line)); background: var(--op-card); }
-html .rv-workspace .rv-project-chip.is-selected { padding-left: 5px; background: var(--op-card); }
-html .rv-project-chip.is-selected > .icon:first-child { box-sizing: content-box; width: 12px; height: 12px; padding: 5px; border-radius: 50%; background: #e4f1e8; color: #177d45; }
-html .rv-workspace .rv-project-chip.is-required { border: 1px dashed var(--op-ink); }
-html .rv-workspace .rv-project-chip.is-error { border-color: #a34f3e; color: #a34f3e; }
-html .rv-workspace .rv-project-chip[aria-expanded='true'] { border-color: var(--op-ink); box-shadow: none; }
+html .rv-project-name-count { padding: 0 6px; color: var(--op-muted); font: 11px/1.5 var(--font-signal); }
+/* 키 모양(검수 이름 칸의 Enter 안내 · 고르기 창 아래 안내) */
+html :is(.rv-project-name-count, .rv-project-picker-hint) kbd { display: inline-block; margin: 0 2px; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--op-ink) 28%, var(--op-line));
+  border-bottom-width: 2px; border-radius: 5px; background: var(--op-card); color: var(--op-ink); font: 10.5px/17px var(--font-signal); }
+/* 저장할 프로젝트 */
+html .rv-workspace .rv-project-chip { gap: 9px; height: 36px; max-width: 300px; padding: 0 5px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card);
+  font-size: 14.5px; box-shadow: 0 1.5px 0 var(--op-line); transition: border-color .15s, box-shadow .15s, transform .12s; }
+html .rv-workspace .rv-project-chip:hover:enabled { border-color: var(--op-ink); background: var(--op-card); box-shadow: 0 2.5px 0 var(--op-ink); transform: translateY(-1px); }
+html .rv-workspace .rv-project-chip:active:enabled { box-shadow: 0 0 0 var(--op-ink); transform: translateY(1.5px); }
+html .rv-workspace .rv-project-chip.is-selected { background: var(--op-card); }
+html .rv-project-chip > .icon:first-child { box-sizing: content-box; width: 13px; height: 13px; padding: 6px; border-radius: 50%; background: var(--op-surface); color: var(--op-muted); }
+html .rv-project-chip.is-selected > .icon:first-child { background: #e4f1e8; color: #177d45; }
+html .rv-workspace .rv-project-chip.is-required { border: 1px dashed var(--op-ink); box-shadow: none; }
+html .rv-project-chip.is-required > .icon:first-child { background: none; color: var(--op-ink); box-shadow: inset 0 0 0 1px var(--op-line); }
+html .rv-workspace .rv-project-chip.is-error { border-color: #a34f3e; color: #a34f3e; box-shadow: 0 1.5px 0 #e6c9c1; }
+html .rv-project-chip.is-error > .icon:first-child { background: #f9ece9; color: #a34f3e; }
+html .rv-workspace .rv-project-chip.is-loading { padding-inline: 5px 14px; }
+html .rv-workspace .rv-project-chip[aria-expanded='true'] { border-color: var(--op-ink); box-shadow: 0 2.5px 0 var(--op-ink); transform: none; }
 html .rv-project-chip-text { font-weight: 500; letter-spacing: -0.02em; }
-html .rv-project-chevron { width: 12px !important; height: 12px !important; }
-/* 동영상 자료 입력의 '자료 종류': 고른 순서(자료 종류 → 보안 여부 → 검수 유형)를 가는 선으로 이은 알약으로 남긴다.
-   보안 자료는 붉은 기운의 알약과 자물쇠, 마지막(검수 유형)은 잉크로 채워 지금 하는 검수를 드러낸다. */
-html .rv-project-trail { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; white-space: nowrap; }
-html .rv-project-trail > li { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 12px; border: 1px solid var(--op-line); border-radius: 999px;
-  background: var(--op-card); color: var(--op-ink); font-size: 13px; font-weight: 500; letter-spacing: -0.01em; }
-html .rv-project-trail > li + li { position: relative; margin-left: 18px; }
-html .rv-project-trail > li + li::before { content: ''; position: absolute; top: 50%; left: -19px; width: 18px; height: 1px; background: var(--op-line); }
-html .rv-project-trail > li.is-secure { border-color: #e6c9c1; background: #f9ece9; color: #a34f3e; }
-html .rv-project-trail > li.is-mode { border-color: var(--op-ink); background: var(--op-ink); color: var(--op-card); }
-html .rv-project-trail .icon { width: 13px; height: 13px; }
+html .rv-project-chevron { box-sizing: content-box; width: 11px !important; height: 11px !important; padding: 6px; border-radius: 50%; background: var(--op-surface); color: var(--op-ink); transition: transform .2s, background .15s, color .15s; }
+html .rv-project-chip[aria-expanded='true'] .rv-project-chevron { background: var(--op-ink); color: var(--op-card); }
 html .rv-project-required { border-radius: 999px; }
+/* 자료 종류: 한 캡슐 안의 길 */
+html .rv-project-trail { display: inline-flex; align-items: stretch; height: 36px; margin: 0; padding: 3px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card);
+  box-shadow: 0 1.5px 0 var(--op-line); list-style: none; white-space: nowrap; }
+html .rv-project-trail > li { display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; border-radius: 999px; color: var(--op-ink); font-size: 13.5px; font-weight: 500; letter-spacing: -0.01em; }
+html .rv-project-trail > li + li { position: relative; margin-left: 16px; }
+html .rv-project-trail > li + li::before { content: ''; position: absolute; top: 50%; left: -11px; width: 5px; height: 5px; border-top: 1px solid var(--op-muted); border-right: 1px solid var(--op-muted);
+  transform: translateY(-50%) rotate(45deg); }
+html .rv-project-trail > li.is-secure { background: #f9ece9; color: #a34f3e; }
+html .rv-project-trail > li.is-mode { background: var(--op-ink); color: var(--op-card); }
+html .rv-project-trail .icon { width: 13px; height: 13px; }
 /* 로고만 검수: 저장할 프로젝트 자리에 점선 알약으로 '프로젝트 없이 진행'을 알린다. */
-html .rv-project-none { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px dashed var(--op-line); border-radius: 999px; color: var(--op-muted); font-size: 13px; }
-html .rv-project-picker-panel { border-color: var(--op-line); border-radius: 8px; box-shadow: 0 18px 50px rgb(0 0 0 / 12%); }
+html .rv-project-none { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px dashed var(--op-line); border-radius: 999px; color: var(--op-muted); font-size: 13px; }
+/* 고르기 창: 알약 바로 아래에서 펼쳐지는 종이 한 장. 잉크 테두리, 밑줄 검색칸, 둥근 고름 표시, 아래 한 줄 안내. */
+@keyframes op-project-pop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
+html .rv-project-picker-panel { top: calc(100% + 10px); width: 348px; padding: 0; overflow: hidden; border: 1px solid var(--op-ink); border-radius: 10px; background: var(--op-card);
+  box-shadow: 0 2.5px 0 var(--op-ink), 0 26px 48px -20px rgb(0 0 0 / 30%); font-size: 13px; transform-origin: 30px 0; animation: op-project-pop .2s cubic-bezier(.2, .7, .2, 1) both; }
+html .rv-project-picker-head { padding: 14px 12px 8px 16px; }
+html .rv-project-picker-head strong { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; letter-spacing: -0.02em; }
+html .rv-project-picker-count { padding: 0 7px; border-radius: 999px; background: var(--op-surface); color: var(--op-muted); font: 11px/18px var(--font-signal); }
+html .rv-workspace .rv-project-picker-head button { gap: 5px; padding: 5px 9px; border-radius: 999px; color: var(--op-muted); font-size: 12px; }
+html .rv-workspace .rv-project-picker-head button:hover:enabled { background: var(--op-surface); color: var(--op-ink); }
+html .rv-workspace .rv-project-picker-head button:hover:enabled .icon { transform: rotate(90deg); }
+html .rv-project-picker-head .icon { transition: transform .3s; }
+html .rv-project-search { height: 40px; margin: 0 16px 8px; padding: 0 2px; border: 0; border-bottom: 1px solid var(--op-line); border-radius: 0; transition: border-color .15s; }
+html .rv-project-search:focus-within { border-bottom-color: var(--op-ink); }
+html .rv-workspace .rv-project-picker .rv-project-search input[type] { background: transparent; font-size: 14px; }
+html .rv-project-list { max-height: 236px; padding: 0 8px 8px; }
+html .rv-workspace .rv-project-list button { gap: 11px; padding: 9px 9px; border-radius: 6px; font-size: 14px; letter-spacing: -0.01em; transition: background .12s; }
+html .rv-workspace .rv-project-list button:hover:enabled, html .rv-workspace .rv-project-list button:focus-visible { background: var(--op-surface); }
+html .rv-workspace .rv-project-list button[aria-selected='true'] { background: none; font-weight: 500; }
+html .rv-workspace .rv-project-list button[aria-selected='true']:hover:enabled { background: var(--op-surface); }
+html .rv-project-list-check { width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--op-line); color: #177d45; transition: box-shadow .12s; }
+html .rv-project-list button:hover:enabled .rv-project-list-check { box-shadow: inset 0 0 0 1px var(--op-ink); }
+html .rv-project-list button[aria-selected='true'] .rv-project-list-check { background: #e4f1e8; box-shadow: none; }
+html .rv-project-list-check .icon { width: 11px; height: 11px; }
+html .rv-project-list-meta { color: var(--op-muted); font: 11px/1.5 var(--font-signal); }
+html .rv-project-list-empty { padding: 22px 12px; color: var(--op-muted); font-size: 13px; }
+html .rv-project-picker-hint { margin: 0; padding: 11px 16px 12px; border-top: 1px solid var(--op-line); background: var(--op-bg); color: var(--op-muted); font-size: 12.5px; line-height: 1.7; }
+html .rv-project-picker-hint b { color: var(--op-ink); font-weight: 500; }
+html .rv-project-picker-panel :is(.error-message, [role='alert']) { margin: 8px 16px 12px; }
+@media (max-width: 720px) { html .rv-project-picker-panel { width: min(348px, calc(100vw - 32px)); } }
+@media (prefers-reduced-motion: reduce) {
+  html .rv-project-picker-panel { animation: none; }
+  html .rv-workspace .rv-project-chip, html .rv-workspace .rv-project-name-field, html .rv-workspace .rv-project-name-field button, html .rv-project-chevron, html .rv-project-picker-head .icon { transition: none; }
+}
 html .rv-project-actions { align-items: stretch; flex-wrap: nowrap; gap: 24px; }
 /* 검수 이름 칸이 없는 줄(결과 확인): 단계 표시만 원래 자리(오른쪽)에 둔다. */
 html .rv-projectbar--steps-only { justify-content: flex-end; }
@@ -287,13 +332,39 @@ html .rv-document-warnings li .icon { width: 14px; height: 14px; margin-top: 3px
 html .rv-document-warnings small { display: block; margin-top: 1px; color: var(--op-muted); font-size: 12px; }
 html .rv-workspace .rv-compact { min-height: 32px; padding: 5px 14px; border-radius: 999px; font-size: 12px; }
 html .rv-document-inline .rv-document-long-running { border-color: var(--op-line); border-radius: 6px; background: var(--op-card); }
-/* 문서 분석 진행: 회전 표시 대신 문서를 읽는 3D 그림(DocumentArt)을 둔다 */
-html .rv-document-art { display: grid; place-items: center; margin: 2px 0 4px; }
+/* 문서 분석 진행(2026-11-17 다듬기): 문서를 읽는 3D 그림(DocumentArt) 아래에 안내 문장, 세 단계 선, 큰 경과 시간을 가운데로 쌓는다.
+   단계 선은 원문 저장 · 요구사항 추출 · 기준 정리 세 칸이다. 서버가 단계 안의 진행률은 알려 주지 않으므로
+   끝난 칸은 잉크로 채우고, 진행 중인 칸은 잉크 줄이 왼쪽에서 오른쪽으로 흐르며, 차례를 기다리는 칸은 점선이 천천히 흐른다. */
+@keyframes op-doc-flow { from { transform: translateX(-105%); } to { transform: translateX(105%); } }
+@keyframes op-doc-wait { to { background-position: 16px 0; } }
+html .rv-document-inline { gap: 0; padding: 16px 0 6px; }
+html .rv-document-art { display: grid; place-items: center; margin: 0 0 10px; }
 html .rv-workspace .rv-document-inline :is(p, small) { font-size: 12px; }
-html .rv-workspace .rv-document-inline > p:first-of-type { color: var(--op-ink); font-size: 13px; }
-/* 경과 시간은 포스터 검수 진행 화면(.rv-poster-progress .rv-progress-facts)과 같은 글꼴·크기로 적는다 */
-html .rv-workspace .rv-document-elapsed dt { color: var(--op-muted); font: 10px/1.6 var(--font-signal); letter-spacing: 0.06em; }
-html .rv-workspace .rv-document-elapsed dd { margin-top: 4px; color: var(--op-ink); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+html .rv-workspace .rv-document-inline > p:first-of-type { margin: 0 0 20px; color: var(--op-ink); font-size: 15px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.5; text-wrap: balance; }
+html .rv-document-track { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: min(100%, 440px); }
+html .rv-document-step { display: grid; gap: 9px; min-width: 0; color: color-mix(in srgb, var(--op-muted) 62%, transparent); text-align: left; transition: color .3s; }
+html .rv-document-step > i { position: relative; height: 3px; overflow: hidden; border-radius: 999px; background: var(--op-line); transition: background-color .4s; }
+html .rv-document-step > span { display: flex; align-items: baseline; gap: 6px; overflow: hidden; font-size: 12.5px; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
+html .rv-document-step b { font: 400 10.5px/1 var(--font-signal); letter-spacing: 0.04em; }
+html .rv-document-step.is-completed { color: var(--op-muted); }
+html .rv-document-step.is-completed > i { background: var(--op-ink); }
+html .rv-document-step:is(.is-active, .is-waiting) { color: var(--op-ink); }
+html .rv-document-step:is(.is-active, .is-waiting) > span { font-weight: 500; }
+html .rv-document-step.is-active > i { background: color-mix(in srgb, var(--op-ink) 16%, var(--op-line)); }
+html .rv-document-step.is-active > i::after { content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--op-ink) 30%, var(--op-ink) 70%, transparent); animation: op-doc-flow 1.7s cubic-bezier(.45, 0, .25, 1) infinite; }
+html .rv-document-step.is-waiting > i { background: repeating-linear-gradient(90deg, var(--op-ink) 0 8px, transparent 8px 16px); opacity: .5; animation: op-doc-wait 1.2s linear infinite; }
+/* 경과 시간: 이름표와 숫자를 한 줄에. 숫자는 진행 화면의 큰 숫자처럼 가늘고 크게 적는다 */
+html .rv-workspace .rv-document-elapsed { margin: 22px 0 0; }
+html .rv-workspace .rv-document-elapsed > div { display: inline-flex; align-items: baseline; gap: 10px; }
+html .rv-workspace .rv-document-elapsed dt { color: var(--op-muted); font: 11px/1.4 var(--font-signal); letter-spacing: 0.04em; }
+html .rv-workspace .rv-document-elapsed dd { margin: 0; color: var(--op-ink); font-size: 30px; font-weight: 400; letter-spacing: -0.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+html .rv-document-inline .rv-document-last-checked { margin-top: 10px; }
+html .rv-document-inline .rv-document-long-running { margin-top: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  html .rv-document-step.is-active > i::after { animation: none; transform: scaleX(0.6); transform-origin: left; background: var(--op-ink); }
+  html .rv-document-step.is-waiting > i { animation: none; }
+}
 html .rv-extracted { border-color: var(--op-line); border-radius: 6px; background: var(--op-surface); }
 /* 문서에서 추출한 요구사항: 줄을 낮춘다(문구는 늘 한 줄, 그 자리에서 고친다). 뺀 항목은 흐리게, 많은 나머지는 접는다. */
 html .rv-extracted-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; margin-top: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--op-line); }
@@ -473,7 +544,7 @@ html .vl-page h1 { font-weight: 500; letter-spacing: -0.05em; }
 html .rv-workspace .rv-input-page { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 24px; }
 html .rv-workspace .rv-input-page > * { grid-column: 1 / -1; min-width: 0; }
 /* 개발 서버의 '데이터 없이 화면 둘러보기'는 저장할 프로젝트 칸 오른쪽, 프로젝트 글자 줄 높이에 맞춘다. */
-html .rv-project-identity > .rv-preview-entry { align-self: flex-end; margin: 0 0 14px; color: var(--op-muted); font: 11px/1.5 var(--font-signal); text-align: left; white-space: nowrap; }
+html .rv-project-identity > .rv-preview-entry { align-self: flex-end; margin: 0 0 9px; color: var(--op-muted); font: 11px/1.5 var(--font-signal); text-align: left; white-space: nowrap; }
 html .rv-workspace .rv-input-page > .rv-type-picker { grid-row: 1; }
 /* 자료 종류 고르기(검수 첫 화면)는 검수 이름 줄이 없어 머리글에 붙는다. 다음 화면과 비슷한 높이에서 시작하게 위를 띄운다. */
 /* 보안 여부·검수 유형 고르기도 검수 이름·프로젝트 줄을 두지 않으므로 같은 높이에서 시작한다. */

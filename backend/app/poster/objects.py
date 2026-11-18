@@ -55,5 +55,5 @@ def request_objects(image: Image.Image, *, threshold: float = OWL_THRESHOLD, loc
     data = _run(payload, lambda p, d: None)
     if (not isinstance(data, dict) or not isinstance(data.get("objects"), list)
             or data.get("size") != list(image.size)):
-        raise WorkerError("RunPod 워커의 포스터 객체 결과 형식이 올바르지 않습니다.")
+        raise WorkerError("검수 서버의 포스터 객체 결과 형식이 올바르지 않습니다.")
     return data

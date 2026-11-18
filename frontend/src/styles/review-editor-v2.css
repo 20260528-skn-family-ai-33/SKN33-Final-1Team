@@ -392,7 +392,6 @@
   animation: rv-document-spin 2s linear infinite;
 }
 @keyframes rv-document-spin { to { transform: rotate(360deg); } }
-.rv-document-inline progress { width: 100%; max-width: 255px; height: 4px; accent-color: var(--rv-ink); }
 .rv-document-inline p, .rv-document-inline small { font-size: 11px; color: var(--rv-muted); }
 .rv-document-inline .rv-document-long-running {
   width: 100%;

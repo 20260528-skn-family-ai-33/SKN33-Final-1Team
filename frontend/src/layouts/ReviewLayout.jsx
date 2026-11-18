@@ -27,7 +27,7 @@ function ProjectNameField({ editor, value = '', locked }) {
       value={value} placeholder="이름 없는 검수 (선택)" disabled={off} onChange={event => editor.onChange(event.target.value)}
       title={editor.onEnter ? 'Enter를 누르면 이 이름으로 프로젝트를 만들고 선택합니다.' : undefined} onKeyDown={keyDown} />
     {editor.maxLength && <span className="rv-project-name-count" aria-hidden="true">
-      {value.length}/{editor.maxLength}{editor.onEnter && value.trim() ? ' · Enter로 프로젝트 만들기' : ''}</span>}
+      {value.length}/{editor.maxLength}{editor.onEnter && value.trim() ? <> <kbd>Enter</kbd> 프로젝트 만들기</> : null}</span>}
     <button type="button" aria-label="검수 이름 고치기" title="검수 이름 고치기" disabled={off}
       onClick={() => { input.current?.focus(); input.current?.select(); }}><Icon name="pencil" /></button>
   </div>;

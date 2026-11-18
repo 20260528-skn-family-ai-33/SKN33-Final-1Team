@@ -129,7 +129,7 @@ def test_full_pipeline_matches_plan_stages(tmp_path):
         assert status["project_reviews"] is False
         policy = status["limits"]
         assert policy["duration_seconds"] == 180
-        assert policy["upload_bytes"] == 1024 ** 3
+        assert policy["upload_bytes"] == 500 * 1024 ** 2
         response = upload(client, data, name="../../etc/passwd.mp4",
                           criteria=[criterion(f'"{SUBTITLE}"'), criterion("'최고' 표현은 쓰지 마세요", "c2")])
         assert response.status_code == 202

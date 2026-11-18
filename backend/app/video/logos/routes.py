@@ -18,6 +18,7 @@ import math
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import threading
 from typing import Callable
 from uuid import UUID, uuid4
@@ -27,13 +28,16 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from PIL import Image
 
+from backend.app.video.frames import probe
+from backend.app.video.frames import resolve_ffmpeg
+from backend.app.video.frames import sniff_container
 from backend.app.video.logos.client import WorkerPool
 from backend.app.video.review import _now
 from backend.app.video.review import _read_json
 from backend.app.video.review import _write_json
+from backend.app.video.review import limits
 
 VIDEO_KEY = "video"
-MAX_VIDEO_BYTES = 1024 * 1024 * 1024
 MAX_LOGO_BYTES = 8 * 1024 * 1024
 MAX_LOGOS = 12
 VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}
@@ -48,6 +52,25 @@ def _link_or_copy(source: Path, target: Path) -> None:
         os.link(source, target)
     except OSError:
         shutil.copyfile(source, target)
+
+
+def check_video_length(path: Path, seconds: int) -> None:
+    """로고만 검수로 올린 영상의 길이를 동영상 검수와 같은 한도(limits의 duration_seconds)로 확인한다.
+    동영상 검수와 같은 방법을 쓴다: 파일 머리로 컨테이너를 고르고(sniff_container) ffmpeg 입력 정보로 길이를 잰다(probe).
+    검수에 연결된 영상(review_id)은 동영상 검수가 접수할 때 이미 확인했으므로 여기로 오지 않는다."""
+    with path.open("rb") as handle:
+        demuxer = sniff_container(handle.read(16))
+    if demuxer is None:
+        raise HTTPException(415, "지원하는 영상 형식이 아닙니다.")
+    ffmpeg = resolve_ffmpeg()
+    if not ffmpeg:
+        raise HTTPException(503, "서버에 ffmpeg가 없어 영상 길이를 확인하지 못했습니다.")
+    try:
+        info = probe(ffmpeg, demuxer, path)
+    except (ValueError, OSError, IndexError, subprocess.SubprocessError):
+        raise HTTPException(415, "영상을 디코딩하지 못했습니다. 손상되지 않은 동영상인지 확인해 주세요.") from None
+    if not 0 < info["duration_ms"] <= seconds * 1000:
+        raise HTTPException(422, f"동영상 길이는 {seconds}초 이하여야 합니다.")
 
 
 def readiness() -> tuple[bool, str]:
@@ -76,7 +99,7 @@ def local_readiness() -> tuple[bool, str]:
     except Exception as exc:  # pragma: no cover - 환경 확인
         return False, f"영상 로고 검수 패키지가 없습니다: {exc.__class__.__name__}"
     if not torch.cuda.is_available():
-        return False, "GPU가 없습니다. RunPod Pod 워커(VIDEO_LOGO_WORKER_URL)를 연결하세요."
+        return False, "로고 검수 서버가 연결되지 않았습니다. 관리자에게 문의해 주세요."
     from scripts.prepare_paddle import DETECTION_MODEL, MODEL, verify_model
     from backend.app.ocr.paddle import paddle_paths
     _, detection, recognition = paddle_paths()
@@ -378,13 +401,16 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 if linked_video is not None:
                     await run_in_threadpool(_link_or_copy, linked_video, target / f"video{suffix}")
                 else:
+                    # 로고만 검수로 올린 영상도 동영상 검수와 같은 용량·길이 한도를 지킨다(기본 500MiB·180초).
+                    policy = limits()
                     size = 0
                     with open(target / f"video{suffix}", "wb") as fh:
                         while chunk := await video.read(1024 * 1024):
                             size += len(chunk)
-                            if size > MAX_VIDEO_BYTES:
-                                raise HTTPException(413, "영상이 너무 큽니다.")
+                            if size > policy["upload_bytes"]:
+                                raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MiB 이하로 업로드해 주세요.")
                             fh.write(chunk)
+                    await run_in_threadpool(check_video_length, target / f"video{suffix}", policy["duration_seconds"])
                 items = []
                 for i, logo in enumerate(logos):
                     raw = await logo.read(MAX_LOGO_BYTES + 1)
