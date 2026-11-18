@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ImageStage from '../../components/ImageStage.jsx';
 import { buildReportContext, posterMarks } from './reportBrief.js';
 import { REPORT_COMMENT_MAX, readReportComments, writeReportComments } from './reportComments.js';
+import { buildConfirmationForm } from './confirmationForm.js';
+import ConfirmationForm from './ConfirmationForm.jsx';
 import '../../styles/framework-report.css';
 
 // 포스터 4단계 보고서. 디자인은 목업(회색 바탕 위 종이, 점 달린 상태 칩, 개수 상자, 안내 상자)을 따르고,
@@ -73,6 +75,15 @@ export default function FrameworkReport({ run, projectName, image = null, standa
     if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
+  // '검수 확인서 인쇄'(2026-11-18 요청): 보고서 대신 공공기관 보고서 형식 확인서(ConfirmationForm)만 인쇄한다.
+  // 상태를 바꿔 확인서가 그려진 뒤 인쇄 창을 열고, 창이 닫히면 보고서 인쇄로 되돌린다.
+  const [printingForm, setPrintingForm] = useState(false);
+  const form = useMemo(() => buildConfirmationForm(context, { comments, decision: run.human_decision }), [context, comments, run.human_decision]);
+  useEffect(() => {
+    if (!printingForm) return;
+    window.print();
+    setPrintingForm(false);
+  }, [printingForm]);
   const hasReviewItems = context.items.some(item => item.verdict.code === 'review');
   const changeReasons = (run.approvals || []).filter(approval => approval.decision === 'approve_changes' && approval.reason).map(approval => approval.reason);
   const status = run.human_decision === 'final_approved' ? '담당자 최종 승인' : context.synthetic ? '합성 데이터 · 자동 검수 초안' : '자동 검수 초안';
@@ -111,8 +122,9 @@ export default function FrameworkReport({ run, projectName, image = null, standa
       </div>
     </div>;
   };
-  return <article className="rv-report-print rv-poster-report" aria-label="검수 보고서">
+  return <article className={`rv-report-print rv-poster-report${printingForm ? ' is-printing-form' : ''}`} aria-label="검수 보고서">
     <div className="rv-report-actions">
+      <button type="button" className="rv-button secondary" onClick={() => setPrintingForm(true)}>검수 확인서 인쇄</button>
       <button type="button" className="rv-button secondary" onClick={() => window.print()}>인쇄 / PDF 저장</button>
     </div>
     <div className="rv-report-shell"><div className="rv-report-paper">
@@ -184,6 +196,7 @@ export default function FrameworkReport({ run, projectName, image = null, standa
         {run.report.change_requests?.length > 0 && <ul>{run.report.change_requests.map((text, index) => <li key={index}>{text}</li>)}</ul>}
       </details>}
     </div></div>
+    <ConfirmationForm form={form} />
     {viewing && marks[viewing] && <LocationViewer key={viewing} mark={marks[viewing]} image={image}
       verdict={context.items.find(item => item.criterion_id === viewing).verdict} onClose={() => setViewing(null)} />}
   </article>;
