@@ -195,11 +195,33 @@ def _sweep() -> None:
             del _jobs[key]
 
 
+def _role() -> str:
+    """VIDEO_LOGO_WORKER_ROLE=poster-objects면 포스터 Qwen Pod에 함께 띄운 OWLv2 전용 워커다(deploy/poster-objects).
+    이때는 poster_objects 작업만 받고, health도 Paddle·SigLIP 없이 OWLv2에 필요한 것만 확인한다."""
+    return "poster-objects" if os.getenv("VIDEO_LOGO_WORKER_ROLE", "").strip().lower() == "poster-objects" else "full"
+
+
+def _objects_readiness() -> tuple[bool, str]:
+    try:
+        import scipy  # noqa: F401  OWLv2 이미지 처리기가 요구
+        import torch
+        import torchvision  # noqa: F401  NMS
+        import transformers  # noqa: F401
+    except Exception as exc:  # pragma: no cover - 환경 확인
+        return False, f"OWLv2 패키지가 없습니다: {exc.__class__.__name__}"
+    if not torch.cuda.is_available():
+        return False, "OWLv2 워커에서 GPU를 찾지 못했습니다."
+    return True, "준비됨(포스터 객체 전용)"
+
+
 @app.get("/health", dependencies=[Depends(_auth)])
 def health():
     """모델을 올리지 않고 패키지·GPU·OCR 모델 파일만 확인한다."""
-    from backend.app.video.logos.routes import local_readiness
-    ready, detail = local_readiness()
+    if _role() == "poster-objects":
+        ready, detail = _objects_readiness()
+    else:
+        from backend.app.video.logos.routes import local_readiness
+        ready, detail = local_readiness()
     with _lock:
         busy = sum(v["status"] in {"queued", "running"} for v in _jobs.values())
     return {"ready": ready, "detail": detail, "busy": busy}
@@ -210,6 +232,8 @@ def submit(body: dict = Body(...)):
     """{"kind": "candidates", "frames": [{sec, jpg_base64}], "refs": [{name, png_base64, text}]}
     또는 {"kind": "compare", "ref": {png_base64, text}, "crops": [jpg_base64, ...]}"""
     kind = body.get("kind")
+    if _role() == "poster-objects" and kind != "poster_objects":
+        raise HTTPException(422, "이 워커는 포스터 객체 탐지(poster_objects)만 처리합니다.")
     if kind == "candidates":
         frames, refs = body.get("frames"), body.get("refs")
         if not (isinstance(frames, list) and 1 <= len(frames) <= MAX_FRAMES and isinstance(refs, list) and 1 <= len(refs) <= MAX_REFS):

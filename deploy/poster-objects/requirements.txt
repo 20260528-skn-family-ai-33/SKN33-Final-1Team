@@ -1,0 +1,11 @@
+# 포스터 Qwen Pod에 함께 띄우는 OWLv2 포스터 객체 워커 전용(backend/app/poster/objects.py, kind=poster_objects).
+# 영상 로고 워커(requirements-logo.txt)와 같은 버전에서 OWLv2에 필요한 것만 남겼다. Paddle·SigLIP·BiRefNet은 넣지 않는다.
+# torch / torchvision 은 setup.sh가 Pod 기본 이미지의 CUDA 12.8 wheel을 재사용하거나 cu128 인덱스에서 따로 설치한다.
+transformers==4.56.2
+huggingface_hub==0.36.2
+safetensors==0.8.0
+pillow==12.3.0
+numpy==2.2.6
+scipy==1.14.1
+fastapi==0.143.0
+uvicorn==0.54.0
