@@ -37,9 +37,10 @@ from .criteria_contracts import CriteriaAdditionRequest,CriteriaVersionRequest,C
 from .poster_review import PosterReviewRequest,PostgresPosterReviews,open_poster_storage
 from .my_tasks import MyTasks, HistoryVisibility
 from .help_chat import LunaResponder, help_chat_router
+from .agents.contracts import CoordinationNote
 
 
-def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=None,poster_storage_root=None):
+def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=None,poster_storage_root=None,run_guidance=None):
     if settings.environment not in ('development','test','production'):
         raise ConfigurationError('Unsupported framework environment.')
     if settings.environment=='production':
@@ -135,6 +136,7 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
                 'context_preparation':configuration.context_preparation.mode if configuration.context_preparation else 'approved_sources',
                 'graph_projection':app.state.framework_revision in GRAPH_REVISIONS,
                 'task_controls':True,
+                **({'a01_guidance_ready':True} if run_guidance is not None else {}),
                 'criteria_review':app.state.criteria_review is not None,
                 'poster_reviews':app.state.poster_reviews is not None,
                 'poster_text_edit_ready':settings.poster_edit_key is not None and app.state.poster_reviews is not None,
@@ -198,6 +200,12 @@ def create_postgres_app(settings,configuration,*,engine=None,pdf_storage_root=No
         return invoke(app.state.framework.start,subject(request),body.context,body.document,body.asset)
     @app.get(prefix+'/runs/{run_id}',response_model=RunSnapshot)
     def read(request:Request,run_id:str):return invoke(app.state.framework.get,subject(request),run_id)
+    @app.post(prefix+'/runs/{run_id}/guidance',response_model=CoordinationNote)
+    def guidance(request:Request,run_id:str,response:Response):
+        actor=subject(request)
+        if run_guidance is None:raise AuthError('A01_GUIDANCE_DISABLED',503)
+        response.headers['Cache-Control']='no-store'
+        return run_guidance.assess(app.state.framework,actor,run_id)
     @app.get(prefix+'/runs/{run_id}/requirements')
     def requirements(request:Request,run_id:str):
         from .requirements_presentation import present_requirements

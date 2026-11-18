@@ -31,7 +31,8 @@ def postgres_mcp(args):
     try:
         _ready(engine, settings)
         store = McpStore(engine, configuration)
-        app = create_mcp_app(PostgresRuns(store), token=token, evidence=PostgresEvidence(store, graph))
+        app = create_mcp_app(PostgresRuns(store), token=token, evidence=PostgresEvidence(store, graph),
+                             read_only=args.read_only)
         uvicorn.run(app, host='127.0.0.1', port=args.port, workers=1, reload=False)
         return 0
     finally:
@@ -44,4 +45,5 @@ def register(commands, port_type):
     command.add_argument('--env-file', required=True, help='explicit app-only env file')
     command.add_argument('--config', required=True, help='fixed trusted team adapter configuration')
     command.add_argument('--port', type=port_type, default=DEFAULT_PORT)
+    command.add_argument('--read-only', action='store_true', help='expose only run, evidence and relation lookups')
     command.set_defaults(handler=postgres_mcp)

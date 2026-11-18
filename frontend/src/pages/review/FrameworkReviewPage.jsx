@@ -13,6 +13,7 @@ import { frameworkResults } from './frameworkResults.js';
 import { criterionLine } from './criterionLabel.js';
 import ReviewProgress from './ReviewProgress.jsx';
 import FrameworkRunStatus from './FrameworkRunStatus.jsx';
+import RunGuidance from './RunGuidance.jsx';
 import { frameworkProgress, processingStatuses } from './frameworkProgress.js';
 import CriteriaAmendment from './CriteriaAmendment.jsx';
 import CriteriaWorkspace from './CriteriaWorkspace.jsx';
@@ -572,6 +573,9 @@ export default function FrameworkReviewPage({ runId, initialFile, projectName, o
       {run?.error?.code === 'USER_CANCELLED' ? <p role="status" className="rv-framework-notice">대기 작업을 취소했습니다. 원본과 기존 기록은 보존됩니다.</p>
         : run?.error && <><ErrorMessage message={extractionFailureMessage(run)} />
           <ExtractionFailure failure={extractionFailureOf(run)} /></>}
+      {health?.a01_guidance_ready === true && ['queued', 'failed', 'outcome_unknown'].includes(status) &&
+        run?.error?.code !== 'USER_CANCELLED' &&
+        <RunGuidance key={runId + ':' + status} path={path} status={status} />}
       {processing ? <ReviewProgress {...progress} image={image} error={error}
         facts={run?.baseline ? [['해상도', image.width ? `${image.width}×${image.height}` : image.unavailable ? '확인 불가' : '확인 중'],
           ['검수 기준', criteria.length ? `${criteria.length}개` : '확인 중'],

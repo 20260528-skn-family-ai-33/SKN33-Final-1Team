@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import re
+from time import monotonic
 from typing import Any, Callable, Protocol, TypeVar
 from urllib.parse import urlsplit, urlunsplit
 
@@ -52,7 +53,8 @@ def bound(tools: ToolClient, name: str, arguments: dict) -> Callable[[], dict]:
 class OpenAICompatibleChat:
     """Single-attempt chat completions; the caller decides whether to start again."""
 
-    def __init__(self, base_url: str, api_key: str | None = None, *, timeout: float = 120):
+    def __init__(self, base_url: str, api_key: str | None = None, *, timeout: float = 120,
+                 model: str = MODEL, reasoning_effort: str | None = None, deadline: float | None = None):
         parsed = urlsplit(base_url or '')
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.query:
             raise AdapterFailure('INVALID_MODEL_ENDPOINT', 'The model endpoint setting is invalid.')
@@ -60,20 +62,31 @@ class OpenAICompatibleChat:
         if not path.endswith('/chat/completions'):
             path += '/chat/completions' if path.endswith('/v1') else '/v1/chat/completions'
         self.url = urlunsplit((parsed.scheme, parsed.netloc, path, '', ''))
+        self.model, self.reasoning_effort, self.deadline = model, reasoning_effort, deadline
+        self.timeout = min(timeout, 120)
         headers = {'Accept': 'application/json','Accept-Encoding':'identity'} | ({'Authorization': f'Bearer {api_key}'} if api_key else {})
         self._http = httpx.Client(headers=headers, follow_redirects=False, trust_env=False,
-                                  timeout=httpx.Timeout(min(timeout, 120), connect=10))
+                                  timeout=httpx.Timeout(self.timeout, connect=10))
 
     def close(self):
         self._http.close()
 
     def complete(self, messages: list[dict], tools: list[dict]) -> dict:
-        payload = {'model': MODEL, 'messages': messages, 'temperature': 0, 'max_tokens': 2048,
-                   'chat_template_kwargs': {'enable_thinking': False}}
+        payload = {'model': self.model, 'messages': messages}
+        if self.reasoning_effort is None:
+            payload.update(temperature=0, max_tokens=2048, chat_template_kwargs={'enable_thinking': False})
+        else:
+            payload.update(max_completion_tokens=2048, reasoning_effort=self.reasoning_effort, store=False)
         if tools:
             payload.update(tools=tools, tool_choice='auto')
+        request_options = {}
+        if self.deadline is not None:
+            remaining = self.deadline - monotonic()
+            if remaining <= 0:
+                raise AdapterFailure('MODEL_TIMEOUT', 'The guidance request reached its time limit.')
+            request_options['timeout'] = httpx.Timeout(min(remaining, self.timeout), connect=min(remaining, 5))
         try:
-            with self._http.stream('POST',self.url,json=payload) as response:
+            with self._http.stream('POST',self.url,json=payload,**request_options) as response:
                 if response.status_code>=500:
                     raise AdapterFailure('MODEL_OUTCOME_UNKNOWN','The model request outcome is unconfirmed.',outcome_unknown=True)
                 if response.status_code!=200:
@@ -82,6 +95,8 @@ class OpenAICompatibleChat:
                     raise AdapterFailure('MODEL_INVALID_RESPONSE','Compressed model responses are not accepted.')
                 content=bytearray()
                 for chunk in response.iter_bytes():
+                    if self.deadline is not None and monotonic() >= self.deadline:
+                        raise AdapterFailure('MODEL_TIMEOUT', 'The guidance request reached its time limit.')
                     if len(content)+len(chunk)>MAX_RESPONSE_BYTES:
                         raise AdapterFailure('MODEL_REQUEST_FAILED','The model response exceeds the size limit.')
                     content.extend(chunk)
