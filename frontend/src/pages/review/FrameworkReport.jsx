@@ -53,10 +53,64 @@ export default function FrameworkReport({ run, projectName, image = null, standa
     setComments(next);
     setCommentSaved(writeReportComments(runId, next));
   };
+  // 충족 항목은 처음에 접어 두고(2026-11-17 요청: 확인 필요는 적고 충족이 너무 많음) 단추로 펼친다.
+  // 인쇄·PDF에는 충족 항목을 빼고, 담당자가 고른 항목만 싣는다. 고른 항목은 이 화면에서만 기억한다.
+  const passRef = useRef(null);
+  const scrollOnOpen = useRef(false);
+  const [passOpen, setPassOpen] = useState(false);
+  const [printPass, setPrintPass] = useState(() => new Set());
+  const [passRun, setPassRun] = useState(runId);
+  if (passRun !== runId) { setPassRun(runId); setPassOpen(false); setPrintPass(new Set()); }
+  const openPass = () => { scrollOnOpen.current = true; setPassOpen(true); };
+  useEffect(() => {
+    if (!passOpen || !scrollOnOpen.current) return;
+    scrollOnOpen.current = false;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    passRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }, [passOpen]);
+  const togglePrint = id => setPrintPass(current => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
   const hasReviewItems = context.items.some(item => item.verdict.code === 'review');
   const changeReasons = (run.approvals || []).filter(approval => approval.decision === 'approve_changes' && approval.reason).map(approval => approval.reason);
   const status = run.human_decision === 'final_approved' ? '담당자 최종 승인' : context.synthetic ? '합성 데이터 · 자동 검수 초안' : '자동 검수 초안';
   const { counts } = context;
+  // 번호는 전체 순서(위치 보기 번호와 같음)를 그대로 쓴다. 항목은 불충족·확인 필요·충족 순으로 정렬돼 있다(reportBrief.js).
+  const numbered = context.items.map((item, index) => ({ item, number: pad(index + 1) }));
+  const passItems = numbered.filter(({ item }) => item.verdict.code === 'pass');
+  const otherItems = numbered.filter(({ item }) => item.verdict.code !== 'pass');
+  const printedPass = passItems.filter(({ item }) => printPass.has(item.criterion_id)).length;
+  const renderItem = ({ item, number }) => {
+    const passed = item.verdict.code === 'pass';
+    const printed = !passed || printPass.has(item.criterion_id);
+    const commentable = item.verdict.code === 'review';
+    const comment = comments[item.criterion_id] || '';
+    return <div className={`rv-report-result${commentable ? ' has-comment' : ''}${printed ? '' : ' is-print-excluded'}`} key={item.criterion_id}>
+      <div className="rv-report-result-heading"><h3>{number}. {item.label}{item.required ? '' : ' · 권장'}</h3>
+        <div className="rv-report-result-side">
+          {passed && <label className="rv-report-print-pick"><input type="checkbox" checked={printed}
+            onChange={() => togglePrint(item.criterion_id)} aria-label={`${number}. ${item.label} 인쇄에 포함`} />인쇄에 포함</label>}
+          {marks[item.criterion_id] ? <button type="button" className="rv-report-locate" aria-haspopup="dialog"
+            aria-label={`${number}. ${item.label} 위치 보기`} onClick={() => setViewing(item.criterion_id)}>위치 보기</button>
+            : !passed && <span className="rv-report-locate-none">위치 정보 없음</span>}
+          <StatusChip verdict={item.verdict} />
+        </div></div>
+      <div className="rv-report-result-body"><div>
+        <p>기준 {item.expected ? `‘${item.expected}’` : '미정'}{item.source ? ` · ${item.source}` : ''}</p>
+        <p><b>관측</b> {item.observed ? `‘${item.observed}’` : item.observation}{!passed && item.location ? ` · ${item.location}` : ''}</p>
+        {item.reason && <p className="rv-report-muted">{item.reason}</p>}
+        {item.human && <p className="rv-report-human"><b>담당자 확인 · {item.human.verdict.label}</b> {item.human.note}</p>}
+        {commentable && comment.trim() && <p className="rv-report-comment-print"><b>담당자 코멘트</b> {comment.trim()}</p>}
+      </div>
+      {/* 위치 보기·확인 필요 칩 바로 아래(오른쪽 칸)에 코멘트 한 칸만 둔다. 인쇄에서는 칸 대신 위의 글로 나온다. */}
+      {commentable && <textarea className="rv-report-comment" rows={2} maxLength={REPORT_COMMENT_MAX}
+        placeholder="담당자 코멘트" aria-label={`${number}. ${item.label} 담당자 코멘트`}
+        value={comment} onChange={event => updateComment(item.criterion_id, event.target.value)} />}
+      </div>
+    </div>;
+  };
   return <article className="rv-report-print rv-poster-report" aria-label="검수 보고서">
     <div className="rv-report-actions">
       <button type="button" className="rv-button secondary" onClick={() => window.print()}>인쇄 / PDF 저장</button>
@@ -78,7 +132,9 @@ export default function FrameworkReport({ run, projectName, image = null, standa
         <div className="rv-report-machine"><StatusChip verdict={context.verdict} /><span>기계 판정 · {context.verdict.label}</span></div>
         <div className="rv-report-counts">
           <span><strong>필수</strong> {counts.required}건</span>
-          <span className="is-pass"><strong>충족</strong> {counts.pass}건</span>
+          {passItems.length > 0 ? <button type="button" className="rv-report-count-jump is-pass" aria-controls="rv-report-pass-list"
+            onClick={openPass}><strong>충족</strong> {counts.pass}건 <span className="rv-report-count-arrow" aria-hidden="true">↓</span></button>
+            : <span className="is-pass"><strong>충족</strong> {counts.pass}건</span>}
           <span className="is-review"><strong>확인 필요</strong> {counts.review}건</span>
           <span className="is-fail"><strong>불충족</strong> {counts.fail}건</span>
           {counts.optional > 0 && <span><strong>권장</strong> {counts.optional}건 · 판정 제외</span>}
@@ -90,31 +146,25 @@ export default function FrameworkReport({ run, projectName, image = null, standa
         {hasReviewItems && <p className="rv-report-comment-hint">
           {commentSaved ? '확인 필요 항목의 담당자 코멘트는 이 브라우저에 저장되고, 인쇄·PDF에 함께 나옵니다.'
             : '이 브라우저에 저장할 수 없어요. 새로고침하면 코멘트가 사라집니다.'}</p>}
-        {context.items.length ? context.items.map((item, index) => {
-          const number = pad(index + 1);
-          const commentable = item.verdict.code === 'review';
-          const comment = comments[item.criterion_id] || '';
-          return <div className={`rv-report-result${commentable ? ' has-comment' : ''}`} key={item.criterion_id}>
-          <div className="rv-report-result-heading"><h3>{number}. {item.label}{item.required ? '' : ' · 권장'}</h3>
-            <div className="rv-report-result-side">
-              {marks[item.criterion_id] ? <button type="button" className="rv-report-locate" aria-haspopup="dialog"
-                aria-label={`${number}. ${item.label} 위치 보기`} onClick={() => setViewing(item.criterion_id)}>위치 보기</button>
-                : item.verdict.code !== 'pass' && <span className="rv-report-locate-none">위치 정보 없음</span>}
-              <StatusChip verdict={item.verdict} />
-            </div></div>
-          <div className="rv-report-result-body"><div>
-            <p>기준 {item.expected ? `‘${item.expected}’` : '미정'}{item.source ? ` · ${item.source}` : ''}</p>
-            <p><b>관측</b> {item.observed ? `‘${item.observed}’` : item.observation}{item.verdict.code !== 'pass' && item.location ? ` · ${item.location}` : ''}</p>
-            {item.reason && <p className="rv-report-muted">{item.reason}</p>}
-            {item.human && <p className="rv-report-human"><b>담당자 확인 · {item.human.verdict.label}</b> {item.human.note}</p>}
-            {commentable && comment.trim() && <p className="rv-report-comment-print"><b>담당자 코멘트</b> {comment.trim()}</p>}
-          </div>
-          {/* 위치 보기·확인 필요 칩 바로 아래(오른쪽 칸)에 코멘트 한 칸만 둔다. 인쇄에서는 칸 대신 위의 글로 나온다. */}
-          {commentable && <textarea className="rv-report-comment" rows={2} maxLength={REPORT_COMMENT_MAX}
-            placeholder="담당자 코멘트" aria-label={`${number}. ${item.label} 담당자 코멘트`}
-            value={comment} onChange={event => updateComment(item.criterion_id, event.target.value)} />}
-          </div>
-        </div>; }) : <p className="rv-report-muted">기록된 검사 결과가 없습니다.</p>}
+        {context.items.length ? <>
+          {otherItems.map(renderItem)}
+          {passItems.length > 0 && <div className="rv-report-pass" ref={passRef}>
+            <div className="rv-report-pass-bar">
+              <button type="button" className="rv-report-pass-toggle" aria-expanded={passOpen} aria-controls="rv-report-pass-list"
+                onClick={() => passOpen ? setPassOpen(false) : openPass()}>
+                충족 항목 {passItems.length}건 {passOpen ? '접기' : '펼쳐 보기'} <span aria-hidden="true">{passOpen ? '▴' : '▾'}</span></button>
+              <span className="rv-report-pass-count">인쇄 포함 {printedPass}/{passItems.length}</span>
+              {passOpen && <button type="button" className="rv-report-pass-all"
+                onClick={() => setPrintPass(printedPass === passItems.length ? new Set() : new Set(passItems.map(({ item }) => item.criterion_id)))}>
+                {printedPass === passItems.length ? '인쇄에서 모두 빼기' : '모두 인쇄에 넣기'}</button>}
+            </div>
+            <div id="rv-report-pass-list" className={`rv-report-pass-list${passOpen ? ' is-open' : ''}`} inert={!passOpen}>
+              <div>{passItems.map(renderItem)}</div>
+            </div>
+            {printedPass < passItems.length && <p className="rv-report-pass-print">{printedPass === 0
+              ? `충족 ${passItems.length}건은 인쇄에서 뺐습니다.` : `충족 ${passItems.length}건 중 담당자가 고른 ${printedPass}건만 실었습니다.`}</p>}
+          </div>}
+        </> : <p className="rv-report-muted">기록된 검사 결과가 없습니다.</p>}
       </section>
 
       {context.actions.length > 0 && <section aria-labelledby="rv-report-todo">

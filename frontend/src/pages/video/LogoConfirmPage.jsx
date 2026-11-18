@@ -90,7 +90,8 @@ function CropPreview({ video, sec, box, compact = false, fit }) {
 
 function FrameViewer({ video, sec, overlays = [], onSelect, className = '' }) {
   const missing = (video.missing || []).includes(sec);
-  return <div className={'vl-frame ' + className} style={{ aspectRatio: video.size[0] + ' / ' + video.size[1] }}>
+  return <div className={'vl-frame ' + className} style={{ aspectRatio: video.size[0] + ' / ' + video.size[1],
+    width: 'min(100%, calc(68vh * ' + ((video.size[0] || 1) / (video.size[1] || 1)).toFixed(4) + '))' }}>
     <img src={frameUrl(video, sec)} alt={sec + '초 전체 프레임'} />
     {/* 이름표는 상자 바깥 위(화면 맨 위에 붙은 상자는 바깥 아래)에 두어 로고를 가리지 않는다.
         선택 여부는 글자 대신 상자 모양(점선 → 굵은 흰 테 + 잉크 외곽선, 이름표 앞 체크)으로 보인다. */}
@@ -294,9 +295,9 @@ function ManualEditor({ video, initialSec, onCancel, onDone }) {
       <button type="button" className="vl-text-button" onClick={onCancel}>후보 화면으로</button>
     </div>
     <p className="vl-help">프레임에서 로고를 드래그해 감싸고, 로고가 보이는 구간을 정하세요.</p>
-    <div className="vl-manual-workspace">
+    <div className={'vl-manual-workspace' + (H > W ? ' is-portrait' : '')} style={{ '--vl-frame-w': 'calc(68vh * ' + ((W || 1) / (H || 1)).toFixed(4) + ')' }}>
       <div>
-        <div ref={canvas} className="vl-manual-canvas" style={{ aspectRatio: W + ' / ' + H }}
+        <div ref={canvas} className="vl-manual-canvas" style={{ aspectRatio: W + ' / ' + H, width: 'min(100%, calc(68vh * ' + ((W || 1) / (H || 1)).toFixed(4) + '))' }}
           onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
           <img src={frameUrl(video, sec)} alt={sec + '초 프레임'} draggable="false" />
           {box && <span className="vl-draw-box" style={boxStyle(box, video.size)} />}
@@ -394,7 +395,8 @@ function CandidateWorkspace({ video, refIndex, checked, onToggle, sec, setSec, o
       </div>
     </div>
 
-    <div className="vl-review-grid">
+    <div className={'vl-review-grid' + (video.size[1] > video.size[0] ? ' is-portrait' : '')}
+      style={{ '--vl-frame-w': 'calc(68vh * ' + ((video.size[0] || 1) / (video.size[1] || 1)).toFixed(4) + ')' }}>
       <div className="vl-review-left">
         <CandidatePlayer video={video} refIndex={refIndex} sec={sec} setSec={setSec} checked={checked} onToggle={onToggle} />
         <section className="vl-panel">
@@ -539,7 +541,7 @@ function EvidenceBundle({ base, bundle, refInfo, several }) {
   const rows = [...(bundle.per_sec || []).map(item => ({ ...item, skipped: false })),
     ...(bundle.skipped || []).map(item => ({ ...item, skipped: true }))].sort((a, b) => a.sec - b.sec);
   const [expanded, setExpanded] = useState(null);
-  const detailsOpen = expanded ?? (rows.length > 0 && rows.length <= 4);
+  const detailsOpen = expanded ?? (rows.length > 0 && rows.length <= 4 && rows.some(row => row.skipped || row.outcome !== 'match'));
   // 묶음 결과는 보류(차이 있음)·통과(차이 없음)로 보이고, 보류면 차이만 종류별로 모아 보여 준다.
   const outcome = OUTCOME[bundleOutcome(evidence.outcomes)];
   const differences = groupDifferences(bundle.per_sec);

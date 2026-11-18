@@ -117,3 +117,37 @@
   .rv-report-comment, .rv-report-comment-hint { display: none !important; }
   .rv-report-comment-print { display: block; border-left: 3px solid #e6dac3; padding-left: 8px; }
 }
+/* 충족 항목 접기·인쇄 선택(2026-11-17). 충족은 처음에 접어 두고, 펼치면 그 자리로 부드럽게 내려간다.
+   인쇄·PDF에는 접힘과 상관없이 담당자가 '인쇄에 포함'을 고른 충족 항목만 싣는다. */
+.rv-poster-report .rv-report-counts .rv-report-count-jump { display: inline; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 4px;
+  background: none; color: #177347; font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.rv-poster-report .rv-report-counts .rv-report-count-jump:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.rv-report-pass { border-top: 1px solid #deded9; padding-top: 9px; scroll-margin-top: 16px; }
+.rv-report-pass-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.rv-poster-report .rv-report-pass-toggle { min-height: 0; padding: 6px 12px; border: 1px solid #c9dccf; border-radius: 8px; background: #e8f2ec;
+  color: #177347; font-size: 12px; font-weight: 600; line-height: 1.5; cursor: pointer; }
+.rv-poster-report .rv-report-pass-toggle:hover { background: #dcebe1; }
+.rv-poster-report :is(.rv-report-pass-toggle, .rv-report-pass-all):focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.rv-report-pass-count { font-size: 11px; color: #62645e; }
+.rv-poster-report .rv-report-pass-all { margin-left: auto; min-height: 0; padding: 3px 9px; border: 1px solid #d6d8d1; border-radius: 7px;
+  background: #fff; color: #222; font-size: 11px; line-height: 1.5; cursor: pointer; }
+.rv-poster-report .rv-report-pass-all:hover { background: #f1f1ef; }
+.rv-report-pass-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+.rv-report-pass-list.is-open { grid-template-rows: 1fr; }
+/* 접힌 뒤(애니메이션이 끝난 뒤)에는 보이지 않게 숨겨 화면 낭독기·찾기에서도 빠진다. */
+.rv-report-pass-list > div { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s .35s; }
+.rv-report-pass-list.is-open > div { margin-top: 6px; visibility: visible; transition: visibility 0s; }
+.rv-report-pass-list .rv-report-result.is-print-excluded .rv-report-result-heading h3 { color: #62645e; }
+.rv-report-print-pick { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #62645e; cursor: pointer; white-space: nowrap; }
+.rv-report-print-pick input { width: 14px; height: 14px; margin: 0; accent-color: #177347; }
+.rv-report-pass-print { display: none; }
+@media (prefers-reduced-motion: reduce) { .rv-report-pass-list { transition: none; } }
+@media print {
+  .rv-report-pass { border-top: 0; padding-top: 0; }
+  .rv-report-pass-bar, .rv-report-print-pick, .rv-report-count-arrow { display: none !important; }
+  .rv-poster-report .rv-report-counts .rv-report-count-jump { text-decoration: none; }
+  .rv-report-pass-list { display: block; }
+  .rv-report-pass-list > div { overflow: visible; }
+  .rv-report-result.is-print-excluded { display: none !important; }
+  .rv-report-pass-print { display: block; margin: 0; padding: 9px 0 0; border-top: 1px solid #deded9; font-size: 12px; color: #62645e; }
+}

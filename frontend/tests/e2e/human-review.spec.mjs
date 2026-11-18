@@ -96,6 +96,29 @@ test('보고서는 승인 구역 없이 확인 필요 항목에만 담당자 코
   await page.emulateMedia({ media: 'screen' });
   assert.equal(await report.locator('.rv-report-comment-print').isVisible(), false);
 
+  // 충족 항목은 접혀 있다가 개수 단추로 펼쳐진다. 인쇄에는 고른 충족 항목만 실린다(2026-11-17)
+  const passTitle = report.getByRole('heading', { name: '02. 행사 이름', exact: true });
+  const passToggle = report.getByRole('button', { name: /^충족 항목 1건/ });
+  assert.equal(await passToggle.getAttribute('aria-expanded'), 'false');
+  assert.equal(await passTitle.isVisible(), false);
+  await report.getByRole('button', { name: /^충족 1건/ }).click();
+  await passTitle.waitFor();
+  assert.equal(await passToggle.getAttribute('aria-expanded'), 'true');
+  const pick = report.getByRole('checkbox', { name: '02. 행사 이름 인쇄에 포함' });
+  assert.equal(await pick.isChecked(), false);
+  await page.emulateMedia({ media: 'print' });
+  assert.equal(await passTitle.isVisible(), false);
+  assert.equal(await report.getByText('충족 1건은 인쇄에서 뺐습니다.', { exact: true }).isVisible(), true);
+  await page.emulateMedia({ media: 'screen' });
+  await pick.check();
+  await passToggle.click();
+  assert.equal(await passToggle.getAttribute('aria-expanded'), 'false');
+  await page.emulateMedia({ media: 'print' });
+  assert.equal(await passTitle.isVisible(), true, '접혀 있어도 고른 충족 항목은 인쇄에 실린다');
+  assert.equal(await report.locator('.rv-report-pass-print').count(), 0);
+  assert.equal(await report.getByRole('checkbox', { name: /인쇄에 포함$/ }).isVisible(), false);
+  await page.emulateMedia({ media: 'screen' });
+
   // 비우면 저장 항목도 지운다. 코멘트는 서버로 보내지 않는다
   await report.getByRole('textbox', { name: /담당자 코멘트$/ }).fill('');
   assert.equal(await page.evaluate(() => localStorage.getItem('poster-report-comments:human-fixture')), null);
