@@ -150,7 +150,7 @@ Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐
 ## 이용 흐름
 
 ```mermaid
-flowchart LR
+flowchart TB
     S["시작<br/>자료 종류 · 보안 여부 · 검수 유형"] --> A["자료 입력 · 기준 확인<br/>창작물 · 요구사항 · 원본 로고"]
     A --> C["검수 진행<br/>관측 · 판정 · 검증"]
     C --> D["결과 확인<br/>충족 · 위반 · 확인 필요"]
@@ -170,7 +170,7 @@ flowchart LR
 ## 아키텍처
 
 ```mermaid
-flowchart LR
+flowchart TB
     U["브라우저"] --> CF["CloudFront"]
     CF --> S3["S3<br/>React 정적 번들"]
     CF --> API["FastAPI<br/>인증 · 접수 · 조회"]
@@ -221,7 +221,7 @@ A02 다음에는 반드시 사람의 기준 승인을 거칩니다. 역할 사�
 | 에이전트 | LangGraph, MCP |
 | 모델 | Qwen3.5-4B · Qwen3-VL(vLLM), OWLv2, OpenAI API |
 | 데이터 | PostgreSQL 17, Neo4j |
-| 영상 | FFmpeg, 프레임 표본 추출, 로고 대조 |
+| 영상 | FFmpeg, 프레임 표본 추출, OWLv2 · SigLIP2 · BiRefNet · PP-OCRv5 |
 | 인프라 | AWS CloudFront · S3 · EC2 · RDS · EFS, RunPod GPU, Docker, GitHub Actions |
 
 ## 빠른 시작
