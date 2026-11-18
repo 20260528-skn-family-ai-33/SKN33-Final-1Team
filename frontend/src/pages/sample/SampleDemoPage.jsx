@@ -8,7 +8,7 @@ import { glowAt, glowOff, reviewModeLabels, SecurityArt, securityModeLabels, Typ
 import { mediaChoiceState } from '../../workspace/mediaChoice.js';
 import { LogoThumb, MediaArt, PlayIcon, SampleFrame, SamplePoster } from './SampleArt.jsx';
 import {
-  CAPTIONS, firstIssue, formatSeconds, LOGO_STEPS, MEDIA_LABELS, POSTER_SIZE, RESULTS, REVIEW_STEPS, runningView, sampleItems,
+  CAPTIONS, firstIssue, formatSeconds, LOGO_FIND_TICKS, LOGO_STEPS, MEDIA_LABELS, POSTER_SIZE, RESULTS, REVIEW_STEPS, runningView, sampleItems,
   TICK_MS, TOTAL_TICKS, VERDICT_LABELS, VIDEO,
 } from './sampleData.js';
 import './sampleDemo.css';
@@ -58,7 +58,8 @@ export default function SampleDemoPage() {
   const restart = () => setState(START);
   const reviewName = !media ? '새로운 검수 (샘플)' : media === 'video' ? '빛의 기록 · 숏폼 예고편 (샘플)' : '빛의 기록 · 전시 포스터 (샘플)';
   const steps = mode === 'logo' ? LOGO_STEPS : REVIEW_STEPS;
-  const stepAt = screen === 'input' ? 0 : screen === 'running' ? 1 : 2;
+  // 로고만 검수는 후보를 찾으면 같은 진행 화면에서 정밀 대조 단계로 넘어간다.
+  const stepAt = screen === 'input' ? 0 : screen === 'running' && !(mode === 'logo' && tick >= LOGO_FIND_TICKS) ? 1 : 2;
   const context = <>
     {media && <span className="sd-kiosk-context">{MEDIA_LABELS[media]}</span>}
     {security && <span className="sd-kiosk-context">{security === 'secure' && <Icon name="lock" />}{securityModeLabels[security]}</span>}
@@ -207,6 +208,54 @@ function FilmScanner({ scanPart, caption, depth = 0 }) {
   </div>;
 }
 
+// 로고 검수 무대(실제 LogoJobProgress와 같은 모양). 돋보기에는 찾고 있는 원본 로고를 담는다.
+function LogoLens({ style }) {
+  return <div className="sd-film-lens sd-logo-lens" style={style}>
+    <span className="sd-film-lens-glass"><LogoThumb /><span className="sd-film-lens-scan" /></span>
+    <span className="sd-film-lens-handle" /></div>;
+}
+
+function LogoStageScale({ caption, percent }) {
+  return <div className="sd-film-scale"><span>원본 로고 1개</span><span>{caption}</span><span>{percent}%</span></div>;
+}
+
+// 포스터: 한 장을 눕혀 탐지 타일을 차례로 밝힌다. 정밀 대조 단계에서는 모든 타일을 읽은 모습으로 두고 돋보기가 가운데에서 훑는다.
+const POSTER_TILES = { cols: 3, rows: 4 };
+function LogoPosterStage({ view }) {
+  const { cols, rows } = POSTER_TILES;
+  const total = cols * rows;
+  const comparing = view.stage === 'comparing';
+  const current = view.stage === 'searching' ? Math.min(total - 1, Math.floor(view.part * total)) : -1;
+  const col = current >= 0 ? current % cols : (cols - 1) / 2, row = current >= 0 ? Math.floor(current / cols) : (rows - 1) / 2;
+  return <div className={`sd-film-scanner sd-logo-stage is-${view.stage}`} aria-hidden="true">
+    <div className="sd-logo-sheet" style={{ '--cols': cols, '--rows': rows }}><SamplePoster decorative />
+      <div className="sd-logo-tiles">{Array.from({ length: total }, (_, index) => <span key={index}
+        className={`${comparing || index < current ? 'is-read' : ''}${index === current ? ' is-current' : ''}`} />)}</div>
+      <LogoLens style={{ left: `${(col + .5) / cols * 100}%`, top: `${(row + .5) / rows * 100}%` }} />
+    </div>
+    <LogoStageScale caption={view.stageCaption} percent={view.percent} />
+  </div>;
+}
+
+// 동영상: 표본 프레임을 카드로 포개 놓고, 지금 살피는 프레임을 띄운다. 정밀 대조 단계에서는 몇 장을 차례로 띄워 원본과 견준다.
+const DECK_CARDS = 8;
+const DECK_PICKS = [1, 4, 6];
+function LogoDeckStage({ view }) {
+  const comparing = view.stage === 'comparing';
+  const current = view.stage === 'searching' ? Math.min(DECK_CARDS - 1, Math.floor(view.part * DECK_CARDS))
+    : comparing ? DECK_PICKS[Math.min(DECK_PICKS.length - 1, Math.floor(view.part * DECK_PICKS.length))] : -1;
+  const shown = comparing || view.stage === 'searching';
+  return <div className={`sd-film-scanner sd-logo-stage is-${view.stage}`} aria-hidden="true">
+    <div className="sd-deck" style={{ '--n': DECK_CARDS, '--at': Math.max(0, current) }}>
+      {Array.from({ length: DECK_CARDS }, (_, index) => <span key={index} style={{ '--i': index }}
+        className={`sd-deck-card${comparing || index < current ? ' is-read' : ''}${index === current ? ' is-current' : ''}`}>
+        {shown && <SampleFrame t={Math.round(index * 29 / (DECK_CARDS - 1))} />}</span>)}
+      <LogoLens />
+    </div>
+    <LogoStageScale caption={view.stageCaption} percent={view.percent} />
+  </div>;
+}
+
 function RunningScreen({ state, tick, elapsed }) {
   const { media, mode } = state;
   const video = media === 'video';
@@ -214,31 +263,31 @@ function RunningScreen({ state, tick, elapsed }) {
   const view = runningView(tick, state);
   const time = formatSeconds(elapsed);
   // 유리판이 떠오르는 정도: 화면을 훑는 단계가 있으면 그 진행에, 없으면(포스터 문구 검수) 진행률에 맞춘다.
-  const depth = video || logoOnly ? (view.scanPart >= 1 ? 2 : view.scanPart > 0 ? 1 : 0) : view.percent >= 67 ? 2 : view.percent >= 33 ? 1 : 0;
+  const depth = video ? (view.scanPart >= 1 ? 2 : view.scanPart > 0 ? 1 : 0) : view.percent >= 67 ? 2 : view.percent >= 33 ? 1 : 0;
   const facts = logoOnly
-    ? video ? [['영상 길이', formatSeconds(VIDEO.seconds)], ['해상도', `${VIDEO.width}×${VIDEO.height}`], ['원본 로고', '1개'], ['경과 시간', time]]
-      : [['해상도', POSTER_SIZE], ['원본 로고', '1개'], ['검수 범위', '로고 위치 후보'], ['경과 시간', time]]
+    ? [['원본 로고', '1개'], ['위치 찾기', state.security === 'general' ? 'OpenAI' : '검수 서버'], ['정밀 대조', '검수 서버 · 자동'], ['경과 시간', time]]
     : video ? [['영상 길이', formatSeconds(VIDEO.seconds)], ['해상도', `${VIDEO.width}×${VIDEO.height}`], ['검수 기준', '3개'], ['처리 속도', view.speed]]
       : [['해상도', POSTER_SIZE], ['검수 기준', '3개'], ['검수 범위', '문구·값 · 시각 조건'], ['경과 시간', time]];
   return <section className="sd-progress" aria-labelledby="page-title">
     {/* 진행 카드 전체를 알림 영역으로 두면 0.28초마다 바뀌는 숫자까지 읽어 무거워진다. 단계 제목이 바뀔 때만 알린다. */}
     <p className="sd-sr-only" role="status">{view.title}</p>
     <div className="sd-progress-card">
-      {video ? <FilmScanner scanPart={view.scanPart} caption={view.filmCaption} depth={depth} /> : <PosterScan depth={depth} />}
-      <span className="sd-eyebrow">{video ? 'VIDEO' : 'POSTER'}{logoOnly ? ' LOGO' : ''} REVIEW IN PROGRESS</span>
+      {logoOnly ? video ? <LogoDeckStage view={view} /> : <LogoPosterStage view={view} />
+        : video ? <FilmScanner scanPart={view.scanPart} caption={view.filmCaption} depth={depth} /> : <PosterScan depth={depth} />}
+      <span className="sd-eyebrow">{logoOnly ? 'LOGO' : video ? 'VIDEO' : 'POSTER'} REVIEW IN PROGRESS</span>
       <h1 id="page-title" tabIndex={-1}>{view.title}</h1>
       <p className="sd-progress-message">{view.message}</p>
       <div className="sd-progress-track" role="progressbar" aria-label="검수 진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={view.percent}>
         <div style={{ width: `${view.percent}%` }} /></div>
-      <div className="sd-progress-caption"><span>처리 단계 기준 진행률</span><strong>{view.percent}%</strong></div>
+      <div className="sd-progress-caption"><span>{view.progressCaption}</span><strong>{view.percent}%</strong></div>
       <ol className="sd-progress-steps">{view.steps.map((step, index) => <li key={step.label} className={`is-${step.status}`}>
         <span>{step.status === 'completed' ? <Icon name="check" /> : String(index + 1).padStart(2, '0')}</span>{step.label}</li>)}</ol>
       <dl className="sd-progress-facts">{facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-      <p className="sd-progress-help">{video ? '완료되면 결과 화면으로 이동합니다. 실제 검수는 페이지를 닫아도 서버에서 계속됩니다.' : '완료되면 다음 화면이 표시됩니다. 페이지를 그대로 두셔도 됩니다.'}</p>
+      <p className="sd-progress-help">{logoOnly ? '후보를 찾으면 순위가 높은 후보로 정밀 대조까지 이어서 합니다. 실제 검수는 페이지를 닫아도 서버에서 계속됩니다.' : video ? '완료되면 결과 화면으로 이동합니다. 실제 검수는 페이지를 닫아도 서버에서 계속됩니다.' : '완료되면 다음 화면이 표시됩니다. 페이지를 그대로 두셔도 됩니다.'}</p>
     </div>
     {mode === 'both' && <section className="sd-logo-card" aria-label="로고 검수 진행">
       <div className="sd-logo-head"><h2>{video ? '동영상 로고 검수' : '포스터 로고 검수'}</h2>
-        <p>후보 찾기 → 위치 확정 → 정밀 대조 순서로 진행합니다. 기준 문구 검수와 별도이며, 로고 일치 여부는 사람이 판단합니다.</p></div>
+        <p>후보를 찾으면 정밀 대조까지 자동으로 이어서 합니다. 기준 문구 검수와 별도이며, 로고 일치 여부는 사람이 판단합니다.</p></div>
       <div className="sd-logo-body">
         <div className="sd-logo-row"><strong>{video ? '빛의 기록 · 숏폼 예고편' : '빛의 기록 · 전시 포스터'} 로고 검수</strong><span className="sd-logo-state">{view.logo.state}</span></div>
         <div className="sd-logo-track"><div style={{ width: `${view.logo.percent}%` }} /></div>
@@ -299,9 +348,9 @@ function ResultsScreen({ state, onSelect, onReal }) {
   // 포스터는 같은 항목을 다시 누르면 접고, 동영상은 늘 한 항목의 프레임을 보여 준다.
   const select = id => onSelect(!video && selected === id ? null : id);
   const logoCard = mode !== 'text' && <section className="sd-panel sd-logo-result" aria-label="로고 정밀 대조 예시">
-    <div className="sd-panel-head"><strong>로고 정밀 대조 (예시)</strong><span>위치 확정 → 정밀 대조</span></div>
+    <div className="sd-panel-head"><strong>로고 정밀 대조 (예시)</strong><span>자동으로 고른 위치</span></div>
     <div className="sd-logo-result-row"><span className="sd-thumb"><LogoThumb /></span>
-      주최 로고 · 확정한 위치 1곳 · {video ? '4초 구간 · 선명도 낮음 근거 1건' : '형태 일치, 색 차이 근거 1건'}
+      주최 로고 · 자동으로 고른 위치 1곳 · {video ? '4초 구간 · 선명도 낮음 근거 1건' : '형태 일치, 색 차이 근거 1건'}
       <span className="sd-verdict is-review">확인 필요</span></div>
   </section>;
   const cta = <div className="sd-cta"><div><strong>내 {video ? '동영상으로' : '포스터로'} 실제 검수를 해 볼까요?</strong>

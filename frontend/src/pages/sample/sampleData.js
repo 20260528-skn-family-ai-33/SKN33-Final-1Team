@@ -35,7 +35,7 @@ export const RESULTS = {
 
 export const VERDICT_LABELS = { poster: { pass: '적합', fail: '부적합', review: '확인 필요' }, video: { pass: '충족', fail: '위반', review: '확인 필요' } };
 export const REVIEW_STEPS = ['자료 입력', '검수 진행', '결과 확인', '보고서'];
-export const LOGO_STEPS = ['자료 입력', '후보 찾기', '위치 확정', '정밀 대조'];
+export const LOGO_STEPS = ['자료 입력', '후보 찾기', '정밀 대조'];
 
 // 진행 화면 연출. 실제 화면의 단계 이름을 따른다(포스터 frameworkProgress.js, 동영상 videoFormat.js).
 export const POSTER_PHASES = [
@@ -54,23 +54,12 @@ export const VIDEO_PHASES = [
   { label: '기준 판정', title: '확정한 기준으로 판정하고 있어요.', until: 18 },
   { label: '결과 정리', title: '결과를 정리하고 있어요.', until: 21 },
 ];
-// 로고 검수는 후보 찾기 작업까지가 진행 화면이다(위치 확정·정밀 대조는 다음 단계).
-export const LOGO_PHASES = {
-  poster: [
-    { label: '순서 대기', title: '로고 검수 순서를 기다리고 있어요.', until: 3 },
-    { label: '원본 로고 준비', title: '원본 로고의 모양과 색을 살펴보고 있어요.', until: 5 },
-    { label: '후보 찾기', title: '포스터에서 원본 로고와 닮은 위치를 찾고 있어요.', until: 17 },
-    { label: '후보 정리', title: '찾은 후보를 위치 확정용으로 정리하고 있어요.', until: 21 },
-  ],
-  video: [
-    { label: '순서 대기', title: '로고 검수 순서를 기다리고 있어요.', until: 2 },
-    { label: '프레임 추출', title: '표본 시각마다 프레임을 뽑고 있어요.', until: 5 },
-    { label: '후보 찾기', title: '프레임마다 원본 로고와 닮은 위치를 찾고 있어요.', until: 17 },
-    { label: '후보 묶기', title: '같은 위치의 후보를 시간 구간으로 묶고 있어요.', until: 21 },
-  ],
-};
 export const TOTAL_TICKS = 22;
 export const TICK_MS = 280;
+// 로고만 검수: 실제 화면처럼 진행 화면 하나가 후보 찾기에서 자동 정밀 대조까지 이어진다. 이 시점부터 02 정밀 대조 단계다.
+export const LOGO_FIND_TICKS = 13;
+const LOGO_COMPARE_FROM = 14;
+const LOGO_CARD_FIND_TICKS = 11;   // 종합 검수의 로고 카드에서 후보 찾기가 끝나는 시점
 const FILM_FRAMES = 31;
 
 export const formatSeconds = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
@@ -98,33 +87,61 @@ export function logoDetail(part, media, security) {
   return security === 'general' ? `OpenAI로 원본 로고 위치를 찾는 중 · ${percent}%` : `후보 탐지 타일 ${Math.min(23, Math.ceil(part * 23))}/23 · ${percent}%`;
 }
 
-// tick(0~TOTAL_TICKS)에 맞는 진행 화면 값. 화면을 훑는 단계(동영상 글자 읽기·로고 후보 찾기)는 단계 안에서도 진행분을 올린다.
-export function runningView(tick, { media, mode, security }) {
-  const logoOnly = mode === 'logo';
+// 로고만 검수의 진행 화면 값(실제 LogoJobProgress와 같은 문구·단계). 진행률은 지금 단계의 값이다.
+function logoRunningView(tick, { media, security }) {
   const video = media === 'video';
-  const phases = logoOnly ? LOGO_PHASES[media] : video ? VIDEO_PHASES : POSTER_PHASES;
+  const searchFrom = video ? 4 : 2;
+  const found = tick >= LOGO_FIND_TICKS;
+  const waitingCompare = found && tick < LOGO_COMPARE_FROM;
+  const finding = found ? 1 : Math.max(0, (tick - searchFrom) / (LOGO_FIND_TICKS - searchFrom));
+  const comparing = Math.max(0, Math.min(1, (tick - LOGO_COMPARE_FROM) / (TOTAL_TICKS - LOGO_COMPARE_FROM)));
+  const stage = found ? 'comparing' : tick >= searchFrom ? 'searching' : video && tick >= 2 ? 'preparing' : 'waiting';
+  const part = found ? comparing : finding;
+  const subject = video ? '영상' : '포스터';
+  return {
+    stage, part, percent: Math.round(part * 100),
+    title: { waiting: '로고 검수 순서를 기다리고 있어요.', preparing: '영상에서 표본 프레임을 뽑고 있어요.', searching: `${subject}에서 로고 후보를 찾고 있어요.`,
+      comparing: waitingCompare ? '정밀 대조 차례를 기다리고 있어요.' : `원본 로고와 ${subject} 속 로고를 정밀 대조하고 있어요.` }[stage],
+    message: found ? '고른 위치를 원본 로고와 비교하고 있습니다.' : stage === 'searching' ? logoDetail(finding, media, security)
+      : `원본 로고 1개 · ${video ? `영상 ${formatSeconds(VIDEO.seconds)}` : `포스터 ${POSTER_SIZE}`}`,
+    stageCaption: { waiting: '순서 대기', preparing: '표본 프레임 준비', searching: video ? '프레임별 후보 찾는 중' : '포스터를 나눠 후보 찾는 중', comparing: '원본과 비교하는 중' }[stage],
+    progressCaption: found ? '로고 정밀 대조 진행률' : '로고 후보 찾기 진행률',
+    steps: [{ label: '로고 후보 찾기', status: found ? 'completed' : 'active' },
+      { label: '로고 정밀 대조', status: !found ? 'pending' : tick >= TOTAL_TICKS ? 'completed' : 'active' }],
+  };
+}
+
+// tick(0~TOTAL_TICKS)에 맞는 진행 화면 값. 화면을 훑는 단계(동영상 글자 읽기)는 단계 안에서도 진행분을 올린다.
+export function runningView(tick, { media, mode, security }) {
+  if (mode === 'logo') return logoRunningView(tick, { media, security });
+  const video = media === 'video';
+  const phases = video ? VIDEO_PHASES : POSTER_PHASES;
   const active = phases.findIndex(phase => tick < phase.until);
   const done = active === -1 ? phases.length : active;
-  const scanAt = logoOnly ? 2 : video ? 3 : -1;
+  const scanAt = video ? 3 : -1;
   const scanFrom = scanAt > 0 ? phases[scanAt - 1].until : 0;
   const scanPart = scanAt < 0 ? 0 : done > scanAt ? 1 : active === scanAt ? (tick - scanFrom) / (phases[scanAt].until - scanFrom) : 0;
   const completedRoles = Math.max(0, done - 1);
-  const percent = !logoOnly && !video ? Math.round(completedRoles / 3 * 100)
+  const percent = !video ? Math.round(completedRoles / 3 * 100)
     : Math.min(100, Math.round((done + (active === scanAt ? scanPart : 0)) / phases.length * 100));
-  const message = logoOnly
-    ? active !== -1 && active < scanAt ? `원본 로고 1개 · ${video ? `영상 ${formatSeconds(VIDEO.seconds)}` : `포스터 ${POSTER_SIZE}`}` : logoDetail(scanPart, media, security)
-    : video ? `영상 ${formatSeconds(VIDEO.seconds)} · ${VIDEO.width}×${VIDEO.height}` : `${completedRoles} / 3개 처리 단계 완료`;
+  const message = video ? `영상 ${formatSeconds(VIDEO.seconds)} · ${VIDEO.width}×${VIDEO.height}` : `${completedRoles} / 3개 처리 단계 완료`;
   const frames = Math.round(scanPart * FILM_FRAMES);
-  const filmCaption = active === scanAt ? `프레임 ${frames} / ${FILM_FRAMES} ${logoOnly ? '탐지' : '읽음'}`
-    : done > scanAt ? `표본 프레임 ${logoOnly ? '탐지' : '읽기'} 완료` : active >= 1 ? `표본 프레임 ${FILM_FRAMES}장 준비` : '표본 프레임 준비 전';
-  const speed = video && !logoOnly && (active >= 4 || active === -1)
+  const filmCaption = active === scanAt ? `프레임 ${frames} / ${FILM_FRAMES} 읽음`
+    : done > scanAt ? '표본 프레임 읽기 완료' : active >= 1 ? `표본 프레임 ${FILM_FRAMES}장 준비` : '표본 프레임 준비 전';
+  const speed = video && (active >= 4 || active === -1)
     ? `장당 ${security === 'general' ? '1.4초 · openai' : '0.8초 · vllm'}` : '글자 읽기 후 표시';
-  const logoPart = Math.min(1, tick / 18);
+  // 종합 검수의 로고 카드: 후보를 찾으면 자동으로 정밀 대조까지 이어진다.
+  const logoFound = tick >= LOGO_CARD_FIND_TICKS;
+  const logoFinding = Math.min(1, tick / LOGO_CARD_FIND_TICKS);
+  const logoComparing = Math.max(0, Math.min(1, (tick - LOGO_CARD_FIND_TICKS) / (TOTAL_TICKS - LOGO_CARD_FIND_TICKS)));
+  const logoDone = logoComparing >= 1;
   return {
-    percent, message, filmCaption, speed, scanPart,
+    percent, message, filmCaption, speed, scanPart, progressCaption: '처리 단계 기준 진행률',
     title: (phases[active] || phases[phases.length - 1]).title,
     steps: phases.map((phase, index) => ({ label: phase.label,
       status: active === -1 || index < active ? 'completed' : index === active ? 'active' : 'pending' })),
-    logo: { percent: Math.round(logoPart * 100), state: logoPart >= 1 ? '위치 확정 대기' : '후보 찾는 중', detail: logoDetail(logoPart, media, security) },
+    logo: { percent: Math.round((logoFound ? logoComparing : logoFinding) * 100),
+      state: logoDone ? '정밀 대조 완료' : logoFound ? '정밀 대조 중' : '후보 찾는 중',
+      detail: logoDone ? '자동으로 고른 위치의 대조를 마쳤어요.' : logoFound ? '자동으로 고른 위치를 원본 로고와 비교하고 있어요.' : logoDetail(logoFinding, media, security) },
   };
 }

@@ -222,3 +222,32 @@
   .sd-scan-sheet, .sd-film-lens-scan { animation: none; }
   .sd-tile, .sd-film-lens { transition: none; }
 }
+
+/* 로고만 검수의 진행 무대(2026-11-18, 실제 LogoJobProgress의 포스터 타일 · 프레임 카드와 같은 모양). 무대 틀은 .sd-film-scanner를 쓴다. */
+html .sd-logo-lens { transform: translateZ(26px) scale(.9); transition: left .6s cubic-bezier(.2, .7, .2, 1), top .6s cubic-bezier(.2, .7, .2, 1), transform .6s cubic-bezier(.2, .7, .2, 1); }
+html .sd-logo-lens .sd-film-lens-glass { background: #fff; }
+html .sd-logo-lens svg { width: 62%; height: 62%; }
+html .sd-logo-stage:is(.is-waiting, .is-preparing) .sd-film-lens-scan { display: none; }
+html .sd-logo-sheet { position: relative; width: min(270px, 34%); margin-top: clamp(10px, 3vh, 34px); background: #0d0d0c;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), -44px 58px 70px -22px rgb(0 0 0 / 75%);
+  transform: rotateX(54deg) rotateZ(-30deg) scale(1.32); transform-style: preserve-3d; }
+html .sd-logo-sheet > img { display: block; width: 100%; height: auto; }
+html .sd-logo-tiles { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); }
+html .sd-logo-tiles > span { background: rgb(13 13 12 / 74%); box-shadow: inset 0 0 0 .5px rgb(255 255 255 / 22%); transition: background-color .7s ease; }
+html .sd-logo-tiles > .is-read { background: rgb(13 13 12 / 10%); }
+html .sd-logo-tiles > .is-current { background: rgb(255 255 255 / 10%); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 88%); }
+html .sd-deck { --card-w: 216px; --dx: 40px; --dz: 5px; --lift: 58px; position: relative; width: calc(var(--card-w) + (var(--n) - 1) * var(--dx)); height: calc(var(--card-w) * 9 / 16);
+  margin-top: clamp(10px, 3vh, 34px); transform: rotateX(56deg) rotateZ(-36deg) scale(1.16); transform-style: preserve-3d; animation: op-float 6s ease-in-out infinite; }
+html .sd-deck-card { position: absolute; left: calc(var(--i) * var(--dx)); top: 0; width: var(--card-w); height: 100%; overflow: hidden; border-radius: 7px; background: #0d0d0c;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), -22px 28px 36px -16px rgb(0 0 0 / 72%); transform: translateZ(calc(var(--i) * var(--dz)));
+  transition: transform .6s cubic-bezier(.2, .7, .2, 1), box-shadow .4s ease; }
+html .sd-deck-card > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+html .sd-deck-card::after { content: ''; position: absolute; inset: 0; background: rgb(13 13 12 / 72%); transition: background-color .5s ease; }
+html .sd-deck-card.is-read::after { background: rgb(13 13 12 / 24%); }
+html .sd-deck-card.is-current { transform: translateZ(calc(var(--i) * var(--dz) + var(--lift))); box-shadow: 0 0 0 1.5px rgb(255 255 255 / 90%), -34px 44px 54px -20px rgb(0 0 0 / 82%); }
+html .sd-deck-card.is-current::after { background: rgb(255 255 255 / 5%); }
+html .sd-logo-stage.is-preparing .sd-deck-card { animation: sd-deck-develop 1.2s ease-in-out infinite; animation-delay: calc(var(--i) * 80ms); }
+@keyframes sd-deck-develop { 50% { background: #33332f; transform: translateZ(calc(var(--i) * var(--dz) + 20px)); } }
+html .sd-deck .sd-logo-lens { left: calc(var(--at) * var(--dx) + var(--card-w) / 2); top: 50%; transform: translateZ(calc(var(--at) * var(--dz) + var(--lift) + 26px)) scale(.9); }
+@media (max-width: 900px) { html .sd-logo-sheet { transform: rotateX(54deg) rotateZ(-30deg) scale(.95); } html .sd-deck { transform: rotateX(56deg) rotateZ(-36deg) scale(.68); } }
+@media (prefers-reduced-motion: reduce) { html .sd-deck, html .sd-deck-card, html .sd-logo-lens, html .sd-logo-tiles > span { animation: none; transition: none; } }
