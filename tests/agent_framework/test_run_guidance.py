@@ -36,7 +36,7 @@ def test_guidance_is_on_demand_uses_the_session_and_scopes_mcp(chat_app, monkeyp
     snapshot = RunSnapshot(context=context, profile='test', synthetic=True, execution_status=status, error=failure)
     facts = overview(snapshot) | {'criteria': [{'text': 'private source'}]}
     calls = []
-    def explain(messages, tools):
+    def explain(messages):
         assert 'private source' not in str(messages) and 'private provider error' not in str(messages)
         return answer(next_action=next_action, summary='현재 상태를 확인했습니다.')
 
