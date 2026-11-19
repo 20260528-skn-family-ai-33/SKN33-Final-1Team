@@ -419,7 +419,16 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
     from backend.app.video.judge import requested_texts
     items, seen, warnings = [], set(), []
     rejected = []
-    for number, item in enumerate(reply.requirements, 1):
+    candidates = []
+    if isinstance(index, TableIndex):
+        for number, (line, row) in enumerate(index.caption_rows.items(), len(reply.requirements) + 1):
+            item = VideoRequirement(target=row.target, label=row.label, expected=row.expected,
+                                    source=SourceRange(start_line=line, end_line=line), item_id=index.row_ids[line],
+                                    required=row.required, unresolved=False, qualifiers=[])
+            candidates.append((number, item, row.judgment))
+    candidates.extend((number, item, None) for number, item in enumerate(reply.requirements, 1))
+    covered_lines = set()
+    for number, item, judgment in candidates:
         dropped = False
         source = None
         try:
@@ -435,6 +444,10 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
                     raise
                 expected, dropped = "", True
             qualifiers = []
+            if judgment is not None:
+                if judgment not in quote:
+                    _fail("A02_QUALIFIER_UNGROUNDED")
+                qualifiers.append(judgment)
             for chosen in item.qualifiers:
                 parent, text = select_video_range(chosen, index)
                 if parent.block_id != source.block_id or text not in quote:
@@ -444,6 +457,10 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
                 row_id = index.row_ids.get(item.source.start_line) if isinstance(index, TableIndex) else None
                 if (row_id is not None and item.item_id != row_id) or item.item_id not in quote:
                     _fail("A02_ITEM_ID_UNGROUNDED")
+            # This exact row already contributes its complete, source-owned criterion.
+            # Validate model citations above even when the row is already represented.
+            if item.source.start_line in covered_lines:
+                continue
             key = (source.block_id, quote, item.target, item.item_id, expected)
             if key in seen:
                 _fail("A02_DUPLICATE_REQUIREMENT")
@@ -456,6 +473,8 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
         elif expected != item.expected:
             warnings.append("expected_spacing_copied_from_source")
         seen.add(key)
+        if judgment is not None:
+            covered_lines.add(item.source.start_line)
         text = _criterion_text(item, quote, expected)
         include, reason = False, EXCLUDED_REASON.get(item.target, "")
         if item.unresolved:
@@ -474,6 +493,7 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
             # 영상 판정(judge.requested_texts)이 이 문장에서 화면 글자와 비교할 값. 비어 있으면 담당자 확인으로 남는다.
             "compare": requested_texts({"text": text}) if include and kind == "information" else [],
             "source": _source_ref(source, quote),
+            **({"extraction_method": "pdf_table_cells"} if judgment is not None else {}),
             "qualifiers": qualifiers,
         })
     if not items:
