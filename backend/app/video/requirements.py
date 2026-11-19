@@ -27,12 +27,13 @@ import zipfile
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from backend.agent_framework.a02_semantic import SourceRange, grounded_literal, selected_range
+from backend.agent_framework.a02_semantic import SourceRange, grounded_literal
 from backend.agent_framework.a02_source_selection import index_sources
 from backend.agent_framework.contracts import PDFTextSource
 from backend.agent_framework.openai_fallback import (WARNING as FALLBACK_WARNING, FallbackFailure, call_openai,
                                                      fallback_settings, should_fall_back)
 from backend.agent_framework.ports import AdapterFailure
+from backend.app.video.pdf_table_rows import TableIndex, group_pdf_rows, select_video_range
 
 POLICY = "a02-video-v2"  # v2: 응답 필드 순서(값→근거 줄→ID), 제외 항목의 원문 밖 값은 비우고 표시
 DEFAULT_MODEL = "Qwen/Qwen3.5-4B"
@@ -422,7 +423,7 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
         dropped = False
         source = None
         try:
-            source, quote = selected_range(item.source, index)
+            source, quote = select_video_range(item.source, index)
             if item.unresolved and item.expected:
                 _fail("A02_UNRESOLVED_VALUE_INVENTED")
             try:
@@ -435,12 +436,14 @@ def materialize(reply: VideoReply, index) -> tuple[list[dict], list[str], list[d
                 expected, dropped = "", True
             qualifiers = []
             for chosen in item.qualifiers:
-                parent, text = selected_range(chosen, index)
+                parent, text = select_video_range(chosen, index)
                 if parent.block_id != source.block_id or text not in quote:
                     _fail("A02_QUALIFIER_UNGROUNDED")
                 qualifiers.append(text)
-            if item.item_id is not None and item.item_id not in quote:
-                _fail("A02_ITEM_ID_UNGROUNDED")
+            if item.item_id is not None:
+                row_id = index.row_ids.get(item.source.start_line) if isinstance(index, TableIndex) else None
+                if (row_id is not None and item.item_id != row_id) or item.item_id not in quote:
+                    _fail("A02_ITEM_ID_UNGROUNDED")
             key = (source.block_id, quote, item.target, item.item_id, expected)
             if key in seen:
                 _fail("A02_DUPLICATE_REQUIREMENT")
@@ -507,6 +510,8 @@ def extract(data: bytes, filename: str = "", *, settings: Settings | None = None
         _fail(failure.code, "문서가 너무 길거나 복잡해 줄 번호를 붙이지 못했습니다. 요구사항 부분만 나눠 올려 주세요.", 413)
     # 포스터 semantic 경로처럼 줄 텍스트만 보낸다(부분 토큰 ID는 보내지 않음).
     payload = [{**block, "lines": [{"id": line["id"], "text": line["text"]} for line in block["lines"]]} for block in payload]
+    if kind == "pdf":
+        index = group_pdf_rows(data, index, payload)
     fallback = None if route == "runpod" else fallback_settings() if fallback is _FROM_ENV else fallback
     qwen_failure = None
     if route == "openai":
