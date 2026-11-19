@@ -104,6 +104,101 @@ def test_pdf_table_rows_keep_ids_with_wrapped_cells_and_cite_original_text():
     ]
 
 
+def caption_contract(rows, headers=("ID / 수준", "항목", "요구 내용", "판정 기준")):
+    columns = (20, 130, 260, 570, 950)
+    with pymupdf.open() as document:
+        page = document.new_page(width=980, height=600)
+        bottom = 30 + 36 * (1 + len(rows))
+        for x in columns:
+            page.draw_line((x, 30), (x, bottom))
+        for y in range(30, bottom + 1, 36):
+            page.draw_line((columns[0], y), (columns[-1], y))
+        for column, header in enumerate(headers):
+            page.insert_text((columns[column] + 5, 44), header, fontsize=9, fontname="korea")
+        for n, (number, level, label, expected, rule) in enumerate(rows):
+            row_top = 66 + n * 36
+            for column, text in enumerate((number, label, expected, rule)):
+                page.insert_text((columns[column] + 5, row_top + 13), text, fontsize=9, fontname="korea")
+                if column == 0:
+                    page.insert_text((columns[0] + 5, row_top + 26), level, fontsize=9, fontname="korea")
+        return document.tobytes()
+
+
+def test_caption_table_recovers_original_wording_and_keeps_model_only_requirements():
+    exact = "자막 글자가 일치해야 함."
+    rows = [
+        ("R01", "필수", "정보 자막", "여름 음악회", exact),
+        ("R02", "필수", "제목 자막", "별빛 정원", exact),
+        ("R03", "권장", "자막 가독성", "자막 글자 크기·대비·노출 시간이 읽기에 충분.",
+         "사람이 가독성 검토. 정량 합격 점수로 사용하지 않음."),
+        ("R04", "권장", "표기 일관성", "숫자·날짜·단위·영문 표기가 일관.", "표기 혼용 여부를 사람이 검토."),
+        ("T01", "필수", "프레임 속도", "25 fps", "파일 정보를 확인."),
+        ("R05", "필수", "안내 자막", "비상 안내", "마지막 화면 하단에 표시."),
+    ]
+    data = caption_contract(rows)
+
+    def choose(lines):
+        # Preserve the deployed Qwen wire format and the original numbered line anchors.
+        assert all(set(line) == {"id", "text"} for line in lines)
+        assert [line["id"] for line in lines] == [f"p1-text:L{n}" for n in (1, 2, 3, 4, 5, 10, 15, 20, 25, 30)]
+        by_id = {line["text"].split()[0]: line["id"] for line in lines}
+
+        def candidate(number, claimed_id, expected, target="screen_text"):
+            return {**title_requirement(by_id[number], claimed_id), "expected": expected, "target": target}
+
+        duplicate = candidate("R02", "R02", "별빛 정원")
+        return [
+            candidate("R02", "REQ01", "별빛 정원"),
+            candidate("R02", "R02", "모델이 지어낸 문구"),
+            duplicate, duplicate,
+            candidate("T01", "T01", "25 fps", "video_spec"),
+            candidate("R05", "R05", "비상 안내"),
+        ]
+
+    result = extract_with_test_model(data, "contract.pdf", choose)
+    assert result["trace"]["prompt_sha256"] == "88bf7b9c56daa5577b6b8e5479f176e14524111a87ad119e3944f8d2d55b7dd0"
+    assert {(item["candidate_index"], item["code"]) for item in result["rejected_candidates"]} == {
+        (1, "A02_ITEM_ID_UNGROUNDED"), (2, "A02_EXPECTED_UNGROUNDED"),
+    }
+    assert len(result["items"]) == len(rows)
+    by_id = {item["item_id"]: item for item in result["items"]}
+    assert set(by_id) == {row[0] for row in rows}
+    page_text = requirements.pdf_sources(data)[0].text
+    for number, level, label, expected, rule in rows[:4]:
+        item = by_id[number]
+        assert item["label"] == label and item["required"] == (level == "필수") and item["include"]
+        assert item["extraction_method"] == "pdf_table_cells" and item["qualifiers"] == [rule]
+        if number in {"R01", "R02"}:
+            assert item["target"] == "screen_text" and item["expected"] == expected
+        else:
+            assert item["target"] == "subtitle_quality" and not item["compare"]
+        quote = item["source"]["quote"]
+        assert quote in page_text and all(cell in quote for cell in (number, level, label, expected, rule))
+        assert item["source"]["source_hash"] == sha256(quote.encode()).hexdigest()
+    assert by_id["T01"]["target"] == "video_spec" and not by_id["T01"]["include"]
+    assert by_id["R05"]["label"] == "제목" and by_id["R05"]["expected"] == "비상 안내"
+    assert all("extraction_method" not in by_id[key] for key in ("T01", "R05"))
+    assert result["counts"]["criteria"] == 5
+
+
+@pytest.mark.parametrize(("headers", "wording", "rule"), [
+    (("ID / 수준", "항목", "납품 또는 규격", "판정 기준"), "여름 음악회", "자막 글자가 일치해야 함."),
+    (("ID / 수준", "항목", "요구 내용", "판정 기준"), "문구 미정", "자막 글자가 일치해야 함."),
+])
+def test_uncertain_table_wording_is_not_promoted_to_a_caption_without_model_evidence(headers, wording, rule):
+    data = caption_contract([
+        ("R01", "필수", "제목 자막", wording, rule),
+        ("T01", "필수", "프레임 속도", "25 fps", "파일 정보를 확인."),
+    ], headers=headers)
+
+    def choose(lines):
+        tech = next(line["id"] for line in lines if line["text"].startswith("T01"))
+        return [{**title_requirement(tech, "T01"), "expected": "25 fps", "target": "video_spec"}]
+
+    result = extract_with_test_model(data, "contract.pdf", choose)
+    assert [item["item_id"] for item in result["items"]] == ["T01"] and result["criteria"] == []
+
+
 def test_docx_table_and_prose_keep_their_own_lines():
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w") as document:
