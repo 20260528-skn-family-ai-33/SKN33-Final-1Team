@@ -70,7 +70,7 @@ def test_api_mount_excludes_graph_and_model_worker_secrets(tmp_path):
         values=desktop.read_env(folder/'app.env')
         assert values['CC_NEO4J_URI']=='bolt://host.docker.internal:57631'
         assert values['CC_NEO4J_PASSWORD']=='graph-test-only' and values['A02_QWEN_API_KEY']=='model-test-only'
-        assert 'VIDEO_LOGO_WORKER_TOKEN' not in values
+        assert values['VIDEO_LOGO_WORKER_TOKEN']=='video-test-only'
     assert env.read_text()==original
 
 
@@ -82,7 +82,8 @@ def test_owner_credentials_cannot_be_sent_to_api(tmp_path):
 
 @pytest.mark.parametrize('action,expected',[
     ('api',{'DB_APP_PASSWORD','CSRF_SECRET','CURSOR_SECRET'}),
-    ('worker',{'DB_APP_PASSWORD','A02_QWEN_API_KEY','CC_QWEN_API_KEY','CC_NEO4J_PASSWORD'}),
+    ('worker',{'DB_APP_PASSWORD','A02_QWEN_API_KEY','CC_QWEN_API_KEY','CC_NEO4J_PASSWORD',
+               'VIDEO_LOGO_WORKER_TOKEN'}),
 ])
 def test_mounted_file_contains_only_the_service_role_secrets(tmp_path,action,expected):
     env=tmp_path/'shared.env'
