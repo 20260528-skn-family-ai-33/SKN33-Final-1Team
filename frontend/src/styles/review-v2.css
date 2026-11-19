@@ -87,6 +87,8 @@
 .rv-workspace .rv-project-name-field .icon { width: 15px; height: 15px; }
 
 .rv-project-picker { position: relative; display: grid; gap: 3px; flex: none; }
+/* 고르기 창(.rv-project-picker-panel)의 기준. 이름표가 아니라 단추 바로 아래에 열린다. */
+.rv-project-picker-anchor { position: relative; display: inline-flex; min-width: 0; }
 .rv-workspace .rv-project-chip {
   display: inline-flex;
   align-items: center;
@@ -146,11 +148,6 @@
 .rv-project-list-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .rv-project-list-meta { margin-left: auto; padding-left: 8px; color: #8a8b85; font-size: 11px; font-weight: 400; white-space: nowrap; }
 .rv-project-list-empty { padding: 14px 10px; color: var(--rv-muted); font-size: 12.5px; line-height: 1.6; text-align: center; }
-.rv-project-create { display: grid; gap: 6px; margin-top: 6px; padding: 10px 8px 4px; border-top: 1px solid #ececea; }
-.rv-project-create label { color: var(--rv-muted); font-size: 11.5px; }
-.rv-project-create > div { display: flex; gap: 6px; }
-.rv-workspace .rv-project-picker .rv-project-create input[type] { flex: 1; width: auto; min-width: 0; height: 34px; padding: 0 9px; border-radius: 8px; background: #fff; font-size: 13px; line-height: 1.4; }
-.rv-workspace .rv-project-create .rv-button { min-height: 34px; padding: 0 12px; border-radius: 8px; font-size: 12.5px; white-space: nowrap; }
 .rv-project-picker-panel .error-message, .rv-project-picker-panel [role=alert] { margin: 6px 8px 2px; }
 .rv-project-none { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 1px dashed var(--rv-line); border-radius: 9px; color: var(--rv-muted); font-size: 12.5px; white-space: nowrap; }
 .rv-project-none .icon { width: 15px; height: 15px; }

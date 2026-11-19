@@ -37,7 +37,7 @@ def test_video_approval_import_revisions_permissions_and_graph(runtime, tmp_path
     data = make_video(tmp_path / "clip.mp4", seconds=2)
     video_root = tmp_path / "video"
     files = {"video": ("clip.mp4", data, "video/mp4")}
-    media_form = {"criteria": json.dumps([criterion(f'"{SUBTITLE}"')]), "disclosure": '{"kind":"self"}'}
+    media_form = {"criteria": json.dumps([criterion(f'"{SUBTITLE}"')])}
     form = media_form | {"project_id": str(r.pid), "criteria_confirmed": "true"}
 
     @contextmanager
@@ -60,7 +60,7 @@ def test_video_approval_import_revisions_permissions_and_graph(runtime, tmp_path
         assert legacy["status"] == "completed"
 
     legacy["criteria_version"], legacy["workflow"] = prepare_review(
-        parent_id, str(r.pid), str(r.subject.user_id), legacy["criteria"], legacy["disclosure_input"],
+        parent_id, str(r.pid), str(r.subject.user_id), legacy["criteria"],
         None, legacy["created_at"],
     )
     change = VideoDecision(command_id=uuid4(), decision="approve_changes", reason="표현 조정",

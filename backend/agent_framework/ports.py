@@ -44,7 +44,10 @@ class Agents:
 
 class AdapterFailure(Exception):
     """Safe, structured adapter error. An ambiguous remote call is never retried here."""
-    def __init__(self, code: str, message: str, *, retryable=False, outcome_unknown=False):
+    def __init__(self, code: str, message: str, *, retryable=False, outcome_unknown=False,
+                 extraction_rejections=(), response_sha256=None):
         super().__init__(message)
         self.code, self.message = code, message
         self.retryable, self.outcome_unknown = retryable, outcome_unknown
+        self.extraction_rejections = extraction_rejections
+        self.response_sha256 = response_sha256

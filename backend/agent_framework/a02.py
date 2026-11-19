@@ -16,9 +16,9 @@ from .a02_configuration import PDFExtractionConfiguration
 from .a02_source_selection import (SelectedProviderReply,SourceIndex,index_sources,selection_schema,materialize_selection,UNRESOLVED_SOURCE,
     TEXT_INPUT_BLOCK_ID)
 from .a02_requirements import compile_requirements,unresolved_passages
-from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticChunkReply,SemanticProviderReply,
+from .a02_semantic import (SEMANTIC_PROMPT,SEMANTIC_PROMPT_HASH,SemanticReply,SemanticChunkReply,SemanticAdditionReply,SemanticProviderReply,
     PRESENTATION_PROMPT,PRESENTATION_PROMPT_HASH,LEGACY_SEMANTIC_PROMPT_HASH,LEGACY_PRESENTATION_PROMPT_HASH,
-    semantic_schema,materialize_semantics,verify_normalized_date,validate_presentation)
+    semantic_schema,semantic_prompt,has_pending_addition,materialize_semantics,verify_normalized_date,validate_presentation)
 from .contracts import CriteriaDraft,Criterion,ExtractionTrace,PDFTextSource,SourceRef
 from .files import inspect_document
 from .ports import AdapterFailure,Agents
@@ -219,22 +219,23 @@ class QwenProvider:
     def __init__(self,settings,*,api_key=None,transport=None):
         self.settings=settings;self._api_key=api_key;self._transport=transport
 
-    def __call__(self,sources):
+    def __call__(self,sources,*,allow_no_additional_requirements=False):
         settings=self.settings
         if settings.mode!='qwen':_fail('QWEN_NOT_CONFIGURED')
         source_index,source_payload=index_sources(sources)
         deadline=monotonic()+settings.timeout_seconds
         if settings.structuring!='semantic':
+            if allow_no_additional_requirements:_fail('A02_ADDITION_PROFILE_UNSUPPORTED')
             return self._request(source_index,source_payload,deadline)
         payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
         batches=list(semantic_chunks(source_index,payload))
         if len(batches)==1:
-            return self._request(source_index,payload,deadline)
+            return self._request(source_index,payload,deadline,addition=allow_no_additional_requirements)
         requirements=[];indexes=[];hashes=[];incomplete=set()
         for batch in batches:
             scoped=SourceIndex({line['id']:source_index.lines[line['id']] for block in batch for line in block['lines']},{})
             try:
-                reply=self._request(scoped,batch,deadline,chunk=True)
+                reply=self._request(scoped,batch,deadline,chunk=True,addition=allow_no_additional_requirements)
             except AdapterFailure as error:
                 if error.code not in ('QWEN_OUTPUT_INCOMPLETE','QWEN_REQUEST_BUDGET_EXHAUSTED'):raise
                 incomplete.update(line.source.page for line in scoped.lines.values())
@@ -242,12 +243,15 @@ class QwenProvider:
             requirements.extend(reply.result.requirements)
             indexes.extend([scoped]*len(reply.result.requirements))
             hashes.append(reply.response_sha256)
-        if not requirements:_fail('QWEN_OUTPUT_INCOMPLETE' if incomplete else 'A02_NO_VALID_REQUIREMENTS')
+        if not requirements and (incomplete or not allow_no_additional_requirements):
+            _fail('QWEN_OUTPUT_INCOMPLETE' if incomplete else 'A02_NO_VALID_REQUIREMENTS')
         if len(requirements)>128:_fail('A02_COMPILED_CRITERIA_LIMIT')
         digest=sha256(('a02-chunks-v1:'+':'.join(hashes)).encode()).hexdigest()
-        return SemanticProviderReply(SemanticReply(requirements=requirements),digest,tuple(indexes),tuple(sorted(incomplete)))
+        result=(SemanticAdditionReply(requirements=requirements,outcome='requirements' if requirements else 'no_new_requirements')
+            if allow_no_additional_requirements else SemanticReply(requirements=requirements))
+        return SemanticProviderReply(result,digest,tuple(indexes),tuple(sorted(incomplete)))
 
-    def _request(self,source_index,source_payload,deadline,*,chunk=False):
+    def _request(self,source_index,source_payload,deadline,*,chunk=False,addition=False):
         import httpx
         settings=self.settings
         semantic=settings.structuring=='semantic'
@@ -255,13 +259,13 @@ class QwenProvider:
         if remaining<=0:_fail('QWEN_REQUEST_BUDGET_EXHAUSTED')
         headers={'Accept':'application/json','Accept-Encoding':'identity'}
         if self._api_key:headers['Authorization']='Bearer '+self._api_key
-        prompt=PRESENTATION_PROMPT if semantic and settings.presentation else SEMANTIC_PROMPT if semantic else QWEN_PROMPT
+        prompt=semantic_prompt(presentation=settings.presentation,addition=addition) if semantic else QWEN_PROMPT
         data={'model':settings.model,'messages':[{'role':'system','content':prompt},
             {'role':'user','content':json.dumps({'sources':source_payload},ensure_ascii=False)}],
             'stream':False,'temperature':0,'max_tokens':settings.max_output_tokens,
             'chat_template_kwargs':{'enable_thinking':False},
             'response_format':{'type':'json_schema','json_schema':{'name':'poster_semantic_requirements' if semantic else 'poster_criteria_source_selection',
-                'strict':True,'schema':semantic_schema(source_index,presentation=settings.presentation,chunk=chunk) if semantic else selection_schema(source_index)}}}
+                'strict':True,'schema':semantic_schema(source_index,presentation=settings.presentation,chunk=chunk,addition=addition) if semantic else selection_schema(source_index)}}}
         transport=self._transport if self._transport is not None else httpx.HTTPTransport(retries=0)
         try:
             with httpx.Client(transport=transport,timeout=httpx.Timeout(remaining,connect=min(10,remaining)),
@@ -291,7 +295,7 @@ class QwenProvider:
             if not isinstance(content,str):_fail('A02_RESPONSE_INVALID')
             model_raw=content.encode('utf-8')
             if semantic:
-                model=SemanticChunkReply if chunk else SemanticReply
+                model=SemanticAdditionReply if addition else SemanticChunkReply if chunk else SemanticReply
                 return SemanticProviderReply(model.model_validate(_json(model_raw)),sha256(model_raw).hexdigest())
             selected=materialize_selection(_json(model_raw),source_index)
             return SelectedProviderReply(selected,sha256(model_raw).hexdigest())
@@ -307,19 +311,20 @@ class OpenAIFallbackProvider:
     @property
     def model(self):return self.fallback.model
 
-    def __call__(self,sources):
+    def __call__(self,sources,*,allow_no_additional_requirements=False):
         from .openai_fallback import FallbackFailure,call_openai
         settings=self.settings
         if settings.structuring!='semantic':_fail('OPENAI_FALLBACK_UNSUPPORTED')
         source_index,source_payload=index_sources(sources)
         source_payload=[{**source,'lines':[{'id':line['id'],'text':line['text']} for line in source['lines']]} for source in source_payload]
         try:
-            content,_=call_openai(self.fallback,system=PRESENTATION_PROMPT if settings.presentation else SEMANTIC_PROMPT,
+            content,_=call_openai(self.fallback,system=semantic_prompt(presentation=settings.presentation,addition=allow_no_additional_requirements),
                 user=json.dumps({'sources':source_payload},ensure_ascii=False),
-                schema=semantic_schema(source_index,presentation=settings.presentation),name='poster_semantic_requirements',
+                schema=semantic_schema(source_index,presentation=settings.presentation,addition=allow_no_additional_requirements),name='poster_semantic_requirements',
                 transport=self._transport)
         except FallbackFailure as failure:_fail(failure.code)
-        try:return SemanticProviderReply(SemanticReply.model_validate(_json(content)),sha256(content).hexdigest())
+        reply_model=SemanticAdditionReply if allow_no_additional_requirements else SemanticReply
+        try:return SemanticProviderReply(reply_model.model_validate(_json(content)),sha256(content).hexdigest())
         except ValidationError:_fail('A02_RESPONSE_INVALID')
 
 
@@ -331,6 +336,8 @@ def validate_trace(document,draft):
     expected_prompt=(PRESENTATION_PROMPT_HASH if trace.policy=='a02-semantic-v4' else
         SEMANTIC_PROMPT_HASH if trace.policy=='a02-semantic-v3' else QWEN_PROMPT_HASH if trace.mode=='qwen' else PROMPT_HASH)
     allowed_prompts={expected_prompt}
+    if trace.input_kind=='free_text' and trace.policy in ('a02-semantic-v3','a02-semantic-v4'):
+        allowed_prompts.add(sha256(semantic_prompt(presentation=trace.policy=='a02-semantic-v4',addition=True).encode()).hexdigest())
     if trace.mode=='qwen' and trace.policy=='a02-semantic-v4':allowed_prompts.add(LEGACY_PRESENTATION_PROMPT_HASH)
     if trace.mode=='qwen' and trace.policy=='a02-semantic-v3':allowed_prompts.add(LEGACY_SEMANTIC_PROMPT_HASH)
     if trace.prompt_sha256 not in allowed_prompts:raise ValueError('EXTRACTION_PROMPT_MISMATCH')
@@ -372,8 +379,15 @@ def validate_trace(document,draft):
             raise ValueError('EXTRACTION_COMPILATION_DETAILS_MISSING')
         details=criterion.details
         if details is not None:
-            references=details.qualifiers+((details.expected_source,) if details.expected_source is not None else ())
-            for reference in references:
+            # An allowance may be cited from another line of the same document, but it must
+            # still be a verbatim excerpt of the block it names.
+            for reference in details.qualifiers:
+                home=sources.get(reference.block_id)
+                if (home is None or reference.document_version_id!=document.document_version_id
+                        or reference.page!=home.page or not reference.quote.strip() or reference.quote not in home.text
+                        or sha256(reference.quote.encode()).hexdigest()!=reference.source_hash):
+                    raise ValueError('EXTRACTION_DETAILS_SOURCE_MISMATCH')
+            for reference in ((details.expected_source,) if details.expected_source is not None else ()):
                 if (reference.document_version_id!=document.document_version_id
                         or reference.page!=criterion.source.page or reference.block_id!=criterion.source.block_id
                         or not reference.quote.strip() or reference.quote not in criterion.source.quote
@@ -396,7 +410,10 @@ def validate_trace(document,draft):
             if details.origin=='retained_unresolved_source' and (not criterion.required or criterion.expected
                     or criterion.operator!='manual' or not UNRESOLVED_SOURCE.search(criterion.source.quote)):
                 raise ValueError('EXTRACTION_UNRESOLVED_LINEAGE_MISMATCH')
-    if trace.policy in ('a02-source-compile-v2','a02-semantic-v3','a02-semantic-v4'):
+    if trace.outcome=='no_new_requirements':
+        if any(has_pending_addition(source.text) for source in trace.sources):
+            raise ValueError('EXTRACTION_UNRESOLVED_SOURCE_OMITTED')
+    elif trace.policy in ('a02-source-compile-v2','a02-semantic-v3','a02-semantic-v4'):
         for source in trace.sources:
             for passage in unresolved_passages(source):
                 if not any(c.source.block_id==source.block_id and c.source.page==source.page
@@ -422,23 +439,28 @@ class RegisteredPDFExtractor:
         route=current_route() if self.settings.mode=='qwen' else 'default'
         document=self.read_document(request)
         sources,image_pages=read_sources(document,self.settings)
+        def call(provider):
+            if request.allow_no_additional_requirements and isinstance(provider,(QwenProvider,OpenAIFallbackProvider)):
+                return provider(sources,allow_no_additional_requirements=True)
+            return provider(sources)
         skipped_pages=tuple(sorted(set(range(1,request.document.page_count+1))-{source.page for source in sources}))
         if route=='openai':
             provider=OpenAIFallbackProvider(self.settings,openai_settings(),transport=getattr(self.fallback,'_transport',None))
-            return self._draft(request,document,sources,provider(sources),mode='openai',model=provider.model,
+            return self._draft(request,document,sources,call(provider),mode='openai',model=provider.model,
                 image_pages=image_pages,skipped_pages=skipped_pages)
         try:
-            return self._draft(request,document,sources,self.provider(sources),mode=self.settings.mode,model=self.settings.model,
+            return self._draft(request,document,sources,call(self.provider),mode=self.settings.mode,model=self.settings.model,
                 image_pages=image_pages,skipped_pages=skipped_pages)
         except Exception as failure:
             code=failure.code if isinstance(failure,AdapterFailure) else 'QWEN_RESULT_INVALID'
             if route=='runpod' or self.fallback is None or not should_fall_back(code):raise
         try:
-            return self._draft(request,document,sources,self.fallback(sources),mode='openai',model=self.fallback.model,
+            return self._draft(request,document,sources,call(self.fallback),mode='openai',model=self.fallback.model,
                 image_pages=image_pages,skipped_pages=skipped_pages,extra_warnings=(WARNING,'qwen_failed_'+code.lower()))
         except AdapterFailure as failure:
             raise AdapterFailure(failure.code,f'Qwen extraction failed ({code}) and the OpenAI fallback also failed ({failure.code}).',
-                retryable=failure.retryable) from None
+                retryable=failure.retryable,extraction_rejections=failure.extraction_rejections,
+                response_sha256=failure.response_sha256) from None
 
     def _draft(self,request,document,sources,raw,*,mode,model,image_pages,skipped_pages,extra_warnings=()):
         response_hash=None
@@ -449,7 +471,11 @@ class RegisteredPDFExtractor:
             response_hash=semantic_reply.response_sha256
             index,_=index_sources(sources)
             try:items,compilation_warnings,rejections=materialize_semantics(semantic_reply.result,index,sources,request.context.document_version_id,
-                presentation=self.settings.presentation,candidate_indexes=semantic_reply.candidate_indexes)
+                presentation=self.settings.presentation,candidate_indexes=semantic_reply.candidate_indexes,
+                allow_no_additional_requirements=request.allow_no_additional_requirements)
+            except AdapterFailure as failure:
+                failure.response_sha256=response_hash
+                raise
             except ValidationError:_fail('A02_RESPONSE_INVALID')
             # The semantic path never invokes the literal compiler or rewrites
             # model values. The legacy JSON validator remains below for old
@@ -485,13 +511,16 @@ class RegisteredPDFExtractor:
                     block_id=item.block_id,quote=item.quote,source_hash=sha256(item.quote.encode()).hexdigest())))
         prompt_hash=(PRESENTATION_PROMPT_HASH if semantic_reply is not None and self.settings.presentation else
             SEMANTIC_PROMPT_HASH if semantic_reply is not None else QWEN_PROMPT_HASH if self.settings.mode=='qwen' else PROMPT_HASH)
+        if semantic_reply is not None and request.allow_no_additional_requirements:
+            prompt_hash=sha256(semantic_prompt(presentation=self.settings.presentation,addition=True).encode()).hexdigest()
         trace=ExtractionTrace(mode=mode,model='mock-line-fixture-v1' if self.settings.mode=='mock' else model,
             parser='utf8-source-v1' if request.document.media_type=='text/plain' else 'pymupdf-'+self.settings.parser_version,
             document_sha256=document.reference.sha256,prompt_sha256=prompt_hash,
             response_sha256=response_hash or sha256(raw.encode() if isinstance(raw,str) else raw).hexdigest(),sources=sources,
             policy=('a02-semantic-v4' if self.settings.presentation else 'a02-semantic-v3') if semantic_reply is not None else 'a02-source-compile-v2' if self.settings.mode=='qwen' else 'a02-text-v1',
             input_kind='free_text' if request.document.media_type=='text/plain' else 'pdf',
-            unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections,skipped_pdf_pages=skipped_pages)
+            unresolved_criterion_ids=tuple(unresolved),rejected_candidates=rejections,skipped_pdf_pages=skipped_pages,
+            outcome=getattr(semantic_reply.result,'outcome','requirements') if semantic_reply is not None else 'requirements')
         warnings=['unapproved_draft','exact_source_check_is_not_semantic_accuracy','text_layer_only_visual_layout_not_verified']
         warnings.extend(IMAGE_PAGE_WARNING.format(number) for number in image_pages)
         warnings.extend(SKIPPED_PAGE_WARNING.format(number) for number in skipped_pages)
@@ -502,7 +531,7 @@ class RegisteredPDFExtractor:
             'semantic_draft_requires_human_review' if semantic_reply is not None else 'literal_compilation_requires_human_review',*compilation_warnings))
         warnings.extend(extra_warnings)
         if unresolved:warnings.append('missing_values_require_client_clarification')
-        elif any(UNRESOLVED_SOURCE.search(source.text) for source in sources):
+        elif trace.outcome!='no_new_requirements' and any(UNRESOLVED_SOURCE.search(source.text) for source in sources):
             # Source grounding alone does not prove coverage. Keep a visible
             # warning when the PDF mentions undecided content that the model
             # omitted, rather than fabricating a new criterion or an approval.

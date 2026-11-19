@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DocumentConditionDetails from './DocumentConditionDetails.jsx';
 import { Icon } from '../../components/Icon.jsx';
 import ImageStage from '../../components/ImageStage.jsx';
+import { Pager } from '../../components/Pager.jsx';
 import { NoMatchArt } from '../../components/ReviewArt.jsx';
 import { statuses } from './reviewConstants.js';
 import { filterResults, selectVisibleResult, evidenceOverlays } from './resultSelection.js';
@@ -30,6 +31,8 @@ function ModelAnalysis({ analysis }) {
 }
 
 const EMPTY = [];
+// 검수 요구사항 목록은 RESULTS_PER_PAGE개씩 쪽으로 넘겨 본다.
+const RESULTS_PER_PAGE = 6;
 
 function StatusLabel({ status }) {
   return <span className={`rv-result-status ${status || 'review'}`}>
@@ -51,7 +54,7 @@ function RetryNote({ retry }) {
 // evidence(선택): 항목을 누르면 열 판정 근거 창을 그리는 함수. 주면 항목을 누를 때마다 창이 열리고 목록 안 상세는 그리지 않는다.
 // 없으면 예전처럼 목록 안에서 펼치고 접는다.
 export default function ResultsPage({ review, filter, setFilter, activeEvidence, setActiveEvidence, edit, newReview,
-  busy = false, exportData = review, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
+  busy = false, actions, revise, finalApproved = false, exceptionApproved = false, header = null, imageActions,
   evidence }) {
   const results = review.results || EMPTY;
   const [query, setQuery] = useState('');
@@ -74,6 +77,11 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   const image = review.image;
   const selectedCondition = selected && review.criteria?.find(item => item.id === selected.criterion_id)?.document_condition;
   const selectedIndex = visible.findIndex(item => item.criterion_id === selected?.criterion_id);
+  // 보이는 쪽은 언제나 고른 항목이 있는 쪽이다. 포스터의 근거 상자, 판정 근거 창의 이전·다음, 화살표 키, 필터로
+  // 다른 쪽의 항목을 고르면 그 쪽으로 넘어가고, 쪽을 넘기면 그 쪽의 첫 항목을 고른다(기준 확인의 검수 항목 목록과 같다).
+  const pages = Math.max(1, Math.ceil(visible.length / RESULTS_PER_PAGE));
+  const pageIndex = selectedIndex < 0 ? 0 : Math.floor(selectedIndex / RESULTS_PER_PAGE);
+  const shown = visible.slice(pageIndex * RESULTS_PER_PAGE, (pageIndex + 1) * RESULTS_PER_PAGE);
 
   useEffect(() => {
     if (!focusRow.current) return;
@@ -96,6 +104,9 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
   function chooseResult(result) {
     setClosedId(null);
     setActiveEvidence(result ? { criterion_id: result.criterion_id, evidence: result.evidence || EMPTY } : null);
+  }
+  function turnPage(next) {
+    chooseResult(visible[next * RESULTS_PER_PAGE]);
   }
   const evidenceResult = evidence && evidenceId ? results.find(item => item.criterion_id === evidenceId) : null;
   const evidenceIndex = evidenceResult ? visible.indexOf(evidenceResult) : -1;
@@ -130,8 +141,10 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     const step = steps[event.key];
     const next = step === -Infinity ? 0 : step === Infinity ? visible.length - 1
       : Math.min(visible.length - 1, Math.max(0, (selectedIndex < 0 ? -1 : selectedIndex) + step));
+    // 옮겨 간 항목이 다른 쪽에 있으면 그 쪽이 그려진 뒤에 초점을 옮긴다(위의 초점 처리).
+    if (visible[next] !== selected) focusRow.current = true;
+    else list.current?.querySelector('.rv-result-item-button.is-selected')?.focus();
     chooseResult(visible[next]);
-    list.current?.querySelectorAll('.rv-result-item-button')[next]?.focus();
   }
   function changeFilter(value) {
     // The provider clears its old evidence on filter change. Restore the same
@@ -143,14 +156,6 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     setQuery('');
     setFilter('all');
     chooseResult(selectVisibleResult(results, selected?.criterion_id));
-  }
-  function exportJson() {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' }));
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `baro-review-${review.id}.json`;
-    anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const details = selected && <aside id="rv-result-inspector" className={`rv-result-inspector rv-panel is-${selected.status}`}
@@ -183,10 +188,12 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
     </div>
   </aside>;
 
+  const approvalLabel = exceptionApproved ? '담당자 예외 승인' : finalApproved ? '담당자 승인 완료' : '';
   return <section className="rv-results" aria-labelledby="page-title">
     <h1 id="page-title" className="sr-only" tabIndex={-1}>{review.project_name || '포스터 검수'}</h1>
-    <p className="rv-result-notice" role="status">{review.status_label || '자동 검수 완료'} · {exceptionApproved
-      ? <strong>담당자 예외 승인</strong> : finalApproved ? <strong>담당자 승인 완료</strong> : '최종 승인은 담당자가 별도로 판단합니다.'}</p>
+    {/* 평소(자동 검수 완료·승인 전)에는 안내 줄을 두지 않는다. 처리 오류·미리보기 표시나 담당자 승인 기록처럼 알려야 할 때만 보인다. */}
+    {(review.status_label || approvalLabel) && <p className="rv-result-notice" role="status">
+      {review.status_label}{review.status_label && approvalLabel && ' · '}{approvalLabel && <strong>{approvalLabel}</strong>}</p>}
     {header}
 
     <div className="rv-result-workbench">
@@ -221,7 +228,7 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
         </div>
         <p className="sr-only" role="status">{visible.length}개 표시</p>
         <span id="rv-result-keys" className="sr-only">위아래 화살표로 항목을 옮길 수 있습니다.</span>
-        {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록" aria-describedby="rv-result-keys" onKeyDown={moveWithKeys}>{visible.map(result => {
+        {visible.length ? <ul ref={list} className="rv-result-items" aria-label="검수 항목 목록" aria-describedby="rv-result-keys" onKeyDown={moveWithKeys}>{shown.map(result => {
           const active = selected?.criterion_id === result.criterion_id;
           const open = !evidence && active && expanded;   // 판정 근거 창을 쓰면 목록 안에서는 펼치지 않는다
           return <li key={result.criterion_id}>
@@ -244,14 +251,13 @@ export default function ResultsPage({ review, filter, setFilter, activeEvidence,
           <p>{results.length ? '검색어나 상태 필터를 바꿔 주세요.' : '기준과 검수 내용을 다시 확인해 주세요.'}</p>
           {results.length > 0 && <button type="button" className="rv-button secondary" onClick={resetFilters}>검색·필터 초기화</button>}
         </div>}
+        <Pager page={pageIndex} pages={pages} onChange={turnPage} label="검수 요구사항 쪽" />
       </aside>
 
     </div>
     <footer className="rv-result-footer">
       <div className="rv-result-secondary-actions">
-        {edit && <button type="button" className="text-btn" disabled={busy} onClick={edit}>기준 다시 확인하기</button>}
-        <button type="button" className="text-btn" onClick={exportJson}>결과 JSON 저장</button>
-      </div>
+        {edit && <button type="button" className="text-btn" disabled={busy} onClick={edit}>기준 다시 확인하기</button>}      </div>
       <div>{revise && <button type="button" className="rv-button secondary" disabled={busy} onClick={revise}>수정본 재검수</button>}
         <button type="button" className={`rv-button ${actions ? 'secondary' : 'primary'}`} disabled={busy} onClick={newReview}>새 검수 시작하기{!actions && <Icon name="arrow" />}</button>{actions}</div>
     </footer>

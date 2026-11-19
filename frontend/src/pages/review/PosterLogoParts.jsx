@@ -7,7 +7,8 @@ import { POSTER_LOGO_API } from './posterLogoFlow.js';
 
 // 포스터 검수 화면에 붙는 포스터 로고 검수 조각: 작업 조회와 상태 카드. 로고 작업은 판정이 아니라 처리 상태다.
 const RUNNING = new Set(['queued', 'running']);
-export const posterLogoStatusLabels = { queued: '접수됨', running: '후보 찾는 중', candidates_ready: '위치 확정 대기', failed: '실패' };
+// 후보를 찾으면 서버가 바로 자동 정밀 대조를 하므로(2026-11-17, 동영상과 같음) '위치 확정 대기'가 아니라 '후보 찾기 완료'다.
+export const posterLogoStatusLabels = { queued: '접수됨', running: '후보 찾는 중', candidates_ready: '후보 찾기 완료', failed: '실패' };
 export const posterCompareLabels = { queued: '정밀 대조 대기', running: '정밀 대조 중', completed: '정밀 대조 완료', failed: '정밀 대조 실패' };
 
 // 포스터 검수 실행에 연결한 로고 작업을 읽는다. 후보 찾기·정밀 대조가 도는 동안 다시 읽는다.
@@ -41,12 +42,12 @@ export function usePosterLogoJobs(runId, reload = 0) {
 const jobState = job => (job.status === 'failed' ? 'is-error' : job.status === 'candidates_ready' ? 'is-todo' : 'is-running');
 const compareState = job => (job.compare_status === 'failed' ? 'is-error' : job.compare_status === 'completed' ? 'is-done' : 'is-running');
 
-// 포스터 검수 진행·결과 화면 아래에 두는 카드. 위치 확정 → 정밀 대조 순서로 사람이 진행한다.
+// 포스터 검수 진행·결과 화면 아래에 두는 카드. 후보 찾기 → 자동 정밀 대조 순서로 서버가 진행하고, 사람은 결과를 보고 필요할 때만 위치를 고친다.
 export function PosterLogoCard({ jobs, error, notice }) {
   if (!jobs?.length && !error && !notice) return null;
   return <section className="rv-panel rv-video-logo-card rv-poster-logo-card" aria-labelledby="poster-logo-title">
     <div className="rv-panel-heading"><div><h2 id="poster-logo-title">포스터 로고 검수</h2>
-      <p>후보 찾기 → 위치 확정 → 정밀 대조 순서로 진행합니다. 기준 문구 검수와 별도이며, 로고 일치 여부는 사람이 판단합니다.</p></div></div>
+      <p>후보 찾기 → 정밀 대조 순서로 자동 진행합니다. 기준 문구 검수와 별도이며, 로고 일치 여부는 사람이 판단합니다.</p></div></div>
     <div className="rv-video-logo-body">
       {notice && <p className="rv-video-inline-warning" role="alert"><Icon name="warning" />{notice}</p>}
       <ErrorMessage message={error} />
@@ -64,8 +65,9 @@ export function PosterLogoCard({ jobs, error, notice }) {
         {job.error && <ErrorMessage message={job.error} />}
         {job.compare_error && job.compare_status === 'failed' && <ErrorMessage message={job.compare_error} />}
         {job.status === 'candidates_ready' && <div className="rv-video-logo-actions">
-          <Link className="rv-button primary" to={`/review/logo?job=${job.id}`}>로고 위치 확정하기</Link>
-          {job.compare_status === 'completed' && <Link className="rv-button secondary" to={`/review/logo?job=${job.id}&view=compare`}>정밀 대조 근거 보기</Link>}
+          <Link className={`rv-button ${job.compare_status === 'completed' ? 'primary' : 'secondary'}`} to={`/review/logo?job=${job.id}`}>
+            {job.compare_status === 'completed' ? '로고 검수 결과 확인' : '로고 검수 보기'}</Link>
+          {!RUNNING.has(job.compare_status) && <Link className="rv-button secondary" to={`/review/logo?job=${job.id}&view=confirm`}>로고 후보 다시 선택</Link>}
         </div>}
       </li>)}</ul>
     </div>

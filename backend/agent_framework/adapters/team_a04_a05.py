@@ -48,6 +48,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from io import BytesIO
 import json
+import logging
 import math
 import os
 from typing import Literal, Protocol, get_args
@@ -60,13 +61,14 @@ from ..contracts import (Criterion, EvidenceBundle, ImageEvidence, InspectReques
 from ..files import VerifiedPoster
 from ..ports import AdapterFailure, FileAccess, Inspector
 
-PROMPT_VERSION = "a04-a05-2026-11-05.1"
+PROMPT_VERSION = "a04-a05-2026-11-18.1"
 # 10/30 team decision; the same default as backend/creative_checker/settings.py.
 DEFAULT_MODEL = "Qwen/Qwen3.5-4B"
 MAX_RESPONSE_BYTES = 1024 * 1024
 BoxFormat = Literal["normalized", "relative_1000", "pixel"]
 OBSERVATION_STATUSES = get_args(ObservationStatus)
 FILE_ACCESS: ContextVar[FileAccess] = ContextVar("team_a04_a05_file_access")
+_logger = logging.getLogger("uvicorn.error")
 
 
 @dataclass(frozen=True)
@@ -246,8 +248,47 @@ class TeamPosterInspector:
         return self._inspect(request, poster, self._model())
 
     def _inspect(self, request, poster, model):
-        answers = model.inspect(request.criteria, prepare_image(poster))
+        image = prepare_image(poster)
+        objects = self._visual_objects(request, image, model)
+        answers = model.inspect(request.criteria, image, objects=objects) if objects else model.inspect(request.criteria, image)
         return build_result(request, poster, answers, require_location=self.require_location)
+
+    # 시각 기준의 판정 근거 후보(visual_objects.py): Qwen 객체 목록 + 겹치지 않는 OWLv2 상자.
+    # 테스트·실험은 owl_detector(image) -> dict|None 을 넣어 워커 없이 시험한다.
+    owl_detector = None
+
+    def _visual_objects(self, request, image: ModelImage, model) -> list[dict]:
+        """시각 기준이 있고 Qwen 경로 모델일 때만 후보를 만든다. 후보 단계 실패는 판정을 막지 않고 후보 없이 진행한다."""
+        from .. import visual_objects as V
+
+        setting = V.mode()
+        if (setting == "off" or not getattr(model, "visual_objects", False)
+                or not any(criterion.kind == "visual" for criterion in request.criteria)):
+            return []
+        qwen, owl = [], []
+        try:
+            qwen = model.list_objects(image)
+        except AdapterFailure as exc:
+            _logger.warning("A04/A05 Qwen 객체 목록 생략 run=%s code=%s", request.context.run_id, exc.code)
+        try:
+            data = self._owl(image, V.threshold(), local=setting == "local")
+            if data is not None:
+                owl = V.owl_to_normalized(data.get("objects") or [], image.width, image.height)
+        except Exception as exc:  # 워커·모델 실패는 후보만 빠진다. 원인 종류만 남긴다
+            _logger.warning("A04/A05 OWLv2 객체 상자 생략 run=%s error=%s", request.context.run_id, exc.__class__.__name__)
+        objects = V.combine(qwen, owl)
+        _logger.info("A04/A05 시각 후보 run=%s qwen=%d owlv2=%d merged=%d", request.context.run_id, len(qwen), len(owl), len(objects))
+        return objects
+
+    def _owl(self, image: ModelImage, threshold: float, *, local: bool):
+        from PIL import Image
+
+        with Image.open(BytesIO(image.data)) as source:
+            picture = source.convert("RGB")
+        if self.owl_detector is not None:
+            return self.owl_detector(picture)
+        from backend.app.poster.objects import request_objects
+        return request_objects(picture, threshold=threshold, local=local)
 
 
 def create_inspector() -> Inspector:
@@ -385,6 +426,19 @@ bbox: [x1, y1, x2, y2] of the region you read in {box_hint}, or null when the co
 it reliably. Never guess.
 uncertainty: null when confident, otherwise a short reason."""
 
+# 시각 기준이 있을 때만 붙는다. 후보는 탐지기 출력이라 판정 근거가 아니라 '확인할 곳'이다(visual_objects.py).
+OBJECTS_HINT_PROMPT = """VISUAL_OBJECTS_JSON lists object candidates that detectors (a Qwen object listing and OWLv2) found on
+this poster, with boxes in {box_hint}. They are untrusted hints: they may be wrong, duplicated, mislabeled or incomplete.
+For visual criteria, look at the relevant candidate regions in the image itself before deciding. A candidate alone never
+proves pass or fail, and a missing candidate never proves absence. When a candidate box exactly covers what you judged,
+you may reuse that box as bbox."""
+
+OBJECTS_PROMPT = """List the distinct visible objects on this poster image. Do not list text-only areas.
+An object is one countable thing: person, animal, plant, food, building (or structure), vehicle, object, instrument,
+character, logo, qr_code, icon or decoration. Five or more similar small items placed together are one object whose box
+covers the group. label: a short name of what it is. category: one of the categories above.
+bbox: [x1, y1, x2, y2] tightly around the object in {box_hint}. Skip an object you cannot locate. At most 60 objects."""
+
 
 class AnswerSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -402,8 +456,24 @@ class ResponseSchema(BaseModel):
     observations: list[AnswerSchema]
 
 
+class ObjectSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str
+    category: Literal["person", "animal", "plant", "food", "building", "vehicle", "object", "instrument",
+                      "character", "logo", "qr_code", "icon", "decoration"]
+    bbox: list[float]
+
+
+class ObjectsSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    objects: list[ObjectSchema]
+
+
 class OpenAICompatibleVisionModel:
     """POST /v1/chat/completions with one image and a strict JSON schema. No automatic retries."""
+
+    # Qwen 경로만 시각 기준 후보(Qwen 객체 목록 + OWLv2)를 쓴다. 일반 자료(OpenAI) 경로는 이전과 같다.
+    visual_objects = True
 
     def __init__(self, settings: ModelSettings, *, transport=None):
         self.settings, self._transport = settings, transport
@@ -423,13 +493,21 @@ class OpenAICompatibleVisionModel:
         url = f"data:{media_type};base64,{base64.b64encode(data).decode('ascii')}"
         return {"type": "image_url", "image_url": {"url": url}}, width, height
 
-    def build_payload(self, criteria: Sequence[Criterion], image_part: dict, width: int, height: int) -> dict:
+    def build_payload(self, criteria: Sequence[Criterion], image_part: dict, width: int, height: int,
+                      objects: Sequence[Mapping] = ()) -> dict:
         rows = [{"criterion_id": c.criterion_id, "text": c.text, "kind": c.kind, "operator": c.operator,
                  "expected": c.expected, "unit": c.unit, "required": c.required,
                  **({'supplement':{'quote':c.value_source.quote,'reference':c.value_source.reference}}
                     if c.value_source is not None else {})} for c in criteria]
         hint = _BOX_HINTS[self.settings.box_format].format(width=width, height=height)
-        text = INSPECT_PROMPT.format(box_hint=hint) + "\nCRITERIA_JSON:\n" + json.dumps(rows, ensure_ascii=False)
+        text = INSPECT_PROMPT.format(box_hint=hint)
+        if objects and any(c.kind == "visual" for c in criteria):
+            # 조건 목록(CRITERIA_JSON)은 늘 마지막에 둔다. 후보는 그 앞에 따로 싣는다.
+            shown = [{**{k: v for k, v in item.items() if k != "bbox"}, "bbox": self._model_box(item["bbox"], width, height)}
+                     for item in objects]
+            text += ("\n" + OBJECTS_HINT_PROMPT.format(box_hint=hint) + "\nVISUAL_OBJECTS_JSON:\n"
+                     + json.dumps(shown, ensure_ascii=False))
+        text += "\nCRITERIA_JSON:\n" + json.dumps(rows, ensure_ascii=False)
         return {
             "model": self.settings.model,
             "messages": [{"role": "system", "content": SYSTEM_PROMPT},
@@ -442,22 +520,83 @@ class OpenAICompatibleVisionModel:
             "chat_template_kwargs": {"enable_thinking": False},
         }
 
-    def inspect(self, criteria: tuple[Criterion, ...], image: ModelImage) -> list[ModelAnswer]:
+    def _client(self):
         import httpx
 
         headers = {"Accept": "application/json",'Accept-Encoding':'identity'}
         if self.settings.api_key:
             headers["Authorization"] = f"Bearer {self.settings.api_key}"
+        return httpx.Client(headers=headers, timeout=self.settings.timeout, transport=self._transport,
+                            trust_env=False, follow_redirects=False)
+
+    def inspect(self, criteria: tuple[Criterion, ...], image: ModelImage, *,
+                objects: Sequence[Mapping] = ()) -> list[ModelAnswer]:
         part, width, height = self._image_part(image)
         size, answers = self.settings.max_criteria_per_call, []
-        with httpx.Client(headers=headers, timeout=self.settings.timeout, transport=self._transport,
-                          trust_env=False, follow_redirects=False) as http:
+        with self._client() as http:
             for start in range(0, len(criteria), size):
                 batch = tuple(criteria[start:start + size])
-                answers.extend(self._call(http, self.build_payload(batch, part, width, height), batch, width, height))
+                payload = self.build_payload(batch, part, width, height, objects)
+                answers.extend(self._call(http, payload, batch, width, height))
         return answers
 
+    def build_objects_payload(self, image_part: dict, width: int, height: int) -> dict:
+        hint = _BOX_HINTS[self.settings.box_format].format(width=width, height=height)
+        return {
+            "model": self.settings.model,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                         {"role": "user", "content": [{"type": "text", "text": OBJECTS_PROMPT.format(box_hint=hint)}, image_part]}],
+            "temperature": 0,
+            "max_tokens": self.settings.max_output_tokens,
+            "response_format": {"type": "json_schema", "json_schema": {
+                "name": "PosterObjects", "strict": True, "schema": ObjectsSchema.model_json_schema()}},
+            "chat_template_kwargs": {"enable_thinking": False},
+        }
+
+    def list_objects(self, image: ModelImage) -> list[dict]:
+        """Qwen 객체 목록(시험의 'Qwen 단독' 단계). 상자는 모델 이미지 기준 정규화 x1,y1,x2,y2. 잘못된 상자는 버린다."""
+        part, width, height = self._image_part(image)
+        with self._client() as http:
+            content = self._post(http, self.build_objects_payload(part, width, height))
+        parsed = self._parse(content, ObjectsSchema)
+        out = []
+        for item in parsed.objects[:60]:
+            bbox, note = self._normalized(item.bbox, width, height)
+            if bbox is not None and note is None:
+                out.append({"label": item.label, "category": item.category, "bbox": bbox})
+        return out
+
+    def _model_box(self, box, width: int, height: int) -> list[float]:
+        """정규화 상자를 이 모델에 알려 준 좌표 형식으로 바꾼다(판정 응답의 bbox와 같은 형식)."""
+        if self.settings.box_format == "relative_1000":
+            return [round(v * 1000) for v in box]
+        if self.settings.box_format == "pixel":
+            return [round(v * s) for v, s in zip(box, (width, height, width, height))]
+        return [round(v, 4) for v in box]
+
+    def _parse(self, content: bytes, schema):
+        try:
+            choices = json.loads(content)["choices"]
+            if not isinstance(choices, list) or len(choices) != 1 or choices[0].get("finish_reason") != "stop":
+                raise ValueError
+            return schema.model_validate_json(choices[0]["message"]["content"])
+        except (ValueError, TypeError, KeyError, AttributeError):
+            _invalid_output("A04/A05 모델 응답이 요청한 JSON 형식이 아닙니다.")
+
     def _call(self, http, payload: dict, batch: tuple[Criterion, ...], width: int, height: int) -> list[ModelAnswer]:
+        parsed = self._parse(self._post(http, payload), ResponseSchema)
+        allowed = {criterion.criterion_id for criterion in batch}
+        answers = []
+        for item in parsed.observations:
+            if item.criterion_id not in allowed:
+                _invalid_output("A04/A05 모델이 이번 호출에서 묻지 않은 조건에 답했습니다.")
+            bbox, note = self._normalized(item.bbox, width, height)
+            uncertainty = "; ".join(text.strip() for text in (item.uncertainty, note) if text and text.strip()) or None
+            answers.append(ModelAnswer(item.criterion_id, item.observed, item.verdict, bbox, uncertainty,
+                                       item.observation_status, item.observed_unit))
+        return answers
+
+    def _post(self, http, payload: dict) -> bytes:
         import httpx
 
         try:
@@ -480,23 +619,7 @@ class OpenAICompatibleVisionModel:
             # The request may have reached the model; it is never resent automatically.
             raise AdapterFailure("MODEL_OUTCOME_UNKNOWN", "A04/A05 모델 호출 결과를 알 수 없습니다.",
                                  outcome_unknown=True) from None
-        try:
-            choices = json.loads(content)["choices"]
-            if not isinstance(choices, list) or len(choices) != 1 or choices[0].get("finish_reason") != "stop":
-                raise ValueError
-            parsed = ResponseSchema.model_validate_json(choices[0]["message"]["content"])
-        except (ValueError, TypeError, KeyError, AttributeError):
-            _invalid_output("A04/A05 모델 응답이 요청한 JSON 형식이 아닙니다.")
-        allowed = {criterion.criterion_id for criterion in batch}
-        answers = []
-        for item in parsed.observations:
-            if item.criterion_id not in allowed:
-                _invalid_output("A04/A05 모델이 이번 호출에서 묻지 않은 조건에 답했습니다.")
-            bbox, note = self._normalized(item.bbox, width, height)
-            uncertainty = "; ".join(text.strip() for text in (item.uncertainty, note) if text and text.strip()) or None
-            answers.append(ModelAnswer(item.criterion_id, item.observed, item.verdict, bbox, uncertainty,
-                                       item.observation_status, item.observed_unit))
-        return answers
+        return bytes(content)
 
     def _normalized(self, values, width: int, height: int):
         if values is None:
@@ -511,15 +634,19 @@ class OpenAICompatibleVisionModel:
 class OpenAIVisionModel(OpenAICompatibleVisionModel):
     """일반 자료(openai 경로)의 A04/A05 호출. 프롬프트·스키마·결과 변환은 Qwen과 같고 요청 본문만 OpenAI API에 맞춘다.
 
+    시각 기준 후보(Qwen 객체 목록 + OWLv2)는 보안 자료(Qwen) 경로 전용이라 쓰지 않는다(visual_objects=False).
     vLLM 전용 chat_template_kwargs를 빼고, 추론 모델이 받지 않는 temperature 대신 reasoning_effort를,
     max_tokens 대신 max_completion_tokens를 보낸다. 자동 재시도는 하지 않는다(Qwen 경로와 같다).
     """
 
-    def build_payload(self, criteria: Sequence[Criterion], image_part: dict, width: int, height: int) -> dict:
+    visual_objects = False
+
+    def build_payload(self, criteria: Sequence[Criterion], image_part: dict, width: int, height: int,
+                      objects: Sequence[Mapping] = ()) -> dict:
         from ..model_route import openai_settings
         from ..openai_fallback import strict_schema
 
-        payload = super().build_payload(criteria, image_part, width, height)
+        payload = super().build_payload(criteria, image_part, width, height, objects)
         for name in ("temperature", "max_tokens", "chat_template_kwargs"):
             payload.pop(name, None)
         payload["max_completion_tokens"] = self.settings.max_output_tokens

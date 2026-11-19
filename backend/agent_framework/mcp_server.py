@@ -23,7 +23,8 @@ from pydantic import ValidationError
 from .contracts import AssetRef, Context, DocumentRef, RunSnapshot, StepTimeline
 from .runtime import Workflow
 
-TOOL_NAMES = ('get_run', 'get_steps', 'get_approval_history', 'start_run', 'request_rereview')
+READ_TOOL_NAMES = ('get_run', 'get_steps', 'get_approval_history')
+TOOL_NAMES = READ_TOOL_NAMES + ('start_run', 'request_rereview')
 # Read-only evidence tools; exposed only with a backend that stores criteria versions (PostgreSQL).
 EVIDENCE_TOOL_NAMES = ('get_approved_criteria', 'get_history', 'verify_sources', 'get_relations', 'get_change_impact')
 
@@ -79,9 +80,10 @@ def _failed(code: str, message: str) -> dict:
 class FrameworkTools:
     """Named tool capabilities; also usable in-process as a tool client."""
 
-    def __init__(self, workflow: RunBackend, evidence: EvidenceBackend | None = None):
+    def __init__(self, workflow: RunBackend, evidence: EvidenceBackend | None = None, *, read_only: bool = False):
         self.workflow, self.evidence = workflow, evidence
-        self.names = TOOL_NAMES + (EVIDENCE_TOOL_NAMES if evidence is not None else ())
+        run_tools = READ_TOOL_NAMES if read_only else TOOL_NAMES
+        self.names = run_tools + (EVIDENCE_TOOL_NAMES if evidence is not None else ())
 
     def get_run(self, run_id: str) -> dict:
         """Compact run state: status, verdicts, report and approval decisions."""
@@ -175,7 +177,7 @@ def _receipt_tool(tools: FrameworkTools, name: str):
 
 
 def create_mcp_app(workflow: RunBackend, *, token: str, host: str = '127.0.0.1',
-                   evidence: EvidenceBackend | None = None):
+                   evidence: EvidenceBackend | None = None, read_only: bool = False):
     from mcp.server.fastmcp import FastMCP
     from mcp.server.transport_security import TransportSecuritySettings
 
@@ -184,7 +186,7 @@ def create_mcp_app(workflow: RunBackend, *, token: str, host: str = '127.0.0.1',
     server = FastMCP('creative-checker-agent-framework', stateless_http=True, json_response=True,
         transport_security=TransportSecuritySettings(allowed_hosts=[host, f'{host}:*', '127.0.0.1', '127.0.0.1:*',
                                                                      'localhost', 'localhost:*'], allowed_origins=[]))
-    tools = FrameworkTools(workflow, evidence)
+    tools = FrameworkTools(workflow, evidence, read_only=read_only)
     for name in tools.names:
         server.add_tool(_receipt_tool(tools, name), name=name)
     return BearerMiddleware(server.streamable_http_app(), token)
@@ -205,7 +207,7 @@ async def call_tool(url: str, token: str, name: str, arguments: dict, *, timeout
     from mcp.client.streamable_http import streamable_http_client
 
     async with httpx.AsyncClient(headers={'Authorization': f'Bearer {token}'}, follow_redirects=False,
-                                 timeout=httpx.Timeout(timeout, connect=10)) as http:
+                                 timeout=httpx.Timeout(timeout, connect=min(timeout, 10)), trust_env=False) as http:
         async with streamable_http_client(url, http_client=http) as (read, write, _):
             async with ClientSession(read, write, read_timeout_seconds=timedelta(seconds=timeout)) as session:
                 await session.initialize()

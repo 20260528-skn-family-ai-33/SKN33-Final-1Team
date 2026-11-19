@@ -56,7 +56,8 @@ function selectedItems(body) {
 // Legacy video review fixture (/api/video-reviews, /api/video-logos).
 // One fixed synthetic short-form script stands in for every upload. Field names
 // and rules follow backend/app/video (review.py, frames.py, tracks.py, judge.py,
-// disclosure.py, logos/routes.py); nothing is decoded, recognised or stored.
+// logos/routes.py); nothing is decoded, recognised or stored. Ad/sponsorship disclosure judging was removed
+// from the server, so the fixture neither reads a disclosure field nor returns disclosure results.
 // ---------------------------------------------------------------------------
 const VIDEO_NOTICE = '시각 QA용 합성 동영상 결과입니다. 실제 영상 디코딩·OCR·판정과 연결되지 않습니다.';
 const VIDEO_SCRIPT = { width: 540, height: 960, duration_ms: 12000, fps: 30 };
@@ -78,7 +79,7 @@ const VIDEO_STAGES = [['queued', 2000], ['extracting', 2000], ['scene_detection'
   ['classifying', 1500], ['segmenting', 1500], ['review', 2000], ['double_check', 1000]];
 const VIDEO_OCR_MS = 14000, VIDEO_FAIL_MS = 6000 + 0.4 * VIDEO_OCR_MS; // a '실패' project stops 40% into ocr
 const VIDEO_LIMITS = { upload_bytes: 500 * 1024 * 1024, duration_seconds: 180, short_side_min: 360, long_side_max: 3840, fps_max: 120, active_jobs: 3, formats: ['mp4', 'mov', 'webm', 'avi'] };
-const VIDEO_SAMPLING = '1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격';
+const VIDEO_SAMPLING = '1초 간격 표본 검사';
 const VIDEO_OCR_FAILURE = '프레임 OCR 실행에 실패했습니다. Paddle 전용 환경과 모델 준비 상태를 확인한 뒤 다시 실행해 주세요.';
 const VIDEO_FAIL_WARNING = "시각 QA 합성 실패 사례입니다. 프로젝트 이름에 '실패'가 있어 OCR 단계에서 멈추도록 만든 응답입니다.";
 const VIDEO_NO_CLIP = '시각 QA 합성 응답에는 재생 파일이 없습니다.';
@@ -96,8 +97,6 @@ const REASONS = {
   whole: '합성 예시: 비교할 화면 문구를 특정하지 않고 영상 전체에서 담당자가 확인하도록 남긴 사례입니다.',
   visual: '합성 예시: 로고·색상·배치·잘림 등 시각 조건은 OCR로 판정하지 않습니다. 영상 전체에서 담당자가 확인해 주세요.',
 };
-const DISCLOSURE_NOTE = "'3초'·'15자'·'중간 한 번 이상'은 내부 기준이며 법령의 숫자 기준이 아닙니다.";
-const ALLOWED = [/#\s*광고/, /#\s*협찬/, /유료\s*광고/];
 const QUOTES = /["“「『]([^"”」』]+)["”」』]|'([^']+)'/g;
 const SVG_FONT = "'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
 
@@ -141,7 +140,7 @@ function agreement(a, b) {
   return longest ? 1 - editDistance(ja, jb) / longest : 1;
 }
 
-// frames.plan_times: 1 s grid over [0, duration) + 0.2 s slots in the first and last 3 s (not for kind 'self').
+// frames.plan_times: 1 s grid over [0, duration) + 0.2 s slots in the first and last 3 s when edges (review.py now uses edges=False).
 function videoPlan(edges) {
   const duration = VIDEO_SCRIPT.duration_ms, end = Math.max(duration - 200 + 1, 1), times = new Map();
   for (let t = 0; t < end; t += 1000) times.set(t, 'base');
@@ -331,61 +330,6 @@ function videoReview(criteria, analysis) {
   });
   return { results, mismatch, calls: 1 };
 }
-function phraseClass(text) {
-  const value = String(text || '').normalize('NFC');
-  if (/^\s*협찬\s*[:：]/.test(value) || /^\s*협찬\s*사(?![\p{L}\p{N}_])/u.test(value)) return 'excluded';
-  if (ALLOWED.some(pattern => pattern.test(value))) return 'allowed';
-  if ([/^\s*체험단\s*$/, /^\s*#?\s*AD\s*$/i, /^\s*#?\s*sponsor(ed)?\s*$/i].some(pattern => pattern.test(value))) return 'disallowed';
-  if (/광고|협찬|체험단|(?<![\p{L}\p{N}_])AD(?![\p{L}\p{N}_])|sponsor/iu.test(value)) return 'ambiguous';
-  return 'none';
-}
-// disclosure.judge_disclosure over the script's OCR lines (12 s, so never the short-video branch).
-function videoDisclosure(info, analysis) {
-  if (info.kind === 'self') return { applicable: false, status: 'not_applicable', severity: 'info', reviewer: 'auto',
-    reason: '광고주 자체 광고로 입력되어 추천·보증 표시 대상이 아닙니다.', rules: {}, notes: [DISCLOSURE_NOTE] };
-  const duration = VIDEO_SCRIPT.duration_ms, capped = info.kind === 'unknown', allowedIn = text => ALLOWED.some(pattern => pattern.test(text));
-  const hits = analysis.lines.map(line => ({ frame_id: line.frame_id, time_ms: line.time_ms, text: line.text, bbox_xyxy: line.bbox_xyxy, class: phraseClass(line.text) }))
-    .filter(hit => hit.class !== 'none');
-  const allowed = hits.filter(hit => hit.class === 'allowed'), disallowed = hits.filter(hit => hit.class === 'disallowed');
-  const window = (start, end, baseOnly = false) => {
-    const frameIds = new Set(analysis.frames.filter(frame => start <= frame.time_ms && frame.time_ms < end && (!baseOnly || frame.sampling === 'base')).map(frame => frame.frame_id));
-    const evidence = allowed.filter(hit => frameIds.has(hit.frame_id));
-    return { status: evidence.length ? 'pass' : 'review', evidence: evidence.slice(0, 5), frames: frameIds.size, ocr_ok: frameIds.size > 0 };
-  };
-  const rules = { R0: capped ? { status: 'review', note: "영상 성격이 '모름'이라 모든 결과를 최대 '확인 필요'로 둡니다." } : { status: 'pass', note: '적용 대상 확정' } };
-  rules.R1 = { status: disallowed.length && !allowed.length ? 'fail' : allowed.length ? 'pass' : 'review',
-    counts: Object.fromEntries(['allowed', 'disallowed', 'ambiguous', 'excluded'].map(kind => [kind, hits.filter(hit => hit.class === kind).length])),
-    evidence: (disallowed.length ? disallowed : hits.filter(hit => hit.class === 'ambiguous')).slice(0, 5),
-    note: "불허 문구만 있으면 위반 후보, 엔딩의 '협찬: ○○' 크레딧은 표시 문구로 보지 않습니다." };
-  const title = info.title.normalize('NFC'), head = Array.from(title).slice(0, 15).join('');
-  rules.R2 = { status: allowedIn(head) ? 'pass' : 'review',
-    note: '제목 앞 15자 안의 허용 문구' + (!allowedIn(head) && allowedIn(title) ? ' — 뒤쪽에만 있어 모바일에서 잘릴 수 있습니다.' : '') };
-  rules.R3a = { ...window(0, 3000), note: '[0, 3초) 0.2초 프레임' };
-  rules.R3b = { ...window(duration - 3000, duration), note: '[끝−3초, 끝) 0.2초 프레임' };
-  const middle = window(3000, duration - 3000, true);
-  rules.R3c = { ...middle, note: '중간 1초 프레임에서 한 번 이상' + (middle.evidence.length ? '' : ' — 중간 반복 미확인') };
-  const captionAllowed = allowedIn(info.caption);
-  rules.R4 = { status: captionAllowed && !allowed.length && rules.R2.status !== 'pass' ? 'review' : 'pass', note: '캡션에만 허용 문구가 있으면 확인 필요' };
-  rules.R5 = { status: 'review', note: '글자 크기·대비·노출 시간(명확한 인식)은 후속 — 담당자 확인' };
-  rules.R6 = { status: 'review', note: 'AI 가상인물 등장 여부는 후속 — 담당자 확인' };
-  const screenOk = info.celebrity_exposure ? rules.R3a.status === 'pass' && rules.R3b.status === 'pass'
-    : ['R3a', 'R3b', 'R3c'].every(key => ['pass', 'skipped'].includes(rules[key].status));
-  const textTime = rules.R2.status === 'pass' || screenOk ? 'pass' : 'review';
-  const headTailOk = rules.R3a.ocr_ok && rules.R3b.ocr_ok, stated = Boolean(info.title || info.caption);
-  const noTrace = !allowed.length && !allowedIn(title) && !captionAllowed, ambiguous = hits.some(hit => hit.class === 'ambiguous');
-  let status = 'review', reason;
-  if (!capped && stated && headTailOk && noTrace && !ambiguous) { status = 'fail'; reason = '적용 대상 영상인데 제목·캡션·화면 어디에도 허용 표시 문구가 없습니다.'; }
-  else if (ambiguous && noTrace && !capped && stated && headTailOk) reason = "허용 표시 문구는 없지만 모호한 표시(예: '광고'·'협찬')가 있어 자동 위반으로 확정하지 않고 확인 필요로 둡니다.";
-  else reason = textTime === 'pass' ? '표본에서 표시 문구·시간은 확인했지만, 시인성(R5)·가상인물(R6)이 남아 전체 광고 적합은 확인 필요입니다.'
-    : '필수 표시를 모두 확인하지 못했습니다. 중간 반복 미확인 등은 위반으로 올리지 않습니다.';
-  // Fixture-only rule so the blocking state can be inspected: no '광고' in title/tag shows as fail.
-  if (!capped && status !== 'fail' && !`${info.title}\n${info.caption}`.includes('광고')) {
-    status = 'fail';
-    reason = "합성 예시: 게시물 제목·태그에 '광고' 표시가 없어 위반으로 표시한 시각 QA 사례입니다. 실제 판정은 화면에 허용 표시 문구가 있으면 위반으로 확정하지 않습니다.";
-  }
-  return { applicable: true, text_time_status: textTime, status, severity: status === 'fail' ? 'block' : 'warn', reviewer: status === 'fail' ? 'auto' : 'manager',
-    reason, rules, notes: [DISCLOSURE_NOTE, '표본 문구 확인과 표시 규정 충족은 다른 상태입니다.'] };
-}
 // Frame image: neutral gradient and a light disc drifting with time, the cues visible at that time at
 // their bbox, and a corner label. Colours follow the clip renderer that reads /__fixture/video-script.
 function frameSvg(ms) {
@@ -493,7 +437,7 @@ const isImage = head => head.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e
 const videoMedia = (container, bytes, sha256) => ({ codec: VIDEO_CODECS[container], width: VIDEO_SCRIPT.width, height: VIDEO_SCRIPT.height, fps: VIDEO_SCRIPT.fps,
   rotation: 0, hdr: false, duration_ms: VIDEO_SCRIPT.duration_ms, container_duration_ms: VIDEO_SCRIPT.duration_ms, container, bytes, sha256 });
 function videoCriteria(raw) { // criteria_contracts.Criterion (extra keys forbidden, strings stripped) + unique ids
-  const invalid = () => fail('INVALID_REQUEST', 422, '검수 기준 또는 광고 입력 형식을 확인해 주세요.');
+  const invalid = () => fail('INVALID_REQUEST', 422, '검수 기준 형식을 확인해 주세요.');
   let parsed;
   try { parsed = raw.length <= 250000 ? JSON.parse(raw) : null; } catch { throw invalid(); }
   if (!Array.isArray(parsed) || parsed.length > 100) throw invalid();
@@ -513,21 +457,13 @@ function videoCriteria(raw) { // criteria_contracts.Criterion (extra keys forbid
   if (new Set(frozen.map(item => item.id)).size !== frozen.length) throw invalid();
   return frozen;
 }
-function videoDisclosureInput(raw) { // disclosure.validate_input
-  let value;
-  try { value = JSON.parse(raw); } catch { throw fail('INVALID_REQUEST', 422, '검수 기준 또는 광고 입력 형식을 확인해 주세요.'); }
-  if (!value || (Array.isArray(value) && !value.length)) value = {};
-  const kind = value.kind === undefined ? 'unknown' : value.kind, text = (item, size) => Array.from(String(item || '')).slice(0, size).join('');
-  if (typeof value !== 'object' || Array.isArray(value) || !['self', 'endorsement', 'partial', 'unknown'].includes(kind)) throw fail('INVALID_REQUEST', 422, '검수 기준 또는 광고 입력 형식을 확인해 주세요.');
-  return { kind, celebrity_exposure: Boolean(value.celebrity_exposure ?? false), title: text(value.title, 500), caption: text(value.caption, 5000), platform: text(value.platform, 50) };
-}
 async function loadClip(path) {
   const data = await readFile(path), format = extname(path).slice(1).toLowerCase();
   return { data, format, type: `video/${format}`, container: format === 'webm' ? 'matroska' : 'mov', sha256: createHash('sha256').update(data).digest('hex') };
 }
 
 function createVideoFixture(clip) {
-  const analyses = new Map([[true, videoAnalysis(true)], [false, videoAnalysis(false)]]);
+  const sampled = videoAnalysis(false);   // review.py: 1초 표본만(edges=False)
   const jobs = new Map(), logoJobs = new Map();
   const elapsedOf = (entry, now) => { const age = Math.max(0, now - entry.createdMs); return entry.failAt === null ? age : Math.min(age, entry.failAt); };
   const failed = (entry, now) => entry.failAt !== null && now - entry.createdMs >= entry.failAt;
@@ -540,9 +476,9 @@ function createVideoFixture(clip) {
   const activeCount = now => [...jobs.values()].filter(entry => active(entry, now)).length;
   const runtime = total => ({ engine: 'paddleocr', pipeline: 'visual-http-fixture', device: 'fixture', load_seconds: 1.2, seconds_per_frame: 0.4, ocr_frames: total, ocr_success_ratio: 1 });
 
-  function addJob({ id = randomUUID(), createdMs, projectName, criteriaVersion = 1, criteria, disclosure, media, logoQuery = false }) {
-    const entry = { id, createdMs, created_at: iso(createdMs), project_name: projectName, criteria_version: criteriaVersion, criteria, disclosure_input: disclosure,
-      media, logo_query: logoQuery, waiting: activeCount(Date.now()), analysis: analyses.get(disclosure.kind !== 'self'),
+  function addJob({ id = randomUUID(), createdMs, projectName, criteriaVersion = 1, criteria, media, logoQuery = false }) {
+    const entry = { id, createdMs, created_at: iso(createdMs), project_name: projectName, criteria_version: criteriaVersion, criteria,
+      media, logo_query: logoQuery, waiting: activeCount(Date.now()), analysis: sampled,
       failAt: projectName.includes('실패') ? VIDEO_FAIL_MS : null, result: null };
     jobs.set(id, entry);
     return entry;
@@ -553,7 +489,6 @@ function createVideoFixture(clip) {
     return {
       classifier: 'rule_fallback', frames: analysis.frames, coverage: analysis.coverage, scenes: { status: 'completed', cut_ms: [] },
       tracks: analysis.tracks, text_groups: analysis.text_groups, segments: analysis.segments, review,
-      disclosure: videoDisclosure(entry.disclosure_input, analysis),
       logo_match: { status: 'skipped', reason: entry.logo_query ? '시각 QA 합성 응답은 지정 로고 대조를 실행하지 않습니다.' : '검사할 지정 로고를 올리지 않았습니다.' },
       // Same contract as backend review.py: available=true only when a separate playback MP4 was made (AVI).
       // MP4/MOV/WEBM originals are streamed as-is and report available=false with this reason.
@@ -576,7 +511,7 @@ function createVideoFixture(clip) {
     else if (stage === 'segmenting') detail = `줄 ${analysis.lines.length}개`;
     else if (stage === 'review' || stage === 'double_check') detail = `구간 ${analysis.segments.length}개`;
     const view = { id: entry.id, status: stage === 'completed' ? 'completed' : stage === 'queued' ? 'queued' : 'running', stage, progress, stage_detail: detail,
-      project_name: entry.project_name, criteria_version: entry.criteria_version, criteria: entry.criteria, disclosure_input: entry.disclosure_input,
+      project_name: entry.project_name, criteria_version: entry.criteria_version, criteria: entry.criteria,
       media: entry.media, logo_query: entry.logo_query, runtime: ['queued', 'extracting', 'scene_detection', 'ocr'].includes(stage) ? null : runtime(total),
       warnings: [], error: null, created_at: entry.created_at, updated_at: iso(entry.createdMs + (failed(entry, now) ? entry.failAt : changed)) };
     if (failed(entry, now)) return { ...view, status: 'failed', stage: 'failed', warnings: [VIDEO_FAIL_WARNING], error: VIDEO_OCR_FAILURE, failed_stage: 'ocr' };
@@ -612,28 +547,31 @@ function createVideoFixture(clip) {
     if (!video) throw fail('INVALID_REQUEST', 422, '동영상 파일이 필요합니다.');
     if (!/^\s*\d+\s*$/.test(version) || Number(version) < 1 || Number(version) > 1_000_000) throw fail('INVALID_REQUEST', 422, '기준 버전을 확인해 주세요.');
     if (!within(projectName, 1, 120)) throw fail('INVALID_REQUEST', 422, '프로젝트 이름은 1~120자로 입력해 주세요.');
-    const criteria = videoCriteria(form.field('criteria') ?? '[]'), disclosure = videoDisclosureInput(form.field('disclosure') ?? '{}');
+    const criteria = videoCriteria(form.field('criteria') ?? '[]');
     if (activeCount(Date.now()) >= VIDEO_LIMITS.active_jobs) throw fail('TOO_MANY_VIDEO_JOBS', 429, `동영상 검수는 실행·대기 합쳐 ${VIDEO_LIMITS.active_jobs}건까지 받습니다. 잠시 후 다시 시도해 주세요.`);
     if (!video.size) throw fail('EMPTY_VIDEO', 400, '빈 동영상 파일입니다.');
     const container = sniffContainer(video.head);
     if (!container) throw fail('UNSUPPORTED_VIDEO', 415, 'MP4·MOV·WEBM·AVI 동영상만 지원합니다.');
     const logoQuery = Boolean(logo?.filename && logo.size);
     if (logoQuery && !isImage(logo.head)) throw fail('UNSUPPORTED_LOGO', 415, '로고는 이미지 파일(PNG·JPG 등)이어야 합니다.');
-    const entry = addJob({ createdMs: Date.now(), projectName, criteriaVersion: Number(version), criteria, disclosure, media: videoMedia(container, video.size, video.sha256), logoQuery });
+    const entry = addJob({ createdMs: Date.now(), projectName, criteriaVersion: Number(version), criteria, media: videoMedia(container, video.size, video.sha256), logoQuery });
     return { id: entry.id, status: 'queued' };
   }
   async function submitLogo(request) { // logos.routes.submit
     const form = await streamMultipart(request, name => (name === 'video' ? { bytes: 1024 ** 3, message: '영상이 너무 큽니다.' } : { bytes: 8 * 1048576, message: '원본 로고 이미지가 너무 큽니다.' }));
     const reviewId = form.field('review_id') ?? null, files = form.files('logos'), video = form.file('video'), title = form.field('title') ?? '영상 로고 검수';
-    if (!video || !within(title, 1, 120)) throw fail('INVALID_REQUEST', 422, '영상과 제목(1~120자)을 확인해 주세요.');
+    if (!within(title, 1, 120)) throw fail('INVALID_REQUEST', 422, '제목(1~120자)을 확인해 주세요.');
     if (reviewId !== null && !isUuid(reviewId)) throw fail('INVALID_REQUEST', 422, 'review_id가 올바르지 않습니다.');
+    // logos.routes.submit: review_id가 있으면 영상을 생략하고 그 동영상 검수에 저장된 영상을 쓴다.
+    if (!video && reviewId === null) throw fail('INVALID_REQUEST', 422, '동영상 파일이 필요합니다.');
+    if (!video && !jobs.has(reviewId)) throw fail('LINKED_VIDEO_UNAVAILABLE', 422, '연결된 동영상 검수의 영상을 쓸 수 없습니다. 영상을 함께 올려 주세요.');
     if (files.length < 1 || files.length > 12) throw fail('INVALID_REQUEST', 422, '원본 로고는 1~12장입니다.');
     let texts;
     try { texts = JSON.parse(form.field('logo_texts') ?? '[]'); } catch { throw fail('INVALID_REQUEST', 422, 'logo_texts는 JSON 배열이어야 합니다.'); }
     if (!Array.isArray(texts) || ![0, files.length].includes(texts.length) || !texts.every(item => typeof item === 'string' && Array.from(item).length <= 300)) {
       throw fail('INVALID_REQUEST', 422, 'logo_texts는 원본 로고 수와 같은 길이의 문자열 배열이어야 합니다.');
     }
-    if (!LOGO_VIDEO_SUFFIXES.has(extname(video.filename).toLowerCase())) throw fail('INVALID_REQUEST', 422, '지원하는 영상 형식이 아닙니다.');
+    if (video && !LOGO_VIDEO_SUFFIXES.has(extname(video.filename).toLowerCase())) throw fail('INVALID_REQUEST', 422, '지원하는 영상 형식이 아닙니다.');
     if (files.some(file => !isImage(file.head))) throw fail('INVALID_REQUEST', 422, '원본 로고가 이미지가 아닙니다.');
     const createdMs = Date.now(), entry = { id: randomUUID(), title, review_id: reviewId, createdMs, created_at: iso(createdMs), failAt: title.includes('실패') ? 2500 : null,
       logos: files.map((file, index) => ({ name: basename(file.filename || `logo_${index}`, extname(file.filename || `logo_${index}`)), file: `${index}.png`, text: texts[index] ?? '' })) };
@@ -654,12 +592,12 @@ function createVideoFixture(clip) {
     response.end(body(start, end));
   }
 
-  const started = Date.now(), seedDisclosure = { kind: 'endorsement', celebrity_exposure: false, title: '#광고 합성 예시 영상', caption: '', platform: '' };
+  const started = Date.now();
   const seedCriteria = [['"예시 자막 첫 번째 줄" 문구 포함', 'information'], ['광고 표시 문구가 시작 3초 안에 보일 것', 'information'], ['화면 글자가 잘리지 않을 것', 'visual']]
     .map(([text, type], index) => ({ id: `criterion-${index + 1}`, text, type, source: text, document_condition: null }));
   const seedMedia = clip ? videoMedia(clip.container, clip.data.length, clip.sha256) : videoMedia('matroska', 0, createHash('sha256').digest('hex'));
-  addJob({ id: VIDEO_SEED_IDS.completed, createdMs: started - 30 * 60000, projectName: '시각 QA 예시 숏폼', criteria: seedCriteria, disclosure: seedDisclosure, media: seedMedia });
-  addJob({ id: VIDEO_SEED_IDS.failed, createdMs: started - 60 * 60000, projectName: '시각 QA 실패 예시', criteria: seedCriteria, disclosure: seedDisclosure, media: seedMedia });
+  addJob({ id: VIDEO_SEED_IDS.completed, createdMs: started - 30 * 60000, projectName: '시각 QA 예시 숏폼', criteria: seedCriteria, media: seedMedia });
+  addJob({ id: VIDEO_SEED_IDS.failed, createdMs: started - 60 * 60000, projectName: '시각 QA 실패 예시', criteria: seedCriteria, media: seedMedia });
 
   return {
     script: () => ({ ...VIDEO_SCRIPT, cues: VIDEO_CUES.map(({ text, start_ms, end_ms, bbox_xyxy, role }) => ({ text, start_ms, end_ms, bbox_xyxy, role })), notice: VIDEO_NOTICE }),

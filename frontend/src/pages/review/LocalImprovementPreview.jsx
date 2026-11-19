@@ -51,9 +51,7 @@ export default function LocalImprovementPreview() {
   }, [tab]);
 
   const totalSeconds = Math.max(0, Math.floor((now - requestStartedAt) / 1000));
-  const stageSeconds = Math.max(0, Math.floor((now - stageStartedAt) / 1000));
   const checkAge = Math.max(0, Math.floor((now - lastCheckedAt) / 1000));
-  const lastChecked = checkAge < 3 ? '방금' : checkAge < 60 ? `${checkAge}초 전` : `${Math.floor(checkAge / 60)}분 전`;
   const shellState = { step: 'results', projectName: '', criteria: [] };
 
   return <ReviewLayout state={shellState} busy={false} showWorkspaceBar={false} mainClassName="rv-improvements-preview">
@@ -89,7 +87,7 @@ export default function LocalImprovementPreview() {
         <DocumentAnalysisProgress documentProgress={{
           stage: 'extracting', percent: 60, startedAt: stageStartedAt,
           message: '문서에서 검수 요구사항과 원문 근거를 추출하고 있습니다.',
-        }} totalSeconds={totalSeconds} stageSeconds={stageSeconds} lastChecked={lastChecked} cancelLabel="입력 반영 취소" />
+        }} totalSeconds={totalSeconds} lastCheckedSeconds={checkAge} cancelLabel="입력 반영 취소" />
         <p className="rv-improvement-auto-check">상태를 자동으로 확인하고 있습니다.</p>
         <button type="button" className="rv-button secondary rv-compact" onClick={() => setLastCheckedAt(Date.now())}>
           예시 상태 갱신

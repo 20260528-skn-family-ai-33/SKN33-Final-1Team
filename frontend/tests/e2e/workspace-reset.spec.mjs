@@ -33,8 +33,8 @@ async function fixture(t, options = {}) {
     await route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new');
-  // 저장할 프로젝트가 하나뿐이면 저절로 고르고, 고른 프로젝트 이름을 프로젝트 버튼에 보여 준다.
-  await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
+  // 첫 화면(보안 여부)을 기다린다. 검수 이름·프로젝트 줄은 유형까지 고른 뒤에 보이므로 프로젝트 확인은 chooseReview에서 한다.
+  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
   const authReads = calls.filter(call => call.path.endsWith('/auth/me')).length;
   t.after(() => { assert.deepEqual(errors, []); assert.deepEqual(unexpected, []); });
   return { page, base, calls, authReads };
@@ -49,13 +49,17 @@ async function chooseReview(page, title = '문구 검수 자료 입력') {
   await page.getByRole('heading', { name: '검수할 항목을 선택해 주세요', exact: true }).waitFor();
   await page.getByRole('button', { name: '문구 검수', exact: true }).click();
   await page.getByRole('heading', { name: title, exact: true }).waitFor();
+  // 저장할 프로젝트가 하나뿐이면 저절로 고르고, 고른 프로젝트 이름을 프로젝트 버튼에 보여 준다.
+  await page.waitForFunction(() => document.querySelector('.rv-project-chip.is-selected .rv-project-chip-text')?.textContent === '검수');
 }
 
-// 새 입력은 보안 여부를 묻는 첫 화면부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다.
+// 새 입력은 보안 여부를 묻는 첫 화면부터 다시 시작한다. 입력 칸은 유형까지 고른 뒤에 확인한다
+// (검수 이름·프로젝트 줄은 보안 여부·유형을 고르는 동안 숨는다).
 async function checkBlank(page) {
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  assert.equal(await page.locator('#project-name').inputValue(), '');
+  assert.equal(await page.locator('#project-name').count(), 0);
   await chooseReview(page);
+  assert.equal(await page.locator('#project-name').inputValue(), '');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByLabel('검수 이미지 선택', { exact: true }).evaluate(input => input.files.length), 0);
   assert.equal(await page.getByRole('progressbar').count(), 0);
@@ -137,7 +141,7 @@ test('PDF 분석 중 자료 입력을 유지하고 카드에서 진행을 보여
   // 회전 표시 대신 문서를 읽는 3D 그림을 보여 준다. 분석 상태는 이 카드에서 확인하므로 새 탭으로 여는 링크는 두지 않는다.
   assert.ok(await documentCard.locator('.rv-document-art .pa.is-document').isVisible());
   assert.equal(await documentCard.getByRole('link', { name: '새 탭에서 분석 상태 확인' }).count(), 0);
-  await documentCard.getByRole('timer', { name: '문서 분석 경과 시간', exact: true }).filter({ hasText: /총 경과 00:0[1-9]/ }).waitFor();
+  await documentCard.getByRole('timer', { name: '문서 분석 경과 시간', exact: true }).filter({ hasText: /^0:0[1-9]$/ }).waitFor();
   await page.getByRole('button', { name: '입력 반영 취소', exact: true }).click();
   await tools.getByRole('link', { name: '동영상 검수', exact: true }).click();
   await tools.getByRole('link', { name: '포스터 검수', exact: true }).click();
@@ -223,20 +227,17 @@ test('영상 업로드 중에는 메뉴 이동을 잠그고 접수 뒤 이동을
   assert.equal(new URL(page.url()).search, '');
 });
 
-test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실행을 유지한다', { timeout: 30000 }, async t => {
+test('영상 결과에는 담당자 승인과 처리 내역을 두지 않는다', { timeout: 30000 }, async t => {
   const path = '/api/video-reviews/checked';
   const frame = { frame_id: 't001000', time_ms: 1000, width: 640, height: 360, lines: [] };
   const job = { id: 'checked', status: 'completed', project_name: '시연', criteria_version: 1, criteria: [],
     media: { duration_ms: 2000, sha256: 'a'.repeat(64) }, coverage: { duration_ms: 2000, inspected_ms: [1000] },
-    frames: [frame], disclosure: { applicable: true, status: 'pass', rules: {} },
+    frames: [frame],
     workflow: { project_id: 'project', asset_version: 1, human_decision: 'unreviewed', decisions: [] },
     approval_options: { blocked: false, human_check_ids: [] } };
   const { page, base } = await fixture(t, { route: async (route, requested) => {
     if (requested === path) await route.fulfill({ json: job });
-    else if (requested === path + '/evidence-graph') {
-      await route.fulfill({ json: { nodes: [{ ...frame, id: 'frame', kind: 'frame', label: '프레임 0:01' }],
-        verdicts: [{ id: 'rule-a', rule: 'A', title: '광고 표시', status: 'pass', chain: ['frame'] }] } });
-    } else if (requested === path + '/frames/' + frame.frame_id) {
+    else if (requested === path + '/frames/' + frame.frame_id) {
       await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"/>' });
     } else if (requested === path + '/video') {
       await route.fulfill({ path: fileURLToPath(new URL('../../src/assets/sample-shortform.mp4', import.meta.url)) });
@@ -244,7 +245,7 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
       const decision = route.request().postDataJSON();
       assert.equal(decision.decision, 'approve_changes');
       assert.equal(decision.asset_sha256, job.media.sha256);
-      assert.equal(decision.reason, '광고 위치 수정');
+      assert.equal(decision.reason, '자막 위치 수정');
       job.workflow.human_decision = 'changes_approved';
       job.workflow.decisions.push({ ...decision, approved_at: '2026-11-11T00:00:00Z' });
       await route.fulfill({ json: job });
@@ -257,6 +258,8 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
       }).formData();
       assert.equal(form.get('parent_run_id'), job.id);
       assert.equal(form.get('project_id'), job.workflow.project_id);
+      // 광고·협찬 표시 판정을 없앴으므로 광고 입력을 보내지 않는다.
+      assert.equal(form.get('disclosure'), null);
       await route.fulfill({ status: 202, json: { id: 'child' } });
     } else if (requested === '/api/video-reviews/child') {
       await route.fulfill({ json: { id: 'child', status: 'queued' } });
@@ -264,22 +267,11 @@ test('영상 결과에서 광고 프레임을 열고 수정 사유와 부모 실
     return true;
   } });
   await page.goto(base + '/video?id=checked');
-  await page.getByText('광고·협찬 근거 관계', { exact: true }).click();
-  await page.getByRole('button', { name: '프레임 0:01', exact: true }).click();
-  await page.getByRole('img', { name: /프레임과 읽은 글자 영역/ }).waitFor();
-  await page.getByLabel('수정 요청 사유', { exact: true }).fill('광고 위치 수정');
-  await page.getByRole('button', { name: '수정 요청 승인', exact: true }).click();
-  await page.getByText('영상·기준·승인 이력', { exact: true }).click();
-  await page.getByText(/광고 위치 수정 · 2026-11-11/).waitFor();
-  await page.getByRole('button', { name: '수정본 등록', exact: true }).click();
-  // 보안 여부 기록이 없는 검수라 수정본을 올릴 때 보안 여부를 다시 묻는다. 유형은 문구 검수로 이어진다.
-  await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  await page.getByRole('button', { name: '일반 자료', exact: true }).click();
-  await page.getByRole('heading', { name: videoInput, exact: true }).waitFor();
-  await page.getByText(/수정본을 등록/).waitFor();
-  await page.getByLabel('검수 동영상 선택', { exact: true }).setInputFiles({
-    name: 'revised.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video'),
-  });
-  await page.getByRole('button', { name: '검수 시작하기', exact: true }).click();
-  await page.waitForURL('**/video?id=child');
+  // 결과 화면 오른쪽에는 담당자 승인(최종 승인·수정 요청·수정본 등록·승인 이력)과 '검사 범위와 처리 내역'을 두지 않는다.
+  await page.getByRole('heading', { name: '검수 요구사항', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('수정 요청 사유', { exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '최종 승인', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '수정 요청 승인', exact: true }).count(), 0);
+  assert.equal(await page.getByText('영상·기준·승인 이력', { exact: true }).count(), 0);
+  assert.equal(await page.getByText('검사 범위와 처리 내역', { exact: true }).count(), 0);
 });

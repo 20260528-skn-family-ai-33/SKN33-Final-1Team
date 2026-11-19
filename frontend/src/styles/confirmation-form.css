@@ -1,0 +1,39 @@
+/* 공공기관 보고서 형식의 검수 확인서(ConfirmationForm). 화면에는 숨기고,
+   보고서가 .is-printing-form일 때 인쇄에서만 보고서 대신 나온다.
+   모양은 output/pdf/creative-checker-confirmation-gimcheon-public.html 샘플(바탕·HY헤드라인M, 파란 제목 띠, 로마 숫자 머리)과 같다. */
+.rv-confirm-form { display: none; }
+@media print {
+  .rv-report-print.is-printing-form .rv-report-shell { display: none !important; }
+  .rv-report-print.is-printing-form .rv-confirm-form { display: block !important; }
+}
+.rv-confirm-form { color: #111; font-family: 'Batang', '바탕', serif; line-height: 1.6; }
+.rv-confirm-form * { box-sizing: border-box; }
+.rv-confirm-page { display: flex; flex-direction: column; min-height: 250mm; padding: 2mm 8mm 0; }
+.rv-confirm-page + .rv-confirm-page { break-before: page; }
+.rv-confirm-title { margin: 0 0 9px; padding: 13px 0 12px; text-align: center; position: relative;
+  font: 700 23px 'HY헤드라인M', 'Malgun Gothic', sans-serif; letter-spacing: -.6px; }
+.rv-confirm-title::before, .rv-confirm-title::after { content: ''; height: 5px; position: absolute; left: 0; right: 0; top: 0;
+  background: linear-gradient(to right, #193aaa 79%, #a0b4e6 79%); }
+.rv-confirm-title::after { top: auto; bottom: 0; background: linear-gradient(to right, #193aaa 22%, #a0b4e6 22%); }
+.rv-confirm-heading { display: flex; align-items: center; margin: 17px 0 9px; background: #f2f2f2; border-top: 1px solid #a6a6a6; border-bottom: 1px solid #a6a6a6;
+  font: 700 17px 'HY헤드라인M', 'Malgun Gothic', sans-serif; }
+.rv-confirm-heading b { background: #193aaa; color: #fff; min-width: 38px; align-self: stretch; display: flex; align-items: center; justify-content: center;
+  font: 700 19px 'Batang', serif; margin: -1px 10px -1px 0; padding: 2px 0; }
+.rv-confirm-form p { margin: 6px 0 6px 8px; font-size: 15px; word-break: keep-all; overflow-wrap: break-word; white-space: pre-wrap; }
+.rv-confirm-form .rv-confirm-lead { font: 700 17px 'HY헤드라인M', 'Malgun Gothic', sans-serif; margin: 9px 0 10px; }
+.rv-confirm-form .rv-confirm-note { font: 11px/1.65 'Malgun Gothic', sans-serif; margin: 5px 0; color: #333; }
+.rv-confirm-table { border-collapse: collapse; width: 100%; table-layout: fixed; margin: 7px 0; font: 12px/1.55 'Malgun Gothic', sans-serif; }
+.rv-confirm-table th, .rv-confirm-table td { border: 1px solid #888; padding: 7px 8px; text-align: left; vertical-align: middle;
+  word-break: keep-all; overflow-wrap: break-word; white-space: pre-wrap; }
+.rv-confirm-table th { background: #f2f2f2; font-weight: 700; }
+.rv-confirm-table tr { break-inside: avoid; }
+.rv-confirm-table.is-check th:nth-child(1) { width: 8%; }
+.rv-confirm-table.is-check th:nth-child(2) { width: 24%; }
+.rv-confirm-table.is-check th:nth-child(3) { width: 42%; }
+.rv-confirm-table.is-check td { padding: 6px 5px; font-size: 11px; }
+.rv-confirm-table.is-sign th { width: 22%; }
+.rv-confirm-table.is-sign td { height: 37px; }
+.rv-confirm-comment { display: block; margin-top: 3px; padding-left: 6px; border-left: 2px solid #a0b4e6; color: #333; }
+.rv-confirm-footer { margin-top: auto; padding-top: 12px; text-align: center; font: 11px 'Batang', serif; color: #444; }
+.rv-confirm-footer div { font: 10px 'Malgun Gothic', sans-serif; color: #666; margin-bottom: 6px; }
+@media print { .rv-confirm-form { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }

@@ -42,8 +42,8 @@ def started(monkeypatch):
     seen = {'engine': Engine()}
     monkeypatch.setattr(mcp_commands, 'create_app_engine', lambda settings: seen['engine'])
     monkeypatch.setattr(mcp_commands, '_ready', lambda engine, settings: seen.update(ready=True))
-    monkeypatch.setattr(mcp_server, 'create_mcp_app', lambda backend, *, token, evidence:
-                        seen.update(backend=backend, token=token, evidence=evidence) or 'app')
+    monkeypatch.setattr(mcp_server, 'create_mcp_app', lambda backend, *, token, evidence, read_only:
+                        seen.update(backend=backend, token=token, evidence=evidence, read_only=read_only) or 'app')
     monkeypatch.setattr(uvicorn, 'run', lambda app, **options: seen.update(app=app, options=options))
     monkeypatch.setenv('AGENT_FRAMEWORK_MCP_TOKEN', 't' * 32)
     return seen
@@ -62,8 +62,11 @@ def test_mcp_serve_requires_a_token_before_any_connection(env_file, capsys, monk
     assert json.loads(capsys.readouterr().out)['error']['code'] == 'MCP_TOKEN_REQUIRED'
 
 
-def test_mcp_serve_binds_postgres_tools_on_loopback(env_file, started):
-    assert main(['mcp-serve', '--env-file', str(env_file), '--config', CONFIG]) == 0
+@pytest.mark.parametrize('read_only', [False, True])
+def test_mcp_serve_binds_postgres_tools_on_loopback(env_file, started, read_only):
+    flags = ['--read-only'] if read_only else []
+    assert main(['mcp-serve', '--env-file', str(env_file), '--config', CONFIG, *flags]) == 0
+    assert started['read_only'] is read_only
     backend, evidence = started['backend'], started['evidence']
     assert isinstance(backend, PostgresRuns) and isinstance(backend.store, McpStore)
     assert backend.store.engine is started['engine']

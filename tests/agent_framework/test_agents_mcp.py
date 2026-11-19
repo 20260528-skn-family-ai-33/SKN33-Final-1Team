@@ -335,14 +335,15 @@ def test_a08_compare_rejects_unrelated_child():
 
 
 @contextmanager
-def mcp_server(workflow, evidence=None):
+def mcp_server(workflow, evidence=None, *, read_only=False):
     """Real loopback HTTP MCP server, so McpToolClient runs its actual transport."""
     import uvicorn
 
     with socket.socket() as probe:
         probe.bind(('127.0.0.1', 0))
         port = probe.getsockname()[1]
-    server = uvicorn.Server(uvicorn.Config(create_mcp_app(workflow, token=TOKEN, evidence=evidence), host='127.0.0.1', port=port,
+    app = create_mcp_app(workflow, token=TOKEN, evidence=evidence, read_only=read_only)
+    server = uvicorn.Server(uvicorn.Config(app, host='127.0.0.1', port=port,
                                            log_level='warning', lifespan='on'))
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
@@ -381,6 +382,42 @@ def test_mcp_client_rejects_a_wrong_token():
         with pytest.raises(httpx.HTTPStatusError) as error:
             McpToolClient(url, 'wrong-token-' + 'x' * 32, timeout=10).call('get_run', {'run_id': parent.run_id})
     assert error.value.response.status_code == 401
+
+
+def test_read_only_mcp_lists_and_serves_lookups_but_rejects_admission():
+    import asyncio
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamable_http_client
+
+    workflow, parent = waiting_revision()
+    child, document, asset = sample_inputs('demo-run-2', 'poster-v2', parent.run_id)
+    child_context = child.model_dump(mode='json')
+    new_asset = asset.model_dump(mode='json')
+
+    async def check(url):
+        async with httpx.AsyncClient(headers={'Authorization': f'Bearer {TOKEN}'}) as http:
+            async with streamable_http_client(url, http_client=http) as (read, write, _):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    available = await session.list_tools()
+                    assert {tool.name for tool in available.tools} == {
+                        'get_run', 'get_steps', 'get_approval_history', 'get_approved_criteria',
+                        'get_history', 'verify_sources', 'get_relations', 'get_change_impact',
+                    }
+                    start = await session.call_tool('start_run', {
+                        'context': child_context, 'document': document.model_dump(mode='json'), 'asset': new_asset,
+                    })
+                    revision = await session.call_tool('request_rereview', {
+                        'parent_run_id': parent.run_id, 'context': child_context, 'asset': new_asset,
+                    })
+                    assert start.isError and revision.isError
+
+    with mcp_server(workflow, evidence=object(), read_only=True) as url:
+        run = McpToolClient(url, TOKEN, timeout=10).call('get_run', {'run_id': parent.run_id})
+        assert run['state'] == 'completed' and run['result']['run_id'] == parent.run_id
+        asyncio.run(check(url))
+    with pytest.raises(KeyError):
+        workflow.get(child.run_id)
 
 
 def test_mcp_tool_exception_and_empty_result_are_outcome_unknown(monkeypatch):

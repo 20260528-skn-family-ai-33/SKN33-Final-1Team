@@ -354,6 +354,11 @@
 .vl-finding-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
 .vl-finding-list li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 7px; color: #5c4c37; background: #fff8e9; font-size: 9px; }
 .vl-finding-list strong { font-variant-numeric: tabular-nums; }
+/* 동영상 정밀 대조: 묶음 결과(통과·보류)와 보류 묶음의 종류별 차이 */
+.vl-evidence-head h2 .vl-bundle-outcome { margin-left: 6px; vertical-align: middle; font-size: 10px; }
+.vl-diff-groups { display: grid; gap: 9px; }
+.vl-diff-group h3 { display: flex; align-items: baseline; gap: 6px; margin: 0 0 5px; color: #a43b3b; font-size: 11px; font-weight: 700; }
+.vl-diff-group h3 span { color: #7b6a55; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .vl-muted-copy { margin: 0; font-size: 10px; }
 /* 높이는 아래 여백 12px을 포함한다(막대 9px). 9px로 두면 border-box라 막대가 보이지 않는다. */
 .vl-sec-timeline { display: flex; gap: 2px; height: 21px; padding: 0 15px 12px; overflow: hidden; }
@@ -450,4 +455,489 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .vl-page *, .vl-page *::before, .vl-page *::after { transition: none!important; scroll-behavior: auto!important; }
+}
+
+
+/* ---------- 정밀 대조 결과(Optimus 테마, 2026-11-17) ----------
+   머리: 큰 얇은 제목 · 한 줄 설명 · 결과 개수 알약. 카드: 흰 바탕 · 가는 선 · 위쪽 결과 색 띠,
+   원본 ↔ 영상 로고를 같은 크기 틀에 나란히 두고, 초별 결과 띠와 접는 초별 표를 아래에 둔다. */
+html .vl-compare { display: grid; gap: 16px; }
+html .vl-compare-heading { align-items: flex-end; padding-bottom: 18px; border-bottom: 1px solid var(--op-line, #e3e3df); }
+html .vl-compare-heading h1 { margin: 0 0 6px; font-size: clamp(26px, 2.2vw, 34px); font-weight: 500; letter-spacing: -.045em; line-height: 1.2; }
+html .vl-compare-heading p { margin: 0; color: var(--op-muted, #6e6e6b); font-size: 14px; line-height: 1.6; }
+html .vl-compare-tally { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+html .vl-compare-total { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px;
+  background: var(--op-card, #fff); color: var(--op-muted, #6e6e6b); font-size: 12px; font-variant-numeric: tabular-nums; }
+html .vl-compare .vl-result-pill { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 11px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; }
+html .vl-compare .vl-result-pill.match { border-color: #d5e8da; }
+html .vl-compare .vl-result-pill.diff { border-color: #efd5ce; }
+html .vl-compare .vl-result-pill.unknown { border-color: #ecdfba; }
+
+html .vl-page .vl-evidence-card.vl-cmp-card { overflow: hidden; border: 1px solid var(--op-line, #e3e3df); border-top: 3px solid #c8a24a; border-radius: 9px;
+  background: var(--op-card, #fff); box-shadow: 0 2px 7px #17171708; transition: box-shadow .18s ease, transform .18s ease; }
+html .vl-page .vl-cmp-card:hover { box-shadow: 0 9px 24px #17171710; transform: translateY(-1px); }
+html .vl-page .vl-cmp-card.is-match { border-top-color: #177d45; }
+html .vl-page .vl-cmp-card.is-diff { border-top-color: #a34f3e; }
+html .vl-cmp-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; padding: 20px 24px 16px; }
+html .vl-cmp-title { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; }
+html .vl-cmp-title h2 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -.035em; }
+html .vl-cmp-title .vl-result-pill { gap: 7px; padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+html .vl-cmp-title .vl-bundle-outcome::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+html .vl-cmp-tag { padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; color: var(--op-muted, #6e6e6b); font-size: 12px; }
+
+html .vl-cmp-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; padding: 4px 24px 20px; }
+html .vl-cmp-pair figure { display: grid; gap: 8px; min-width: 0; margin: 0; }
+html .vl-cmp-frame { display: grid; place-items: center; height: clamp(175px, 16vw, 228px); padding: 20px; overflow: hidden; border: 1px solid var(--op-line, #e3e3df);
+  border-radius: 7px; background-color: var(--op-surface, #f3f3f1); box-shadow: inset 0 1px 0 #ffffff80; transition: border-color .18s ease, background-color .18s ease;
+  background-image: linear-gradient(#17171708 1px, transparent 1px), linear-gradient(90deg, #17171708 1px, transparent 1px); background-size: 16px 16px; }
+html .vl-cmp-pair figure:hover .vl-cmp-frame { border-color: #c9c9c2; background-color: #f0f0ed; }
+html .vl-cmp-frame img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; border: 0; background: none; }
+html .vl-cmp-frame.is-empty { color: var(--op-muted, #6e6e6b); font-size: 13px; }
+html .vl-cmp-pair figcaption { color: var(--op-muted, #6e6e6b); font: 12px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+html .vl-cmp-arrow { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--op-line, #e3e3df); border-radius: 50%; background: var(--op-card, #fff);
+  color: var(--op-ink, #171717); font-size: 16px; }
+html .vl-cmp-card.is-match .vl-cmp-arrow { border-color: #d5e8da; background: #f0f7f2; color: #177d45; }
+html .vl-cmp-card.is-diff .vl-cmp-arrow { border-color: #efd5ce; background: #fbf1ee; color: #a34f3e; }
+
+html .vl-cmp-diffs { margin: 0 24px 18px; padding: 14px 16px; border-radius: 6px; background: #faf3f0; }
+html .vl-cmp-diffs .vl-diff-group h3 { font-size: 14px; }
+html .vl-cmp-diffs .vl-diff-group h3 span { font-size: 12px; }
+html .vl-cmp-diffs .vl-finding-list li { padding: 7px 10px; background: var(--op-card, #fff); font-size: 13px; }
+html .vl-cmp-note { margin: 0 24px 18px; padding: 10px 14px; border-radius: 6px; background: #fbf4e2; color: #6b5820; font-size: 13px; }
+
+html .vl-cmp-strip { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 0 24px 18px; }
+html .vl-cmp-strip > span { color: var(--op-muted, #8a8a84); font: 11px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .06em; white-space: nowrap; }
+html .vl-cmp-strip .vl-sec-timeline { gap: 3px; height: 10px; padding: 0; }
+html .vl-cmp-strip .vl-sec-timeline span { border-radius: 999px; }
+html .vl-cmp-strip .vl-sec-timeline span.match { background: #177d45; }
+html .vl-cmp-strip .vl-sec-timeline span.diff { background: #a34f3e; }
+html .vl-cmp-strip .vl-sec-timeline span.unknown { background: #c8a24a; }
+
+html .vl-cmp-card .vl-details { border-top: 1px solid var(--op-line, #e3e3df); }
+html .vl-cmp-card .vl-details summary { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; list-style: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color .16s ease; }
+html .vl-cmp-card .vl-details summary:hover { background: var(--op-surface, #f3f3f1); }
+html .vl-cmp-card .vl-details summary::-webkit-details-marker { display: none; }
+html .vl-cmp-card .vl-details summary em { margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--op-surface, #f3f3f1); color: var(--op-ink, #171717);
+  font: 12px/1.5 var(--font-signal, ui-monospace, monospace); font-style: normal; }
+html .vl-cmp-card .vl-details summary > i { width: 24px; height: 24px; border: 1px solid var(--op-line, #e3e3df); border-radius: 50%;
+  background: linear-gradient(var(--op-ink, #171717), var(--op-ink, #171717)) center / 9px 1.5px no-repeat, linear-gradient(var(--op-ink, #171717), var(--op-ink, #171717)) center / 1.5px 9px no-repeat;
+  transition: transform .25s ease; }
+html .vl-cmp-card .vl-details[open] summary > i { transform: rotate(45deg); }
+html .vl-cmp-card .vl-details summary:hover > i { border-color: var(--op-ink, #171717); }
+html .vl-cmp-card .vl-evidence-table th, html .vl-cmp-card .vl-evidence-table td { padding: 10px 24px; font-size: 13px; }
+html .vl-cmp-card .vl-evidence-table th { background: var(--op-surface, #f3f3f1); color: var(--op-muted, #6e6e6b); font-size: 11px; letter-spacing: .06em; }
+html .vl-cmp-card .vl-evidence-table tbody tr:hover td { background: #fafaf8; }
+html .vl-cmp-card .vl-evidence-table .vl-result-pill { padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+html .vl-cmp-card .vl-details summary > span { color: var(--op-ink, #171717); font-size: 14px; font-weight: 500; }
+
+/* ---------- 정밀 대조 카드 다듬기(2026-11-17 2차) ----------
+   머리에 결과 색 바탕을 은은하게 깔고, 수치는 한 덩어리 칩 묶음으로. 이미지 이름표는 틀 안쪽 위 모서리에 붙이고,
+   가운데 화살표는 '비교' 표시로, 초별 결과 띠 아래에는 시작·끝 시각을 둔다. */
+html .vl-cmp-head { padding: 18px 24px; border-bottom: 1px solid var(--op-line, #e3e3df); background: linear-gradient(180deg, #fbf6e9, var(--op-card, #fff)); }
+html .vl-cmp-card.is-match .vl-cmp-head { background: linear-gradient(180deg, #f1f7f3, var(--op-card, #fff)); }
+html .vl-cmp-card.is-diff .vl-cmp-head { background: linear-gradient(180deg, #fbf1ee, var(--op-card, #fff)); }
+html .vl-cmp-title h2 { font-size: 24px; }
+
+html .vl-cmp-pair { padding: 22px 24px 20px; }
+html .vl-cmp-pair figure { position: relative; }
+html .vl-cmp-pair figcaption { position: absolute; top: 10px; left: 10px; z-index: 1; padding: 3px 10px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px;
+  background: var(--op-card, #fff); color: var(--op-ink, #171717); font-size: 11px; box-shadow: 0 1px 3px #1717170f; }
+html .vl-cmp-frame { padding: 34px 22px 22px; }
+html .vl-cmp-arrow { position: relative; width: 44px; height: 44px; font-size: 18px; box-shadow: 0 2px 8px #17171712; }
+html .vl-cmp-arrow::after { content: '비교'; position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); color: var(--op-muted, #8a8a84);
+  font: 10px/1 var(--font-signal, ui-monospace, monospace); letter-spacing: .08em; white-space: nowrap; }
+
+html .vl-cmp-strip { grid-template-columns: auto minmax(0, 1fr); row-gap: 6px; padding: 2px 24px 20px; }
+html .vl-cmp-strip .vl-sec-timeline { height: 12px; }
+html .vl-cmp-strip-axis { grid-column: 2; display: flex; justify-content: space-between; color: var(--op-muted, #8a8a84);
+  font: 11px/1.2 var(--font-signal, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+
+html .vl-cmp-diffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; border: 1px solid #efd5ce; }
+html .vl-cmp-diffs .vl-diff-group h3 { color: #8f4132; }
+
+
+/* ---------- 로고 위치 직접 확인(Optimus 테마, 2026-11-17) ----------
+   흰 카드·가는 선·알약 단추로 통일하고, 영상 프레임 위 단추줄(이전·다음 후보), 잉크색 진행 막대, 키 안내를 둔다. */
+html .vl-layout.is-single { grid-template-columns: minmax(0, 1fr); }
+html .vl-page .vl-current-ref { display: flex; align-items: center; gap: 18px; padding: 16px 20px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); }
+html .vl-page .vl-current-ref img { width: 132px; height: 72px; padding: 6px; border: 1px solid var(--op-line, #e3e3df); border-radius: 8px; background: #fff; }
+html .vl-current-label { display: block; color: var(--op-muted, #8a8a84); font: 11px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .08em; }
+html .vl-page .vl-current-ref h1 { margin: 2px 0 0; font-size: 26px; font-weight: 500; letter-spacing: -.04em; }
+
+html .vl-confirm-heading { align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--op-line, #e3e3df); }
+html .vl-confirm-heading h2 { margin: 0; font-size: 20px; font-weight: 500; letter-spacing: -.035em; }
+html .vl-stage-actions { display: flex; gap: 8px; }
+html .vl-page .vl-stage-actions .vl-button { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; }
+
+html .vl-page :is(.vl-panel, .vl-viewer-card) { padding: 18px 20px; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px; background: var(--op-card, #fff); box-shadow: 0 1px 2px #1717170a; }
+html .vl-section-heading { margin-bottom: 14px; }
+html .vl-section-heading h2 { margin: 0; font-size: 16px; font-weight: 500; letter-spacing: -.03em; }
+html .vl-page .vl-soft-tag, html .vl-page .vl-count { padding: 3px 10px; border-radius: 999px; background: var(--op-surface, #f3f3f1); color: var(--op-muted, #6e6e6b); font-size: 12px; font-weight: 400; }
+html .vl-page .vl-count { min-width: 26px; background: var(--op-ink, #171717); color: var(--op-card, #fff); text-align: center; }
+
+html .vl-player { outline: none; }
+html .vl-player:focus-visible { box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-player-jump { display: flex; gap: 6px; }
+html .vl-player-jump button { min-height: 32px; padding: 0 14px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
+  font-size: 13px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+html .vl-player-jump button:hover:enabled { border-color: var(--op-ink, #171717); }
+html .vl-player-jump button:disabled { color: #b5b5ae; cursor: default; }
+html .vl-page .vl-frame { border-radius: 8px; }
+html .vl-page .vl-frame-time { padding: 4px 10px; font-size: 12px; }
+html .vl-page .vl-box { border-color: #c8a24a; background: #c8a24a14; }
+html .vl-page .vl-box > span { padding: 2px 8px; border-radius: 0 0 6px 0; background: #c8a24a; color: #fff; font-size: 11px; font-weight: 500; }
+html .vl-page .vl-box.selected { border: 2px solid #fff; background: #ffffff1f; box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-page .vl-box.selected > span { background: var(--op-ink, #171717); color: #fff; }
+
+html .vl-page .vl-player-controls { grid-template-columns: auto auto minmax(80px, 1fr) auto auto; gap: 10px; margin-top: 14px; }
+html .vl-page .vl-play { min-width: 84px; min-height: 38px; padding: 0 18px; font-size: 13px; }
+html .vl-step { min-height: 34px; padding: 0 12px; border: 1px solid var(--op-line, #e3e3df); border-radius: 999px; background: var(--op-card, #fff); color: var(--op-ink, #171717);
+  font: 12px/1 var(--font-signal, ui-monospace, monospace); cursor: pointer; }
+html .vl-step:hover:enabled { border-color: var(--op-ink, #171717); }
+html .vl-step:disabled { color: #b5b5ae; cursor: default; }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range] { --at: 0%; height: 8px; margin: 0; padding: 0; border: 0; border-radius: 999px; cursor: pointer; -webkit-appearance: none; appearance: none;
+  background: linear-gradient(90deg, var(--op-ink, #171717) var(--at), #ecebe6 var(--at)); }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range]::-webkit-slider-thumb { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: var(--op-ink, #171717);
+  box-shadow: 0 0 0 1px #17171733, 0 2px 6px #17171740; -webkit-appearance: none; appearance: none; }
+html .vl-page.vl-page .vl-player-controls.vl-player-controls input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 3px solid #fff; border-radius: 50%; background: var(--op-ink, #171717); }
+html .vl-page .vl-player-controls strong { color: var(--op-ink, #171717); font: 500 15px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-player-controls strong span { font-size: 12px; font-weight: 400; }
+html .vl-page .vl-player-options { align-items: center; gap: 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--op-line, #e3e3df); }
+html .vl-page .vl-player-options label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 400; }
+html .vl-page .vl-player-options select { min-height: 32px; padding: 0 10px; border-radius: 999px; font-size: 12px; }
+
+html .vl-page .vl-candidate-grid { gap: 12px; }
+html .vl-page .vl-candidate { border-radius: 8px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+html .vl-page .vl-candidate:hover { transform: translateY(-1px); box-shadow: 0 6px 16px #17171712; }
+html .vl-page .vl-candidate.selected { box-shadow: 0 0 0 2px var(--op-ink, #171717); }
+html .vl-page .vl-candidate-check { padding: 3px 10px; font-size: 11px; }
+html .vl-page .vl-rank { padding: 2px 9px; font: 11px/1.5 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate-info { gap: 4px; padding: 10px 12px 12px; }
+html .vl-page .vl-candidate-score span, html .vl-page .vl-candidate-info p { font-size: 12px; }
+html .vl-page .vl-candidate-score strong { font: 500 14px/1 var(--font-signal, ui-monospace, monospace); }
+
+html .vl-page .vl-selected-item { border-radius: 8px; }
+html .vl-page .vl-selected-item strong { font-size: 14px; }
+html .vl-page .vl-selected-item small, html .vl-page .vl-mini-label { font-size: 12px; }
+html .vl-page .vl-selection-empty { padding: 18px; border: 1px dashed var(--op-line, #e3e3df); border-radius: 8px; font-size: 13px; text-align: center; }
+html .vl-page .vl-wide { min-height: 42px; border-radius: 999px; font-size: 13px; }
+html .vl-page .vl-linked-copy strong { font-size: 13px; }
+html .vl-page .vl-linked-copy small, html .vl-page .vl-empty-inline, html .vl-page .vl-help { font-size: 13px; }
+
+html .vl-page .vl-savebar { padding: 12px 14px 12px 20px; border-radius: 999px; }
+html .vl-page .vl-savebar strong { font-size: 14px; font-weight: 500; }
+html .vl-page .vl-save-actions .vl-button { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; }
+html .vl-page .vl-exposure p, html .vl-page .vl-timeline-axis { font-size: 12px; }
+html .vl-page .vl-player-options label { white-space: nowrap; }
+
+/* 영상 위 후보 상자(2026-11-17): 이름표는 상자 바깥 위에 붙여 로고를 가리지 않는다(화면 맨 위 상자는 바깥 아래).
+   고르지 않은 후보는 금색 점선, 고른 후보는 굵은 흰 테 + 잉크 외곽선 + 흰 빛 번짐으로 구분하고 이름표에 체크를 붙인다. */
+html .vl-page .vl-frame { overflow: hidden; }
+html .vl-page .vl-box { border: 2px dashed #e0b85a; border-radius: 4px; background: transparent; box-shadow: none; transition: border-color .15s ease, box-shadow .15s ease; }
+html .vl-page .vl-box:hover { border-style: solid; background: #e0b85a1f; }
+html .vl-page .vl-box > span { top: auto; bottom: calc(100% + 4px); left: -2px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+  background: #e0b85a; color: #171717; font-size: 11px; font-weight: 600; line-height: 1.4; white-space: nowrap; box-shadow: 0 1px 4px #00000040; }
+html .vl-page .vl-box.label-below > span { top: calc(100% + 4px); bottom: auto; }
+html .vl-page .vl-box.selected { z-index: 4; border: 3px solid #fff; border-radius: 5px; background: transparent;
+  box-shadow: 0 0 0 2px var(--op-ink, #171717), 0 0 16px 2px #ffffffb3; }
+html .vl-page .vl-box.selected > span { background: #fff; color: var(--op-ink, #171717); box-shadow: 0 0 0 2px var(--op-ink, #171717), 0 2px 6px #00000040; }
+html .vl-page .vl-box.selected > span > i { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; background: var(--op-ink, #171717);
+  color: #fff; font-size: 9px; font-style: normal; }
+
+/* '선택한 구간' 항목 글자 키우기(2026-11-17): 구분 이름표 14px, 구간 시각 20px. 프레임 수·점수 줄은 뺐다. */
+html .vl-page .vl-selected-item { align-items: center; gap: 16px; padding: 12px 14px; }
+html .vl-page .vl-selected-item > div { display: grid; gap: 4px; }
+html .vl-page .vl-selected-item .vl-mini-label { font-size: 14px; font-weight: 500; }
+html .vl-page .vl-selected-item strong { font: 500 20px/1.3 var(--font-signal, ui-monospace, monospace); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+html .vl-page .vl-selected-item small { font-size: 14px; }
+html .vl-page .vl-selected-item > button { width: 32px; height: 32px; font-size: 16px; }
+
+/* ---------- 위치 직접 확인 글자·원본 로고 키우기(2026-11-17) ----------
+   후보 카드·옵션 줄 글자를 13~16px로 올리고, 위쪽 원본 로고는 모눈 바탕 큰 틀(260×130)에 넣어 이름보다 먼저 눈에 들어오게 한다. */
+html .vl-page .vl-player-options label, html .vl-page .vl-player-options select { font-size: 14px; }
+html .vl-page .vl-player-options select { min-height: 36px; padding: 0 12px; }
+html .vl-page .vl-section-heading h2 { font-size: 18px; }
+html .vl-page .vl-soft-tag, html .vl-page .vl-count { font-size: 13px; }
+html .vl-page .vl-candidate-info { gap: 6px; padding: 12px 14px 14px; }
+html .vl-page .vl-candidate-score span { font-size: 14px; }
+html .vl-page .vl-candidate-score strong { font-size: 17px; }
+html .vl-page .vl-candidate-info p { font-size: 15px; color: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-info p.vl-candidate-frames { font-size: 14px; color: var(--op-muted, #6e6e6b) !important; }
+html .vl-page .vl-rank { padding: 3px 10px; font-size: 13px; }
+html .vl-page .vl-candidate-check { padding: 4px 12px; font-size: 13px; }
+html .vl-page .vl-ocr-chip { font-size: 13px; }
+html .vl-page .vl-text-button { font-size: 14px; }
+html .vl-page .vl-player-jump button, html .vl-page .vl-step { font-size: 14px; }
+html .vl-page .vl-play { font-size: 14px; }
+
+html .vl-page .vl-current-ref { gap: 24px; padding: 18px 24px; }
+html .vl-page .vl-current-ref img { width: 260px; height: 130px; padding: 16px; object-fit: contain; border: 1px solid var(--op-line, #e3e3df); border-radius: 10px;
+  background-color: #fff; background-image: linear-gradient(#17171708 1px, transparent 1px), linear-gradient(90deg, #17171708 1px, transparent 1px); background-size: 14px 14px;
+  box-shadow: 0 2px 10px #17171712; }
+html .vl-current-label { font-size: 12px; }
+html .vl-page .vl-current-ref h1 { font-size: 20px; color: var(--op-muted, #4a4a46); }
+
+/* 선택한 구간·다른 구간 항목의 로고 조각: 128×72 칸에 조각 전체를 줄여 넣는다(예전 76×48 칸에서는 오른쪽이 잘렸다). */
+html .vl-page .vl-selected-item { grid-template-columns: 128px minmax(0, 1fr) 32px; }
+html .vl-page .vl-linked-item { grid-template-columns: 18px 128px minmax(0, 1fr); }
+html .vl-page :is(.vl-selected-item, .vl-linked-item) .vl-crop { width: 128px; height: 72px; border: 1px solid var(--op-line, #e3e3df); border-radius: 6px; background: #fff; }
+
+/* 후보 카드 순위·선택 표시(2026-11-17): 로고 조각 위에 겹치지 않게 조각 위쪽의 얇은 줄로 옮기고 작게 줄인다.
+   순위는 모노 글자만, 선택은 18px 원(고르면 잉크색 ✓, 아니면 빈 원). */
+html .vl-page .vl-candidate-image { gap: 6px; padding: 8px 10px 10px; }
+html .vl-candidate-top { display: flex; align-items: center; justify-content: space-between; min-height: 18px; }
+html .vl-page .vl-candidate-top .vl-rank { position: static; padding: 0; border-radius: 0; background: none; color: var(--op-muted, #6e6e6b);
+  font: 500 12px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-rank { color: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-top .vl-candidate-check { position: static; display: grid; place-items: center; width: 18px; height: 18px; padding: 0;
+  border: 1.5px solid #b9b9b2; border-radius: 50%; background: var(--op-card, #fff); color: #fff; font-size: 11px; line-height: 1; }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-candidate-check { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); }
+html .vl-page .vl-candidate-image:hover .vl-candidate-check { border-color: var(--op-ink, #171717); }
+
+/* 후보 카드 순위(#1) 다시 또렷하게(2026-11-17): 글자만 두면 회색 바탕에 묻혀서, 작은 알약(13px)으로 둔다.
+   고른 카드는 잉크색 알약, 나머지는 흰 알약 + 가는 테두리. 위치는 그대로 로고 위쪽 줄이라 로고를 가리지 않는다. */
+html .vl-page .vl-candidate-top .vl-rank { padding: 2px 9px; border: 1px solid var(--op-line, #d6d6cf); border-radius: 999px; background: var(--op-card, #fff);
+  color: var(--op-ink, #171717); font: 600 13px/1.4 var(--font-signal, ui-monospace, monospace); }
+html .vl-page .vl-candidate.selected .vl-candidate-top .vl-rank { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); color: #fff; }
+
+/* '검수 범위 · 선택한 구간' 패널 글자 키우기(2026-11-17): 머리글 13px, 양끝 시각 13px, 구간 목록 16px, 초 수 배지 14px. */
+html .vl-page .vl-exposure .vl-kicker { font-size: 13px; }
+html .vl-page .vl-exposure .vl-section-heading h2 { font-size: 20px; }
+html .vl-page .vl-exposure .vl-soft-tag { padding: 4px 12px; font-size: 14px; }
+html .vl-page .vl-exposure .vl-timeline-axis { margin-top: 6px; font-size: 13px; }
+html .vl-page .vl-exposure p { margin-top: 10px; color: var(--op-ink, #171717); font: 500 16px/1.5 var(--font-signal, ui-monospace, monospace); font-variant-numeric: tabular-nums; }
+
+
+/* 초별 근거 표의 '차이 내용': 서버 문장을 다듬어 한 줄에 하나씩 보인다(원문은 마우스를 올리면 보인다). */
+html .vl-cell-findings { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+html .vl-cell-findings li { position: relative; padding-left: 12px; line-height: 1.55; }
+html .vl-cell-findings li::before { content: ''; position: absolute; top: .7em; left: 0; width: 5px; height: 5px; border-radius: 50%; background: #a34f3e; }
+
+/* 정밀 대조 카드 이름표·비교 표시 키우기(2026-11-17): '원본 로고'·'영상 01:25' 이름표 14px, 가운데 비교 원 52px + '비교' 13px. */
+html .vl-cmp-pair figcaption { top: 12px; left: 12px; padding: 5px 14px; font-size: 14px; font-weight: 500; }
+html .vl-cmp-frame { padding-top: 48px; }
+html .vl-cmp-arrow { width: 52px; height: 52px; font-size: 22px; }
+html .vl-cmp-arrow::after { top: calc(100% + 8px); font-size: 13px; font-weight: 500; letter-spacing: .04em; }
+html .vl-cmp-diffs .vl-finding-list li { font-size: 14px; line-height: 1.6; }
+
+/* 저장 줄 맨 오른쪽의 '정밀 대조 재검수' 단추(2026-11-17): 저장 단추와 가는 세로선으로 나누고 잉크색으로 가장 또렷하게 둔다. */
+html .vl-page .vl-save-actions { align-items: center; }
+html .vl-page .vl-save-actions .vl-recompare { position: relative; margin-left: 14px; background: var(--op-ink, #171717); color: #fff; }
+html .vl-page .vl-save-actions .vl-recompare::before { content: ''; position: absolute; left: -11px; top: 8px; bottom: 8px; width: 1px; background: var(--op-line, #e3e3df); }
+html .vl-page .vl-save-actions .vl-recompare:disabled { background: #b5b5ae; cursor: default; }
+
+/* ---------- 정밀 대조 진행 표시(2026-11-17) ----------
+   동영상 검수 진행 화면과 같은 짜임: 왼쪽 어두운 점 모눈 무대(원본 로고를 위아래로 훑는 스캔 선), 오른쪽 모노 머리글·큰 제목·
+   큰 진행률·얇은 막대·단계 목록. */
+html .vl-compare-progress { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 40px; align-items: start; padding: 8px 0 24px; }
+html .vl-compare-stage { position: relative; display: grid; align-content: center; gap: 18px; min-height: 360px; padding: 36px 28px 20px; overflow: hidden;
+  border: 1px solid #2a2622; background-color: #1b1714;
+  background-image: radial-gradient(#ffffff1f 1px, transparent 1px), radial-gradient(ellipse at center, #2b2622 0%, #1b1714 70%); background-size: 18px 18px, 100% 100%; }
+html .vl-compare-stage-logos { display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; }
+html .vl-compare-stage-logo { position: relative; display: grid; place-items: center; width: min(320px, 80%); aspect-ratio: 16 / 7; padding: 18px; overflow: hidden;
+  border-radius: 12px; background: #fff; box-shadow: 0 18px 40px #00000066, 0 0 0 1px #ffffff1a; }
+html .vl-compare-stage-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+html .vl-compare-stage-logo i { position: absolute; left: 0; right: 0; top: 0; height: 36%; background: linear-gradient(180deg, transparent, #c8a24a40 70%, #c8a24a); opacity: .9;
+  animation: vl-compare-scan 1.8s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
+html .vl-compare-stage-logo i::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #e0b85a; box-shadow: 0 0 12px #e0b85a; }
+@keyframes vl-compare-scan { from { transform: translateY(-40%); } to { transform: translateY(210%); } }
+@media (prefers-reduced-motion: reduce) { html .vl-compare-stage-logo i { animation: none; transform: translateY(80%); } }
+html .vl-compare-stage-caption { justify-self: center; padding-top: 14px; border-top: 1px solid #ffffff1f; color: #f3efe6; font: 13px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .04em; }
+html .vl-compare-progress-body { display: grid; gap: 14px; }
+html .vl-compare-progress-eyebrow { color: var(--op-muted, #6e6e6b); font: 12px/1.4 var(--font-signal, ui-monospace, monospace); letter-spacing: .12em; }
+html .vl-compare-progress-body h2 { margin: 0; font-size: clamp(30px, 3vw, 44px); font-weight: 400; letter-spacing: -.05em; line-height: 1.2; }
+html .vl-compare-progress-value { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 18px; color: var(--op-muted, #6e6e6b); font-size: 14px; }
+html .vl-compare-progress-value strong { color: var(--op-ink, #171717); font-size: clamp(48px, 5vw, 76px); font-weight: 400; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+html .vl-compare-progress-track { height: 2px; background: var(--op-line, #e3e3df); }
+html .vl-compare-progress-track i { display: block; height: 100%; background: var(--op-ink, #171717); transition: width .8s cubic-bezier(.2, .7, .2, 1); }
+html .vl-compare-progress-steps { display: grid; margin: 8px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--op-line, #e3e3df); }
+html .vl-compare-progress-steps li { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--op-line, #e3e3df); color: var(--op-muted, #6e6e6b); font-size: 15px; }
+html .vl-compare-progress-steps li > span { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--op-line, #e3e3df); border-radius: 50%;
+  font: 11px/1 var(--font-signal, ui-monospace, monospace); }
+html .vl-compare-progress-steps li.is-active { color: var(--op-ink, #171717); font-weight: 500; }
+html .vl-compare-progress-steps li.is-active > span { border-color: var(--op-ink, #171717); background: var(--op-ink, #171717); color: #fff; }
+html .vl-compare-progress-steps li.is-completed > span { border-color: #cfe3d5; background: #e6f0e9; color: #177d45; }
+html .vl-compare-progress-help { margin: 4px 0 0; color: var(--op-muted, #6e6e6b); font-size: 14px; line-height: 1.6; }
+@media (max-width: 960px) { html .vl-compare-progress { grid-template-columns: 1fr; } }
+
+/* (5) 로고 이미지를 중심으로: 정밀 대조 카드의 영상 쪽 작은 조각도 틀을 채우도록 키워 보인다(원본·영상 같은 크기로 견준다). */
+html .vl-cmp-frame { height: clamp(200px, 18vw, 260px); padding: 52px 28px 24px; }
+html .vl-cmp-frame img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: contain; }
+/* 확대한 로고가 틀을 넘치지 않게: 틀 안쪽 여백(위 52 · 좌우 28 · 아래 24)에 이미지를 절대 위치로 맞추고 비율을 지켜 채운다. */
+html .vl-cmp-frame { position: relative; }
+html .vl-cmp-frame img { position: absolute; top: 52px; left: 28px; width: calc(100% - 56px); height: calc(100% - 76px); }
+
+/* 정밀 대조 카드 '초별 결과' 이름표와 시작·끝 시각 키우기(2026-11-17): 11px → 14px·13px. */
+html .vl-page .vl-cmp-strip > span { font-size: 14px; letter-spacing: .02em; }
+html .vl-page .vl-cmp-strip-axis { font-size: 13px; }
+
+/* 후보 카드 '원본과 일치도 n%': 큰 숫자 + 얇은 막대(2026-11-17). 예전 '순위 점수 0.990' 표기를 바꿨다. */
+html .vl-page .vl-candidate-score { display: grid; grid-template-columns: 1fr auto; align-items: baseline; row-gap: 8px; }
+html .vl-page .vl-candidate-score span { font-size: 14px; }
+html .vl-page .vl-candidate-score strong { font: 500 20px/1 var(--font-ui, inherit); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+html .vl-candidate-meter { grid-column: 1 / -1; display: block; height: 4px; overflow: hidden; border-radius: 999px; background: var(--op-line, #e3e3df); }
+html .vl-candidate-meter b { display: block; height: 100%; border-radius: inherit; background: var(--op-ink, #171717); }
+html .vl-page .vl-candidate:not(.selected) .vl-candidate-meter b { background: #8a8a84; }
+
+/* 정밀 대조 카드 '프레임별 결과'(2026-11-17): 프레임마다 결과 색 막대 아래에 그 프레임 시각을 적는다(예전 양끝 시각 줄 대신). */
+html .vl-cmp-strip { align-items: start; }
+html .vl-cmp-strip > span { padding-top: 0; line-height: 12px; }
+html .vl-page .vl-cmp-strip .vl-frame-strip { display: flex; gap: 4px; height: auto; padding: 0; overflow: visible; }
+html .vl-page .vl-frame-cell { display: grid; flex: 1 1 0; gap: 6px; min-width: 2px; height: auto; border-radius: 0; background: none !important; }
+html .vl-page .vl-frame-cell > i { display: block; height: 12px; border-radius: 999px; background: var(--op-line, #e3e3df); }
+html .vl-page .vl-frame-cell.match > i { background: #177d45; }
+html .vl-page .vl-frame-cell.diff > i { background: #a34f3e; }
+html .vl-page .vl-frame-cell.unknown > i { background: #c8a24a; }
+html .vl-page .vl-frame-cell.skipped > i { background: repeating-linear-gradient(135deg, #d2d2cb 0 2px, #f7f7f4 2px 4px); }
+html .vl-page .vl-frame-cell > time { overflow: hidden; color: var(--op-muted, #6e6e6b); font: 13px/1.2 var(--font-signal, ui-monospace, monospace); text-align: center;
+  white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+
+/* ══════════ 포스터 로고 화면 무대 짜임 · 세로 영상 배치 (2026-11-17) ══════════
+   포스터 로고 화면(.pl-page, PosterLogoPage.jsx)을 '왼쪽 잉크 무대(포스터) + 오른쪽 종이 면(후보·결과)' 짜임으로 두고,
+   동영상 화면의 정사각 로고 잘림과 세로 영상 배치를 고친다. 위 규칙들과 우선순위가 같아 순서가 중요하므로 이 파일 맨 끝에 둔다. */
+
+/* ── 공통: 정밀 대조 진행 무대의 원본 로고가 정사각이면 아래가 잘리던 문제 ── */
+html .vl-page.vl-page .vl-compare-stage-logo { grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
+html .vl-page.vl-page .vl-compare-stage-logo img { min-width: 0; min-height: 0; }
+
+/* ── 포스터: 잉크 무대 ── */
+html .pl-page .pl-confirm-grid, html .pl-page .pl-result-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+html .pl-page .pl-stage { position: sticky; top: 14px; display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; min-width: 0; padding: 30px 24px 0;
+  border: 1px solid var(--op-stage-line); background-color: var(--op-stage); background-image: var(--op-stage-grid); background-size: 44px 44px;
+  box-shadow: inset 0 0 120px rgb(0 0 0 / 38%); animation: op-rise .45s cubic-bezier(.2, .7, .2, 1) both; }
+/* 무대 모서리 표시(다른 화면의 잉크 무대와 같은 장치) */
+html .pl-page .pl-stage::before, html .pl-page .pl-stage::after { content: ''; position: absolute; width: 14px; height: 14px; border: 1px solid rgb(255 255 255 / 42%); pointer-events: none; }
+html .pl-page .pl-stage::before { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+html .pl-page .pl-stage::after { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+html .pl-page .pl-stage :is(.pl-poster, .pl-manual-canvas) { border-radius: 0; background: #0d0d0c; box-shadow: 0 0 0 1px rgb(255 255 255 / 20%), 0 34px 60px -24px rgb(0 0 0 / 80%); }
+html .pl-page .pl-stage .pl-poster { overflow: visible; }
+html .pl-page .pl-stage-scale { justify-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 26px -24px 0; padding: 10px 16px;
+  border-top: 1px solid var(--op-stage-line); color: var(--op-stage-muted); font: 11px/1.5 var(--font-signal, ui-monospace, monospace); letter-spacing: .03em; }
+html .pl-page .pl-stage-scale > span:nth-child(2) { color: var(--op-bg); font-size: 12px; text-align: center; }
+html .pl-page .pl-stage-scale label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+html .pl-page.pl-page .pl-stage.pl-stage .pl-stage-scale.pl-stage-scale select { min-height: 26px; padding: 0 8px; border: 1px solid var(--op-stage-line); border-radius: 999px; background: transparent; color: var(--op-bg); font: inherit; }
+html .pl-page .pl-stage .pl-stage-scale select option { color: #171717; }
+html .pl-page .pl-stage-legend { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+html .pl-page .pl-stage-legend i { width: 8px; height: 8px; margin-left: 8px; border-radius: 50%; }
+html .pl-page .pl-stage-legend i.match { background: #3fbf7a; }
+html .pl-page .pl-stage-legend i.diff { background: #f08a72; }
+
+/* ── 포스터: 위치 확인(오른쪽 종이 면) ── */
+html .pl-page .pl-confirm-side, html .pl-page .pl-result-list { display: grid; gap: 14px; min-width: 0; }
+html .pl-page .pl-crop { --pl-crop-h: 150px; height: var(--pl-crop-h); grid-template-columns: minmax(0, 1fr); justify-items: center; }
+html .pl-page .pl-crop.compact { --pl-crop-h: 78px; }
+html .pl-page .pl-crop > span { background-repeat: no-repeat; }
+html .pl-page .vl-selected-item .pl-crop { --pl-crop-h: 56px; height: 72px; padding: 0 8px; }
+html .pl-page .vl-selected-item small { font-size: 13px; color: var(--op-muted); }
+html .pl-page .vl-candidate-info { min-height: 0; }
+html .pl-page .vl-confirm-heading { padding-bottom: 14px; }
+html .pl-page .pl-confirm-side .vl-help { margin: 12px 0 0; }
+html .pl-page .pl-manual-panel { display: grid; gap: 14px; }
+html .pl-page .pl-manual-panel .vl-manual-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+html .pl-page .vl-current-ref .vl-kicker { display: block; margin-top: 2px; }
+/* 포스터 위 후보 이름표는 번호만 — 붙어 있는 로고끼리 겹치지 않는다 */
+html .pl-page .pl-poster .vl-box > span { padding: 1px 7px; font: 600 11px/1.5 var(--font-signal, ui-monospace, monospace); }
+
+/* ── 포스터: 결과 ── */
+html .pl-page .pl-mark { position: absolute; padding: 0; border: 2px solid #e0b85a; border-radius: 4px; background: transparent; cursor: pointer;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 45%); transition: box-shadow .16s ease, transform .16s ease; }
+html .pl-page .pl-mark > span { position: absolute; bottom: calc(100% + 5px); left: -2px; padding: 1px 8px; border-radius: 999px; background: #8a6d1f; color: #fff;
+  font: 600 11px/1.5 var(--font-signal, ui-monospace, monospace); box-shadow: 0 1px 4px rgb(0 0 0 / 40%); }
+html .pl-page .pl-mark.label-below > span { top: calc(100% + 5px); bottom: auto; }
+html .pl-page .pl-mark.is-match { border-color: #3fbf7a; }
+html .pl-page .pl-mark.is-match > span { background: #177d45; }
+html .pl-page .pl-mark.is-diff { border-color: #f08a72; }
+html .pl-page .pl-mark.is-diff > span { background: #a34f3e; }
+html .pl-page .pl-mark:is(:hover, :focus-visible, .is-active) { z-index: 3; box-shadow: 0 0 0 2px #fff, 0 0 18px 3px rgb(255 255 255 / 70%); }
+html .pl-page .pl-result-no { padding: 2px 9px; border: 1px solid var(--op-line); border-radius: 999px; background: var(--op-card); color: var(--op-muted);
+  font: 500 12px/1.5 var(--font-signal, ui-monospace, monospace); }
+html .pl-page .pl-cmp-card { scroll-margin: 90px; }
+html .pl-page .pl-cmp-card .vl-cmp-title h2 { font-size: 21px; }
+html .pl-page .pl-cmp-card .vl-cmp-head { padding: 14px 20px; }
+html .pl-page .pl-cmp-card .vl-cmp-pair { gap: 14px; padding: 18px 20px 16px; }
+html .pl-page .pl-cmp-card .vl-cmp-frame { height: clamp(118px, 10.5vw, 156px); padding: 34px 16px 14px; }
+html .pl-page .pl-cmp-card .vl-cmp-diffs, html .pl-page .pl-cmp-card .vl-cmp-note { margin: 0 20px 16px; }
+html .pl-page .pl-cmp-card.is-active { box-shadow: 0 0 0 1px var(--op-ink), 0 10px 26px #1717171a; transform: translateY(-1px); }
+html .pl-page .pl-absent .pl-absent-list li { border-color: var(--op-line); border-radius: 6px; background: var(--op-surface); font-size: 14px; }
+
+/* ── 포스터: 후보 찾기 진행(필름 띠 대신 포스터 한 장을 타일로 훑는다) ── */
+html .pl-scanner .pl-scan-sheet { position: relative; width: min(270px, 34%); margin-top: clamp(10px, 3vh, 34px); background: #0d0d0c;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), -44px 58px 70px -22px rgb(0 0 0 / 75%);
+  transform: rotateX(54deg) rotateZ(-30deg) scale(1.32); transform-style: preserve-3d; }
+html .pl-scanner .pl-scan-sheet > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+html .pl-scanner .pl-scan-tiles { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); }
+html .pl-scanner .pl-scan-tile { background: rgb(13 13 12 / 74%); box-shadow: inset 0 0 0 .5px rgb(255 255 255 / 22%); transition: background-color .7s ease; }
+html .pl-scanner .pl-scan-tile.is-read { background: rgb(13 13 12 / 10%); }
+html .pl-scanner .pl-scan-tile.is-current { background: rgb(255 255 255 / 10%); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 88%); }
+html .pl-scanner.is-waiting .pl-scan-tile, html .pl-scanner.is-preparing .pl-scan-tile { background: rgb(13 13 12 / 55%); }
+html .pl-scanner .rv-video-lens { transform: translateZ(22px) scale(.74); transition: left .9s cubic-bezier(.2, .7, .2, 1), top .9s cubic-bezier(.2, .7, .2, 1); }
+html .pl-scanner.is-failed .pl-scan-sheet { box-shadow: 0 0 0 1px #a34f3e, -44px 58px 70px -22px rgb(0 0 0 / 75%); }
+@media (prefers-reduced-motion: reduce) { html .pl-scanner .pl-scan-tile, html .pl-scanner .rv-video-lens { transition: none; } }
+
+/* ── 동영상: 세로 영상은 화면 높이에 맞춰 줄이고, 후보 구간을 프레임 옆에 둔다 ── */
+html .vl-page .vl-player .vl-frame { margin-inline: auto; }
+html .vl-page .vl-review-grid.is-portrait { grid-template-columns: minmax(300px, calc(var(--vl-frame-w) + 42px)) minmax(0, 1fr); column-gap: 18px; }
+html .vl-page .vl-review-grid.is-portrait > .vl-review-left { display: contents; }
+html .vl-page .vl-review-grid.is-portrait .vl-player { grid-column: 1; grid-row: 1 / span 2; position: sticky; top: 14px; }
+html .vl-page .vl-review-grid.is-portrait > .vl-review-left > .vl-panel { grid-column: 2; grid-row: 1; }
+html .vl-page .vl-review-grid.is-portrait > .vl-review-right { grid-column: 2; grid-row: 2; }
+html .vl-page .vl-review-grid.is-portrait .vl-player-controls { flex-wrap: wrap; }
+html .vl-page .vl-review-grid.is-portrait .vl-player-head { flex-wrap: wrap; gap: 8px; }
+
+@media (max-width: 1100px) {
+  html .pl-page .pl-confirm-grid, html .pl-page .pl-result-grid { grid-template-columns: 1fr; }
+  html .pl-page .pl-stage { position: static; }
+  html .vl-page .vl-review-grid.is-portrait { grid-template-columns: 1fr; }
+  html .vl-page .vl-review-grid.is-portrait > .vl-review-left { display: grid; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player { position: static; }
+}
+html .pl-page .pl-manual-panel .vl-manual-actions .vl-button { min-height: 40px; padding: 0 18px; font-size: 13px; }
+/* 세로 영상: 좁은 프레임 아래 조작 줄은 두 줄(위 시점 막대, 아래 재생·1초 이동·시각)로 둔다 */
+@media (min-width: 1101px) {
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls { grid-template-columns: auto auto auto minmax(0, 1fr); grid-template-areas: "range range range range" "play back fwd time"; row-gap: 12px; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls > input[type=range] { grid-area: range; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls > .vl-play { grid-area: play; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls > :nth-child(2) { grid-area: back; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls > :nth-child(4) { grid-area: fwd; }
+  html .vl-page .vl-review-grid.is-portrait .vl-player-controls > strong { grid-area: time; justify-self: end; }
+}
+/* 동영상 직접 지정: 세로 영상이면 프레임을 화면 높이에 맞추고 영역·구간 칸을 옆에 둔다 */
+html .vl-page .vl-manual-canvas { margin-inline: auto; }
+@media (min-width: 1101px) {
+  html .vl-page .vl-manual-workspace.is-portrait { grid-template-columns: minmax(300px, var(--vl-frame-w)) minmax(0, 1fr); gap: 18px; }
+}
+
+/* ── 동영상: 후보 찾기 · 자동 정밀 대조 진행(2026-11-18). 필름 띠 대신 표본 프레임을 카드로 포개 놓는다 ──
+   포스터 한 장(pl-scan-sheet)과 같은 각도로 눕히되, 영상은 프레임이 여러 장이라 시간 순서대로 조금씩 밀어 포갠다.
+   지금 살피는 프레임은 더미에서 떠오르고(is-current) 돋보기가 그 위에 온다. 살핀 프레임은 밝게 남는다(is-read). */
+html .vl-deck-scanner .vl-deck { --card-w: 124px; --dx: 44px; --dz: 5px; --lift: 58px; --deck-scale: 1.36; position: relative;
+  width: calc(var(--card-w) + (var(--n) - 1) * var(--dx)); height: calc(var(--card-w) / var(--ratio)); margin-top: clamp(10px, 3vh, 34px);
+  transform: rotateX(56deg) rotateZ(-36deg) scale(var(--deck-scale)); transform-style: preserve-3d; animation: op-float 6s ease-in-out infinite; }
+html .vl-deck-scanner .vl-deck.is-wide { --card-w: 216px; --dx: 40px; --deck-scale: 1.24; }
+html .vl-deck-scanner .vl-deck-card { position: absolute; left: calc(var(--i) * var(--dx)); top: 0; width: var(--card-w); height: 100%; overflow: hidden;
+  border-radius: 7px; background: #0d0d0c; box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), -22px 28px 36px -16px rgb(0 0 0 / 72%);
+  transform: translateZ(calc(var(--i) * var(--dz))); transition: transform .9s cubic-bezier(.2, .7, .2, 1), background-color .7s ease, box-shadow .5s ease; }
+html .vl-deck-scanner .vl-deck-card > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 아직 살피지 않은 프레임은 어둡게 덮고, 살핀 프레임은 걷어 낸다 */
+html .vl-deck-scanner .vl-deck-card::after { content: ''; position: absolute; inset: 0; background: rgb(13 13 12 / 72%); transition: background-color .7s ease; }
+html .vl-deck-scanner .vl-deck-card.is-read { background: #3a3a37; }
+html .vl-deck-scanner .vl-deck-card.is-read::after { background: rgb(13 13 12 / 24%); }
+html .vl-deck-scanner .vl-deck-card.is-current { background: #4a4a45; transform: translateZ(calc(var(--i) * var(--dz) + var(--lift)));
+  box-shadow: 0 0 0 1.5px rgb(255 255 255 / 90%), -34px 44px 54px -20px rgb(0 0 0 / 82%); }
+html .vl-deck-scanner .vl-deck-card.is-current::after { background: rgb(255 255 255 / 5%); }
+/* 프레임을 뽑는 동안에는 카드가 차례로 들썩인다 */
+html .vl-deck-scanner.is-preparing .vl-deck-card { animation: vl-deck-develop 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * 110ms); }
+@keyframes vl-deck-develop { 50% { background: #33332f; transform: translateZ(calc(var(--i) * var(--dz) + 20px)); } }
+/* 돋보기는 지금 프레임 위에 떠 있고, 프레임이 바뀌면 따라 옮겨 간다 */
+html .vl-deck-scanner .vl-deck .rv-video-lens { left: calc(var(--at) * var(--dx) + var(--card-w) / 2); top: 50%;
+  transform: translateZ(calc(var(--at) * var(--dz) + var(--lift) + 26px)) scale(.76);
+  transition: left .9s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1); }
+html .rv-video-scanner.vl-deck-scanner:is(.is-waiting, .is-preparing) .vl-deck .rv-video-lens { animation: vl-deck-bob 2.6s ease-in-out infinite; }
+@keyframes vl-deck-bob { 50% { transform: translateZ(calc(var(--at) * var(--dz) + var(--lift) + 44px)) scale(.76); } }
+html .vl-deck-scanner.is-failed .vl-deck { animation: none; }
+html .vl-deck-scanner.is-failed .vl-deck-card { box-shadow: 0 0 0 1px #a34f3e, -22px 28px 36px -16px rgb(0 0 0 / 72%); }
+@media (max-width: 900px) { html .vl-deck-scanner .vl-deck { --deck-scale: .8; } html .vl-deck-scanner .vl-deck.is-wide { --deck-scale: .7; } }
+@media (prefers-reduced-motion: reduce) {
+  html .vl-deck-scanner .vl-deck, html .vl-deck-scanner .vl-deck-card, html .vl-deck-scanner .vl-deck .rv-video-lens { animation: none; transition: none; }
 }

@@ -25,7 +25,7 @@ const POSTER_URL = toDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
 function frameSvg(t) {
   const captions = CAPTIONS.filter(caption => t >= caption.from && t < caption.to).map(caption => caption.kind === 'title'
     ? `<text x="160" y="96" text-anchor="middle" fill="#fff" font-family="${FONT_KO}" font-size="30" font-weight="800">${caption.text}</text>`
-    : caption.kind === 'ad'
+    : caption.kind === 'badge'
       ? `<rect x="10" y="10" width="78" height="18" rx="3" fill="#171717" opacity=".75"/><text x="49" y="23" text-anchor="middle" fill="#fff" font-family="${FONT_KO}" font-size="10" font-weight="700">${caption.text}</text>`
       : `<rect x="60" y="146" width="200" height="20" rx="3" fill="#000" opacity=".45"/><text x="160" y="160" text-anchor="middle" fill="#fff" font-family="${FONT_KO}" font-size="11" font-weight="700">${caption.text}</text>`).join('');
   const logo = t >= 26 ? '<rect x="250" y="140" width="58" height="28" rx="4" fill="#fff"/><circle cx="264" cy="154" r="7" fill="#171717"/><rect x="275" y="149" width="26" height="10" rx="2" fill="#62645e"/>' : '';

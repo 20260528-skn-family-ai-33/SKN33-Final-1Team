@@ -118,11 +118,13 @@ class PostgresStore:
             project_id=UUID(snapshot.context.project_id),phase=phase,state='queued',attempt_no=0))
         self.event(c,snapshot.context.run_id,'job.queued',phase=phase)
 
-    def _create(self,c,snapshot,document,asset,*,phase=None,model_route=None,criteria_addition=None):
+    def _create(self,c,snapshot,document,asset,*,phase=None,model_route=None,criteria_addition=None,original=None):
         fixed={'context':payload(snapshot.context),'document':payload(document),'asset':payload(asset) if asset else None}
         if snapshot.baseline is not None:fixed['baseline']=payload(snapshot.baseline)
         # 보안 여부에 따른 모델 경로(model_route.py). default는 적지 않아 기존 입력 해시가 그대로다.
         if model_route is not None:fixed['model_route']=model_route
+        # 업로드 원본 파일의 측정값(poster_review.measure_original). 재지 못한 실행에는 적지 않는다.
+        if original is not None:fixed['original']=payload(original)
         if criteria_addition is not None:fixed['criteria_addition']=payload(criteria_addition)
         c.execute(insert(runs).values(run_id=snapshot.context.run_id,project_id=UUID(snapshot.context.project_id),
             actor_id=UUID(snapshot.context.actor_id),parent_run_id=snapshot.context.parent_run_id,

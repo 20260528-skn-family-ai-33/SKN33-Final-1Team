@@ -27,7 +27,7 @@ function ProjectNameField({ editor, value = '', locked }) {
       value={value} placeholder="이름 없는 검수 (선택)" disabled={off} onChange={event => editor.onChange(event.target.value)}
       title={editor.onEnter ? 'Enter를 누르면 이 이름으로 프로젝트를 만들고 선택합니다.' : undefined} onKeyDown={keyDown} />
     {editor.maxLength && <span className="rv-project-name-count" aria-hidden="true">
-      {value.length}/{editor.maxLength}{editor.onEnter && value.trim() ? ' · Enter로 프로젝트 만들기' : ''}</span>}
+      {value.length}/{editor.maxLength}{editor.onEnter && value.trim() ? <> <kbd>Enter</kbd> 프로젝트 만들기</> : null}</span>}
     <button type="button" aria-label="검수 이름 고치기" title="검수 이름 고치기" disabled={off}
       onClick={() => { input.current?.focus(); input.current?.select(); }}><Icon name="pencil" /></button>
   </div>;
@@ -35,14 +35,18 @@ function ProjectNameField({ editor, value = '', locked }) {
 
 // 서비스 메인 이동은 위쪽 사이트 머리글(로고)로 하므로 이 줄에는 홈 버튼을 두지 않는다.
 // 상태(작업 중·기준 vN) 표시는 두지 않는다. 호출하는 화면이 넘기는 version은 쓰지 않는다.
-export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, locked, projectEditor, projectTools, children }) {
-  return <div className="rv-projectbar">
-    <div className="rv-project-identity">
-      <div className="rv-project-field"><span className="rv-project-field-label">검수 이름</span>{projectEditor
+// projectAside: 저장할 프로젝트 칸 바로 오른쪽에 붙일 보조 요소(예: 개발 서버의 '데이터 없이 화면 둘러보기').
+// showName=false: 검수 이름 칸을 그리지 않는다(결과 확인). 왼쪽에 보일 것이 없으면 단계 표시만 오른쪽에 둔다.
+export function WorkspaceProjectBar({ name, step, steps, canNavigate, navigate, locked, projectEditor, projectTools, projectAside, showName = true, children }) {
+  const identity = showName || projectTools || projectAside;
+  return <div className={`rv-projectbar${identity ? '' : ' rv-projectbar--steps-only'}`}>
+    {identity && <div className="rv-project-identity">
+      {showName && <div className="rv-project-field"><span className="rv-project-field-badge">프로젝트 명</span>{projectEditor
         ? <ProjectNameField editor={projectEditor} value={name || ''} locked={locked} />
-        : <strong title={name || undefined}>{name || '이름 없는 검수'}</strong>}</div>
+        : <strong title={name || undefined}>{name || '이름 없는 검수'}</strong>}</div>}
       {projectTools}
-    </div>
+      {projectAside}
+    </div>}
     <div className="rv-project-actions">
       {steps && <nav className="rv-step-nav" aria-label="검수 단계">{Object.entries(steps).map(([key, label], index) => <button type="button" key={key}
         disabled={locked || !canNavigate(key)} className={key === step ? 'is-active' : ''}
@@ -73,9 +77,10 @@ function ReviewStartOverlay({ message, children }) {
 }
 
 // steps를 null로 주면 단계 표시를 숨긴다(검수 유형을 고르기 전).
+// 결과 확인 단계에서는 검수 이름 칸을 두지 않는다(showProjectName으로 바꿀 수 있다).
 export default function ReviewLayout({ state, busy, navigate, children, steps = posterSteps,
-  canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions,
-  showWorkspaceBar = true, startMessage, startActions, headerCurrent = '/review/new' }) {
+  canNavigate, versionLabel, mainClassName = '', workspaceStep, topbarLocked = false, projectEditor, projectTools, projectActions, projectAside,
+  showWorkspaceBar = true, showProjectName = state.step !== 'results', startMessage, startActions, headerCurrent = '/review/new' }) {
   const navigationLocked = topbarLocked || busy;
   const enabled = canNavigate || (key => key === 'input' || key === 'criteria' && state.criteria.length > 0
     || key === 'running' && state.review && state.review.status !== 'completed' || key === 'results' && state.review?.status === 'completed');
@@ -85,7 +90,7 @@ export default function ReviewLayout({ state, busy, navigate, children, steps = 
     {showWorkspaceBar && <>
       {navigationLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
       <WorkspaceProjectBar name={state.projectName || ''} step={state.step === 'criteria' ? 'input' : state.step} steps={steps}
-        projectEditor={projectEditor} projectTools={projectTools} locked={navigationLocked}
+        projectEditor={projectEditor} projectTools={projectTools} projectAside={projectAside} showName={showProjectName} locked={navigationLocked}
         version={versionLabel || (state.snapshot ? `기준 v${state.snapshot.version}` : '작업 중')} canNavigate={enabled} navigate={navigate}>
         {projectActions}
       </WorkspaceProjectBar>

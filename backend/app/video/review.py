@@ -2,7 +2,7 @@
 
 계획 문서(숏폼_검수_최종판 2026-10-20)의 0~7단계를 따른다.
   0 입력 검증 → 1 프레임 추출·검사 범위 → 2 장면 경계 → 3 프레임 OCR(배치) → 3-1 자막 줄 분류
-  → 4 자막 트랙·구간 → 5 대표 프레임 → 6 기준 판정(영상당 1회) + 6-A 광고·협찬 표시 → (6-1 이중 검수: 꺼짐) → 7 결과
+  → 4 자막 트랙·구간 → 5 대표 프레임 → 6 기준 판정(영상당 1회) → (6-1 이중 검수: 꺼짐) → 7 결과
 결과는 .runtime/video-reviews/<id>/ 아래에만 둔다. 문서의 실행 구조(v1 PostgreSQL 큐·독립 worker·DB 저장)는
 팀 결정 사항이라 여기서는 기존 시제품의 추론 잠금으로 대신하며, v1 앱(main.py)에는 연결하지 않는다.
 """
@@ -23,14 +23,12 @@ import time
 from typing import Callable
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
 from backend.app.video import subtitle_roles as roles
 from backend.app.video import subtitle_vlm as vlm
-from backend.app.video.disclosure import judge_disclosure
-from backend.app.video.disclosure import validate_input
 from backend.app.video.frames import coverage
 from backend.app.video.frames import detect_scenes
 from backend.app.video.frames import extract_frames
@@ -58,11 +56,13 @@ MIN_OCR_SUCCESS = 0.9
 PROGRESS = {"queued": 5, "extracting": 5, "scene_detection": 10, "ocr": 15, "classifying": 88,
             "segmenting": 90, "review": 93, "logo": 95, "double_check": 97, "transcode": 99, "completed": 100}
 LOGO_QUERY_MAX_BYTES = 8 * 1024 * 1024  # 지정 로고(쿼리) 이미지 상한
+DOCUMENT_RESULT_TTL_SECONDS = 3600
+DOCUMENT_RESULT_LIMIT = 32
 FAILURE_MESSAGES = {
     "extracting": "영상에서 표본 프레임을 추출하지 못했습니다. 잘린 파일이거나 코덱을 읽을 수 없습니다.",
     "ocr": "프레임 글자 판독에 실패했습니다. 자막 판독 모델(Qwen3-VL) 서버 연결과 준비 상태를 확인한 뒤 다시 실행해 주세요.",
     "segmenting": "판독 결과를 자막 트랙과 구간으로 정리하지 못했습니다. 실행 기록을 확인해 주세요.",
-    "review": "기준 판정 또는 광고 표시 판정을 완료하지 못했습니다. 기준 형식을 확인해 주세요.",
+    "review": "기준 판정을 완료하지 못했습니다. 기준 형식을 확인해 주세요.",
 }
 CONTAINER_MIME = {"mov": "video/mp4", "matroska": "video/webm", "avi": "video/x-msvideo"}
 FRAME_ID = re.compile(r"^t\d{6}$")
@@ -79,9 +79,10 @@ def _int_env(name: str, default: int, low: int, high: int) -> int:
 
 
 def limits() -> dict:
-    """영상 검수 기본값은 3분·1GiB다. 환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 조정할 수 있다."""
+    """영상 검수 기본값은 3분·500MiB다. 환경 변수 VIDEO_MAX_SECONDS·VIDEO_MAX_MB로 조정할 수 있다.
+    로고만 검수로 올리는 영상(logos/routes.py)도 이 길이·용량 한도를 같이 쓴다."""
     return {
-        "upload_bytes": _int_env("VIDEO_MAX_MB", 1024, 1, 2048) * 1024 * 1024,
+        "upload_bytes": _int_env("VIDEO_MAX_MB", 500, 1, 2048) * 1024 * 1024,
         "duration_seconds": _int_env("VIDEO_MAX_SECONDS", 180, 1, 600),
         "short_side_min": 360, "long_side_max": 3840, "fps_max": 120,
         "active_jobs": _int_env("VIDEO_MAX_ACTIVE", 3, 1, 20),
@@ -145,8 +146,16 @@ def subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int
 
 
 # 보안 여부에 따른 모델 경로(backend/agent_framework/model_route.py, 2026-11-12 사용자 결정).
-# 일반 자료(openai)는 문서 분석·자막 판독을 OpenAI API로, 보안 자료(runpod)는 기존 Qwen/RunPod만 쓴다.
+# 일반 자료(openai)는 문서 분석을 OpenAI API로, 보안 자료(runpod)는 기존 Qwen/RunPod만 쓴다.
+# 자막 판독은 보안 여부와 관계없이 설정한 엔진(기본 Qwen3-VL/RunPod)이 먼저 읽고, 일반 자료만 OpenAI를 보조로 쓴다
+# (2026-11-16 사용자 결정: 19편 평가에서 처음 보는 영상의 재현율·정밀도가 Qwen3-VL이 더 높았다).
 VIDEO_ROUTES = ("default", "openai", "runpod")
+
+
+def general_subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
+    """일반 자료의 자막 판독. Qwen3-VL 엔진이면 Qwen3-VL이 먼저 읽고 OpenAI를 보조로 쓴다. Paddle 엔진이면 기본 판독과 같다."""
+    return vlm.read_frames(frames, directory, progress, route="openai") if subtitle_engine() == "qwen3-vl" \
+        else subtitle_frames(frames, directory, progress)
 
 
 def route_form(value: str) -> str:
@@ -155,11 +164,6 @@ def route_form(value: str) -> str:
     if value not in VIDEO_ROUTES:
         raise HTTPException(422, "model_route는 default, openai, runpod 중 하나여야 합니다.")
     return value
-
-
-def openai_subtitle_frames(frames: list[Path], directory: Path, progress: Callable[[int], None]) -> dict:
-    """일반 자료의 자막 판독: 같은 프롬프트·형식으로 OpenAI 비전 모델이 프레임을 읽는다."""
-    return vlm.read_frames(frames, directory, progress, route="openai")
 
 
 # ---------------------------------------------------------------------------
@@ -353,11 +357,11 @@ class Pipeline:
         target = self.target
         media, snapshot = _read_json(target / "media.json"), _read_json(target / "snapshot.json")
         duration = media["duration_ms"]
-        disclosure = snapshot["disclosure"]
 
         self.stage = "extracting"
         self.update(target, status="running", stage=self.stage, progress=PROGRESS["extracting"])
-        plan = plan_times(duration, edges=disclosure["kind"] != "self")  # 자체 광고면 시작·끝 창 전용 프레임 생략
+        # 시작·끝 3초 0.2초 표본은 광고·협찬 표시 판정 전용이었다. 그 판정을 없앴으므로 1초 표본만 뽑는다.
+        plan = plan_times(duration, edges=False)
         frames = extract_frames(ffmpeg, demuxer, target / "original.bin", target / "frames", plan)
         cover = coverage(plan, duration)
         _write_json(target / "frames.json", frames)
@@ -400,7 +404,8 @@ class Pipeline:
             "height": f["height"], "status": f["ocr_status"], "same_as": f["same_as"], "unread_boxes": f["unread_boxes"],
             "lines": [{"line_id": f"{f['frame_id']}:{r['id']}", "text": r["text"], "bbox_xyxy": r["bbox_xyxy"],
                        "confidence": r["confidence"],
-                       **({"vlm_role": r.get("role"), "region": r.get("region")} if use_vlm else {})}
+                       **({"vlm_role": r.get("role"), "region": r.get("region"), "bbox_source": r.get("bbox_source")}
+                          if use_vlm else {})}
                       for r in f["records"]]} for f in frames])
         if succeeded < MIN_OCR_SUCCESS:
             raise ValueError(f"OCR success ratio {succeeded:.2f}")
@@ -412,7 +417,10 @@ class Pipeline:
                        "device": payload.get("device") or "vllm", "load_seconds": None,
                        "wall_seconds": payload.get("wall_seconds"),
                        "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
-                       "ocr_success_ratio": round(succeeded, 4)}
+                       "ocr_success_ratio": round(succeeded, 4),
+                       "fallback_frames": payload.get("fallback_frames", 0)}   # 일반 자료에서 OpenAI가 보조로 읽은 프레임 수
+            if payload.get("fallback_frames"):
+                self.warnings.append(f"자막 판독 모델(Qwen3-VL)이 읽지 못한 프레임 {payload['fallback_frames']}장은 OpenAI로 보조 판독했습니다.")
         else:
             runtime = {"engine": "paddleocr", "pipeline": PIPELINE, "device": payload.get("device") or "cpu", "load_seconds": payload.get("load_seconds"),
                        "seconds_per_frame": _mean(payload.get("inference_seconds")), "ocr_frames": total,
@@ -459,8 +467,7 @@ class Pipeline:
         self.stage = "review"
         self.update(target, stage=self.stage, progress=PROGRESS["review"], stage_detail=f"구간 {len(segments)}개")
         review = judge(snapshot["criteria"], tracks, segments, frames)
-        disclosure_result = judge_disclosure(disclosure, frames, lines, duration)
-        _write_json(target / "review.json", {**review, "disclosure": disclosure_result})
+        _write_json(target / "review.json", review)
 
         # 6-B 로고 검수(선택) — 지정 로고를 올렸을 때만. 미준비·실패여도 OCR 검수 결과는 그대로 둔다.
         logo_match = {"status": "skipped", "reason": "검사할 지정 로고를 올리지 않았습니다."}
@@ -507,7 +514,7 @@ class Pipeline:
             "scenes": {"status": scenes["status"], "cut_ms": scenes["cut_ms"]},
             "tracks": tracks, "text_groups": groups, "segments": segments,
             "review": {"results": review["results"], "mismatch": review["mismatch"], "calls": review["calls"]},
-            "disclosure": disclosure_result, "logo_match": logo_match, "playback": playback,
+            "logo_match": logo_match, "playback": playback,
             "double_check": double_check, "warnings": self.warnings,
             "counts": {"frames": len(frames), "ocr_frames": total, "lines": len(lines), "kept": kept,
                        "excluded": len(lines) - kept, "tracks": len(tracks), "segments": len(segments),
@@ -616,10 +623,12 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         detail = ocr_detail if ffmpeg else "ffmpeg를 찾을 수 없습니다. `pip install imageio-ffmpeg` 하거나 FFMPEG_BIN을 지정하세요."
         if readonly:
             detail = "읽기 전용 모드라 새 동영상 검수를 받지 않습니다. 기존 결과만 볼 수 있습니다."
-        return {"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
+        from backend.app.video.requirements import readiness as requirements_readiness
+        requirements = {**requirements_readiness(), "enabled": not readonly, "async_jobs": not readonly}
+        return {"requirements": requirements,"ready": bool(ffmpeg) and ocr_ready and not readonly, "ffmpeg": bool(ffmpeg), "ocr": ocr_ready, "detail": detail,
                 "logo": {"ready": logo_ready, "detail": logo_detail}, "readonly": readonly,
                 "pipeline": pipeline_name(engine) if engine else None, "subtitle_engine": engine, "limits": policy,
-                "sampling": "1초 간격 표본 검사 · 시작·끝 3초는 0.2초 간격"}
+                "sampling": "1초 간격 표본 검사"}
 
     def active_jobs() -> Counter[str]:
         counts = Counter()
@@ -658,9 +667,10 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             reserved.pop(result["id"])
 
     def run(target: Path, demuxer: str, slot: str) -> None:
-        # 일반 자료(openai)는 자막 판독을 OpenAI로, 보안 자료·기존 작업은 설정된 엔진(Qwen3-VL/RunPod)으로 읽는다.
+        # 자막 판독은 보안 여부와 관계없이 설정된 엔진(Qwen3-VL/RunPod)이 먼저 읽는다.
+        # 일반 자료(openai)만 Qwen3-VL이 내려가 있거나 읽지 못한 프레임을 OpenAI로 보조 판독한다(subtitle_vlm.read_frames).
         route = _read_json(target / "result.json").get("model_route") or "default"
-        pipeline = Pipeline(target, openai_subtitle_frames if route == "openai" and ocr is None else recognize, update, do_logo)
+        pipeline = Pipeline(target, general_subtitle_frames if route == "openai" and ocr is None else recognize, update, do_logo)
         pipeline.stage = "extracting"
         try:
             with worker_pool.acquire(slot, target.name) if worker_pool else inference_lock:
@@ -701,11 +711,117 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
         return {"items": jobs[:20]}
 
     if not readonly:
+        from backend.app.video import requirements as video_a02
+
+        requirements_lock = threading.Lock()
+        document_jobs_lock = threading.Lock()
+        document_jobs: dict[str, dict] = {}
+
+        def document_owner(request: Request) -> str:
+            identity = getattr(request.state, "video_identity", None)
+            if isinstance(identity, tuple):
+                return str(identity[0].user_id)
+            if isinstance(identity, dict):
+                return str(identity["id"])
+            return "local"
+
+        async def read_requirement_upload(document: UploadFile) -> tuple[bytes, str]:
+            try:
+                data = await document.read(video_a02.MAX_BYTES + 1)
+                filename = document.filename or ""
+            finally:
+                await document.close()
+            if not data:
+                raise HTTPException(400, {"code": "DOCUMENT_EMPTY", "message": "빈 파일입니다."})
+            if len(data) > video_a02.MAX_BYTES:
+                raise HTTPException(413, {"code": "DOCUMENT_TOO_LARGE", "message": "문서는 10MB 이하로 올려 주세요."})
+            return data, filename
+
+        def prune_document_jobs() -> None:
+            cutoff = time.monotonic() - DOCUMENT_RESULT_TTL_SECONDS
+            for job_id, job in list(document_jobs.items()):
+                if job["finished_at"] is not None and job["finished_at"] <= cutoff:
+                    del document_jobs[job_id]
+
+        def run_document_job(job_id: str, data: bytes, filename: str, route: str = "default") -> None:
+            try:
+                with document_jobs_lock:
+                    job = document_jobs[job_id]
+                    job["response"] = {"id": job_id, "status": "running"}
+                try:
+                    result = video_a02.extract(data, filename, route=route)
+                    outcome = {"status": "completed", "result": result}
+                except video_a02.DocumentError as error:
+                    outcome = {"status": "failed", "error": {"code": error.code, "message": str(error)}}
+                except Exception:
+                    outcome = {"status": "failed", "error": {
+                        "code": "VIDEO_DOCUMENT_ANALYSIS_FAILED", "message": "영상 문서 분석을 완료하지 못했습니다.",
+                    }}
+                with document_jobs_lock:
+                    job["response"] = {"id": job_id, **outcome}
+                    job["finished_at"] = time.monotonic()
+            finally:
+                requirements_lock.release()
+
+        @router.post("/requirements/extract")
+        async def extract_requirements(document: UploadFile = File(...), model_route: str = Form("default")):
+            """기존 클라이언트의 동기 추출 경로."""
+            route = route_form(model_route)
+            data, filename = await read_requirement_upload(document)
+            if not requirements_lock.acquire(blocking=False):
+                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
+            try:
+                return await run_in_threadpool(video_a02.extract, data, filename, route=route)
+            except video_a02.DocumentError as error:
+                raise HTTPException(error.status, {"code": error.code, "message": str(error)}) from None
+            finally:
+                requirements_lock.release()
+
+        @router.post("/requirements/extractions", status_code=202)
+        async def submit_requirement_extraction(request: Request, response: Response,
+                                                background_tasks: BackgroundTasks, document: UploadFile = File(...),
+                                                model_route: str = Form("default")):
+            owner = document_owner(request)
+            route = route_form(model_route)
+            data, filename = await read_requirement_upload(document)
+            if not requirements_lock.acquire(blocking=False):
+                raise HTTPException(429, "다른 문서를 읽고 있습니다. 잠시 후 다시 시도해 주세요.")
+            job_id = str(uuid4())
+            pending = {"id": job_id, "status": "queued"}
+            try:
+                with document_jobs_lock:
+                    prune_document_jobs()
+                    if len(document_jobs) >= DOCUMENT_RESULT_LIMIT:
+                        document_jobs.pop(next(iter(document_jobs)))
+                    document_jobs[job_id] = {"owner": owner, "response": pending, "finished_at": None}
+                background_tasks.add_task(run_document_job, job_id, data, filename, route)
+            except BaseException:
+                with document_jobs_lock:
+                    document_jobs.pop(job_id, None)
+                requirements_lock.release()
+                raise
+            response.headers["Cache-Control"] = "private, no-store"
+            return pending
+
+        @router.get("/requirements/extractions/{job_id}")
+        def get_requirement_extraction(job_id: UUID, request: Request, response: Response):
+            owner = document_owner(request)
+            with document_jobs_lock:
+                prune_document_jobs()
+                job = document_jobs.get(str(job_id))
+                if job is None or job["owner"] != owner:
+                    raise HTTPException(404, {"code": "VIDEO_DOCUMENT_ANALYSIS_NOT_FOUND",
+                                              "message": "영상 문서 분석 작업을 찾을 수 없습니다."},
+                                        headers={"Cache-Control": "private, no-store"})
+                result = job["response"]
+            response.headers["Cache-Control"] = "private, no-store"
+            return result
+
         @router.post("", status_code=202)
         async def submit(request: Request, background_tasks: BackgroundTasks, video: UploadFile = File(...),
                          criteria: str = Form("[]"), criteria_version: int = Form(1, ge=1, le=1_000_000),
                          project_name: str = Form("동영상 검수", min_length=1, max_length=120),
-                         disclosure: str = Form("{}"), logo: UploadFile = File(None),
+                         logo: UploadFile = File(None),
                          project_id: UUID | None = Form(None), parent_run_id: UUID | None = Form(None),
                          criteria_confirmed: bool = Form(False), model_route: str = Form("default")):
             job_id = str(uuid4())
@@ -723,9 +839,8 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     frozen = [Criterion.model_validate(item).model_dump() for item in parsed]
                     if len({item["id"] for item in frozen}) != len(frozen):
                         raise ValueError
-                    ad = validate_input(json.loads(disclosure))
                 except (ValueError, TypeError):
-                    raise HTTPException(422, "검수 기준 또는 광고 입력 형식을 확인해 주세요.") from None
+                    raise HTTPException(422, "검수 기준 형식을 확인해 주세요.") from None
                 account_root = owner_root(request)
                 project = str(project_id) if project_id else None
                 if (project and not criteria_confirmed) or (parent_run_id and not project):
@@ -734,8 +849,6 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 if project and store is None:
                     raise AuthError("VIDEO_APPROVAL_SCHEMA_NOT_READY", 503)
                 actor = await run_in_threadpool(project_actor, request, project, "write") if project else None
-                if project and any(item["id"] == "disclosure" for item in frozen):
-                    raise AuthError("INVALID_REQUEST", 422)
                 keys = request.headers.getlist("idempotency-key")
                 if keys:
                     try:
@@ -747,7 +860,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                     job_id = str(uuid5(NAMESPACE_URL, f"creative-checker/video-review/{actor}/{key}"))
                     existing = account_root / job_id
                     if (existing / "result.json").is_file():
-                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, ad, route)
+                        return await replay(existing, video, logo, project, parent_run_id, project_name, frozen, route)
                 parent = None
                 if parent_run_id:
                     target = await run_in_threadpool(directory, request, str(parent_run_id))
@@ -769,7 +882,7 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 account_root.mkdir(mode=0o700, parents=True, exist_ok=True)
                 with TemporaryDirectory(dir=account_root, prefix=".video-upload-") as staging:
                     return await accept(request, Path(staging), account_root / job_id, background_tasks, video,
-                                        frozen, criteria_version, project_name, ad, logo, job_id, slot, project, actor, parent,
+                                        frozen, criteria_version, project_name, logo, job_id, slot, project, actor, parent,
                                         route)
             finally:
                 if slot is not None:
@@ -781,11 +894,11 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 if logo is not None:
                     await logo.close()
 
-        async def replay(target, video, logo, project, parent, title, criteria, disclosure, route="default"):
+        async def replay(target, video, logo, project, parent, title, criteria, route="default"):
             job = await run_in_threadpool(_read_json, target / "result.json")
             workflow = job["workflow"]
             if (workflow["project_id"] != project or workflow["parent_run_id"] != (str(parent) if parent else None)
-                    or job["project_name"] != title or job["criteria"] != criteria or job["disclosure_input"] != disclosure
+                    or job["project_name"] != title or job["criteria"] != criteria
                     or job["media"]["bytes"] != video.size or (job.get("model_route") or "default") != route):
                 raise AuthError("IDEMPOTENCY_KEY_REUSED", 409)
             digest = await run_in_threadpool(hashlib.file_digest, video.file, "sha256")
@@ -796,14 +909,14 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             return {"id": job["id"], "status": job["status"]}
 
         async def accept(request, staged, target, background_tasks, video, frozen, criteria_version, project_name,
-                         ad, logo, job_id, slot, project, actor, parent, route="default"):
+                         logo, job_id, slot, project, actor, parent, route="default"):
             source = staged / "original.bin"  # 사용자 파일명은 경로나 응답에 쓰지 않는다
             digest, size, head = hashlib.sha256(), 0, b""
             with source.open("wb") as output:  # 1MiB씩 디스크에 흘려 쓰면서 SHA-256 계산
                 while chunk := await video.read(CHUNK):
                     size += len(chunk)
                     if size > policy["upload_bytes"]:
-                        raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MiB 이하로 업로드해 주세요.")
+                        raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MB 이하로 업로드해 주세요.")
                     if len(head) < 16:
                         head += chunk[:16 - len(head)]
                     digest.update(chunk)
@@ -830,17 +943,17 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
             created = _now()
             workflow = None
             if project:
-                criteria_version, workflow = prepare_review(job_id, project, actor, frozen, ad, parent, created)
+                criteria_version, workflow = prepare_review(job_id, project, actor, frozen, parent, created)
             media = {**info, "bytes": size, "sha256": digest.hexdigest()}
             _write_json(staged / "media.json", media)
             _write_json(staged / "snapshot.json", {"project_name": project_name, "criteria_version": criteria_version,
-                                                   "criteria": frozen, "disclosure": ad, "logo_query": has_logo,
+                                                   "criteria": frozen, "logo_query": has_logo,
                                                    "created_at": created})
             warnings = ["HDR 영상입니다. 톤매핑 없이 처리해 색이 다르게 보일 수 있습니다."] if info["hdr"] else []
             result = {
                 "id": job_id, "status": "queued", "stage": "queued", "progress": PROGRESS["queued"],
                 "stage_detail": f"대기 {sum((await run_in_threadpool(active_jobs)).values())}건", "project_name": project_name,
-                "criteria_version": criteria_version, "criteria": frozen, "disclosure_input": ad, "media": media,
+                "criteria_version": criteria_version, "criteria": frozen, "media": media,
                 "logo_query": has_logo, "runtime": None, "warnings": warnings, "error": None,
                 "created_at": created, "updated_at": created,
             }
@@ -905,20 +1018,6 @@ def video_review_router(*, root: Path, inference_lock: threading.Lock, readonly:
                 return job
 
             return await run_in_threadpool(save)
-
-    @router.get("/{job_id}/evidence-graph")
-    def evidence_graph(request: Request, job_id: str, rule: str | None = None):
-        """광고·협찬 판정의 근거 관계도(노드·관계). 저장된 완료 결과만 읽고 모델·그래프DB를 부르지 않는다."""
-        from backend.app.video.evidence_graph import GraphNotReady, UnknownRule, build_evidence_graph
-        with lock:
-            job = _read_json(directory(request, job_id) / "result.json")
-        try:
-            return build_evidence_graph(job, rule)
-        except GraphNotReady:
-            raise HTTPException(409, {"code": "evidence_graph_not_ready",
-                                      "message": "검수가 끝난 뒤 근거 관계도를 볼 수 있습니다."}) from None
-        except UnknownRule:
-            raise HTTPException(404, "판정 규칙을 찾을 수 없습니다.") from None
 
     @router.get("/{job_id}/video")
     def video_file(request: Request, job_id: str):

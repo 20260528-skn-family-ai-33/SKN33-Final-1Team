@@ -6,7 +6,8 @@
      겹치는 상자를 하나로 묶는 규칙(겹침·포함 + 비슷한 모양)은 영상의 '같은 초 안 묶기'와 같고,
      후보 점수 = 묶음 안 상자 중 그 원본 로고와 가장 닮은 상자의 SigLIP2 유사도(대표 상자도 그 상자)
   ② 촘촘한 타일: 포스터는 해상도가 높고 주최·후원 로고가 아래 띠에 작게 모인다. 영상과 같은 전체 화면 + 타일 10개에
-     960px 격자 타일(25% 겹침)을 더해 긴 변이 큰 포스터에서도 작은 로고가 OWLv2 입력(960px)에서 줄어들지 않게 한다
+     960px 격자 타일(25% 겹침)을 더해 긴 변이 큰 포스터에서도 작은 로고가 OWLv2 입력(960px)에서 줄어들지 않게 한다.
+     타일 안쪽 경계에 닿은 타일 상자는 로고가 잘린 상자라 NMS 전에 버린다(영상과 같음, 2026-11-17)
   ③ 후보 상한 60 → 120: 포스터 한 장에는 로고·문구 상자가 영상 한 초보다 많다
   ④ 가산점 기준 문구의 줄 구분(|)을 띄어쓰기로 바꿔 줄마다 조각으로 비교한다
 좌표는 포스터 원본(EXIF 회전을 반영한 화면 방향) 픽셀이다. 확정 화면·정밀 대조가 같은 좌표를 쓴다.
@@ -60,7 +61,9 @@ def detect(image: Image.Image, progress=lambda done, total: None) -> list[dict]:
     for i in range(0, len(tiles), V.OWL_BATCH):
         part = tiles[i:i + V.OWL_BATCH]
         for (bt, st), t in zip(V._text_detect([image.crop(t) for t in part]), part):
-            boxes.append(bt + torch.tensor([t[0], t[1], t[0], t[1]])); scores.append(st)
+            # 영상과 같이 타일 안쪽 경계에서 잘린 상자는 버린다(V._cut_by_tile, 2026-11-17).
+            bt = bt + torch.tensor([t[0], t[1], t[0], t[1]]); whole = ~V._cut_by_tile(bt, t, w, h)
+            boxes.append(bt[whole]); scores.append(st[whole])
         progress(1 + i + len(part), total)
     B, S = torch.cat(boxes), torch.cat(scores)
     if not len(S):

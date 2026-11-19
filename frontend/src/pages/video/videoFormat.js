@@ -6,7 +6,7 @@ export const stageLabels = {
   ocr: '프레임마다 글자를 읽고 있어요.',
   classifying: '자막과 배경 글자를 나누고 있어요.',
   segmenting: '같은 자막을 트랙과 구간으로 묶고 있어요.',
-  review: '확정한 기준과 광고 표시를 판정하고 있어요.',
+  review: '확정한 기준으로 판정하고 있어요.',
   logo: '지정한 로고와 프레임을 대조하고 있어요.',
   double_check: '결과를 정리하고 있어요.',
   transcode: '재생용 영상으로 변환하고 있어요.',
@@ -18,9 +18,18 @@ export const statusLabels = { pass: '충족', fail: '위반', review: '확인 �
 export const MiB = 1024 ** 2;
 const GiB = 1024 * MiB;
 
+// 화면에 적는 용량 단위는 MB · GB로 쓴다(2026-11-18 사용자 요청, MiB · GiB 표기를 통일). 값은 1024 단위로 센 것이다.
+// 정확히 몇 GB로 떨어지면 GB로, 아니면 MB로 적는다.
 export function formatVideoUploadLimit(bytes) {
   if (!bytes) return '';
-  return bytes % GiB === 0 ? `${bytes / GiB} GiB` : `${bytes / MiB} MiB`;
+  return bytes % GiB === 0 ? `${bytes / GiB} GB` : `${bytes / MiB} MB`;
+}
+
+// 동영상 업로드 한도는 500MiB다(2026-11-18 결정). 화면은 서버가 알려 준 한도와 이 값 가운데 작은 쪽을 적고, 그 값으로 파일을 거른다.
+// 예전 설정(1GiB)으로 도는 서버가 남아 있어도 화면에는 500MiB로 보인다. 서버가 더 작은 값을 알리면 그 값을 따른다.
+export const VIDEO_UPLOAD_MAX = 500 * MiB;
+export function videoUploadLimit(serverBytes) {
+  return serverBytes ? Math.min(serverBytes, VIDEO_UPLOAD_MAX) : 0;
 }
 
 // 서버 처리 단계 순서. 진행 화면의 단계 표시와 돋보기 위치 계산에 쓴다.
@@ -62,7 +71,8 @@ const clamp01 = value => Math.min(1, Math.max(0, Number.isFinite(value) ? value 
 // 서버 프레임 이름(t + 밀리초 6자리)을 만든다.
 export function frameId(ms) { return `t${String(Math.max(0, Math.round(Number(ms) || 0))).padStart(6, '0')}`; }
 
-// 서버 표본 계획(backend/app/video/frames.py plan_times)과 같은 규칙: 1초 격자 + (광고 표시 검사 대상이면) 시작·끝 3초의 0.2초 슬롯.
+// 서버 표본 계획(backend/app/video/frames.py plan_times)과 같은 규칙: 1초 격자 + (edges면) 시작·끝 3초의 0.2초 슬롯.
+// 지금 서버는 1초 격자만 뽑는다(edges=False). 시작·끝 슬롯은 광고 판정이 있던 예전 검수 기록을 다시 볼 때만 쓴다.
 // 0.2초를 다 채우는 슬롯(t + 0.2초 ≤ 길이)만 뽑으므로 끝이 0.2초보다 짧게 남으면 그 시각은 계획에 없다.
 const BASE_MS = 1000, EDGE_MS = 200, EDGE_WINDOW_MS = 3000;
 export function planTimes(durationMs, edges = true) {
@@ -77,7 +87,7 @@ export function planTimes(durationMs, edges = true) {
   return [...times.entries()].sort((a, b) => a[0] - b[0]).map(([time, sampling]) => ({ time_ms: time, sampling, frame_id: frameId(time) }));
 }
 
-// 검사 범위 문구. 자체 광고처럼 시작·끝 0.2초 표본을 뽑지 않은 작업에 0.2초 문구를 붙이지 않는다.
+// 검사 범위 문구. 시작·끝 0.2초 표본을 뽑지 않은 작업에 0.2초 문구를 붙이지 않는다.
 export function coverageNote(coverage) {
   if (!coverage) return '';
   const edges = (coverage.inspected_ms || []).some(time => time % BASE_MS !== 0);
@@ -100,7 +110,7 @@ export function scanState(job) {
   const phase = failed ? 'failed' : index <= 0 ? 'waiting' : index < ocr ? 'preparing' : index === ocr ? 'reading'
     : index < stageOrder.indexOf('review') ? 'organizing' : 'judging';
   let readUpTo = index > ocr ? Infinity : -1, lensTime = null;
-  const plan = index === ocr && job.media?.duration_ms > 0 ? planTimes(job.media.duration_ms, job.disclosure_input?.kind !== 'self') : [];
+  const plan = index === ocr && job.media?.duration_ms > 0 ? planTimes(job.media.duration_ms, Boolean(job.disclosure_input) && job.disclosure_input.kind !== 'self') : [];
   if (plan.length) {
     const done = Math.min(plan.length, Math.round(position * plan.length));
     readUpTo = done > 0 ? plan[done - 1].time_ms : -1;
@@ -123,13 +133,13 @@ export function filmCells(media, maxWidth = 720, height = 64, gap = 6) {
   return { width, height, gap, cells };
 }
 
-// 결과 목록: 기준별 결과, 영상 전체에서 볼 항목, 광고·협찬 표시를 한 목록에 순서대로 묶는다.
+// 결과 목록: 기준별 결과, 영상 전체에서 볼 항목을 한 목록에 순서대로 묶는다.
+// 광고·협찬 표시 판정(job.disclosure)은 화면에 보이지 않는다. 이전에 판정한 검수도 결과·보고서에 넣지 않는다.
 export function judgmentItems(job) {
   const results = job?.review?.results || [];
   const items = [];
   results.filter(result => !result.whole_video).forEach(result => items.push({ key: `criterion:${result.criterion_id}`, kind: 'criterion', group: 'criteria', status: result.status, result }));
   results.filter(result => result.whole_video).forEach(result => items.push({ key: `criterion:${result.criterion_id}`, kind: 'criterion', group: 'whole', status: result.status, result }));
-  if (job?.disclosure) items.push({ key: 'disclosure', kind: 'disclosure', group: 'disclosure', status: job.disclosure.status, disclosure: job.disclosure });
   return items;
 }
 
@@ -138,9 +148,16 @@ export const severityLabels = { block: '차단', warn: '경고', info: '정보' 
 export const reviewerLabels = { auto: '자동', manager: '담당자' };
 export const roleLabels = { subtitle: '자막', background: '배경', other: '기타' };
 export const mismatchLabels = { variants: '프레임마다 다르게 읽힘', spacing: '띄어쓰기 다름', case: '대소문자 다름', one_character: '한 글자 다름' };
-export const ruleLabels = {
-  R0: '적용 대상', R1: '표시 문구', R2: '제목 앞 15자', R3a: '시작 3초', R3b: '끝 3초', R3c: '중간 반복', R4: '캡션만', R5: '형태·시인성', R6: '가상인물',
-};
+
+// 글자 위치 없이 화면 구역(위·가운데·아래 3등분, 왼쪽·오른쪽 절반, 전체)으로 저장된 상자인가.
+// 2026-11-16 이전 자막 판독(backend/app/video/subtitle_vlm.region_box)은 이 구역 사각형만 남겼다. 상자는 판독할 때 저장되므로
+// 그 뒤 서버를 바꿔도 이미 끝난 검수의 상자는 그대로다. 화면은 이 경우 '구역 표시'라고 알린다.
+export function isRegionBox(box, width, height) {
+  if (!Array.isArray(box) || box.length !== 4 || !(width > 0) || !(height > 0)) return false;
+  const regions = [[0, 0, width, height / 3], [0, height / 3, width, height * 2 / 3], [0, height * 2 / 3, width, height],
+    [0, 0, width / 2, height], [width / 2, 0, width, height], [0, 0, width, height]];
+  return regions.some(region => region.every((value, index) => Math.abs(value - box[index]) < 1.5));
+}
 
 // 서버 기준 형식(포스터와 같이 정의되지 않은 필드는 거부)에 맞게 화면용 필드(selected 등)를 뺀다.
 export function criteriaPayload(criteria) {
@@ -151,11 +168,11 @@ export function criteriaPayload(criteria) {
 export function isTerminal(status) { return status === 'completed' || status === 'failed'; }
 
 // 밀리초를 m:ss 형식으로, 0.2초 단위 시각은 m:ss.s로 바꾼다.
+// 영상 시각은 1초 단위(분:초)로만 보인다. 1초 아래는 버린다(1:44.2 → 1:44).
 export function formatTime(ms) {
   const value = Math.max(0, Number(ms) || 0);
   const seconds = Math.floor(value / 1000);
-  const tenth = Math.floor((value % 1000) / 100);
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}${tenth ? `.${tenth}` : ''}`;
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 }
 
 // 기준 문구와 화면 문구를 글자 단위로 맞춰 다른 글자만 표시한다(LCS).

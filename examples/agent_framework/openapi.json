@@ -553,7 +553,6 @@
               "$ref": "#/components/schemas/Criterion"
             },
             "type": "array",
-            "minItems": 1,
             "title": "Criteria"
           },
           "warnings": {
@@ -1025,6 +1024,29 @@
                 "type": "null"
               }
             ]
+          },
+          "fields": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "source",
+                "target",
+                "field",
+                "kind",
+                "operator",
+                "expected",
+                "normalized_expected",
+                "unit",
+                "required",
+                "unresolved",
+                "qualifiers",
+                "presentation"
+              ]
+            },
+            "type": "array",
+            "maxItems": 12,
+            "title": "Fields",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -1136,6 +1158,15 @@
             "maxItems": 128,
             "title": "Rejected Candidates",
             "default": []
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "requirements",
+              "no_new_requirements"
+            ],
+            "title": "Outcome",
+            "default": "requirements"
           }
         },
         "additionalProperties": false,
@@ -1176,6 +1207,27 @@
             "type": "boolean",
             "title": "Outcome Unknown",
             "default": false
+          },
+          "extraction_rejections": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractionRejection"
+            },
+            "type": "array",
+            "maxItems": 128,
+            "title": "Extraction Rejections",
+            "default": []
+          },
+          "response_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Sha256"
           }
         },
         "additionalProperties": false,

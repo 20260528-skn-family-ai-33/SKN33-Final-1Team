@@ -86,13 +86,14 @@ test('내 작업: 대기 취소, 충돌 재조회, 숨김·복원과 새로고�
   await page.getByRole('heading', { name: video.project_name + ' 검수 결과', exact: true }).waitFor();
 });
 
-test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { timeout: 30000 }, async t => {
+test('대기 실행의 A01 안내는 요청할 때만 호출되며 취소 뒤 숨긴다', { timeout: 30000 }, async t => {
   const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
   t.after(() => vite.close()); await vite.listen();
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
   const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
   t.after(() => browser.close()); const page = await browser.newPage(); page.setDefaultTimeout(8000);
   let cancelled = false;
+  let guidanceRequests = 0;
   const context = { run_id: 'queued', actor_id: 'user', project_id: 'project' };
   const snapshot = () => ({ context, execution_status: cancelled ? 'failed' : 'queued',
     ...(cancelled ? { error: { code: 'USER_CANCELLED', message: '대기 작업 취소' } } : {}) });
@@ -100,9 +101,17 @@ test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { 
     const path = new URL(route.request().url()).pathname;
     let body;
     if (path.endsWith('/auth/me')) body = { authenticated: true, user: { id: 'user', display_name: '담당자' } };
-    else if (path.endsWith('/health')) body = { status: 'ok', ready: true };
+    else if (path.endsWith('/health')) body = { status: 'ok', ready: true, a01_guidance_ready: true };
     else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
     else if (path.endsWith('/cancel')) { cancelled = true; body = snapshot(); }
+    else if (path.endsWith('/runs/queued/guidance')) {
+      assert.equal(route.request().method(), 'POST');
+      assert.equal(route.request().headers()['x-csrftoken'], 'token');
+      guidanceRequests++;
+      if (guidanceRequests > 1) return route.fulfill({ status: 503, json: { error: { code: 'A01_GUIDANCE_UNAVAILABLE' } } });
+      body = { run_id: context.run_id, execution_status: 'queued', summary: '검수 작업이 대기 중입니다.',
+        model_summary: '워커가 실행을 시작할 때까지 기다려 주세요.' };
+    }
     else if (path.endsWith('/runs/queued')) body = snapshot();
     // 실행 화면은 이 실행에 연결된 포스터 로고 작업도 함께 읽는다. 이 시험에는 로고 작업이 없다.
     else if (path === '/api/poster-logos') body = { items: [] };
@@ -110,9 +119,18 @@ test('대기 실행 화면에서 취소하면 작업 종료를 표시한다', { 
     await route.fulfill({ json: body });
   });
   await page.goto(base + '/review/new?framework=queued');
+  const guidance = page.getByRole('button', { name: '다음 할 일 안내', exact: true });
+  await guidance.waitFor();
+  assert.equal(guidanceRequests, 0);
+  await guidance.click();
+  await page.getByText('검수 작업이 대기 중입니다.', { exact: true }).waitFor();
+  await guidance.click();
+  await page.getByText('실행 안내를 불러오지 못했습니다.', { exact: false }).waitFor();
+  assert.equal(guidanceRequests, 2);
   await page.getByRole('button', { name: '대기 작업 취소', exact: true }).click();
   await page.getByRole('heading', { name: '대기 작업 취소됨', exact: true }).waitFor();
   assert.equal(cancelled, true);
   assert.equal(await page.getByRole('progressbar').count(), 0);
+  assert.equal(await guidance.count(), 0);
   await page.getByRole('link', { name: '내 작업으로' }).waitFor();
 });

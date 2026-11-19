@@ -21,8 +21,9 @@ class VideoDecision(BaseModel):
     human_checks: dict[str, str] = Field(default_factory=dict, max_length=101)
 
 
-def prepare_review(job_id, project_id, actor_id, criteria, disclosure, parent, created_at):
-    value = json.dumps([criteria, disclosure], ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+def prepare_review(job_id, project_id, actor_id, criteria, parent, created_at):
+    # 기준 묶음의 지문. 예전에는 광고 입력(disclosure)도 함께 묶었으므로, 그때 만든 검수의 수정본은 기준 버전이 한 번 오른다.
+    value = json.dumps(criteria, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     criteria_sha256 = sha256(value.encode()).hexdigest()
     prior = parent["workflow"] if parent else None
     version = parent["criteria_version"] + (prior["criteria_sha256"] != criteria_sha256) if prior else 1
@@ -39,13 +40,8 @@ def prepare_review(job_id, project_id, actor_id, criteria, disclosure, parent, c
 def final_requirements(job):
     """Pass or directly confirm an observed item. Unknown or failed evidence stays open."""
     results = {item["criterion_id"]: item for item in (job.get("review") or {}).get("results", [])}
+    # 광고·협찬 표시 판정은 없앴다. 예전 검수에 남은 job["disclosure"]도 승인 조건에 넣지 않는다.
     statuses = [(item["id"], results.get(item["id"], {})) for item in job.get("criteria", [])]
-    disclosure = job.get("disclosure")
-    if disclosure and disclosure.get("applicable"):
-        statuses.append(("disclosure", {
-            "status": disclosure.get("status"),
-            "evidence_segments": any(rule.get("evidence") for rule in disclosure.get("rules", {}).values()),
-        }))
     blocked = not statuses or not job.get("coverage")
     manual = []
     for criterion_id, item in statuses:

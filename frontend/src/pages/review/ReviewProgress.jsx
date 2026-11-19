@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/Icon.jsx';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
-import { useTilt } from '../../components/LayerFigure.jsx';
 import { scanFocus } from './progressScan.js';
+import { formatClock } from './elapsedClock.js';
 import '../../styles/review-progress.css';
 
 const statusText = { completed: '완료', active: '진행 중', waiting: '차례 대기', failed: '멈춤', pending: '대기' };
@@ -15,12 +15,12 @@ function PartArt({ kind }) {
 // 포스터 위의 확대 위치와 렌즈의 중심은 같은 좌표를 쓴다.
 // 포스터는 3D로 눕혀 놓고, 처리 단계가 나아가면 그 위로 유리판 두 장(02 읽은 자리 · 03 판정)이 차례로 떠오른다.
 // 유리판은 진행 정도만 알리는 장식이다. 실제 읽은 위치와 판정은 결과 화면에서 보여 준다.
+// 3D로 눕힌 포스터는 제자리에 고정한다(마우스를 따라 기울지 않는다). 훑는 돋보기와 떠오르는 유리판은 그대로 움직인다.
 function PosterScan({ image, working, depth = 0 }) {
-  const tilt = useTilt();
   const ready = image?.url && image.width > 0 && image.height > 0;
   const width = ready ? Math.min(460, 248 * image.width / image.height) : 0;
   return <figure className={`rv-poster-scan${working ? ' is-working' : ''}`} data-depth={depth}>
-    <div className="rv-poster-scan-stage" ref={tilt}>
+    <div className="rv-poster-scan-stage">
       {ready ? <div className="rv-poster-scan-sheet" style={{ '--rv-poster-width': `${width}px` }}>
         <img src={image.url} alt="검수 대상 포스터" width={image.width} height={image.height} />
         <span className="rv-poster-scan-zoom" aria-hidden="true"><img src={image.url} alt="" /></span>
@@ -77,7 +77,7 @@ export default function ReviewProgress({ title, message, detail, percent, starte
   const suppliedStart = typeof startedAt === 'number' ? startedAt : Date.parse(startedAt);
   const start = Number.isFinite(suppliedStart) ? Math.min(openedAt.current, suppliedStart) : openedAt.current;
   const seconds = Math.max(0, Math.floor((now - start) / 1000));
-  const elapsed = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const elapsed = formatClock(seconds);
   const value = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : poster ? 0 : null;
   const completed = steps.filter(step => step.status === 'completed').length;
   const shownFacts = poster || !steps.length ? facts : [...facts, ['처리 단계', `${completed} / ${steps.length} 완료`]];

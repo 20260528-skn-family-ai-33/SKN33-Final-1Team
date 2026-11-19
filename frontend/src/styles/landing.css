@@ -66,6 +66,14 @@ html:has(.lp-page) { scrollbar-gutter: stable; }
 .lp-format-foot p { max-width: 430px; color: var(--lp-muted); font-size: 14px; line-height: 1.9; }
 .lp-3d { --turn: 0deg; --lean: 0deg; --lift: 112px; position: relative; display: grid; place-items: center; height: 520px; margin-top: 20px; overflow: hidden; background-color: var(--lp-surface); background-image: linear-gradient(color-mix(in srgb, var(--lp-border) 45%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--lp-border) 45%, transparent) 1px, transparent 1px); background-size: 43px 43px; perspective: 2200px; perspective-origin: 50% 20%; }
 .lp-3d-stack { position: relative; transform: rotateX(calc(57deg + var(--lean))) rotateZ(calc(-37deg + var(--turn))); transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
+/* 도해는 마우스로 잡고 돌릴 수 있다(LayerFigure의 useOrbit). 끄는 동안은 손을 바로 따라오게 전환을 끄고,
+   놓으면 살짝 넘쳤다 돌아오는 전환으로 제자리에 온다. 움직임을 줄인 환경에서는 전환 없이 돌아온다. */
+.lp-3d { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+.lp-3d[data-orbit='drag'] { cursor: grabbing; }
+.lp-3d[data-orbit='drag'] .lp-3d-stack, .lp-3d[data-orbit='rest'] .lp-3d-stack { transition: none; }
+.lp-3d[data-orbit='back'] .lp-3d-stack { transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.12); }
+.lp-3d-hint { position: absolute; z-index: 1; left: 16px; bottom: 14px; color: var(--lp-muted); font: 11px/1 var(--lp-mono); letter-spacing: 0.02em; pointer-events: none; transition: opacity 0.4s; }
+.lp-3d[data-orbit='drag'] .lp-3d-hint, .lp-3d[data-turned='true'] .lp-3d-hint { opacity: 0; }
 .lp-3d--poster .lp-3d-stack { width: 264px; height: 352px; margin-top: 164px; }
 .lp-3d--video .lp-3d-stack { width: 384px; height: 172px; margin-top: 214px; }
 .lp-3d-plane { --z: 0px; position: absolute; inset: 0; transform: translateZ(var(--z)); transition: transform 1.1s cubic-bezier(0.25, 0.8, 0.25, 1); }

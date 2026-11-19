@@ -48,19 +48,20 @@ def present_requirements(snapshot):
         conditions.append(entry)
     if len(conditions)>100 or len('\n\n'.join(c['text'] for c in conditions))>6000:
         raise AuthError('REQUIREMENTS_PRESENTATION_TOO_LONG',422)
-    warnings=['확인 중인 항목은 검수 입력에서 분리했습니다.'] if notes else []
+    # 화면은 경고를 첫 문장(무슨 일인지)과 나머지(무엇을 하면 되는지)로 나눠 보인다(frontend DocumentInput.jsx).
+    warnings=[f'미확정 {len(notes)}개는 조건 목록에 넣지 않았어요. 문서에 값이 아직 정해지지 않은 항목이에요.'] if notes else []
     if draft.extraction.rejected_candidates:
         count=len(draft.extraction.rejected_candidates)
-        warnings.append(f'원문 검증에 실패한 후보 {count}개를 제외했습니다. 기준 확인 화면에서 사유를 확인해 주세요.')
+        warnings.append(f'원문과 맞지 않는 후보 {count}개를 뺐어요. 빠진 사유는 기준 확인 화면에서 볼 수 있어요.')
     image_pages=[m.group(1) for m in map(IMAGE_PAGE.fullmatch,draft.warnings) if m]
     if image_pages:
-        warnings.append(f'{", ".join(image_pages)}쪽의 이미지 안 내용은 읽지 않았습니다. 이미지에 요구사항이 있으면 직접 추가해 주세요.')
+        warnings.append(f'{", ".join(image_pages)}쪽 이미지 속 글자는 읽지 않았어요. 이미지에 요구사항이 있으면 직접 추가해 주세요.')
     skipped=draft.extraction.skipped_pdf_pages
     if skipped:
-        warnings.append(f'{", ".join(map(str,skipped))}쪽은 텍스트를 읽지 못했습니다. 원본을 대조해 빠진 조건을 보완해 주세요.')
+        warnings.append(f'{", ".join(map(str,skipped))}쪽은 텍스트를 읽지 못했어요. 원본과 대조해 빠진 조건을 보완해 주세요.')
     incomplete=[m.group(1) for m in map(INCOMPLETE_PAGE.fullmatch,draft.warnings) if m]
     if incomplete:
-        warnings.append(f'{", ".join(incomplete)}쪽의 일부 분석 응답을 받지 못했습니다. 원본을 대조해 주세요.')
+        warnings.append(f'{", ".join(incomplete)}쪽의 일부 분석 응답을 받지 못했어요. 원본과 대조해 주세요.')
     return {'conditions':conditions,'pending':notes,'page_count':len(draft.extraction.sources)+len(skipped),'warnings':warnings,
         'framework':{'run_id':snapshot.context.run_id,'document_version_id':snapshot.context.document_version_id,
             'policy':draft.extraction.policy,'synthetic':draft.synthetic},'approved':False}

@@ -290,10 +290,8 @@ test('저장된 검수 결과를 확인하고 결과 JSON을 저장한다', asyn
   await page.getByRole('complementary', { name: '선택 항목 상세', exact: true }).getByText('이미지 문구에서 행사명을 확인했습니다.', { exact: true }).waitFor();
   // 저장된 결과를 여는 것만으로는 예전 실행을 새로 접수하지 않는다.
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);
-  const downloadEvent = page.waitForEvent('download');
-  await page.getByRole('button', { name: '결과 JSON 저장', exact: true }).click();
-  const download = await downloadEvent;
-  assert.match(download.suggestedFilename(), /\.json$/);
+  // 결과 화면에는 JSON 내려받기 버튼을 두지 않는다.
+  assert.equal(await page.getByRole('button', { name: '결과 JSON 저장', exact: true }).count(), 0);
 });
 
 // 알려진 화면 문제: 저장된 검수(?review=)에서 홈으로 나갔다 오면 새 입력이 열리지 않는다(이전 결과가 다시 보이거나 첫 화면이 잠김).
@@ -310,8 +308,8 @@ test('저장된 검수 결과에서 서비스 메인 왕복 시 새 입력으로
   await page.getByRole('heading', { name: mediaScreen, exact: true }).waitFor();
   await page.getByRole('button', { name: '포스터', exact: true }).click();
   await page.getByRole('heading', { name: firstScreen, exact: true }).waitFor();
-  assert.equal(await page.locator('#project-name').inputValue(), '');
   await chooseReviewType(page);
+  assert.equal(await page.locator('#project-name').inputValue(), '');
   assert.equal(await page.locator('#requirements').inputValue(), '');
   assert.equal(await page.getByRole('list', { name: '검수 항목 목록', exact: true }).count(), 0);
   assert.equal(state.requests.filter(request => request.path === '/api/reviews' && request.method === 'POST').length, 0);

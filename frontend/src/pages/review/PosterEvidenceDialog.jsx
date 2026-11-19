@@ -55,9 +55,8 @@ function EvidenceBody({ graph, image }) {
     if (node.id === 'previous') setShownId(node.runId);
     else if (['poster', 'region', 'observation'].includes(node.id)) setShownId(null);
   }
-  const source = graph.relationSource === 'neo4j' ? '기준과 원문의 관계는 Neo4j 그래프에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
-    : graph.relationSource === 'postgresql' ? '기준과 원문의 관계는 PostgreSQL에서 조회했고, 읽은 값·위치·판정은 이 검수의 실행 기록에서 읽어 연결했습니다.'
-      : '기준·원문·읽은 값·판정을 이 검수의 실행 기록에서 읽어 연결했습니다.';
+  // 어느 저장소(그래프DB·관계형DB)에서 읽었는지는 화면에 적지 않는다.
+  const source = '기준·원문·읽은 값·판정을 이 검수의 기록에서 읽어 연결했습니다.';
   return <div className="rv-evd-body">
     <PosterPane graph={graph} image={image} shownId={shownId} onShow={setShownId} />
     <section className="rv-evd-main" aria-label="판정 근거">
@@ -71,7 +70,7 @@ function EvidenceBody({ graph, image }) {
         {graph.reasons.length > 0 && <ul className="rv-evd-reasons" aria-label="판정 사유">{graph.reasons.map(text => <li key={text}>{text}</li>)}</ul>}
       </div>
       <EvidenceRelations graph={graph} selectedId={selectedId} onSelect={select} foot={source}
-        store={selected => <>{selected.graph ? <>그래프 노드 <code title={selected.graph.key}>{selected.graph.kind}</code></> : selected.record}
+        store={selected => <>{selected.record}
           {selected.runId && <a href={'?framework=' + encodeURIComponent(selected.runId)}>이 검수 결과 열기</a>}</>} />
     </section>
   </div>;

@@ -156,6 +156,11 @@
     },
     "document": {
       "$ref": "#/$defs/DocumentRef"
+    },
+    "allow_no_additional_requirements": {
+      "default": false,
+      "title": "Allow No Additional Requirements",
+      "type": "boolean"
     }
   },
   "required": [

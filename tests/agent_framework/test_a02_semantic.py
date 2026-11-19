@@ -157,7 +157,7 @@ def test_model_proposed_canonical_dates_keep_the_original_literal_citation():
 
 @pytest.mark.parametrize('mutation,code',[
     ('value','A02_EXPECTED_UNGROUNDED'),('source','A02_SOURCE_MISMATCH'),('backwards','A02_SOURCE_MISMATCH'),
-    ('qualifier','A02_QUALIFIER_UNGROUNDED'),('unit','A02_UNIT_UNGROUNDED'),
+    ('unit','A02_UNIT_UNGROUNDED'),
     ('normalized','A02_NORMALIZED_VALUE_UNGROUNDED'),('normalization_kind','A02_NORMALIZATION_UNSUPPORTED'),
     ('duplicate','A02_DUPLICATE_REQUIREMENT'),
 ])
@@ -166,7 +166,6 @@ def test_semantic_output_is_rejected_instead_of_repaired(mutation,code):
     if mutation=='value':item['expected']='없는 행사 이름'
     if mutation=='source':item['source']['start_line']='unknown:L1'
     if mutation=='backwards':item['source'].update(start_line='input-text:L4',end_line='input-text:L1')
-    if mutation=='qualifier':item['qualifiers']=[{'start_line':'input-text:L3','end_line':'input-text:L3'}]
     if mutation=='unit':item['unit']='text'
     if mutation=='normalized':reply['requirements'][2]['normalized_expected']='2027-10-25'
     if mutation=='normalization_kind':item['normalized_expected']='2026-10-23'
@@ -179,6 +178,82 @@ def test_semantic_output_is_rejected_instead_of_repaired(mutation,code):
         assert rejected.source is None
     else:
         assert rejected.source.quote in BRIEF
+
+
+RULE_TEXT=('행사명에 다음 문구를 포함해야 합니다: 수원재즈페스티벌\n'
+    '장소에 다음 문구를 포함해야 합니다: 광교호수공원\n'
+    '문구 판정: 줄바꿈·연속 공백은 정규화할 수 있습니다.')
+
+
+def test_common_allowance_below_requirements_keeps_them_with_its_own_citation():
+    # 명세 PDF처럼 공통 '문구 판정' 줄이 여러 요구사항 아래에 따로 있어도 요구사항을 버리지 않는다.
+    from backend.agent_framework.a02 import validate_trace
+    from backend.agent_framework.validation import _criteria
+    rule={'start_line':'input-text:L3','end_line':'input-text:L3'}
+    reply={'requirements':[requirement(1,'event_name','수원재즈페스티벌',qualifiers=[rule]),
+        requirement(2,'venue','광교호수공원',qualifiers=[rule])]}
+    request,draft,_,_=extract(reply,text_document(RULE_TEXT))
+    assert not draft.extraction.rejected_candidates
+    assert [(c.expected,c.source.quote) for c in draft.criteria]==[
+        ('수원재즈페스티벌','행사명에 다음 문구를 포함해야 합니다: 수원재즈페스티벌'),
+        ('광교호수공원','장소에 다음 문구를 포함해야 합니다: 광교호수공원')]
+    for c in draft.criteria:
+        cited,=c.details.qualifiers
+        assert cited.quote=='문구 판정: 줄바꿈·연속 공백은 정규화할 수 있습니다.' and cited.quote not in c.source.quote
+        assert (cited.block_id,cited.page,cited.source_hash)==(
+            c.source.block_id,c.source.page,sha256(cited.quote.encode()).hexdigest())
+    assert 'qualifier_cited_outside_requirement_source' in draft.warnings
+    validate_trace(request.document,draft)
+    _criteria(draft.context,draft.criteria)
+
+
+def test_allowance_on_another_pdf_page_is_cited_on_that_page():
+    import pymupdf
+    with pymupdf.open() as pdf:
+        for text in ('Title: Festival','Wording rule: line breaks may differ.'):
+            pdf.new_page().insert_text((40,40),text)
+        raw=pdf.tobytes()
+    context=text_document().context
+    ref=DocumentRef(file_id='rule-pdf',document_version_id=context.document_version_id,
+        sha256=sha256(raw).hexdigest(),media_type='application/pdf',page_count=2)
+    item=requirement(1,'event_name','Festival',source={'start_line':'p1-text:L1','end_line':'p1-text:L1'},
+        qualifiers=[{'start_line':'p2-text:L1','end_line':'p2-text:L1'}])
+    _,draft,_,_=extract({'requirements':[item]},VerifiedDocument(context,ref,raw,2))
+    c,=draft.criteria
+    cited,=c.details.qualifiers
+    assert (c.source.page,c.source.block_id)==(1,'p1-text')
+    assert (cited.page,cited.block_id,cited.quote)==(2,'p2-text','Wording rule: line breaks may differ.')
+
+
+def test_unlocatable_allowance_is_dropped_without_losing_the_requirement():
+    reply=model_reply()
+    reply['requirements'][0]['qualifiers']=[{'start_line':'input-text:L3','end_line':'input-text:L1'}]
+    _,draft,_,_=extract(reply)
+    assert not draft.extraction.rejected_candidates and len(draft.criteria)==len(reply['requirements'])
+    assert draft.criteria[0].expected=='김천김밥축제' and not draft.criteria[0].details.qualifiers
+    assert 'model_qualifier_unlocatable_dropped' in draft.warnings
+
+
+def test_allowance_citation_must_stay_verbatim_in_its_named_block_and_document():
+    from backend.agent_framework.a02 import validate_trace
+    from backend.agent_framework.validation import _criteria
+    rule={'start_line':'input-text:L3','end_line':'input-text:L3'}
+    request,draft,_,_=extract({'requirements':[requirement(1,'event_name','수원재즈페스티벌',qualifiers=[rule])]},
+        text_document(RULE_TEXT))
+    c=draft.criteria[0];cited=c.details.qualifiers[0]
+    def with_qualifier(**update):
+        changed=cited.model_copy(update=update)
+        details=c.details.model_copy(update={'qualifiers':(changed,)})
+        return draft.model_copy(update={'criteria':(c.model_copy(update={'details':details}),)})
+    invented='문구 판정: 의미가 같으면 일치로 봅니다.'
+    with pytest.raises(ValueError,match='EXTRACTION_DETAILS_SOURCE_MISMATCH'):
+        validate_trace(request.document,with_qualifier(quote=invented,source_hash=sha256(invented.encode()).hexdigest()))
+    with pytest.raises(ValueError,match='EXTRACTION_DETAILS_SOURCE_MISMATCH'):
+        validate_trace(request.document,with_qualifier(block_id='p9-text'))
+    other=with_qualifier(document_version_id='00000000-0000-4000-8000-000000000999')
+    with pytest.raises(ValueError,match='DETAILS_SOURCE_MISMATCH'):_criteria(other.context,other.criteria)
+    with pytest.raises(ValueError,match='DETAILS_SOURCE_MISMATCH'):
+        tampered=with_qualifier(quote=invented);_criteria(tampered.context,tampered.criteria)
 
 
 def test_response_with_unowned_fields_still_fails_as_an_invalid_document_reply():

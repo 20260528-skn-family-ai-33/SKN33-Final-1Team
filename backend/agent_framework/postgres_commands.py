@@ -47,13 +47,15 @@ def postgres_check(args):
 def postgres_serve(args):
     from backend.app.v1_config import load_v1_settings
     from .postgres_api import create_postgres_app
+    from .run_guidance import RunGuidance
     import uvicorn
-    values,_settings=_values(args.env_file)
+    values,_settings=_values(args.env_file, 'framework-api')
     from .deployment import trusted_proxies
     proxies=trusted_proxies(values.get('TRUSTED_PROXY_IPS',''))
     root=Path(args.pdf_storage_root).expanduser().resolve() if args.pdf_storage_root else None
     posters=Path(args.poster_storage_root).expanduser().resolve() if args.poster_storage_root else None
-    app=create_postgres_app(load_v1_settings(values),load_config(args.config),pdf_storage_root=root,poster_storage_root=posters)
+    app=create_postgres_app(load_v1_settings(values),load_config(args.config),pdf_storage_root=root,
+                            poster_storage_root=posters,run_guidance=RunGuidance.configured(values))
     uvicorn.run(app,host=getattr(args,'host','127.0.0.1'),port=args.port,workers=1,reload=False,
                 proxy_headers=bool(proxies),forwarded_allow_ips=proxies)
     return 0

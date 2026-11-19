@@ -147,6 +147,19 @@ class RoleRequest(Contract):
 class ExtractRequest(RoleRequest):
     context: Context
     document: DocumentRef
+    allow_no_additional_requirements: bool = False
+
+    @model_validator(mode='after')
+    def additional_input_is_text(self):
+        if self.allow_no_additional_requirements and self.document.media_type!='text/plain':
+            raise ValueError('only direct additions may have no new requirements')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_request(self,handler):
+        data=handler(self)
+        if not self.allow_no_additional_requirements:data.pop('allow_no_additional_requirements',None)
+        return data
 
 
 class PDFTextSource(Contract):
@@ -160,6 +173,20 @@ class ExtractionRejection(Contract):
     candidate_index: int = Field(ge=1, le=128, strict=True)
     code: Identifier
     source: SourceRef | None = None
+    fields: tuple[Literal['source','target','field','kind','operator','expected','normalized_expected',
+                          'unit','required','unresolved','qualifiers','presentation'], ...] = Field(default=(),max_length=12)
+
+    @model_validator(mode='after')
+    def bounded_diagnostic_source(self):
+        if self.source is not None and len(self.source.quote)>4000:
+            raise ValueError('rejected source excerpt exceeds diagnostic limit')
+        return self
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_rejection(self,handler):
+        data=handler(self)
+        if not self.fields:data.pop('fields',None)
+        return data
 
 
 class ExtractionTrace(Contract):
@@ -175,6 +202,7 @@ class ExtractionTrace(Contract):
     skipped_pdf_pages: tuple[int,...] = Field(default=(), max_length=49)
     unresolved_criterion_ids: tuple[Identifier,...] = ()
     rejected_candidates: tuple[ExtractionRejection, ...] = Field(default=(), max_length=128)
+    outcome: Literal['requirements','no_new_requirements'] = 'requirements'
 
     @model_serializer(mode='wrap')
     def preserve_legacy_trace(self,handler):
@@ -182,15 +210,27 @@ class ExtractionTrace(Contract):
         if self.input_kind=='pdf':data.pop('input_kind',None)
         if not self.rejected_candidates:data.pop('rejected_candidates',None)
         if not self.skipped_pdf_pages:data.pop('skipped_pdf_pages',None)
+        if self.outcome=='requirements':data.pop('outcome',None)
         return data
 
 
 class CriteriaDraft(Contract):
     context: Context
-    criteria: tuple[Criterion, ...] = Field(min_length=1)
+    criteria: tuple[Criterion, ...]
     warnings: tuple[str, ...] = ()
     synthetic: bool = False
     extraction: ExtractionTrace | None = None
+
+    @model_validator(mode='after')
+    def explicit_empty_addition(self):
+        empty=self.extraction is not None and self.extraction.outcome=='no_new_requirements'
+        if empty:
+            if (self.criteria or self.extraction.input_kind!='free_text' or self.extraction.rejected_candidates
+                    or self.extraction.unresolved_criterion_ids or self.extraction.skipped_pdf_pages):
+                raise ValueError('no new requirements must be an explicit complete empty text result')
+        elif not self.criteria:
+            raise ValueError('a requirement draft must contain at least one criterion')
+        return self
 
     @model_serializer(mode='wrap')
     def preserve_legacy_wire_shape(self,handler):
@@ -274,12 +314,47 @@ class InspectionResult(Contract):
     synthetic: bool = False
 
 
+class OriginalFile(Contract):
+    """What the server measured from the uploaded original poster file; never an inspector's answer.
+
+    AssetRef describes the normalized display image a model sees. File requirements are
+    about the file that was delivered: its format, its pixel size as displayed (EXIF
+    orientation applied), the decoder's colour mode name such as RGB or CMYK, its
+    verified byte count and the pixel density the file records.
+    """
+    file_id: Identifier
+    sha256: Hash
+    format: Literal["PNG", "JPEG", "WEBP"]
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    color_mode: str = Field(min_length=1, max_length=16, pattern=r"^[A-Za-z0-9;]+$")
+    # Absent in facts measured before these were recorded; such runs keep their stored JSON and hash.
+    byte_size: int | None = Field(default=None, ge=0)
+    # Horizontal and vertical density written in the file (JFIF, PNG pHYs or EXIF); None when it records none.
+    dpi: tuple[Annotated[float, Field(gt=0)], Annotated[float, Field(gt=0)]] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_original(self, handler):
+        data = handler(self)
+        for name in ('byte_size', 'dpi'):
+            if getattr(self, name) is None:data.pop(name, None)
+        return data
+
+
 class ValidateRequest(RoleRequest):
     context: Context
     criteria: tuple[Criterion, ...] = Field(min_length=1)
     asset: AssetRef
     evidence: EvidenceBundle
     inspection: InspectionResult
+    # Absent for a run admitted without these facts; file requirements then stay with a person.
+    original: OriginalFile | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_request(self,handler):
+        data=handler(self)
+        if self.original is None:data.pop('original',None)
+        return data
 
 
 class ValidatedItem(Contract):
@@ -337,6 +412,15 @@ class FrameworkError(Contract):
     message: str
     retryable: bool = False
     outcome_unknown: bool = False
+    extraction_rejections: tuple[ExtractionRejection,...] = Field(default=(),max_length=128)
+    response_sha256: Hash | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_error(self,handler):
+        data=handler(self)
+        if not self.extraction_rejections:data.pop('extraction_rejections',None)
+        if self.response_sha256 is None:data.pop('response_sha256',None)
+        return data
 
 
 class HumanReview(Contract):
@@ -471,6 +555,6 @@ class RunSnapshot(Contract):
 
 
 CONTRACT_TYPES = (Context, DocumentRef, AssetRef, Criterion,CriteriaValueSource, ExtractRequest, CriteriaDraft,PDFTextSource,ExtractionTrace,
-                  EvidenceBundle, InspectRequest, InspectionResult,
+                  EvidenceBundle, InspectRequest, InspectionResult, OriginalFile,
                   ValidateRequest, ValidatedResult, ReportRequest, ReportDraft, HumanReview, Approval,
                   FrameworkError, StepRecord, StepTimeline, RunSnapshot,ApprovedBaseline)

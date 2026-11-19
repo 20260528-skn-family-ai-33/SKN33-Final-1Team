@@ -70,14 +70,14 @@ class WorkerPool:
 
     def readiness(self, ready_slots: tuple[str, ...] | None = None) -> tuple[bool, str]:
         slots = self.ready_slots() if ready_slots is None else ready_slots
-        return bool(slots), f"영상 RunPod 워커 준비 {len(slots)} / {len(self.endpoints)}"
+        return bool(slots), f"영상 검수 서버 준비 {len(slots)} / {len(self.endpoints)}"
 
     @contextmanager
     def acquire(self, preferred: str | None, api_job_id: str):
         # Old records have no slot. Pick a currently healthy worker for those operations.
         slots = (preferred,) if preferred in self.endpoints else self.ready_slots()
         if not slots:
-            raise WorkerError("사용 가능한 영상 RunPod 워커가 없습니다.")
+            raise WorkerError("사용 가능한 영상 검수 서버가 없습니다.")
         with self.condition:
             self.condition.wait_for(lambda: any(slot not in self.busy for slot in slots))
             slot = next(slot for slot in slots if slot not in self.busy)
@@ -116,17 +116,17 @@ def _request(method: str, path: str, payload: dict | None = None, timeout: float
             detail = json.loads(exc.read(64 * 1024)).get("detail") or ""
         except (ValueError, AttributeError, OSError):
             pass
-        raise WorkerError(f"RunPod 워커 응답 오류 {exc.code}{f': {detail}' if isinstance(detail, str) and detail else ''}") from None
+        raise WorkerError(f"검수 서버 응답 오류 {exc.code}{f': {detail}' if isinstance(detail, str) and detail else ''}") from None
     except (urllib.error.URLError, TimeoutError, OSError):
-        raise WorkerError("RunPod 워커에 연결하지 못했습니다. Pod 워커 실행과 SSH 터널을 확인하세요.") from None
+        raise WorkerError("검수 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.") from None
     if len(content) > MAX_RESPONSE_BYTES:
-        raise WorkerError("RunPod 워커 응답이 너무 큽니다.")
+        raise WorkerError("검수 서버 응답이 너무 큽니다.")
     try:
         body = json.loads(content)
     except ValueError:
-        raise WorkerError("RunPod 워커가 올바르지 않은 응답을 돌려줬습니다.") from None
+        raise WorkerError("검수 서버가 올바르지 않은 응답을 돌려줬습니다.") from None
     if not isinstance(body, dict):
-        raise WorkerError("RunPod 워커가 올바르지 않은 응답을 돌려줬습니다.")
+        raise WorkerError("검수 서버가 올바르지 않은 응답을 돌려줬습니다.")
     return body
 
 
@@ -137,7 +137,7 @@ def health() -> tuple[bool, str]:
     except WorkerError as exc:
         return False, str(exc)
     detail = body.get("detail") or ""
-    return bool(body.get("ready")), f"RunPod 워커: {detail}" + (f" · 대기·실행 중 작업 {body['busy']}개" if body.get("busy") else "")
+    return bool(body.get("ready")), f"검수 서버: {detail}" + (f" · 대기·실행 중 작업 {body['busy']}개" if body.get("busy") else "")
 
 
 def _encode(image: Image.Image, fmt: str) -> str:
@@ -150,7 +150,7 @@ def _run(payload: dict, progress) -> object:
     """작업을 한 번 제출하고(재제출하지 않는다) 끝날 때까지 진행률을 읽는다."""
     job_id = _request("POST", "/jobs", payload, timeout=600).get("id")
     if not isinstance(job_id, str) or not re.fullmatch(r"[0-9a-f]{32}", job_id):
-        raise WorkerError("RunPod 워커가 작업 번호를 돌려주지 않았습니다.")
+        raise WorkerError("검수 서버가 작업 번호를 돌려주지 않았습니다.")
     worker = _bound_worker.get()
 
     def record(status: str) -> None:
@@ -163,7 +163,7 @@ def _run(payload: dict, progress) -> object:
     deadline, failures = time.monotonic() + _timeout(), 0
     while True:
         if time.monotonic() > deadline:
-            raise WorkerError("RunPod 워커 작업이 제한 시간을 넘겼습니다.")
+            raise WorkerError("검수 서버 작업이 제한 시간을 넘겼습니다.")
         time.sleep(POLL_SECONDS)
         try:
             state = _request("GET", f"/jobs/{job_id}", timeout=60); failures = 0
@@ -181,20 +181,20 @@ def _run(payload: dict, progress) -> object:
             return state.get("result")
         if status == "failed":
             record("failed")
-            raise WorkerError(f"RunPod 워커 작업 실패: {state.get('error') or '원인 미상'}")
+            raise WorkerError(f"검수 서버 작업 실패: {state.get('error') or '원인 미상'}")
         progress(state.get("progress") or 0, state.get("detail"))
 
 
 def build_candidates(frames_dir: Path, frames: list[dict], refs: list[dict], progress=lambda p, d: None) -> dict:
     """video_logo_candidates.build_candidates와 같은 입출력. 프레임은 원본 해상도(full/<sec>.jpg)를 그대로 보낸다."""
-    progress(2, "RunPod 워커로 프레임 보내는 중")
+    progress(2, "검수 서버로 프레임을 보내는 중")
     payload = {"kind": "candidates",
                "frames": [{"sec": f["sec"], "jpg_base64": base64.b64encode((frames_dir / "full" / f"{f['sec']}.jpg").read_bytes()).decode("ascii")}
                           for f in frames],
                "refs": [{"name": r["name"], "png_base64": _encode(r["image"], "PNG"), "text": r["text"]} for r in refs]}
-    data = _run(payload, lambda p, d: progress(5 + 0.9 * p, f"RunPod · {d}" if d else "RunPod에서 후보 찾는 중"))
+    data = _run(payload, lambda p, d: progress(5 + 0.9 * p, d or "로고 후보를 찾는 중"))
     if not isinstance(data, dict) or not isinstance(data.get("groups"), list) or not isinstance(data.get("refs"), list):
-        raise WorkerError("RunPod 워커의 후보 결과 형식이 올바르지 않습니다.")
+        raise WorkerError("검수 서버의 후보 결과 형식이 올바르지 않습니다.")
     return data
 
 
@@ -206,7 +206,7 @@ def compare_crops(ref_image: Image.Image, ref_text: str, crops: list[Image.Image
                "crops": [_encode(c, "JPEG") for c in crops]}
     results = _run(payload, lambda p, d: progress(round(len(crops) * p / 100)))
     if not isinstance(results, list) or len(results) != len(crops) or not all(isinstance(r, dict) and r.get("outcome") in {"match", "diff", "unknown"} for r in results):
-        raise WorkerError("RunPod 워커의 대조 결과 형식이 올바르지 않습니다.")
+        raise WorkerError("검수 서버의 대조 결과 형식이 올바르지 않습니다.")
     return results
 
 
@@ -216,5 +216,5 @@ def ocr_frames(frame_paths: list[Path], progress=lambda done: None) -> list[dict
     result = _run(payload, lambda p, d: progress(round(len(frame_paths) * p / 100)))
     rows = result.get("rows") if isinstance(result, dict) else None
     if not isinstance(rows, list) or len(rows) != len(frame_paths) + 1 or not all(isinstance(r, dict) for r in rows):
-        raise WorkerError("RunPod 워커의 자막 OCR 결과 형식이 올바르지 않습니다.")
+        raise WorkerError("검수 서버의 자막 OCR 결과 형식이 올바르지 않습니다.")
     return rows

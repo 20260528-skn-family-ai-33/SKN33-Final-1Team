@@ -51,6 +51,16 @@ def approval_blockers(criteria):
     return result
 
 
+# A person can settle these from the review result, so they are listed but do not hold back approval:
+# the criterion is still inspected and A06 reports it as review. What holds back approval is a supplemented
+# value that is itself unusable, because an approved version cannot be corrected afterwards.
+REVIEWABLE_BLOCKERS=frozenset({'unsupported_or_manual_criterion','missing_expected_value','missing_inspection_target'})
+
+
+def blocks_approval(blockers):
+    return any(set(issues)-REVIEWABLE_BLOCKERS for issues in blockers.values())
+
+
 def direct_input_quote(quote, text):
     """Include the exact typed line(s) around an unambiguous A02 citation."""
     start = text.find(quote)
@@ -299,14 +309,21 @@ class PostgresCriteriaReview:
         kept = (len(current) if admission.criterion_ids is None else
             sum(item.source.kind == 'direct_input' or item.criterion_id in admission.criterion_ids for item in current))
         omitted = len(current) - kept
+        if kept + len(extracted.criteria) == 0:
+            _error('CRITERIA_ADDITION_SELECTION_INVALID', 422)
         if kept + len(extracted.criteria) > 128 or omitted + len(extracted.criteria) > 128:
             _error('CRITERIA_ADDITION_LIMIT_EXCEEDED', 422)
         if extracted.extraction.rejected_candidates or any('model_output_incomplete' in warning for warning in extracted.warnings):
-            _error('CRITERIA_ADDITION_INCOMPLETE', 422)
+            from .ports import AdapterFailure
+            raise AdapterFailure('CRITERIA_ADDITION_INCOMPLETE',
+                'Some additional requirements could not be validated.',
+                extraction_rejections=extracted.extraction.rejected_candidates,
+                response_sha256=extracted.extraction.response_sha256)
         version = revise_criteria(snapshot.criteria, parent, request, version_id=version_id,
             created_by=row['actor_id'], created_at=now, addition=(admission, extracted))
         audit = payload(admission) | {'analysis_run_id': extracted.context.run_id,
-            'analysis_document_sha256': extracted.extraction.document_sha256, 'analysis_draft_sha256': digest(extracted)}
+            'analysis_document_sha256': extracted.extraction.document_sha256, 'analysis_draft_sha256': digest(extracted),
+            'analysis_outcome': extracted.extraction.outcome}
         return self._insert_version(c, row, doc, version, admission.request_key, audit)
 
     @staticmethod
@@ -389,7 +406,7 @@ class PostgresCriteriaReview:
                     or latest['snapshot_sha256']!=request.expected_sha256):_error('CRITERIA_VERSION_CONFLICT')
             version=self._record(latest)
             self._source(c,row,snapshot,allow_prior_runtime=bool(version.version.addition_run_ids))
-            if version.approval_blockers:_error('CRITERIA_UNRESOLVED')
+            if blocks_approval(version.approval_blockers):_error('CRITERIA_UNRESOLVED')
             synthetic=snapshot.synthetic or version.version.synthetic or request.purpose=='synthetic_test'
             evidence=freeze_approved_context(version.version.context,version.version.criteria,synthetic=synthetic)
             approval=Approval(context=snapshot.context,actor_id=str(subject.user_id),decision='approve_criteria',

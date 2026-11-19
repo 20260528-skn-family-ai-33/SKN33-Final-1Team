@@ -24,6 +24,7 @@ async function pickProject(page, name) {
 }
 
 // API replies are scripted; this checks the real input/approval/report UI, not model quality.
+// 자료 입력은 한 화면이다: 문서를 첨부하면 같은 화면에 검수 항목이 나타나고, '검수 시작하기'가 기준 승인과 검수 접수까지 한다.
 async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false } = {}) {
   const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
   t.after(() => vite.close()); await vite.listen();
@@ -34,11 +35,17 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } }); page.setDefaultTimeout(8000);
     const errors = [], legacy = [], textInputs = [];
     const subset = mode === 'pdf_subset';
-    const adding = mode === 'pdf_addition';
+    const noNew = mode === 'pdf_no_addition';
+    const failedAddition = mode === 'pdf_addition_failed';
+    const adding = mode === 'pdf_addition' || noNew || failedAddition;
     const selectsSubset = subset || adding;
     let extractionRequests = 0;
     let additionRequests = 0;
+    // 직접 입력 분석을 '대기'로 붙잡아 두고, 그동안 문서 첨부 카드가 어떻게 보이는지 확인한 뒤 풀어 준다.
+    let additionReady = false;
     let latest = null, approved = false, reviewed = false, extractedText = false, uploads = 0;
+    // 값이 정해지지 않은 기준이 남은 채로 온 승인 요청을 서버가 거절한 횟수(blocker · skip 흐름의 이전 서버).
+    let refusals = 0;
     const posterApproval = Promise.withResolvers();
     // 바로 시작(direct) 흐름에서 잠금 상태를 확인하는 동안 기준 승인 응답을 붙잡아 둔다.
     // 응답이 먼저 끝나면 시작 버튼이 사라져 확인 단계가 실행 속도에 따라 실패했다.
@@ -54,12 +61,14 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     const subtitle = { ...criterion, criterion_id: 'subtitle', text: '보조 제목은 전시', expected: '전시' };
     const venue = { ...criterion, criterion_id: 'venue', text: '장소는 전시장', expected: '전시장' };
     const selectedPdfCriteria = [criterion, subtitle];
-    const directInput = '장소를 아카이브 홀로 표기합니다.';
+    const directInput = noNew ? '검수해줘' : failedAddition ? '행사 날짜는 미정입니다.' : '장소를 아카이브 홀로 표기합니다.';
     const added = { ...criterion, criterion_id: 'input-job-c001', text: '장소를 아카이브 홀로 표기', expected: '아카이브 홀',
       human_added: true, source: { kind: 'direct_input', page: 1, quote: directInput },
       value_source: { reference: '담당자 직접 입력', quote: '아카이브 홀' } };
     const rejectedCandidate = { candidate_index: 2, code: 'A02_EXPECTED_UNGROUNDED',
       source: { page: 2, quote: '행사 장소는 전시장 A입니다.' } };
+    const failedCandidate = { candidate_index: 1, code: 'A02_UNRESOLVED_VALUE_INVENTED', fields: ['presentation', 'operator'],
+      source: { page: 1, block_id: 'input-text', quote: directInput } };
     const baseline = { criteria_version_id: 'version', criteria_sha256: 'b'.repeat(64) };
     let png;
     page.on('pageerror', error => errors.push(error.message));
@@ -99,9 +108,13 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         assert.ok(request.headers()['idempotency-key']);
         return route.fulfill({ status: 202, json: { context: { run_id: 'input-job' }, execution_status: 'queued' } });
       } else if (path.endsWith('/runs/input-job') && adding) {
-        latest = { version: { ...baseline, version_no: 1, criteria: [...selectedPdfCriteria, added], exclusions: [],
+        if (failedAddition && additionReady) return route.fulfill({ json: { context: { ...context, run_id: 'input-job' }, execution_status: 'failed',
+          error: { code: failedCandidate.code, message: 'private provider model response', extraction_rejections: [failedCandidate], response_sha256: 'c'.repeat(64) } } });
+        if (additionReady) latest = { version: { ...baseline, version_no: 1, criteria: noNew ? selectedPdfCriteria : [...selectedPdfCriteria, added],
+          exclusions: [{ criterion_id: 'venue' }, { criterion_id: 'pending' }],
           addition_run_ids: ['input-job'] }, sha256: baseline.criteria_sha256, approval_blockers: {} };
-        body = { execution_status: 'waiting_criteria' };
+        body = { execution_status: additionReady ? 'waiting_criteria' : 'queued',
+          criteria: { criteria: noNew ? [] : [added], extraction: { outcome: noNew ? 'no_new_requirements' : 'requirements' } } };
       }
       else if (path.endsWith('/criteria-versions')) {
         const input = request.postDataJSON();
@@ -116,15 +129,23 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
           assert.deepEqual(input.edits.map(edit => [edit.action, edit.criterion_id]), [['exclude', 'venue'], ['exclude', 'pending']]);
         }
         const skipped = mode === 'skip' && input.edits.some(edit => edit.criterion_id === 'pending');
+        // 값이 빈 기준이 남는 경우: 빼기 전의 skip 흐름과, 빼지 않고 그대로 가는 unresolved 흐름.
+        const unresolvedLeft = (mode === 'skip' && !skipped) || mode === 'unresolved';
         latest = { version: { ...baseline, version_no: skipped ? 2 : 1,
-          criteria: subset ? selectedPdfCriteria : mode === 'skip' && !skipped ? [criterion, pending] : [criterion],
+          criteria: subset ? selectedPdfCriteria : unresolvedLeft ? [criterion, pending] : [criterion],
           exclusions: subset || skipped ? input.edits : [] }, sha256: baseline.criteria_sha256,
           approval_blockers: mode === 'blocker' ? { title: ['missing_expected_value'] }
-            : mode === 'skip' && !skipped ? { pending: ['missing_expected_value'] } : {} };
+            : unresolvedLeft ? { pending: ['missing_expected_value'] } : {} };
         body = latest;
       } else if (path.endsWith('/criteria-approvals')) {
         assert.equal(request.postDataJSON().reviewed_all_criteria, true);
-        if (mode === 'direct') await criteriaApproval.promise;
+        // 값이 빈 기준이 남아 있으면 승인하지 않는 서버(이전 서버)를 blocker · skip 흐름에서 흉내 낸다.
+        // 지금 서버는 그대로 승인하고(unresolved 흐름), 그 항목은 결과에서 '확인 필요'로 나온다.
+        if ((mode === 'blocker' || mode === 'skip') && Object.keys(latest.approval_blockers).length) {
+          refusals++;
+          return route.fulfill({ status: 409, json: { error: { code: 'CRITERIA_UNRESOLVED', message: 'Criteria are not resolved.' } } });
+        }
+        if (mode === 'direct' || noNew) await criteriaApproval.promise;
         approved = true; body = {};
       } else if (path.endsWith('/images')) {
         assert.ok(approved, 'image registration follows criteria approval'); uploads++; body = { id: 'image' };
@@ -141,7 +162,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         body = { execution_status: 'reviewing', context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline };
       } else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
       else if (path.endsWith('/runs/draft')) body = { context, execution_status: !allowDocumentResult ? 'extracting' : approved ? 'waiting_asset' : 'waiting_criteria',
-        criteria: { criteria: selectsSubset ? [...selectedPdfCriteria, venue, pending] : mode === 'skip' ? [criterion, pending] : [criterion],
+        criteria: { criteria: selectsSubset ? [...selectedPdfCriteria, venue, pending] : ['skip', 'unresolved'].includes(mode) ? [criterion, pending] : [criterion],
           ...(checkRejectedCandidates ? { extraction: { rejected_candidates: [rejectedCandidate] } } : {}) } };
       else if (path.endsWith('/runs/poster')) body = { context: { ...context, run_id: 'poster', asset_version_id: 'image' }, baseline,
         execution_status: reviewed ? allowReviewResult ? 'waiting_review' : 'reviewing' : 'waiting_criteria', criteria: { criteria: [criterion] },
@@ -158,6 +179,8 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
     });
     await page.goto(base + '/review/new');
     await chooseReview(page);
+    // 문서를 첨부하는 흐름인가(아니면 직접 입력만으로 시작한다).
+    const documentMode = mode === 'pdf' || selectsSubset;
     if (mode === 'pdf') {
       // 프로젝트를 고르기 전에는 필수 표시가 보이고 문서를 첨부할 수 없다.
       await page.locator('.rv-project-chip.is-required').filter({ hasText: '프로젝트 선택' }).getByText('필수', { exact: true }).waitFor();
@@ -170,43 +193,80 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       return canvas.toDataURL().split(',')[1];
     }), 'base64');
     await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
-    if (mode === 'pdf' || mode === 'edited_pdf' || selectsSubset) {
+    const overlay = page.getByRole('dialog', { name: '검수 준비 중', exact: true });
+    const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
+    const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+    const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
+    // 자료 입력은 한 화면이다. 기준만 따로 확인하는 화면('검수할 항목을 확정해 주세요.')으로 넘어가지 않는다.
+    const criteriaOnlyPage = page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' });
+    if (documentMode) {
+      // 직접 입력란에 쓰던 글과 초점은 문서 추출이 끝나 검수 항목이 나타나도 그대로 남아야 한다.
+      await page.locator('#requirements').fill(adding ? directInput : '');
       await page.getByLabel('요구사항 문서 선택', { exact: true }).setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-test') });
       if (mode === 'pdf') {
-        const documentCard = page.getByRole('region', { name: '요구사항 문서 첨부', exact: true });
         await documentCard.getByRole('progressbar', { name: '문서 분석 단계' }).waitFor();
         await page.waitForFunction(() => document.querySelector('.rv-document-card progress')?.value === 60);
         assert.ok(await page.locator('#requirements').isVisible());
         assert.equal(await page.locator('.rv-progress-page').count(), 0);
+        // 문서를 추출하는 동안에는 검수 항목 상자가 아직 없다(직접 입력란 바로 아래가 문서 첨부다).
+        assert.equal(await page.getByRole('region', { name: '검수 항목', exact: true }).count(), 0);
+        await page.locator('#requirements').focus();
+        await page.locator('#requirements').evaluate(field => { field.dataset.kept = 'yes'; });
         if (process.env.E2E_PROGRESS_SCREENSHOT_DIR) {
           mkdirSync(process.env.E2E_PROGRESS_SCREENSHOT_DIR, { recursive: true });
           await page.screenshot({ path: process.env.E2E_PROGRESS_SCREENSHOT_DIR + '/pdf-progress.png', fullPage: true });
         }
         allowDocumentResult = true;
       }
-      const extracted = page.getByLabel('문서 요구사항 1번 문구', { exact: true });
-      await extracted.waitFor();
-      assert.equal(await page.locator('#requirements').inputValue(), '');
-      assert.equal(await extracted.inputValue(), '행사명은 봄');
-      // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 일부만 검수할 때는 뺄 항목의 체크를 푼다.
-      const include = page.getByLabel('문서 요구사항 1번 검수에 포함', { exact: true });
-      assert.equal(await include.isChecked(), true);
-      if (selectsSubset) await page.getByLabel('문서 요구사항 2번 검수에 포함', { exact: true }).uncheck();
-      if (mode === 'edited_pdf') await extracted.fill('행사명은 여름');
+      // 문서 추출이 끝나면 같은 화면에 검수 항목이 나타난다. 주소에는 초안의 실행 번호가 붙는다.
+      await checklist.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄' }).waitFor();
+      await page.waitForURL('**/review/new?framework=draft');
+      assert.equal(await criteriaOnlyPage.count(), 0);
+      assert.equal(await page.locator('#requirements').inputValue(), adding ? directInput : '');
+      assert.equal(await documentCard.locator('.rv-upload-name').textContent(), 'brief.pdf');
+      assert.equal(await documentCard.locator('.rv-document-summary').textContent(), '추출 완료 · 1페이지');
+      assert.equal(extractionRequests, 1);
+      // 검수 항목 상자는 직접 입력란과 문서 첨부 사이에 놓인다.
+      const order = await page.evaluate(() => ['#requirements', '.rv-criteria-box', '.rv-document-card']
+        .map(selector => Math.round(document.querySelector(selector).getBoundingClientRect().top)));
+      assert.ok(order[0] < order[1] && order[1] < order[2], 'input, criteria, document from top to bottom: ' + order);
+      if (mode === 'pdf') {
+        // 같은 입력란이 그대로 남아 있고(다시 그려지지 않았다) 초점도 그 칸에 있다.
+        assert.deepEqual(await page.locator('#requirements').evaluate(field => [field.dataset.kept, document.activeElement === field]), ['yes', true]);
+        // 초안이 생긴 뒤에는 그 실행의 프로젝트에 묶인다. 저장할 프로젝트를 바꿀 수 없다.
+        assert.ok(await projectChip(page).isDisabled());
+      }
     }
-    if (mode !== 'pdf' && !subset) await page.locator('#requirements').fill(adding ? directInput : mode === 'edited_pdf' ? '장소: 아카이브 홀' : '행사명은 봄');
+    if (checkRejectedCandidates) {
+      // 기준 확인 화면에는 원문 검증에서 제외된 후보 안내를 두지 않는다. 제외된 후보는 기준 목록에도 넣지 않는다.
+      await checklist.waitFor();
+      assert.equal(await page.getByRole('region', { name: '원문 검증에서 제외된 후보' }).count(), 0);
+      assert.equal(await checklist.getByRole('checkbox').count(), 1);
+      assert.equal(await checklist.getByText(rejectedCandidate.source.quote).count(), 0);
+      assert.equal(approved, false);
+      assert.deepEqual(errors, []);
+      await page.close();
+      continue;
+    }
+    if (selectsSubset) {
+      // 문서에서 나온 기준은 처음부터 모두 검수에 포함되어 있다. 뺄 항목만 체크를 푼다.
+      assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => [row.getAttribute('aria-label'), row.checked])),
+        [['검수에 포함: 행사명은 봄', true], ['검수에 포함: 보조 제목은 전시', true], ['검수에 포함: 장소는 전시장', true], ['검수에 포함: 관람시간 확인 중', true]]);
+      await checklist.getByRole('checkbox', { name: '검수에 포함: 장소는 전시장' }).uncheck();
+      await checklist.getByRole('checkbox', { name: '검수에 포함: 관람시간 확인 중' }).uncheck();
+      await page.getByText('2개 포함', { exact: true }).waitFor();
+      assert.equal(latest, null, 'unchecking stays on screen until the review starts');
+    }
+    if (!documentMode) await page.locator('#requirements').fill('행사명은 봄');
     if (mode === 'pdf') {
-      // 프로젝트 선택을 비우는 방법과 필수 안내의 흔들림 효과는 없어졌다. 다른 프로젝트로 바꾼 경우를 확인한다.
-      await pickProject(page, '다른 프로젝트');
-      await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).click();
-      await page.getByText(/이 원문을 저장한 프로젝트를 선택/).waitFor();
-      assert.equal(textInputs.length, 0, 'a project change must not silently convert PDF criteria to a new text source');
-      await pickProject(page, '검수');
-      configured = false; // Draft review must work even if poster models are not ready yet.
+      // 포스터 검사 구성이 준비되지 않았으면 기준을 승인하기 전에 멈춘다.
+      configured = false;
+      await start.click();
+      await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
+      assert.equal(latest, null); assert.equal(approved, false); assert.equal(uploads, 0);
+      configured = true;
     }
-    if (mode === 'edited_pdf') await page.getByText(/선택·수정한 문구는 새 기준 초안으로 분석합니다/).waitFor();
-    const overlay = page.getByRole('dialog', { name: '검수 준비 중', exact: true });
-    const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
+    // '검수 시작하기' 하나로 (직접 입력 분석 →) 기준 승인 → 포스터 등록 → 검수 접수까지 간다.
     await start.click();
     if (mode === 'direct') {
       try {
@@ -229,102 +289,86 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
         }
       } finally { textAdmission.resolve(); }
     }
+    if (adding) {
+      // 직접 입력을 분석하는 동안 진행은 준비 창에만 보인다. 문서 첨부 카드는 추출을 마친 모습 그대로여서
+      // 문서를 한 번 더 추출하는 것처럼 보이지 않는다(서버도 직접 입력만 분석한다).
+      try {
+        await overlay.getByText('입력한 요구사항의 분석 차례를 기다리고 있습니다.', { exact: true }).waitFor();
+        assert.equal(await documentCard.getByRole('progressbar').count(), 0);
+        assert.equal(await documentCard.locator('.rv-document-art').count(), 0);
+        assert.equal(await documentCard.getAttribute('aria-busy'), null);
+        assert.equal(await documentCard.locator('.rv-upload-name').textContent(), 'brief.pdf');
+        assert.equal(await documentCard.locator('.rv-document-summary').textContent(), '추출 완료 · 1페이지');
+        assert.equal(extractionRequests, 1);
+      } finally { additionReady = true; }
+    }
+    if (failedAddition) {
+      // 분석 직후와 실패 실행을 다시 연 화면에서 같은 항목·원인·원문을 확인할 수 있다.
+      await overlay.waitFor({ state: 'hidden' });
+      const failure = page.getByRole('region', { name: '분석하지 못한 항목과 원인', exact: true });
+      await failure.getByText('항목 1', { exact: true }).waitFor();
+      await failure.getByText(/미확정 항목에 값·표시 문구 또는 자동 비교 방식/).waitFor();
+      await failure.getByText('확인할 내용: 화면 표시 문구 · 판정 방식', { exact: true }).waitFor();
+      await failure.getByText(directInput, { exact: true }).waitFor();
+      assert.equal(await page.locator('#requirements').inputValue(), directInput);
+      assert.equal(approved, false); assert.equal(uploads, 0);
+      assert.equal(latest, null, 'failed additions must not replace PDF conditions');
+      await failure.getByRole('link', { name: '이 분석의 실패 기록 보기', exact: true }).click();
+      await page.waitForURL('**/review/new?framework=input-job');
+      await failure.getByText(directInput, { exact: true }).waitFor();
+      await page.reload();
+      await failure.getByText('직접 입력 원문', { exact: true }).waitFor();
+      await failure.getByText('확인할 내용: 화면 표시 문구 · 판정 방식', { exact: true }).waitFor();
+      assert.equal(await page.getByText('private provider model response', { exact: false }).count(), 0);
+      assert.equal(additionRequests, 1);
+      assert.deepEqual(errors, []);
+      await page.close();
+      continue;
+    }
+    if (noNew) {
+      try {
+        await overlay.getByText('추가할 조건이 없어 기존 문서 기준으로 진행합니다.', { exact: true }).waitFor();
+        assert.deepEqual(latest.version.criteria.map(item => item.criterion_id), ['title', 'subtitle']);
+        assert.equal(await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).count(), 0);
+      } finally { criteriaApproval.resolve(); }
+    }
     if (mode === 'not_ready') {
       await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
       assert.equal(textInputs.length, 0);
       await overlay.waitFor({ state: 'hidden' });
       assert.ok(await start.isEnabled());
     } else {
-      await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
-      await overlay.waitFor({ state: 'hidden' });
-      configured = true;
-      assert.ok(await page.locator('.rv-criteria-canvas-column').isVisible());
-      assert.ok(await page.getByRole('complementary', { name: '검수 기준 검토' }).isVisible());
-      assert.deepEqual(textInputs, mode === 'pdf' || selectsSubset ? [] : [{ text: mode === 'edited_pdf' ? '장소: 아카이브 홀\n행사명은 여름' : '행사명은 봄' }]);
-      assert.equal(reviewed, false);
-      if (adding) {
-        assert.equal(extractionRequests, 1);
-        assert.equal(additionRequests, 1);
+      if (mode === 'blocker' || mode === 'skip') {
+        // 서버가 승인을 거절하면 오류로 끝내지 않고 같은 화면에서 멈춘다. 손봐야 할 항목은 목록의 번호로 짚어 준다.
+        const skip = page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true });
+        await skip.waitFor();
+        assert.equal(refusals, 1);
+        assert.equal(await page.getByText('CRITERIA_UNRESOLVED', { exact: false }).count(), 0);
+        await overlay.waitFor({ state: 'hidden' });
         await page.waitForURL('**/review/new?framework=draft');
-        await page.reload();
-        const checklist = page.getByRole('list', { name: '검수 항목 목록' });
-        await checklist.getByRole('button').filter({ hasText: '직접 입력' }).click();
-        assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
-          ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시', '검수에 포함: 장소를 아카이브 홀로 표기']);
-        const details = page.locator('#rv-active-criterion');
-        await details.getByText('담당자 직접 입력 원문', { exact: true }).waitFor();
-        await details.getByText(directInput, { exact: true }).waitFor();
-        assert.equal(approved, false);
-        assert.deepEqual(errors, []);
-        await page.close();
-        continue;
+        assert.equal(await criteriaOnlyPage.count(), 0);
+        assert.ok(await start.isDisabled());
+        assert.equal(approved, false); assert.equal(uploads, 0); assert.equal(reviewed, false);
+        if (mode === 'blocker') {
+          await page.getByRole('button', { name: '01번 항목 확인하기', exact: true }).click();
+          // 남는 기준이 하나도 없으면 빼고 시작할 수 없다.
+          assert.ok(await skip.isDisabled());
+          assert.deepEqual(errors, []);
+          await page.close();
+          continue;
+        }
+        await page.getByRole('button', { name: '02번 항목 확인하기', exact: true }).waitFor();
+        await skip.click();
       }
-      if (subset) {
-        assert.equal(extractionRequests, 1);
-        assert.equal(latest, null, 'selection stays unapproved and unsaved when entering the review');
-        await page.reload();
-        const checklist = page.getByRole('list', { name: '검수 항목 목록' });
-        await checklist.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄' }).waitFor();
-        assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
-          ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시']);
-        await page.getByText('요구사항 원문 · 1쪽', { exact: true }).waitFor();
-        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
-        await page.getByText('제외한 기준 2개', { exact: true }).waitFor();
-        assert.equal(extractionRequests, 1);
-        assert.equal(approved, false);
-        assert.equal(uploads, 0);
-        assert.deepEqual(errors, []);
-        await page.close();
-        continue;
-      }
-      if (checkRejectedCandidates) {
-        const rejected = page.getByRole('region', { name: '원문 검증에서 제외된 후보' });
-        await rejected.getByText('원문 검증에서 후보 1개를 제외했어요.', { exact: true }).waitFor();
-        await rejected.getByText('제외한 후보 사유별로 보기', { exact: true }).click();
-        await rejected.getByText('기대값이 원문과 일치하지 않습니다.', { exact: true }).waitFor();
-        assert.equal(await rejected.locator('.rv-rejection-candidates').innerText(), '후보 2');
-        await rejected.locator('details.rv-rejection-source > summary').click();
-        assert.equal(await rejected.locator('details.rv-rejection-source > p').innerText(), rejectedCandidate.source.quote);
-        const checklist = page.getByRole('list', { name: '검수 항목 목록' });
-        assert.equal(await checklist.getByRole('checkbox').count(), 1);
-        assert.equal(await checklist.getByText(rejectedCandidate.source.quote).count(), 0);
-        assert.equal(approved, false);
-        assert.deepEqual(errors, []);
-        await page.close();
-        continue;
-      }
-      if (mode === 'blocker') {
-        await page.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true }).click();
-        // 확인 필요 항목은 내부 기준 번호 대신 목록의 번호로 적는다.
-        await page.getByRole('button', { name: '01번 항목 확인하기', exact: true }).click();
-        assert.ok(await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).isDisabled());
-        assert.equal(approved, false);
-        assert.equal(uploads, 0);
-        assert.equal(reviewed, false);
-        assert.deepEqual(errors, []);
-        await page.close();
-        continue;
-      }
-      if (mode === 'skip') {
-        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
-        await page.getByRole('button', { name: '확인 필요 항목 1개 제외하고 바로 검수', exact: true }).click();
-      } else if (mode !== 'direct') {
-        await page.getByRole('button', { name: '검토한 기준 버전 저장', exact: true }).click();
-        await page.getByRole('button', { name: '이 버전의 전체 기준 승인', exact: true }).click();
-      }
-      const nextStep = page.getByRole('region', { name: '검수 다음 단계' });
       const steps = page.getByRole('navigation', { name: '검수 단계' });
       const stageStatus = page.locator('.rv-step-status');
-      const registerPoster = nextStep.getByRole('button', { name: '승인 기준에 포스터 등록', exact: true });
-      const startReview = nextStep.getByRole('button', { name: '이 포스터와 기준을 확인하고 검수 시작', exact: true });
       if (mode === 'direct') {
-        const submit = nextStep.getByRole('button', { name: '기준 승인하고 검수 시작', exact: true });
+        // 직접 입력만으로 시작하면 분석이 끝난 뒤 묻지 않고 기준 승인으로 이어 간다. 그동안 화면은 잠긴다.
         try {
-          await submit.click();
           await page.waitForFunction(() => document.querySelector('.rv-step-status')?.textContent === '기준을 승인하고 있어요.');
           await overlay.waitFor();
           assert.ok(await overlay.getByText('기준을 승인하고 있어요.').isVisible());
-          const backgroundSubmit = page.locator('button').filter({ hasText: /^기준 승인하고 검수 시작$/ });
+          const backgroundSubmit = page.locator('button').filter({ hasText: /^검수 시작하기$/ });
           assert.ok(await backgroundSubmit.isDisabled());
           assert.equal(await page.locator('.rv-step-nav button:disabled').count(), 4);
           assert.ok(await page.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄', includeHidden: true }).isDisabled());
@@ -333,25 +377,52 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
           criteriaApproval.resolve();
           posterApproval.resolve();
         }
-      } else if (mode === 'text') {
-        configured = false;
-        await registerPoster.click();
-        await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
-        assert.equal(uploads, 0);
-        configured = true;
       }
-      if (mode !== 'direct' && mode !== 'skip') await registerPoster.click();
-      if (mode === 'text') {
-        configured = false;
-        await startReview.click();
-        await page.getByText(/포스터 검사·보고 구성이 준비되지/).waitFor();
-        assert.equal(reviewed, false);
-        configured = true;
-      }
-      if (mode !== 'direct' && mode !== 'skip') await startReview.click();
       await page.getByRole('heading', { name: '포스터의 문구와 시각 조건을 확인하고 있어요.' }).waitFor();
       await overlay.waitFor({ state: 'hidden' });
       assert.equal(posterApprovalRequests, 1);
+      assert.equal(uploads, 1);
+      assert.deepEqual(textInputs, documentMode ? [] : [{ text: '행사명은 봄' }]);
+      if (mode === 'unresolved') {
+        // 값이 정해지지 않은 기준이 있어도 멈추지 않고 접수까지 갔다. 그 기준을 빼지 않고 그대로 승인했다.
+        assert.deepEqual(Object.keys(latest.approval_blockers), ['pending']);
+        assert.deepEqual(latest.version.exclusions, []);
+        assert.equal(refusals, 0);
+        assert.equal(await page.getByRole('button', { name: /제외하고 바로 검수$/ }).count(), 0);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
+      if (adding) {
+        assert.equal(extractionRequests, 1);
+        assert.equal(additionRequests, 1);
+        // 접수한 뒤 그 초안을 다시 열면 승인된 기준에 직접 입력으로 더한 항목과 그 원문이 남아 있다.
+        await page.goto(base + '/review/new?framework=draft');
+        if (noNew) {
+          await checklist.getByRole('checkbox', { name: '검수에 포함: 행사명은 봄', exact: true }).waitFor();
+          assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+            ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시']);
+          assert.equal(await checklist.getByText('검수해줘', { exact: true }).count(), 0);
+          assert.deepEqual(errors, []);
+          await page.close();
+          continue;
+        }
+        await checklist.getByRole('button').filter({ hasText: '직접 입력' }).click();
+        assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+          ['검수에 포함: 행사명은 봄', '검수에 포함: 보조 제목은 전시', '검수에 포함: 장소를 아카이브 홀로 표기']);
+        const details = page.locator('#rv-active-criterion');
+        await details.getByText('직접 입력 원문', { exact: true }).waitFor();
+        await details.getByText(directInput, { exact: true }).waitFor();
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
+      if (subset) {
+        assert.equal(extractionRequests, 1);
+        assert.deepEqual(errors, []);
+        await page.close();
+        continue;
+      }
       const progress = page.getByRole('progressbar', { name: '검수 처리 진행 상태' });
       await progress.waitFor();
       assert.equal(await progress.getAttribute('aria-valuenow'), '0');
@@ -389,7 +460,7 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       assert.ok(columns.every(column => column.height > 200 && Math.abs(column.top - columns[0].top) < 2));
       assert.ok(columns[0].right <= columns[1].left, 'poster and requirements must form two columns');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
       await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
       await page.getByText('행사명을 봄으로 수정해 주세요.', { exact: true }).waitFor();
@@ -417,11 +488,13 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
       await page.getByRole('button', { name: '인쇄 / PDF 저장', exact: true }).waitFor();
       await page.getByText('기계 판정 · 불충족', { exact: true }).waitFor();
       await page.getByRole('button', { name: '결과 확인으로 돌아가기', exact: true }).click();
+      // 접수한 뒤에는 승인된 기준을 읽기 전용으로 다시 볼 수 있다.
       await page.getByRole('button', { name: '기준 다시 확인하기', exact: true }).click();
-      await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
+      await page.getByRole('heading', { name: '승인한 검수 기준', exact: true }).waitFor();
+      assert.equal(await criteriaOnlyPage.count(), 0);
       assert.equal(await page.getByRole('button', { name: '기준 보완', exact: true }).count(), 0, 'approved criteria stay read-only');
       await page.reload();
-      await page.getByRole('button', { name: '보고서·담당자 승인', exact: true }).click();
+      await page.getByRole('button', { name: '보고서 보기', exact: true }).click();
       await page.getByText('보고서 원문 보기', { exact: true }).click();
       await page.getByText('A07 보고: 행사명이 기준과 다릅니다.', { exact: true }).waitFor();
     }
@@ -430,15 +503,75 @@ async function verifyFrameworkEntry(t, modes, { checkRejectedCandidates = false 
   }
 }
 
-// 일곱 가지 흐름을 차례로 끝까지 돌아 60초로는 모자란다(흐름 하나에 12~15초, 전체 약 75초로 측정).
-test('직접 입력·PDF·편집 입력을 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 150000 }, t =>
-  verifyFrameworkEntry(t, ['text', 'pdf', 'edited_pdf', 'direct', 'blocker', 'skip', 'not_ready']));
+// 일곱 가지 흐름을 차례로 끝까지 돈다(흐름 하나에 10~15초).
+test('직접 입력·PDF 입력을 한 화면에서 승인과 보고로 연결하고 미설정은 접수 전에 막는다', { timeout: 150000 }, t =>
+  verifyFrameworkEntry(t, ['text', 'pdf', 'direct', 'unresolved', 'blocker', 'skip', 'not_ready']));
 
 test('포스터 PDF 부분 초안은 제외된 후보의 사유와 원문을 기준 목록과 분리한다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf'], { checkRejectedCandidates: true }));
 
-test('PDF 일부 문단을 선택하면 연결된 기준과 원문을 첫 A02 결과에서 재사용한다', { timeout: 30000 }, t =>
+test('검수 항목에서 체크를 푼 기준은 검수를 시작할 때 제외로 기록한다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf_subset']));
 
-test('문서 기준에 직접 입력만 추가하고 새로고침 후 같은 실행에서 원문을 본다', { timeout: 30000 }, t =>
+test('문서 기준에 직접 입력만 더해 접수하고, 다시 열면 그 원문이 남아 있다', { timeout: 30000 }, t =>
   verifyFrameworkEntry(t, ['pdf_addition']));
+
+test('검수해줘는 추가 기준을 만들지 않고 선택한 PDF 기준으로 검수한다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf_no_addition']));
+
+test('입력 분석 실패 항목과 원인을 즉시 확인하고 실패 기록에서도 다시 읽는다', { timeout: 30000 }, t =>
+  verifyFrameworkEntry(t, ['pdf_addition_failed']));
+
+test('A08은 수정본 결과가 저장된 뒤 요청한 경우에만 전후 비교를 표시한다', { timeout: 30000 }, async t => {
+  const vite = await createServer({ server: { host: '127.0.0.1', port: 0 }, logLevel: 'error' });
+  t.after(() => vite.close()); await vite.listen();
+  const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+  const browser = await chromium.launch({ headless: true, channel: process.env.E2E_BROWSER_CHANNEL || 'chrome' });
+  t.after(() => browser.close());
+  const page = await browser.newPage(); page.setDefaultTimeout(8000);
+  const requests = [];
+  let complete = false;
+  const context = { run_id: 'child', parent_run_id: 'parent', project_id: 'project', actor_id: 'user', asset_version_id: 'image' };
+  const criteria = ['행사명', '장소', '시간'].map((name, index) => ({
+    criterion_id: 'c' + index, text: name + ' 확인', expected: name, required: true,
+    kind: 'text', operator: 'contains', source: { page: 1, quote: name },
+  }));
+  const items = criteria.map((criterion, index) => ({ criterion_id: criterion.criterion_id,
+    criterion_text: criterion.text, verdict: ['pass', 'fail', 'review'][index], issues: [], observed: criterion.expected }));
+  await page.route(base + '/api/**', async route => {
+    const request = route.request(), path = new URL(request.url()).pathname;
+    let body;
+    if (path.endsWith('/auth/me')) body = { authenticated: true, user: { id: 'user', display_name: '검수 담당자' } };
+    else if (path.endsWith('/health')) body = { status: 'ok', ready: true, a08_comparison_ready: true };
+    else if (path.endsWith('/csrf')) body = { csrf_token: 'token' };
+    else if (path.endsWith('/revision-comparison')) {
+      assert.equal(request.headers()['x-csrftoken'], 'token');
+      requests.push(path);
+      if (requests.length > 1) return route.fulfill({ status: 503, json: { error: { code: 'A08_COMPARISON_UNAVAILABLE' } } });
+      body = { parent_run_id: 'parent', child_run_id: 'child', compared: true, resolved: ['c0'],
+        unresolved: ['c1'], new_violations: ['c2'], model_summary: '수정 전후 결과를 검토했습니다.' };
+    } else if (path.endsWith('/runs/child')) {
+      body = { context, baseline: { criteria_version_id: 'version' }, execution_status: complete ? 'waiting_review' : 'reviewing',
+        criteria: { criteria }, ...(complete ? { machine_verdict: 'fail', validated: { items } } : {}) };
+    } else if (path === '/api/poster-logos') body = { items: [] };
+    else return route.fulfill({ status: 404, json: { detail: 'fixture has no data' } });
+    await route.fulfill({ json: body });
+  });
+  await page.goto(base + '/review/new?framework=child');
+  await page.getByRole('progressbar').waitFor();
+  const button = page.getByRole('button', { name: '수정 전후 비교', exact: true });
+  assert.equal(await button.count(), 0);
+  complete = true;
+  await button.waitFor();
+  assert.deepEqual(requests, []);
+  await button.click();
+  const comparison = page.getByRole('region', { name: '수정 전후 비교' });
+  for (const text of ['해결 1건', '미해결 1건', '새 위반·확인 필요 1건']) {
+    await comparison.getByText(text, { exact: true }).waitFor();
+  }
+  await comparison.getByText(/시간.*확인 필요/).waitFor();
+  await button.click();
+  await comparison.getByRole('alert').waitFor();
+  await page.getByRole('button', { name: '보고서 보기', exact: true }).waitFor();
+  assert.deepEqual(requests, Array(2).fill('/api/framework/v1/runs/child/revision-comparison'));
+});

@@ -6,8 +6,8 @@
     "revision": 18,
     "review": 8
   },
-  "flow_data_sha256": "3bbcde5ff62c5390a68c9f5bfc275815ca3e7a35a4f150a7c48a1eaa96edccfe",
-  "html_sha256": "c8207abbd8305f4a3fb350727270efc7220f1b6f61021be8df836968f8e8b0ed",
+  "flow_data_sha256": "d544fa903f81fbd01b9d2a2ee6717857c356319f8fd550a62264f2e7bb9e56ea",
+  "html_sha256": "575267cdf038c9d2577d3c19a3fcda9f55b5ba37d7e333ec26fb7ac5897394f6",
   "code_graph": {
     "version": "0.9.100",
     "files": 25,
@@ -40,7 +40,7 @@
       "built_at": "2026-11-02T08:29:35.886251+00:00"
     }
   },
-  "source_files": 81,
-  "source_html_sha256": "e22e1572d5f76ed712e1bc48d00dcaee3c08eb9e94991ed2ff07c65676bffd11",
+  "source_files": 83,
+  "source_html_sha256": "5a300ee17d501c256efcabcdc8ac548fb9e218bbda97005332d10bd8fb0f2645",
   "verification": "Data/reference checks and static HTML/JavaScript checks; browser rendering not verified."
 }

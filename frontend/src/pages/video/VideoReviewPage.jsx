@@ -3,11 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { fetchJson } from '../../api/client.js';
 import { ErrorMessage } from '../../components/ErrorMessage.jsx';
 import { Icon } from '../../components/Icon.jsx';
-import { logoSteps, WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
+import { WorkspaceProjectBar } from '../../layouts/ReviewLayout.jsx';
 import { SiteHeader } from '../../components/SiteHeader.jsx';
-import { DocumentProjectPicker } from '../review/DocumentInput.jsx';
-import ReviewTypePicker, { SecurityPicker } from '../review/ReviewTypePicker.jsx';
-import { useLogoJobs } from './LogoFlowParts.jsx';
+import { DocumentProjectPicker, projectBlockReason } from '../review/DocumentInput.jsx';
+import ReviewTypePicker, { SecurityPicker, SelectionTrail } from '../review/ReviewTypePicker.jsx';
+import { logoJobsPending, useAutoCompare, useLogoJobs } from './LogoFlowParts.jsx';
+import { videoLogoSteps } from './logoFlow.js';
 import VideoInput from './VideoInput.jsx';
 import VideoProgress from './VideoProgress.jsx';
 import VideoResults from './VideoResults.jsx';
@@ -67,8 +68,7 @@ function useVideoJob(id, onFinish) {
 
 const steps = { input: '자료 입력', running: '검수 진행', results: '결과 확인', report: '보고서' };
 // securityMode('secure'|'general')·reviewMode('text'|'logo'|'both')는 포스터 검수와 같은 키오스크 선택(ReviewTypePicker.jsx).
-const blankDraft = () => ({ securityMode: null, reviewMode: null, projectName: '', requirements: '', documentRows: [], documentName: '',
-  ad: { kind: 'endorsement', celebrity_exposure: false, title: '', caption: '', platform: '' } });
+const blankDraft = () => ({ securityMode: null, reviewMode: null, projectName: '', requirements: '', documentRows: [], documentName: '' });
 const securityFromRoute = route => route === 'openai' ? 'general' : route === 'runpod' ? 'secure' : null;
 
 // 동영상을 올려 계획 문서의 0~7단계로 검수하는 화면. 포스터 검수와 같은 자료 입력 → 검수 진행 → 결과 확인 흐름을 따른다.
@@ -88,10 +88,14 @@ export default function VideoReviewPage() {
   const { status, refresh } = useVideoStatus();
   const { job: loaded, error, missing, setJob } = useVideoJob(id, refresh);
   const logo = useLogoJobs(id);
+  useAutoCompare(logo.jobs);
   // id가 바뀐 직후 이전 작업이 한 번 그려지지 않도록 현재 id의 작업만 쓴다.
   const job = loaded?.id === id ? loaded : null;
   const legacy = job && job.status === 'completed' && !job.coverage;
-  const completed = job?.status === 'completed' && !legacy;
+  // 함께 올린 로고 작업이 후보 찾기·정밀 대조를 끝내기 전에는 결과 화면으로 넘기지 않는다(2026-11-17).
+  // 로고 목록을 아직 못 읽었으면 기다리고, 목록 조회가 실패하면 동영상 결과만으로 넘어간다.
+  const logoPending = !!id && !logo.error && (logo.jobs == null || logoJobsPending(logo.jobs));
+  const completed = job?.status === 'completed' && !legacy && !logoPending;
   const step = !id ? 'input' : completed ? params.get('view') === 'report' ? 'report' : 'results' : 'running';
   const inputLocked = step === 'input' && (uploading || documentBusy);
   const placeholder = step === 'running' && !job && !error;
@@ -130,8 +134,7 @@ export default function VideoReviewPage() {
     setDraft({ ...blankDraft(), securityMode: securityFromRoute(job.model_route), reviewMode: 'text',
       projectName: job.project_name || '숏폼 검수', parentRunId: revision ? job.id : null,
       requirements: criteria.filter(item => !extracted(item)).map(item => item.text).join('\n'),
-      documentRows: criteria.filter(extracted).map((item, index) => ({ ...item, id: `reused-${index}`, selected: true })),
-      ad: { ...blankDraft().ad, ...(job.disclosure_input || {}) } });
+      documentRows: criteria.filter(extracted).map((item, index) => ({ ...item, id: `reused-${index}`, selected: true })) });
     backToInput();
   }
   const enabled = key => key === 'input' || key === 'running' && step === 'running' || completed && (key === 'results' || key === 'report');
@@ -148,42 +151,45 @@ export default function VideoReviewPage() {
     <a href="#review-content" className="rv-skip">작업 영역으로 이동</a>
     <SiteHeader current="/video" locked={inputLocked} lockReason="처리 중에는 화면을 이동할 수 없습니다." />
     {inputLocked && <span id="mt-lock-reason" className="sr-only">처리 중에는 화면을 이동할 수 없습니다.</span>}
-    <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
-      step={step} steps={picker ? null : logoOnly ? logoSteps : steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
+    {/* 보안 여부·유형을 고르는 동안에는 검수 이름·프로젝트 줄을 숨긴다(포스터와 같은 규칙). */}
+    {!picker && <WorkspaceProjectBar name={step === 'input' ? draft.projectName : job?.project_name} version={job ? `기준 v${job.criteria_version}` : '작업 중'}
+      step={step} steps={picker ? null : logoOnly ? videoLogoSteps : steps} canNavigate={enabled} navigate={changeStep} locked={inputLocked}
       projectEditor={step === 'input' ? { id: 'video-project-name', maxLength: 120, disabled: inputLocked,
         onChange: value => setDraft(previous => ({ ...previous, projectName: value })),
         // 검수 이름 칸에서 Enter를 누르면 그 이름으로 저장할 프로젝트를 만들고 선택한다(로고만 검수는 프로젝트 없음).
         onEnter: logoOnly ? undefined : name => projectPicker.current?.createFromName(name) } : undefined}
       projectTools={step !== 'input' ? undefined : logoOnly
         // 로고만 검수는 동영상 검수 작업 없이 로고 작업만 접수하므로 프로젝트에 저장하지 않는다.
-        ? <div className="rv-project-field"><span className="rv-project-field-label">저장할 프로젝트</span>
+        ? <div className="rv-project-field"><span className="rv-project-field-badge">저장할 프로젝트</span>
           <span className="rv-project-none"><Icon name="folder" />로고 검수는 프로젝트 없이 진행돼요</span></div>
         : <DocumentProjectPicker ref={projectPicker} projectId={projectId} setProjectId={setProjectId}
-          projectName={draft.projectName} disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus}
+          disabled={inputLocked || !!draft.parentRunId} onStatus={setProjectStatus}
           // 저장된 프로젝트를 고르면 그 이름을 검수 이름에도 넣는다(반대 방향: 검수 이름 Enter → 프로젝트 만들기).
-          onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}>
+          onPick={project => setDraft(previous => ({ ...previous, projectName: project.name.slice(0, 120) }))} />}
+      projectAside={step === 'input' && <SelectionTrail media="video" security={draft.securityMode} mode={draft.reviewMode} />}>
       {step === 'report' && <button type="button" className="rv-button secondary" onClick={openResults}>결과 확인으로 돌아가기</button>}
-    </WorkspaceProjectBar>
+    </WorkspaceProjectBar>}
     <main id="review-content" className="rv-main" tabIndex={-1}>
       {/* 결과 화면은 화면 높이를 꽉 채우므로 로고 접수 경고를 머리글의 로고 요약에 넣는다. */}
       {submissionWarning && step === 'running' && <div className="rv-video-page-alert"><ErrorMessage message={submissionWarning} /></div>}
-      {picker === 'security' && <section className="rv-input-page" aria-labelledby="page-title">
+      {picker === 'security' && <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
         <SecurityPicker media="video" disabled={inputLocked} onSelect={value => setDraft(previous => ({ ...previous, securityMode: value }))}
           onBack={() => navigate(mediaChoicePath, { state: mediaChoiceState })} /></section>}
-      {picker === 'type' && <section className="rv-input-page" aria-labelledby="page-title">
+      {picker === 'type' && <section className="rv-input-page rv-choice-screen" aria-labelledby="page-title">
         <ReviewTypePicker media="video" disabled={inputLocked} security={draft.securityMode}
           onSelect={value => setDraft(previous => ({ ...previous, reviewMode: value }))}
           onBack={() => setDraft(previous => ({ ...previous, securityMode: null }))} /></section>}
       {step === 'input' && !picker && <VideoInput status={status} draft={draft} setDraft={setDraft}
         busy={uploading} setBusy={setUploading}
-        projectId={projectId} projectReady={projectStatus.ready && !projectStatus.busy} documentBusy={documentBusy} setDocumentBusy={setDocumentBusy}
+        projectId={projectId} projectReady={projectStatus.ready && !projectStatus.busy} projectBlock={projectBlockReason(projectStatus)}
+        documentBusy={documentBusy} setDocumentBusy={setDocumentBusy}
         file={file} setFile={setFile} logos={logos} setLogos={setLogos}
         onSubmitted={(value, warning) => { setLogoSubmissionWarning(warning ? { id: value, message: warning } : null); openJob(value); refresh(); }} />}
       {step === 'running' && (legacy ? <section className="rv-progress-page" aria-labelledby="page-title"><div className="rv-progress-card rv-video-progress-card is-failed">
         <span className="rv-eyebrow">PREVIOUS FORMAT</span><h1 id="page-title" tabIndex={-1}>이 결과는 새 화면으로 보여 줄 수 없어요.</h1>
         <ErrorMessage message="계획 문서 반영 전에 만든 결과라 새 화면으로 보여 줄 수 없습니다. 같은 영상을 다시 검수해 주세요." />
         <div className="rv-progress-actions"><button type="button" className="rv-button primary" onClick={backToInput}>새 동영상으로 다시 검수<Icon name="arrow" /></button></div>
-        </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo}
+        </div></section> : <VideoProgress job={job} error={error} missing={missing} logo={logo} logoWaiting={job?.status === 'completed' && logoPending}
           onRestart={() => job?.workflow && job.status === 'failed' ? reuse(true) : backToInput()} />)}
       {step === 'results' && <VideoResults key={job.id} job={job} logo={logo} logoWarning={submissionWarning}
         onNewReview={startOver} onReuse={() => reuse()} onRevise={() => reuse(true)} onOpenRun={openJob} onDecision={setJob} onReport={openReport} />}

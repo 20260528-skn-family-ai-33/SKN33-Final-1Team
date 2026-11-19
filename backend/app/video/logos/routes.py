@@ -1,7 +1,8 @@
 """영상 로고 확정·정밀 대조 API (/api/video-logos).
 
-흐름: 영상 + 원본 로고 업로드 → 1부 후보(video_logo_candidates) → 사용자가 확정 화면에서 위치 확정
-      → 2부 정밀 대조(video_logo_compare) → 묶음별 근거(판정 없음, 최종 판단은 사람).
+흐름: 영상 + 원본 로고 업로드 → 1부 후보(video_logo_candidates) → 원본 로고마다 순위가 높은 후보를 자동으로 골라
+      2부 정밀 대조(video_logo_compare)까지 바로 진행 → 묶음별 근거(판정 없음, 최종 판단은 사람).
+      검수하려던 로고가 아니면 사용자가 확정 화면에서 위치를 직접 고르고 POST /{id}/compare로 다시 대조한다.
 
 확정 화면(LogoConfirmPage.jsx)이 정적 시연 데이터와 같은 경로로 읽을 수 있게, 작업 하나를 세트 하나처럼 낸다:
   {base}/index.json, {base}/video/data.json, {base}/video/f/<sec>.jpg, {base}/refs/<i>.png   (base = /api/video-logos/<id>)
@@ -9,30 +10,67 @@
 """
 from __future__ import annotations
 
+from contextlib import nullcontext
 from io import BytesIO
 from ipaddress import ip_address
 import json
 import math
+import os
 from pathlib import Path
 import shutil
+import subprocess
 import threading
 from typing import Callable
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Body, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 from PIL import Image
 
+from backend.app.video.frames import probe
+from backend.app.video.frames import resolve_ffmpeg
+from backend.app.video.frames import sniff_container
 from backend.app.video.logos.client import WorkerPool
 from backend.app.video.review import _now
 from backend.app.video.review import _read_json
 from backend.app.video.review import _write_json
+from backend.app.video.review import limits
 
 VIDEO_KEY = "video"
-MAX_VIDEO_BYTES = 1024 * 1024 * 1024
 MAX_LOGO_BYTES = 8 * 1024 * 1024
 MAX_LOGOS = 12
 VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm", ".m4v"}
+# 동영상 검수가 판별한 컨테이너(frames.sniff_container) → 로고 작업 영상 파일의 확장자.
+LINKED_SUFFIXES = {"mov": ".mp4", "matroska": ".webm", "avi": ".avi"}
+
+
+def _link_or_copy(source: Path, target: Path) -> None:
+    """동영상 검수에 저장된 영상을 로고 작업 폴더로 가져온다. 같은 파일 시스템이면 하드 링크로 바이트를 다시 쓰지 않고,
+    링크를 만들 수 없으면 복사한다. 원본은 읽기만 하므로 동영상 검수 기록은 바뀌지 않는다."""
+    try:
+        os.link(source, target)
+    except OSError:
+        shutil.copyfile(source, target)
+
+
+def check_video_length(path: Path, seconds: int) -> None:
+    """로고만 검수로 올린 영상의 길이를 동영상 검수와 같은 한도(limits의 duration_seconds)로 확인한다.
+    동영상 검수와 같은 방법을 쓴다: 파일 머리로 컨테이너를 고르고(sniff_container) ffmpeg 입력 정보로 길이를 잰다(probe).
+    검수에 연결된 영상(review_id)은 동영상 검수가 접수할 때 이미 확인했으므로 여기로 오지 않는다."""
+    with path.open("rb") as handle:
+        demuxer = sniff_container(handle.read(16))
+    if demuxer is None:
+        raise HTTPException(415, "지원하는 영상 형식이 아닙니다.")
+    ffmpeg = resolve_ffmpeg()
+    if not ffmpeg:
+        raise HTTPException(503, "서버에 ffmpeg가 없어 영상 길이를 확인하지 못했습니다.")
+    try:
+        info = probe(ffmpeg, demuxer, path)
+    except (ValueError, OSError, IndexError, subprocess.SubprocessError):
+        raise HTTPException(415, "영상을 디코딩하지 못했습니다. 손상되지 않은 동영상인지 확인해 주세요.") from None
+    if not 0 < info["duration_ms"] <= seconds * 1000:
+        raise HTTPException(422, f"동영상 길이는 {seconds}초 이하여야 합니다.")
 
 
 def readiness() -> tuple[bool, str]:
@@ -61,7 +99,7 @@ def local_readiness() -> tuple[bool, str]:
     except Exception as exc:  # pragma: no cover - 환경 확인
         return False, f"영상 로고 검수 패키지가 없습니다: {exc.__class__.__name__}"
     if not torch.cuda.is_available():
-        return False, "GPU가 없습니다. RunPod Pod 워커(VIDEO_LOGO_WORKER_URL)를 연결하세요."
+        return False, "로고 검수 서버가 연결되지 않았습니다. 관리자에게 문의해 주세요."
     from scripts.prepare_paddle import DETECTION_MODEL, MODEL, verify_model
     from backend.app.ocr.paddle import paddle_paths
     _, detection, recognition = paddle_paths()
@@ -79,6 +117,46 @@ def seconds_text(secs: list[int], limit: int = 20) -> str:
 
 def missing_text(missing: list[int], total: int) -> str:
     return f"영상 {total}초 중 {len(missing)}초의 프레임을 읽지 못해 후보 찾기·정밀 대조에서 빠졌습니다: {seconds_text(missing)}"
+
+
+AUTO_LINK_RATIO = 0.92   # 화면 logoFlow.js LINK_RATIO와 같다: 1위 점수의 92% 이상이면 같은 로고의 다른 구간 후보로 본다
+AUTO_MAX_GROUPS = 3      # 원본 로고마다 자동으로 대조할 묶음 수 상한(화면의 상위 후보 3개와 같다)
+
+
+def _js_round(value: float) -> int:
+    """화면(logoFlow.js handoff)의 Math.round와 같은 반올림. 파이썬 round는 .5를 짝수로 보내 값이 달라진다."""
+    return math.floor(value + 0.5)
+
+
+def auto_selection(groups: list[dict], refs: int) -> list[dict]:
+    """사람이 위치를 확인하기 전에 정밀 대조할 묶음. 원본 로고마다 순위 1위 묶음과, 그 점수의 92% 이상인 다른 묶음을
+    점수 순으로 최대 3개까지 고른다. 후보가 없으면 decision='none'(대조하지 않음)이다. 순서는 화면 topGroups와 같다."""
+    picks = []
+    for li in range(refs):
+        order = sorted(range(len(groups)), key=lambda i: groups[i]["rank"][li], reverse=True)
+        if not order:
+            picks.append({"logo": li, "decision": "none", "groups": []})
+            continue
+        top = groups[order[0]]["rank"][li]
+        floor = AUTO_LINK_RATIO * top if top > 0 else math.inf
+        chosen = [order[0]] + [i for i in order[1:] if groups[i]["rank"][li] >= floor]
+        picks.append({"logo": li, "decision": "done", "groups": chosen[:AUTO_MAX_GROUPS]})
+    return picks
+
+
+def auto_answers(picks: list[dict], groups: list[dict], logos: list[dict]) -> list[dict]:
+    """auto_selection을 POST /compare와 같은 정답 값으로 바꾼다(화면 logoFlow.js handoff의 후보 crop과 같은 모양)."""
+    answers = []
+    for pick in picks:
+        li = pick["logo"]
+        crops = []
+        for gi in pick["groups"]:
+            sec, box = groups[gi]["rep"][li]
+            bbox = [_js_round(v) for v in box]
+            if bbox[0] < bbox[2] and bbox[1] < bbox[3]:
+                crops.append({"group": gi, "sec": int(sec), "bbox": bbox, "source": "candidate"})
+        answers.append({"logo": li, "reference": logos[li]["name"], "decision": "done" if crops else "none", "crops": crops})
+    return answers
 
 
 def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: bool = False,
@@ -169,11 +247,22 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             for i, r in enumerate(data["refs"]):
                 r["img"] = f"refs/{i}.png"
             _write_json(target / "data.json", data)
-            update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None, seconds=total)
+            picks = auto_selection(data["groups"], len(meta["logos"]))
+            # 사람이 위치를 확인하는 단계 없이 정밀 대조까지 이어서 한다. 후보 준비와 대조 대기를 한 번에 적어
+            # 화면이 그 사이에 '대조하지 않음'을 보지 않게 한다. 자동으로 고른 묶음(auto_selection)은 확정 화면이 미리 선택해 둔다.
+            with lock:
+                (target / "compare.json").unlink(missing_ok=True)
+                update(target, status="candidates_ready", stage="candidates_ready", progress=100, stage_detail=None, seconds=total,
+                       auto_selection=picks, compare_status="queued", compare_progress=0, compare_error=None)
         except Exception as exc:
             update(target, status="failed", error=f"후보 찾기에 실패했습니다: {failure_text(exc)}")
+            return
+        answers = auto_answers(picks, data["groups"], meta["logos"])
+        run_compare(target, [a for a in answers if a["decision"] == "done"], origin="auto")
 
-    def run_compare(target: Path, answers: list[dict]) -> None:
+    def run_compare(target: Path, answers: list[dict], origin: str = "manual") -> None:
+        """origin: auto(후보 찾기 직후 자동으로 고른 묶음) · manual(확정 화면에서 사람이 고른 묶음). 대조할 묶음이 없으면
+        워커 슬롯을 잡지 않고 빈 결과만 남긴다."""
         from backend.app.video.logos import compare as V
         from backend.app.video.logos import client as R
         meta, data = _read_json(target / "result.json"), _read_json(target / "data.json")
@@ -192,8 +281,10 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             return results
 
         try:
-            with (worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock) as slot:
-                if worker_pool:
+            hold = nullcontext() if not answers else (
+                worker_pool.acquire(meta.get("worker_slot"), target.name) if worker_pool else inference_lock)
+            with hold as slot:
+                if worker_pool and answers:
                     update(target, worker_slot=slot)
                 update(target, compare_status="running", compare_progress=0)
                 total = sum(len(V.bundle_seconds(c, data["groups"])) for a in answers for c in a.get("crops", [])) or 1; done = 0
@@ -230,7 +321,7 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
             small = sum(x["reason"] == "crop_too_small" for b in out for x in b["skipped"])
             warnings = ([f"프레임이 없어 대조하지 못한 초 {len(lost)}개: {seconds_text(lost)}"] if lost else []) + \
                 ([f"자른 영역이 너무 작아(4px 미만) 대조하지 못한 초 {small}개"] if small else [])
-            _write_json(target / "compare.json", {"bundles": out, "warnings": warnings, "created_at": _now()})
+            _write_json(target / "compare.json", {"bundles": out, "warnings": warnings, "origin": origin, "created_at": _now()})
             update(target, compare_status="completed", compare_progress=100)
         except Exception as exc:
             update(target, compare_status="failed", compare_error=f"정밀 대조에 실패했습니다: {failure_text(exc)}")
@@ -257,15 +348,18 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
 
     if not readonly:
         @router.post("", status_code=202)
-        async def submit(request: Request, background: BackgroundTasks, video: UploadFile = File(...), logos: list[UploadFile] = File(...),
+        async def submit(request: Request, background: BackgroundTasks, video: UploadFile | None = File(None), logos: list[UploadFile] = File(...),
                          logo_texts: str = Form("[]"), title: str = Form("영상 로고 검수", min_length=1, max_length=120),
                          review_id: str | None = Form(None), detector: str = Form("runpod")):
             """logo_texts: 원본 로고마다 기준 문구(줄은 |로 구분, 예: "울산광역시남구|ULSAN METROPOLITAN NAMGU"). 비우면 문자 비교를 하지 않는다.
             review_id: 같은 영상으로 함께 접수한 동영상 검수 작업(로고만 검수하면 없음).
+            video: review_id가 있으면 생략할 수 있다. 그때는 동영상 검수에 이미 저장된 영상(original.bin)을 쓴다.
+              화면이 같은 영상을 두 번 올리지 않게 하려는 것이다. 연결된 영상을 쓸 수 없으면 LINKED_VIDEO_UNAVAILABLE로 거절한다.
             detector: 위치 후보를 찾는 곳. runpod(보안 자료·기본) 또는 openai(일반 자료). 정밀 대조는 둘 다 RunPod다."""
             if detector not in ("runpod", "openai"):
                 raise HTTPException(422, "detector는 runpod 또는 openai입니다.")
             worker_slot = None
+            review_dir = None
             if review_id is not None:
                 try:
                     if str(UUID(review_id)) != review_id:
@@ -273,11 +367,19 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 except ValueError:
                     raise HTTPException(422, "review_id가 올바르지 않습니다.") from None
                 if linked_reviews is not None:
-                    review = linked_reviews / request.state.video_owner / review_id / "result.json"
-                    if not review.is_file():
+                    review_dir = (linked_reviews / request.state.video_owner if isolate_users else linked_reviews) / review_id
+                    if not (review_dir / "result.json").is_file():
                         raise HTTPException(404, "동영상 검수 기록을 찾을 수 없습니다.")
                     if worker_pool:
-                        worker_slot = _read_json(review).get("worker_slot")
+                        worker_slot = _read_json(review_dir / "result.json").get("worker_slot")
+            linked_video = None
+            if video is None:
+                if review_id is None:
+                    raise HTTPException(422, "동영상 파일이 필요합니다.")
+                linked_video = review_dir / "original.bin" if review_dir is not None else None
+                if linked_video is None or not linked_video.is_file():
+                    raise HTTPException(422, {"code": "LINKED_VIDEO_UNAVAILABLE",
+                                              "message": "연결된 동영상 검수의 영상을 쓸 수 없습니다. 영상을 함께 올려 주세요."})
             if not 1 <= len(logos) <= MAX_LOGOS:
                 raise HTTPException(422, f"원본 로고는 1~{MAX_LOGOS}장입니다.")
             try:
@@ -286,18 +388,29 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
                 raise HTTPException(422, "logo_texts는 JSON 배열이어야 합니다.") from None
             if not isinstance(texts, list) or len(texts) not in (0, len(logos)) or not all(isinstance(t, str) and len(t) <= 300 for t in texts):
                 raise HTTPException(422, "logo_texts는 원본 로고 수와 같은 길이의 문자열 배열이어야 합니다.")
-            suffix = Path(video.filename or "").suffix.lower()
-            if suffix not in VIDEO_SUFFIXES:
-                raise HTTPException(422, "지원하는 영상 형식이 아닙니다.")
+            if linked_video is not None:
+                # 동영상 검수가 확인한 컨테이너로 확장자를 정한다(업로드 파일 이름이 없다).
+                container = (_read_json(review_dir / "result.json").get("media") or {}).get("container")
+                suffix = LINKED_SUFFIXES.get(container, ".mp4")
+            else:
+                suffix = Path(video.filename or "").suffix.lower()
+                if suffix not in VIDEO_SUFFIXES:
+                    raise HTTPException(422, "지원하는 영상 형식이 아닙니다.")
             job_id = str(uuid4()); target = owner_root(request) / job_id; (target / "refs").mkdir(parents=True)
             try:  # 검증에 걸리면 반쯤 만든 작업 폴더를 남기지 않는다
-                size = 0
-                with open(target / f"video{suffix}", "wb") as fh:
-                    while chunk := await video.read(1024 * 1024):
-                        size += len(chunk)
-                        if size > MAX_VIDEO_BYTES:
-                            raise HTTPException(413, "영상이 너무 큽니다.")
-                        fh.write(chunk)
+                if linked_video is not None:
+                    await run_in_threadpool(_link_or_copy, linked_video, target / f"video{suffix}")
+                else:
+                    # 로고만 검수로 올린 영상도 동영상 검수와 같은 용량·길이 한도를 지킨다(기본 500MiB·180초).
+                    policy = limits()
+                    size = 0
+                    with open(target / f"video{suffix}", "wb") as fh:
+                        while chunk := await video.read(1024 * 1024):
+                            size += len(chunk)
+                            if size > policy["upload_bytes"]:
+                                raise HTTPException(413, f"동영상은 {policy['upload_bytes'] // (1024 * 1024)}MB 이하로 업로드해 주세요.")
+                            fh.write(chunk)
+                    await run_in_threadpool(check_video_length, target / f"video{suffix}", policy["duration_seconds"])
                 items = []
                 for i, logo in enumerate(logos):
                     raw = await logo.read(MAX_LOGO_BYTES + 1)
@@ -324,7 +437,8 @@ def video_logo_router(*, root: Path, inference_lock: threading.Lock, readonly: b
         @router.post("/{job_id}/compare", status_code=202)
         def compare(request: Request, job_id: str, background: BackgroundTasks, answers: list[dict] = Body(...)):
             """확정 화면이 내려받는 정답 값(원본 로고마다 {logo, reference, decision, crops})의 목록을 받는다.
-            logo는 원본 로고 번호(업로드 순서)다. 파일 이름이 같은 로고가 있어도 번호로 구분한다."""
+            logo는 원본 로고 번호(업로드 순서)다. 파일 이름이 같은 로고가 있어도 번호로 구분한다.
+            후보 찾기 직후 자동 대조(origin=auto)를 마친 뒤, 사람이 위치를 고쳐 다시 대조할 때 부른다(origin=manual)."""
             target = directory(request, job_id); meta = _read_json(target / "result.json")
             if meta.get("status") != "candidates_ready":
                 raise HTTPException(409, "후보 찾기가 끝난 뒤에 정밀 대조를 실행할 수 있습니다.")

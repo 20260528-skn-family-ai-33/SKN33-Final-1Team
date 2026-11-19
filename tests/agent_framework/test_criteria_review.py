@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 from backend.agent_framework.contracts import CriteriaDraft
 from backend.agent_framework.criteria_contracts import CriteriaAddition,CriteriaVersionRequest,CriteriaApprovalRequest
-from backend.agent_framework.criteria_review import revise_criteria,approval_blockers
+from backend.agent_framework.criteria_review import revise_criteria,approval_blockers,blocks_approval
 from backend.agent_framework.postgres import digest
 from backend.agent_framework.context import freeze_approved_context
 from backend.agent_framework.validation import validate_evidence
@@ -104,13 +104,16 @@ def test_excluded_condition_can_be_restored_only_as_a_new_revision_with_provenan
     assert next(c for c in two.criteria if c.criterion_id==excluded).value_source.quote.endswith('새 버전에서 복원한 개발값')
 
 
-@pytest.mark.parametrize('kind,operator,expected,issue',(
-    ('text','contains','','missing_expected_value'),('text','equals',' \n ','missing_expected_value'),
-    ('unsupported','manual','value','unsupported_or_manual_criterion'),('number','equals','NaN','numeric_expected_invalid'),
-    ('number','gte','wrong-number','numeric_expected_invalid'),('visual','manual','value','unsupported_or_manual_criterion')))
-def test_approval_blocks_unresolved_or_unsupported_conditions(kind,operator,expected,issue):
+@pytest.mark.parametrize('kind,operator,expected,issue,blocks',(
+    ('text','contains','','missing_expected_value',False),('text','equals',' \n ','missing_expected_value',False),
+    ('unsupported','manual','value','unsupported_or_manual_criterion',False),('number','equals','NaN','numeric_expected_invalid',True),
+    ('number','gte','wrong-number','numeric_expected_invalid',True),('visual','manual','value','unsupported_or_manual_criterion',False)))
+def test_unresolved_conditions_are_listed_and_only_an_unusable_value_holds_back_approval(kind,operator,expected,issue,blocks):
     source=draft();c=source.criteria[0].model_copy(update={'kind':kind,'operator':operator,'expected':expected})
-    assert issue in approval_blockers((c,))[c.criterion_id]
+    blockers=approval_blockers((c,))
+    assert issue in blockers[c.criterion_id]
+    # A missing value or a condition a person must judge is reviewed instead of refused; A06 reports it as review.
+    assert blocks_approval(blockers) is blocks
 
 
 @pytest.mark.parametrize('expected,unit,observed,valid',(

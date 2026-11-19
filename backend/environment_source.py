@@ -19,14 +19,21 @@ COOKIE = frozenset("CC_COOKIE_SECURE CC_SESSION_COOKIE CC_SESSION_HOURS".split()
 OPENAI_FALLBACK = frozenset("A02_OPENAI_FALLBACK A02_OPENAI_MODEL A02_OPENAI_REASONING_EFFORT A02_OPENAI_API_KEY OPENAI_API_KEY creative_checker_openapi".split())
 # 같은 날 보안 여부 선택: 일반 자료는 A02·A04/A05·포스터 로고 위치 탐지를 OpenAI로 보낸다(backend/agent_framework/model_route.py).
 OPENAI_FALLBACK = OPENAI_FALLBACK | {"OPENAI_ROUTE_MODEL", "OPENAI_ROUTE_REASONING_EFFORT"}
+# 2026-11-18 A04/A05 시각 기준 후보: worker가 OWLv2 워커(backend/app/poster/objects.py)를 부르는 주소·토큰과
+# 시각 후보·A06 보강 켜기/끄기(backend/agent_framework/visual_objects.py). 영상 전용 VIDEO_* 설정은 넘기지 않는다.
+VISUAL_OBJECTS = frozenset("VIDEO_LOGO_WORKER_URL VIDEO_LOGO_WORKER_TOKEN VIDEO_LOGO_WORKER_TIMEOUT_SECONDS "
+                           "A04_VISUAL_OBJECTS A04_VISUAL_OBJECT_THRESHOLD A06_VISUAL_SUPPORT".split())
 PROFILES = {
     "api": STORAGE | MODEL | GRAPH | COOKIE,
     "worker": frozenset({"DATABASE_URL"}) | MODEL | MCP,
     "projection": frozenset({"DATABASE_URL"}) | GRAPH,
     "mcp": STORAGE | QWEN | MCP,
     "v1": DATABASE | WEB | REVIEW | {"creative_checker_openapi"},
+    "framework-api": DATABASE | WEB | REVIEW | QWEN | MCP | OPENAI_FALLBACK | {
+        "CC_A01_ENABLED", "CC_A08_ENABLED", "A02_QWEN_API_KEY",
+    },
     "v1-worker": DATABASE | REVIEW | {"LOCAL_ADMIN_LOGIN"},
-    "framework-worker": DATABASE | QWEN | GRAPH | OPENAI_FALLBACK | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
+    "framework-worker": DATABASE | QWEN | GRAPH | OPENAI_FALLBACK | VISUAL_OBJECTS | {"STORAGE_ROOT", "A02_QWEN_API_KEY"},
     "framework-projection": DATABASE | GRAPH,
     # 영상 API(legacy 프로필)의 계약서 A02가 포스터 A02와 같은 Qwen3.5-4B 서버를 쓴다.
     "legacy": DATABASE | WEB | REVIEW | QWEN | OPENAI_FALLBACK | {"LEGACY_READ_ONLY", "CC_WEB_POSTGRES_ENV_FILE", "FFMPEG_BIN", "A02_QWEN_API_KEY"},
@@ -34,6 +41,7 @@ PROFILES = {
 PREFIXES = {
     "legacy": ("OCR_", "REQUIREMENTS_", "RUNPOD_", "LOGO_", "VIDEO_", "MODELTEST_", "REVIEW_MODELS_"),
     "v1": ("OCR_",),
+    "framework-api": ("OCR_",),
     "v1-worker": ("OCR_",),
     "framework-worker": ("A04_A05_MODEL_",),
 }

@@ -205,7 +205,7 @@ def test_pending_scope_amendment_roundtrips_with_approval_evidence(semantic):
     assert r.client.get(route+'/criteria-approval').json()==approved.json()
 
 
-def test_semantic_pdf_uses_same_worker_and_keeps_missing_condition_unapproved(semantic):
+def test_semantic_pdf_uses_same_worker_and_approves_the_missing_condition_for_review(semantic):
     r=semantic;pdf=next((PDFS/'EXH-NEW004').glob('*.pdf'))
     response=upload(r,pdf.read_bytes(),filename=pdf.name);assert response.status_code==201,response.text
     item=requirement(1,'venue','열린문화공간 후소 전시실')
@@ -215,8 +215,10 @@ def test_semantic_pdf_uses_same_worker_and_keeps_missing_condition_unapproved(se
     draft=snapshot['criteria'];assert draft['criteria'][0]['expected']=='열린문화공간 후소 전시실'
     assert draft['extraction']['unresolved_criterion_ids']
     version=create_version(r,rid,draft);assert version['approval_blockers']
-    response=approve(r,rid,version)
-    assert response.status_code==409 and response.json()['error']['code']=='CRITERIA_UNRESOLVED'
+    # The undecided condition does not hold back approval: it stays in the approved version and A06 reports it as review.
+    response=approve(r,rid,version);assert response.status_code==200,response.text
+    assert response.json()['criteria']==version
+    assert r.client.get('/api/framework/v1/runs/'+rid).json()['execution_status']=='waiting_asset'
 
 
 def test_replacement_requirement_is_a_new_approved_version_with_preserved_history(semantic):

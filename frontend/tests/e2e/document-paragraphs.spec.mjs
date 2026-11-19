@@ -19,8 +19,9 @@ async function chooseReview(page, title = '문구 검수 자료 입력') {
   await page.getByRole('heading', { name: title, exact: true }).waitFor();
 }
 
+// 문서를 추출하면 같은 화면에 그 실행의 검수 항목이 나타난다(기준만 따로 확인하는 화면으로 넘어가지 않는다).
 for (const mode of ['resolved', 'pending_empty', 'pending_existing', 'pending_visual']) {
-test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한다 (${mode})`, { timeout: 60000 }, async t => {
+test(`PDF에서 만든 검수 항목·미확정 항목을 같은 화면에서 확인하고 보완한다 (${mode})`, { timeout: 60000 }, async t => {
   const pendingOnly = mode !== 'resolved';
   const visual = mode === 'pending_visual';
   const value = visual ? '가공원 로고' : '11월 12일';
@@ -60,10 +61,17 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     ? JSON.parse(readFileSync(process.env.E2E_REQUIREMENTS_RESULT_FILE, 'utf8')).presentation : null;
   const items = pendingOnly ? [] : recorded?.conditions || fixtureItems;
   const pending = pendingOnly ? [{ criterion_id: 'pending-1', page: 1, source: visual ? '로고는 확인 중입니다.' : '행사 날짜는 확인 중입니다.' }] : [];
-  const criteria = pending.map(item => ({ criterion_id: item.criterion_id, text: item.source, expected: '',
+  const context = { run_id: 'run-fixture', project_id: 'project-fixture', actor_id: 'user-fixture' };
+  const posterContext = { ...context, run_id: 'poster-fixture', asset_version_id: 'image' };
+  // 값이 정해진 조건은 그대로 검수 항목이 되고, 미확정 조건은 기대값이 빈 항목으로 남는다.
+  const criteria = pendingOnly ? pending.map(item => ({ criterion_id: item.criterion_id, text: item.source, expected: '',
     source: { page: item.page, quote: item.source }, kind: 'unsupported', operator: 'manual', unit: null, required: true,
-    details: visual ? scope : { target: 'unspecified', field: 'unspecified' } }));
-  let latest = null, approved = false;
+    details: visual ? scope : { target: 'unspecified', field: 'unspecified' } }))
+    : items.map((item, index) => ({ criterion_id: 'c' + (index + 1), text: item.text, expected: item.requirement || item.text,
+      source: { page: item.page, quote: item.source }, kind: item.type === 'visual' ? 'visual' : 'text',
+      operator: item.type === 'visual' ? 'present' : 'contains', unit: null, required: true,
+      details: { target: item.type === 'visual' ? 'poster_visual' : 'poster_text', field: 'wording' } }));
+  let latest = null, approved = false, reviewed = false, png;
   const saves = [];
   await page.route(base + '/api/**', async route => {
     const request = route.request(); const path = new URL(request.url()).pathname;
@@ -84,7 +92,7 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
       assert.equal(request.postData(), null);
       body = { context: { run_id: 'run-fixture' }, execution_status: 'queued' };
     } else if (path === '/api/framework/v1/runs/run-fixture') body = { execution_status: approved ? 'waiting_asset' : 'waiting_criteria',
-      context: { run_id: 'run-fixture' }, criteria: { criteria } };
+      context, criteria: { criteria } };
     else if (path.endsWith('/run-fixture/criteria-review')) body = { latest_version: latest, source_draft_sha256: 'a'.repeat(64) };
     else if (path.endsWith('/run-fixture/criteria-versions')) {
       saves.push({ body: request.postDataJSON(), key: request.headers()['idempotency-key'] });
@@ -107,7 +115,18 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
       assert.equal(approval.reviewed_all_criteria, true);
       approved = true; body = {};
     }
-    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2, warnings: recorded?.warnings || [],
+    // '검수 시작하기'는 기준 승인에 이어 포스터를 등록하고 검수를 접수한다.
+    else if (path.endsWith('/images')) { assert.ok(approved, 'image registration follows criteria approval'); body = { id: 'image' }; }
+    else if (path.endsWith('/images/image/content')) return route.fulfill({ contentType: 'image/png', body: png });
+    else if (path.endsWith('/run-fixture/poster-reviews')) {
+      assert.equal(request.postDataJSON().criteria_version_id, latest.version.criteria_version_id);
+      body = { context: posterContext };
+    } else if (path.endsWith('/poster-fixture/approvals')) { reviewed = true; body = { execution_status: 'reviewing', context: posterContext }; }
+    else if (path === '/api/framework/v1/runs/poster-fixture') body = { execution_status: 'reviewing', context: posterContext,
+      baseline: { criteria_version_id: 'version-1', criteria_sha256: 'b'.repeat(64) }, criteria: { criteria: latest?.version.criteria || [] } };
+    else if (path.endsWith('/run-fixture/requirements')) body = { ...recorded, conditions: items, pending, page_count: 2,
+      // 서버는 미확정 항목이 있으면 경고 첫 줄에 그 개수를 적는다(backend requirements_presentation.py).
+      warnings: pendingOnly ? ['미확정 1개는 조건 목록에 넣지 않았어요. 문서에 값이 아직 정해지지 않은 항목이에요.'] : recorded?.warnings || [],
       framework: { run_id: 'run-fixture', document_version_id: 'document-fixture' } };
     // 관계 조회(이전 기준 대비 변경 · 수정본 이력)는 부가 안내라 이 시험에서는 자료 없음으로 답한다.
     else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
@@ -142,26 +161,36 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
   } else {
     await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
   }
-  const expectedTexts = [...new Set(items.map(item => item.text))];
-  const extracted = page.getByLabel(/문서 요구사항 \d+번 문구/);
-  const notice = page.getByText(new RegExp(`추출을 완료했어요.*${expectedTexts.length}개 추출${pendingOnly ? '.*미확정 1개' : ''}`));
-  await notice.waitFor();
-  assert.equal(await page.locator('#requirements').inputValue(), current);
-  assert.deepEqual(await extracted.evaluateAll(fields => fields.map(field => field.value)), expectedTexts);
-  if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
-  await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
-  await notice.waitFor();
-  assert.equal(await page.locator('#requirements').inputValue(), current);
-  assert.deepEqual(await extracted.evaluateAll(fields => fields.map(field => field.value)), expectedTexts);
-  if (pendingOnly) {
-    await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).click();
-    await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).waitFor();
-    await page.getByText('요구사항 원문 · 1쪽', { exact: true }).waitFor();
-    await page.locator('.rv-criteria-source').getByText(pending[0].source, { exact: true }).waitFor();
+  const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+  const notice = page.getByText('추출 완료 · 2페이지', { exact: true });
+  // 추출이 끝나면 같은 화면에 검수 항목이 나타나고, 주소에 그 실행의 번호가 붙는다. 직접 입력란은 그대로다.
+  async function expectDraft() {
+    await notice.waitFor();
+    await checklist.getByRole('checkbox').first().waitFor();
     assert.equal(new URL(page.url()).searchParams.get('framework'), 'run-fixture');
-    assert.equal(await page.getByRole('button', { name: '이 버전의 전체 기준 승인' }).count(), 0);
+    assert.equal(await page.getByRole('heading', { name: '검수할 항목을 확정해 주세요.' }).count(), 0);
+    assert.equal(await page.locator('#requirements').inputValue(), current);
+    await page.getByText(`${criteria.length}개 포함`, { exact: true }).waitFor();
+    // 목록은 여섯 개씩 넘겨 본다.
+    assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+      criteria.slice(0, 6).map(item => '검수에 포함: ' + item.text));
+  }
+  await expectDraft();
+  // 값이 정해지지 않은 항목은 줄 끝에 '기대값 미정'과 필수 여부를 함께 적는다.
+  if (pendingOnly) await checklist.getByText('기대값 미정 · 필수', { exact: true }).waitFor();
+  if (process.env.E2E_REQUIREMENTS_SCREENSHOT) await page.screenshot({ path: process.env.E2E_REQUIREMENTS_SCREENSHOT, fullPage: true });
+  // 같은 문서를 다시 첨부하면 저장된 원문과 분석을 다시 쓴다(올리기·접수를 되풀이하지 않는다).
+  await checklist.evaluate(list => { list.dataset.before = 'yes'; });
+  await upload.setInputFiles({ name: 'brief.pdf', mimeType: 'application/pdf', buffer: data });
+  await page.waitForFunction(() => { const list = document.querySelector('.rv-criteria-list'); return list && !list.dataset.before; });
+  await expectDraft();
+  if (pendingOnly) {
+    // 고른 항목의 상세는 그 항목 바로 아래에 펼친다(원문 N쪽 · 원문 인용).
+    await page.getByText('원문 1쪽', { exact: true }).waitFor();
+    await page.locator('.rv-criteria-quote').getByText(pending[0].source, { exact: true }).waitFor();
+    const start = page.getByRole('button', { name: '검수 시작하기', exact: true });
     await page.getByRole('button', { name: '기준 보완', exact: true }).click();
-    const save = page.getByRole('button', { name: '검토한 기준 버전 저장' });
+    const save = page.getByRole('button', { name: '보완 내용 저장', exact: true });
     await save.click();
     assert.equal(saves.length, 0); // Required classification and provenance must be filled before sending.
     if (visual) {
@@ -185,23 +214,33 @@ test(`PDF 문단·미확정 항목을 보존하고 같은 실행으로 연결한
     if (mode === 'pending_existing') {
       await page.getByRole('button', { name: '서버 상태 다시 확인' }).waitFor();
       assert.equal(await page.getByLabel('보완값', { exact: true }).inputValue(), value);
-      assert.equal(await page.getByRole('button', { name: '이 버전의 전체 기준 승인' }).count(), 0);
+      assert.equal(approved, false);
       await save.click();
     }
-    const approve = page.getByRole('button', { name: '이 버전의 전체 기준 승인' });
-    await approve.waitFor();
-    await page.getByText('보완 회신: ' + reply + ' · 출처: 개발용 담당자 회신', { exact: true }).waitFor();
+    // 펼친 상세에서는 '보완 회신' 이름표 옆에 회신 내용과 출처를 적는다.
+    await page.getByText(reply + ' · 출처: 개발용 담당자 회신', { exact: true }).waitFor();
     assert.equal(saves.length, mode === 'pending_existing' ? 2 : 1);
     assert.ok(saves[0].key);
     if (mode === 'pending_existing') assert.deepEqual(saves[0], saves[1]);
     await page.getByRole('button', { name: '기준 보완', exact: true }).click();
     assert.equal(await page.getByLabel('검사 대상', { exact: true }).inputValue(), scope.target);
     assert.equal(await page.getByLabel('검사 항목', { exact: true }).inputValue(), scope.field);
-    assert.equal(await approve.count(), 0); // Unsaved edits cannot approve the previous version.
     await page.getByRole('button', { name: '보완 취소' }).click();
-    await approve.click();
-    await page.getByLabel('검수 포스터', { exact: true }).waitFor();
+    // 포스터가 없으면 시작할 수 없다. 포스터를 넣고 시작하면 보완한 기준을 승인하고 검수를 접수한다.
+    assert.ok(await start.isDisabled());
+    assert.equal(approved, false);
+    png = Buffer.from(await page.evaluate(() => {
+      const canvas = document.createElement('canvas'); canvas.width = canvas.height = 10;
+      return canvas.toDataURL().split(',')[1];
+    }), 'base64');
+    await page.getByLabel('검수 이미지 선택', { exact: true }).setInputFiles({ name: 'poster.png', mimeType: 'image/png', buffer: png });
+    // 직접 입력란에 글이 남아 있으면 시작할 때 그 글을 분석해 기준에 더한다(framework-entry의 pdf_addition이 확인한다). 여기서는 비우고 시작한다.
+    await page.locator('#requirements').fill('');
+    await start.click();
+    await page.waitForURL(url => url.searchParams.get('framework') === 'poster-fixture');
     assert.equal(approved, true);
+    assert.equal(reviewed, true);
+    assert.equal(saves.length, mode === 'pending_existing' ? 2 : 1, 'starting does not save the criteria again');
   }
   assert.equal(uploads, 1); assert.equal(admissions, 1); assert.deepEqual(unexpectedRequests, []);
   assert.deepEqual(errors, []);
@@ -234,6 +273,9 @@ async function verifyDocx(t, mode) {
   const items = [['행사명', '진연', 'information'], ['연주자', '전통 복식과 관모를 쓴 연주자 2명', 'visual']]
     .map(([label, requirement, type]) => ({ label, requirement, type, inspection: '', level: '필수', page: 1, source: requirement,
       text: type === 'visual' ? requirement : `${label}: ${requirement}` }));
+  const docxCriteria = items.map((item, index) => ({ criterion_id: 'c' + (index + 1), text: item.text, expected: item.requirement,
+    source: { page: 1, quote: item.source }, kind: item.type === 'visual' ? 'visual' : 'text', operator: item.type === 'visual' ? 'present' : 'contains',
+    unit: null, required: true, details: { target: item.type === 'visual' ? 'poster_visual' : 'poster_text', field: 'wording' } }));
   let docxUploads = 0, pdfUploads = 0, admissions = 0;
   const videoJob = { id: 'video-docx', status: 'queued', stage: 'queued', project_name: 'DOCX 검증', criteria_version: 1 };
   const videoSubmissions = [];
@@ -269,7 +311,11 @@ async function verifyDocx(t, mode) {
         source: { sha256: createHash('sha256').update(docx).digest('hex'), converter: 'docx-text-v1' } };
     } else if (path.endsWith('/documents')) { pdfUploads++; return route.fulfill({ status: 500, json: { detail: 'PDF 경로를 쓰면 안 됩니다.' } }); }
     else if (path.endsWith('/extractions')) { admissions++; body = { context: { run_id: 'run-docx' }, execution_status: 'queued' }; }
-    else if (path === '/api/framework/v1/runs/run-docx') body = { execution_status: 'waiting_criteria', context: { run_id: 'run-docx' }, criteria: { criteria: [] } };
+    else if (path === '/api/framework/v1/runs/run-docx') body = { execution_status: 'waiting_criteria',
+      context: { run_id: 'run-docx', project_id: 'project-fixture', actor_id: 'user-fixture' }, criteria: { criteria: docxCriteria } };
+    else if (path.endsWith('/run-docx/criteria-review')) body = { latest_version: null, source_draft_sha256: 'a'.repeat(64) };
+    else if (path === '/api/poster-logos') body = { items: [] };
+    else if (/\/(criteria-change-impact|revision-history)$/.test(path)) return route.fulfill({ status: 404, json: { detail: 'no relation data' } });
     else if (path.endsWith('/run-docx/requirements')) body = { conditions: items, pending: [], page_count: 1, warnings: [],
       framework: { run_id: 'run-docx', document_version_id: 'document-docx' } };
     else return route.fulfill({ status: 404, json: { detail: 'unexpected test route' } });
@@ -283,8 +329,7 @@ async function verifyDocx(t, mode) {
   assert.match(await upload.getAttribute('accept'), /\.docx/);
   assert.equal(await upload.getAttribute('multiple'), null);
   assert.equal(await card.getByRole('link', { name: 'PDF 여러 개 올리기' }).count(), 0);
-  await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MiB', { exact: true }).waitFor();
-  await card.getByText(/별도로 보관한 Word 원본에서 확인해 주세요/).waitFor();
+  await card.getByText('PDF 텍스트층 · DOCX 본문 · 최대 10MB', { exact: true }).waitFor();
   if (mode === 'video-drop') {
     const dataTransfer = await page.evaluateHandle(bytes => {
       const data = new DataTransfer();
@@ -301,8 +346,11 @@ async function verifyDocx(t, mode) {
     await card.getByRole('button', { name: '파일 선택', exact: true }).click();
     await (await choose).setFiles({ name: '계약서.docx', mimeType: DOCX, buffer: docx });
   }
-  await page.getByText(video ? '계약서.docx · 2개 추출' : /추출을 완료했어요\. Word 문서 · 2개 추출/).waitFor();
-  assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
+  // 영상은 추출한 조건을 그 자리에서 고르고, 포스터는 같은 화면의 검수 항목 칸에 그 실행의 기준이 나타난다.
+  await page.getByText(video ? '추출 완료 · Word 문서 · 조건 2개' : '추출 완료 · Word 문서', { exact: true }).waitFor();
+  // DOCX는 추출을 마친 뒤 '확인할 점'에 본문만 읽었다는 안내가 붙는다.
+  await card.getByText(/Word 본문 글자만 읽었어요/).waitFor();
+  if (video) assert.deepEqual(await page.getByLabel(/문서 요구사항 \d+번 문구/).evaluateAll(fields => fields.map(field => field.value)), items.map(item => item.text));
   if (video) {
     // 추출한 항목은 처음부터 모두 검수에 포함되어 있다. 1번의 체크를 풀어 2번만 보낸다.
     await page.getByRole('checkbox', { name: '문서 요구사항 1번 검수에 포함', exact: true }).uncheck();
@@ -316,8 +364,11 @@ async function verifyDocx(t, mode) {
       source: `계약서.docx · 본문\n${items[1].source}`,
     }]]);
   } else {
-    await page.getByRole('button', { name: 'DOCX 본문과 기준 확인', exact: true }).waitFor();
-    assert.equal(await page.getByRole('button', { name: 'PDF 원문과 기준 확인', exact: true }).count(), 0);
+    const checklist = page.getByRole('list', { name: '검수 항목 목록' });
+    await checklist.getByRole('checkbox').first().waitFor();
+    assert.deepEqual(await checklist.getByRole('checkbox').evaluateAll(rows => rows.map(row => row.getAttribute('aria-label'))),
+      items.map(item => '검수에 포함: ' + item.text));
+    assert.equal(new URL(page.url()).searchParams.get('framework'), 'run-docx');
     if (process.env.E2E_DOCX_SCREENSHOT) await page.screenshot({ path: process.env.E2E_DOCX_SCREENSHOT, fullPage: true });
   }
   assert.equal(docxUploads, 1); assert.equal(pdfUploads, 0); assert.equal(admissions, 1);

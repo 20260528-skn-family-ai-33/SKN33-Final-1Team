@@ -41,10 +41,10 @@ def chat_app(monkeypatch):
     monkeypatch.setattr(postgres_api, "check_app_permissions", lambda _: None)
     config = load_config("examples/agent_framework/team_config.synthetic.json")
 
-    def create(key=""):
+    def create(key="", *, run_guidance=None):
         settings = load_v1_settings(auth_environment(creative_checker_openapi=key))
         return TestClient(
-            postgres_api.create_postgres_app(settings, config, engine=object()),
+            postgres_api.create_postgres_app(settings, config, engine=object(), run_guidance=run_guidance),
             base_url=ORIGIN,
         )
     return create

@@ -24,7 +24,7 @@
 <p>PDF root는 <a href="PDF_등록_버전저장_가이드.html">PDF 등록 가이드</a>대로 이미 초기화한 전용 경로를 사용한다. 등록·추출·기준 확정에 같은 app 계정을 사용하며 owner 파일을 API/worker에 넘기지 않는다. 실제 파일 저장 구현은 POSIX 기반이며 Windows 네이티브 백엔드 실행은 아직 미검증이다. HTML·문서 링크는 상대 경로로 열람할 수 있다.</p>
 </section><section class="chapter"><h2 id="04-보완-버전-api">04. 보완 버전 API</h2>
 <p>모든 경로는 <code>/api/framework/v1</code> 아래다. 기존 로그인 쿠키·CSRF·허용 Origin을 사용한다. 현재 쓰기 정책은 <strong>해당 A02 실행 생성자이면서 활성 프로젝트 editor/owner인 사용자</strong>다. 다른 사용자에게 승인을 위임하는 정책은 추가하지 않았다. 권한 있는 viewer는 조회할 수 있다.</p>
-<div class="table-wrap"><table><thead><tr><th>경로</th><th>용도</th></tr></thead><tbody><tr><td>GET <code>/runs/{run_id}/criteria-review</code></td><td>첫 초안 해시, 최신 보완 버전과 해시, 승인 상태</td></tr><tr><td>POST <code>/runs/{run_id}/criteria-versions</code></td><td>보완·제외를 새 불변 버전으로 저장</td></tr><tr><td>GET <code>/runs/{run_id}/criteria-versions</code></td><td>과거 버전을 포함한 전체 이력</td></tr><tr><td>GET <code>/runs/{run_id}/criteria-versions/{version_id}</code></td><td>특정 버전·해시·승인 차단 사유 조회</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>경로</th><th>용도</th></tr></thead><tbody><tr><td>GET <code>/runs/{run_id}/criteria-review</code></td><td>첫 초안 해시, 최신 보완 버전과 해시, 승인 상태</td></tr><tr><td>POST <code>/runs/{run_id}/criteria-versions</code></td><td>보완·제외를 새 불변 버전으로 저장</td></tr><tr><td>GET <code>/runs/{run_id}/criteria-versions</code></td><td>과거 버전을 포함한 전체 이력</td></tr><tr><td>GET <code>/runs/{run_id}/criteria-versions/{version_id}</code></td><td>특정 버전·해시·미결 사유(<code>approval_blockers</code>) 조회</td></tr></tbody></table></div>
 <p>쓰기에는 <code>Idempotency-Key</code> UUID를 보존해 전송한다. 첫 버전은 <code>parent_version_id=null</code>, <code>expected_base_sha256</code>은 overview의 <code>source_draft_sha256</code>이다. 다음 버전은 최신 <code>criteria_version_id</code>와 응답의 <code>sha256</code>을 부모로 지정한다.</p>
 <div class="code-block" data-language="json"><div class="code-bar"><span>JSON</span><button class="copy" type="button">복사</button></div><pre><code>{
   &quot;parent_version_id&quot;: null,
@@ -42,7 +42,7 @@
 }</code></pre></div>
 <p>위 꺾쇠 내용은 형식 설명용 자리다. 실제 값을 대신 만들어 제출하지 않는다. 개발 시험에서는 <code>purpose=synthetic_test</code>와 명시적인 합성 회신을 사용한다. 제출자·시각·synthetic flag는 요청으로 지정할 수 없고 서버가 정한다. 요청 JSON은 기존 256KiB 제한·중복 키·스키마 검사를 재사용한다. 큰 수정은 새 부모 버전을 지정해 나눠 제출한다.</p>
 <p>동일 키·동일 입력은 최초 버전을 반환한다. 같은 키에 다른 내용은 409다. 최신 부모나 해시가 다르면 409로 막아 동시 편집에서 기준이 분기되지 않게 한다. 원문 PDF의 같은 논리 문서에 새 파일 버전이 등록되면 이전 추출을 새로 보완·승인하지 못한다. 새 PDF 버전으로 A02를 다시 접수해야 한다.</p>
-<p><code>target</code>과 <code>field</code>는 함께 지정한다. 위 예시는 포스터에 적힌 관람시간이며, 다른 조건은 실제 검사 대상과 항목에 맞게 지정해야 한다. 두 필드를 생략하면 현재 버전의 분류를 유지하지만, <code>target=unspecified</code>인 조건은 기대값만 채워도 승인할 수 없다. 값만 보완하면 원문 인용과 추가 조건을 유지하며, 날짜·시각 요소·파일 정보 등은 A06의 지원 범위에 따라 확인 필요로 남을 수 있다.</p>
+<p><code>target</code>과 <code>field</code>는 함께 지정한다. 위 예시는 포스터에 적힌 관람시간이며, 다른 조건은 실제 검사 대상과 항목에 맞게 지정해야 한다. 두 필드를 생략하면 현재 버전의 분류를 유지하지만, <code>target=unspecified</code>인 조건은 기대값만 채워도 검사 대상이 정해지지 않은 조건으로 남아 결과에서 확인 필요가 된다. 값만 보완하면 원문 인용과 추가 조건을 유지하며, 날짜·시각 요소·파일 정보 등은 A06의 지원 범위에 따라 확인 필요로 남을 수 있다.</p>
 <p>2026-11-05부터 조건 자체가 바뀐 회신은 <code>resolution.replacement_text</code>에 전체 조건 문장을 넣는다. 이때 <code>target</code>·<code>field</code>도 명시해야 한다. 변경 문장 전체가 회신 <code>source.quote</code>에 포함되어야 하며, 기대값과 지정 단위도 변경 문장에 있어야 한다. 새 버전의 <code>text</code>를 바꾸고 이전 조건의 <code>qualifiers</code>를 해제하되, 원본 초안·PDF 인용·과거 버전은 보존한다. 새 문장에도 허용·예외·대안이 있으면 자동 통과시키지 않는다. 이미 승인한 기준은 수정할 수 없으므로 새 추출·보완·승인을 거친다.</p>
 <p>front-v2의 <strong>기준 보완</strong>에서 검사 대상·항목, 보완값, 사유, 회신 출처·원문을 입력한 뒤 <strong>검토한 기준 버전 저장</strong>을 누른다. 저장된 보완 회신과 전체 기준을 확인하고 승인한다. 저장 전에는 이전 버전을 승인할 수 없으며, 저장 요청이 실패하면 입력 내용이 남는다.</p>
 <p>조건 전체를 바꿀 때는 <strong>회신에 따라 조건 자체를 변경</strong>을 선택하고 <strong>변경한 전체 조건</strong>을 입력한다. A04·A05에는 현재 조건·기대값과 보완 회신·출처를 함께 전달하므로 원문의 “확인 중”과 확정값을 구분할 수 있다.</p>
@@ -68,7 +68,7 @@
   &quot;reason&quot;: &quot;&lt;원문과 보완 내용을 확인한 근거&gt;&quot;,
   &quot;reviewed_all_criteria&quot;: true
 }</code></pre></div>
-<p>이 요청은 사용자의 실제 검토·승인 의사가 있을 때 보낸다. 일반 대화의 <code>1</code>이나 기능 실행 성공으로 자동 생성하지 않는다. 빈/공백 기대값, 수동/미지원 조건, 유효하지 않은 숫자가 하나라도 남으면 승인하지 않는다. 버전 응답의 <code>approval_blockers</code>를 확인한다. 제외한 범위와 대안·예외·허용치도 원문과 대조해야 하며, 서버의 문자열 검사가 의미 정확도나 범위 완전성을 보증하지는 않는다.</p>
+<p>이 요청은 사용자의 실제 검토·승인 의사가 있을 때 보낸다. 일반 대화의 <code>1</code>이나 기능 실행 성공으로 자동 생성하지 않는다. 2026-11-18부터 빈/공백 기대값, 수동/미지원 조건, 검사 대상이 정해지지 않은 조건은 승인을 막지 않는다. 승인한 버전에 그대로 남아 검수에 들어가고, A06이 확인 필요로 판정한다. 승인을 거절(409 <code>CRITERIA_UNRESOLVED</code>)하는 것은 보완한 값을 쓸 수 없을 때뿐이다: 유효하지 않은 숫자, 보완 출처 누락. 버전 응답의 <code>approval_blockers</code>는 이름을 유지하지만 두 종류의 사유를 모두 담으므로, 승인 전에 어떤 조건이 확인 필요로 남는지 여기서 확인한다. 제외한 범위와 대안·예외·허용치도 원문과 대조해야 하며, 서버의 문자열 검사가 의미 정확도나 범위 완전성을 보증하지는 않는다.</p>
 <p>서버는 원본 PDF 무결성과 최신 문서 버전, 현재 계정·프로젝트 권한, 실행/설정, 최신 기준 ID·해시를 다시 확인한다. 승인 기록·대상 연결·근거 스냅샷·실행 상태는 하나의 트랜잭션으로 확정한다. 승인 뒤에는 <code>waiting_asset</code>이며 검수 job을 만들지 않는다.</p>
 <p><code>RunSnapshot.context</code>와 <code>criteria</code>는 최초 A02 실행의 고정 입력·원본 초안이다. 승인 대상은 <code>approved_criteria_version_id</code>를 통해 새 버전으로 조회한다. 승인 기록의 <code>approved_criteria_version_id</code>와 <code>criteria_sha256</code>에도 정확한 대상을 보존한다. <code>human_decision=unreviewed</code>는 포스터 최종 승인 상태이며 기준 승인과 다르다.</p>
 <p>승인 후 기존 기준을 수정할 수 없다. 바꿀 내용은 새 A02 실행과 기준 승인으로 처리하고 이전 승인 이력은 보존한다. 같은 키와 같은 승인 요청은 기존 승인을 반환한다. 응답을 못 받았으면 새 키로 반복 승인하지 말고 기존 키·대상·해시를 유지해 조회/재전송한다. DB 결과가 불명확하면 503을 반환하며 자동 쓰기 재시도를 하지 않는다.</p>

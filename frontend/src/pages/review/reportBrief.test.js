@@ -78,7 +78,7 @@ test('실행 기록으로 템플릿 context를 채운다', () => {
     { kind: '확인', label: '행사일', time: null, text: '행사일이 기준과 같은 날짜·시간인지 확인해 주세요.' }]);
   assert.deepEqual(context.notes, ['자동 검수 초안입니다. 담당자가 확인하기 전에는 승인이 아닙니다.', '합성 시험 데이터로 만든 보고서입니다.',
     '코드 검증만 했습니다. 이미지 인식 정확도와 기준 출처는 따로 검증하지 않았습니다.', '기준 근거가 최신 상태가 아닙니다.',
-    '승인된 기준만 근거로 썼고 PostgreSQL·Neo4j 관계 조회는 하지 않았습니다.']);
+    '승인된 기준만 근거로 썼고 기준 관계 조회는 하지 않았습니다.']);
 });
 
 test('A07이 Qwen 할 일을 쓴 경우에만 그 문장을 쓴다', () => {
@@ -107,4 +107,25 @@ test('위치 보기는 불충족·확인 필요만, 현재 포스터의 위치 �
   const original = posterMarks(run, buildReportContext(run).items);
   assert.deepEqual([original.marks, original.unlocated.map(item => item.number)], [[], ['01', '02']]);
   assert.ok(!('marks' in buildReportContext(marked)));
+});
+
+// 보고서 '확인 필요' 항목의 담당자 코멘트는 이 브라우저에 실행별로 저장한다(reportComments.js).
+test('담당자 코멘트는 실행별로 저장하고 빈 코멘트는 남기지 않는다', async () => {
+  const { readReportComments, writeReportComments, REPORT_COMMENT_MAX } = await import('./reportComments.js');
+  const data = new Map();
+  const store = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, String(value)), removeItem: key => data.delete(key) };
+  assert.deepEqual(readReportComments('run-a', store), {});
+  assert.equal(writeReportComments('run-a', { date: '원문 날짜와 같음', venue: '  ' }, store), true);
+  assert.deepEqual(readReportComments('run-a', store), { date: '원문 날짜와 같음' });
+  assert.deepEqual(readReportComments('run-b', store), {});                       // 다른 실행에는 보이지 않는다
+  assert.equal(writeReportComments('run-a', { date: '' }, store), true);
+  assert.equal(data.size, 0);                                                   // 모두 비우면 저장 항목을 지운다
+  data.set('poster-report-comments:run-c', JSON.stringify({ date: 'x'.repeat(REPORT_COMMENT_MAX + 5), bad: 3 }));
+  assert.deepEqual(readReportComments('run-c', store), { date: 'x'.repeat(REPORT_COMMENT_MAX) });
+  data.set('poster-report-comments:run-d', '{깨진 값');
+  assert.deepEqual(readReportComments('run-d', store), {});
+  const blocked = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); }, removeItem() {} };
+  assert.deepEqual(readReportComments('run-a', blocked), {});
+  assert.equal(writeReportComments('run-a', { date: '메모' }, blocked), false);
+  assert.equal(writeReportComments('', { date: '메모' }, store), false);
 });

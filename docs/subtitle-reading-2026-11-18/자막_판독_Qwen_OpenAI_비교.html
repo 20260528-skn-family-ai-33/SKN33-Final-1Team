@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>자막 판독 Qwen·OpenAI 비교</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  /* 레이아웃: 한 줄 기둥의 실험 보고서. 결론 → 파이프라인 → 조건 → 구성별 비교 → 근거 → 보안 경로 보강 → 한계 → 결론 상세 */
+  :root{
+    --bg:#f6f7f6; --surface:#ffffff; --surface-2:#eef1ef; --fg:#18201d; --fg-2:#3e4a45; --muted:#66736d;
+    --line:#d9dfdc; --accent:#0d9488; --qwen:#0d9488; --openai:#c2670a; --track:#e6ebe8;
+    --good-bg:#e3f3ef; --good-fg:#0b5f57;
+    --f-head:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+    --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    --f-num:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#111614; --surface:#18201d; --surface-2:#1f2925; --fg:#e8eeeb; --fg-2:#c3cdc8; --muted:#94a29b;
+    --line:#2c3833; --accent:#11a596; --qwen:#11a596; --openai:#d47c0c; --track:#25302b;
+    --good-bg:#16312c; --good-fg:#7fd8cc; color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#111614; --surface:#18201d; --surface-2:#1f2925; --fg:#e8eeeb; --fg-2:#c3cdc8; --muted:#94a29b;
+    --line:#2c3833; --accent:#11a596; --qwen:#11a596; --openai:#d47c0c; --track:#25302b;
+    --good-bg:#16312c; --good-fg:#7fd8cc; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+  .wrap{max-width:940px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 56px;display:flex;flex-direction:column;gap:44px}
+  h1,h2,h3{font-family:var(--f-head);line-height:1.3;margin:0;text-wrap:balance}
+  h1{font-size:1.9rem;font-weight:700;letter-spacing:-.01em}
+  h2{font-size:1.3rem;font-weight:700}
+  h3{font-size:1.02rem;font-weight:600}
+  p{margin:0;max-width:68ch}
+  .num,code{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+  code{font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+  .muted{color:var(--muted)}
+  section{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .label{font-size:.74rem;font-weight:600;letter-spacing:.08em;color:var(--muted)}
+
+  header{display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line);padding-bottom:22px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;color:var(--muted)}
+  .lead-text{font-size:1.02rem;color:var(--fg-2)}
+  .who{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+  .who i{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+  .who.q i{background:var(--qwen)} .who.o i{background:var(--openai)}
+
+  .verdict{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;
+    display:flex;flex-direction:column;gap:14px}
+  .verdict .answer{font-family:var(--f-head);font-size:1.18rem;font-weight:700;line-height:1.45}
+  .verdict ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+  .verdict li{max-width:72ch}
+
+  /* 파이프라인 흐름 */
+  .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    display:flex;flex-direction:column;gap:6px;min-width:0}
+  .step.q{border-top:3px solid var(--qwen)} .step.o{border-top:3px solid var(--openai)}
+  .step .k{font-size:.74rem;font-weight:600;letter-spacing:.06em;color:var(--muted)}
+  .step p{font-size:.88rem;color:var(--fg-2)}
+  .arrow{align-self:center;color:var(--muted);font-family:var(--f-num);font-size:1.1rem}
+  .route{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:600px;font-size:.9rem}
+  th,td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  thead th{background:var(--surface-2);font-weight:600;font-size:.8rem;color:var(--fg-2);line-height:1.4}
+  tbody tr:last-child td{border-bottom:none}
+  td.n,th.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+  td .hint{display:block;font-size:.76rem;color:var(--muted)}
+  td.win{font-weight:700;background:var(--good-bg);color:var(--good-fg)}
+  tr.focus td{font-weight:600}
+  th.colp{box-shadow:inset 0 -3px 0 var(--fg)}
+  th.colq{box-shadow:inset 0 -3px 0 var(--qwen)} th.colo{box-shadow:inset 0 -3px 0 var(--openai)}
+  .cap{font-size:.8rem;color:var(--muted);max-width:none}
+
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:8px;min-width:0}
+  .card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+
+  /* 막대: 구성별 재현율·CER (한 계열씩) */
+  .chart{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 18px 12px;
+    display:flex;flex-direction:column;gap:10px;min-width:0}
+  .bar{display:grid;grid-template-columns:minmax(0,11rem) 1fr;gap:12px;align-items:center}
+  .bar .nm{font-size:.86rem;color:var(--fg-2);line-height:1.35}
+  .bar .tr{position:relative;height:22px;background:var(--track);border-radius:4px}
+  .bar .fl{height:100%;background:var(--muted);border-radius:0 4px 4px 0;min-width:3px}
+  .bar.best .fl{background:var(--qwen)}
+  .bar .vl{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--f-num);font-size:.8rem;
+    color:var(--fg);padding-left:8px;white-space:nowrap}
+  .axis{display:grid;grid-template-columns:minmax(0,11rem) 1fr;gap:12px;font-family:var(--f-num);font-size:.7rem;color:var(--muted)}
+  .axis div:last-child{display:flex;justify-content:space-between}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  ol.recs{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:12px}
+  ol.recs li{max-width:72ch}
+  ol.recs b{font-family:var(--f-head)}
+  .notes{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+  footer{border-top:1px solid var(--line);padding-top:18px;font-size:.8rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+  footer code{font-size:.78rem}
+
+  @media (max-width:720px){
+    h1{font-size:1.55rem}
+    .pair,.route,.charts{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}
+    .arrow{transform:rotate(90deg);justify-self:center}
+    .bar,.axis{grid-template-columns:1fr;gap:4px}
+    .axis div:first-child{display:none}
+  }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header>
+  <div class="meta"><span>Creative Checker · 영상 자막 검수 3단계(화면 글자 판독)</span><span>작성 2026-11-18</span><span>측정 2026-11-16 · 11-17</span></div>
+  <h1>자막 판독 Qwen·OpenAI 비교</h1>
+  <p class="lead-text">홍보 영상 19편, 1초 간격 1,267프레임에서 화면 글자를 읽는 성능을 같은 프레임·같은 정답 라벨·같은 채점기로 비교했다. 비교한 구성은 넷이다. <span class="who q"><i></i>Qwen3-VL-8B</span> 단독, <span class="who o"><i></i>OpenAI gpt-6-luna</span> 단독, 둘을 잇는 현재 파이프라인, 그리고 Qwen 요청 설정을 바꾼 보강안이다.</p>
+</header>
+
+<section class="verdict" aria-labelledby="v-title">
+  <div class="label" id="v-title">결론</div>
+  <p class="answer">테스트 결과, 현재 자막 판독 파이프라인(Qwen3-VL-8B가 먼저 읽고, Qwen이 읽지 못한 프레임만 OpenAI가 다시 읽는 구성)이 시험한 구성 중 가장 좋다.</p>
+  <ul>
+    <li><b>가장 높은 정확도:</b> 재현율 93.0%, 문자 오류율 5.32%, 판독 실패 0장으로, 시험한 구성 중 셋 다 가장 좋다. 처음 보는 영상(holdout)에서도 재현율 90.2%, 문자 오류율 7.68%로 가장 좋다.</li>
+    <li><b>Qwen을 먼저 쓰는 근거:</b> 두 모델이 모두 읽은 프레임에서는 Qwen이 재현율·정밀도·문자 오류율 모두 OpenAI보다 낫다. 정밀도는 91.3% 대 89.2%로, 맞는 자막을 오탈자로 잘못 경보하는 일이 적다.</li>
+    <li><b>OpenAI를 보조로 붙이는 근거:</b> Qwen의 약점은 글자가 많은 화면에서 생기는 판독 실패(2.1%)다. 이 프레임만 OpenAI가 채우면 실패가 0이 되고 전체 정확도가 단독 모델 어느 쪽보다 높아진다.</li>
+    <li><b>보안 자료 경로 보강:</b> 보안 자료는 OpenAI를 쓸 수 없어 Qwen만 읽는다. Qwen 요청 설정을 바꾸는 보강안으로 실패가 27장에서 6장으로 줄었다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="s-pipe">
+  <h2 id="s-pipe">현재 파이프라인</h2>
+  <p>앱의 <code>backend/app/video/subtitle_vlm.read_frames</code>가 아래 순서로 프레임을 읽는다. 자료 종류에 따라 OpenAI 보조 여부만 달라지고, 응답 형식과 후처리는 같다.</p>
+  <div class="flow" aria-label="Qwen3-VL이 모든 프레임을 읽고, 실패한 프레임만 일반 자료에서 OpenAI가 다시 읽은 뒤, 같은 형식으로 합친다">
+    <div class="step q"><span class="k">1 · 기본 판독</span><h3>Qwen3-VL-8B</h3><p>모든 프레임을 로컬 vLLM으로 읽는다. 프레임당 2번까지 시도한다.</p></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step o"><span class="k">2 · 보조 판독 (일반 자료)</span><h3>OpenAI gpt-6-luna</h3><p>Qwen이 읽지 못한 프레임만 다시 읽는다. Qwen 서버가 내려가 있으면 전부 읽는다.</p></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step"><span class="k">3 · 결과</span><h3>프레임별 글자 목록</h3><p>같은 형식으로 합쳐 자막 트랙과 판정 단계로 넘긴다.</p></div>
+  </div>
+  <div class="route">
+    <div class="card"><h3>일반 자료</h3><p>1 → 2 → 3. 이 보고서의 "현재 파이프라인" 점수가 이 경로다.</p></div>
+    <div class="card"><h3>보안 자료</h3><p>1 → 3. 프레임을 외부로 보내지 않는다. Qwen 단독 점수가 이 경로다.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="s-cond">
+  <h2 id="s-cond">시험 조건</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>항목</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>평가 데이터</td><td>홍보 영상 19편, 1fps 프레임 1,267장. 개발셋(owlexp) 13편 681장 + 미사용 검증셋(holdout) 6편 586장</td></tr>
+        <tr><td>정답 라벨</td><td><code>labels_v2</code>: 자막·제목·정보 글자 2,579항목, 자막 이벤트 487건. Claude 2차 검증을 거친 silver 라벨로, 사람 최종 확인 전</td></tr>
+        <tr><td>채점</td><td><code>score_run_v2.py</code>. 프레임마다 정답 문구와 모델 출력의 가장 비슷한 부분을 비교하는 부분 정렬 문자 오류율(CER) 기준. 판독에 실패한 프레임은 '못 읽음'으로 센다</td></tr>
+        <tr><td>프롬프트</td><td>앱 현행 <code>subtitle_vlm.PROMPT</code>. 두 모델 모두 같은 문구다</td></tr>
+        <tr><td><span class="who q"><i></i>Qwen3-VL-8B</span></td><td>RunPod A40, vLLM 0.33.0, temperature 0, thinking 끔, max_tokens 2048, 긴 변 1280px, 동시 8 (11/17 측정)</td></tr>
+        <tr><td><span class="who o"><i></i>OpenAI gpt-6-luna</span></td><td>앱 일반 자료 경로, reasoning_effort low, max_completion_tokens 8192, 동시 8 (11/16 측정)</td></tr>
+        <tr><td>현재 파이프라인</td><td>위 Qwen 결과에서 실패한 프레임만 OpenAI 결과로 바꿔 채점했다. 앱의 일반 자료 경로와 같은 방식이다</td></tr>
+        <tr><td>Qwen 보강안</td><td>Qwen 요청만 max_tokens 4096 + presence_penalty 1.0으로 바꿔 1,267장을 다시 읽었다 (11/17 측정)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="s-all">
+  <h2 id="s-all">구성별 비교 (전체 1,267프레임)</h2>
+  <p>가장 좋은 값에 색을 칠했다. 현재 파이프라인은 정확도를 가늠하는 핵심 지표(재현율, 문자 오류율, 판독 실패)에서 모두 1위이고, 처음 보는 영상에서도 같다.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>지표</th><th class="n colp">현재 파이프라인<br>Qwen + 실패분 OpenAI</th><th class="n colq">Qwen 단독<br>(보안 자료 경로)</th>
+        <th class="n colo">OpenAI 단독</th><th class="n colq">Qwen 보강안<br>4096 + pp 1.0</th>
+      </tr></thead>
+      <tbody>
+        <tr class="focus"><td>판독 실패 프레임<span class="hint">응답을 읽지 못한 장수</span></td><td class="n win">0</td><td class="n">27</td><td class="n win">0</td><td class="n">6</td></tr>
+        <tr class="focus"><td>프레임 재현율 @0.3<span class="hint">정답 글자를 CER 0.3 이하로 읽은 비율 (핵심)</span></td><td class="n win">93.0</td><td class="n">91.7</td><td class="n">92.0</td><td class="n">92.6</td></tr>
+        <tr class="focus"><td>문자 오류율 CER (%)<span class="hint">낮을수록 좋음</span></td><td class="n win">5.32</td><td class="n">6.61</td><td class="n">5.51</td><td class="n">5.69</td></tr>
+        <tr><td>정밀도 @0.3<span class="hint">모델이 낸 글자 중 정답과 맞은 비율</span></td><td class="n">87.7</td><td class="n win">91.2</td><td class="n">85.9</td><td class="n">89.4</td></tr>
+        <tr><td>정밀도 @0.1</td><td class="n">83.6</td><td class="n win">86.9</td><td class="n">82.9</td><td class="n">85.0</td></tr>
+        <tr><td>띄어쓰기 완전일치</td><td class="n">75.2</td><td class="n">74.3</td><td class="n win">78.3</td><td class="n">74.3</td></tr>
+        <tr><td>배경 글자 재현율 @0.3<span class="hint">간판·현수막 등 촬영된 글자</span></td><td class="n">60.3</td><td class="n">53.4</td><td class="n win">70.8</td><td class="n">56.5</td></tr>
+        <tr class="focus"><td>holdout 재현율 @0.3<span class="hint">처음 보는 영상 6편 586장</span></td><td class="n win">90.2</td><td class="n">88.5</td><td class="n">87.5</td><td class="n">89.2</td></tr>
+        <tr class="focus"><td>holdout CER (%)</td><td class="n win">7.68</td><td class="n">9.32</td><td class="n">8.66</td><td class="n">8.29</td></tr>
+        <tr><td>holdout 정밀도 @0.3</td><td class="n">78.6</td><td class="n win">87.8</td><td class="n">76.6</td><td class="n">83.6</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">단위는 %(실패만 장수). 주 지표는 자막·제목·정보 역할 글자만 센다. 현재 파이프라인과 OpenAI 단독 값은 11/16·17 측정 보고서에서 옮겼다.</p>
+
+  <div class="charts">
+    <div class="chart" role="img" aria-label="구성별 재현율 @0.3. 현재 파이프라인 93.0, Qwen 보강안 92.6, OpenAI 단독 92.0, Qwen 단독 91.7">
+      <h3>재현율 @0.3 (%, 높을수록 좋음)</h3>
+      <div class="bar best"><div class="nm"><b>현재 파이프라인</b></div><div class="tr"><div class="fl" style="width:65%"></div><span class="vl" style="left:65%">93.0</span></div></div>
+      <div class="bar"><div class="nm">Qwen 보강안</div><div class="tr"><div class="fl" style="width:63%"></div><span class="vl" style="left:63%">92.6</span></div></div>
+      <div class="bar"><div class="nm">OpenAI 단독</div><div class="tr"><div class="fl" style="width:60%"></div><span class="vl" style="left:60%">92.0</span></div></div>
+      <div class="bar"><div class="nm">Qwen 단독</div><div class="tr"><div class="fl" style="width:58.5%"></div><span class="vl" style="left:58.5%">91.7</span></div></div>
+      <div class="axis"><div></div><div><span>80</span><span>85</span><span>90</span><span>95</span><span>100</span></div></div>
+    </div>
+    <div class="chart" role="img" aria-label="구성별 문자 오류율 CER. 현재 파이프라인 5.32, OpenAI 단독 5.51, Qwen 보강안 5.69, Qwen 단독 6.61">
+      <h3>문자 오류율 CER (%, 낮을수록 좋음)</h3>
+      <div class="bar best"><div class="nm"><b>현재 파이프라인</b></div><div class="tr"><div class="fl" style="width:66.5%"></div><span class="vl" style="left:66.5%">5.32</span></div></div>
+      <div class="bar"><div class="nm">OpenAI 단독</div><div class="tr"><div class="fl" style="width:68.875%"></div><span class="vl" style="left:68.875%">5.51</span></div></div>
+      <div class="bar"><div class="nm">Qwen 보강안</div><div class="tr"><div class="fl" style="width:71.125%"></div><span class="vl" style="left:71.125%">5.69</span></div></div>
+      <div class="bar"><div class="nm">Qwen 단독</div><div class="tr"><div class="fl" style="width:82.625%"></div><span class="vl" style="left:82.625%">6.61</span></div></div>
+      <div class="axis"><div></div><div><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span></div></div>
+    </div>
+  </div>
+  <p class="cap">재현율 막대는 80%에서 시작한다. 구성 간 차이가 작아 0에서 시작하면 구분되지 않기 때문이다. CER 막대는 0에서 시작한다.</p>
+</section>
+
+<section aria-labelledby="s-why">
+  <h2 id="s-why">현재 파이프라인이 가장 좋은 이유</h2>
+  <div class="pair">
+    <div class="card">
+      <h3>읽은 프레임의 품질은 Qwen이 낫다</h3>
+      <p>Qwen과 OpenAI가 모두 읽은 1,236장만 비교하면, 세 지표 모두 Qwen이 앞선다. 그래서 Qwen을 먼저 쓴다.</p>
+      <div class="scroll" style="margin-top:4px">
+        <table style="min-width:0">
+          <thead><tr><th>공통 1,236장</th><th class="n colq">Qwen</th><th class="n colo">OpenAI</th></tr></thead>
+          <tbody>
+            <tr><td>재현율 @0.3</td><td class="n win">93.0</td><td class="n">92.1</td></tr>
+            <tr><td>정밀도 @0.3</td><td class="n win">91.3</td><td class="n">89.2</td></tr>
+            <tr><td>CER (%)</td><td class="n win">5.25</td><td class="n">5.45</td></tr>
+            <tr><td>holdout 정밀도 @0.3</td><td class="n win">88.4</td><td class="n">84.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Qwen의 빈틈은 OpenAI가 채운다</h3>
+      <ul>
+        <li><b>Qwen 단독의 약점:</b> 27장(2.1%)을 읽지 못했다. 같은 항목을 반복하거나 글자가 너무 많은 화면에서 2,048토큰 한도에 걸려 응답이 끊긴 경우다.</li>
+        <li><b>OpenAI 단독의 약점:</b> 실패는 없지만, 읽은 프레임의 정밀도와 문자 오류율이 Qwen보다 떨어진다.</li>
+        <li><b>둘을 이으면:</b> Qwen이 잘 읽는 98%는 Qwen 결과를 쓰고, 나머지 2%만 OpenAI가 채운다. 두 모델의 강점만 남아 재현율·CER·실패가 모두 가장 좋아진다.</li>
+      </ul>
+    </div>
+  </div>
+  <ul class="notes">
+    <li><b>정밀도는 Qwen 단독이 더 높아 보인다.</b> Qwen 단독은 읽지 못한 27장이 아무 항목도 내지 않아 정밀도 분모에서 빠진다. 파이프라인에서는 그 27장(대부분 글자가 빽빽한 안내·웹페이지 화면)을 OpenAI가 읽어 장당 수십 개 항목이 분모에 들어간다. Qwen이 읽는 나머지 1,240장에서는 파이프라인 출력이 Qwen 출력과 같으므로, 정밀도 우위도 그대로 유지된다.</li>
+    <li><b>OpenAI가 앞서는 지표는 띄어쓰기 완전일치와 배경 글자다.</b> 배경 글자(간판·현수막)는 자막 검수의 주 대상이 아니다. 띄어쓰기만 다른 문구는 판정 단계에서 '사람 확인'으로 넘기는 규칙으로 처리한다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="s-secure">
+  <h2 id="s-secure">보안 자료 경로 보강: Qwen 요청 설정</h2>
+  <p>보안 자료는 OpenAI 보조가 없어 Qwen이 읽지 못한 프레임이 '못 읽음'으로 남는다. 실패 27장은 모두 응답이 2,048토큰 한도에서 끊긴 경우였다. 같은 항목 반복이 16장, 글자가 정말 많은 화면이 10장, 빈 줄만 이어 쓴 응답이 1장이다. 실패한 27장에 요청 설정 4가지를 시험했다.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>설정 (Qwen 단독)</th><th class="n">남은 실패</th><th class="n">재현율 @0.3</th><th class="n">정밀도 @0.3</th><th class="n">CER (%)</th></tr></thead>
+      <tbody>
+        <tr><td>현행 (2048, 벌점 없음)</td><td class="n">27</td><td class="n">91.7</td><td class="n">91.2</td><td class="n">6.61</td></tr>
+        <tr><td>한도 4096만</td><td class="n">20</td><td class="n">92.2</td><td class="n">89.5</td><td class="n">6.13</td></tr>
+        <tr><td>반복 벌점 1.05 (2048)</td><td class="n">20</td><td class="n">91.9</td><td class="n">91.1</td><td class="n">6.38</td></tr>
+        <tr><td>4096 + 반복 벌점 1.05</td><td class="n">15</td><td class="n">92.4</td><td class="n">89.9</td><td class="n">5.96</td></tr>
+        <tr><td>4096 + presence_penalty 1.0</td><td class="n">9</td><td class="n">92.6</td><td class="n">88.4</td><td class="n">5.64</td></tr>
+        <tr class="focus"><td>보강안: 위 설정으로 1,267장 전체 재판독</td><td class="n win">6</td><td class="n win">92.6</td><td class="n">89.4</td><td class="n">5.69</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">위 다섯 줄은 실패했던 27장만 다시 읽어 현행 결과에 끼워 넣고 전체로 채점한 값이다. 마지막 줄은 처음부터 전부 다시 읽은 값이다.</p>
+  <ul class="notes">
+    <li><b>잘 읽던 프레임에는 영향이 거의 없다.</b> 현행과 보강안이 모두 읽은 1,239장에서 재현율 93.0 → 92.8, 정밀도 91.1 → 92.0, CER 5.25 → 5.42로 변화가 1p 안쪽이다. 1,023장(82.6%)은 출력이 완전히 같다.</li>
+    <li><b>처리 시간도 같다.</b> 프레임당 지연 중앙값은 6.4초에서 6.1초로 비슷하고, 전체 소요도 3,485초 대 3,472초다. 다만 끝까지 반복에 빠지는 프레임은 최대 310초가 걸린다.</li>
+    <li><b>남은 6장:</b> 로고 글자를 반복하는 bamicha 14초와 daejeon 7초, 그리고 글자가 매우 많은 kcisa 웹페이지 4장이다. 일반 자료라면 OpenAI가 채우고, 보안 자료라면 '사람 확인'으로 넘긴다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="s-limit">
+  <h2 id="s-limit">수치를 읽을 때 주의할 점</h2>
+  <ul class="notes">
+    <li><b>현재 파이프라인과 OpenAI 단독 값은 다시 채점하지 못했다.</b> 11/16·17 측정 보고서의 집계를 옮겼다. OpenAI 원본 판독 결과가 이 작업 환경에 없어서다. Qwen 값은 RunPod 원본을 같은 채점기로 다시 채점해 일치를 확인했다.</li>
+    <li><b>Qwen 보강안을 쓴 파이프라인 점수는 계산하지 않았다.</b> 같은 이유다. 보강안은 Qwen 단독 실패를 줄이므로, 파이프라인에 넣어도 OpenAI가 다시 읽는 프레임만 27장에서 6장으로 줄어든다.</li>
+    <li><b>앱의 실패 처리 방식은 시험과 조금 다르다.</b> 앱은 Qwen이 2번 시도해 실패한 프레임을 바로 OpenAI로 넘긴다. 시험의 Qwen 결과는 실패한 프레임을 한 바퀴 더 읽은 뒤의 값이다. OpenAI가 다시 읽는 프레임 수가 27장에서 30장 안팎으로 늘 뿐, 결론은 같다.</li>
+    <li><b>정답 라벨은 silver다.</b> 사람 최종 확인 전이므로 1p 안팎의 차이는 순위를 단정할 근거가 되지 못한다. 현재 파이프라인의 우위는 여러 지표와 holdout에서 같은 방향으로 나타난다는 점에 근거한다.</li>
+    <li><b>요청 조건이 완전히 같지는 않다.</b> 출력 토큰 한도가 OpenAI 8192, Qwen 2048이다. OpenAI의 한도에는 추론 토큰도 포함된다.</li>
+    <li><b>판정 정확도는 별건이다.</b> 이 시험은 화면 글자를 정확히 읽었는지만 본다. 오탈자를 일부러 넣은 프레임에서 그대로 읽어 내는지, 계약서 기준 통과·불합격 판정이 맞는지는 측정하지 않았다.</li>
+  </ul>
+</section>
+
+<section class="verdict" aria-labelledby="c-title">
+  <div class="label" id="c-title">결론과 권고</div>
+  <p class="answer">시험한 네 구성 중 현재 파이프라인(Qwen3-VL-8B 기본 판독 + 일반 자료는 실패 프레임만 OpenAI 보조 판독)이 재현율·문자 오류율·판독 실패 모두 가장 좋다. 이 구성을 유지한다.</p>
+  <ol class="recs">
+    <li><b>현재 파이프라인을 유지한다.</b> 읽은 프레임의 품질은 Qwen이 OpenAI보다 낫고, Qwen이 놓치는 2%는 OpenAI가 채운다. 단독 모델 어느 쪽보다 정확하다.</li>
+    <li><b>보안 자료 경로를 보강한다.</b> Qwen 요청을 <code>max_tokens 4096 + presence_penalty 1.0</code>으로 바꾸면 Qwen 단독 실패가 27장에서 6장으로 줄고, 잘 읽던 프레임과 처리 시간은 그대로다. 일반 자료 경로에서도 OpenAI 호출이 줄어든다.</li>
+    <li><b>남은 실패와 띄어쓰기는 판정 단계에서 처리한다.</b> 보안 자료에서 읽지 못한 프레임과 띄어쓰기만 다른 문구는 '사람 확인'으로 넘긴다.</li>
+    <li><b>확정 전에 두 가지를 보완한다.</b> OpenAI 원본으로 파이프라인 점수를 다시 채점하고, 정답 라벨을 사람이 확인해 gold로 올린다.</li>
+  </ol>
+</section>
+
+<footer>
+  <div>Creative Checker · 영상 자막 검수 · 자막 판독 모델 비교 보고서 (2026-11-18)</div>
+  <div>파이프라인 코드: <code>backend/app/video/subtitle_vlm.py</code> <code>read_frames</code> (Qwen 먼저, route=openai일 때만 실패 프레임 OpenAI 보조).</div>
+  <div>Qwen 결과: RunPod <code>/workspace/subtitle-gt-20261109/rerun_1117/</code>. 현행 <code>full1_qwen3vl_8b_current</code>, 설정 시험 <code>variants/f27_*</code>, 보강안 <code>variants/full1_mt4096_pp1</code> + <code>_pass2</code>, 채점본 <code>variants/score_*.json</code>, 요약 <code>variants/README.md</code>.</div>
+  <div>OpenAI 단독 · 현재 파이프라인 · 공통 1,236장 값: 「자막 판독 모델 비교」 11/16·17 보고서. 채점기 <code>score_run_v2.py</code>, 라벨 <code>labels_v2</code>.</div>
+</footer>
+
+</div>
+
+</body>
+</html>

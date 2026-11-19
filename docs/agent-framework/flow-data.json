@@ -319,11 +319,11 @@
       "files": [
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 207
+          "line": 213
         },
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 117
+          "line": 123
         },
         {
           "path": "backend/agent_framework/runtime.py",
@@ -361,7 +361,7 @@
         },
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 176
+          "line": 182
         },
         {
           "path": "backend/agent_framework/adapters/templates.py",
@@ -373,7 +373,7 @@
         },
         {
           "path": "backend/agent_framework/validation.py",
-          "line": 147
+          "line": 153
         }
       ],
       "x": 80,

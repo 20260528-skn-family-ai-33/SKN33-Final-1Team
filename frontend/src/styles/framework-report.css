@@ -35,7 +35,14 @@
 @media print {
   body * { visibility: hidden !important; }
   .rv-report-print, .rv-report-print * { visibility: visible !important; }
-  .rv-report-print { position: absolute; top: 0; left: 0; width: 100%; max-width: none; }
+  /* 보이지 않게만 하면 보고서 밖 내용(머리글·단계 표시·로고 카드 등)이 자리를 그대로 차지해 뒤에 빈 쪽이 생긴다(2026-11-17 피드백).
+     보고서와 그 바깥 틀만 남기고 나머지는 자리에서 빼며, 바깥 틀의 여백·최소 높이도 없앤다. */
+  html, body { height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; }
+  body :not(:has(.rv-report-print)):not(.rv-report-print):not(.rv-report-print *) { display: none !important; }
+  body :has(.rv-report-print) { display: block !important; position: static !important; width: auto !important; max-width: none !important;
+    height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important;
+    border: 0 !important; background: none !important; box-shadow: none !important; overflow: visible !important; transform: none !important; }
+  .rv-report-print { position: static; width: 100%; max-width: none; }
   .rv-report-actions { display: none; }
   .rv-report-shell { border: 0; padding: 0; background: transparent; }
   .rv-report-paper { width: 100%; border: 0; padding: 0; box-shadow: none; }
@@ -96,3 +103,51 @@
 .rv-report-raw summary { cursor: pointer; }
 .rv-report-raw p { margin-top: 8px; }
 @media print { .rv-report-raw { display: none; } }
+/* 확인 필요 항목의 담당자 코멘트(2026-11-17). 위치 보기·상태 칩 바로 아래 오른쪽 칸에 한 칸만 둔다.
+   이 브라우저에만 저장하고(reportComments.js), 인쇄·PDF에서는 입력 칸 대신 '담당자 코멘트' 글로 나온다. */
+.rv-report-comment-hint { margin: -2px 0 6px; font-size: 11px; color: #8a8b85; }
+.rv-report-result.has-comment .rv-report-result-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 250px); gap: 0 16px; align-items: start; }
+/* 칸의 색·테두리는 앱의 다른 입력 칸과 같은 테마(optimus-theme.css)를 따른다. */
+.rv-poster-report .rv-report-result .rv-report-comment { display: block; width: 100%; min-height: 48px; margin-top: 6px; padding: 6px 9px;
+  font-size: 12px; line-height: 1.5; resize: vertical; }
+.rv-poster-report .rv-report-result .rv-report-comment::placeholder { color: #a39060; }
+.rv-report-comment-print { display: none; }
+@media print {
+  .rv-report-result.has-comment .rv-report-result-body { display: block; }
+  .rv-report-comment, .rv-report-comment-hint { display: none !important; }
+  .rv-report-comment-print { display: block; border-left: 3px solid #e6dac3; padding-left: 8px; }
+}
+/* 충족 항목 접기·인쇄 선택(2026-11-17). 충족은 처음에 접어 두고, 펼치면 그 자리로 부드럽게 내려간다.
+   인쇄·PDF에는 접힘과 상관없이 담당자가 '인쇄에 포함'을 고른 충족 항목만 싣는다. */
+.rv-poster-report .rv-report-counts .rv-report-count-jump { display: inline; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 4px;
+  background: none; color: #177347; font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.rv-poster-report .rv-report-counts .rv-report-count-jump:focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.rv-report-pass { border-top: 1px solid #deded9; padding-top: 9px; scroll-margin-top: 16px; }
+.rv-report-pass-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.rv-poster-report .rv-report-pass-toggle { min-height: 0; padding: 6px 12px; border: 1px solid #c9dccf; border-radius: 8px; background: #e8f2ec;
+  color: #177347; font-size: 12px; font-weight: 600; line-height: 1.5; cursor: pointer; }
+.rv-poster-report .rv-report-pass-toggle:hover { background: #dcebe1; }
+.rv-poster-report :is(.rv-report-pass-toggle, .rv-report-pass-all):focus-visible { outline: 2px solid #171717; outline-offset: 2px; }
+.rv-report-pass-count { font-size: 11px; color: #62645e; }
+.rv-poster-report .rv-report-pass-all { margin-left: auto; min-height: 0; padding: 3px 9px; border: 1px solid #d6d8d1; border-radius: 7px;
+  background: #fff; color: #222; font-size: 11px; line-height: 1.5; cursor: pointer; }
+.rv-poster-report .rv-report-pass-all:hover { background: #f1f1ef; }
+.rv-report-pass-list { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
+.rv-report-pass-list.is-open { grid-template-rows: 1fr; }
+/* 접힌 뒤(애니메이션이 끝난 뒤)에는 보이지 않게 숨겨 화면 낭독기·찾기에서도 빠진다. */
+.rv-report-pass-list > div { min-height: 0; overflow: hidden; visibility: hidden; transition: visibility 0s .35s; }
+.rv-report-pass-list.is-open > div { margin-top: 6px; visibility: visible; transition: visibility 0s; }
+.rv-report-pass-list .rv-report-result.is-print-excluded .rv-report-result-heading h3 { color: #62645e; }
+.rv-report-print-pick { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #62645e; cursor: pointer; white-space: nowrap; }
+.rv-report-print-pick input { width: 14px; height: 14px; margin: 0; accent-color: #177347; }
+.rv-report-pass-print { display: none; }
+@media (prefers-reduced-motion: reduce) { .rv-report-pass-list { transition: none; } }
+@media print {
+  .rv-report-pass { border-top: 0; padding-top: 0; }
+  .rv-report-pass-bar, .rv-report-print-pick, .rv-report-count-arrow { display: none !important; }
+  .rv-poster-report .rv-report-counts .rv-report-count-jump { text-decoration: none; }
+  .rv-report-pass-list { display: block; }
+  .rv-report-pass-list > div { overflow: visible; }
+  .rv-report-result.is-print-excluded { display: none !important; }
+  .rv-report-pass-print { display: block; margin: 0; padding: 9px 0 0; border-top: 1px solid #deded9; font-size: 12px; color: #62645e; }
+}
