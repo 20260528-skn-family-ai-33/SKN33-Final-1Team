@@ -1,3 +1,5 @@
+<a id="readme-top"></a>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/banner-dark.png">
   <img src="docs/assets/readme/banner-light.png" alt="Creative Checker — 좋은 디자인의 마지막 확인. 포스터와 요구사항을 함께 놓고, 디테일까지 살펴보세요." width="100%">
@@ -6,22 +8,23 @@
 <p align="center">
   <a href="https://d3navmtcjn23y2.cloudfront.net"><img src="https://img.shields.io/badge/서비스_열기-121212?style=for-the-badge&logo=googlechrome&logoColor=white" alt="서비스 열기"></a>
   <a href="#샘플-체험"><img src="https://img.shields.io/badge/샘플_체험-1F7A4D?style=for-the-badge&logo=googleslides&logoColor=white" alt="샘플 체험"></a>
-  <a href="#산출물"><img src="https://img.shields.io/badge/산출물-8A7A2E?style=for-the-badge&logo=bookstack&logoColor=white" alt="산출물"></a>
-  <a href="#팀"><img src="https://img.shields.io/badge/팀_소개-A3473A?style=for-the-badge&logo=github&logoColor=white" alt="팀 소개"></a>
+  <a href="#11--산출물"><img src="https://img.shields.io/badge/산출물-8A7A2E?style=for-the-badge&logo=bookstack&logoColor=white" alt="산출물"></a>
+  <a href="#14--팀"><img src="https://img.shields.io/badge/팀_소개-A3473A?style=for-the-badge&logo=github&logoColor=white" alt="팀 소개"></a>
 </p>
 
 <p align="center"><sub>SK네트웍스 Family AI 캠프 33기 · 최종 프로젝트 1팀 · 2026.09 – 2026.11</sub></p>
 
-<img src="docs/assets/readme/poster-results.png" alt="포스터 결과 화면: 항목별 판정과 포스터 위 근거 상자" width="100%">
+<p align="center">
+  <img src="docs/assets/readme/sample-flow.gif" alt="샘플 체험 흐름: 자료 종류 선택, 자료 입력, 검수 진행, 결과 확인" width="100%">
+  <br><sub>샘플 체험 · 자료 고르기 → 자료 입력 → 검수 진행 → 결과 확인</sub>
+</p>
 
 > [!NOTE]
 > 배포 사이트의 API·GPU 모델 서버는 상시 가동하지 않으므로, 로그인 후 실제 검수는 동작하지 않을 수 있습니다. 첫 화면의 **샘플로 체험하기**는 서버 없이 동작하므로 검수 흐름 전체를 확인할 수 있습니다.
 
 <br>
 
-<sub><code>01 — OVERVIEW</code></sub>
-
-## 프로젝트 개요
+## 01 · 프로젝트 개요
 
 기준 문서의 요구사항과 포스터·동영상을 대조해, 항목별 판정과 그 이유를 창작물 위의 위치와 함께 보여 주는 창작물 검수 서비스입니다.
 
@@ -36,13 +39,19 @@
 
 <br>
 
-<sub><code>02 — WHY</code></sub>
-
-## 왜 만들었나요
+## 02 · 왜 만들었나요
 
 포스터 한 장을 검수하려면 기획서와 가이드에서 요구사항을 찾아 이미지와 하나씩 맞춰 봐야 합니다. 행사 기간이 하루 다르거나 필수 안내 문구가 빠져도 눈으로는 놓치기 쉽고, 어떤 기준으로 통과시켰는지는 파일과 메신저에 흩어져 나중에 찾기 어렵습니다.
 
-Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐름으로 묶습니다. 자동 판정은 담당자의 검토를 돕는 초안이고, 기준 확정과 최종 판단은 사람이 합니다.
+Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐름으로 묶습니다.
+
+<table>
+<tr>
+<td align="center" width="33%"><b>① 기준을 정하고</b><br><sub>문서·직접 입력에서 조건을 뽑아<br>담당자가 확정합니다</sub></td>
+<td align="center" width="33%"><b>② 근거를 살피고</b><br><sub>확정한 조건 전체를 창작물과 대조해<br>읽은 위치를 표시합니다</sub></td>
+<td align="center" width="33%"><b>③ 사람이 판단합니다</b><br><sub>자동 판정은 검토를 돕는 초안이고<br>최종 결정은 담당자가 합니다</sub></td>
+</tr>
+</table>
 
 | 현장의 문제 | Creative Checker의 대응 |
 | --- | --- |
@@ -53,9 +62,7 @@ Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐
 
 <br>
 
-<sub><code>03 — FEATURES</code></sub>
-
-## 주요 기능
+## 03 · 주요 기능
 
 <table>
 <tr>
@@ -63,7 +70,7 @@ Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐
 
 ### 🖼️ 포스터 검수
 
-요구사항 문서(PDF·DOCX 1개)를 올리거나 요구사항을 직접 적으면 검수 기준 초안이 만들어집니다. 기준마다 원문 출처가 남고, 문서에서 정해지지 않은 값은 임의로 채우지 않고 **미정**으로 둡니다. 자료 입력과 기준 확인이 한 화면이라, 항목을 빼거나 보완한 뒤 **검수 시작하기** 한 번으로 기준 승인부터 검수 접수까지 이어집니다.
+요구사항 문서(PDF·DOCX 1개)를 올리거나 직접 적으면 검수 기준 초안이 만들어집니다. 기준마다 원문 출처가 남고, 정해지지 않은 값은 임의로 채우지 않고 **미정**으로 둡니다. 같은 화면에서 기준을 빼거나 보완한 뒤 **검수 시작하기** 한 번으로 승인과 접수가 이어집니다.
 
 </td>
 <td width="50%" valign="top">
@@ -126,26 +133,24 @@ Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐
 
 <br>
 
-<sub><code>04 — SCREENS</code></sub>
-
-## 화면
+## 04 · 화면
 
 <table>
 <tr>
-<td width="50%"><img src="docs/assets/readme/hero.png" alt="서비스 첫 화면"></td>
 <td width="50%"><img src="docs/assets/readme/select-security.png" alt="검수 시작 화면: 보안 자료와 일반 자료 선택"></td>
-</tr>
-<tr>
-<td align="center"><sub><b>첫 화면</b> · 샘플 체험과 실제 검수의 시작점</sub></td>
-<td align="center"><sub><b>시작</b> · 자료 종류, 보안 여부, 검수 유형을 고릅니다</sub></td>
-</tr>
-<tr>
 <td width="50%"><img src="docs/assets/readme/poster-input.png" alt="포스터 자료 입력 화면: 검수 요구사항, 요구사항 문서, 원본 로고 첨부"></td>
-<td width="50%"><img src="docs/assets/readme/poster-running.png" alt="검수 진행 화면: 처리 단계 기준 진행률"></td>
 </tr>
 <tr>
-<td align="center"><sub><b>자료 입력</b> · 포스터, 요구사항, 원본 로고를 한 화면에</sub></td>
-<td align="center"><sub><b>검수 진행</b> · 끝난 처리 단계만 진행률에 반영합니다</sub></td>
+<td align="center"><sub><b>① 시작</b> · 자료 종류, 보안 여부, 검수 유형</sub></td>
+<td align="center"><sub><b>② 자료 입력</b> · 포스터, 요구사항, 원본 로고를 한 화면에</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/assets/readme/poster-running.png" alt="검수 진행 화면: 처리 단계 기준 진행률"></td>
+<td width="50%"><img src="docs/assets/readme/poster-results.png" alt="포스터 결과 화면: 항목별 판정과 포스터 위 근거 상자"></td>
+</tr>
+<tr>
+<td align="center"><sub><b>③ 검수 진행</b> · 끝난 처리 단계만 진행률에 반영</sub></td>
+<td align="center"><sub><b>④ 포스터 결과</b> · 항목별 판정과 포스터 위 근거 상자</sub></td>
 </tr>
 <tr>
 <td width="50%"><img src="docs/assets/readme/logo-results.png" alt="로고 검수 결과 화면: 원본 로고와 닮은 위치와 판정 이유"></td>
@@ -157,23 +162,18 @@ Creative Checker는 이 과정을 **기준 → 근거 → 결과** 하나의 흐
 </tr>
 </table>
 
-<sub>모든 화면은 배포 사이트의 [샘플 체험](#샘플-체험)에서 캡처한 예시이며 실제 검수 결과가 아닙니다.</sub>
+<sub>모든 화면은 배포 사이트의 [샘플 체험](#샘플-체험)에서 캡처한 예시이며 실제 검수 결과가 아닙니다. 샘플 화면의 판정 표시(적합·부적합)는 실제 검수 화면에서 **충족·위반·확인 필요**로 나타납니다.</sub>
 
 <br>
 
-<sub><code>05 — FLOW</code></sub>
+## 05 · 이용 흐름
 
-## 이용 흐름
-
-```mermaid
-flowchart LR
-    S["시작<br/>자료 종류<br/>보안 여부<br/>검수 유형"] --> A["자료 입력 · 기준 확인<br/>창작물 · 요구사항<br/>원본 로고"]
-    A --> C["검수 진행<br/>관측 · 판정<br/>검증"]
-    C --> D["결과 확인<br/>충족 · 위반<br/>확인 필요"]
-    D --> E["보고서<br/>코멘트 · 인쇄<br/>확인서"]
-    E ~~~ SP[" "]
-    style SP fill:none,stroke:none
-```
+<p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/flow-dark.png">
+  <img src="docs/assets/readme/flow.png" alt="이용 흐름: 시작 → 자료 입력 → 검수 진행 → 결과 확인(충족·위반·확인 필요) → 보고서" width="100%">
+</picture>
+</p>
 
 | 단계 | 하는 일 |
 | --- | --- |
@@ -187,25 +187,14 @@ flowchart LR
 
 <br>
 
-<sub><code>06 — ARCHITECTURE</code></sub>
+## 06 · 시스템 구성
 
-## 시스템 구성
-
-```mermaid
-flowchart TB
-    U["브라우저"] --> CF["CloudFront"]
-    CF --> S3["S3<br/>React 정적 번들"]
-    CF --> API["FastAPI<br/>인증 · 접수 · 조회"]
-    API <--> PG[("PostgreSQL<br/>업무 원장 · 작업 큐")]
-    API <--> FS[("EFS<br/>원본 파일")]
-    PG <--> W["포스터 워커<br/>LangGraph"]
-    W <--> N[("Neo4j<br/>근거 관계")]
-    W -->|보안 자료| Q["Qwen3.5-4B · OWLv2<br/>RunPod GPU"]
-    W -->|일반 자료| O["OpenAI API"]
-    API --> VA["영상 API"]
-    VA --> VW["영상 워커 ×2<br/>Qwen3-VL 자막 · 로고 대조<br/>RunPod GPU"]
-    VA -->|일반 자료| O
-```
+<p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/architecture-dark.png">
+  <img src="docs/assets/readme/architecture.png" alt="시스템 구성: 브라우저 → CloudFront → S3·FastAPI, FastAPI ↔ PostgreSQL·EFS, PostgreSQL ↔ 포스터 워커 ↔ Neo4j, 포스터 워커 → Qwen3.5-4B·OWLv2(RunPod GPU, 보안 자료) 또는 OpenAI API(일반 자료), FastAPI → 영상 API → 영상 워커 ×2(RunPod GPU)·OpenAI API" width="100%">
+</picture>
+</p>
 
 API는 요청을 검증하고 작업을 등록할 뿐 모델을 직접 실행하지 않습니다. 독립 워커가 PostgreSQL에서 작업을 가져가 처리하므로, 처리 중 서버가 재시작돼도 완료된 단계부터 이어집니다. PostgreSQL이 업무의 원본이고 Neo4j는 언제든 다시 만들 수 있는 관계 조회용 사본입니다. 벡터 DB와 독립 근거 검색 단계(A03)는 비교 실험 후 제외했습니다.
 
@@ -236,12 +225,13 @@ A02 다음에는 반드시 사람의 기준 승인을 거칩니다. 역할 사�
 
 <br>
 
-<sub><code>07 — STACK</code></sub>
-
-## 기술 스택
+## 07 · 기술 스택
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=python,fastapi,react,vite,ts,postgres,docker,aws,githubactions&theme=light" alt="Python, FastAPI, React, Vite, TypeScript, PostgreSQL, Docker, AWS, GitHub Actions">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://skillicons.dev/icons?i=python,fastapi,react,vite,ts,postgres,docker,aws,githubactions&theme=dark">
+    <img src="https://skillicons.dev/icons?i=python,fastapi,react,vite,ts,postgres,docker,aws,githubactions&theme=light" alt="Python, FastAPI, React, Vite, TypeScript, PostgreSQL, Docker, AWS, GitHub Actions">
+  </picture>
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/Neo4j-4581C3?style=flat-square&logo=neo4j&logoColor=white" alt="Neo4j">
@@ -251,6 +241,9 @@ A02 다음에는 반드시 사람의 기준 승인을 거칩니다. 역할 사�
   <img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white" alt="OpenAI">
   <img src="https://img.shields.io/badge/RunPod-673AB7?style=flat-square" alt="RunPod">
 </p>
+
+<details>
+<summary><b>영역별 사용 기술</b></summary>
 
 | 영역 | 사용 기술 |
 | --- | --- |
@@ -262,11 +255,11 @@ A02 다음에는 반드시 사람의 기준 승인을 거칩니다. 역할 사�
 | 영상 | FFmpeg, 프레임 표본 추출, OWLv2 · SigLIP2 · BiRefNet · PP-OCRv5 |
 | 인프라 | AWS CloudFront · S3 · EC2 · RDS · EFS, RunPod GPU(A40), Docker, GitHub Actions |
 
+</details>
+
 <br>
 
-<sub><code>08 — RESULTS</code></sub>
-
-## 테스트 결과
+## 08 · 테스트 결과
 
 [서비스 테스트 계획 및 결과 보고서 v04](<docs/산출물/05_서비스 배포 및 테스트/[모델배포] 서비스 테스트 계획 및 결과 보고서_33기_1팀_261118_v04.docx>)의 주요 결과입니다. 2026-11-05~11-18 테스트 사이트·격리 환경의 기록 시점 수치이며, 범위를 함께 적습니다.
 
@@ -303,17 +296,16 @@ A02 다음에는 반드시 사람의 기준 승인을 거칩니다. 역할 사�
 
 <br>
 
-<sub><code>09 — QUICK START</code></sub>
-
-## 빠른 시작
+## 09 · 빠른 시작
 
 ### 샘플 체험
 
 [배포 사이트](https://d3navmtcjn23y2.cloudfront.net) 첫 화면에서 **샘플로 체험하기**를 누르면 로그인 없이 포스터·동영상·로고 검수 흐름을 둘러볼 수 있습니다. 예시 자료만 쓰며 서버로 아무것도 보내지 않습니다.
 
-### 로컬에서 화면만 띄우기
+개발 환경에서 직접 실행하려면 아래 항목을 펼칩니다.
 
-Node.js 20.19 이상이 필요합니다.
+<details>
+<summary><b>로컬에서 화면만 띄우기</b> · Node.js 20.19 이상</summary>
 
 ```bash
 npm --prefix frontend ci
@@ -325,9 +317,12 @@ npm --prefix frontend run dev
 
 `http://127.0.0.1:5173/sample`을 엽니다. 샘플 체험은 백엔드 없이 동작합니다.
 
-### 검수 흐름 실행해 보기
+</details>
 
-모델과 DB 없이 메모리에서 기준 승인 → 검사 → 보고 → 재검수까지 한 바퀴 돕니다. Python 3.12와 [uv](https://docs.astral.sh/uv/)가 필요합니다.
+<details>
+<summary><b>검수 흐름 실행해 보기</b> · Python 3.12 · uv, 모델·DB 없이</summary>
+
+모델과 DB 없이 메모리에서 기준 승인 → 검사 → 보고 → 재검수까지 한 바퀴 돕니다. [uv](https://docs.astral.sh/uv/)로 의존성을 설치합니다.
 
 ```bash
 uv sync --locked --group dev
@@ -339,7 +334,10 @@ uv run --locked --no-sync python -m backend.agent_framework demo
 
 출력은 합성 데이터이며, 그 안의 승인도 스크립트가 넣은 테스트 값입니다.
 
-### 전체 스택 실행
+</details>
+
+<details>
+<summary><b>전체 스택 실행</b> · Docker · PostgreSQL · 모델 엔드포인트</summary>
 
 실제 검수에는 PostgreSQL, Qwen 엔드포인트 또는 OpenAI API 키, 환경 파일이 필요합니다. macOS와 Windows 모두 같은 실행기로 Docker 안의 Linux 런타임을 사용합니다.
 
@@ -353,7 +351,10 @@ python scripts/framework_desktop.py build
 
 이후 설정 생성, 마이그레이션, API·워커 실행 순서는 [Mac·Windows 공통 실행 가이드](docs/agent-framework/Mac_Windows_공통실행_가이드.md)를, 영상까지 함께 띄우려면 [포스터·영상 병행 실행](docs/agent-framework/영상_포스터_로컬_병행실행.md)을, 환경 파일은 [환경 설정](docs/environment.md)을 따릅니다. 실제 `.env`와 API 키는 저장소에 포함하지 않습니다.
 
-### 테스트
+</details>
+
+<details>
+<summary><b>테스트</b> · pytest · 프런트 단위 테스트</summary>
 
 ```bash
 uv run --locked --no-sync pytest -q
@@ -365,11 +366,14 @@ npm --prefix frontend test
 
 DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마커로 따로 실행합니다.
 
+</details>
+
 <br>
 
-<sub><code>10 — STRUCTURE</code></sub>
+## 10 · 저장소 구조
 
-## 저장소 구조
+<details>
+<summary><b>폴더 구성 펼치기</b></summary>
 
 ```text
 ├── frontend/                 React 앱
@@ -388,11 +392,11 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 └── docs/                     설계 · 운영 · 검증 기록 · 산출물
 ```
 
+</details>
+
 <br>
 
-<sub><code>11 — DELIVERABLES</code></sub>
-
-## 산출물
+## 11 · 산출물
 
 | 단계 | 산출물 |
 | --- | --- |
@@ -405,9 +409,7 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 
 <br>
 
-<sub><code>12 — DOCS</code></sub>
-
-## 문서
+## 12 · 문서
 
 전체 목록은 [문서 목차](docs/INDEX.md)에서 목적별로 찾을 수 있습니다.
 
@@ -425,9 +427,7 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 
 <br>
 
-<sub><code>13 — SCOPE</code></sub>
-
-## 현재 범위
+## 13 · 현재 범위
 
 팀 개발·발표용 환경에서 운영했으며, 상시 가동과 장기 부하는 보장하지 않습니다.
 
@@ -445,9 +445,7 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 
 <br>
 
-<sub><code>14 — TEAM</code></sub>
-
-## 팀
+## 14 · 팀
 
 <table>
 <tr>
@@ -461,9 +459,7 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 
 <br>
 
-<sub><code>15 — RETROSPECTIVE</code></sub>
-
-## 한 줄 회고
+## 15 · 한 줄 회고
 
 | 이름 | 회고 |
 | --- | --- |
@@ -475,8 +471,10 @@ DB·실모델이 필요한 통합 검사는 기본 실행에서 제외되며 마
 
 <br>
 
-<sub><code>16 — CONTRIBUTING</code></sub>
-
-## 기여
+## 16 · 기여
 
 모든 변경은 Issue에서 시작해 `main` 대상 PR로 병합합니다. 브랜치·커밋·PR 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md)를 따릅니다.
+
+<br>
+
+<p align="center"><a href="#readme-top">맨 위로 ↑</a></p>
